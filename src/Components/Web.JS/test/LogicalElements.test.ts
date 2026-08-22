@@ -2,6 +2,9 @@ import { expect, test, describe } from '@jest/globals';
 import {
   toLogicalElement,
   insertLogicalChild,
+  insertLogicalChildBefore,
+  removeLogicalChild,
+  emptyLogicalElement,
   getLogicalChildrenArray,
   getLogicalChild,
   LogicalElement,
@@ -164,5 +167,123 @@ describe('insertLogicalChild', () => {
     expect(parent.childNodes[0]).toBe(newChild);
     expect(parent.childNodes[1]).toBe(spanA);
     expect(parent.childNodes[2]).toBe(spanB);
+  });
+});
+
+describe('HTMLTemplateElement handling (issue #50831)', () => {
+  test('appendChild via logical element should put children into template.content, not template.childNodes', () => {
+    // Repro of issue #50831: rendering a <template> with a RenderFragment child appended the
+    // child directly to the <template> element instead of the standard HTMLTemplateElement
+    // 'content' DocumentFragment.
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const child = document.createElement('div');
+    child.textContent = 'hello';
+    insertLogicalChild(child, logicalTemplate, 0);
+
+    // The standard <template> contract: children live in template.content, not in the
+    // template element's own childNodes. The template's own childNodes must always be empty.
+    expect(template.childNodes.length).toBe(0);
+    expect(template.content.childNodes.length).toBe(1);
+    expect(template.content.firstChild).toBe(child);
+    expect(template.content.firstChild!.textContent).toBe('hello');
+
+    // The logical children tracking should still reflect the inserted child.
+    const children = getLogicalChildrenArray(logicalTemplate);
+    expect(children.length).toBe(1);
+    expect(children[0] as any as Node).toBe(child);
+  });
+
+  test('inserting multiple children appends them all into template.content', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const first = document.createElement('div');
+    first.textContent = 'one';
+    const second = document.createElement('div');
+    second.textContent = 'two';
+    const third = document.createElement('div');
+    third.textContent = 'three';
+
+    insertLogicalChild(first, logicalTemplate, 0);
+    insertLogicalChild(second, logicalTemplate, 1);
+    insertLogicalChild(third, logicalTemplate, 2);
+
+    expect(template.childNodes.length).toBe(0);
+    expect(template.content.childNodes.length).toBe(3);
+    expect(template.content.childNodes[0]).toBe(first);
+    expect(template.content.childNodes[1]).toBe(second);
+    expect(template.content.childNodes[2]).toBe(third);
+  });
+
+  test('insertLogicalChildBefore places the new child correctly inside template.content', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const first = document.createElement('div');
+    first.textContent = 'first';
+    const third = document.createElement('div');
+    third.textContent = 'third';
+    insertLogicalChild(first, logicalTemplate, 0);
+    insertLogicalChild(third, logicalTemplate, 1);
+
+    const second = document.createElement('div');
+    second.textContent = 'second';
+    insertLogicalChildBefore(second, logicalTemplate, third as unknown as LogicalElement);
+
+    expect(template.childNodes.length).toBe(0);
+    expect(template.content.childNodes.length).toBe(3);
+    expect(template.content.childNodes[0]).toBe(first);
+    expect(template.content.childNodes[1]).toBe(second);
+    expect(template.content.childNodes[2]).toBe(third);
+  });
+
+  test('removeLogicalChild should remove from template.content', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const a = document.createElement('div'); a.textContent = 'a';
+    const b = document.createElement('div'); b.textContent = 'b';
+    insertLogicalChild(a, logicalTemplate, 0);
+    insertLogicalChild(b, logicalTemplate, 1);
+
+    removeLogicalChild(logicalTemplate, 0);
+
+    expect(template.childNodes.length).toBe(0);
+    expect(template.content.childNodes.length).toBe(1);
+    expect(template.content.firstChild).toBe(b);
+
+    const children = getLogicalChildrenArray(logicalTemplate);
+    expect(children.length).toBe(1);
+    expect(children[0] as any as Node).toBe(b);
+  });
+
+  test('emptyLogicalElement should clear template.content', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const a = document.createElement('div'); a.textContent = 'a';
+    const b = document.createElement('div'); b.textContent = 'b';
+    insertLogicalChild(a, logicalTemplate, 0);
+    insertLogicalChild(b, logicalTemplate, 1);
+
+    emptyLogicalElement(logicalTemplate);
+
+    expect(template.childNodes.length).toBe(0);
+    expect(template.content.childNodes.length).toBe(0);
+    expect(getLogicalChildrenArray(logicalTemplate).length).toBe(0);
+  });
+
+  test('content inserted into a <template> should be readable from template.content using standard semantics', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+
+    const child = document.createElement('div');
+    child.textContent = 'test';
+    insertLogicalChild(child, logicalTemplate, 0);
+    const cloned = template.content.cloneNode(true);
+    expect(cloned.childNodes.length).toBe(1);
+    expect((cloned.firstChild as HTMLElement).textContent).toBe('test');
   });
 });
