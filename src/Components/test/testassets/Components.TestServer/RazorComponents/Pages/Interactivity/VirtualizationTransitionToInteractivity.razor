@@ -2,7 +2,18 @@
 @using BasicTestApp
 @using TestContentPackage;
 
-@if (TestInitialItemIndex)
+@if (TestStaleMeasurement)
+{
+    <VirtualizationAnchorMode @rendermode="@RenderMode.InteractiveServer"
+                              InitialItemIndex="@ReproInitialItemIndex"
+                              InitialItemCount="2000"
+                              InitialContainerHeight="2500"
+                              InitialOverscanCount="3"
+                              InitiallyUseItemsProvider="@UseItemsProvider"
+                              InitiallyUseVariableHeight="@UseVariableHeight"
+                              UseExactItemSize="@(!UseVariableHeight)" />
+}
+else if (TestInitialItemIndex)
 {
     <VirtualizationAnchorMode @rendermode="@RenderMode.InteractiveServer" InitialItemIndex="500" />
 }
@@ -25,4 +36,20 @@ else
     [Parameter]
     [SupplyParameterFromQuery(Name = "test-initial-item-index")]
     public bool TestInitialItemIndex { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "test-stale-measurement")]
+    public bool TestStaleMeasurement { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "initial-item-index")]
+    public int ReproInitialItemIndex { get; set; } = 1990;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "use-items-provider")]
+    public bool UseItemsProvider { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "use-variable-height")]
+    public bool UseVariableHeight { get; set; }
 }
