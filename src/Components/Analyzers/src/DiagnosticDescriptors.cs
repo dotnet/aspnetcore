@@ -156,4 +156,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor VirtualizeSpacerElementIsInvalid = new(
+        "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Title)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Description)));
 }
