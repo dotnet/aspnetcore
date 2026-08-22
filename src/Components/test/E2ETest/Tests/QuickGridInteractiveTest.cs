@@ -162,4 +162,16 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
         Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
     }
+    
+    [Fact]
+    public void QuickGrid_EnableColumnResize()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid3 > table"));
+
+        var grid = Browser.FindElement(By.CssSelector("#grid3 > table"));
+
+        Browser.Equal(2, () => grid.FindElements(By.CssSelector(".col-width-draghandle")).Count);
+        Assert.Contains("col-resize", grid.GetAttribute("class"));
+    }
 }
