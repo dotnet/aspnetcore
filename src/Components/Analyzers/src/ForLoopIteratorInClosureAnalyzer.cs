@@ -55,7 +55,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
             {
                 var analyzerState = new ForLoopAnalyzerState();
                 if (blockContext.OwningSymbol is IMethodSymbol owningMethod
-                    && IsImplementationOfBuildRenderTree(owningMethod, availableTypes))
+                    && ComponentFacts.IsBuildRenderTree(owningMethod, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
                 {
                     foreach (var childBlock in blockContext.OperationBlocks)
                     {
@@ -66,24 +66,6 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                 }
             });
         });
-    }
-
-    private static bool IsImplementationOfBuildRenderTree(IMethodSymbol methodSymbol, Dictionary<string, INamedTypeSymbol?> availableTypes)
-    {
-        if (methodSymbol.Name != "BuildRenderTree" || !methodSymbol.IsOverride)
-        {
-            return false;
-        }
-        var containingType = methodSymbol.ContainingType;
-        while (containingType is not null)
-        {
-            if (SymbolEqualityComparer.Default.Equals(containingType, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
-            {
-                return true;
-            }
-            containingType = containingType.BaseType;
-        }
-        return false;
     }
 
     private static void AnalyzeOperationsTree(IOperation operation, Dictionary<string, INamedTypeSymbol?> availableTypes, ForLoopAnalyzerState analyzerState)
