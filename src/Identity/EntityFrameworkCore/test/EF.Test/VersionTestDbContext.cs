@@ -41,7 +41,10 @@ public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, stri
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        if (SchemaVersion >= new Version(10, 0))
+        var storeOptions = this.GetService<Microsoft.Extensions.Options.IOptions<IdentityOptions>>()?.Value?.Stores;
+        var schemaVersion = storeOptions?.SchemaVersion ?? IdentitySchemaVersions.Version1;
+
+        if (schemaVersion >= new Version(10, 0))
         {
             builder.Ignore<IdentityUser>();
 
@@ -84,7 +87,10 @@ public class CustomVersionDbContext : IdentityDbContext<IdentityUser, IdentityRo
     {
         base.OnModelCreating(builder);
 
-        if (SchemaVersion >= new Version(3, 0))
+        var storeOptions = this.GetService<Microsoft.Extensions.Options.IOptions<IdentityOptions>>()?.Value?.Stores;
+        var schemaVersion = storeOptions?.SchemaVersion ?? IdentitySchemaVersions.Version1;
+
+        if (schemaVersion >= new Version(3, 0))
         {
             builder.Entity<CustomColumn>(b =>
             {
