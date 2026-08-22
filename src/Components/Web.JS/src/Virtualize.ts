@@ -891,7 +891,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     });
 
     if (intersectingEntries.length === 0) {
-      if (source === ScrollSource.AlignToItem) {
+      if (canEndAlignActivity(source)) {
         scrollActivity.clear();
       }
       return;
@@ -934,9 +934,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       dotNetHelper.invokeMethodAsync(methodName, spacerSize, spacerSeparation, containerSize, reason);
     });
 
-    if (source === ScrollSource.AlignToItem) {
+    if (canEndAlignActivity(source)) {
       scrollActivity.clear();
     }
+  }
+
+  // An alignment that could not measure its target yet stays pending until a later render
+  // retries it, and until then scrollTop has not moved. Ending the align activity early would
+  // downgrade the spacer callbacks from ProgrammaticScroll (ignored by C#) to ViewportFill,
+  // letting C# redistribute the window out from under the alignment and strand it at the
+  // pre-alignment scroll position.
+  function canEndAlignActivity(source: ScrollSource): boolean {
+    return source === ScrollSource.AlignToItem && pendingAlignLocalIndex === null;
   }
 
   function isValidTableElement(element: HTMLElement | null): boolean {
