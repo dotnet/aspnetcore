@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Text;
 
 #nullable enable
 
@@ -103,7 +104,24 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                var awaitExpressions = body.DescendantNodes(static node => !IsNestedFunctionLike(node)).OfType<AwaitExpressionSyntax>().OrderBy(n => n.SpanStart).ToList();
+                var suspensionStart = int.MaxValue;
+                var suspensionEnd = int.MinValue;
+                foreach (var node in body.DescendantNodes(static node => !IsNestedFunctionLike(node)))
+                {
+                    if (TryGetSuspensionSpan(node, out var suspension))
+                    {
+                        if (suspension.Start < suspensionStart)
+                        {
+                            suspensionStart = suspension.Start;
+                        }
+
+                        if (suspension.End > suspensionEnd)
+                        {
+                            suspensionEnd = suspension.End;
+                        }
+                    }
+                }
+
                 var stateCalls = body.DescendantNodes(static node => !IsNestedFunctionLike(node)).OfType<InvocationExpressionSyntax>()
                     .Where(invocation => IsStateHasChangedCall(syntaxContext.SemanticModel, invocation))
                     .OrderBy(invocation => invocation.SpanStart)
@@ -115,9 +133,9 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 }
 
                 var callLocations = new Dictionary<int, Location>();
-                if (awaitExpressions.Count == 0)
+                if (suspensionStart > suspensionEnd)
                 {
-                    // no await expressions, all calls are potentially redundant
+                    // no awaits, all calls are potentially redundant
                     foreach (var stateCall in stateCalls)
                     {
                         AddCallLocation(callLocations, stateCall);
@@ -125,11 +143,9 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 }
                 else
                 {
-                    var firstAwaitStart = awaitExpressions[0].SpanStart;
-                    var lastAwaitStart = awaitExpressions[awaitExpressions.Count - 1].SpanStart;
                     foreach (var stateCall in stateCalls)
                     {
-                        if (stateCall.SpanStart < firstAwaitStart || stateCall.SpanStart > lastAwaitStart)
+                        if (stateCall.SpanStart < suspensionStart || stateCall.SpanStart > suspensionEnd)
                         {
                             // any calls before the first await or after the last one are redundant, because ComponentBase calls StateHasChanged afterwards.
                             AddCallLocation(callLocations, stateCall);
@@ -213,6 +229,39 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
     private static bool IsNestedFunctionLike(SyntaxNode node)
     {
         return node is LocalFunctionStatementSyntax or AnonymousFunctionExpressionSyntax;
+    }
+
+    private static bool TryGetSuspensionSpan(SyntaxNode node, out TextSpan span)
+    {
+        switch (node)
+        {
+            case AwaitExpressionSyntax awaitExpression:
+                span = awaitExpression.Span;
+                return true;
+
+            case CommonForEachStatementSyntax forEachStatement when IsAwaitKeyword(forEachStatement.AwaitKeyword):
+                span = forEachStatement.Span;
+                return true;
+
+            case UsingStatementSyntax usingStatement when IsAwaitKeyword(usingStatement.AwaitKeyword):
+                span = usingStatement.Span;
+                return true;
+
+            case LocalDeclarationStatementSyntax declaration when IsAwaitKeyword(declaration.AwaitKeyword):
+                span = TextSpan.FromBounds(
+                    declaration.SpanStart,
+                    declaration.Parent is BlockSyntax enclosingBlock ? enclosingBlock.Span.End : declaration.Span.End);
+                return true;
+
+            default:
+                span = default;
+                return false;
+        }
+    }
+
+    private static bool IsAwaitKeyword(SyntaxToken token)
+    {
+        return token.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.AwaitKeyword);
     }
 
     private static IMethodSymbol? TryGetMethodFromOperation(IOperation operation)

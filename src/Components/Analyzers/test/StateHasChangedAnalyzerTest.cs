@@ -509,6 +509,176 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void StateHasChangedInsideAwaitForeach_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Collections.Generic;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            protected override async Task OnInitializedAsync()
+            {
+                await foreach (var item in StreamAsync())
+                {
+                    StateHasChanged();
+                }
+            }
+
+            private static async IAsyncEnumerable<int> StreamAsync()
+            {
+                await Task.Delay(1);
+                yield return 1;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void StateHasChangedBeforeAwaitForeach_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Collections.Generic;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            protected override async Task OnInitializedAsync()
+            {
+                StateHasChanged();
+
+                await foreach (var item in StreamAsync())
+                {
+                }
+            }
+
+            private static async IAsyncEnumerable<int> StreamAsync()
+            {
+                await Task.Delay(1);
+                yield return 1;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
+                Message = "StateHasChanged is unnecessary in method 'OnInitializedAsync' and can be removed.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 12, 17) }
+            });
+    }
+
+    [Fact]
+    public void StateHasChangedAfterAwaitForeach_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Collections.Generic;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            protected override async Task OnInitializedAsync()
+            {
+                await foreach (var item in StreamAsync())
+                {
+                }
+
+                StateHasChanged();
+            }
+
+            private static async IAsyncEnumerable<int> StreamAsync()
+            {
+                await Task.Delay(1);
+                yield return 1;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
+                Message = "StateHasChanged is unnecessary in method 'OnInitializedAsync' and can be removed.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 16, 17) }
+            });
+    }
+
+    [Fact]
+    public void StateHasChangedInsideAwaitUsingBlock_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            protected override async Task OnInitializedAsync()
+            {
+                await using (var scope = new Scope())
+                {
+                    StateHasChanged();
+                }
+            }
+
+            private sealed class Scope : IAsyncDisposable
+            {
+                public ValueTask DisposeAsync() => default;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void StateHasChangedAfterAwaitUsingDeclaration_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            protected override async Task OnInitializedAsync()
+            {
+                await using var scope = new Scope();
+
+                StateHasChanged();
+            }
+
+            private sealed class Scope : IAsyncDisposable
+            {
+                public ValueTask DisposeAsync() => default;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
     public void NonComponentBaseClassWithOnInitialized_DoesNotReportDiagnostic()
     {
         var test = @"
