@@ -16,9 +16,30 @@ export function tryApplySpecialProperty(element: Element, name: string, value: s
       return tryApplyValueProperty(element, value);
     case 'checked':
       return tryApplyCheckedProperty(element, value);
+    case 'type':
+      return tryApplyTypeProperty(element, value);
     default:
       return false;
   }
+}
+
+function tryApplyTypeProperty(element: Element, value: string | null): boolean {
+  if (element.tagName !== 'INPUT' || value === null) {
+    return false;
+  }
+
+  const inputElement = element as HTMLInputElement;
+  // If 'value' was applied before 'type' in the same render batch,
+  // tryApplyValueProperty stashed it on the element. We need to re-apply it
+  // because the browser will have wiped the IDL .value property.
+  const deferredValue = (inputElement as any)[deferredValuePropname] as string | undefined;
+
+  inputElement.setAttribute('type', value);
+
+  if (deferredValue !== undefined) {
+    setDeferredElementValue(inputElement, deferredValue);
+  }
+  return true;
 }
 
 export function applyAnyDeferredValue(element: Element) {
@@ -158,8 +179,17 @@ function setDeferredElementValue(element: Element, value: any) {
     } else {
       setSingleSelectElementValue(element, value);
     }
-  } else {
-    (element as any).value = value;
+    return;
+  }
+
+  if (element instanceof HTMLInputElement) {
+    if (element.type === 'checkbox') {
+      element.checked = value === '' || value === true;
+    } else if (typeof value === 'string') {
+      element.value = value;
+    } else if (value === null) {
+      element.value = '';
+    }
   }
 }
 
