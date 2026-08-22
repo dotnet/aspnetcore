@@ -24,6 +24,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
 {
     private static readonly Version Http11Version = new Version(1, 1);
     private static readonly Version Http2Version = new Version(2, 0);
+    private static readonly object CertificateLock = new();
 
     public static IEnumerable<object[]> Http11And2 =>
         new List<object[]>
@@ -259,6 +260,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
 
     private Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
     {
+        var certificatePath = EnsureTestCertificate();
         var builder = new HostBuilder()
             .ConfigureServices(AddTestLogging)
             .ConfigureServices(services => services
@@ -271,7 +273,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
                 {
                     options.Listen(IPAddress.Loopback, 0, endpoint =>
                     {
-                        endpoint.UseHttps("negotiateAuthCert.pfx", "testPassword");
+                        endpoint.UseHttps(certificatePath, "testPassword");
                     });
                 });
                 webHostBuilder.Configure(app =>
@@ -284,6 +286,21 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
             });
 
         return builder.StartAsync();
+    }
+
+    private static string EnsureTestCertificate()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "negotiateAuthCert.pfx");
+        lock (CertificateLock)
+        {
+            using var certificate = TestCertificateFactory.CreateRsaCertificate(
+                enhancedKeyUsages: [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: true,
+                configureSubjectAlternativeNames: TestCertificateFactory.ConfigureLocalhostSubjectAlternativeNames);
+            TestCertificateFactory.WritePfxFile(certificate, path);
+        }
+
+        return path;
     }
 
     private static void ConfigureEndpoints(IEndpointRouteBuilder builder)

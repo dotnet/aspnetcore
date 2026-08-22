@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -31,7 +30,7 @@ public class HttpsConfigurationTests
                     .UseKestrelCore()
                     .ConfigureKestrel(serverOptions =>
                     {
-                        serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
+                        serverOptions.TestOverrideDefaultCertificate = TestResources.GetTestCertificate("aspnetdevcert.pfx");
                     })
                     .Configure(app => { })
                     // This is what ASPNETCORE_URLS would populate
@@ -103,7 +102,7 @@ public class HttpsConfigurationTests
                         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                         {
                             new KeyValuePair<string, string>("Endpoints:end1:Url", address),
-                            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.GetCertPath("aspnetdevcert.pfx")),
                             new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
                         }).Build();
                         serverOptions.Configure(config);
@@ -144,7 +143,7 @@ public class HttpsConfigurationTests
                     {
                         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                         {
-                            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.GetCertPath("aspnetdevcert.pfx")),
                             new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
                         }).Build();
                         serverOptions.Configure(config);
@@ -181,7 +180,7 @@ public class HttpsConfigurationTests
                         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                         {
                             new KeyValuePair<string, string>("Endpoints:end1:Url", address),
-                            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.GetCertPath("aspnetdevcert.pfx")),
                             new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
                         }).Build();
                         serverOptions.Configure(config);
@@ -218,7 +217,7 @@ public class HttpsConfigurationTests
                     .UseKestrelCore()
                     .ConfigureKestrel(serverOptions =>
                     {
-                        serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
+                        serverOptions.TestOverrideDefaultCertificate = TestResources.GetTestCertificate("aspnetdevcert.pfx");
 
                         serverOptions.ListenAnyIP(0, listenOptions =>
                         {
@@ -251,7 +250,7 @@ public class HttpsConfigurationTests
                         {
                             listenOptions.UseHttps(new HttpsConnectionAdapterOptions()
                             {
-                                ServerCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword"),
+                                ServerCertificate = TestResources.GetTestCertificate("aspnetdevcert.pfx"),
                             });
                         });
                     })

@@ -8,9 +8,27 @@ namespace Microsoft.AspNetCore.InternalTesting;
 public static class TestResources
 {
     private static readonly string _baseDir = Path.Combine(Directory.GetCurrentDirectory(), "shared", "TestCertificates");
+    private static readonly object _generatedCertificateLock = new();
+    private static readonly HashSet<string> _generatedCertificatePaths = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> _generatedCertificateNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "aspnetdevcert.pfx",
+        "eku.client.pfx",
+        "eku.code_signing.pfx",
+        "eku.multiple_usages.pfx",
+        "eku.server.pfx",
+        "no_extensions.pfx",
+        "testCert.pfx",
+    };
 
-    public static string TestCertificatePath { get; } = Path.Combine(_baseDir, "testCert.pfx");
-    public static string GetCertPath(string name) => Path.Combine(_baseDir, name);
+    public static string TestCertificatePath => GetCertPath("testCert.pfx");
+
+    public static string GetCertPath(string name)
+    {
+        var path = Path.Combine(_baseDir, name);
+        EnsureGeneratedCertificate(name, path);
+        return path;
+    }
 
     private const int MutexTimeout = 120 * 1000;
     private static readonly Mutex importPfxMutex = OperatingSystem.IsWindows() ?
@@ -19,6 +37,8 @@ public static class TestResources
 
     public static X509Certificate2 GetTestCertificate(string certName = "testCert.pfx")
     {
+        var certPath = GetCertPath(certName);
+
         // On Windows, applications should not import PFX files in parallel to avoid a known system-level
         // race condition bug in native code which can cause crashes/corruption of the certificate state.
         if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
@@ -28,7 +48,7 @@ public static class TestResources
 
         try
         {
-            return new X509Certificate2(GetCertPath(certName), "testPassword");
+            return new X509Certificate2(certPath, TestCertificateFactory.TestCertificatePassword);
         }
         finally
         {
@@ -73,5 +93,104 @@ public static class TestResources
         {
             importPfxMutex?.ReleaseMutex();
         }
+    }
+
+    private static void EnsureGeneratedCertificate(string name, string path)
+    {
+        var fileName = Path.GetFileName(name);
+        if (!_generatedCertificateNames.Contains(fileName))
+        {
+            return;
+        }
+
+        lock (_generatedCertificateLock)
+        {
+            if (_generatedCertificatePaths.Contains(path))
+            {
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(path) ??
+                throw new InvalidOperationException($"Cannot determine certificate directory for '{path}'.");
+            Directory.CreateDirectory(directory);
+
+            var certificateBytes = CreateGeneratedCertificate(fileName);
+            var tempPath = Path.Combine(directory, Path.GetRandomFileName());
+            try
+            {
+                File.WriteAllBytes(tempPath, certificateBytes);
+                File.Move(tempPath, path, overwrite: true);
+                _generatedCertificatePaths.Add(path);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+    }
+
+    private static byte[] CreateGeneratedCertificate(string name)
+    {
+        return name.ToLowerInvariant() switch
+        {
+            "aspnetdevcert.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=localhost",
+                [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: true,
+                includeAspNetHttpsExtension: true,
+                includeKeyUsage: true,
+                keyUsageCritical: true,
+                enhancedKeyUsageCritical: true,
+                subjectAlternativeNameCritical: true,
+                configureSubjectAlternativeNames: TestCertificateFactory.ConfigureAspNetHttpsSubjectAlternativeNames),
+            "eku.client.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=testcertonly",
+                [TestCertificateFactory.ClientAuthentication],
+                includeSubjectAlternativeName: false,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: true,
+                keyUsageCritical: false),
+            "eku.code_signing.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=testcertonly",
+                [TestCertificateFactory.CodeSigning],
+                includeSubjectAlternativeName: false,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: true,
+                keyUsageCritical: false),
+            "eku.multiple_usages.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=testcertonly",
+                [
+                    TestCertificateFactory.ServerAuthentication,
+                    TestCertificateFactory.ClientAuthentication,
+                ],
+                includeSubjectAlternativeName: false,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: true,
+                keyUsageCritical: false),
+            "eku.server.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=testcertonly",
+                [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: false,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: true,
+                keyUsageCritical: false),
+            "no_extensions.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=testcertonly",
+                [],
+                includeSubjectAlternativeName: false,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: false),
+            "testcert.pfx" => TestCertificateFactory.CreateRsaPfx(
+                "CN=localhost",
+                [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: true,
+                includeAspNetHttpsExtension: false,
+                includeKeyUsage: true,
+                keyUsageCritical: false),
+            _ => throw new InvalidOperationException($"Unknown generated certificate '{name}'."),
+        };
     }
 }
