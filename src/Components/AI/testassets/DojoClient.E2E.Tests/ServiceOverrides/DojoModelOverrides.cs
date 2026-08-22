@@ -28,6 +28,9 @@ internal class DojoModelOverrides
             new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
     }
 
+    public static void HumanInTheLoop(IServiceCollection services)
+        => AddRecordedModel(services, "HumanInTheLoop.recording.json");
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));

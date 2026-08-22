@@ -18,6 +18,16 @@ namespace AGUIDojoApi;
 // recorded client through a service override.
 internal static class ChatClientAgentFactory
 {
+    internal const string HumanInTheLoopSystemPrompt = """
+        You are a planning assistant.
+        When asked to create a plan, call generate_task_steps so the user can review the steps.
+        A request for a simple plan must contain exactly 5 sensible steps.
+        A request for a complex plan must contain exactly 10 sensible steps.
+        Keep all supported plans between 5 and 10 steps and set every initial status to "enabled".
+        After the tool returns, mention exactly the selected steps and do not mention disabled steps as selected.
+        If the user rejected every step, acknowledge that no steps will be performed.
+        """;
+
     internal static IChatClient CreateAgenticChat(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
