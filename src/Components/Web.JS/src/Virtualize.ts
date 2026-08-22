@@ -634,7 +634,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   subscribeToScroll();
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  const pendingCallbacks: Set<Element> = new Set();
+  const pendingCallbacks: Map<Element, IntersectionMeasurement | null> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
   let pendingAlignLocalIndex: number | null = null;
 
@@ -812,14 +812,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (pendingCallbacks.size === 0) {
       return;
     }
-    const targets = Array.from(pendingCallbacks);
+    const measurements = Array.from(pendingCallbacks.values())
+      .filter((measurement): measurement is IntersectionMeasurement => measurement !== null);
     pendingCallbacks.clear();
-    const measurements = measureIntersectionTargets(targets);
     processIntersectionEntries(measurements);
   }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
-    entries.forEach(entry => pendingCallbacks.add(entry.target));
+    const measurements = measureIntersectionTargets(entries.map(entry => entry.target));
+    const measurementsByTarget = new Map(measurements.map(measurement => [measurement.target, measurement]));
+    entries.forEach(entry => pendingCallbacks.set(entry.target, measurementsByTarget.get(entry.target) ?? null));
 
     if (!callbackTimeout) {
       flushPendingCallbacks();

@@ -194,8 +194,8 @@ describe('Virtualize intersection measurements', () => {
     invokeMethodAsync.mockClear();
 
     Virtualize.beginProgrammaticScroll(dotNetHelper);
-    intersectionCallback([entry], {} as IntersectionObserver);
     setElementMetrics(spacerBefore, rect(-200, 20), 20);
+    intersectionCallback([entry], {} as IntersectionObserver);
     jest.advanceTimersByTime(50);
 
     setElementMetrics(spacerBefore, rect(-10, 20), 20);
@@ -208,6 +208,51 @@ describe('Virtualize intersection measurements', () => {
       400,
       2,
       1);
+  });
+
+  test('dispatches callback-time measurement after the target moves during throttling', () => {
+    jest.useFakeTimers();
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    document.body.append(spacerBefore, item, spacerAfter);
+
+    setElementMetrics(spacerBefore, rect(-10, 20), 20);
+    setElementMetrics(item, rect(10, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+    jest.spyOn(document.documentElement, 'clientHeight', 'get').mockReturnValue(300);
+
+    invokeMethodAsync.mockClear();
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter, 0);
+    const entry = {
+      target: spacerBefore,
+      isIntersecting: true,
+    } as unknown as IntersectionObserverEntry;
+    intersectionCallback([entry], {} as IntersectionObserver);
+    invokeMethodAsync.mockClear();
+
+    setElementMetrics(spacerBefore, rect(-100, 120), 120);
+    spacerSeparation = 500;
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '2');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '2');
+    intersectionCallback([entry], {} as IntersectionObserver);
+
+    setElementMetrics(spacerBefore, rect(-200, 20), 20);
+    spacerSeparation = 400;
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '3');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '3');
+    jest.advanceTimersByTime(50);
+
+    expect(invokeMethodAsync).toHaveBeenCalledWith(
+      'OnSpacerBeforeVisible',
+      50,
+      500,
+      400,
+      2,
+      2);
   });
 });
 
