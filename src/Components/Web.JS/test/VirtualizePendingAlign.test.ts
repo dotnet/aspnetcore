@@ -111,7 +111,9 @@ function spacerReasons(helper: any): number[] {
 
 function raiseSpacerIntersection(before: Element, after: Element) {
   intersectionCallback([ioEntry(before, true), ioEntry(after, false)]);
-  jest.advanceTimersByTime(100);
+  // Virtualize throttles its intersection callbacks behind a single setTimeout, so flush
+  // whatever is pending rather than coupling the test to the throttle duration.
+  jest.runOnlyPendingTimers();
 }
 
 describe('Virtualize programmatic alignment', () => {
