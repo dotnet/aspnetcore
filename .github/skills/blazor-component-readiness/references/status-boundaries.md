@@ -8,6 +8,8 @@ variants, and misspellings are invalid.
 
 | Situation | Status | Why |
 |---|---|---|
+| No canonical documentation or sample source was supplied or inspected | `not tested` plus maintainer clarification | The evidence set cannot establish either presence or absence. |
+| Supplied documentation contains relevant product guidance, but exact package/version/component alignment is unknown | `maintainer evidence required` | The content narrows an absence claim, but only the maintainer can bind it to the reviewed release or provide an aligned source. |
 | Required public nuspec field is absent from the exact nupkg | `defect` | The released public artifact observably conflicts with the requirement. |
 | Package is listed, but exact bytes remain unavailable after the acquisition protocol | `not tested` | The requirement applies, but transport prevented direct inspection. |
 | Maintainer legal approval or retention record is private and unavailable | `maintainer evidence required` | The maintainer owns an inaccessible record. |

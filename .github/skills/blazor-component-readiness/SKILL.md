@@ -74,6 +74,8 @@ Read before a complete review:
 - `references/areas/index.md`: evidence precedence and quality-area playbooks.
 - `references/artifact-acquisition.md`: deterministic package retrieval, mode selection, minimum
   checks, and shared exact-artifact evidence.
+- `references/documentation-source-intake.md`: provenance and alignment boundaries for explicitly
+  supplied documentation and sample sources.
 - `references/status-boundaries.md`: paired classification examples.
 - `references/targeted-profiles.md`: non-authoritative targeted starter sets.
 - `references/report-template.md`: concise report, annex, handoff, and evidence-anchor shape.
@@ -132,6 +134,10 @@ before finalizing the review mode:
 5. select complete or targeted mode using the evidence-state table.
 
 A first-path retrieval failure must not turn a released package into a source-only component.
+
+When a maintainer, reviewer, or user explicitly supplies documentation or sample evidence, follow
+`references/documentation-source-intake.md` before classifying documentation rows. This is an
+evidence-intake step for the supplied source, not an instruction to find additional sources.
 
 ### 2. Pin the bundled rubric
 
