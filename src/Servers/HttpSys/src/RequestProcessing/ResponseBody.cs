@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
@@ -194,7 +193,7 @@ internal sealed partial class ResponseBody : Stream
         if (chunked && !hasData && endOfRequest)
         {
             dataChunks = allocator.AllocAsSpan<HTTP_DATA_CHUNK>(1);
-            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
+            dataChunks[currentChunk++] = Helpers.ChunkTerminatorChunk;
             pins = default;
             return;
         }
@@ -246,11 +245,11 @@ internal sealed partial class ResponseBody : Stream
 
         if (chunked)
         {
-            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.CRLF);
+            dataChunks[currentChunk++] = Helpers.CRLFChunk;
 
             if (endOfRequest)
             {
-                SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
+                dataChunks[currentChunk++] = Helpers.ChunkTerminatorChunk;
             }
         }
 
@@ -272,22 +271,16 @@ internal sealed partial class ResponseBody : Stream
         ArraySegment<byte> buffer,
         out GCHandle handle)
     {
-        handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
-        SetDataChunkWithPinnedData(chunks, ref chunkIndex, new ReadOnlySpan<byte>((void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count));
-    }
+        Debug.Assert(buffer.Count > 0, "Empty buffers should not produce a chunk.");
 
-    private static unsafe void SetDataChunkWithPinnedData(
-        Span<HTTP_DATA_CHUNK> chunks,
-        ref int chunkIndex,
-        ReadOnlySpan<byte> bytes)
-    {
+        // The handle keeps buffer.Array pinned until FreeDataBuffers releases it, which
+        // is what makes this address safe to hand to HTTP.SYS.
+        handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
+
         ref var chunk = ref chunks[chunkIndex++];
         chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        // Preserve null-on-empty; GetReference may return a non-null ref for empty spans.
-        chunk.Anonymous.FromMemory.pBuffer = bytes.IsEmpty
-            ? null
-            : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
-        chunk.Anonymous.FromMemory.BufferLength = (uint)bytes.Length;
+        chunk.Anonymous.FromMemory.pBuffer = (byte*)handle.AddrOfPinnedObject() + buffer.Offset;
+        chunk.Anonymous.FromMemory.BufferLength = (uint)buffer.Count;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)

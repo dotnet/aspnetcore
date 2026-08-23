@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 using Windows.Win32.Networking.HttpServer;
@@ -68,7 +67,7 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
+            _dataChunks[currentChunk++] = Helpers.CRLFChunk;
         }
 
         // This call will pin needed memory
@@ -87,8 +86,9 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            // No need to update this chunk, CRLF, because it was already pinned.
-            // However, we increment the counter to ensure we are accounting for all sections.
+            // No need to update this chunk, CRLF, because it points at a permanently
+            // pinned buffer. However, we increment the counter to ensure we are
+            // accounting for all sections.
             currentChunk++;
         }
 
@@ -130,9 +130,9 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
                 _dataChunks[1].Anonymous.FromFileHandle.FileHandle = (HANDLE)_fileStream.SafeFileHandle.DangerousGetHandle();
                 // Nothing to pin for the file handle.
 
-                // No need to pin the CRLF data
+                // No need to pin the CRLF data, the chunk points at a permanently pinned buffer.
                 int currentChunk = 2;
-                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
+                _dataChunks[currentChunk++] = Helpers.CRLFChunk;
                 Debug.Assert(currentChunk == _dataChunks.Length);
             }
             else
@@ -163,17 +163,6 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         // The address is not set until after we pin it with Overlapped
         chunk.Anonymous.FromMemory.BufferLength = (uint)segment.Count;
-    }
-
-    private static void SetDataChunkWithPinnedData(HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, ReadOnlySpan<byte> bytes)
-    {
-        ref var chunk = ref chunks[chunkIndex++];
-        chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        // Preserve null-on-empty; GetReference may return a non-null ref for empty spans.
-        chunk.Anonymous.FromMemory.pBuffer = bytes.IsEmpty
-            ? null
-            : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
-        chunk.Anonymous.FromMemory.BufferLength = (uint)bytes.Length;
     }
 
     internal SafeNativeOverlapped? NativeOverlapped
