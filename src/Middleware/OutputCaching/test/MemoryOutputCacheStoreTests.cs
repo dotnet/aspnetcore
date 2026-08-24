@@ -245,6 +245,34 @@ public class MemoryOutputCacheStoreTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await store.SetAsync(key, value, new string[] { tag }, TimeSpan.FromMinutes(1), default));
     }
 
+    [Fact]
+    public async Task SetAsync_ChargesKeySizeAgainstSizeLimit()
+    {
+        // The SizeLimit accommodates the small value on its own, but not once the retained key is charged.
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 100 });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+        var key = new string('k', 100); // 100 chars => 200 bytes; value + key exceeds the limit
+
+        await store.SetAsync(key, value, null, TimeSpan.FromMinutes(1), default);
+
+        // The entry is rejected because the key bytes push it past SizeLimit.
+        Assert.Null(await store.GetAsync(key, default));
+    }
+
+    [Fact]
+    public async Task SetAsync_SmallKeyAndValue_WithinSizeLimit_IsCached()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 100 });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+        var key = "k"; // 1 char => 2 bytes; value + key stays within the limit
+
+        await store.SetAsync(key, value, null, TimeSpan.FromMinutes(1), default);
+
+        Assert.NotNull(await store.GetAsync(key, default));
+    }
+
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock
     {
         public DateTimeOffset UtcNow { get; set; }

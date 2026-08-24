@@ -120,7 +120,9 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         var options = new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = validFor,
-            Size = value.Length
+            // Charge the retained UTF-16 cache key in addition to the serialized response body so the
+            // configured SizeLimit accounts for the full retained footprint of the entry.
+            Size = checked(value.LongLength + ((long)key.Length * sizeof(char)))
         };
 
         if (tags is { Length: > 0 })
