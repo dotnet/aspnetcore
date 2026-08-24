@@ -716,7 +716,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
+    setAnchorMode: (mode: number) => {
+      anchorMode = mode;
+      // Re-derive the whole at-bottom state from the live viewport. `wasAtBottomLastRender`
+      // is otherwise only refreshed by a render or a user scroll, so a list that was briefly
+      // shorter than its container (an empty first render, or an async ItemsProvider round
+      // trip) leaves it latched. Switching into End mode would then pin the viewport to the
+      // bottom even though the user is parked at the top.
+      const atBottom = isViewportAtBottom();
+      bottomTracking.following = (mode & 2) !== 0;
+      bottomTracking.reached = atBottom;
+      bottomTracking.wasAtBottomLastRender = atBottom;
+    },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
