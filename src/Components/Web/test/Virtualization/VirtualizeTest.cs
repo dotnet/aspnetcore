@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -876,6 +877,177 @@ public class VirtualizeTest
         Assert.NotEqual(initialState, GetVirtualizeState(virtualize));
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task SpacerCallback_GeometryNeutralRerenderPreservesVersion(bool beforeSpacer, bool useItemsProvider)
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f,
+            totalItems: 500,
+            useItemsProvider: useItemsProvider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                5000f,
+                500f,
+                500f,
+                SpacerVisibilityReason.ViewportFill,
+                virtualize._renderedWindowVersion));
+
+        var renderedWindowVersion = virtualize._renderedWindowVersion;
+        await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
+
+        Assert.Equal(renderedWindowVersion, virtualize._renderedWindowVersion);
+        var stateBeforeCallback = GetVirtualizeState(virtualize);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            if (beforeSpacer)
+            {
+                callbacks.OnBeforeSpacerVisible(2500f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
+            }
+            else
+            {
+                callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
+            }
+        });
+
+        Assert.NotEqual(stateBeforeCallback, GetVirtualizeState(virtualize));
+    }
+
+    [Fact]
+    public async Task SpacerCallback_ItemSizeChangeAdvancesVersionAndRearmsStaleMeasurement()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 500);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        var staleVersion = virtualize._renderedWindowVersion;
+        virtualize._itemSize = 60f;
+        await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
+
+        Assert.True(virtualize._renderedWindowVersion > staleVersion);
+        var stateBeforeCallback = GetVirtualizeState(virtualize);
+        var accepted = await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1000f,
+                1000f,
+                SpacerVisibilityReason.ViewportFill,
+                staleVersion));
+
+        Assert.False(accepted);
+        Assert.Equal(stateBeforeCallback, GetVirtualizeState(virtualize));
+    }
+
+    [Fact]
+    public async Task RefreshData_AdvancesVersionWhenWindowGeometryIsUnchanged()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 500);
+        var renderedWindowVersion = virtualize._renderedWindowVersion;
+
+        await virtualize.RefreshDataAsync();
+        await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
+
+        Assert.True(virtualize._renderedWindowVersion > renderedWindowVersion);
+    }
+
+    [Fact]
+    public async Task SpacerCallback_StaleUserScrollCancelsInFlightScroll()
+    {
+        var blockProvider = false;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (!blockProvider)
+            {
+                return new ItemsProviderResult<int>(
+                    Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                    100);
+            }
+
+            requestStarted.TrySetResult();
+            using var registration = request.CancellationToken.Register(requestCanceled.SetResult);
+            await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
+            return default;
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f,
+            totalItems: 100,
+            customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        blockProvider = true;
+
+        Task scrollTask = null;
+        await renderer.Dispatcher.InvokeAsync(() => { scrollTask = virtualize.ScrollToItemAsync(90); });
+        await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                500f,
+                500f,
+                SpacerVisibilityReason.UserScroll,
+                virtualize._renderedWindowVersion - 1));
+
+        await requestCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await scrollTask.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task SpacerCallback_StaleUserScrollDoesNotCancelWhileAnchorRestoreIsPending()
+    {
+        var blockProvider = false;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (!blockProvider)
+            {
+                return new ItemsProviderResult<int>(
+                    Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                    100);
+            }
+
+            requestStarted.TrySetResult();
+            using var registration = request.CancellationToken.Register(requestCanceled.SetResult);
+            await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
+            return default;
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f,
+            totalItems: 100,
+            customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        blockProvider = true;
+        using var cts = new CancellationTokenSource();
+
+        Task scrollTask = null;
+        await renderer.Dispatcher.InvokeAsync(() => { scrollTask = virtualize.ScrollToItemAsync(90, cts.Token); });
+        await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        typeof(Virtualize<int>).GetField("_pendingAnchorRestore", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(virtualize, true);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                500f,
+                500f,
+                SpacerVisibilityReason.UserScroll,
+                virtualize._renderedWindowVersion - 1));
+
+        Assert.False(requestCanceled.Task.IsCompleted);
+
+        cts.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scrollTask.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
     private static VirtualizeState GetVirtualizeState(Virtualize<int> virtualize)
         => new(
             virtualize._itemsBefore,
@@ -892,7 +1064,8 @@ public class VirtualizeTest
         int totalItems,
         ItemsProviderDelegate<int> customProvider = null,
         RenderFragment<int> childContent = null,
-        int initialItemIndex = 0)
+        int initialItemIndex = 0,
+        bool useItemsProvider = true)
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -905,8 +1078,8 @@ public class VirtualizeTest
         {
             InnerContent = BuildVirtualize(
                 itemSize,
-                provider,
-                null,
+                useItemsProvider ? provider : null,
+                useItemsProvider ? null : Enumerable.Range(0, totalItems).ToList(),
                 virtualize => renderedVirtualize = virtualize,
                 childContent,
                 initialItemIndex)

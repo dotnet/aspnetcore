@@ -232,6 +232,99 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void SpacerIntersection_MatchesNativeThresholdZeroEdgeSemantics()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        var js = (IJavaScriptExecutor)Browser;
+
+        var results = (ReadOnlyCollection<object>)js.ExecuteAsyncScript(
+            """
+            const done = arguments[arguments.length - 1];
+            const cases = [
+                { name: 'edge-adjacent nonzero spacer', top: -10, height: 10 },
+                { name: 'separated spacer', top: -11, height: 10 },
+                { name: 'edge-adjacent zero-height spacer', top: 0, height: 0 },
+                { name: 'overlapping spacer', top: -9, height: 10 },
+            ];
+
+            Promise.all(cases.map(async (testCase, index) => {
+                const container = document.createElement('div');
+                Object.assign(container.style, {
+                    position: 'fixed',
+                    top: '100px',
+                    left: `${100 + index * 120}px`,
+                    width: '100px',
+                    height: '100px',
+                    overflowY: 'auto',
+                });
+
+                const spacerBefore = document.createElement('div');
+                Object.assign(spacerBefore.style, {
+                    position: 'absolute',
+                    top: `${testCase.top}px`,
+                    width: '10px',
+                });
+                spacerBefore.setAttribute('data-blazor-virtualize-reserved-height', `${testCase.height}`);
+                spacerBefore.setAttribute('data-blazor-virtualize-rendered-window-version', '1');
+
+                const item = document.createElement('div');
+                Object.assign(item.style, {
+                    position: 'absolute',
+                    top: '20px',
+                    height: '20px',
+                });
+
+                const spacerAfter = document.createElement('div');
+                Object.assign(spacerAfter.style, {
+                    position: 'absolute',
+                    top: '500px',
+                    width: '10px',
+                });
+                spacerAfter.setAttribute('data-blazor-virtualize-reserved-height', '10');
+                spacerAfter.setAttribute('data-blazor-virtualize-rendered-window-version', '1');
+
+                container.append(spacerBefore, item, spacerAfter);
+                document.body.append(container);
+
+                const calls = [];
+                const helper = {
+                    _callDispatcher: {},
+                    _id: index + 1,
+                    invokeMethodAsync(methodName, ...args) {
+                        calls.push({ methodName, args });
+                        return Promise.resolve();
+                    },
+                    dispose() {},
+                };
+
+                Blazor._internal.Virtualize.init(helper, spacerBefore, spacerAfter, 0, 0);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                Blazor._internal.Virtualize.dispose(helper);
+                container.remove();
+
+                return {
+                    name: testCase.name,
+                    wasReported: calls.some(call => call.methodName === 'OnSpacerBeforeVisible'),
+                };
+            })).then(done);
+            """);
+
+        Assert.Collection(
+            results,
+            result => AssertIntersectionResult(result, "edge-adjacent nonzero spacer", expected: true),
+            result => AssertIntersectionResult(result, "separated spacer", expected: false),
+            result => AssertIntersectionResult(result, "edge-adjacent zero-height spacer", expected: true),
+            result => AssertIntersectionResult(result, "overlapping spacer", expected: true));
+
+        static void AssertIntersectionResult(object value, string expectedName, bool expected)
+        {
+            var result = (Dictionary<string, object>)value;
+            Assert.Equal(expectedName, result["name"]);
+            Assert.Equal(expected, result["wasReported"]);
+        }
+    }
+
+    [Fact]
     public void RerendersWhenItemSizeShrinks_Sync()
     {
         Browser.MountTestComponent<VirtualizationComponent>();

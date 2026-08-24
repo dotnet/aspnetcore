@@ -32,15 +32,15 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     }
 
     [JSInvokable]
-    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
+    public bool OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
     {
-        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
+        return _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
     }
 
     [JSInvokable]
-    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
+    public bool OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
     {
-        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
+        return _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
     }
 
     [JSInvokable]

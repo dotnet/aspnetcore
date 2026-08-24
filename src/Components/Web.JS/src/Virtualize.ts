@@ -694,9 +694,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const targetRect = target.getBoundingClientRect();
       const targetIntersectionTop = Math.max(targetRect.top, intersectionTop);
       const targetIntersectionBottom = Math.min(targetRect.bottom, intersectionBottom);
-      const isZeroHeightIntersection = targetRect.height === 0 && targetIntersectionBottom === targetIntersectionTop;
-      if (targetIntersectionBottom < targetIntersectionTop
-        || (targetIntersectionBottom === targetIntersectionTop && !isZeroHeightIntersection)) {
+      if (targetIntersectionBottom < targetIntersectionTop) {
         continue;
       }
 
@@ -791,6 +789,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
+    reobserveSpacers,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
       mutationObserver.disconnect();
@@ -989,7 +988,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
 
       const methodName = isBefore ? 'OnSpacerBeforeVisible' : 'OnSpacerAfterVisible';
-      dotNetHelper.invokeMethodAsync(
+      const callback = dotNetHelper.invokeMethodAsync(
         methodName,
         measurement.spacerSize,
         measurement.spacerSeparation,
@@ -997,6 +996,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         reason,
         measurement.renderedWindowVersion
       );
+      void Promise.resolve(callback).then(isCurrentMeasurement => {
+        if (isCurrentMeasurement === false) {
+          reobserveSpacers();
+        }
+      });
     });
 
     if (source === ScrollSource.AlignToItem) {

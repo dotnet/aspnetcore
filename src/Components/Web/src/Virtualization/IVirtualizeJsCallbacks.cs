@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 
 internal interface IVirtualizeJsCallbacks
 {
-    void OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason, long renderedWindowVersion);
-    void OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason, long renderedWindowVersion);
+    bool OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason, long renderedWindowVersion);
+    bool OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason, long renderedWindowVersion);
     void OnAlignmentCompleted(VirtualizeAlignmentResult result);
 }

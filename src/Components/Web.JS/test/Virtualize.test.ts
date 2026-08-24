@@ -17,10 +17,15 @@ describe('Virtualize exports', () => {
 describe('Virtualize intersection measurements', () => {
   let intersectionCallback: IntersectionObserverCallback;
   let spacerSeparation: number;
+  let observe: jest.Mock;
+  let unobserve: jest.Mock;
 
   beforeEach(() => {
     document.body.innerHTML = '';
     spacerSeparation = 600;
+    observe = jest.fn();
+    unobserve = jest.fn();
+    invokeMethodAsync.mockReset().mockResolvedValue(true);
 
     Object.defineProperty(globalThis, 'CSS', {
       configurable: true,
@@ -33,8 +38,8 @@ describe('Virtualize intersection measurements', () => {
           intersectionCallback = callback;
         }
 
-        observe() {}
-        unobserve() {}
+        observe(target: Element) { observe(target); }
+        unobserve(target: Element) { unobserve(target); }
         disconnect() {}
       },
     });
@@ -60,7 +65,7 @@ describe('Virtualize intersection measurements', () => {
     jest.restoreAllMocks();
   });
 
-  const invokeMethodAsync = jest.fn();
+  const invokeMethodAsync = jest.fn<(...args: unknown[]) => Promise<boolean>>();
   const dotNetHelper = {
     _callDispatcher: {},
     _id: 1,
@@ -253,6 +258,82 @@ describe('Virtualize intersection measurements', () => {
       400,
       2,
       2);
+  });
+
+  test.each([
+    ['edge-adjacent nonzero spacer', -60, 10, true],
+    ['separated spacer', -61, 10, false],
+    ['edge-adjacent zero-height spacer', -50, 0, true],
+    ['overlapping spacer', -59, 10, true],
+  ])('matches threshold-zero intersection semantics for %s', (_, top, height, expectedCallback) => {
+    const container = document.createElement('div');
+    container.style.overflowY = 'auto';
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    container.append(spacerBefore, item, spacerAfter);
+    document.body.append(container);
+
+    setElementMetrics(container, rect(0, 200), 200);
+    setElementMetrics(spacerBefore, rect(top, height), height);
+    setElementMetrics(item, rect(20, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+
+    invokeMethodAsync.mockClear();
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter);
+    intersectionCallback([{
+      target: spacerBefore,
+      isIntersecting: expectedCallback,
+    } as unknown as IntersectionObserverEntry], {} as IntersectionObserver);
+
+    expect(invokeMethodAsync).toHaveBeenCalledTimes(expectedCallback ? 1 : 0);
+  });
+
+  test('reobserves spacers only when managed code rejects a stale measurement', async () => {
+    jest.useFakeTimers();
+    const container = document.createElement('div');
+    container.style.overflowY = 'auto';
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    container.append(spacerBefore, item, spacerAfter);
+    document.body.append(container);
+
+    setElementMetrics(container, rect(0, 200), 200);
+    setElementMetrics(spacerBefore, rect(-10, 20), 20);
+    setElementMetrics(item, rect(10, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+
+    invokeMethodAsync.mockReset().mockResolvedValueOnce(false);
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter);
+    observe.mockClear();
+    unobserve.mockClear();
+
+    const entry = {
+      target: spacerBefore,
+      isIntersecting: true,
+    } as unknown as IntersectionObserverEntry;
+    intersectionCallback([entry], {} as IntersectionObserver);
+    await Promise.resolve();
+
+    expect(unobserve).toHaveBeenCalledTimes(2);
+    expect(observe).toHaveBeenCalledTimes(2);
+
+    jest.advanceTimersByTime(50);
+    observe.mockClear();
+    unobserve.mockClear();
+    invokeMethodAsync.mockResolvedValueOnce(true);
+    intersectionCallback([entry], {} as IntersectionObserver);
+    await Promise.resolve();
+
+    expect(unobserve).not.toHaveBeenCalled();
+    expect(observe).not.toHaveBeenCalled();
   });
 });
 
