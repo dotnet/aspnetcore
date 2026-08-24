@@ -90,7 +90,20 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                     {
                         throw new ArgumentException(Resources.TagCannotBeNull);
                     }
+                }
 
+                SetEntry(key, value, tags, validFor, entryId);
+
+                // The entry might not have been admitted, for instance when it exceeds the configured SizeLimit.
+                // In that case the tag index must not reference it, otherwise EvictByTagAsync would keep trying to
+                // remove keys that were never cached.
+                if (!_cache.TryGetValue(key, out var cached) || !ReferenceEquals(cached, value))
+                {
+                    return ValueTask.CompletedTask;
+                }
+
+                foreach (var tag in tags)
+                {
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
                         keys = new HashSet<TaggedEntry>();
@@ -101,8 +114,6 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
                     keys.Add(new TaggedEntry(key, entryId));
                 }
-
-                SetEntry(key, value, tags, validFor, entryId);
             }
         }
         else

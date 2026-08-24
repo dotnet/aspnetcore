@@ -273,6 +273,34 @@ public class MemoryOutputCacheStoreTests
         Assert.NotNull(await store.GetAsync(key, default));
     }
 
+    [Fact]
+    public async Task SetAsync_TaggedEntryExceedingSizeLimit_DoesNotLeaveStaleTaggedEntries()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 100 });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+        var key = new string('k', 100); // 100 chars => 200 bytes; value + key exceeds the limit
+
+        await store.SetAsync(key, value, new[] { "tag1" }, TimeSpan.FromMinutes(1), default);
+
+        Assert.Null(await store.GetAsync(key, default));
+        Assert.Empty(store.TaggedEntries);
+    }
+
+    [Fact]
+    public async Task SetAsync_TaggedEntryWithinSizeLimit_IsIndexedByTag()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 100 });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+        var key = "k";
+
+        await store.SetAsync(key, value, new[] { "tag1" }, TimeSpan.FromMinutes(1), default);
+
+        Assert.NotNull(await store.GetAsync(key, default));
+        Assert.Equal(key, Assert.Single(Assert.Single(store.TaggedEntries).Value));
+    }
+
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock
     {
         public DateTimeOffset UtcNow { get; set; }
