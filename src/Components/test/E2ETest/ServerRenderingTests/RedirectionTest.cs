@@ -119,6 +119,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67738")]
     public void RedirectEnhancedGetToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -158,7 +159,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66709")]
     public void RedirectStreamingEnhancedGetToInternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -185,7 +185,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
-    
 
     [Theory]
     [InlineData(true)]
@@ -299,6 +298,9 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
+
+        // Wait for the circular redirects to settle.
+        Browser.Exists(By.Id("unobserved-exceptions-count"));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);

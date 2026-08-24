@@ -29,7 +29,7 @@ import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Plat
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { createValidationService, ValidationOptions } from './Validation';
+import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -59,6 +59,9 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     enhancedNavigationStarted: () => {
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
+    beforeDomUpdate: (source) => {
+      updateOptionsFromBrowserConfiguration(options, source);
+    },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
       resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
@@ -79,15 +82,11 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
-  // Client-side validation is initialized on demand: only when the page contains
-  // SSR-rendered form fields with data-val attributes. This avoids adding document-level
-  // event listeners in interactive-only apps that never use client-side validation.
+  // Client-side validation is initialized only when the page contains the
+  // SSR-rendered custom element bearing the client validation data.
+  // This avoids adding event listeners in interactive-only apps that never use client validation.
   jsEventRegistry.addEventListener('enhancedload', () => {
-    if (Blazor.formValidation) {
-      Blazor.formValidation.scanRules();
-    } else {
-      initFormValidationIfNeeded(options?.ssr?.formValidation);
-    }
+    initFormValidationIfNeeded();
   });
 
   // Wait until the initial page response completes before activating interactive components.
@@ -103,8 +102,31 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 }
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
-  // Discover server-emitted browser configuration and merge into options
-  const browserConfig = discoverBrowserConfiguration(document);
+  updateOptionsFromBrowserConfiguration(options);
+
+  // Retrieve and start invoking the initializers.
+  // Blazor server options get defaults that are configured before we invoke the initializers
+  // so we do the same here.
+  const initialCircuitOptions = resolveOptions(options?.circuit || {});
+  options.circuit = initialCircuitOptions;
+  options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
+  const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
+  const initializersPromise = fetchAndInvokeInitializers(options, logger);
+  setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
+  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
+
+  registerAllComponentDescriptors(document);
+
+  rootComponentManager.onDocumentUpdated();
+
+  // Initialize client-side validation if the page has validatable fields.
+  initFormValidationIfNeeded();
+
+  callAfterStartedCallbacks(initializersPromise);
+}
+
+function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Node = document): void {
+  const browserConfig = discoverBrowserConfiguration(source);
   if (browserConfig) {
     if (browserConfig.logLevel !== undefined) {
       options.logLevel = browserConfig.logLevel;
@@ -145,49 +167,27 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
         }
       }
     }
-  }
 
-  // Retrieve and start invoking the initializers.
-  // Blazor server options get defaults that are configured before we invoke the initializers
-  // so we do the same here.
-  const initialCircuitOptions = resolveOptions(options?.circuit || {});
-  options.circuit = initialCircuitOptions;
-  options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
-  const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
-  const initializersPromise = fetchAndInvokeInitializers(options, logger);
-  setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
-  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
-
-  // If BrowserConfiguration had WebAssembly server options, apply them
-  // before registering component descriptors, since registration triggers
-  // WebAssembly platform loading which captures these options.
-  if (browserConfig?.webAssembly) {
-    rootComponentManager.setWebAssemblyOptions({
-      environmentName: browserConfig.webAssembly.environmentName ?? '',
-      environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
-    });
-  }
-
-  registerAllComponentDescriptors(document);
-
-  rootComponentManager.onDocumentUpdated();
-
-  // Initialize client-side validation if the page has validatable fields.
-  initFormValidationIfNeeded(options?.ssr?.formValidation);
-
-  callAfterStartedCallbacks(initializersPromise);
-}
-
-function initFormValidationIfNeeded(formValidation?: ValidationOptions): void {
-  if (Blazor.formValidation) {
-    return;
-  }
-  for (const form of Array.from(document.forms)) {
-    if (form.querySelector('[data-val="true"]')) {
-      Blazor.formValidation = createValidationService(formValidation);
-      return;
+    // Apply WebAssembly server options before processing component descriptors, since
+    // registration can trigger platform loading that captures these options.
+    if (browserConfig.webAssembly) {
+      rootComponentManager.setWebAssemblyOptions({
+        environmentName: browserConfig.webAssembly.environmentName ?? '',
+        environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
+      });
     }
   }
+}
+
+function initFormValidationIfNeeded(): void {
+  if (Blazor.formValidation) {
+    // The service already exists. An enhanced-navigation morph reuses forms in place and strips the
+    // JS-added novalidate, so re-add it.
+    ensureNovalidateOnForms();
+    return;
+  }
+
+  Blazor.formValidation = createBlazorValidation();
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {
