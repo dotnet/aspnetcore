@@ -1173,13 +1173,14 @@ public sealed class EvidenceLedgerTests
             Encoding.UTF8);
 
         Assert.Contains(
-            "<scorecard|tracker|ledger|receipt|validate-skill> [options]",
+            "<scorecard|tracker|ledger|receipt|revision|validate-skill> [options]",
             content);
         Assert.Contains("\"scorecard\" =>", content);
         Assert.Contains("\"tracker\" =>", content);
         Assert.Contains("\"validate-skill\" =>", content);
         Assert.Contains("\"ledger\" =>", content);
         Assert.Contains("\"receipt\" =>", content);
+        Assert.Contains("\"revision\" =>", content);
     }
 
     private static ExactAssessmentIdentity KnownAssessment()

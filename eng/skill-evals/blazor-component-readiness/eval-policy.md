@@ -5,7 +5,7 @@ The two suites have distinct ownership:
 - `eval.vally.yaml` is the auto-discovered baseline-versus-skilled lane. Its five duplicated cases
   provide bounded, high-discrimination signal for artifact truth, accessibility layering,
   cross-area completeness, a no-defect control, and targeted status boundaries.
-- `regression.vally.yaml` is the explicitly invoked exhaustive governance suite. It owns all 23
+- `regression.vally.yaml` is the explicitly invoked exhaustive governance suite. It owns all 24
   cases, requirement-prefix coverage, train/held-out tiers, score families, controls, provenance,
   architecture portability, and held-out refresh.
 

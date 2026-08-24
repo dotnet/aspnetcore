@@ -189,6 +189,33 @@ For a rubric migration replay:
 5. report current-head drift and never present the replay as a fresh audit;
 6. treat aggregate count changes without new product evidence as suspicious until explained.
 
+For a correction to an existing exact-snapshot report:
+
+1. start from the prior report and its immutable ledgers rather than generating a fresh report;
+2. keep the exact assessment identity fixed; a new package, source commit, component, or rubric
+   requires a separate assessment or migration;
+3. declare the requirement IDs being corrected and preserve every undeclared scorecard row
+   field-for-field, including its evidence anchors and disposition;
+4. preserve prior maintainer or partner feedback verbatim, including issue and pull-request links;
+5. change a status only when the row's evidence is also updated to explain the new classification;
+6. record a correction delta that names the supplied evidence, changed IDs, old and new statuses,
+   and why unrelated rows were not reverified;
+7. revise the existing tracker presentation rather than replacing it with a newly generated
+   confidential report.
+
+Before publishing the correction, run the deterministic revision gate:
+
+```bash
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  revision --previous <prior-report-or-tracker.md> \
+  --changed-ids BEQ-02,BEQ-03 <revised-report-or-tracker.md>
+```
+
+The gate rejects changed assessment identity, added or removed requirement rows, undeclared row
+edits, status-only changes, no-op declarations, and loss of text from a prior
+`Feedback after review` column. Run the normal scorecard and tracker validators afterward; the
+revision gate proves preservation boundaries, not factual correctness.
+
 ### 4. Create the scorecard annex
 
 From the repository root, run `source activate.sh` once before invoking the C# tool. For a complete

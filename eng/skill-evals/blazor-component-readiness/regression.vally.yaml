@@ -586,7 +586,7 @@ stimuli:
       provenance_kind: "multi-model-consensus"
       provenance_source: "immutable evidence ledger architecture review"
       positive_controls: "0,1,2,3,5,6"
-      negative_controls: "4,7"
+      negative_controls: "4"
       executor_model: "gpt-5.6-sol"
       expected_runs: "5"
     graders:
@@ -661,3 +661,37 @@ stimuli:
       - "Unknown support or governance claims remain bounded evidence requests, and unperformed applicable probes remain not tested rather than inferred from unrelated components."
       - "A response that assumes generated wrappers, a shared runtime, private feeds, commercial release machinery, or unrelated-component evidence fails this portability case."
       - "The plan remains read-only and does not expand into sibling packages or a component catalog."
+  - name: "eval-24-report-correction-preservation"
+    prompt: |-
+      Correct the prior exact-snapshot readiness report using only the supplied fixture. The maintainer disputes the BEQ-02 documentation finding and supplied attributable product documentation. Produce the correction plan and revised-row delta without rerunning the control or replacing the tracker.
+
+      Read eval-input/report-correction.md. Explain the deterministic revision validation command and every preservation boundary that applies.
+    tags:
+      eval_id: "24"
+      area: "reporting-and-provenance"
+      score_family: "revision-preservation"
+      tier: "train"
+      requirement_prefixes: "A11Y,BEQ"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "destructive four-control report replacement incident"
+      positive_controls: "0,1,2,3,5,6"
+      negative_controls: "4"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    environment:
+      files:
+        - src: "fixtures/report-correction.md"
+          dest: "eval-input/report-correction.md"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A surgical BEQ-02 correction preserves the exact assessment, unrelated scorecard rows, retained runtime evidence, and prior maintainer feedback."
+      - "Only BEQ-02 is declared changed; BEQ-12 and A11Y-08 remain field-for-field unchanged and are explicitly not reverified."
+      - "BEQ-02 changes only after the supplied documentation is checked for provenance, authority, currency, applicability, and component alignment; its revised evidence records that basis."
+      - "The prior callback runtime probe, accessibility runtime probe, evidence anchors or artifact references, and maintainer issue link remain intact."
+      - "The tracker is revised in place rather than replaced by a fresh confidential report or a full rerun."
+      - "The correction delta names the prior and revised BEQ-02 status, the new evidence, and the unchanged exact package, source commit, component, and rubric."
+      - "The response runs revision --previous <prior-report-or-tracker.md> --changed-ids BEQ-02 <revised-report-or-tracker.md>, then runs the normal scorecard and tracker validators."
+      - "The response does not silently remove feedback, downgrade higher-precedence evidence, change undeclared rows, or claim that structural validation proves factual correctness."

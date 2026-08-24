@@ -11,7 +11,7 @@ internal static class Program
         {
             Console.Error.WriteLine(
                 "Usage: BlazorComponentReadiness " +
-                "<scorecard|tracker|ledger|receipt|validate-skill> [options]");
+                "<scorecard|tracker|ledger|receipt|revision|validate-skill> [options]");
             return 1;
         }
 
@@ -21,6 +21,7 @@ internal static class Program
             "tracker" => TrackerCommand.Run(args[1..], Console.Out, Console.Error),
             "ledger" => EvidenceLedgerCommand.Run(args[1..], Console.Out, Console.Error),
             "receipt" => ReceiptCommand.Run(args[1..], Console.Out, Console.Error),
+            "revision" => RevisionCommand.Run(args[1..], Console.Out, Console.Error),
             "validate-skill" => SkillValidationCommand.Run(args[1..], Console.Out, Console.Error),
             _ => UnknownCommand(args[0]),
         };
@@ -30,7 +31,7 @@ internal static class Program
     {
         Console.Error.WriteLine(
             $"Unknown command '{command}'. Expected 'scorecard', 'tracker', 'ledger', " +
-            "'receipt', or 'validate-skill'.");
+            "'receipt', 'revision', or 'validate-skill'.");
         return 1;
     }
 }

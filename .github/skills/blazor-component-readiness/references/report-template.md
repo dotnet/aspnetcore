@@ -196,6 +196,19 @@ Use the same scorecard columns, evidence anchors, and finding blocks. A targeted
 
 Do not repeat unchanged repository-wide findings or imply a complete adoption/release decision.
 
+When correcting an existing report for the same exact assessment identity, preserve every
+undeclared scorecard row field-for-field and retain all prior maintainer or partner feedback
+verbatim. Do not replace the tracker body with a newly generated full report. Record the changed
+IDs and correction delta, then run:
+
+```bash
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  revision --previous <prior-report-or-tracker.md> \
+  --changed-ids <comma-separated IDs> <revised-report-or-tracker.md>
+```
+
+The revision gate is additive to the scorecard and tracker validators.
+
 ## Shared repository-wide evidence
 
 For batched controls with the same repository SHA and package ID/version/digest, build one immutable

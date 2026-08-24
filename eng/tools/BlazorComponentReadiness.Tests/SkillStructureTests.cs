@@ -1828,7 +1828,7 @@ public sealed class SkillStructureTests
 
         var stimuli = SkillValidator.ParseVallyStimuli(layout.VallyPath);
 
-        Assert.Equal(23, stimuli.Count);
+        Assert.Equal(24, stimuli.Count);
         Assert.Contains(stimuli, stimulus => stimulus.Name == stimulusName);
         Assert.Empty(SkillValidator.Validate(layout));
     }
@@ -1842,7 +1842,7 @@ public sealed class SkillStructureTests
 
         var stimuli = SkillValidator.ParseVallyStimuli(layout.VallyPath);
 
-        Assert.Equal(23, stimuli.Count);
+        Assert.Equal(24, stimuli.Count);
         Assert.Empty(SkillValidator.Validate(layout));
     }
 
@@ -1864,7 +1864,7 @@ public sealed class SkillStructureTests
 
         var stimuli = SkillValidator.ParseVallyStimuli(layout.VallyPath);
 
-        Assert.Equal(23, stimuli.Count);
+        Assert.Equal(24, stimuli.Count);
         Assert.Empty(SkillValidator.Validate(layout));
     }
 
@@ -1943,7 +1943,7 @@ public sealed class SkillStructureTests
             SkillValidator.Validate(layout),
             error => error.Contains(
                 "unparsed content appears after stimulus " +
-                "eval-23-architecture-portability",
+                "eval-24-report-correction-preservation",
                 StringComparison.Ordinal));
     }
 
