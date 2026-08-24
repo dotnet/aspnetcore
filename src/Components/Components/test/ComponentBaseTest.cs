@@ -465,6 +465,7 @@ public class ComponentBaseTest
 
         var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
         var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.True(frames.Count > 0);
         Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
         Assert.Equal("div", frames.Array[0].ElementName);
 
@@ -473,6 +474,7 @@ public class ComponentBaseTest
 
         Assert.NotNull(capturedBoundary!.ReceivedException);
         frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.True(frames.Count > 0);
         Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
         Assert.Equal("div", frames.Array[0].ElementName);
     }
@@ -513,8 +515,60 @@ public class ComponentBaseTest
 
         var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
         var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.True(frames.Count > 0);
         Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
         Assert.Equal("div", frames.Array[0].ElementName);
+    }
+
+    [Fact]
+    public void NestedErrorBoundaryDoesNotPreventOuterBoundaryFromRenderingErrorContent()
+    {
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedOuterBoundary = null;
+        TestErrorBoundary capturedInnerBoundary = null;
+
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(outerChildBuilder =>
+            {
+                outerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                outerChildBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                outerChildBuilder.CloseComponent();
+
+                outerChildBuilder.OpenComponent<TestErrorBoundary>(2);
+                outerChildBuilder.AddComponentParameter(3, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(innerChildBuilder =>
+                {
+                    innerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                    innerChildBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                    innerChildBuilder.CloseComponent();
+                }));
+                outerChildBuilder.AddComponentReferenceCapture(4, obj => capturedInnerBoundary = (TestErrorBoundary)obj);
+                outerChildBuilder.CloseComponent();
+
+                outerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(5);
+                outerChildBuilder.AddComponentParameter(6, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                outerChildBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, obj => capturedOuterBoundary = (TestErrorBoundary)obj);
+            builder.CloseComponent();
+        };
+
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootId);
+
+        Assert.NotNull(capturedOuterBoundary);
+        Assert.NotNull(capturedInnerBoundary);
+        Assert.NotNull(capturedOuterBoundary!.ReceivedException);
+
+        var outerBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>()
+            .Single(frame => ReferenceEquals(frame.Component, capturedOuterBoundary))
+            .ComponentId;
+        var outerFrames = renderer.GetCurrentRenderTreeFrames(outerBoundaryId);
+        Assert.True(outerFrames.Count > 0);
+        Assert.Equal(RenderTree.RenderTreeFrameType.Element, outerFrames.Array[0].FrameType);
+        Assert.Equal("div", outerFrames.Array[0].ElementName);
     }
 
     [Fact]

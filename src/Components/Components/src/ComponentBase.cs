@@ -122,11 +122,10 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     /// </summary>
     protected void StateHasChanged()
     {
-        if (_hasPendingQueuedRender && !_renderHandle.TryConsumeAllowOneRender())
+        if (_hasPendingQueuedRender)
         {
             return;
         }
-        _hasPendingQueuedRender = false;
 
         if (_hasNeverRendered || ShouldRender() || (_renderHandle.IsRenderingOnMetadataUpdate && _renderHandle.IsFirstHotReloadRender()))
         {
@@ -143,6 +142,13 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             }
         }
     }
+
+    // Called by the renderer when it queues a render for this component on the component's behalf
+    // (currently only the empty render that discards a failed ErrorBoundary subtree). That render
+    // supersedes whatever this component had queued, so the coalescing guard has to be released or
+    // the component's own next StateHasChanged would be silently dropped.
+    internal void NotifyQueuedRenderSuperseded()
+        => _hasPendingQueuedRender = false;
 
     /// <summary>
     /// Returns a flag to indicate whether the component should render.
