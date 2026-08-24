@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -88,13 +89,16 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <inheritdoc />
     public override Task<bool> HandleRequestAsync()
     {
+        // Both paths below are, like the sign-in callback, cross-site requests owned by this handler, and
+        // HandleRemoteSignOutAsync reads a form_post body, so they need the same antiforgery verdict handling
+        // that RemoteAuthenticationHandler applies to CallbackPath.
         if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
         {
-            return HandleRemoteSignOutAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleRemoteSignOutAsync);
         }
         else if (Options.SignedOutCallbackPath.HasValue && Options.SignedOutCallbackPath == Request.Path)
         {
-            return HandleSignOutCallbackAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleSignOutCallbackAsync);
         }
 
         return base.HandleRequestAsync();

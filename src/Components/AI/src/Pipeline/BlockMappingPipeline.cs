@@ -29,6 +29,15 @@ internal class BlockMappingPipeline
             _handlers.Add(registration.CreateEntry());
         }
 
+        if (options.UIActions.Count > 0)
+        {
+            _handlers.Add(new HandlerEntry<UIActionHandler.State>(
+                new UIActionHandler(options.UIActions)));
+        }
+
+        _handlers.Add(new HandlerEntry<FunctionInvocationContentBlock>(
+            new FunctionInvocationHandler()));
+
         // Structured snapshots take precedence over the plain-text fallback.
         _handlers.Add(new HandlerEntry<RichContentBlock>(new RichTextContentHandler()));
 
@@ -104,7 +113,25 @@ internal class BlockMappingPipeline
                     emitBlock.AuthorName = update.AuthorName;
                     emitBlock.LifecycleState = BlockLifecycleState.Active;
                     ThrowIfIdMissing(emitBlock);
-                    _activeStack.Add(activeEntry);
+
+                    var keepActive = true;
+                    if (emitBlock is FunctionInvocationContentBlock)
+                    {
+                        var catchUpResult = activeEntry.Invoke(context);
+
+                        BlockMappingPipelineLog.ActiveHandlerResult(_logger, emitBlock.GetType().Name, catchUpResult.Kind.ToString(), emitBlock.Id);
+
+                        if (catchUpResult.Kind == HandleResult.ResultKind.Complete)
+                        {
+                            emitBlock.LifecycleState = BlockLifecycleState.Inactive;
+                            keepActive = false;
+                        }
+                    }
+
+                    if (keepActive)
+                    {
+                        _activeStack.Add(activeEntry);
+                    }
 
                     BlockMappingPipelineLog.EmittingBlock(_logger, emitBlock.GetType().Name, emitBlock.Id, emitBlock.Role?.Value);
 

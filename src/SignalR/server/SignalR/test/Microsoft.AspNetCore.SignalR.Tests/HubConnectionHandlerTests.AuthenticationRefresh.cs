@@ -6,6 +6,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,8 +26,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -89,8 +90,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -125,8 +126,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -169,8 +170,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "stable-user"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -213,8 +214,8 @@ public partial class HubConnectionHandlerTests
             using (var client = new TestClient(userIdentifier: "old-name-identifier"))
             {
                 client.Connection.User!.AddIdentity(new ClaimsIdentity([new Claim("stable-id", "stable-user")]));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -224,7 +225,7 @@ public partial class HubConnectionHandlerTests
                     new Claim("stable-id", "stable-user"),
                 ], "Test"));
 
-                Assert.True(feature.Validate(refreshedUser));
+                Assert.True(await feature.Validate(refreshedUser));
 
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
@@ -250,8 +251,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "user-1"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
                 var originalUser = client.Connection.User;
@@ -260,7 +261,7 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.NameIdentifier, "user-2"),
                 ], "Test"));
 
-                Assert.False(feature.Validate(refreshedUser));
+                Assert.False(await feature.Validate(refreshedUser));
                 Assert.Same(originalUser, client.Connection.User);
 
                 client.Dispose();
@@ -283,8 +284,8 @@ public partial class HubConnectionHandlerTests
                 [
                     new Claim("sub", "user-a"),
                 ], "Test"));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -298,8 +299,8 @@ public partial class HubConnectionHandlerTests
                     new Claim("sub", "user-b"),
                 ], "Test"));
 
-                Assert.True(feature.Validate(sameUser));
-                Assert.False(feature.Validate(differentUser));
+                Assert.True(await feature.Validate(sameUser));
+                Assert.False(await feature.Validate(differentUser));
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -321,24 +322,24 @@ public partial class HubConnectionHandlerTests
                 [
                     new Claim("employeeId", "1"),
                 ], "Test"));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                Assert.True(feature.Validate(client.Connection.User));
+                Assert.True(await feature.Validate(client.Connection.User));
 
                 var equivalentUser = new ClaimsPrincipal(new ClaimsIdentity(
                 [
                     new Claim("employeeId", "1"),
                 ], "Test"));
-                Assert.True(feature.Validate(equivalentUser));
+                Assert.True(await feature.Validate(equivalentUser));
 
                 var differentUser = new ClaimsPrincipal(new ClaimsIdentity(
                 [
                     new Claim("employeeId", "2"),
                 ], "Test"));
-                Assert.False(feature.Validate(differentUser));
+                Assert.False(await feature.Validate(differentUser));
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -357,12 +358,12 @@ public partial class HubConnectionHandlerTests
             using (var client = new TestClient())
             {
                 client.Connection.User = new ClaimsPrincipal(new ClaimsIdentity());
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                Assert.True(feature.Validate(new ClaimsPrincipal(new ClaimsIdentity())));
+                Assert.True(await feature.Validate(new ClaimsPrincipal(new ClaimsIdentity())));
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -382,8 +383,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -422,8 +423,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -463,8 +464,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "alice"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -506,7 +507,7 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                Assert.Null(client.Connection.Features.Get<IConnectionUserRefreshFeature>());
+                Assert.Null(client.Connection.Features.Get<IConnectionAuthenticationRefreshFeature>());
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -532,8 +533,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "user-1"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -541,9 +542,9 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.NameIdentifier, "user-2"),
                 }, "Test"));
 
-                Assert.False(feature.Validate(refreshedUser));
-                feature.OnUserRefreshing = static _ => true;
-                Assert.True(feature.Validate(refreshedUser));
+                Assert.False(await feature.Validate(refreshedUser));
+                feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+                Assert.True(await feature.Validate(refreshedUser));
 
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
@@ -575,8 +576,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "stable-user"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -586,8 +587,8 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.Name, "refreshed-user"),
                     new Claim("throw", "true"),
                 }, "Test"));
-                feature.OnUserRefreshing = static _ => true;
-                Assert.True(feature.Validate(refreshedUser));
+                feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+                Assert.True(await feature.Validate(refreshedUser));
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
 
@@ -626,8 +627,8 @@ public partial class HubConnectionHandlerTests
             using (var client = new TestClient(userIdentifier: "alice"))
             {
                 client.Connection.User!.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "alice") }));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -683,8 +684,8 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.NameIdentifier, "alice"),
                     new Claim("scope", "admin"),
                 }));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -711,14 +712,14 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    private sealed class TestConnectionUserRefreshFeature : IConnectionUserRefreshFeature
+    private sealed class TestConnectionAuthenticationRefreshFeature : IConnectionAuthenticationRefreshFeature
     {
-        private Action<ClaimsPrincipal, object?>? _callback;
+        private Action<AuthenticationRefreshContext, object?>? _callback;
         private object? _state;
 
-        public Func<ClaimsPrincipal, bool>? OnUserRefreshing { get; set; }
+        public Func<AuthenticationRefreshContext, Task<bool>> OnAuthenticationRefresh { get; set; } = static _ => Task.FromResult(true);
 
-        public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+        public IDisposable OnAuthenticationRefreshed(Action<AuthenticationRefreshContext, object?> callback, object? state)
         {
             _callback = callback;
             _state = state;
@@ -726,17 +727,26 @@ public partial class HubConnectionHandlerTests
             return new UserRefreshedRegistration(this);
         }
 
-        public bool Validate(ClaimsPrincipal user)
+        public Task<bool> Validate(ClaimsPrincipal user)
         {
-            return OnUserRefreshing?.Invoke(user) ?? true;
+            return OnAuthenticationRefresh(CreateContext(user));
         }
 
         public void Raise(ClaimsPrincipal current)
         {
-            _callback?.Invoke(current, _state);
+            _callback?.Invoke(CreateContext(current), _state);
         }
 
-        private sealed class UserRefreshedRegistration(TestConnectionUserRefreshFeature feature) : IDisposable
+        private static AuthenticationRefreshContext CreateContext(ClaimsPrincipal user) => new()
+        {
+            HttpContext = new DefaultHttpContext(),
+            ConnectionId = "test-connection",
+            PreviousUser = user,
+            NewUser = user,
+            NewExpiration = null,
+        };
+
+        private sealed class UserRefreshedRegistration(TestConnectionAuthenticationRefreshFeature feature) : IDisposable
         {
             public void Dispose()
             {

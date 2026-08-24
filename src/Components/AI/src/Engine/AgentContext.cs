@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
@@ -74,7 +75,7 @@ public class AgentContext : IDisposable
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (Status == ConversationStatus.Streaming)
+        if (Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput)
         {
             throw new InvalidOperationException("A message is already being processed.");
         }
@@ -195,19 +196,46 @@ public class AgentContext : IDisposable
 
         try
         {
-            await foreach (var block in _agent.SendMessageAsync(message, cancellationToken)
-                .WithCancellation(cancellationToken))
+            ChatMessage? currentMessage = message;
+            while (currentMessage is not null)
             {
-                if (block.Role == message.Role)
+                var actions = new List<UIActionBlock>();
+
+                await foreach (var block in _agent.SendMessageAsync(currentMessage, cancellationToken)
+                    .WithCancellation(cancellationToken))
                 {
-                    turn.AddRequestBlock(block);
-                }
-                else
-                {
-                    turn.AddResponseBlock(block);
+                    if (block.Role == message.Role)
+                    {
+                        turn.AddRequestBlock(block);
+                    }
+                    else
+                    {
+                        turn.AddResponseBlock(block);
+                    }
+
+                    if (block is UIActionBlock action)
+                    {
+                        actions.Add(action);
+                    }
+
+                    NotifyBlockAdded(turn, block);
                 }
 
-                NotifyBlockAdded(turn, block);
+                if (actions.Count == 0)
+                {
+                    currentMessage = null;
+                    continue;
+                }
+
+                Status = ConversationStatus.AwaitingInput;
+                NotifyStatusChanged();
+
+                var results = await Task.WhenAll(
+                    actions.Select(action => action.GetResultAsync(cancellationToken)));
+
+                currentMessage = new ChatMessage(ChatRole.Tool, [.. results]);
+                Status = ConversationStatus.Streaming;
+                NotifyStatusChanged();
             }
 
             Status = ConversationStatus.Idle;
