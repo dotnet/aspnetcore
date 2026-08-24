@@ -201,6 +201,44 @@ public sealed class RevisionValidatorTests
     }
 
     [Fact]
+    public void AcceptsLegacyWhitespaceSeparatedRequirementIdentifiers()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime and package | `PI-01` `BEQ-02` | {ReviewerFeedback} |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime and package | `BEQ-02`, `PI-01` | {ReviewerFeedback} |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void RejectsProseBetweenWhitespaceSeparatedRequirementIdentifiers()
+    {
+        var feedback = CreateFeedbackTable(
+            $"| Runtime and package | `PI-01` and `BEQ-02` | {ReviewerFeedback} |");
+        var previous = CreateSnapshot(feedbackSection: feedback);
+        var revised = CreateSnapshot(feedbackSection: feedback);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "invalid canonical requirement IDs '`PI-01` and `BEQ-02`'",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void AcceptsDuplicateRequirementSetsDisambiguatedByArea()
     {
         var previous = CreateSnapshot(

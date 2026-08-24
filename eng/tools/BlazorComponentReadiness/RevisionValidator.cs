@@ -598,7 +598,10 @@ internal static class RevisionValidator
         out IReadOnlyList<string> identifiers)
     {
         var parsedIdentifiers = value
-            .Split(',', StringSplitOptions.TrimEntries)
+            .Replace(',', ' ')
+            .Split(
+                (char[]?)null,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(TrimCode)
             .ToArray();
         if (parsedIdentifiers.Length == 0 ||
