@@ -51,6 +51,9 @@
     <Content Include="TestAssets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWeb-CSharp\BlazorWebCSharp.1\Components\Layout\NavMenu.razor.js"
+      Link="TestAssets\NavMenu.razor.js"
+      CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="TestAssets\**\*.cs" />
   </ItemGroup>
 

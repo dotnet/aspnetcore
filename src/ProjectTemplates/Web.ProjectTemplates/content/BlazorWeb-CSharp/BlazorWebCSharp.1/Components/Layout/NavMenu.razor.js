@@ -1,9 +1,6 @@
-// Handle navigation menu toggle
-const navScrollable = document.getElementById("nav-scrollable");
-const navToggler = document.querySelector(".navbar-toggler");
-
-if (navScrollable && navToggler) {
-    navScrollable.addEventListener("click", function() {
-        navToggler.click();
-    });
-}
+// The menu elements can be replaced during hydration, so resolve them at click time.
+document.addEventListener("click", function(event) {
+    if (event.target instanceof Element && event.target.closest("#nav-scrollable")) {
+        document.querySelector(".navbar-toggler")?.click();
+    }
+});

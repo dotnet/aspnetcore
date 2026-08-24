@@ -48,9 +48,47 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
             }
 
+
             // In other cases, just use the root project
             return rootProject;
         }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_NavigationMenuHandlesElementReplacement(BrowserKind browserKind)
+    {
+        var navMenuScript = await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "TestAssets", "NavMenu.razor.js"));
+
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync(
+            """
+            <input type="checkbox" class="navbar-toggler" checked />
+            <div id="nav-scrollable">
+                <a href="#counter">Counter</a>
+            </div>
+            """);
+        await page.EvaluateAsync("(script) => eval(script)", navMenuScript);
+        await page.EvaluateAsync(
+            """
+            () => {
+                const navScrollable = document.querySelector("#nav-scrollable");
+                navScrollable.replaceWith(navScrollable.cloneNode(true));
+            }
+            """);
+
+        await page.ClickAsync("#nav-scrollable a");
+
+        Assert.False(await page.IsCheckedAsync(".navbar-toggler"));
+        await page.CloseAsync();
     }
 
     [Theory]
@@ -111,4 +149,3 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     }
 
 }
-
