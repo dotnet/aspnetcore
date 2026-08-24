@@ -43,6 +43,15 @@ internal static partial class StableEvidenceValidator
         return Validate(report, evidenceRows, bundle);
     }
 
+    private static string[] SplitLines(string content)
+    {
+        return content
+            .Split('\n')
+            .Select(static line =>
+                line.Length > 0 && line[^1] == '\r' ? line[..^1] : line)
+            .ToArray();
+    }
+
     internal static IReadOnlyList<string> ValidateTracker(
         ReportSnapshot report,
         EvidenceBundle bundle)
@@ -204,7 +213,7 @@ internal static partial class StableEvidenceValidator
     {
         const string Marker = "bcr-assessment-v1";
         const string Opening = "```bcr-assessment-v1";
-        var lines = content.Split('\n');
+        var lines = SplitLines(content);
         var openingIndexes = lines
             .Select((line, index) => (line, index))
             .Where(entry => string.Equals(entry.line, Opening, StringComparison.Ordinal))
@@ -269,7 +278,7 @@ internal static partial class StableEvidenceValidator
         EvidenceBundle bundle,
         ICollection<string> errors)
     {
-        var lines = content.Split('\n');
+        var lines = SplitLines(content);
         var exactHeaderIndexes = lines
             .Select((line, index) => (line, index))
             .Where(entry => string.Equals(
@@ -360,7 +369,7 @@ internal static partial class StableEvidenceValidator
         var uses = new List<EvidenceUse>();
         var inTable = false;
         var lineNumber = 0;
-        foreach (var line in content.Split('\n'))
+        foreach (var line in SplitLines(content))
         {
             lineNumber++;
             if (string.Equals(

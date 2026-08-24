@@ -194,7 +194,7 @@ public sealed class EvidenceIntegrationTests
     }
 
     [Fact]
-    public void StableCompleteMultiOverlayReceiptRoundTripsInCanonicalOrder()
+    public void StableCompleteDuplicateMultiOverlayReceiptRoundTripsInCanonicalOrder()
     {
         using var directory = new TemporaryDirectory();
         string[] reverseOverlayOrder = ["scaffolder", "ai-skill"];
@@ -215,6 +215,8 @@ public sealed class EvidenceIntegrationTests
                     reverseOverlayOrder[0],
                     "--overlay",
                     reverseOverlayOrder[1],
+                    "--overlay",
+                    reverseOverlayOrder[0],
                     "--emit-template",
                 ],
                 template,
@@ -231,6 +233,8 @@ public sealed class EvidenceIntegrationTests
                 reverseOverlayOrder[0],
                 "--overlay",
                 reverseOverlayOrder[1],
+                "--overlay",
+                reverseOverlayOrder[0],
                 "--evidence-bundle",
                 bundlePath,
                 reportPath,
@@ -264,6 +268,18 @@ public sealed class EvidenceIntegrationTests
                 .GetProperty("selected_overlays")
                 .EnumerateArray()
                 .Select(value => value.GetString()));
+    }
+
+    [Fact]
+    public void OverlaySnapshotsEnforceSizeLimit()
+    {
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ValidationProvenance.ReadOverlaySnapshots(
+                Layout,
+                ["scaffolder"],
+                maximumBytes: 1));
+
+        Assert.Contains("1-byte limit", exception.Message);
     }
 
     [Fact]
@@ -1271,10 +1287,6 @@ public sealed class EvidenceIntegrationTests
                 "```bcr-assessment-v1",
                 "prefix ```bcr-assessment-v1",
                 StringComparison.Ordinal),
-            original.Replace(
-                "```bcr-assessment-v1\n",
-                "```bcr-assessment-v1\r\n",
-                StringComparison.Ordinal),
             ReplaceFirst(original, "\n```\n", "\n``` \n"),
             original + "\n" + block,
         };
@@ -1294,6 +1306,27 @@ public sealed class EvidenceIntegrationTests
             Assert.Equal(1, exitCode);
             Assert.Contains("bcr-assessment-v1", error.ToString());
         }
+    }
+
+    [Fact]
+    public void StableEvidenceValidationAcceptsCrLfReport()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        File.WriteAllText(
+            reportPath,
+            File.ReadAllText(reportPath, Encoding.UTF8).ReplaceLineEndings("\r\n"),
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        var scorecardExitCode = RunStableScorecard(
+            reportPath,
+            bundlePath,
+            receiptPath: null,
+            error);
+        Assert.Equal(0, scorecardExitCode);
+        Assert.Empty(error.ToString());
     }
 
     [Fact]

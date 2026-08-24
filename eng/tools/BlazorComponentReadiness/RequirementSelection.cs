@@ -8,7 +8,10 @@ internal static class RequirementSelection
     internal static IReadOnlyList<string> CanonicalOverlayNames(
         IEnumerable<string> overlays)
     {
-        return overlays.Order(StringComparer.Ordinal).ToArray();
+        return overlays
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
     }
 
     internal static IReadOnlyList<string> OverlayNames(

@@ -14,7 +14,8 @@ internal static class ValidationProvenance
     internal static IReadOnlyDictionary<string, ReadOnlyMemory<byte>>
         ReadOverlaySnapshots(
             SkillLayout layout,
-            IEnumerable<string> overlayNames)
+            IEnumerable<string> overlayNames,
+            long maximumBytes = MaximumProvenanceInputBytes)
     {
         return overlayNames
             .Distinct(StringComparer.Ordinal)
@@ -28,7 +29,8 @@ internal static class ValidationProvenance
                             $"Unknown overlay '{name}'.");
                     }
 
-                    return (ReadOnlyMemory<byte>)File.ReadAllBytes(path);
+                    return (ReadOnlyMemory<byte>)
+                        FileSystemUtilities.ReadAllBytesBounded(path, maximumBytes);
                 },
                 StringComparer.Ordinal);
     }
