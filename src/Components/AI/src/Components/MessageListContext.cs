@@ -60,7 +60,7 @@ public class MessageListContext
                 builder.CloseElement(); // bubble div
                 builder.CloseElement(); // message div
             }
-            else
+            else if (block is not FunctionInvocationContentBlock)
             {
                 builder.OpenElement(0, "div");
                 builder.AddAttribute(1, "class", "sc-ai-unknown-block");

@@ -9,4 +9,6 @@ internal static class DojoScenarios
     internal const string ApiHttpClientName = "agui-dojo-api";
 
     internal const string AgenticChatEndpoint = "/agentic_chat";
+
+    internal const string BackendToolRenderingEndpoint = "/backend_tool_rendering";
 }

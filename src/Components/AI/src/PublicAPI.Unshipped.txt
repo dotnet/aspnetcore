@@ -117,6 +117,15 @@ Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode() -> void
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.FunctionInvocationContentBlock() -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.HasResult.get -> bool
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Result.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.HeadingNode
 Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode() -> void
 Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode(int level) -> void
@@ -243,6 +252,17 @@ Microsoft.AspNetCore.Components.AI.TextNode.TextNode() -> void
 Microsoft.AspNetCore.Components.AI.TextNode.TextNode(string! text) -> void
 Microsoft.AspNetCore.Components.AI.ThematicBreakNode
 Microsoft.AspNetCore.Components.AI.ThematicBreakNode.ThematicBreakNode() -> void
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute.ToolBlockAttribute(string! toolName) -> void
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute.ToolName.get -> string!
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.ToolParameterAttribute() -> void
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.ToolResultAttribute() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent
 Microsoft.AspNetCore.Components.AI.UIAgent.Dispose() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
@@ -255,7 +275,14 @@ Microsoft.AspNetCore.Components.AI.UIAgentOptions
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>! handler) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.UIAgentOptions() -> void
+Microsoft.AspNetCore.Components.AI.UIActionBlock
+Microsoft.AspNetCore.Components.AI.UIActionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.InvokeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.IsComplete.get -> bool
+Microsoft.AspNetCore.Components.AI.UIActionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.UIActionBlock.ToolName.get -> string!
 abstract Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnInitialized() -> void

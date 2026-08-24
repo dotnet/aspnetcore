@@ -5,6 +5,7 @@ using AGUI.Abstractions;
 using AGUI.Formatting;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 using AGUIDojoApi;
 
@@ -26,9 +27,14 @@ builder.Services.AddSingleton<IChatClient>(sp =>
     ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
 
 var app = builder.Build();
+var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
 // Map the AG-UI agent endpoints for the dojo scenarios.
 app.MapDojoEndpoint("/agentic_chat");
+app.MapDojoEndpoint(
+    "/backend_tool_rendering",
+    serverTools: ChatClientAgentFactory.CreateBackendToolRenderingTools(
+        jsonOptions.Value.SerializerOptions));
 
 await app.RunAsync();
 
