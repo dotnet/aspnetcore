@@ -72,7 +72,6 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
-    <LatestPackageReference Include="Microsoft.OpenApi.YamlReader" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />

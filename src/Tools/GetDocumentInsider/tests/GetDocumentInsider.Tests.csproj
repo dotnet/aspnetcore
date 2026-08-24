@@ -44,7 +44,6 @@
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
     <Reference Include="Microsoft.OpenApi" />
-    <Reference Include="Microsoft.OpenApi.YamlReader" />
     <ProjectReference Include="$(RepoRoot)\src\Tools\GetDocumentInsider\sample\GetDocumentSample.csproj" />
   </ItemGroup>
 

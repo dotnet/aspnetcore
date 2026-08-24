@@ -56,7 +56,6 @@
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <PackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllVersion)" />
     <PackageReference Include="Microsoft.OpenApi" Version="$(MicrosoftOpenApiVersion)" />
-    <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="$(MicrosoftOpenApiYamlReaderVersion)" />
     <PackageReference Include="Microsoft.Playwright" Version="$(MicrosoftPlaywrightVersion)" />
     <PackageReference Include="Microsoft.Playwright.TestAdapter" Version="$(MicrosoftPlaywrightTestAdapterVersion)" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />

@@ -101,12 +101,15 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
         Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.2'", StringComparison.OrdinalIgnoreCase));
-        responseBodyStream.Position = 0;
-        await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
+        if (!isYaml)
         {
-            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
-            Assert.Equal("1.0.0", document.Info.Version);
-        }, isYaml ? "yaml" : "json");
+            responseBodyStream.Position = 0;
+            await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
+            {
+                Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
+                Assert.Equal("1.0.0", document.Info.Version);
+            });
+        }
     }
 
     [Fact]
@@ -222,20 +225,21 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
         var responseString = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         // String check to validate that generated document starts with YAML syntax
         Assert.Equal(isYaml, responseString.StartsWith("openapi: '3.1.2'", StringComparison.OrdinalIgnoreCase));
-        responseBodyStream.Position = 0;
-        await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
+        if (!isYaml)
         {
-            Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);
-            Assert.Equal("1.0.0", document.Info.Version);
-        }, isYaml ? "yaml" : "json");
+            responseBodyStream.Position = 0;
+            await ValidateOpenApiDocumentAsync(responseBodyStream, document =>
+            {
+                Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);
+                Assert.Equal("1.0.0", document.Info.Version);
+            });
+        }
     }
 
-    private static async Task ValidateOpenApiDocumentAsync(MemoryStream documentStream, Action<OpenApiDocument> action, string format = "json")
+    private static async Task ValidateOpenApiDocumentAsync(MemoryStream documentStream, Action<OpenApiDocument> action)
     {
         documentStream.Position = 0;
-        var readerSettings = new OpenApiReaderSettings();
-        readerSettings.AddYamlReader();
-        var result = await OpenApiDocument.LoadAsync(documentStream, format, readerSettings);
+        var result = await OpenApiDocument.LoadAsync(documentStream, "json");
         Assert.Empty(result.Diagnostic.Errors);
         action(result.Document);
     }
