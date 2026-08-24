@@ -20,6 +20,7 @@ public class CircuitRegistryJSInteropTest
         var client = Mock.Of<ISingleClientProxy>(
             c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()) == Task.CompletedTask);
         var circuitHost = TestCircuitHost.Create(clientProxy: new CircuitClientProxy(client, "connection"));
+        circuitHost.JSRuntime.Initialize(circuitHost.Client);
         registry.Register(circuitHost);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var pendingInteropCall = circuitHost.JSRuntime.InvokeAsync<string>("test", cts.Token, Array.Empty<object>());
