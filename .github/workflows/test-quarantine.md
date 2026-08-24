@@ -1120,7 +1120,10 @@ on:
                     result[key] = value
                 return result
 
-            json.loads(js, object_pairs_hook=reject_duplicate_keys)
+            try:
+                json.loads(js, object_pairs_hook=reject_duplicate_keys)
+            except json.JSONDecodeError as ex:
+                sys.exit(f"FATAL: part1_data is invalid JSON: {ex}")
             if duplicates:
                 examples = ", ".join(sorted(duplicates)[:3])
                 sys.exit(f"FATAL: part1_data contains duplicate JSON keys: {examples}")
