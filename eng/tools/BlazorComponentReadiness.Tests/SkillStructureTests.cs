@@ -2316,10 +2316,14 @@ public sealed class SkillStructureTests
         Assert.Contains("false positives", agent);
         Assert.Contains("do not claim", agent);
         Assert.Contains("requirement-level crosswalk", agent);
+        Assert.Contains("Feedback after review", agent);
         Assert.Contains("## Evidence-only evaluation result", report);
         Assert.Contains("### Areas we believe need to be fixed", report);
         Assert.Contains("### Full report", report);
         Assert.Contains("Canonical status", report);
+        Assert.Contains(
+            "| Area | Requirement IDs | Feedback after review |",
+            report);
         Assert.Contains("eval-20-evidence-only-tracker-result", vally);
     }
 

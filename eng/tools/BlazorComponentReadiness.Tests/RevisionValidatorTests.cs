@@ -8,6 +8,9 @@ namespace BlazorComponentReadiness.Tests;
 
 public sealed class RevisionValidatorTests
 {
+    private const string ReviewerFeedback =
+        "Reviewer confirmed the docs in [issue 42](https://github.com/example/components/issues/42).";
+
     [Fact]
     public void AcceptsSurgicalCorrectionThatPreservesFeedbackAndOtherRows()
     {
@@ -89,28 +92,270 @@ public sealed class RevisionValidatorTests
     }
 
     [Fact]
-    public void RejectsDroppedPartnerFeedback()
+    public void RejectsRemovedFeedbackColumnWhenCellIsPastedIntoProse()
     {
         var previous = CreateSnapshot(includeFeedback: true);
-        var revised = CreateSnapshot(
-            firstStatus: "verified",
-            firstEvidence: "Supplied documentation explicitly establishes support.",
-            includeFeedback: false);
+        var revisedWithoutFeedback = CreateSnapshot(includeFeedback: false);
+        var revisedContent = revisedWithoutFeedback.Content + Environment.NewLine + ReviewerFeedback;
+        var revised = new ReportSnapshot(
+            revisedWithoutFeedback.Path,
+            revisedContent,
+            Encoding.UTF8.GetBytes(revisedContent));
 
         var errors = RevisionValidator.Validate(
             previous,
             revised,
-            new HashSet<string>(["BEQ-02"], StringComparer.Ordinal));
+            new HashSet<string>(StringComparer.Ordinal));
 
         Assert.Contains(
             errors,
             error => error.Contains(
-                "REV011: prior partner feedback disappeared",
+                "REV011: revised report removed the dedicated Feedback after review column",
                 StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsFeedbackMovedToDifferentRequirementRow()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+                "| Package integrity | `PI-01` | |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                "| Render modes | `BEQ-02` | |",
+                $"| Package integrity | `PI-01` | {ReviewerFeedback} |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
         Assert.Contains(
             errors,
             error => error.Contains(
-                "https://github.com/example/components/issues/42",
+                "reviewer feedback changed for requirement key 'BEQ-02'",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsParaphrasedFeedback()
+    {
+        var previous = CreateSnapshot(includeFeedback: true);
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                "| Render modes | `BEQ-02` | Reviewer confirmed the documentation. |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "preserve the exact cell verbatim",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AcceptsFeedbackRowsAndColumnsInDifferentOrder()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+                "| Package integrity | `PI-01` | Exact package evidence was accepted. |"));
+        var revised = CreateSnapshot(
+            feedbackSection: """
+                | Feedback after review | Requirement IDs | Area |
+                |---|---|---|
+                | Exact package evidence was accepted. | `PI-01` | Package integrity |
+                | Reviewer confirmed the docs in [issue 42](https://github.com/example/components/issues/42). | `BEQ-02` | Render modes |
+
+                """);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void AcceptsRequirementIdentifiersInDifferentOrder()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime and package | `PI-01`, `BEQ-02` | {ReviewerFeedback} |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime and package | `BEQ-02`, `PI-01` | {ReviewerFeedback} |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void AcceptsDuplicateRequirementSetsDisambiguatedByArea()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+                "| Runtime behavior | `BEQ-02` | Runtime context was accepted. |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                "| Runtime behavior | `BEQ-02` | Runtime context was accepted. |",
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void RejectsAmbiguousDuplicateRequirementKey()
+    {
+        var feedback = CreateFeedbackTable(
+            $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+            "| Render modes | `BEQ-02` | Additional reviewer context. |");
+        var previous = CreateSnapshot(feedbackSection: feedback);
+        var revised = CreateSnapshot(feedbackSection: feedback);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "ambiguous reviewer feedback mapping for requirement key 'BEQ-02'",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsSplitFeedbackRequirementMembership()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime and package | `PI-01`, `BEQ-02` | {ReviewerFeedback} |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Runtime | `BEQ-02` | {ReviewerFeedback} |",
+                "| Package | `PI-01` | |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "feedback row requirement membership changed",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AcceptsReportsWithoutFeedbackTables()
+    {
+        var previous = CreateSnapshot(includeFeedback: false);
+        var revised = CreateSnapshot(includeFeedback: false);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void AcceptsPreservedBlankFeedbackCells()
+    {
+        var feedback = CreateFeedbackTable(
+            "| Render modes | `BEQ-02` | |",
+            "| Package integrity | `PI-01` | |");
+        var previous = CreateSnapshot(feedbackSection: feedback);
+        var revised = CreateSnapshot(feedbackSection: feedback);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void RejectsFeedbackAddedToPreviouslyBlankCell()
+    {
+        var previous = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+                "| Package integrity | `PI-01` | |"));
+        var revised = CreateSnapshot(
+            feedbackSection: CreateFeedbackTable(
+                $"| Render modes | `BEQ-02` | {ReviewerFeedback} |",
+                "| Package integrity | `PI-01` | Agent-authored reviewer feedback. |"));
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "reviewer feedback was added for requirement key 'PI-01'",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsNonCanonicalFeedbackIdentifier()
+    {
+        var feedback = CreateFeedbackTable(
+            $"| Render modes | `BEQ-2` | {ReviewerFeedback} |");
+        var previous = CreateSnapshot(feedbackSection: feedback);
+        var revised = CreateSnapshot(feedbackSection: feedback);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "invalid canonical requirement IDs '`BEQ-2`'",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsFeedbackIdentifierMissingFromScorecard()
+    {
+        var feedback = CreateFeedbackTable(
+            $"| Render modes | `BEQ-99` | {ReviewerFeedback} |");
+        var previous = CreateSnapshot(feedbackSection: feedback);
+        var revised = CreateSnapshot(feedbackSection: feedback);
+
+        var errors = RevisionValidator.Validate(
+            previous,
+            revised,
+            new HashSet<string>(StringComparer.Ordinal));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "references requirement IDs absent from its scorecard: BEQ-99",
                 StringComparison.Ordinal));
     }
 
@@ -158,7 +403,8 @@ public sealed class RevisionValidatorTests
         string secondEvidence = "Exact package inspection passed.",
         bool includeFeedback = true,
         string componentId = "Widget",
-        bool trackerShape = false)
+        bool trackerShape = false,
+        string? feedbackSection = null)
     {
         var content = CreateReport(
             firstStatus,
@@ -166,7 +412,8 @@ public sealed class RevisionValidatorTests
             secondEvidence,
             includeFeedback,
             componentId,
-            trackerShape);
+            trackerShape,
+            feedbackSection);
         return new ReportSnapshot(
             "report.md",
             content,
@@ -189,7 +436,8 @@ public sealed class RevisionValidatorTests
                 "Exact package inspection passed.",
                 includeFeedback,
                 "Widget",
-                trackerShape: false),
+                trackerShape: false,
+                feedbackSection: null),
             new UTF8Encoding(false));
         return path;
     }
@@ -200,7 +448,8 @@ public sealed class RevisionValidatorTests
         string secondEvidence,
         bool includeFeedback,
         string componentId,
-        bool trackerShape)
+        bool trackerShape,
+        string? feedbackSection)
     {
         var assessment = Encoding.UTF8.GetString(
             CanonicalEvidenceJson.SerializeAssessment(
@@ -215,11 +464,11 @@ public sealed class RevisionValidatorTests
                             "1.0.0",
                             new Sha256Digest("sha256", new string('b', 64)))),
                     componentId)));
-        var feedbackSection = includeFeedback
+        feedbackSection ??= includeFeedback
             ? """
                 | Area | Requirement IDs | Feedback after review |
                 |---|---|---|
-                | Render modes | `BEQ-02` | Partner confirmed the docs in [issue 42](https://github.com/example/components/issues/42). |
+                | Render modes | `BEQ-02` | Reviewer confirmed the docs in [issue 42](https://github.com/example/components/issues/42). |
 
                 """
             : string.Empty;
@@ -246,6 +495,16 @@ public sealed class RevisionValidatorTests
             {{feedbackSection}}{{scorecard}}
 
             End of report.
+            """;
+    }
+
+    private static string CreateFeedbackTable(params string[] rows)
+    {
+        return $"""
+            | Area | Requirement IDs | Feedback after review |
+            |---|---|---|
+            {string.Join(Environment.NewLine, rows)}
+
             """;
     }
 

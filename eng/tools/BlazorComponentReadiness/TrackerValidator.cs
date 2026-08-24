@@ -491,6 +491,7 @@ internal static class TrackerValidator
         var areaRows = tableBody
             .Split('\n')
             .Skip(1)
+            .TakeWhile(line => !string.IsNullOrWhiteSpace(line))
             .Where(line => line.StartsWith("| ", StringComparison.Ordinal))
             .Where(line =>
             {

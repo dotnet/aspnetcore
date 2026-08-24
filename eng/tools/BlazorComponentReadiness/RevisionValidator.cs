@@ -41,7 +41,12 @@ internal static class RevisionValidator
             revisedTable.Rows,
             changedIdentifiers,
             errors);
-        ValidateFeedbackPreservation(previous, revised, errors);
+        ValidateFeedbackPreservation(
+            previous,
+            revised,
+            previousTable.Rows.Keys.ToHashSet(StringComparer.Ordinal),
+            revisedTable.Rows.Keys.ToHashSet(StringComparer.Ordinal),
+            errors);
 
         return errors;
     }
@@ -316,58 +321,162 @@ internal static class RevisionValidator
     private static void ValidateFeedbackPreservation(
         ReportSnapshot previous,
         ReportSnapshot revised,
+        IReadOnlySet<string> previousIdentifiers,
+        IReadOnlySet<string> revisedIdentifiers,
         ICollection<string> errors)
     {
-        foreach (var feedback in ExtractFeedbackCells(previous))
+        var previousFeedback = ParseFeedbackTable(
+            previous,
+            "previous",
+            previousIdentifiers,
+            errors);
+        var revisedFeedback = ParseFeedbackTable(
+            revised,
+            "revised",
+            revisedIdentifiers,
+            errors);
+        if (!previousFeedback.HasColumn)
         {
-            if (!revised.Content.Contains(feedback, StringComparison.Ordinal))
+            return;
+        }
+
+        if (!revisedFeedback.HasColumn)
+        {
+            errors.Add(
+                "REV011: revised report removed the dedicated Feedback after review column.");
+            return;
+        }
+
+        var previousGroups = previousFeedback.Rows
+            .GroupBy(row => row.RequirementKey, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        var revisedGroups = revisedFeedback.Rows
+            .GroupBy(row => row.RequirementKey, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        foreach (var requirementKey in previousGroups.Keys
+            .Union(revisedGroups.Keys, StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal))
+        {
+            previousGroups.TryGetValue(requirementKey, out var previousRows);
+            revisedGroups.TryGetValue(requirementKey, out var revisedRows);
+            previousRows ??= [];
+            revisedRows ??= [];
+            if (previousRows.Length != revisedRows.Length)
             {
                 errors.Add(
-                    "REV011: prior partner feedback disappeared from the revised " +
-                    $"report: '{feedback}'.");
+                    "REV011: feedback row requirement membership changed for key " +
+                    $"'{requirementKey}'; preserve the exact normalized requirement-ID set.");
+                continue;
+            }
+
+            if (previousRows.Length == 1)
+            {
+                ValidateFeedbackCell(
+                    requirementKey,
+                    previousRows[0].Feedback,
+                    revisedRows[0].Feedback,
+                    errors);
+                continue;
+            }
+
+            if (previousRows.Length == 0)
+            {
+                continue;
+            }
+
+            var previousByArea = IndexFeedbackRowsByArea(
+                previousRows,
+                "previous",
+                requirementKey,
+                errors);
+            var revisedByArea = IndexFeedbackRowsByArea(
+                revisedRows,
+                "revised",
+                requirementKey,
+                errors);
+            if (previousByArea is null || revisedByArea is null)
+            {
+                continue;
+            }
+
+            var previousAreas = previousByArea.Keys.Order(StringComparer.Ordinal).ToArray();
+            var revisedAreas = revisedByArea.Keys.Order(StringComparer.Ordinal).ToArray();
+            if (!previousAreas.SequenceEqual(revisedAreas, StringComparer.Ordinal))
+            {
+                errors.Add(
+                    "REV011: feedback row area disambiguation changed for requirement key " +
+                    $"'{requirementKey}'; preserve the exact area labels.");
+                continue;
+            }
+
+            foreach (var area in previousAreas)
+            {
+                ValidateFeedbackCell(
+                    $"{requirementKey}' in area '{area}",
+                    previousByArea[area].Feedback,
+                    revisedByArea[area].Feedback,
+                    errors);
             }
         }
     }
 
-    private static IReadOnlyList<string> ExtractFeedbackCells(ReportSnapshot report)
+    private static FeedbackTable ParseFeedbackTable(
+        ReportSnapshot report,
+        string role,
+        IReadOnlySet<string> canonicalIdentifiers,
+        ICollection<string> errors)
     {
-        var feedback = new List<string>();
+        var rows = new List<FeedbackRow>();
+        var hasColumn = false;
+        var headerColumnCount = -1;
         var feedbackColumnIndex = -1;
+        var identifierColumnIndex = -1;
+        var areaColumnIndex = -1;
+        var lineNumber = 0;
         using var reader = new StringReader(report.Content);
         while (reader.ReadLine() is { } line)
         {
+            lineNumber++;
             if (!line.TrimStart().StartsWith('|'))
             {
+                headerColumnCount = -1;
                 feedbackColumnIndex = -1;
+                identifierColumnIndex = -1;
+                areaColumnIndex = -1;
                 continue;
             }
 
-            var cells = ScorecardValidator.SplitMarkdownRow(line);
-            var declaredFeedbackColumn = -1;
-            for (var index = 0; index < cells.Count; index++)
-            {
-                if (string.Equals(
-                    cells[index],
-                    FeedbackColumn,
-                    StringComparison.Ordinal))
-                {
-                    declaredFeedbackColumn = index;
-                    break;
-                }
-            }
-
+            var cells = SplitMarkdownRowPreservingText(line);
+            var declaredFeedbackColumn = IndexOf(cells, FeedbackColumn);
             if (declaredFeedbackColumn >= 0)
             {
+                hasColumn = true;
+                headerColumnCount = cells.Count;
                 feedbackColumnIndex = declaredFeedbackColumn;
+                identifierColumnIndex = IndexOf(cells, "Requirement IDs");
+                if (identifierColumnIndex < 0)
+                {
+                    identifierColumnIndex = IndexOf(cells, "Requirement ID");
+                }
+                areaColumnIndex = IndexOf(cells, "Area");
+                if (identifierColumnIndex < 0)
+                {
+                    errors.Add(
+                        $"REV011: {role} Feedback after review table at line {lineNumber} " +
+                        "requires a Requirement IDs column.");
+                    headerColumnCount = -1;
+                    feedbackColumnIndex = -1;
+                }
                 continue;
             }
 
-            if (cells.Any(cell => string.Equals(
-                cell,
-                "Requirement ID",
-                StringComparison.Ordinal)))
+            if (IndexOf(cells, "Requirement ID") >= 0 ||
+                IndexOf(cells, "Requirement IDs") >= 0)
             {
+                headerColumnCount = -1;
                 feedbackColumnIndex = -1;
+                identifierColumnIndex = -1;
+                areaColumnIndex = -1;
                 continue;
             }
 
@@ -376,20 +485,188 @@ internal static class RevisionValidator
                 continue;
             }
 
-            if (feedbackColumnIndex >= cells.Count ||
-                cells.All(IsTableSeparator))
+            if (cells.All(IsTableSeparator))
             {
                 continue;
             }
 
-            var value = cells[feedbackColumnIndex].Trim();
-            if (!string.IsNullOrWhiteSpace(value) && value is not "-")
+            if (cells.Count != headerColumnCount)
             {
-                feedback.Add(value);
+                errors.Add(
+                    $"REV011: {role} Feedback after review row at line {lineNumber} has " +
+                    $"{cells.Count} columns; expected {headerColumnCount}.");
+                continue;
             }
+
+            if (!TryNormalizeRequirementKey(
+                cells[identifierColumnIndex],
+                out var requirementKey,
+                out var identifiers))
+            {
+                errors.Add(
+                    $"REV011: {role} Feedback after review row at line {lineNumber} has " +
+                    $"invalid canonical requirement IDs '{cells[identifierColumnIndex]}'.");
+                continue;
+            }
+
+            var absentIdentifiers = identifiers
+                .Where(identifier => !canonicalIdentifiers.Contains(identifier))
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            if (absentIdentifiers.Length > 0)
+            {
+                errors.Add(
+                    $"REV011: {role} Feedback after review row at line {lineNumber} " +
+                    "references requirement IDs absent from its scorecard: " +
+                    $"{string.Join(", ", absentIdentifiers)}.");
+                continue;
+            }
+
+            rows.Add(new FeedbackRow(
+                requirementKey,
+                areaColumnIndex >= 0 ? NormalizeArea(cells[areaColumnIndex]) : string.Empty,
+                cells[feedbackColumnIndex],
+                lineNumber));
         }
 
-        return feedback.Distinct(StringComparer.Ordinal).ToArray();
+        return new FeedbackTable(hasColumn, rows);
+    }
+
+    private static IReadOnlyDictionary<string, FeedbackRow>? IndexFeedbackRowsByArea(
+        IReadOnlyList<FeedbackRow> rows,
+        string role,
+        string requirementKey,
+        ICollection<string> errors)
+    {
+        var missingAreas = rows
+            .Where(row => string.IsNullOrWhiteSpace(row.Area))
+            .Select(row => row.LineNumber)
+            .ToArray();
+        var duplicateAreas = rows
+            .Where(row => !string.IsNullOrWhiteSpace(row.Area))
+            .GroupBy(row => row.Area, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        if (missingAreas.Length > 0 || duplicateAreas.Length > 0)
+        {
+            errors.Add(
+                $"REV011: {role} report has an ambiguous reviewer feedback mapping for " +
+                $"requirement key '{requirementKey}'; duplicate requirement-ID sets require " +
+                "unique non-empty Area labels.");
+            return null;
+        }
+
+        return rows.ToDictionary(row => row.Area, StringComparer.Ordinal);
+    }
+
+    private static void ValidateFeedbackCell(
+        string keyDescription,
+        string previous,
+        string revised,
+        ICollection<string> errors)
+    {
+        if (IsBlankFeedback(previous))
+        {
+            if (!IsBlankFeedback(revised))
+            {
+                errors.Add(
+                    $"REV011: reviewer feedback was added for requirement key '{keyDescription}'; " +
+                    "only preserve reviewer-owned text already present in the previous report.");
+            }
+
+            return;
+        }
+
+        if (!string.Equals(previous, revised, StringComparison.Ordinal))
+        {
+            errors.Add(
+                $"REV011: reviewer feedback changed for requirement key '{keyDescription}'; " +
+                "preserve the exact cell verbatim.");
+        }
+    }
+
+    private static bool IsBlankFeedback(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) || value is "-";
+    }
+
+    private static bool TryNormalizeRequirementKey(
+        string value,
+        out string requirementKey,
+        out IReadOnlyList<string> identifiers)
+    {
+        var parsedIdentifiers = value
+            .Split(',', StringSplitOptions.TrimEntries)
+            .Select(TrimCode)
+            .ToArray();
+        if (parsedIdentifiers.Length == 0 ||
+            parsedIdentifiers.Any(identifier => !IsRequirementIdentifier(identifier)) ||
+            parsedIdentifiers.Distinct(StringComparer.Ordinal).Count() != parsedIdentifiers.Length)
+        {
+            requirementKey = string.Empty;
+            identifiers = [];
+            return false;
+        }
+
+        identifiers = parsedIdentifiers.Order(StringComparer.Ordinal).ToArray();
+        requirementKey = string.Join(", ", identifiers);
+        return true;
+    }
+
+    private static string NormalizeArea(string value)
+    {
+        return string.Join(
+            " ",
+            value.Split(
+                (char[]?)null,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
+    private static IReadOnlyList<string> SplitMarkdownRowPreservingText(string line)
+    {
+        var cells = new List<string>();
+        var current = new System.Text.StringBuilder();
+        var escaped = false;
+        foreach (var character in line.Trim())
+        {
+            if (escaped)
+            {
+                current.Append('\\');
+                current.Append(character);
+                escaped = false;
+            }
+            else if (character == '\\')
+            {
+                escaped = true;
+            }
+            else if (character == '|')
+            {
+                cells.Add(current.ToString().Trim());
+                current.Clear();
+            }
+            else
+            {
+                current.Append(character);
+            }
+        }
+        if (escaped)
+        {
+            current.Append('\\');
+        }
+
+        cells.Add(current.ToString().Trim());
+        if (cells.Count > 0 && cells[0].Length == 0)
+        {
+            cells.RemoveAt(0);
+        }
+        if (cells.Count > 0 && cells[^1].Length == 0)
+        {
+            cells.RemoveAt(cells.Count - 1);
+        }
+
+        return cells;
     }
 
     private static bool IsTableSeparator(string value)
@@ -429,9 +706,10 @@ internal static class RevisionValidator
     {
         var separator = value.LastIndexOf('-');
         return separator > 0 &&
-            separator < value.Length - 1 &&
+            separator == value.Length - 3 &&
+            value[0] is >= 'A' and <= 'Z' &&
             value[..separator].All(character =>
-                character is >= 'A' and <= 'Z') &&
+                character is >= 'A' and <= 'Z' or >= '0' and <= '9') &&
             value[(separator + 1)..].All(char.IsAsciiDigit);
     }
 
@@ -449,6 +727,16 @@ internal static class RevisionValidator
     private sealed record RevisionTable(
         IReadOnlyList<string> Header,
         IReadOnlyDictionary<string, RevisionRow> Rows);
+
+    private sealed record FeedbackTable(
+        bool HasColumn,
+        IReadOnlyList<FeedbackRow> Rows);
+
+    private sealed record FeedbackRow(
+        string RequirementKey,
+        string Area,
+        string Feedback,
+        int LineNumber);
 
     private sealed record RevisionRow(
         string Identifier,

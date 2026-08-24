@@ -685,10 +685,10 @@ stimuli:
         config:
           threshold: 0.7
     rubric:
-      - "Overall response matches this expected outcome: A surgical BEQ-02 correction preserves the exact assessment, unrelated scorecard rows, retained runtime evidence, and prior maintainer feedback."
+      - "Overall response matches this expected outcome: A surgical BEQ-02 correction preserves the exact assessment, unrelated scorecard rows, retained runtime evidence, and prior reviewer feedback."
       - "Only BEQ-02 is declared changed; BEQ-12 and A11Y-08 remain field-for-field unchanged and are explicitly not reverified."
       - "BEQ-02 changes only after the supplied documentation is checked for provenance, authority, currency, applicability, and component alignment; its revised evidence records that basis."
-      - "The prior callback runtime probe, accessibility runtime probe, evidence anchors or artifact references, and maintainer issue link remain intact."
+      - "The prior callback runtime probe, accessibility runtime probe, evidence anchors or artifact references, and exact Feedback after review cell remain intact on the same normalized BEQ-02, BEQ-12 key."
       - "The tracker is revised in place rather than replaced by a fresh confidential report or a full rerun."
       - "The correction delta names the prior and revised BEQ-02 status, the new evidence, and the unchanged exact package, source commit, component, and rubric."
       - "The response runs revision --previous <prior-report-or-tracker.md> --changed-ids BEQ-02 <revised-report-or-tracker.md>, then runs the normal scorecard and tracker validators."

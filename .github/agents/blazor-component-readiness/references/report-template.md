@@ -78,6 +78,18 @@ Represent every `defect` ID exactly once, retain evidence anchors, and do not in
 bijection: the validator fails if any defect is missing or any non-defect appears. Do not add
 remediation steps, acceptance gates, a verdict, or inferred next actions.
 
+For every fresh pilot report, immediately follow that summary with a reviewer-feedback table. Copy
+the same area labels and normalized requirement-ID sets, and leave the feedback cells blank:
+
+| Area | Requirement IDs | Feedback after review |
+|---|---|---|
+| [Descriptive area] | `[IDs]` | |
+
+Treat each `Feedback after review` cell as opaque reviewer-owned text after publication. A revision
+must preserve the table and the exact non-empty cell on the same normalized requirement-ID set.
+Row and column order may change. Do not split, merge, or change an ID set; when the same set occurs
+more than once, retain unique area labels so the revision gate can disambiguate it.
+
 Follow the summary with:
 
 > **Feedback requested:** Please let us know if any item above is a false positive, misses important
@@ -197,9 +209,9 @@ Use the same scorecard columns, evidence anchors, and finding blocks. A targeted
 Do not repeat unchanged repository-wide findings or imply a complete adoption/release decision.
 
 When correcting an existing report for the same exact assessment identity, preserve every
-undeclared scorecard row field-for-field and retain all prior maintainer or partner feedback
-verbatim. Do not replace the tracker body with a newly generated full report. Record the changed
-IDs and correction delta, then run:
+undeclared scorecard row field-for-field and retain all prior reviewer feedback verbatim in its
+`Feedback after review` cell on the same normalized requirement-ID set. Do not replace the tracker
+body with a newly generated full report. Record the changed IDs and correction delta, then run:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \

@@ -817,11 +817,12 @@ internal static class SkillValidator
             "Requirement ID",
             "Requirement scope",
             "Reviewer follow-up",
+            "Feedback after review",
         })
         {
             if (!report.Contains(heading, StringComparison.Ordinal))
             {
-                errors.Add($"Report template is missing scorecard column {heading}");
+                errors.Add($"Report template is missing required report column {heading}");
             }
         }
 

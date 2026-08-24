@@ -200,7 +200,8 @@ For a correction to an existing exact-snapshot report:
    requires a separate assessment or migration;
 3. declare the requirement IDs being corrected and preserve every undeclared scorecard row
    field-for-field, including its evidence anchors and disposition;
-4. preserve prior maintainer or partner feedback verbatim, including issue and pull-request links;
+4. preserve prior reviewer feedback verbatim in its `Feedback after review` cell on the same
+   normalized requirement-ID set, including issue and pull-request links;
 5. change a status only when the row's evidence is also updated to explain the new classification;
 6. record a correction delta that names the supplied evidence, changed IDs, old and new statuses,
    and why unrelated rows were not reverified;
@@ -215,9 +216,11 @@ dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness
   --changed-ids BEQ-02,BEQ-03 <revised-report-or-tracker.md>
 ```
 
-The gate rejects changed assessment identity, added or removed requirement rows, undeclared row
-edits, status-only changes, no-op declarations, and loss of text from a prior
-`Feedback after review` column. Run the normal scorecard and tracker validators afterward; the
+Fresh pilot reports emit a dedicated `Feedback after review` table keyed by requirement IDs; leave
+cells blank until a reviewer supplies feedback. The gate rejects changed assessment identity, added
+or removed requirement rows, undeclared row edits, status-only changes, no-op declarations, removal
+of that table, changed requirement-ID membership, ambiguous feedback keys, and any non-verbatim
+change to prior reviewer feedback. Run the normal scorecard and tracker validators afterward; the
 revision gate proves preservation boundaries, not factual correctness.
 
 ### 4. Create the scorecard annex

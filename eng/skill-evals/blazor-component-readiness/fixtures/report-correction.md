@@ -12,11 +12,11 @@ Relevant scorecard rows:
 | BEQ-12 | defect | Browser probe `callback-awaiting.json` showed that an incomplete callback task did not delay completion and its later exception was unobserved. | Await the callback task. | Re-run the retained callback probe after a fix. |
 | A11Y-08 | verified | Browser probe `tree-keyboard.json` exercised the documented keyboard matrix and retained the computed accessibility-tree snapshot. | - | - |
 
-The tracker summary contains this maintainer feedback:
+The tracker summary contains this reviewer feedback:
 
-> The supported render modes are documented at
-> https://example.com/components/blazor/render-modes. Callback issue:
-> https://github.com/example/components/issues/42.
+| Area | Requirement IDs | Feedback after review |
+|---|---|---|
+| Render modes and callbacks | `BEQ-02`, `BEQ-12` | The supported render modes are documented at https://example.com/components/blazor/render-modes. Callback issue: https://github.com/example/components/issues/42. |
 
 New supplied evidence:
 

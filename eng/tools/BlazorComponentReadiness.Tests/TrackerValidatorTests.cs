@@ -471,6 +471,9 @@ public sealed class TrackerValidatorTests
         builder.Append(TrackerValidator.FixAreaHeader);
         builder.Append("\n|---|---|---|---|\n");
         builder.Append(CultureInfo.InvariantCulture, $"| Grouped defects | Observed in evidence. | {string.Join(", ", defects)} | [E-001] |\n\n");
+        builder.Append("| Area | Requirement IDs | Feedback after review |\n");
+        builder.Append("|---|---|---|\n");
+        builder.Append(CultureInfo.InvariantCulture, $"| Grouped defects | {string.Join(", ", defects)} | |\n\n");
         builder.Append(TrackerValidator.FeedbackCallout);
         builder.Append("\n\n## Full report\n\n");
         builder.Append(TrackerValidator.FullReportSentence);
