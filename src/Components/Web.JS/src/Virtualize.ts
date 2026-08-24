@@ -22,7 +22,6 @@ const SpacerVisibilityReason = {
   UserScroll: 0,
   ProgrammaticScroll: 1,
   ViewportFill: 2,
-  RenderedContentMeasurement: 3,
 } as const;
 
 const ViewportFillDirection = {

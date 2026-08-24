@@ -366,20 +366,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return null;
         }
 
-        var initialItemSize = _itemSize;
         var result = await _jsInterop.AlignToItemAsync(localIndex, token);
-        var fillDirection = ProcessAlignmentResult(result, out var visibleItemCapacity, out var unusedItemCapacity);
-        if (_initialIndex.Phase == InitialIndexPhase.Pending
-            && _itemSize != initialItemSize
-            && _initialIndex.TryBeginRemeasure(_itemSize))
-        {
-            StateHasChanged();
-            return null;
-        }
-
-        _visibleItemCapacity = visibleItemCapacity;
-        _unusedItemCapacity = unusedItemCapacity;
-        return fillDirection;
+        return ProcessAlignmentResult(result, updateWindowFromViewport: false);
     }
 
     private int ClampToItemRange(int requested)
@@ -648,16 +636,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
-    {
-        if (_initialIndex.Phase != InitialIndexPhase.Pending)
-        {
-            return;
-        }
-
-        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out _, out _, out _);
-    }
-
     private void CancelInFlightScrollForUserInteraction()
     {
         _initialIndex.Abort();
@@ -681,11 +659,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
-        {
-            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
-            return;
-        }
         if (_pendingAnchorRestore)
         {
             return;
@@ -743,11 +716,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
-        {
-            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
-            return;
-        }
         if (_pendingAnchorRestore || reason == SpacerVisibilityReason.ProgrammaticScroll)
         {
             return;
@@ -802,31 +770,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        var initialItemSize = _itemSize;
-        var fillDirection = ProcessAlignmentResult(result, out var visibleItemCapacity, out var unusedItemCapacity);
-        if (_itemSize != initialItemSize && _initialIndex.TryBeginRemeasure(_itemSize))
-        {
-            StateHasChanged();
-            return;
-        }
-
-        _visibleItemCapacity = visibleItemCapacity;
-        _unusedItemCapacity = unusedItemCapacity;
-        UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
+        ProcessAlignmentResult(result, updateWindowFromViewport: true);
     }
 
     private ViewportFillDirection? ProcessAlignmentResult(
         VirtualizeAlignmentResult? result,
-        out int visibleItemCapacity,
-        out int unusedItemCapacity)
+        bool updateWindowFromViewport)
     {
-        visibleItemCapacity = _visibleItemCapacity;
-        unusedItemCapacity = _unusedItemCapacity;
         if (result is null || result.RenderedWindowVersion != _renderedWindowVersion)
         {
             return null;
         }
 
+        var initialItemSize = _itemSize;
+        var visibleItemCapacity = _visibleItemCapacity;
+        var unusedItemCapacity = _unusedItemCapacity;
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
             CalculateItemDistribution(
@@ -836,6 +794,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 out _,
                 out visibleItemCapacity,
                 out unusedItemCapacity);
+        }
+
+        if (_initialIndex.Phase == InitialIndexPhase.Pending
+            && _itemSize != initialItemSize
+            && _initialIndex.TryBeginRemeasure(_itemSize))
+        {
+            StateHasChanged();
+            return null;
+        }
+
+        _visibleItemCapacity = visibleItemCapacity;
+        _unusedItemCapacity = unusedItemCapacity;
+        if (updateWindowFromViewport)
+        {
+            UpdateWindowFromViewport(result.FillDirection, _visibleItemCapacity, _unusedItemCapacity);
         }
 
         return result.FillDirection;
