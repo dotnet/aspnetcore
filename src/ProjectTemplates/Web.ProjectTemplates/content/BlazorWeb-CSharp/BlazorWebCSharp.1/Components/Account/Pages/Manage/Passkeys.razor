@@ -48,6 +48,11 @@ else
     <p>No passkeys are registered.</p>
 }
 
+@if (user is not null)
+{
+    <AllAcceptedCredentialsSignal User="user" />
+}
+
 @if (!isReauthenticated)
 {
     <ReauthenticationPrompt Purpose="Adding a passkey creates a new way to sign in to your account." />
