@@ -14,7 +14,7 @@
     </label>
 </div>
 
-<div id="scroll-container" style="height: @(InitialContainerHeight)px; overflow-y: auto; border: 1px solid black;">
+<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
     @if (listLoaded)
     {
         @if (useItemsProvider)
@@ -88,6 +88,7 @@
     <button id="set-low-max-item-count" @onclick="SetLowMaxItemCount">MaxItemCount 20, overscan 3</button>
     <button id="set-double-size" @onclick="SetDoubleSize">Item size 100</button>
     <button id="set-average-height-trap" @onclick="SetAverageHeightTrap">Tall rows before index 100</button>
+    <button id="set-stale-measurement-scenario" @onclick="SetStaleMeasurementScenario">Stale measurement scenario</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -117,6 +118,7 @@
     private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useAverageHeightTrap;
+    private bool useExactItemSize;
     private bool useItemsProvider = false;
     private bool omitItemComparer = false;
     private int itemSize = 50;
@@ -140,24 +142,6 @@
     [Parameter]
     public int InitialItemIndex { get; set; }
 
-    [Parameter]
-    public int InitialItemCount { get; set; } = 1000;
-
-    [Parameter]
-    public int InitialContainerHeight { get; set; } = 300;
-
-    [Parameter]
-    public int InitialOverscanCount { get; set; } = 15;
-
-    [Parameter]
-    public bool InitiallyUseItemsProvider { get; set; }
-
-    [Parameter]
-    public bool InitiallyUseVariableHeight { get; set; }
-
-    [Parameter]
-    public bool UseExactItemSize { get; set; }
-
     private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
         new Dictionary<string, object>();
 
@@ -175,17 +159,13 @@
     protected override void OnInitialized()
     {
         initialItemIndex = InitialItemIndex;
-        overscanCount = InitialOverscanCount;
-        useItemsProvider = InitiallyUseItemsProvider;
-        useVariableHeight = InitiallyUseVariableHeight;
-        items = Enumerable.Range(0, InitialItemCount)
+        items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
-        nextAppendIndex = InitialItemCount;
     }
 
     private string GetItemStyle(DynamicItem item)
-        => UseExactItemSize
+        => useExactItemSize
             ? $"height: {item.Height}px;"
             : $"border: 1px solid gray; padding: 5px; min-height: {item.Height}px;";
 
@@ -372,6 +352,22 @@
             item.Height = GetHeight(item.Index);
         }
         statusMessage = "Tall rows before index 100";
+    }
+
+    private void SetStaleMeasurementScenario()
+    {
+        itemSize = 50;
+        maxItemCount = 100;
+        overscanCount = 3;
+        useVariableHeight = false;
+        useAverageHeightTrap = false;
+        useExactItemSize = true;
+        items = Enumerable.Range(0, 2000)
+            .Select(i => new DynamicItem { Index = i, Height = itemSize })
+            .ToList();
+        nextPrependIndex = -1;
+        nextAppendIndex = items.Count;
+        statusMessage = "Stale measurement scenario: 2000 exact 50px items, overscan 3";
     }
 
     private void ExpandVisibleItem()

@@ -4990,7 +4990,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item identity stabilize.
+    /// item range, item count, scroll extent, scrollTop, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
@@ -4998,8 +4998,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
     {
         long lastScrollTop = -1;
+        long lastScrollHeight = -1;
         int lastItemCount = -1;
         string lastFirstIndex = "";
+        string lastFirstRenderedIndex = "";
+        string lastLastRenderedIndex = "";
         int stableCount = 0;
 
         Browser.True(() =>
@@ -5017,12 +5020,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         break;
                     }
                 }
-                return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
+                var index = item => item ? item.getAttribute('data-index') || item.textContent : '';
+                return {
+                    scrollTop: Math.round(c.scrollTop),
+                    scrollHeight: Math.round(c.scrollHeight),
+                    itemCount: items.length,
+                    firstIndex: firstIdx,
+                    firstRenderedIndex: index(items[0]),
+                    lastRenderedIndex: index(items[items.length - 1])
+                };
             ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToInt64(result["scrollHeight"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
             var firstIndex = result["firstIndex"]?.ToString() ?? "";
+            var firstRenderedIndex = result["firstRenderedIndex"]?.ToString() ?? "";
+            var lastRenderedIndex = result["lastRenderedIndex"]?.ToString() ?? "";
 
             if (string.IsNullOrEmpty(firstIndex))
             {
@@ -5031,7 +5045,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 // item to reappear rather than reporting this moment as stable.
                 stableCount = 0;
             }
-            else if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
+            else if (scrollTop == lastScrollTop
+                && scrollHeight == lastScrollHeight
+                && itemCount == lastItemCount
+                && firstIndex == lastFirstIndex
+                && firstRenderedIndex == lastFirstRenderedIndex
+                && lastRenderedIndex == lastLastRenderedIndex)
             {
                 stableCount++;
             }
@@ -5041,11 +5060,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }
 
             lastScrollTop = scrollTop;
+            lastScrollHeight = scrollHeight;
             lastItemCount = itemCount;
             lastFirstIndex = firstIndex;
+            lastFirstRenderedIndex = firstRenderedIndex;
+            lastLastRenderedIndex = lastRenderedIndex;
 
-            // Require 3 consecutive stable reads to account for async provider delays.
-            return stableCount >= 3;
+            // Require 5 consecutive stable reads to account for async provider delays and geometry updates.
+            return stableCount >= 5;
         }, TimeSpan.FromSeconds(15), "Render cycle did not settle in time");
     }
 
@@ -5546,6 +5568,69 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }
             return edge === 'top' ? (best <= rect.top + 2) : (best >= rect.bottom - 2);
         ", edge);
+    }
+
+    [Fact]
+    public void InitialItemIndex_NearEndResize_DoesNotApplyStaleRenderedWindowMeasurement()
+    {
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 2900);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetStaleMeasurementContainerHeight(js, 2500);
+        Browser.Exists(By.Id("set-stale-measurement-scenario")).Click();
+        Browser.Contains("Stale measurement scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        SetManualInitialIndex(1990);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        AssertViewportState("initial 2500px");
+
+        for (var cycle = 1; cycle <= 3; cycle++)
+        {
+            SetStaleMeasurementContainerHeight(js, 2000);
+            AssertViewportState($"cycle {cycle} at 2000px");
+            SetStaleMeasurementContainerHeight(js, 2500);
+            AssertViewportState($"cycle {cycle} at 2500px");
+        }
+
+        var severeLogs = Browser.Manage().Logs.GetLog(LogType.Browser)
+            .Where(entry => entry.Level == LogLevel.Severe)
+            .ToArray();
+        Assert.Empty(severeLogs);
+
+        void AssertViewportState(string stage)
+        {
+            WaitForRenderToSettle(container, js);
+            var firstVisibleItem = GetTopRenderedIndex(js);
+            var topCovered = ViewportEdgeCoveredByRealItem(js, "top");
+            var bottomCovered = ViewportEdgeCoveredByRealItem(js, "bottom");
+            var scrollHeight = Convert.ToDouble(
+                js.ExecuteScript("return document.getElementById('scroll-container').scrollHeight;"),
+                CultureInfo.InvariantCulture);
+            var atScrollEnd = Convert.ToBoolean(
+                js.ExecuteScript("""
+                    const container = document.getElementById('scroll-container');
+                    return Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) <= 2;
+                    """),
+                CultureInfo.InvariantCulture);
+
+            Assert.True(firstVisibleItem == 1950
+                && topCovered
+                && (bottomCovered || atScrollEnd)
+                && Math.Abs(scrollHeight - 100_000) <= 2,
+                $"Unexpected viewport state after {stage}: firstVisibleItem={firstVisibleItem}, " +
+                $"scrollTop={GetScrollTop(js, container)}, scrollHeight={scrollHeight}, " +
+                $"topCovered={topCovered}, bottomCovered={bottomCovered}, atScrollEnd={atScrollEnd}.");
+        }
+    }
+
+    private static void SetStaleMeasurementContainerHeight(IJavaScriptExecutor js, int height)
+    {
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = `${arguments[0]}px`;", height);
     }
 
     [Fact]
