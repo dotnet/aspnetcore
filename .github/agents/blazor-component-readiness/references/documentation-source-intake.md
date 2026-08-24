@@ -41,4 +41,3 @@ query an archive, or expand the evidence set during this protocol.
 - Documentation proves only what it states. It does not establish runtime behavior, accessibility
   behavior, test execution, or site-wide completeness unless the retained evidence directly covers
   that separate claim.
-
