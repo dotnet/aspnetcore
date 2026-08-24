@@ -5743,6 +5743,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68724")]
     public void QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll(bool useProvider)
     {
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridScrollComponent>();
