@@ -105,11 +105,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // Extract validatable types discovered in members of this type and add them to the top-level list.
-        ImmutableArray<ValidatableProperty> members = [];
-        if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
-        {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
-        }
+        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonDerivedTypeAttribute));
