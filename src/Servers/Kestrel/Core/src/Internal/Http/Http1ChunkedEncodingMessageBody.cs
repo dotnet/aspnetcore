@@ -397,9 +397,10 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
 
     private void ParseExtension(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
-        _chunkedExtensionParser ??= new ChunkedExtensionParser();
+        var parser = _chunkedExtensionParser ?? new ChunkedExtensionParser();
+
         var reader = new SequenceReader<byte>(buffer);
-        if (_chunkedExtensionParser.Consume(ref reader, out consumed, out examined))
+        if (parser.Consume(ref reader, out consumed, out examined))
         {
             _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
@@ -407,6 +408,13 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
             // Alternatively, we could also reuse the same parser, but we will want to remove
             // the "Completed" state in ChunkedExtensionParser and use StartOfExtension instead.
             _chunkedExtensionParser = null;
+        }
+        else
+        {
+            // ChunkedExtensionParser is a struct.
+            // We want to ensure that we don't lose the state of the parser across multiple calls to ParseExtension.
+            // We ensure we have the state in the private field, and not just in a "copy" of the struct.
+            _chunkedExtensionParser = parser;
         }
 
         AddAndCheckObservedBytes(reader.Consumed);

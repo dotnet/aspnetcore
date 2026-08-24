@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 // HTAB           =  %x09
 // SP             =  %x20
 // VCHAR          =  %x21-7E
-internal sealed class ChunkedExtensionParser
+internal struct ChunkedExtensionParser
 {
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
@@ -53,7 +53,10 @@ internal sealed class ChunkedExtensionParser
     private const byte ByteDQuote = (byte)'"';
     private const byte ByteBackslash = (byte)'\\';
 
-    private State _state = State.StartOfExtension;
+    private State _state;
+
+    public ChunkedExtensionParser()
+        => _state = State.StartOfExtension;
 
     public bool Consume(ref SequenceReader<byte> reader, out SequencePosition consumed, out SequencePosition examined)
     {
