@@ -30,6 +30,10 @@ query an archive, or expand the evidence set during this protocol.
 - If supplied content materially addresses a row but exact package/version/component alignment is
   `unknown`, it can correct an unsupported absence claim but cannot verify the reviewed release.
   Use `maintainer evidence required` and name the missing alignment evidence.
+- If supplied content makes a product-wide statement that logically covers the reviewed component
+  (e.g., "all Product X components require Y" and the component belongs to Product X), treat
+  component alignment as `verified` at product scope. Apply this consistently to every component
+  in the same product reviewed under the same supplied source.
 - Use `verified` only when the retained content directly satisfies the row and its package, version,
   and component alignment are all established.
 - Use `defect` for absence only after the retained source was successfully inspected and its
