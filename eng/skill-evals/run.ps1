@@ -1,7 +1,7 @@
 #requires -Version 7.0
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('Validate', 'Test', 'Lint', 'Run')]
+    [ValidateSet('Validate', 'Test', 'Lint', 'Run', 'RunAgent')]
     [string]$Action = 'Validate',
 
     [string]$Eval,
@@ -33,6 +33,11 @@ $repoRoot = if ($Root) {
 $evalRoot = Join-Path $repoRoot 'eng/skill-evals'
 $runtimeRoot = Join-Path $repoRoot '.github/skills'
 $experiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
+$readinessEvalRoot = Join-Path $evalRoot 'blazor-component-readiness'
+$readinessRepresentative = Join-Path $readinessEvalRoot 'representative.vally.yaml'
+$readinessRegression = Join-Path $readinessEvalRoot 'regression.vally.yaml'
+$readinessExecutor = Join-Path $readinessEvalRoot 'copilot-agent-executor.mjs'
+$readinessExecutorTest = Join-Path $readinessEvalRoot 'copilot-agent-executor.test.mjs'
 $script:vallyInitialized = $false
 
 function Resolve-Eval {
@@ -132,6 +137,85 @@ function Invoke-VallyExperimentDryRun {
         '--dry-run',
         '--output-dir', 'plan-results'
     )
+}
+
+function Resolve-OutputDirectory {
+    if ($OutputDirectory) {
+        if ([IO.Path]::IsPathRooted($OutputDirectory)) {
+            return $OutputDirectory
+        }
+        return Join-Path $repoRoot $OutputDirectory
+    }
+
+    return Join-Path $repoRoot 'artifacts/skill-evals'
+}
+
+function Test-IsReadinessAgentEval {
+    param([string]$Path)
+
+    return [string]::Equals(
+        $Path,
+        $readinessRepresentative,
+        [StringComparison]::OrdinalIgnoreCase
+    ) -or [string]::Equals(
+        $Path,
+        $readinessRegression,
+        [StringComparison]::OrdinalIgnoreCase
+    )
+}
+
+function Assert-AgentArgumentsSafe {
+    foreach ($reserved in @(
+        '-e',
+        '--backend',
+        '--eval-spec',
+        '--executor',
+        '--executor-plugin',
+        '--skill-dir',
+        '--skip-validate',
+        '--work-dir',
+        '--workspace'
+    )) {
+        if ($Arguments -contains $reserved -or
+            @($Arguments | Where-Object { $_.StartsWith("$reserved=") }).Count -gt 0) {
+            throw "RunAgent owns $reserved to preserve exact agent binding and workspace isolation."
+        }
+    }
+}
+
+function Invoke-ReadinessAgentEval {
+    $resolvedEval = Resolve-Eval
+    if (-not $resolvedEval) {
+        $resolvedEval = (Resolve-Path $readinessRepresentative).Path
+    }
+    if (-not (Test-IsReadinessAgentEval $resolvedEval)) {
+        throw 'RunAgent only supports the component-readiness representative and regression suites.'
+    }
+
+    Assert-AgentArgumentsSafe
+    $output = Resolve-OutputDirectory
+    $workDirectory = Join-Path ([IO.Path]::GetTempPath()) (
+        'aspnetcore-readiness-agent-evals-' + [guid]::NewGuid().ToString('N')
+    )
+    $workspace = Join-Path $workDirectory 'workspaces'
+    New-Item -ItemType Directory -Path $workDirectory | Out-Null
+    try {
+        Push-Location $workDirectory
+        $vallyArguments = @(
+            'eval',
+            '--eval-spec', $resolvedEval,
+            '--executor-plugin', $readinessExecutor,
+            '--executor', 'blazor-component-readiness-agent',
+            '--workspace', $workspace,
+            '--workers', '1',
+            '--output-dir', $output
+        )
+        $vallyArguments += $Arguments
+        Invoke-Vally $vallyArguments
+    } finally {
+        Pop-Location
+        Remove-Item -Recurse -Force $workDirectory
+    }
 }
 
 function Get-TrackedFiles {
@@ -237,21 +321,21 @@ switch ($Action) {
     'Test' {
         & (Join-Path $PSScriptRoot 'test_validate.ps1')
         & (Join-Path $PSScriptRoot 'test_run.ps1')
+        $global:LASTEXITCODE = 0
+        & node --test $readinessExecutorTest
+        if (-not $? -or $LASTEXITCODE -ne 0) {
+            throw "Component-readiness custom-agent executor tests failed."
+        }
     }
     'Lint' {
         Invoke-VallyLint
     }
     'Run' {
         $resolvedEval = Resolve-Eval
-        $output = if ($OutputDirectory) {
-            if ([IO.Path]::IsPathRooted($OutputDirectory)) {
-                $OutputDirectory
-            } else {
-                Join-Path $repoRoot $OutputDirectory
-            }
-        } else {
-            Join-Path $repoRoot 'artifacts/skill-evals'
+        if ($resolvedEval -and (Test-IsReadinessAgentEval $resolvedEval)) {
+            throw 'Use RunAgent for component-readiness custom-agent suites.'
         }
+        $output = Resolve-OutputDirectory
 
         if (-not $resolvedEval -or (Split-Path $resolvedEval -Leaf) -eq 'eval.vally.yaml') {
             $vallyArguments = @(
@@ -277,5 +361,8 @@ switch ($Action) {
 
         $vallyArguments += $Arguments
         Invoke-VallyIsolated $vallyArguments
+    }
+    'RunAgent' {
+        Invoke-ReadinessAgentEval
     }
 }

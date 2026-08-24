@@ -1123,6 +1123,8 @@ public sealed class SkillStructureTests
         Assert.True(File.Exists(Layout.RepresentativeVallyPath));
         Assert.True(File.Exists(Layout.VallyPath));
         Assert.True(File.Exists(Layout.EvalPolicyPath));
+        Assert.True(File.Exists(Layout.ExecutorPluginPath));
+        Assert.True(File.Exists(Layout.ExecutorTestPath));
         Assert.True(File.Exists(Path.Combine(
             Layout.EvalRoot,
             "fixtures",
@@ -1130,6 +1132,56 @@ public sealed class SkillStructureTests
         Assert.False(Directory.Exists(Path.Combine(Layout.Root, "evals")));
         Assert.False(File.Exists(Path.Combine(Layout.EvalRoot, "eval.vally.yaml")));
         Assert.False(File.Exists(Layout.LegacySkillPath));
+    }
+
+    [Fact]
+    public void VallySuitesSelectRepositoryCustomAgentExecutor()
+    {
+        const string expectedExecutor =
+            "  executor: blazor-component-readiness-agent";
+
+        Assert.Contains(
+            expectedExecutor,
+            File.ReadAllText(Layout.RepresentativeVallyPath, Encoding.UTF8));
+        Assert.Contains(
+            expectedExecutor,
+            File.ReadAllText(Layout.VallyPath, Encoding.UTF8));
+    }
+
+    [Fact]
+    public void MissingCustomAgentExecutorAssetIsRejected()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.ProfilePath);
+        File.Delete(layout.ExecutorPluginPath);
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "Custom-agent executor asset does not exist",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void MissingCustomAgentExecutorSelectionIsRejected()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.ProfilePath);
+        var content = File.ReadAllText(layout.RepresentativeVallyPath, Encoding.UTF8)
+            .Replace(
+                "  executor: blazor-component-readiness-agent\n",
+                string.Empty,
+                StringComparison.Ordinal);
+        File.WriteAllText(
+            layout.RepresentativeVallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "representative.vally.yaml must select",
+                StringComparison.Ordinal));
     }
 
     [Fact]

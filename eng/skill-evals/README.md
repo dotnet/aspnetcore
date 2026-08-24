@@ -44,6 +44,11 @@ Run these commands from any directory:
 ./eng/skill-evals/run.ps1 Run
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-public-api/eval.vally.yaml
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/<skill>/<specialized>.vally.yaml
+
+# A repository custom-agent suite uses its explicit repository adapter
+./eng/skill-evals/run.ps1 RunAgent
+./eng/skill-evals/run.ps1 RunAgent `
+  -Eval eng/skill-evals/blazor-component-readiness/regression.vally.yaml
 ```
 
 `Validate`, `Lint`, and `Run` use the exact
@@ -59,6 +64,13 @@ output defaults to `artifacts/skill-evals`.
 Standard runs use Vally's experiment `--compare` mode. Vally 0.13 removed the
 old per-stimulus `pairwise` grader, so comparison is owned by the experiment
 rather than repeated in each eval spec.
+
+`RunAgent` is intentionally limited to the component-readiness representative
+and regression suites. Vally 0.13 has no native repository custom-agent
+selector, so this action loads the repository-local executor adapter, stages the
+profile into an isolated temporary workspace, and uses the Copilot CLI's native
+`--agent` option. The representative suite is the bounded default. The
+exhaustive regression suite remains an explicitly selected, cost-gated run.
 
 ## Result interpretation and provenance
 

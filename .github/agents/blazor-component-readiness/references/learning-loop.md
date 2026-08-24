@@ -56,6 +56,15 @@ dotnet test \
 pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Lint
 ```
 
+Those checks are model-free. Run the bounded representative corpus through the real custom agent
+only when model-bearing validation is intended:
+
+```powershell
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 RunAgent
+```
+
+Select `regression.vally.yaml` explicitly only for a cost-approved exhaustive governance run.
+
 ## Review for overfitting
 
 - Would this help another maintainer and architecture?

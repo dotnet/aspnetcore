@@ -5,6 +5,7 @@ name: blazor-component-readiness
 description: "Representative behavioral evals for the explicit Blazor component-readiness agent."
 type: capability
 defaults:
+  executor: blazor-component-readiness-agent
   runs: 5
   timeout: 1200s
   model: gpt-5.6-sol

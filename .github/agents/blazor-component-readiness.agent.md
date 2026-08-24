@@ -490,5 +490,5 @@ When asked to improve the workflow after a run, follow
 evidence-backed lessons. Keep the representative and exhaustive behavioral corpora under
 `eng/skill-evals/blazor-component-readiness`; follow
 `eng/skill-evals/blazor-component-readiness/eval-policy.md` for ownership and the Vally 0.13
-execution limitation. Preserve component-specific facts outside the public core, and keep a
+custom-agent execution bridge. Preserve component-specific facts outside the public core, and keep a
 no-defect canary.

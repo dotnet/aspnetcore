@@ -31,6 +31,8 @@ internal sealed class SkillLayout
         EvalRoot = Path.Combine(repositoryRoot, "eng", "skill-evals", skillName);
         EvalPolicyPath = Path.Combine(EvalRoot, "eval-policy.md");
         RepresentativeVallyPath = Path.Combine(EvalRoot, "representative.vally.yaml");
+        ExecutorPluginPath = Path.Combine(EvalRoot, "copilot-agent-executor.mjs");
+        ExecutorTestPath = Path.Combine(EvalRoot, "copilot-agent-executor.test.mjs");
         ChecklistPath = Path.Combine(Root, "references", "checklist.md");
         AreasIndexPath = Path.Combine(Root, "references", "areas", "index.md");
         LegacySkillPath = Path.Combine(
@@ -62,6 +64,10 @@ internal sealed class SkillLayout
     internal string EvalPolicyPath { get; }
 
     internal string RepresentativeVallyPath { get; }
+
+    internal string ExecutorPluginPath { get; }
+
+    internal string ExecutorTestPath { get; }
 
     internal string ChecklistPath { get; }
 

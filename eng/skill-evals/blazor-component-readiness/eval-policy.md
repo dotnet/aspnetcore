@@ -13,14 +13,21 @@ The five representative cases intentionally duplicate regression cases 01, 02, 1
 C# agent validator requires their names, prompts, tags, fixture bindings, and rubrics to remain
 identical so the bounded corpus cannot silently diverge from the governed corpus.
 
-## Vally 0.13 limitation
+## Vally 0.13 custom-agent bridge
 
-Vally 0.13.0 can load `SKILL.md` directories through `--skill-dir` or `environment.skills`, but it
-cannot select or load a repository `.agent.md` custom-agent profile. Neither corpus declares
-`environment.skills`, and neither is named `eval.vally.yaml`, so the generic
-baseline-versus-skilled experiment does not auto-discover or falsely execute them as agent runs.
-Retain and strict-lint both specs as the behavioral contract. Do not run their model-bearing
-stimuli through the repository runner until it can explicitly select the custom agent.
+Vally 0.13.0 does not natively select a repository `.agent.md` custom-agent profile. The repository
+bridge in `copilot-agent-executor.mjs` supplies that missing executor boundary by invoking the
+Copilot CLI with the unchanged stimulus and native
+`--agent blazor-component-readiness` selection. Both suites select
+`blazor-component-readiness-agent` as their Vally executor and must not declare
+`environment.skills`.
+
+The bridge stages the exact repository profile and its resources into each isolated Vally
+workspace, validates and records the profile digest and CLI version, probes an unknown agent to
+prove resolution fails closed with the expected profile as the sole available custom agent, and
+rejects malformed or incomplete CLI event streams. Copilot's session event schema does not expose
+the selected custom-agent name, so this isolated native-resolution probe is the strongest available
+identity attestation; the bridge does not invent one or inject profile text into the stimulus.
 
 ## Governance
 
@@ -60,12 +67,20 @@ pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Lint
 `Validate` proves that the generic experiment does not discover these custom-agent corpora. `Lint`
 strictly validates both Vally specifications and their fixtures without invoking a model.
 
-## Future agent comparison
+Model-bearing execution is always explicit. The default command runs the bounded representative
+suite with one worker; additional Vally arguments can narrow trials further:
 
-When the runner gains explicit custom-agent selection, use all cases and five trials with the pinned
-executor and judge models. Preserve JSONL output, Vally diagnostics, resolved CLI version, agent
-revision, and timestamp. Compare train and held-out results separately as well as overall; do not
-allow several similar cases in one score family to hide failure in another family.
+```powershell
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 RunAgent
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 RunAgent `
+  -Eval eng/skill-evals/blazor-component-readiness/regression.vally.yaml
+```
+
+The exhaustive regression command is deliberately cost-gated by its explicit path. For a governed
+comparison, use all cases and five trials with the pinned executor and judge models. Preserve JSONL
+output, bridge artifacts, Vally diagnostics, resolved CLI version, profile digest, model and
+reasoning identities, and timestamp. Compare train and held-out results separately as well as
+overall; do not allow several similar cases in one score family to hide failure in another family.
 
 Vally prompt grading is probabilistic. Deterministic scripts remain authoritative for checklist
 structure, requirement coverage, status vocabulary, and generated-spec synchronization.

@@ -771,6 +771,47 @@ internal static class SkillValidator
             }
         }
 
+        foreach (var path in new[]
+        {
+            layout.ExecutorPluginPath,
+            layout.ExecutorTestPath,
+        })
+        {
+            if (!File.Exists(path))
+            {
+                errors.Add($"Custom-agent executor asset does not exist: {path}");
+            }
+        }
+
+        const string expectedExecutor = "  executor: blazor-component-readiness-agent";
+        foreach (var path in new[]
+        {
+            layout.RepresentativeVallyPath,
+            layout.VallyPath,
+        })
+        {
+            var suite = File.ReadAllText(path, Encoding.UTF8);
+            if (!suite.Contains(expectedExecutor, StringComparison.Ordinal))
+            {
+                errors.Add(
+                    $"{Path.GetFileName(path)} must select " +
+                    "blazor-component-readiness-agent");
+            }
+        }
+
+        foreach (var marker in new[]
+        {
+            "copilot-agent-executor.mjs",
+            "RunAgent",
+            "--agent blazor-component-readiness",
+        })
+        {
+            if (!evalPolicy.Contains(marker, StringComparison.Ordinal))
+            {
+                errors.Add($"Evaluation policy is missing custom-agent bridge marker {marker}");
+            }
+        }
+
         foreach (var heading in new[]
         {
             "Requirement ID",

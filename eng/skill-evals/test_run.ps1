@@ -97,6 +97,76 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     Assert-True ($specializedInvocation[1] -eq 'eval') 'Specialized run did not use Vally eval.'
     Assert-True ($specializedInvocation -contains '--eval-spec') 'Specialized run omitted --eval-spec.'
 
+    & $runner RunAgent `
+        -Vally $fakeVally `
+        -VallyPrefix @() `
+        -OutputDirectory $output `
+        '--runs' '1' '--tag' 'eval_id=1'
+    $agentInvocation = Read-Invocation
+    Assert-True ($agentInvocation[1] -eq 'eval') 'Agent run did not use Vally eval.'
+    Assert-True ($agentInvocation -contains '--executor-plugin') (
+        'Agent run omitted its repository-local executor plugin.'
+    )
+    Assert-True ($agentInvocation -contains '--executor') 'Agent run omitted --executor.'
+    Assert-True ($agentInvocation -contains 'blazor-component-readiness-agent') (
+        'Agent run did not select the component-readiness executor.'
+    )
+    Assert-True ($agentInvocation -contains '--workspace') (
+        'Agent run omitted its isolated workspace.'
+    )
+    $workspaceIndex = [Array]::IndexOf($agentInvocation, '--workspace')
+    Assert-True ($workspaceIndex -ge 0) 'Agent run workspace index was not found.'
+    Assert-True (-not $agentInvocation[$workspaceIndex + 1].StartsWith($repoRoot)) (
+        'Agent run workspace was placed inside the developer checkout.'
+    )
+    Assert-True (-not (Test-Path $agentInvocation[$workspaceIndex + 1])) (
+        'Agent run workspace was not removed.'
+    )
+    Assert-True ($agentInvocation -contains '--workers') (
+        'Agent run did not bound default concurrency.'
+    )
+    Assert-True ($agentInvocation -contains '--runs') 'Agent run did not forward --runs.'
+    Assert-True ($agentInvocation -contains 'eval_id=1') 'Agent run did not forward its tag.'
+
+    $unsafeAgentRunRejected = $false
+    try {
+        & $runner RunAgent `
+            -Vally $fakeVally `
+            -VallyPrefix @() `
+            '--workspace' $repoRoot
+    } catch {
+        $unsafeAgentRunRejected = $_.Exception.Message -like (
+            '*owns --workspace to preserve exact agent binding and workspace isolation*'
+        )
+    }
+    Assert-True $unsafeAgentRunRejected 'Agent run accepted a workspace override.'
+
+    $shortEvalOverrideRejected = $false
+    try {
+        & $runner RunAgent `
+            -Vally $fakeVally `
+            -VallyPrefix @() `
+            '-e' $specialized
+    } catch {
+        $shortEvalOverrideRejected = $_.Exception.Message -like (
+            '*owns -e to preserve exact agent binding and workspace isolation*'
+        )
+    }
+    Assert-True $shortEvalOverrideRejected 'Agent run accepted the short eval-spec override.'
+
+    $wrongAgentSuiteRejected = $false
+    try {
+        & $runner RunAgent `
+            -Eval $specialized `
+            -Vally $fakeVally `
+            -VallyPrefix @()
+    } catch {
+        $wrongAgentSuiteRejected = $_.Exception.Message -like (
+            '*only supports the component-readiness representative and regression suites*'
+        )
+    }
+    Assert-True $wrongAgentSuiteRejected 'Agent run accepted an unrelated suite.'
+
     $env:SKILL_EVAL_FAKE_FAILURE = 'true'
     $failurePropagated = $false
     try {
