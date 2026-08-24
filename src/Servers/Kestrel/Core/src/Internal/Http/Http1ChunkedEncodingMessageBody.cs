@@ -379,9 +379,6 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 return;
             }
 
-            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
-            examined = reader.Position;
-
             if (reader.Consumed > MaxChunkPrefixBytes)
             {
                 // We consumed already the 8 bytes fully. And the next byte wasn't CRLF nor semicolon.
