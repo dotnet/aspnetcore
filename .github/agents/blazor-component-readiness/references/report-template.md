@@ -40,7 +40,7 @@ Validate the finished body before writing it to any tracker:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  tracker --skill-dir .github/skills/blazor-component-readiness \
+  tracker --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --evidence-bundle <evidence.json> --source-report <report.md> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <tracker-body.md>
@@ -149,7 +149,7 @@ Generate the complete table with:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness --emit-template
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md --emit-template
 ```
 
 Add `--overlay scaffolder` or `--overlay ai-skill` only when applicable.
@@ -158,13 +158,13 @@ Rules:
 
 - Include all 110 core IDs exactly once in checklist order.
 - Include every ID from each selected overlay; omit unselected overlays entirely.
-- Use only the five statuses defined by the skill.
+- Use only the five statuses defined by the agent rubric.
 - Explain every status directly or through a resolved evidence anchor.
 - Give a concrete maintainer action for `maintainer evidence required`.
 - Give a bounded reviewer follow-up for `not tested`.
 - Link concrete defects to detailed finding blocks.
 - Validate with
-  `dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- scorecard --skill-dir .github/skills/blazor-component-readiness --evidence-bundle <evidence.json> --shared-row-projection <shared-row-projection.json> --provenance-input <target-manifest.json> <report.md> --receipt <validation-receipt.json>` for a shared-foundation batch that declares the target-manifest digest. Omit the projection option for an independent review and omit the provenance-input option when no additional live artifact digest is declared.
+  `dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md --evidence-bundle <evidence.json> --shared-row-projection <shared-row-projection.json> --provenance-input <target-manifest.json> <report.md> --receipt <validation-receipt.json>` for a shared-foundation batch that declares the target-manifest digest. Omit the projection option for an independent review and omit the provenance-input option when no additional live artifact digest is declared.
 
 ## Targeted follow-up
 
@@ -179,10 +179,10 @@ Emit and validate only the named IDs:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --ids BEQ-12,BEQ-15 --emit-template
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --ids BEQ-12,BEQ-15 --evidence-bundle <evidence.json> <targeted-report.md>
 ```
 
@@ -308,7 +308,7 @@ Generate a receipt with:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --evidence-bundle <evidence.json> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <report.md> \
@@ -333,11 +333,11 @@ evidence-anchor resolution. It does not prove that the evidence or classificatio
 correct.
 ```
 
-Before publishing, validate the receipt against the exact historical skill inputs:
+Before publishing, validate the receipt against the exact historical agent resources:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  receipt validate --skill-dir <exact-historical-skill-snapshot> \
+  receipt validate --agent-profile <exact-historical-agent-profile> \
   --evidence-bundle <evidence.json> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> --report <report.md> \
@@ -392,5 +392,7 @@ rubric content.
 
 ## Run-observations note
 
-Use the compact template in `references/feedback.md`. Keep workflow feedback separate from the
-component verdict so it can be shared with skill maintainers without exposing reviewed code.
+Use the compact template in
+`.github/agents/blazor-component-readiness/references/feedback.md`. Keep workflow feedback separate
+from the component verdict so it can be shared with agent maintainers without exposing reviewed
+code.

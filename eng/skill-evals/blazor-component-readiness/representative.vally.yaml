@@ -1,8 +1,8 @@
-# This Vally specification is the auto-discovered baseline-versus-skilled lane.
+# This Vally specification retains the bounded representative behavioral corpus.
 # Validated with @microsoft/vally-cli@0.13.0.
 # Duplicated cases must remain identical to regression.vally.yaml.
 name: blazor-component-readiness
-description: "Representative A/B evals for the public Blazor component-readiness skill."
+description: "Representative behavioral evals for the explicit Blazor component-readiness agent."
 type: capability
 defaults:
   runs: 5

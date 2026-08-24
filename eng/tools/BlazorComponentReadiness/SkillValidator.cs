@@ -10,6 +10,7 @@ namespace BlazorComponentReadiness;
 internal static class SkillValidator
 {
     internal const string VallyPackage = "@microsoft/vally-cli@0.13.0";
+    internal const int MaximumAgentPromptCharacters = 30_000;
     internal const int ExpectedCoreRequirementCount =
         ScorecardValidator.ExpectedCoreRequirementCount;
     private static readonly HashSet<string> ExpectedCorePrefixes = new(
@@ -35,7 +36,7 @@ internal static class SkillValidator
             "negative_controls",
         ],
         StringComparer.Ordinal);
-    private static readonly string[] StandardEvalNames =
+    private static readonly string[] RepresentativeEvalNames =
         [
             "eval-01-artifact-provenance",
             "eval-02-accessibility-layers",
@@ -68,15 +69,12 @@ internal static class SkillValidator
         "^        - src: \"([^\"]+)\"[ \\t]*\\n" +
         "          dest: \"([^\"]+)\"[ \\t]*$",
         RegexOptions.Multiline | RegexOptions.CultureInvariant);
-    private static readonly Regex RegressionSkillEnvironmentPattern = new(
-        "^environment:[ \\t]*\\n" +
-        "  skills:[ \\t]*\\n" +
-        "    - \"../../../\\.github/skills/blazor-component-readiness\"[ \\t]*\\n" +
-        "stimuli:[ \\t]*(?:#.*)?$",
-        RegexOptions.Multiline | RegexOptions.CultureInvariant);
     private static readonly Regex SkillMappingPattern = new(
         "^[ \\t]*skills:[ \\t]*$",
         RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex AgentReferencePattern = new(
+        "`(\\.github/agents/blazor-component-readiness/references/[^`]+)`",
+        RegexOptions.CultureInvariant);
     private static readonly Regex AreaReferencePattern = new(
         "`([^`]+\\.md)`",
         RegexOptions.CultureInvariant);
@@ -245,10 +243,11 @@ internal static class SkillValidator
         var errors = new List<string>();
         try
         {
+            ValidateAgentProfile(layout, errors);
             var prefixes = ValidateRequirementSequences(layout, errors);
             ValidateAreaMapping(layout, prefixes, errors);
             ValidateVally(layout, prefixes, errors);
-            ValidateStandardVally(layout, errors);
+            ValidateRepresentativeVally(layout, errors);
             ValidateWiring(layout, errors);
         }
         catch (Exception exception) when (
@@ -261,6 +260,142 @@ internal static class SkillValidator
         }
 
         return errors;
+    }
+
+    private static void ValidateAgentProfile(
+        SkillLayout layout,
+        ICollection<string> errors)
+    {
+        var content = NormalizeLineEndings(
+            File.ReadAllText(layout.AgentProfilePath, Encoding.UTF8));
+        if (!content.StartsWith("---\n", StringComparison.Ordinal))
+        {
+            errors.Add("Agent profile must begin with YAML frontmatter");
+            return;
+        }
+
+        var frontmatterEnd = content.IndexOf("\n---\n", 4, StringComparison.Ordinal);
+        if (frontmatterEnd < 0)
+        {
+            errors.Add("Agent profile YAML frontmatter is not terminated");
+            return;
+        }
+
+        var frontmatter = content[4..frontmatterEnd];
+        var prompt = content[(frontmatterEnd + 5)..];
+        var properties = Regex.Matches(
+                frontmatter,
+                "^([a-z][a-z-]*):",
+                RegexOptions.Multiline | RegexOptions.CultureInvariant)
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+        var expectedProperties = new[]
+        {
+            "name",
+            "description",
+            "disable-model-invocation",
+            "user-invocable",
+        };
+        if (!properties.SequenceEqual(expectedProperties, StringComparer.Ordinal))
+        {
+            errors.Add(
+                "Agent profile frontmatter must contain only name, description, " +
+                "disable-model-invocation, and user-invocable in canonical order");
+        }
+
+        foreach (var marker in new[]
+        {
+            "name: blazor-component-readiness",
+        })
+        {
+            if (!frontmatter.Contains(marker, StringComparison.Ordinal))
+            {
+                errors.Add($"Agent profile is missing required frontmatter: {marker}");
+            }
+        }
+
+        if (!frontmatter.Contains(
+            "disable-model-invocation: true",
+            StringComparison.Ordinal))
+        {
+            errors.Add("Agent profile disable-model-invocation must be true");
+        }
+
+        if (!frontmatter.Contains("user-invocable: true", StringComparison.Ordinal))
+        {
+            errors.Add("Agent profile user-invocable must be true");
+        }
+
+        if (!frontmatter.Contains("external Blazor component vendor", StringComparison.Ordinal))
+        {
+            errors.Add("Agent profile description must state its external-vendor scope");
+        }
+
+        if (prompt.Length > MaximumAgentPromptCharacters)
+        {
+            errors.Add(
+                $"Agent prompt exceeds {MaximumAgentPromptCharacters} characters: " +
+                prompt.Length);
+        }
+
+        var normalizedPrompt = Regex.Replace(
+            prompt,
+            @"\s+",
+            " ",
+            RegexOptions.CultureInvariant);
+        foreach (var marker in new[]
+        {
+            "external Blazor component vendor explicitly selects",
+            "one representative released vendor control or package",
+            "Do not use it for ASP.NET Core first-party component development",
+            "ambient model routing",
+            "normal pull-request review",
+            "CI investigation",
+            "issue triage",
+        })
+        {
+            if (!normalizedPrompt.Contains(marker, StringComparison.Ordinal))
+            {
+                errors.Add($"Agent prompt is missing explicit scope boundary: {marker}");
+            }
+        }
+
+        if (content.Contains(
+            ".github/skills/blazor-component-readiness",
+            StringComparison.Ordinal))
+        {
+            errors.Add("Agent profile must not reference the removed repository skill");
+        }
+
+        if (File.Exists(layout.LegacySkillPath))
+        {
+            errors.Add($"Legacy routable skill must not exist: {layout.LegacySkillPath}");
+        }
+
+        var repositoryRoot = Path.GetFullPath(Path.Combine(layout.Root, "..", "..", ".."));
+        foreach (Match match in AgentReferencePattern.Matches(prompt))
+        {
+            var relativePath = match.Groups[1].Value;
+            var referencePath = Path.GetFullPath(Path.Combine(repositoryRoot, relativePath));
+            if (!FileSystemUtilities.IsWithinDirectory(layout.Root, referencePath))
+            {
+                errors.Add($"Agent reference escapes the resource root: {relativePath}");
+                continue;
+            }
+
+            if (!File.Exists(referencePath) && !Directory.Exists(referencePath))
+            {
+                errors.Add($"Agent reference does not exist: {relativePath}");
+            }
+        }
+
+        if (Regex.IsMatch(
+            prompt,
+            "`references/",
+            RegexOptions.CultureInvariant))
+        {
+            errors.Add("Agent resource references must be repository-relative");
+        }
     }
 
     private static HashSet<string> ValidateRequirementSequences(
@@ -370,14 +505,14 @@ internal static class SkillValidator
         }
 
         var areaDirectory = Path.GetDirectoryName(layout.AreasIndexPath)!;
-        var resolvedSkillRoot = FileSystemUtilities.ResolveExistingPath(layout.Root);
+        var resolvedAgentRoot = FileSystemUtilities.ResolveExistingPath(layout.Root);
         var resolvedAreaDirectory = FileSystemUtilities.ResolveExistingPath(areaDirectory);
         if (!FileSystemUtilities.IsWithinDirectory(
-            resolvedSkillRoot,
+            resolvedAgentRoot,
             resolvedAreaDirectory))
         {
             errors.Add(
-                $"Area directory must remain under skill root {layout.Root}: " +
+                $"Area directory must remain under agent resource root {layout.Root}: " +
                 areaDirectory);
             return;
         }
@@ -460,11 +595,11 @@ internal static class SkillValidator
             }
         }
 
-        if (RegressionSkillEnvironmentPattern.Matches(content).Count != 1 ||
-            SkillMappingPattern.Matches(content).Count != 1)
+        if (SkillMappingPattern.IsMatch(content))
         {
             errors.Add(
-                "Specialized Vally suite must load only the component-readiness runtime skill");
+                "Vally 0.13 suites must not declare environment.skills because they cannot " +
+                "load a custom agent profile");
         }
 
         var stimuli = ParseVallyStimuli(layout.VallyPath);
@@ -603,30 +738,30 @@ internal static class SkillValidator
         SkillLayout layout,
         ICollection<string> errors)
     {
-        var skill = File.ReadAllText(layout.SkillPath, Encoding.UTF8);
+        var agent = File.ReadAllText(layout.AgentProfilePath, Encoding.UTF8);
         var report = File.ReadAllText(layout.ReportTemplatePath, Encoding.UTF8);
         foreach (var reference in new[]
         {
-            "references/areas/index.md",
-            "references/artifact-acquisition.md",
-            "references/feedback.md",
-            "references/overlays/",
-            "references/status-boundaries.md",
-            "references/targeted-profiles.md",
+            ".github/agents/blazor-component-readiness/references/areas/index.md",
+            ".github/agents/blazor-component-readiness/references/artifact-acquisition.md",
+            ".github/agents/blazor-component-readiness/references/feedback.md",
+            ".github/agents/blazor-component-readiness/references/overlays/",
+            ".github/agents/blazor-component-readiness/references/status-boundaries.md",
+            ".github/agents/blazor-component-readiness/references/targeted-profiles.md",
             "eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj",
             "eng/skill-evals/blazor-component-readiness/eval-policy.md",
         })
         {
-            if (!skill.Contains(reference, StringComparison.Ordinal))
+            if (!agent.Contains(reference, StringComparison.Ordinal))
             {
-                errors.Add($"SKILL.md does not reference {reference}");
+                errors.Add($"Agent profile does not reference {reference}");
             }
         }
 
         var evalPolicy = File.ReadAllText(layout.EvalPolicyPath, Encoding.UTF8);
         foreach (var evalPath in new[]
         {
-            "eval.vally.yaml",
+            "representative.vally.yaml",
             "regression.vally.yaml",
         })
         {
@@ -657,9 +792,9 @@ internal static class SkillValidator
             "EV1-",
         })
         {
-            if (!skill.Contains(marker, StringComparison.Ordinal))
+            if (!agent.Contains(marker, StringComparison.Ordinal))
             {
-                errors.Add($"SKILL.md is missing stable evidence marker {marker}");
+                errors.Add($"Agent profile is missing stable evidence marker {marker}");
             }
 
             if (!report.Contains(marker, StringComparison.Ordinal))
@@ -684,11 +819,11 @@ internal static class SkillValidator
 
     }
 
-    private static void ValidateStandardVally(
+    private static void ValidateRepresentativeVally(
         SkillLayout layout,
         ICollection<string> errors)
     {
-        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8);
+        var content = File.ReadAllText(layout.RepresentativeVallyPath, Encoding.UTF8);
         foreach (var marker in new[]
         {
             $"# Validated with {VallyPackage}.",
@@ -699,7 +834,7 @@ internal static class SkillValidator
         {
             if (!content.Contains(marker, StringComparison.Ordinal))
             {
-                errors.Add($"Standard Vally suite is missing pinned marker: {marker}");
+                errors.Add($"Representative Vally suite is missing pinned marker: {marker}");
             }
         }
 
@@ -709,60 +844,69 @@ internal static class SkillValidator
             RegexOptions.Multiline | RegexOptions.CultureInvariant))
         {
             errors.Add(
-                "Standard Vally suite must not set environment.skills; the experiment owns it");
+                "Representative Vally suite must not set environment.skills because Vally " +
+                "0.13 cannot load a custom agent profile");
         }
 
-        var standardStimuli = ParseVallyStimuli(layout.StandardVallyPath);
-        if (!standardStimuli.Select(stimulus => stimulus.Name).SequenceEqual(StandardEvalNames))
+        var representativeStimuli = ParseVallyStimuli(layout.RepresentativeVallyPath);
+        if (!representativeStimuli
+            .Select(stimulus => stimulus.Name)
+            .SequenceEqual(RepresentativeEvalNames))
         {
             errors.Add(
-                "Standard Vally suite must contain exactly these representative cases in order: " +
-                string.Join(", ", StandardEvalNames));
+                "Representative Vally suite must contain exactly these cases in order: " +
+                string.Join(", ", RepresentativeEvalNames));
             return;
         }
 
         var regressionStimuli = ParseVallyStimuli(layout.VallyPath)
             .ToLookup(stimulus => stimulus.Name, StringComparer.Ordinal);
-        foreach (var standard in standardStimuli)
+        foreach (var representative in representativeStimuli)
         {
-            var matches = regressionStimuli[standard.Name].ToArray();
+            var matches = regressionStimuli[representative.Name].ToArray();
             if (matches.Length == 0)
             {
                 errors.Add(
-                    $"{standard.Name}: standard case is missing from the regression suite");
+                    $"{representative.Name}: representative case is missing from the " +
+                    "regression suite");
                 continue;
             }
 
             if (matches.Length > 1)
             {
                 errors.Add(
-                    $"{standard.Name}: standard case has multiple regression definitions");
+                    $"{representative.Name}: representative case has multiple regression " +
+                    "definitions");
                 continue;
             }
 
             var regression = matches[0];
-            if (!string.Equals(standard.Prompt, regression.Prompt, StringComparison.Ordinal) ||
-                !standard.RubricItems.SequenceEqual(
+            if (!string.Equals(
+                    representative.Prompt,
+                    regression.Prompt,
+                    StringComparison.Ordinal) ||
+                !representative.RubricItems.SequenceEqual(
                     regression.RubricItems,
                     StringComparer.Ordinal) ||
-                !standard.Fixtures.SequenceEqual(regression.Fixtures) ||
-                standard.Tags.Count != regression.Tags.Count ||
-                standard.Tags.Any(tag =>
+                !representative.Fixtures.SequenceEqual(regression.Fixtures) ||
+                representative.Tags.Count != regression.Tags.Count ||
+                representative.Tags.Any(tag =>
                     !regression.Tags.TryGetValue(tag.Key, out var value) ||
                     !string.Equals(tag.Value, value, StringComparison.Ordinal)))
             {
                 errors.Add(
-                    $"{standard.Name}: standard prompt, tags, fixtures, or rubric drifted " +
-                    "from regression.vally.yaml");
+                    $"{representative.Name}: representative prompt, tags, fixtures, or " +
+                    "rubric drifted from regression.vally.yaml");
             }
 
-            var fixtureDirectory = Path.GetDirectoryName(layout.StandardVallyPath)!;
-            foreach (var fixture in standard.Fixtures)
+            var fixtureDirectory = Path.GetDirectoryName(layout.RepresentativeVallyPath)!;
+            foreach (var fixture in representative.Fixtures)
             {
                 if (!File.Exists(Path.Combine(fixtureDirectory, fixture.Source)))
                 {
                     errors.Add(
-                        $"{standard.Name}: missing standard fixture source {fixture.Source}");
+                        $"{representative.Name}: missing representative fixture source " +
+                        fixture.Source);
                 }
             }
         }

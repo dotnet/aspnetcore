@@ -7,8 +7,8 @@ namespace BlazorComponentReadiness;
 
 internal static class ScorecardCommand
 {
-    private const string DefaultSkillDirectory =
-        ".github/skills/blazor-component-readiness";
+    private const string DefaultAgentProfile =
+        ".github/agents/blazor-component-readiness.agent.md";
 
     internal static int Run(
         string[] args,
@@ -16,7 +16,7 @@ internal static class ScorecardCommand
         TextWriter error,
         Action? beforeReceiptPublish = null)
     {
-        var skillDirectory = DefaultSkillDirectory;
+        var layoutPath = DefaultAgentProfile;
         string? checklistPath = null;
         string? reportPath = null;
         string? identifiers = null;
@@ -32,10 +32,11 @@ internal static class ScorecardCommand
         {
             switch (args[index])
             {
+                case "--agent-profile":
                 case "--skill-dir":
-                    if (!TryReadValue(args, ref index, out skillDirectory))
+                    if (!TryReadValue(args, ref index, out layoutPath))
                     {
-                        return MissingValue("--skill-dir", error);
+                        return MissingValue(args[index], error);
                     }
 
                     break;
@@ -120,9 +121,10 @@ internal static class ScorecardCommand
             }
         }
 
-        if (string.IsNullOrWhiteSpace(skillDirectory))
+        if (string.IsNullOrWhiteSpace(layoutPath))
         {
-            error.WriteLine("ERROR: --skill-dir requires a non-empty value.");
+            error.WriteLine(
+                "ERROR: --agent-profile or --skill-dir requires a non-empty value.");
             return 1;
         }
 
@@ -161,7 +163,7 @@ internal static class ScorecardCommand
 
         try
         {
-            var layout = SkillLayout.Create(skillDirectory);
+            var layout = SkillLayout.Create(layoutPath);
             checklistPath = Path.GetFullPath(checklistPath ?? layout.ChecklistPath);
             var rubric = ScorecardValidator.LoadCoreRubric(checklistPath);
             if (identifiers is not null && overlays.Count > 0)

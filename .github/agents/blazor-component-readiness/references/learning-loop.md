@@ -1,17 +1,17 @@
-# Skill learning loop
+# Agent learning loop
 
-Use this only after a completed review and only when asked to improve the skill or capture lessons.
+Use this only after a completed review and only when asked to improve the agent or capture lessons.
 
 ## Classify each lesson
 
 | Class | Destination |
 |---|---|
 | Public baseline requirement change | `references/checklist.md` |
-| General review-method improvement | `SKILL.md` or an area playbook |
+| General review-method improvement | `.github/agents/blazor-component-readiness.agent.md` or an area playbook |
 | Output-shape improvement | `references/report-template.md` |
 | Feedback-collection improvement | `references/feedback.md` |
 | Component/repository-specific fact | Keep with the review evidence, not in the public core |
-| One-off investigation detail | Do not add to the skill |
+| One-off investigation detail | Do not add to the agent |
 
 Do not turn a component defect into a general requirement. Extract the reusable evidence rule,
 probe recipe, or classification boundary.
@@ -40,20 +40,20 @@ Keep tentative ideas in run observations until they meet that bar.
 ## Add or update an eval
 
 Use `eng/skill-evals/blazor-component-readiness/eval-policy.md` to select the owning suite. Keep the
-five-case `eval.vally.yaml` lane bounded to representative baseline-versus-skilled signal. Add
-exhaustive governance cases to `regression.vally.yaml`; when a representative case is duplicated,
-update both copies together. Retain scope-control and no-defect canaries so new guidance does not
-manufacture findings or expand into catalog audits.
+five-case `representative.vally.yaml` corpus bounded to high-discrimination behavior. Add exhaustive
+governance cases to `regression.vally.yaml`; when a representative case is duplicated, update both
+copies together. Retain scope-control and no-defect canaries so new guidance does not manufacture
+findings or expand into catalog audits.
 
-Validate skill maintenance changes with:
+Validate agent maintenance changes with:
 
 ```bash
 source activate.sh
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  validate-skill --skill-dir .github/skills/blazor-component-readiness
+  validate-agent --agent-profile .github/agents/blazor-component-readiness.agent.md
 dotnet test \
   eng/tools/BlazorComponentReadiness.Tests/BlazorComponentReadiness.Tests.csproj
-pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Validate
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Lint
 ```
 
 ## Review for overfitting

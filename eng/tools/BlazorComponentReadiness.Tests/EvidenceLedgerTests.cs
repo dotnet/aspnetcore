@@ -1173,11 +1173,11 @@ public sealed class EvidenceLedgerTests
             Encoding.UTF8);
 
         Assert.Contains(
-            "<scorecard|tracker|ledger|receipt|revision|validate-skill> [options]",
+            "<scorecard|tracker|ledger|receipt|revision|validate-agent> [options]",
             content);
         Assert.Contains("\"scorecard\" =>", content);
         Assert.Contains("\"tracker\" =>", content);
-        Assert.Contains("\"validate-skill\" =>", content);
+        Assert.Contains("\"validate-agent\" =>", content);
         Assert.Contains("\"ledger\" =>", content);
         Assert.Contains("\"receipt\" =>", content);
         Assert.Contains("\"revision\" =>", content);
@@ -1313,11 +1313,11 @@ public sealed class EvidenceLedgerTests
         while (directory is not null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "activate.sh")) &&
-                Directory.Exists(Path.Combine(
+                File.Exists(Path.Combine(
                     directory.FullName,
                     ".github",
-                    "skills",
-                    "blazor-component-readiness")))
+                    "agents",
+                    "blazor-component-readiness.agent.md")))
             {
                 return directory.FullName;
             }

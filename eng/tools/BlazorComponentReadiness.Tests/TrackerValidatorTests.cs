@@ -16,8 +16,8 @@ public sealed class TrackerValidatorTests
     private static readonly SkillLayout Layout = SkillLayout.Create(Path.Combine(
         RepositoryRoot,
         ".github",
-        "skills",
-        "blazor-component-readiness"));
+        "agents",
+        "blazor-component-readiness.agent.md"));
 
     [Fact]
     public void CanonicalBodyPassesValidation()
@@ -517,11 +517,11 @@ public sealed class TrackerValidatorTests
         while (directory is not null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "activate.sh")) &&
-                Directory.Exists(Path.Combine(
+                File.Exists(Path.Combine(
                     directory.FullName,
                     ".github",
-                    "skills",
-                    "blazor-component-readiness")))
+                    "agents",
+                    "blazor-component-readiness.agent.md")))
             {
                 return directory.FullName;
             }

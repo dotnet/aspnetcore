@@ -5,12 +5,12 @@ namespace BlazorComponentReadiness;
 
 internal static class TrackerCommand
 {
-    private const string DefaultSkillDirectory =
-        ".github/skills/blazor-component-readiness";
+    private const string DefaultAgentProfile =
+        ".github/agents/blazor-component-readiness.agent.md";
 
     internal static int Run(string[] args, TextWriter output, TextWriter error)
     {
-        var skillDirectory = DefaultSkillDirectory;
+        var layoutPath = DefaultAgentProfile;
         string? bodyPath = null;
         string? evidenceBundlePath = null;
         string? sharedRowProjectionPath = null;
@@ -23,10 +23,11 @@ internal static class TrackerCommand
         {
             switch (args[index])
             {
+                case "--agent-profile":
                 case "--skill-dir":
-                    if (!TryReadValue(args, ref index, out skillDirectory))
+                    if (!TryReadValue(args, ref index, out layoutPath))
                     {
-                        return MissingValue("--skill-dir", error);
+                        return MissingValue(args[index], error);
                     }
 
                     break;
@@ -94,9 +95,10 @@ internal static class TrackerCommand
             }
         }
 
-        if (string.IsNullOrWhiteSpace(skillDirectory))
+        if (string.IsNullOrWhiteSpace(layoutPath))
         {
-            error.WriteLine("ERROR: --skill-dir requires a non-empty value.");
+            error.WriteLine(
+                "ERROR: --agent-profile or --skill-dir requires a non-empty value.");
             return 1;
         }
 
@@ -128,7 +130,7 @@ internal static class TrackerCommand
 
         try
         {
-            var layout = SkillLayout.Create(skillDirectory);
+            var layout = SkillLayout.Create(layoutPath);
             var rubric = ScorecardValidator.LoadCoreRubric(layout.ChecklistPath);
             IReadOnlyList<string> effectiveOverlays = legacyEvidence
                 ? overlays

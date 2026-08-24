@@ -5,17 +5,40 @@ namespace BlazorComponentReadiness;
 
 internal sealed class SkillLayout
 {
-    private SkillLayout(string root)
+    private const string AgentSuffix = ".agent.md";
+
+    private SkillLayout(string rootOrProfile)
     {
-        Root = Path.GetFullPath(root);
+        var candidate = Path.GetFullPath(rootOrProfile);
+        if (candidate.EndsWith(AgentSuffix, StringComparison.Ordinal))
+        {
+            AgentProfilePath = candidate;
+            var agentDirectory = Path.GetDirectoryName(candidate)!;
+            var agentName = Path.GetFileName(candidate)[..^AgentSuffix.Length];
+            Root = Path.Combine(agentDirectory, agentName);
+        }
+        else
+        {
+            Root = candidate;
+            var agentDirectory = Path.GetDirectoryName(Root)!;
+            AgentProfilePath = Path.Combine(
+                agentDirectory,
+                Path.GetFileName(Root) + AgentSuffix);
+        }
+
         var skillName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Root));
         var repositoryRoot = Path.GetFullPath(Path.Combine(Root, "..", "..", ".."));
         EvalRoot = Path.Combine(repositoryRoot, "eng", "skill-evals", skillName);
         EvalPolicyPath = Path.Combine(EvalRoot, "eval-policy.md");
-        StandardVallyPath = Path.Combine(EvalRoot, "eval.vally.yaml");
+        RepresentativeVallyPath = Path.Combine(EvalRoot, "representative.vally.yaml");
         ChecklistPath = Path.Combine(Root, "references", "checklist.md");
         AreasIndexPath = Path.Combine(Root, "references", "areas", "index.md");
-        SkillPath = Path.Combine(Root, "SKILL.md");
+        LegacySkillPath = Path.Combine(
+            repositoryRoot,
+            ".github",
+            "skills",
+            skillName,
+            "SKILL.md");
         ReportTemplatePath = Path.Combine(Root, "references", "report-template.md");
         VallyPath = Path.Combine(EvalRoot, "regression.vally.yaml");
         OverlayPaths = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -32,17 +55,19 @@ internal sealed class SkillLayout
 
     internal string Root { get; }
 
+    internal string AgentProfilePath { get; }
+
     internal string EvalRoot { get; }
 
     internal string EvalPolicyPath { get; }
 
-    internal string StandardVallyPath { get; }
+    internal string RepresentativeVallyPath { get; }
 
     internal string ChecklistPath { get; }
 
     internal string AreasIndexPath { get; }
 
-    internal string SkillPath { get; }
+    internal string LegacySkillPath { get; }
 
     internal string ReportTemplatePath { get; }
 

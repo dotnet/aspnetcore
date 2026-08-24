@@ -15,8 +15,8 @@ public sealed class EvidenceIntegrationTests
     private static readonly SkillLayout Layout = SkillLayout.Create(Path.Combine(
         RepositoryRoot,
         ".github",
-        "skills",
-        "blazor-component-readiness"));
+        "agents",
+        "blazor-component-readiness.agent.md"));
     private static readonly string FixtureRoot = Path.Combine(
         RepositoryRoot,
         "eng",
@@ -26,6 +26,7 @@ public sealed class EvidenceIntegrationTests
         "EvidenceKnownAnswers");
 
     [Theory]
+    [InlineData("--agent-profile")]
     [InlineData("--skill-dir")]
     [InlineData("--report")]
     [InlineData("--evidence-bundle")]
@@ -49,7 +50,7 @@ public sealed class EvidenceIntegrationTests
     }
 
     [Fact]
-    public void ReceiptRequiresExplicitHistoricalSkillDirectoryInBothModes()
+    public void ReceiptRequiresExplicitHistoricalAgentProfileInBothModes()
     {
         foreach (var args in new[]
         {
@@ -73,7 +74,7 @@ public sealed class EvidenceIntegrationTests
 
             Assert.Equal(1, exitCode);
             Assert.Contains(
-                "requires non-empty --skill-dir",
+                "requires non-empty --agent-profile",
                 error.ToString());
         }
     }
@@ -90,8 +91,8 @@ public sealed class EvidenceIntegrationTests
 
         var exitCode = ScorecardCommand.Run(
             [
-                "--skill-dir",
-                Layout.Root,
+                "--agent-profile",
+                Layout.AgentProfilePath,
                 "--ids",
                 "LP-01,BEQ-01",
                 "--evidence-bundle",
@@ -123,8 +124,8 @@ public sealed class EvidenceIntegrationTests
         exitCode = ReceiptCommand.Run(
             [
                 "validate",
-                "--skill-dir",
-                Layout.Root,
+                "--agent-profile",
+                Layout.AgentProfilePath,
                 "--evidence-bundle",
                 bundlePath,
                 "--report",
@@ -209,8 +210,8 @@ public sealed class EvidenceIntegrationTests
             0,
             ScorecardCommand.Run(
                 [
-                    "--skill-dir",
-                    Layout.Root,
+                    "--agent-profile",
+                    Layout.AgentProfilePath,
                     "--overlay",
                     reverseOverlayOrder[0],
                     "--overlay",
@@ -815,7 +816,7 @@ public sealed class EvidenceIntegrationTests
         Assert.Empty(error.ToString());
         Assert.Equal(
             "Legacy schema-2 structural revalidation passed against the supplied " +
-            "skill inputs; exact historical overlay/input provenance is not established.\n",
+            "agent resources; exact historical overlay/input provenance is not established.\n",
             output.ToString());
         using var receipt = JsonDocument.Parse(
             File.ReadAllText(receiptPath, Encoding.UTF8));
@@ -2925,8 +2926,8 @@ public sealed class EvidenceIntegrationTests
 
         var exitCode = TrackerCommand.Run(
             [
-                "--skill-dir",
-                Layout.Root,
+                "--agent-profile",
+                Layout.AgentProfilePath,
                 "--evidence-bundle",
                 bundlePath,
                 trackerPath,
@@ -3719,11 +3720,11 @@ public sealed class EvidenceIntegrationTests
         while (directory is not null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "activate.sh")) &&
-                Directory.Exists(Path.Combine(
+                File.Exists(Path.Combine(
                     directory.FullName,
                     ".github",
-                    "skills",
-                    "blazor-component-readiness")))
+                    "agents",
+                    "blazor-component-readiness.agent.md")))
             {
                 return directory.FullName;
             }

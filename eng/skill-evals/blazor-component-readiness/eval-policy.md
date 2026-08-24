@@ -1,17 +1,26 @@
 # Evaluation policy
 
-The two suites have distinct ownership:
+The two retained suites have distinct ownership:
 
-- `eval.vally.yaml` is the auto-discovered baseline-versus-skilled lane. Its five duplicated cases
-  provide bounded, high-discrimination signal for artifact truth, accessibility layering,
-  cross-area completeness, a no-defect control, and targeted status boundaries.
+- `representative.vally.yaml` is the bounded five-case corpus. Its duplicated cases provide
+  high-discrimination coverage for artifact truth, accessibility layering, cross-area completeness,
+  a no-defect control, and targeted status boundaries.
 - `regression.vally.yaml` is the explicitly invoked exhaustive governance suite. It owns all 24
   cases, requirement-prefix coverage, train/held-out tiers, score families, controls, provenance,
   architecture portability, and held-out refresh.
 
-The five standard cases intentionally duplicate regression cases 01, 02, 10, 11, and 18. The C#
-skill validator requires their names, prompts, tags, fixture bindings, and rubrics to remain
-identical so the fast lane cannot silently diverge from the governed corpus.
+The five representative cases intentionally duplicate regression cases 01, 02, 10, 11, and 18. The
+C# agent validator requires their names, prompts, tags, fixture bindings, and rubrics to remain
+identical so the bounded corpus cannot silently diverge from the governed corpus.
+
+## Vally 0.13 limitation
+
+Vally 0.13.0 can load `SKILL.md` directories through `--skill-dir` or `environment.skills`, but it
+cannot select or load a repository `.agent.md` custom-agent profile. Neither corpus declares
+`environment.skills`, and neither is named `eval.vally.yaml`, so the generic
+baseline-versus-skilled experiment does not auto-discover or falsely execute them as agent runs.
+Retain and strict-lint both specs as the behavioral contract. Do not run their model-bearing
+stimuli through the repository runner until it can explicitly select the custom agent.
 
 ## Governance
 
@@ -35,7 +44,7 @@ identical so the fast lane cannot silently diverge from the governed corpus.
 ```bash
 source activate.sh
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  validate-skill --skill-dir .github/skills/blazor-component-readiness
+  validate-agent --agent-profile .github/agents/blazor-component-readiness.agent.md
 dotnet test \
   eng/tools/BlazorComponentReadiness.Tests/BlazorComponentReadiness.Tests.csproj
 ```
@@ -45,27 +54,18 @@ The repository runner pins the exact `@microsoft/vally-cli@0.13.0` package:
 ```powershell
 pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Test
 pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Validate
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Lint
 ```
 
-## Explicit regression run
+`Validate` proves that the generic experiment does not discover these custom-agent corpora. `Lint`
+strictly validates both Vally specifications and their fixtures without invoking a model.
 
-Run the complete specialized suite:
+## Future agent comparison
 
-```powershell
-pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Run `
-  -Eval eng/skill-evals/blazor-component-readiness/regression.vally.yaml
-```
-
-The specialized spec declares exactly the component-readiness runtime skill so this direct Vally
-run exercises the skill. The standard spec does not declare a skill because the repository
-experiment owns its baseline-versus-skilled variants.
-
-## Retained comparison
-
-Use all cases and five trials with the pinned executor and judge models. Preserve JSONL output,
-Vally diagnostics, resolved CLI version, skill revision, and timestamp. Compare train and held-out
-results separately as well as overall; do not allow several similar cases in one score family to
-hide failure in another family.
+When the runner gains explicit custom-agent selection, use all cases and five trials with the pinned
+executor and judge models. Preserve JSONL output, Vally diagnostics, resolved CLI version, agent
+revision, and timestamp. Compare train and held-out results separately as well as overall; do not
+allow several similar cases in one score family to hide failure in another family.
 
 Vally prompt grading is probabilistic. Deterministic scripts remain authoritative for checklist
 structure, requirement coverage, status vocabulary, and generated-spec synchronization.

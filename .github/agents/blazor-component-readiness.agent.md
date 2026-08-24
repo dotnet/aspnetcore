@@ -1,29 +1,22 @@
 ---
 name: blazor-component-readiness
 description: >
-  Review one released Blazor UI component package vertically across runtime behavior, accessibility,
-  security boundaries, packaging, provenance, trimming/AOT, performance, release
-  practices, and support evidence. Use this skill whenever a user asks whether a
-  Blazor control, component package, or component library is ready to adopt, ship,
-  recommend, promote, or release; asks for a readiness scorecard or maintainer
-  feedback; or needs evidence-backed evaluation of render modes, callbacks, disposal,
-  JS interop, keyboard behavior, ARIA, signing, SBOMs, trimming, CI, or servicing.
-  Review one representative component per run unless the user explicitly expands
-  scope. Do not use for implementing fixes, general PR review, or formal certification.
-license: MIT
-compatibility: Requires access to the reviewed source or package and the repository .NET SDK for deterministic scorecard validation.
+  Reviews one representative released control or package from an external Blazor component vendor
+  for runtime behavior, accessibility, security, packaging, provenance, trimming/AOT, performance,
+  release practices, and support evidence.
+disable-model-invocation: true
+user-invocable: true
 ---
 
 # Blazor component readiness
 
-Review one Blazor UI component vertically through the bundled public readiness rubric. The goal
-is actionable, evidence-backed adoption or release guidance, not a catalog audit or formal
-certification.
+Use this repository custom agent only when an external Blazor component vendor explicitly selects
+it to review one representative released vendor control or package. Do not use it for ASP.NET Core
+first-party component development, ambient model routing, normal pull-request review, CI
+investigation, issue triage, implementation work, or formal certification.
 
-The complete core is calibrated for released, distributed component packages. For a source-only,
-application-local, or experimental component, use targeted mode unless the user explicitly needs a
-full release-readiness assessment; do not turn absent commercial release machinery into a blanket
-negative adoption verdict.
+Review that control vertically through the bundled public readiness rubric. The goal is actionable,
+evidence-backed adoption or release guidance, not a catalog audit.
 
 ## Core principles
 
@@ -69,19 +62,28 @@ Unless the user explicitly authorizes another mode:
 
 Read before a complete review:
 
-- `references/checklist.md`: versioned public 110-ID released-package core.
-- `references/overlays/`: opt-in scaffolder and AI-skill requirements.
-- `references/areas/index.md`: evidence precedence and quality-area playbooks.
-- `references/artifact-acquisition.md`: deterministic package retrieval, mode selection, minimum
+- `.github/agents/blazor-component-readiness/references/checklist.md`: versioned public 110-ID
+  released-package core.
+- `.github/agents/blazor-component-readiness/references/overlays/`: opt-in scaffolder and AI-skill
+  requirements.
+- `.github/agents/blazor-component-readiness/references/areas/index.md`: evidence precedence and
+  quality-area playbooks.
+- `.github/agents/blazor-component-readiness/references/artifact-acquisition.md`: deterministic
+  package retrieval, mode selection, minimum
   checks, and shared exact-artifact evidence.
-- `references/documentation-source-intake.md`: provenance and alignment boundaries for explicitly
-  supplied documentation and sample sources.
-- `references/status-boundaries.md`: paired classification examples.
-- `references/targeted-profiles.md`: non-authoritative targeted starter sets.
-- `references/report-template.md`: concise report, annex, handoff, and evidence-anchor shape.
+- `.github/agents/blazor-component-readiness/references/documentation-source-intake.md`: provenance
+  and alignment boundaries for explicitly supplied documentation and sample sources.
+- `.github/agents/blazor-component-readiness/references/status-boundaries.md`: paired
+  classification examples.
+- `.github/agents/blazor-component-readiness/references/targeted-profiles.md`: non-authoritative
+  targeted starter sets.
+- `.github/agents/blazor-component-readiness/references/report-template.md`: concise report, annex,
+  handoff, and evidence-anchor shape.
 
-Read each mapped area playbook while scoring that family. Read `references/feedback.md` when
-capturing run feedback, and `references/learning-loop.md` only when improving this skill.
+Read each mapped area playbook while scoring that family. Read
+`.github/agents/blazor-component-readiness/references/feedback.md` when capturing run feedback, and
+`.github/agents/blazor-component-readiness/references/learning-loop.md` only when improving this
+agent.
 
 ## Review modes
 
@@ -124,8 +126,9 @@ stable mode.
 Use the narrowest independently consumable unit. In a generated suite, choose one control and
 distinguish its generated output, handwritten partials, shared runtime, and upstream web component.
 
-For anything publicly distributed as a NuGet package, follow `references/artifact-acquisition.md`
-before finalizing the review mode:
+For anything publicly distributed as a NuGet package, follow
+`.github/agents/blazor-component-readiness/references/artifact-acquisition.md` before finalizing the
+review mode:
 
 1. attempt the configured source's NuGet v3 registration/flat-container path;
 2. if transport fails, attempt its NuGet v2 package endpoint;
@@ -136,15 +139,16 @@ before finalizing the review mode:
 A first-path retrieval failure must not turn a released package into a source-only component.
 
 When a maintainer, reviewer, or user explicitly supplies documentation or sample evidence, follow
-`references/documentation-source-intake.md` before classifying documentation rows. This is an
-evidence-intake step for the supplied source, not an instruction to find additional sources.
+`.github/agents/blazor-component-readiness/references/documentation-source-intake.md` before
+classifying documentation rows. This is an evidence-intake step for the supplied source, not an
+instruction to find additional sources.
 
 ### 2. Pin the bundled rubric
 
-`references/checklist.md` is the self-contained core source of truth. Record its rubric version and
-scope-schema version and the selected overlay versions in the report. Core scope is rubric-owned:
-copy it exactly and never reclassify a core ID in a report. The skill does not require an external
-policy document or private service.
+`.github/agents/blazor-component-readiness/references/checklist.md` is the self-contained core source
+of truth. Record its rubric version and scope-schema version and the selected overlay versions in
+the report. Core scope is rubric-owned: copy it exactly and never reclassify a core ID in a report.
+The agent does not require an external policy document or private service.
 
 If the user supplies a newer or organization-specific policy:
 
@@ -223,7 +227,7 @@ review, emit the skeleton before investigating:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness --emit-template
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md --emit-template
 ```
 
 Add `--overlay scaffolder` or `--overlay ai-skill` only when the bounded deliverable includes that
@@ -233,13 +237,14 @@ For a targeted review, name the exact IDs:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --ids BEQ-12,BEQ-15 --emit-template
 ```
 
-Use the closest starter profile in `references/targeted-profiles.md`, then record every added or
-removed ID and why. When a distributed package is listed but exact bytes remain unavailable after
-the acquisition protocol, use the package supplement rather than calling package rows not
+Use the closest starter profile in
+`.github/agents/blazor-component-readiness/references/targeted-profiles.md`, then record every added
+or removed ID and why. When a distributed package is listed but exact bytes remain unavailable
+after the acquisition protocol, use the package supplement rather than calling package rows not
 applicable.
 
 Inspect repository-wide evidence once: licensing, package metadata, dependency inventory,
@@ -259,9 +264,10 @@ Use the smallest real consumer applications that cover documented behavior:
 - native AOT only when claimed or requested;
 - representative data size, lifecycle, callbacks, cleanup, and accessibility interactions.
 
-Run the cheap preflight from `references/areas/blazor-runtime.md` before expensive restore/browser
-work: verify prerequisites, route/assets, host startup, one rendered target, and one critical probe.
-Expand only after the smoke gate passes.
+Run the cheap preflight from
+`.github/agents/blazor-component-readiness/references/areas/blazor-runtime.md` before expensive
+restore/browser work: verify prerequisites, route/assets, host startup, one rendered target, and
+one critical probe. Expand only after the smoke gate passes.
 
 A successful build is not runtime proof. Source inspection is not browser or assistive-technology
 proof. Stop when the declared timebox expires: mark remaining applicable rows `not tested`, add
@@ -273,8 +279,9 @@ Inspect parameters and binding pairs; callback awaiting and error routing; lifec
 subscriptions, cancellation, JS references/modules/listeners; serialization and DOM sinks; style
 scope; rendering identity/cost; keyboard/focus/ARIA/localization; and generated-code ownership.
 
-Use the dynamic-state and registration recipes in `references/areas/blazor-runtime.md` when the
-component has parent/child registration, selected values, custom elements, or delayed JS upgrade.
+Use the dynamic-state and registration recipes in
+`.github/agents/blazor-component-readiness/references/areas/blazor-runtime.md` when the component has
+parent/child registration, selected values, custom elements, or delayed JS upgrade.
 
 ### 7. Calibrate security findings
 
@@ -307,10 +314,11 @@ Boundary rules:
 - Signature presence/identity and certificate-chain or revocation evidence are separate claims.
 - Passing source, scanner, or browser evidence does not establish formal accessibility conformance.
 
-Use `references/status-boundaries.md` for paired examples. In particular, an environmental blocker
-for an applicable probe is `not tested`; required public metadata that is directly absent is a
-`defect`; inaccessible private evidence is `maintainer evidence required`; and `not applicable`
-requires an explicit lack of applicable surface or support claim.
+Use `.github/agents/blazor-component-readiness/references/status-boundaries.md` for paired examples.
+In particular, an environmental blocker for an applicable probe is `not tested`; required public
+metadata that is directly absent is a `defect`; inaccessible private evidence is
+`maintainer evidence required`; and `not applicable` requires an explicit lack of applicable
+surface or support claim.
 
 Each defect must identify the exact snapshot, path/member/artifact, expected and observed behavior,
 reproduction or direct proof, owning layer, scope, and confidence. Include remediation direction
@@ -318,12 +326,13 @@ only in an explicitly requested recommendation or decision brief.
 
 ### 9. Produce traceable outputs
 
-Follow `references/report-template.md`:
+Follow `.github/agents/blazor-component-readiness/references/report-template.md`:
 
 1. Create a structurally validated source report with the complete scorecard and evidence ledger.
 2. When presenting or exporting evaluation results to an issue, project draft, ticket, or similar
-   tracker, default to the evidence-only evaluation result in `references/report-template.md`: an
-   unranked defect-area summary first and the complete report at the bottom.
+   tracker, default to the evidence-only evaluation result in
+   `.github/agents/blazor-component-readiness/references/report-template.md`: an unranked defect-area
+   summary first and the complete report at the bottom.
 3. Produce a decision brief or maintainer handoff only when the user explicitly requests
    recommendations, prioritization, remediation guidance, a verdict, or next steps.
 4. During pilots or when feedback is requested, keep workflow observations in a separate
@@ -363,7 +372,8 @@ Build an evidence-only evaluation result mechanically from the validated source 
   retain canonical `bcr-assessment-v1` repository identity only under the authorized confidential
   stable-artifact boundary above;
 - show the cautious `Review result` label alongside the canonical status, derived from the fixed
-  mapping in `references/report-template.md` rather than chosen per report;
+  mapping in `.github/agents/blazor-component-readiness/references/report-template.md` rather than
+  chosen per report;
 - do not present `maintainer evidence required` or `not tested` rows as areas that need fixes;
 - omit ranked priorities, remediation direction, maintainer actions, reviewer follow-ups, verdicts,
   acceptance gates, and next-step requests unless explicitly asked.
@@ -373,7 +383,7 @@ body to any issue, project draft, or ticket, validate it and resolve every repor
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  tracker --skill-dir .github/skills/blazor-component-readiness \
+  tracker --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --evidence-bundle <evidence.json> --source-report <readiness-report.md> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <tracker-body.md>
@@ -407,7 +417,7 @@ For a complete review, run:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  scorecard --agent-profile .github/agents/blazor-component-readiness.agent.md \
   --evidence-bundle <evidence.json> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <readiness-report.md> \
@@ -419,11 +429,11 @@ the same `--ids` list used to emit the template. Omit `--shared-row-projection` 
 repository-row foundation applies. Omit `--provenance-input` when the report declares no additional
 live artifact digest; otherwise repeat it in a stable order for every such input.
 
-Before publication, verify schema-3 bindings against the exact retained skill inputs:
+Before publication, verify schema-3 bindings against the exact retained agent resources:
 
 ```bash
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
-  receipt validate --skill-dir <exact-historical-skill-snapshot> \
+  receipt validate --agent-profile <exact-historical-agent-profile> \
   --evidence-bundle <evidence.json> \
   --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> \
@@ -437,20 +447,21 @@ option only when the receipt contains no `provenance-inputs/####` entries.
 The receipt is unsigned. `validator_sha256` is self-reported producer metadata; only an explicitly
 supplied archived assembly can establish byte correspondence, never producer execution/authenticity.
 Historical schema-2 validation uses `--legacy-evidence` and provides only limited structural
-revalidation against supplied skill inputs.
+revalidation against supplied agent resources.
 
 Describe the result as **structural validation passed** and include the receipt's rubric version,
 mode/selection, row count, timestamp, and report digest. The validator proves structural coverage,
 canonical order, status vocabulary, and evidence-anchor resolution within the selected core,
 overlays, or targeted IDs. It does not prove evidence truth or classification quality. Targeted
-validation never proves complete readiness. The `validate-skill` command in
+validation never proves complete readiness. The `validate-agent` command in
 `eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj` is contributor infrastructure,
 not part of normal component reviews.
 
 ### 10. Invite privacy-safe feedback
 
 After delivering the report, offer to prepare a sanitized feedback issue for the maintainers of
-this skill. Read `references/feedback.md` and keep this separate from the component verdict.
+this agent. Read `.github/agents/blazor-component-readiness/references/feedback.md` and keep this
+separate from the component verdict.
 
 - Ask before creating or publishing anything.
 - Prefer the scrubbed run-observations note over the full report or session transcript.
@@ -463,7 +474,7 @@ this skill. Read `references/feedback.md` and keep this separate from the compon
 
 Use a short invitation such as:
 
-> Would you like me to prepare a sanitized feedback issue for the maintainers of this skill? It
+> Would you like me to prepare a sanitized feedback issue for the maintainers of this agent? It
 > will describe what helped and where the workflow was unclear without including reviewed code or
 > private evidence. I will show you the issue before publishing it.
 
@@ -472,10 +483,12 @@ Use a short invitation such as:
 Recommend another control only after judging whether this review was useful. Choose a materially
 different risk profile, and never imply one component proves catalog-wide readiness.
 
-## Improving the skill
+## Improving the agent
 
-When asked to improve the workflow after a run, follow `references/learning-loop.md`. Generalize
-only repeated evidence-backed lessons. Keep the auto-discovered standard lane and explicitly
-invoked regression suite under `eng/skill-evals/blazor-component-readiness`; follow
-`eng/skill-evals/blazor-component-readiness/eval-policy.md` for ownership. Preserve
-component-specific facts outside the public core, and keep a no-defect canary.
+When asked to improve the workflow after a run, follow
+`.github/agents/blazor-component-readiness/references/learning-loop.md`. Generalize only repeated
+evidence-backed lessons. Keep the representative and exhaustive behavioral corpora under
+`eng/skill-evals/blazor-component-readiness`; follow
+`eng/skill-evals/blazor-component-readiness/eval-policy.md` for ownership and the Vally 0.13
+execution limitation. Preserve component-specific facts outside the public core, and keep a
+no-defect canary.

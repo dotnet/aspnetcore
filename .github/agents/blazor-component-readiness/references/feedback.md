@@ -8,9 +8,9 @@ artifact works across Copilot CLI, other agents, and manual reviews.
 Write `[component]-readiness-run-observations.md` with:
 
 ```markdown
-# Readiness skill run observations
+# Readiness agent run observations
 
-- **Skill/rubric version:**
+- **Agent/rubric version:**
 - **Component and exact snapshot:**
 - **Review mode and elapsed/timebox:**
 - **Guidance that prevented a likely mistake:**
@@ -20,7 +20,7 @@ Write `[component]-readiness-run-observations.md` with:
 - **Rows/status boundaries that required judgment:**
 - **Probe recipe worth generalizing:**
 - **Did the scorecard annex change or materially qualify the decision?:**
-- **Suggested skill change, if any:**
+- **Suggested agent change, if any:**
 - **Evidence supporting that change:**
 ```
 
@@ -34,11 +34,11 @@ Users can paste this after a run:
 Review this completed Blazor component-readiness session as workflow evidence, not as a new
 component review. Read the readiness report, handoff, run-observations note, and available tool
 transcript. Identify: (1) guidance that prevented an error, (2) repeated friction or ambiguity,
-(3) any unsupported conclusion the skill encouraged, (4) useful probe recipes, and (5) proposed
-skill changes. Separate one-off component facts from changes that generalize. Recommend a core
+(3) any unsupported conclusion the agent encouraged, (4) useful probe recipes, and (5) proposed
+agent changes. Separate one-off component facts from changes that generalize. Recommend a core
 change only when supported by at least two independent runs or a public standard. For each proposed
 change provide evidence, exact destination file, smallest edit, and a regression case. Do not
-modify the skill or publish reviewed component evidence.
+modify the agent or publish reviewed component evidence.
 ```
 
 ## Collection channel
@@ -73,7 +73,7 @@ Suggested body:
 ```markdown
 ## Run context
 
-- **Skill/rubric version:**
+- **Agent/rubric version:**
 - **Review mode:**
 - **Component type:** [generic description; omit confidential names]
 - **Approximate elapsed time or timebox:**
@@ -88,7 +88,7 @@ Suggested body:
 
 ## Reusable improvement
 
-[A generalized probe recipe or smallest proposed skill change.]
+[A generalized probe recipe or smallest proposed agent change.]
 
 ## Supporting workflow evidence
 

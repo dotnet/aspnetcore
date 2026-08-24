@@ -14,7 +14,7 @@ internal static class ReceiptCommand
         {
             error.WriteLine(
                 "Usage: BlazorComponentReadiness receipt validate " +
-                "--skill-dir <historical-skill> --report <report> " +
+                "--agent-profile <historical-agent-profile> --report <report> " +
                 "(--evidence-bundle <bundle>|--legacy-evidence) " +
                 "[--shared-row-projection <projection>] " +
                 "[--provenance-input <path>]... <receipt>");
@@ -41,7 +41,7 @@ internal static class ReceiptCommand
         TextWriter output,
         TextWriter error)
     {
-        string? skillDirectory = null;
+        string? layoutPath = null;
         string? reportPath = null;
         string? evidenceBundlePath = null;
         string? producerValidatorPath = null;
@@ -53,8 +53,9 @@ internal static class ReceiptCommand
         {
             switch (args[index])
             {
+                case "--agent-profile":
                 case "--skill-dir":
-                    skillDirectory = ReadValue(args, ref index, "--skill-dir");
+                    layoutPath = ReadValue(args, ref index, args[index]);
                     break;
                 case "--report":
                     reportPath = ReadValue(args, ref index, "--report");
@@ -96,12 +97,12 @@ internal static class ReceiptCommand
             }
         }
 
-        if (string.IsNullOrWhiteSpace(skillDirectory) ||
+        if (string.IsNullOrWhiteSpace(layoutPath) ||
             string.IsNullOrWhiteSpace(reportPath) ||
             string.IsNullOrWhiteSpace(receiptPath))
         {
             error.WriteLine(
-                "ERROR: receipt validate requires non-empty --skill-dir, " +
+                "ERROR: receipt validate requires non-empty --agent-profile, " +
                 "--report, and receipt paths.");
             return 1;
         }
@@ -137,7 +138,7 @@ internal static class ReceiptCommand
             try
             {
                 ValidateLegacy(
-                    SkillLayout.Create(skillDirectory!),
+                    SkillLayout.Create(layoutPath!),
                     report,
                     receipt,
                     document.RootElement);
@@ -149,7 +150,7 @@ internal static class ReceiptCommand
 
             output.WriteLine(
                 "Legacy schema-2 structural revalidation passed against the supplied " +
-                "skill inputs; exact historical overlay/input provenance is not established.");
+                "agent resources; exact historical overlay/input provenance is not established.");
         }
         else
         {
@@ -173,7 +174,7 @@ internal static class ReceiptCommand
                     .Append(receipt.Path)
                     .ToArray());
             ValidateStable(
-                SkillLayout.Create(skillDirectory!),
+                SkillLayout.Create(layoutPath!),
                 report,
                 evidenceSnapshot,
                 sharedRowProjectionSnapshot,

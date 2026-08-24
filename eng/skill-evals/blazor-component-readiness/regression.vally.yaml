@@ -1,8 +1,8 @@
 # This Vally specification is the exhaustive governance regression source of truth.
 # Validated with @microsoft/vally-cli@0.13.0.
-# Run vally lint --strict and the repository C# validate-skill command after changes.
+# Run vally lint --strict and the repository C# validate-agent command after changes.
 name: blazor-component-readiness
-description: "Capability and governance regressions for the public Blazor component-readiness skill."
+description: "Capability and governance regressions for the explicit Blazor component-readiness agent."
 type: capability
 defaults:
   runs: 5
@@ -13,9 +13,6 @@ scoring:
   weights:
     prompt: 1.0
   threshold: 0.7
-environment:
-  skills:
-    - "../../../.github/skills/blazor-component-readiness"
 stimuli:
   - name: "eval-01-artifact-provenance"
     prompt: |-
@@ -322,10 +319,10 @@ stimuli:
       - The public metadata-versus-private-attestation status boundary was unclear, and the same ambiguity was recorded in two independent prior runs.
       - Repeating one exact package-provenance claim across 14 scorecard rows was the highest clerical cost.
       - A dynamic child/value reconciliation matrix caught a late-registration failure and appears reusable.
-      - One specific child failed in a proprietary source file; that component fact must not enter the public skill.
+      - One specific child failed in a proprietary source file; that component fact must not enter the repository agent.
       - The scorecard annex materially qualified, but did not reverse, the decision.
 
-      Mine the experience so the public skill can improve. Produce a shareable, issue-ready workflow retrospective with evidence-backed proposed changes and regression cases, then explain the consent-safe sharing step. Do not rerun the component review, expose proprietary evidence, modify the skill, publish an issue, or share the full session.
+      Mine the experience so the repository agent can improve. Produce a shareable, issue-ready workflow retrospective with evidence-backed proposed changes and regression cases, then explain the consent-safe sharing step. Do not rerun the component review, expose proprietary evidence, modify the agent, publish an issue, or share the full session.
     tags:
       eval_id: "12"
       area: "feedback-loop"
@@ -343,7 +340,7 @@ stimuli:
         config:
           threshold: 0.7
     rubric:
-      - "Overall response matches this expected outcome: A portable, privacy-aware workflow retrospective that separates component facts from general skill changes and proposes a regression-backed improvement."
+      - "Overall response matches this expected outcome: A portable, privacy-aware workflow retrospective that separates component facts from general agent changes and proposes a regression-backed improvement."
       - "The response uses the run-observations structure or portable mining prompt rather than requiring a product-specific slash command."
       - "Proprietary component evidence is excluded or scrubbed from shareable feedback."
       - "A one-off component fact is not added to the public core."

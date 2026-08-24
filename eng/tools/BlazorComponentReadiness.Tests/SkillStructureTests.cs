@@ -15,8 +15,8 @@ public sealed class SkillStructureTests
     private static readonly SkillLayout Layout = SkillLayout.Create(Path.Combine(
         RepositoryRoot,
         ".github",
-        "skills",
-        "blazor-component-readiness"));
+        "agents",
+        "blazor-component-readiness.agent.md"));
     private static readonly RubricSnapshot Rubric =
         ScorecardValidator.LoadCoreRubric(Layout.ChecklistPath);
     private static readonly IReadOnlyDictionary<string, string> ExpectedCoreScopes =
@@ -1120,7 +1120,7 @@ public sealed class SkillStructureTests
             "blazor-component-readiness");
 
         Assert.Equal(expectedRoot, Layout.EvalRoot);
-        Assert.True(File.Exists(Layout.StandardVallyPath));
+        Assert.True(File.Exists(Layout.RepresentativeVallyPath));
         Assert.True(File.Exists(Layout.VallyPath));
         Assert.True(File.Exists(Layout.EvalPolicyPath));
         Assert.True(File.Exists(Path.Combine(
@@ -1128,10 +1128,118 @@ public sealed class SkillStructureTests
             "fixtures",
             "mixed-evidence-component.md")));
         Assert.False(Directory.Exists(Path.Combine(Layout.Root, "evals")));
+        Assert.False(File.Exists(Path.Combine(Layout.EvalRoot, "eval.vally.yaml")));
+        Assert.False(File.Exists(Layout.LegacySkillPath));
     }
 
     [Fact]
-    public void StandardVallySuiteIsBoundedAndMatchesRegression()
+    public void AgentProfileIsExplicitVendorOnlyAndBounded()
+    {
+        var content = File.ReadAllText(Layout.AgentProfilePath, Encoding.UTF8)
+            .Replace("\r\n", "\n", StringComparison.Ordinal);
+        var frontmatterEnd = content.IndexOf("\n---\n", 4, StringComparison.Ordinal);
+        Assert.True(frontmatterEnd > 0);
+        var prompt = content[(frontmatterEnd + "\n---\n".Length)..];
+
+        Assert.Equal(
+            Path.Combine(
+                RepositoryRoot,
+                ".github",
+                "agents",
+                "blazor-component-readiness.agent.md"),
+            Layout.AgentProfilePath);
+        Assert.Contains("disable-model-invocation: true", content);
+        Assert.Contains("user-invocable: true", content);
+        Assert.Contains("external Blazor component vendor", content);
+        Assert.Contains("Do not use it for ASP.NET Core", content);
+        Assert.True(prompt.Length <= 30_000);
+        Assert.False(Directory.Exists(Path.Combine(
+            RepositoryRoot,
+            ".github",
+            "skills",
+            "blazor-component-readiness")));
+    }
+
+    [Fact]
+    public void AgentProfileExplicitInvocationFlagsAreRequired()
+    {
+        using var skill = CopySkill();
+        var content = File.ReadAllText(skill.ProfilePath, Encoding.UTF8)
+            .Replace(
+                "disable-model-invocation: true",
+                "disable-model-invocation: false",
+                StringComparison.Ordinal)
+            .Replace(
+                "user-invocable: true",
+                "user-invocable: false",
+                StringComparison.Ordinal);
+        File.WriteAllText(skill.ProfilePath, content, new UTF8Encoding(false));
+
+        var errors = SkillValidator.Validate(SkillLayout.Create(skill.ProfilePath));
+
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "disable-model-invocation must be true",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            errors,
+            error => error.Contains(
+                "user-invocable must be true",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AgentProfileMissingResourceIsRejected()
+    {
+        using var skill = CopySkill();
+        var content = File.ReadAllText(skill.ProfilePath, Encoding.UTF8)
+            .Replace(
+                ".github/agents/blazor-component-readiness/references/checklist.md",
+                ".github/agents/blazor-component-readiness/references/missing.md",
+                StringComparison.Ordinal);
+        File.WriteAllText(skill.ProfilePath, content, new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(SkillLayout.Create(skill.ProfilePath)),
+            error => error.Contains(
+                "Agent reference does not exist",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AgentProfileOverPromptLimitIsRejected()
+    {
+        using var skill = CopySkill();
+        File.AppendAllText(
+            skill.ProfilePath,
+            new string('x', 30_001),
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(SkillLayout.Create(skill.ProfilePath)),
+            error => error.Contains(
+                "exceeds 30000 characters",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LegacyRoutableSkillIsRejected()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.ProfilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(layout.LegacySkillPath)!);
+        File.WriteAllText(layout.LegacySkillPath, "legacy", Encoding.UTF8);
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "Legacy routable skill must not exist",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RepresentativeVallySuiteIsBoundedAndMatchesRegression()
     {
         var expectedNames = new[]
         {
@@ -1141,12 +1249,12 @@ public sealed class SkillStructureTests
             "eval-11-bounded-no-defect",
             "eval-18-targeting-and-status-boundaries",
         };
-        var standard = SkillValidator.ParseVallyStimuli(Layout.StandardVallyPath);
+        var representative = SkillValidator.ParseVallyStimuli(Layout.RepresentativeVallyPath);
         var regression = SkillValidator.ParseVallyStimuli(Layout.VallyPath)
             .ToDictionary(stimulus => stimulus.Name, StringComparer.Ordinal);
 
-        Assert.Equal(expectedNames, standard.Select(stimulus => stimulus.Name));
-        Assert.All(standard, stimulus =>
+        Assert.Equal(expectedNames, representative.Select(stimulus => stimulus.Name));
+        Assert.All(representative, stimulus =>
         {
             var source = regression[stimulus.Name];
             Assert.Equal(source.Prompt, stimulus.Prompt);
@@ -1156,63 +1264,65 @@ public sealed class SkillStructureTests
         });
         Assert.DoesNotContain(
             "skills:",
-            File.ReadAllText(Layout.StandardVallyPath, Encoding.UTF8));
+            File.ReadAllText(Layout.RepresentativeVallyPath, Encoding.UTF8));
+        Assert.DoesNotContain(
+            "skills:",
+            File.ReadAllText(Layout.VallyPath, Encoding.UTF8));
     }
 
     [Fact]
-    public void StandardVallyPromptDriftIsRejected()
+    public void RepresentativeVallyPromptDriftIsRejected()
     {
         using var skill = CopySkill();
         var layout = SkillLayout.Create(skill.DirectoryPath);
-        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8)
+        var content = File.ReadAllText(layout.RepresentativeVallyPath, Encoding.UTF8)
             .Replace(
                 "Timebox one published Blazor grid-component review",
                 "Review every component in a generated catalog",
                 StringComparison.Ordinal);
         File.WriteAllText(
-            layout.StandardVallyPath,
+            layout.RepresentativeVallyPath,
             content,
             new UTF8Encoding(false));
 
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "standard prompt, tags, fixtures, or rubric drifted",
+                "representative prompt, tags, fixtures, or rubric drifted",
                 StringComparison.Ordinal));
     }
 
     [Fact]
-    public void StandardVallyFixtureDestinationDriftIsRejected()
+    public void RepresentativeVallyFixtureDestinationDriftIsRejected()
     {
         using var skill = CopySkill();
         var layout = SkillLayout.Create(skill.DirectoryPath);
-        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8)
+        var content = File.ReadAllText(layout.RepresentativeVallyPath, Encoding.UTF8)
             .Replace(
                 "dest: \"eval-input/evidence.md\"",
                 "dest: \"eval-input/other-evidence.md\"",
                 StringComparison.Ordinal);
         File.WriteAllText(
-            layout.StandardVallyPath,
+            layout.RepresentativeVallyPath,
             content,
             new UTF8Encoding(false));
 
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "standard prompt, tags, fixtures, or rubric drifted",
+                "representative prompt, tags, fixtures, or rubric drifted",
                 StringComparison.Ordinal));
     }
 
     [Fact]
-    public void SpecializedVallyMustLoadRuntimeSkill()
+    public void RegressionVallyCannotDeclareSkills()
     {
         using var skill = CopySkill();
         var layout = SkillLayout.Create(skill.DirectoryPath);
-        var content = File.ReadAllText(layout.VallyPath, Encoding.UTF8)
-            .Replace(
-                "    - \"../../../.github/skills/blazor-component-readiness\"",
-                "    - \"../../../.github/skills/other-skill\"",
-                StringComparison.Ordinal);
+        var content = ReplaceFirst(
+            File.ReadAllText(layout.VallyPath, Encoding.UTF8),
+            "stimuli:\n",
+            "environment:\n  skills:\n    - \"../../../.github/skills/other-skill\"\nstimuli:\n");
         File.WriteAllText(
             layout.VallyPath,
             content,
@@ -1221,35 +1331,12 @@ public sealed class SkillStructureTests
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "must load only the component-readiness runtime skill",
+                "must not declare environment.skills",
                 StringComparison.Ordinal));
     }
 
     [Fact]
-    public void SpecializedVallyCannotLoadAdditionalSkill()
-    {
-        using var skill = CopySkill();
-        var layout = SkillLayout.Create(skill.DirectoryPath);
-        var content = File.ReadAllText(layout.VallyPath, Encoding.UTF8)
-            .Replace(
-                "    - \"../../../.github/skills/blazor-component-readiness\"",
-                "    - \"../../../.github/skills/blazor-component-readiness\"\n" +
-                "    - \"../../../.github/skills/other-skill\"",
-                StringComparison.Ordinal);
-        File.WriteAllText(
-            layout.VallyPath,
-            content,
-            new UTF8Encoding(false));
-
-        Assert.Contains(
-            SkillValidator.Validate(layout),
-            error => error.Contains(
-                "must load only the component-readiness runtime skill",
-                StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void SpecializedVallyCannotLoadStimulusSkill()
+    public void RegressionVallyCannotLoadStimulusSkill()
     {
         using var skill = CopySkill();
         var layout = SkillLayout.Create(skill.DirectoryPath);
@@ -1268,16 +1355,16 @@ public sealed class SkillStructureTests
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "must load only the component-readiness runtime skill",
+                "must not declare environment.skills",
                 StringComparison.Ordinal));
     }
 
     [Fact]
-    public void StandardVallyCannotSelectItsOwnSkill()
+    public void RepresentativeVallyCannotDeclareSkills()
     {
         using var skill = CopySkill();
         var layout = SkillLayout.Create(skill.DirectoryPath);
-        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8);
+        var content = File.ReadAllText(layout.RepresentativeVallyPath, Encoding.UTF8);
         content = ReplaceFirst(
             content,
             "    graders:\n",
@@ -1286,14 +1373,14 @@ public sealed class SkillStructureTests
             "        - ../../../.github/skills/blazor-component-readiness\n" +
             "    graders:\n");
         File.WriteAllText(
-            layout.StandardVallyPath,
+            layout.RepresentativeVallyPath,
             content,
             new UTF8Encoding(false));
 
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "experiment owns it",
+                "must not set environment.skills",
                 StringComparison.Ordinal));
     }
 
@@ -1318,34 +1405,34 @@ public sealed class SkillStructureTests
     }
 
     [Fact]
-    public void BlankSkillDirectoryIsReportedWithoutThrowing()
+    public void BlankAgentProfileIsReportedWithoutThrowing()
     {
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
-        var exitCode = SkillValidationCommand.Run(
-            ["--skill-dir", ""],
+        var exitCode = AgentValidationCommand.Run(
+            ["--agent-profile", ""],
             TextWriter.Null,
             error);
 
         Assert.Equal(1, exitCode);
         Assert.Contains(
-            "ERROR: --skill-dir requires a non-empty value.",
+            "ERROR: --agent-profile requires a non-empty value.",
             error.ToString());
     }
 
     [Fact]
-    public void BlankScorecardSkillDirectoryIsReportedWithoutThrowing()
+    public void BlankScorecardAgentProfileIsReportedWithoutThrowing()
     {
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
         var exitCode = ScorecardCommand.Run(
-            ["--skill-dir", "", "--emit-template"],
+            ["--agent-profile", "", "--emit-template"],
             TextWriter.Null,
             error);
 
         Assert.Equal(1, exitCode);
         Assert.Contains(
-            "ERROR: --skill-dir requires a non-empty value.",
+            "ERROR: --agent-profile or --skill-dir requires a non-empty value.",
             error.ToString());
     }
 
@@ -1488,8 +1575,8 @@ public sealed class SkillStructureTests
         File.WriteAllText(layout.VallyPath, content, new UTF8Encoding(false));
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
-        var exitCode = SkillValidationCommand.Run(
-            ["--skill-dir", skill.DirectoryPath],
+        var exitCode = AgentValidationCommand.Run(
+            ["--agent-profile", skill.ProfilePath],
             TextWriter.Null,
             error);
 
@@ -1701,8 +1788,8 @@ public sealed class SkillStructureTests
             new UTF8Encoding(false));
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
-        var exitCode = SkillValidationCommand.Run(
-            ["--skill-dir", skill.DirectoryPath],
+        var exitCode = AgentValidationCommand.Run(
+            ["--agent-profile", skill.ProfilePath],
             TextWriter.Null,
             error);
 
@@ -2000,8 +2087,8 @@ public sealed class SkillStructureTests
             new UTF8Encoding(false));
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
-        var exitCode = SkillValidationCommand.Run(
-            ["--skill-dir", skill.DirectoryPath],
+        var exitCode = AgentValidationCommand.Run(
+            ["--agent-profile", skill.ProfilePath],
             TextWriter.Null,
             error);
 
@@ -2028,8 +2115,8 @@ public sealed class SkillStructureTests
         File.WriteAllText(layout.VallyPath, content, new UTF8Encoding(false));
         var error = new StringWriter(CultureInfo.InvariantCulture);
 
-        var exitCode = SkillValidationCommand.Run(
-            ["--skill-dir", skill.DirectoryPath],
+        var exitCode = AgentValidationCommand.Run(
+            ["--agent-profile", skill.ProfilePath],
             TextWriter.Null,
             error);
 
@@ -2138,7 +2225,7 @@ public sealed class SkillStructureTests
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "Area directory must remain under skill root",
+                "Area directory must remain under agent resource root",
                 StringComparison.Ordinal));
     }
 
@@ -2161,22 +2248,22 @@ public sealed class SkillStructureTests
         Assert.Contains(
             SkillValidator.Validate(layout),
             error => error.Contains(
-                "Area directory must remain under skill root",
+                "Area directory must remain under agent resource root",
                 StringComparison.Ordinal));
     }
 
     [Fact]
     public void TrackerOutputStructureIsWired()
     {
-        var skill = File.ReadAllText(Layout.SkillPath, Encoding.UTF8);
+        var agent = File.ReadAllText(Layout.AgentProfilePath, Encoding.UTF8);
         var report = File.ReadAllText(Layout.ReportTemplatePath, Encoding.UTF8);
         var vally = File.ReadAllText(Layout.VallyPath, Encoding.UTF8);
 
-        Assert.Contains("evidence-only evaluation result", skill);
-        Assert.Contains("Areas we believe need to be fixed", skill);
-        Assert.Contains("false positives", skill);
-        Assert.Contains("do not claim", skill);
-        Assert.Contains("requirement-level crosswalk", skill);
+        Assert.Contains("evidence-only evaluation result", agent);
+        Assert.Contains("Areas we believe need to be fixed", agent);
+        Assert.Contains("false positives", agent);
+        Assert.Contains("do not claim", agent);
+        Assert.Contains("requirement-level crosswalk", agent);
         Assert.Contains("## Evidence-only evaluation result", report);
         Assert.Contains("### Areas we believe need to be fixed", report);
         Assert.Contains("### Full report", report);
@@ -2185,7 +2272,7 @@ public sealed class SkillStructureTests
     }
 
     [Fact]
-    public void SkillStructureIsValid()
+    public void AgentStructureIsValid()
     {
         Assert.Empty(SkillValidator.Validate(Layout));
     }
@@ -2283,20 +2370,20 @@ public sealed class SkillStructureTests
             ["--skill-dir", skill.DirectoryPath, reportPath],
             TextWriter.Null,
             validationError);
-        var skillError = new StringWriter(CultureInfo.InvariantCulture);
-        var skillExitCode = SkillValidationCommand.Run(
-            ["--skill-dir", skill.DirectoryPath],
+        var agentError = new StringWriter(CultureInfo.InvariantCulture);
+        var agentExitCode = AgentValidationCommand.Run(
+            ["--agent-profile", skill.ProfilePath],
             TextWriter.Null,
-            skillError);
+            agentError);
 
         Assert.Equal(1, templateExitCode);
         Assert.Equal(1, validationExitCode);
-        Assert.Equal(1, skillExitCode);
+        Assert.Equal(1, agentExitCode);
         foreach (var output in new[]
         {
             templateError.ToString(),
             validationError.ToString(),
-            skillError.ToString(),
+            agentError.ToString(),
         })
         {
             Assert.Contains("Core requirement IDs differ from the canonical schema", output);
@@ -2372,9 +2459,15 @@ public sealed class SkillStructureTests
             DirectoryPath = Path.Combine(
                 _repository.DirectoryPath,
                 ".github",
-                "skills",
+                "agents",
                 "blazor-component-readiness");
             CopyDirectory(Layout.Root, DirectoryPath);
+            ProfilePath = Path.Combine(
+                _repository.DirectoryPath,
+                ".github",
+                "agents",
+                "blazor-component-readiness.agent.md");
+            File.Copy(Layout.AgentProfilePath, ProfilePath);
             CopyDirectory(
                 Layout.EvalRoot,
                 Path.Combine(
@@ -2385,6 +2478,8 @@ public sealed class SkillStructureTests
         }
 
         internal string DirectoryPath { get; }
+
+        internal string ProfilePath { get; }
 
         public void Dispose()
         {
@@ -2621,11 +2716,11 @@ public sealed class SkillStructureTests
         while (directory is not null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "activate.sh")) &&
-                Directory.Exists(Path.Combine(
+                File.Exists(Path.Combine(
                     directory.FullName,
                     ".github",
-                    "skills",
-                    "blazor-component-readiness")))
+                    "agents",
+                    "blazor-component-readiness.agent.md")))
             {
                 return directory.FullName;
             }
