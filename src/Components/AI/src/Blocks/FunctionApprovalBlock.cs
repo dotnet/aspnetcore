@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// }
 /// </code>
 /// </example>
-public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
+public class FunctionApprovalBlock : ContentBlock, IInteractiveBlock
 {
     private readonly TaskCompletionSource<AIContent> _resultSource =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -25,10 +25,51 @@ public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
     internal FunctionApprovalBlock(
         ContentBlock innerBlock,
         ToolApprovalRequestContent request)
-        : base(innerBlock)
     {
+        ArgumentNullException.ThrowIfNull(innerBlock);
+        InnerBlock = innerBlock;
         ApprovalRequest = request;
     }
+
+    /// <summary>
+    /// Gets the wrapped function invocation block.
+    /// </summary>
+    public ContentBlock InnerBlock { get; }
+
+    /// <summary>
+    /// Gets the function call represented by this block.
+    /// </summary>
+    public FunctionCallContent? Call => InnerBlock switch
+    {
+        FunctionInvocationContentBlock invocation => invocation.Call,
+        UIActionBlock action => action.Call,
+        _ => null,
+    };
+
+    /// <summary>
+    /// Gets the function result represented by this block.
+    /// </summary>
+    public FunctionResultContent? Result => InnerBlock switch
+    {
+        FunctionInvocationContentBlock invocation => invocation.Result,
+        UIActionBlock action => action.Result,
+        _ => null,
+    };
+
+    /// <summary>
+    /// Gets the name of the invoked tool.
+    /// </summary>
+    public string? ToolName => Call?.Name;
+
+    /// <summary>
+    /// Gets the arguments supplied to the tool.
+    /// </summary>
+    public IDictionary<string, object?>? Arguments => Call?.Arguments;
+
+    /// <summary>
+    /// Gets a value indicating whether the server produced a result.
+    /// </summary>
+    public bool HasResult => Result is not null;
 
     /// <summary>
     /// Gets the current approval status.

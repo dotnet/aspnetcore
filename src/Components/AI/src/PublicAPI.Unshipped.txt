@@ -123,11 +123,17 @@ Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode()
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.ApprovalRequest.get -> Microsoft.Extensions.AI.ToolApprovalRequestContent!
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Approve() -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.HasResult.get -> bool
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.ContentBlock!
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Reject(string? reason = null) -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
 Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Status.get -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
@@ -171,14 +177,6 @@ Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.get -> string!
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.set -> void
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode() -> void
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode(string! code) -> void
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.HasResult.get -> bool
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.ContentBlock!
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.ContentBlock! innerBlock) -> void
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.LineBreakNode
 Microsoft.AspNetCore.Components.AI.LineBreakNode.LineBreakNode() -> void
 Microsoft.AspNetCore.Components.AI.LinkNode
