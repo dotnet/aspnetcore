@@ -20,11 +20,31 @@ For implementation work:
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.
-- Once the fix or feature is validated in the sample, implement E2E tests for it.
-  - When you create an E2E test. First execute it interactively with Playwright.
+- Once the fix or feature is validated in the sample, select its permanent test surface using the boundary below.
+  - For browser-owned behavior, implement a C# Selenium E2E test and first execute its scenario interactively with Playwright.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
-- Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
+- Only after the selected permanent tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
+
+### Permanent regression test boundary
+
+Before selecting a permanent test surface, record these five fields:
+
+- **Behavior owner**: the subsystem that owns the behavior.
+- **Production producer**: the real mechanism that creates the disputed preconditions.
+- **Final observable**: the material result the regression test must assert.
+- **Selected permanent surface**: the test suite that exercises that producer and observable.
+- **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
+
+Browser-owned behavior requires permanent C# Selenium coverage under `src/Components/test/E2ETest`. This includes DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser event ordering, browser-dependent JS interop, navigation, focus and selection, and rendering or rehydration. Extend existing test assets and classes when practical.
+
+Do not add or retain Jest or `.test.ts` coverage in the production change for the same browser scenario, whether described as primary, supplemental, faster, or more precise, including additions to an existing `.test.ts` file. Existing TypeScript tests are grandfathered exceptions, not precedent. Synthetic geometry, mocked observers or events, and direct state mutation or callback invocation are temporary diagnostic probes outside the production change; remove them after Selenium supersedes them.
+
+Permanent JavaScript or TypeScript unit tests are appropriate only for genuinely pure helpers whose preconditions and observable are browser-independent plain inputs and outputs. The helper is not pure for this purpose when its test mocks or stubs browser observers, layout APIs, or geometry, including `getComputedStyle`, `getBoundingClientRect`, `getClientRects`, `scrollTop`, `scrollHeight`, `clientHeight`, `offsetHeight`, or geometry installed with `Object.defineProperty`. Managed or service behavior that is fully owned and observable below the browser remains at its faithful lower boundary.
+
+If WebDriver cannot perform or observe one operation, keep the permanent C# Selenium scenario, name the exact WebDriver limitation, and use only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep scenario orchestration and the final user-visible assertion in C#.
+
+For browser fixes, require strict red/green evidence: the identical Selenium assertion must fail for the expected reason without the fix and pass with it. Include the nearest opposite and adjacent same-producer controls. The fix remains blocked while Jest is its only regression proof.
 
 ### Code clarity and durable knowledge
 
@@ -59,7 +79,7 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 **Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
 - Test the feature interactively in a real browser
-- Verify the feature works before writing formal E2E tests
+- Verify the feature works before writing its selected permanent tests
 - Debug issues more easily with full logging capabilities
 
 3. **Debug when needed**:
@@ -70,9 +90,9 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 
 4. **Validate the sample works** - You must have a validated, working sample in the Samples folder before proceeding. Use Playwright to confirm the feature works end-to-end in the browser.
 
-5. **Implement E2E tests** - Only after the sample is validated, implement E2E tests for it.
+5. **Implement permanent tests** - Only after the sample is validated, select the permanent test surface using the boundary above. Browser-owned behavior requires a C# Selenium E2E test.
 
-6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
+6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
 
 ## Build Tips
 

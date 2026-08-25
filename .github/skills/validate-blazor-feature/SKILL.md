@@ -1,12 +1,12 @@
 ---
 name: validate-blazor-feature
 description: >-
-  Validate a Blazor feature or behavior interactively in a browser using the canonical Components samples in this repo, before writing E2E tests. USE FOR exercising a Blazor change in src/Components (a render-mode behavior, an interactive component, enhanced navigation, forms, streaming, prerendering), deciding which sample to use, where to add a test page, how to set the render mode (Server/WebAssembly/Auto/static SSR), how to confirm the app is actually interactive (not just static SSR), and how to inspect the browser console and network for errors. Covers BlazorWebAppGlobal, BlazorWebAppPerPage, and BlazorWebAssemblyStandalone, launching them against the in-tree framework, and driving them with the Playwright MCP browser tools. DO NOT USE FOR writing the permanent E2E/Selenium tests themselves, non-Components areas, or unit tests.
+  Validate a Blazor feature or behavior interactively in a browser using the canonical Components samples in this repo, before selecting or writing permanent test coverage. USE FOR exercising a Blazor change in src/Components (a render-mode behavior, an interactive component, enhanced navigation, forms, streaming, prerendering), deciding which sample to use, where to add a test page, how to set the render mode (Server/WebAssembly/Auto/static SSR), how to confirm the app is actually interactive (not just static SSR), and how to inspect the browser console and network for errors. Covers BlazorWebAppGlobal, BlazorWebAppPerPage, and BlazorWebAssemblyStandalone, launching them against the in-tree framework, and driving them with the Playwright MCP browser tools. DO NOT USE FOR writing the permanent E2E/Selenium tests themselves, non-Components areas, or unit tests.
 ---
 
 # Validate a Blazor feature with the Components samples
 
-Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. Validate behavior before writing E2E tests; remove the sample code afterward (`git checkout`/`git clean`) once the E2E test covers it.
+Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. Validate behavior before selecting permanent coverage; remove the sample code afterward (`git checkout`/`git clean`) once the selected permanent test covers it.
 
 ## 1. Pick the sample and where the page goes
 
@@ -86,12 +86,32 @@ After interacting, inspect the console. **Scope it to the current page**: call `
 
 See [references/error-checks.md](references/error-checks.md) for the catalog of common failures, the symptom each produces, and the fix.
 
-## 6. Finish
+## 6. Record the permanent regression boundary
+
+Before handing off to permanent tests, record:
+
+- **Behavior owner**: the subsystem that owns the behavior.
+- **Production producer**: the real mechanism that creates the disputed preconditions.
+- **Final observable**: the material result the regression test must assert.
+- **Selected permanent surface**: the test suite that exercises that producer and observable.
+- **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
+
+For browser-owned behavior (DOM measurement, layout or geometry, scrolling, browser observers, browser event ordering, browser-dependent JS interop, navigation, focus or selection, and rendering or rehydration), hand off to permanent C# Selenium coverage under `src/Components/test/E2ETest`. Extend an existing asset and test class when practical. Require the identical Selenium assertion to be red without the fix and green with it, plus the nearest opposite and adjacent same-producer controls. A browser fix remains blocked while Jest is its only regression proof.
+
+Do not recommend adding or retaining Jest or `.test.ts` coverage for the same browser scenario, including as supplemental coverage or in an existing test file. Synthetic geometry, mocked observers or events, and direct state or callback injection are temporary diagnostic probes and stay outside the production change.
+
+JavaScript or TypeScript unit coverage remains appropriate for a genuinely pure helper when its preconditions and observable are browser-independent plain inputs and outputs. It does not qualify if the test mocks or stubs browser observers, layout APIs, or geometry such as `getComputedStyle`, `getBoundingClientRect`, `getClientRects`, `scrollTop`, `scrollHeight`, `clientHeight`, or `offsetHeight`. Managed or service behavior fully owned and observable below the browser remains at that faithful lower boundary.
+
+If WebDriver cannot perform or observe one exact operation, name that limitation and permit only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep the permanent scenario orchestration and final user-visible assertion in C# Selenium.
+
+This skill validates the sample interactively and records the handoff. It does not write the permanent Selenium test.
+
+## 7. Finish
 
 - Stop the sample server by its specific PID.
 - Remove the Playwright artifacts folder (`.playwright-mcp/`) it drops into the working directory.
-- Per the Components workflow, once an E2E test covers the behavior, remove the sample scenario code: `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples`.
+- Per the Components workflow, once the selected permanent test covers the behavior, remove the sample scenario code: `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples`.
 
 ## Completion criteria
 
-The validation is done when: the page loaded (200, framework JS served), the behavior was exercised by a real interaction, the resulting state change was observed in a snapshot, and the console shows no real errors for the page under test. Only then move on to writing the E2E test.
+The validation is done when: the page loaded (200, framework JS served), the behavior was exercised by a real interaction, the resulting state change was observed in a snapshot, and the console shows no real errors for the page under test. Only then record the five-field handoff to the selected permanent surface; browser-owned behavior moves to C# Selenium E2E coverage.
