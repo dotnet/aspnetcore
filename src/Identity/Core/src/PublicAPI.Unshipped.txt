@@ -1,4 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.CreatedAt.get -> System.DateTimeOffset
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.CreatedAt.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.CredentialId.get -> string!
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.CredentialId.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.Name.get -> string?
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.Name.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyInfoResponse.PasskeyInfoResponse() -> void
 Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest
 Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest.CredentialJson.get -> string!
 Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest.CredentialJson.init -> void
@@ -9,14 +17,12 @@ Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.CredentialJson.ini
 Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.Name.get -> string?
 Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.Name.init -> void
 Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.PasskeyRegistrationRequest() -> void
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.CredentialId.get -> string!
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.CredentialId.init -> void
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.Name.get -> string?
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.Name.init -> void
-Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.PasskeyRegistrationResponse() -> void
 Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest
 Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.Email.get -> string?
 Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.Email.init -> void
 Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.PasskeyRequestOptionsRequest() -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest
+Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.Name.get -> string?
+Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.Name.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.PasskeyUpdateRequest() -> void
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasskeySignInAsync(string! credentialJson, bool isPersistent) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult!>!

@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -335,7 +336,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
-        passkeyAccountGroup.MapPost("", async Task<Results<Ok<PasskeyRegistrationResponse>, ValidationProblem, NotFound>>
+        passkeyAccountGroup.MapPost("", async Task<Results<Ok<PasskeyInfoResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] PasskeyRegistrationRequest registration, [FromServices] IServiceProvider sp) =>
         {
             var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
@@ -387,11 +388,99 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return CreateValidationProblem(result);
             }
 
-            return TypedResults.Ok(new PasskeyRegistrationResponse
+            return TypedResults.Ok(CreatePasskeyInfoResponse(attestationResult.Passkey));
+        });
+
+        passkeyAccountGroup.MapGet("", async Task<Results<Ok<PasskeyInfoResponse[]>, NotFound>>
+            (ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
-                CredentialId = WebEncoders.Base64UrlEncode(attestationResult.Passkey.CredentialId),
-                Name = attestationResult.Passkey.Name,
-            });
+                return TypedResults.NotFound();
+            }
+
+            var passkeys = await userManager.GetPasskeysAsync(user);
+            var responses = new PasskeyInfoResponse[passkeys.Count];
+            for (var i = 0; i < passkeys.Count; i++)
+            {
+                responses[i] = CreatePasskeyInfoResponse(passkeys[i]);
+            }
+
+            return TypedResults.Ok(responses);
+        });
+
+        passkeyAccountGroup.MapPut("/{credentialId}", async Task<Results<Ok<PasskeyInfoResponse>, ValidationProblem, NotFound>>
+            (ClaimsPrincipal claimsPrincipal, string credentialId, [FromBody] PasskeyUpdateRequest request, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (request.Name is { Length: > MaxPasskeyNameLength })
+            {
+                return CreateValidationProblem(
+                    "InvalidPasskeyName",
+                    $"Passkey names must be no longer than {MaxPasskeyNameLength} characters.");
+            }
+
+            if (!TryDecodeCredentialId(credentialId, out var credentialIdBytes))
+            {
+                return CreateValidationProblem("InvalidCredentialId", "The credential ID is not a valid Base64Url string.");
+            }
+
+            if (await userManager.GetPasskeyAsync(user, credentialIdBytes) is not { } passkey)
+            {
+                return TypedResults.NotFound();
+            }
+
+            passkey.Name = string.IsNullOrEmpty(request.Name) ? null : request.Name;
+            var result = await userManager.AddOrUpdatePasskeyAsync(user, passkey);
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            return TypedResults.Ok(CreatePasskeyInfoResponse(passkey));
+        });
+
+        passkeyAccountGroup.MapDelete("/{credentialId}", async Task<Results<Ok, ValidationProblem, NotFound>>
+            (ClaimsPrincipal claimsPrincipal, string credentialId, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (!TryDecodeCredentialId(credentialId, out var credentialIdBytes))
+            {
+                return CreateValidationProblem("InvalidCredentialId", "The credential ID is not a valid Base64Url string.");
+            }
+
+            if (await userManager.GetPasskeyAsync(user, credentialIdBytes) is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var result = await userManager.RemovePasskeyAsync(user, credentialIdBytes);
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            return TypedResults.Ok();
         });
 
         accountGroup.MapPost("/2fa", async Task<Results<Ok<TwoFactorResponse>, ValidationProblem, NotFound>>
@@ -611,6 +700,30 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         }
 
         return TypedResults.ValidationProblem(errorDictionary);
+    }
+
+    private static bool TryDecodeCredentialId(string credentialId, [NotNullWhen(true)] out byte[]? result)
+    {
+        try
+        {
+            result = WebEncoders.Base64UrlDecode(credentialId);
+            return true;
+        }
+        catch (FormatException)
+        {
+            result = null;
+            return false;
+        }
+    }
+
+    private static PasskeyInfoResponse CreatePasskeyInfoResponse(UserPasskeyInfo passkey)
+    {
+        return new()
+        {
+            CredentialId = WebEncoders.Base64UrlEncode(passkey.CredentialId),
+            Name = passkey.Name,
+            CreatedAt = passkey.CreatedAt,
+        };
     }
 
     private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
