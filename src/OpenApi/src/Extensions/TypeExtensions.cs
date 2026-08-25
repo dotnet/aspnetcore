@@ -90,6 +90,19 @@ internal static class TypeExtensions
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 
+    public static bool ShouldApplyNullableArrayElementSchema(this ApiParameterDescription apiParameterDescription)
+    {
+        if (apiParameterDescription.Type is not { IsArray: true } ||
+            apiParameterDescription.ParameterDescriptor is not IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+        {
+            return false;
+        }
+
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
+        return nullabilityInfo.ElementType?.WriteState == NullabilityState.Nullable;
+    }
+
     public static bool ShouldApplyNullablePropertySchema(this JsonPropertyInfo jsonPropertyInfo)
     {
         if (jsonPropertyInfo.AttributeProvider is not PropertyInfo propertyInfo)
@@ -99,6 +112,10 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
-        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+
+        // Reflection reports a nullable write state for [AllowNull] properties whose setters
+        // System.Text.Json ignores. The type-keyword path works around the same issue in dotnet/runtime#131602.
+        return nullabilityInfo.ReadState == NullabilityState.Nullable ||
+            (jsonPropertyInfo.Set is not null && nullabilityInfo.WriteState == NullabilityState.Nullable);
     }
 }
