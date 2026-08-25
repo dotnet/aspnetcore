@@ -103,22 +103,42 @@ public class UIAgent : IDisposable
         ChatMessage message,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(message);
 
-        _history.Add(message);
-
-        var pipeline = new BlockMappingPipeline(_options, _logger);
-
-        // Process user message through pipeline
-        var userUpdate = new ChatResponseUpdate
-        {
-            Role = message.Role,
-            Contents = [.. message.Contents]
-        };
-        await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
+        await foreach (var block in SendMessagesAsync([message], cancellationToken).ConfigureAwait(false))
         {
             yield return block;
         }
+    }
+
+    internal async IAsyncEnumerable<ContentBlock> SendMessagesAsync(
+        IReadOnlyList<ChatMessage> messages,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        foreach (var message in messages)
+        {
+            ArgumentNullException.ThrowIfNull(message);
+            _history.Add(message);
+        }
+
+        var pipeline = new BlockMappingPipeline(_options, _logger);
+
+        // Process user messages through pipeline
+        foreach (var message in messages)
+        {
+            var userUpdate = new ChatResponseUpdate
+            {
+                Role = message.Role,
+                Contents = [.. message.Contents]
+            };
+            await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
+            {
+                yield return block;
+            }
+        }
+
         foreach (var block in pipeline.Finalize())
         {
             yield return block;
@@ -128,9 +148,10 @@ public class UIAgent : IDisposable
         UIAgentLog.StreamingAssistantResponse(_logger);
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
+        var chatOptions = BuildChatOptions();
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
-            _history, _options.ChatOptions, cancellationToken).ConfigureAwait(false))
+            _history, chatOptions, cancellationToken).ConfigureAwait(false))
         {
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
@@ -158,6 +179,27 @@ public class UIAgent : IDisposable
         }
 
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+    }
+
+    private ChatOptions? BuildChatOptions()
+    {
+        if (_options.UIActions.Count == 0)
+        {
+            return _options.ChatOptions;
+        }
+
+        var chatOptions = _options.ChatOptions?.Clone() ?? new ChatOptions();
+        var tools = chatOptions.Tools is null
+            ? new List<AITool>()
+            : [.. chatOptions.Tools];
+
+        foreach (var action in _options.UIActions.Values)
+        {
+            tools.Add(action.AsDeclarationOnly());
+        }
+
+        chatOptions.Tools = tools;
+        return chatOptions;
     }
 
     /// <summary>

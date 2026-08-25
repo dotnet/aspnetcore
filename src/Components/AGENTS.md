@@ -1,14 +1,22 @@
 # Working on Issues in the Components Area
 
-This guide provides step-by-step instructions for working on issues in the ASP.NET Core Components area.
+This guide provides step-by-step instructions for investigating, reviewing, and implementing work in the ASP.NET Core Components area.
 
 ## Working on issues
 
-You MUST follow this workflow when implementing new features or fixing bugs in the Components area.
-* Add the workflow to your `todos` and follow it strictly.
-- Create a sample scenario.
-- If working on a bug, use playwright to reproduce the behavior/problem first.
-- You MUST have reproduced the problem before attempting to fix it.
+You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
+* Add the applicable workflow steps to your `todos` and follow them strictly.
+
+For behavioral investigations and reviews:
+- Create or identify a scenario at the smallest faithful validation boundary.
+- Faithful validation includes the component, service, runtime, or browser mechanism that owns or produces each disputed precondition and observes the claimed material effect at the appropriate boundary.
+- Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
+- Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
+- Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
+- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
+
+For implementation work:
+- For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.

@@ -25,6 +25,9 @@ public class UIAgentOptions
 
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
+    internal Dictionary<string, AIFunction> UIActions { get; } =
+        new(StringComparer.Ordinal);
+
     /// <summary>
     /// Registers a handler that maps model updates into content blocks. Registered handlers
     /// run before the built-in ones, so they can claim content the built-in handlers would
@@ -37,6 +40,22 @@ public class UIAgentOptions
     {
         ArgumentNullException.ThrowIfNull(handler);
         HandlerRegistrations.Add(new HandlerRegistration<TState>(handler));
+    }
+
+    /// <summary>
+    /// Registers a function that a matching model tool call executes in the UI.
+    /// The function is sent to the chat client as a declaration, not as an executable server tool.
+    /// </summary>
+    /// <param name="function">
+    /// The function to execute in the UI. Its name must be unique among the registered UI actions.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// An action with the same name is already registered.
+    /// </exception>
+    public void RegisterUIAction(AIFunction function)
+    {
+        ArgumentNullException.ThrowIfNull(function);
+        UIActions.Add(function.Name, function);
     }
 
     internal interface IHandlerRegistration

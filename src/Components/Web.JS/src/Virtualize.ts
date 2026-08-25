@@ -823,7 +823,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const rect = el.getBoundingClientRect();
       if (rect.bottom > containerTop) {
         const existing = observersByDotNetObjectId[id].anchorSnapshot;
-        const nativeAnchoringUnavailable = !useNativeAnchoring || (scrollContainer !== null && isAtScrollTop());
+        const nativeAnchoringUnavailable = !useNativeAnchoring || isAtScrollTop();
         // Keep the pre-shift snapshot for None/End modes, and for Start modes that are not actively
         // converging to the top (during top convergence the viewport is repositioned instead).
         const modePinsTopItem = !anchorModeIs.beginning || !convergence.top;
