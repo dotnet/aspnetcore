@@ -348,15 +348,16 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 _mode = Mode.Extension;
 
                 var reject = !_context.ServiceContext.ServerOptions.EnableChunkedExtensions;
-                if (reject)
-                {
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.ChunkedExtensionNotAllowed);
-                }
 
                 if (!_sawChunkedExtension)
                 {
                     _sawChunkedExtension = true;
                     _context.OnChunkedExtension(reject);
+                }
+
+                if (reject)
+                {
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.ChunkedExtensionNotAllowed);
                 }
 
                 return;
