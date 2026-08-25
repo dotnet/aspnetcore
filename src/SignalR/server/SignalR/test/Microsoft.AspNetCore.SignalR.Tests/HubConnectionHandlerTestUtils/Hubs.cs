@@ -681,6 +681,22 @@ public class GenericMethodHub : Hub
     }
 }
 
+[Authorize(AuthenticationSchemes = "test scheme")]
+public class HubWithAuthenticationScheme : Hub
+{
+    public void Method()
+    {
+    }
+}
+
+public class HubWithMethodAuthenticationScheme : Hub
+{
+    [Authorize(AuthenticationSchemes = "test scheme")]
+    public void Method()
+    {
+    }
+}
+
 public class DisposeTrackingHub : TestHub
 {
     private readonly TrackDispose _trackDispose;
