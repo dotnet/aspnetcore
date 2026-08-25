@@ -393,6 +393,12 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
+    public void OnChunkedExtension(bool rejected)
+    {
+        Log.Http1ChunkedExtension(ConnectionId, rejected);
+        ServiceContext.Metrics.ChunkedExtension(MetricsContext, rejected);
+    }
+
     public void OnBareLineFeedTerminator(bool rejected)
     {
         // Only record the metric and log once per request even if multiple lines use a bare LF terminator.

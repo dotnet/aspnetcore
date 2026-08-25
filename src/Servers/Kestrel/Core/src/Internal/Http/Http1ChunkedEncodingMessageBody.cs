@@ -32,6 +32,8 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
 
     private ChunkedExtensionParser? _chunkedExtensionParser;
 
+    private bool _sawChunkedExtension;
+
     public Http1ChunkedEncodingMessageBody(Http1Connection context, bool keepAlive)
         : base(context, keepAlive)
     {
@@ -345,9 +347,16 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 _inputLength = chunkSize;
                 _mode = Mode.Extension;
 
-                if (!_context.ServiceContext.ServerOptions.EnableChunkedExtensions)
+                var reject = !_context.ServiceContext.ServerOptions.EnableChunkedExtensions;
+                if (reject)
                 {
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.ChunkedExtensionNotAllowed);
+                }
+
+                if (!_sawChunkedExtension)
+                {
+                    _sawChunkedExtension = true;
+                    _context.OnChunkedExtension(reject);
                 }
 
                 return;
