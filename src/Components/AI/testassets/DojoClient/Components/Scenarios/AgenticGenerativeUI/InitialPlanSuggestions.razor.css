@@ -41,12 +41,6 @@
     font-weight: 600;
 }
 
-.plan-suggestion__description {
-    color: #6b7280;
-    font-size: 0.85rem;
-    line-height: 1.35;
-}
-
 @media (max-width: 36rem) {
     .plan-suggestions {
         grid-template-columns: 1fr;
