@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI;
 
@@ -11,6 +12,8 @@ public sealed class HaikuData
 {
     internal const string AncientPondImage = "ancient-pond.svg";
     internal const string DefaultGradient = "linear-gradient(135deg, #667eea, #764ba2)";
+    private static readonly JsonSerializerOptions s_jsonOptions =
+        new(JsonSerializerDefaults.Web);
     private static readonly Regex s_safeGradientPattern = new(
         @"\Alinear-gradient\(\s*\d{1,3}deg\s*,\s*#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\s*,\s*#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\s*\)\z",
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
@@ -40,12 +43,14 @@ public sealed class HaikuData
     {
         ArgumentNullException.ThrowIfNull(call);
 
-        var arguments = call.Arguments;
+        var arguments = JsonSerializer
+            .SerializeToElement(call.Arguments, s_jsonOptions)
+            .Deserialize<HaikuArguments>(s_jsonOptions);
         return Create(
-            GetStringList(arguments, "japanese"),
-            GetStringList(arguments, "english"),
-            GetString(arguments, "image_name"),
-            GetString(arguments, "gradient"));
+            arguments?.Japanese,
+            arguments?.English,
+            arguments?.ImageName,
+            arguments?.Gradient);
     }
 
     internal static string NormalizeGradient(string? gradient)
@@ -56,43 +61,15 @@ public sealed class HaikuData
     private static string? NormalizeImageName(string? imageName)
         => imageName == AncientPondImage ? imageName : null;
 
-    private static List<string> GetStringList(
-        IDictionary<string, object?>? arguments,
-        string name)
+    private sealed class HaikuArguments
     {
-        if (arguments is null ||
-            !arguments.TryGetValue(name, out var value) ||
-            value is null)
-        {
-            return [];
-        }
+        public List<string>? Japanese { get; set; }
 
-        return value switch
-        {
-            JsonElement element => element.Deserialize<List<string>>() ?? [],
-            IEnumerable<string> strings => [.. strings],
-            _ => JsonSerializer.Deserialize<List<string>>(
-                JsonSerializer.Serialize(value)) ?? [],
-        };
-    }
+        public List<string>? English { get; set; }
 
-    private static string? GetString(
-        IDictionary<string, object?>? arguments,
-        string name)
-    {
-        if (arguments is null ||
-            !arguments.TryGetValue(name, out var value) ||
-            value is null)
-        {
-            return null;
-        }
+        [JsonPropertyName("image_name")]
+        public string? ImageName { get; set; }
 
-        return value switch
-        {
-            string text => text,
-            JsonElement { ValueKind: JsonValueKind.String } element =>
-                element.GetString(),
-            _ => value.ToString(),
-        };
+        public string? Gradient { get; set; }
     }
 }

@@ -27,7 +27,7 @@
             <BlockRenderer TBlock="UIActionBlock"
                            Context="action"
                            When="@(block => block.ToolName == "generate_haiku")">
-                <GenerateHaikuAction Block="action" />
+                <GenerateHaikuAction @key="action.Id" Block="action" />
             </BlockRenderer>
         </MessageListContent>
     </ChatPage>

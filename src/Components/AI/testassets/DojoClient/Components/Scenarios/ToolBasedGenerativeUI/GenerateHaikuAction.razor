@@ -11,19 +11,12 @@
 
 @code {
     private HaikuData? _haiku;
-    private UIActionBlock? _initializedBlock;
 
     [Parameter, EditorRequired]
     public UIActionBlock Block { get; set; } = default!;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (ReferenceEquals(_initializedBlock, Block))
-        {
-            return;
-        }
-
-        _initializedBlock = Block;
         _haiku = HaikuData.FromCall(Block.Call);
 
         if (!Block.IsComplete)
