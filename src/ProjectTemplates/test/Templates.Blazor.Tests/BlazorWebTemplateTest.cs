@@ -34,7 +34,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             ? AuthenticationFeatures.None
             : AuthenticationFeatures.RegisterAndLogIn;
 
-        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures, verifyNavMenuCollapses: true);
 
         bool HasClientProject()
             => interactivityOption is "WebAssembly" or "Auto";
@@ -65,7 +65,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
     }
 
-    private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures)
+    private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures, bool verifyNavMenuCollapses = false)
     {
         var appName = project.ProjectName;
 
@@ -77,7 +77,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures, verifyNavMenuCollapses);
         }
 
         // Test the published project
@@ -88,7 +88,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures, verifyNavMenuCollapses);
         }
     }
 

@@ -1,9 +1,6 @@
 // Handle navigation menu toggle
-const navScrollable = document.getElementById("nav-scrollable");
-const navToggler = document.querySelector(".navbar-toggler");
-
-if (navScrollable && navToggler) {
-    navScrollable.addEventListener("click", function() {
-        navToggler.click();
-    });
-}
+document.addEventListener("click", function (event) {
+    if (event.target.closest?.("#nav-scrollable")) {
+        document.querySelector(".navbar-toggler")?.click();
+    }
+});

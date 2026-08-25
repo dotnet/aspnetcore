@@ -87,7 +87,8 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         string listeningUri,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None,
+        bool verifyNavMenuCollapses = false)
     {
         if (!BrowserManager.IsAvailable(browserKind))
         {
@@ -101,7 +102,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         Output.WriteLine($"Opening browser at {listeningUri}...");
         await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await TestBasicInteractionAsync(browser, page, appName, pagesToExclude, authenticationFeatures);
+        await TestBasicInteractionAsync(browser, page, appName, pagesToExclude, authenticationFeatures, verifyNavMenuCollapses);
 
         await page.CloseAsync();
     }
@@ -111,7 +112,8 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         IPage page,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None,
+        bool verifyNavMenuCollapses = false)
     {
         await page.WaitForSelectorAsync("nav");
 
@@ -299,6 +301,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
         }
 
+        if (verifyNavMenuCollapses)
+        {
+            await VerifyNavMenuCollapsesAfterNavigationAsync(page);
+        }
+
         static async Task IncrementCounterAsync(IPage page)
         {
             // Allow multiple click attempts because some interactive render modes
@@ -325,6 +332,26 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             }
 
             Assert.Fail($"The counter did not increment after {MaxIncrementAttempts} attempts");
+        }
+    }
+    private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
+    {
+        var originalViewportSize = page.ViewportSize;
+
+        // The nav menu only collapses behind the toggler on viewports narrower than 641px.
+        await page.SetViewportSizeAsync(400, 800);
+
+        try
+        {
+            await page.CheckAsync(".navbar-toggler");
+            Assert.True(await page.IsCheckedAsync(".navbar-toggler"), "The nav menu did not open.");
+            await page.ClickAsync("nav a[href='']");
+            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
+            await page.WaitForSelectorAsync(".navbar-toggler:not(:checked)");
+        }
+        finally
+        {
+            await page.SetViewportSizeAsync(originalViewportSize.Width, originalViewportSize.Height);
         }
     }
 
