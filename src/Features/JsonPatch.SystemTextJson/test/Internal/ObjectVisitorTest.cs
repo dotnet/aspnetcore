@@ -208,7 +208,7 @@ public class ObjectVisitorTest
     public void Visit_NullTarget_ReturnsNullAdapter()
     {
         // Arrange
-        var visitor = new ObjectVisitor(new ParsedPath("/test"), JsonSerializerOptions.Default);
+        var visitor = new ObjectVisitor(new ParsedPath("test"), JsonSerializerOptions.Default);
 
         // Act
         object target = null;
