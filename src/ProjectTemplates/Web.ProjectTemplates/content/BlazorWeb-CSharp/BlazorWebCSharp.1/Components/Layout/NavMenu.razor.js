@@ -1,6 +1,24 @@
-// The menu elements can be replaced during hydration, so resolve them at click time.
-document.addEventListener("click", function(event) {
-    if (event.target instanceof Element && event.target.closest("#nav-scrollable")) {
-        document.querySelector(".navbar-toggler")?.click();
-    }
-});
+const customElementName = "blazor-nav-menu";
+
+if (!customElements.get(customElementName)) {
+    customElements.define(customElementName, class BlazorNavMenuElement extends HTMLElement {
+        connectedCallback() {
+            this.addEventListener("click", this.closeMenu);
+        }
+
+        disconnectedCallback() {
+            this.removeEventListener("click", this.closeMenu);
+        }
+
+        closeMenu(event) {
+            if (!(event.target instanceof Element) || !event.target.closest(".nav-scrollable")) {
+                return;
+            }
+
+            const navToggler = this.querySelector(".navbar-toggler");
+            if (navToggler instanceof HTMLInputElement) {
+                navToggler.checked = false;
+            }
+        }
+    });
+}

@@ -1,0 +1,36 @@
+@page "/interactivity/nav-menu-hydration"
+@rendermode RenderMode.InteractiveServer
+
+<script type="module" src="@Assets["RazorComponents/Pages/Interactivity/NavMenuHydration.razor.js"]"></script>
+
+<h1>Navigation menu hydration</h1>
+
+<blazor-nav-menu>
+    <input id="nav-menu-toggler" type="checkbox" class="navbar-toggler" />
+
+    <nav id="nav-scrollable" class="nav-scrollable">
+        <a id="nav-menu-destination" href="interactivity/nav-menu-hydration?destination=true">Destination</a>
+    </nav>
+</blazor-nav-menu>
+
+<button id="nav-menu-interactive-proof" @onclick="Increment">Increment</button>
+<p id="nav-menu-count">@count</p>
+<p id="nav-menu-destination-state">@Destination</p>
+
+@if (RendererInfo.IsInteractive)
+{
+    <p id="nav-menu-interactive">Interactive</p>
+}
+
+@code {
+    private int count;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Destination { get; set; }
+
+    private void Increment()
+    {
+        count++;
+    }
+}
