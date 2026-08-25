@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
