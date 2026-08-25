@@ -275,7 +275,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
-         if (internalDestinationHref !== response.url) {
+        if (internalDestinationHref !== response.url) {
           internalDestinationHref = response.url;
           // The redirect changed the URL, so re-notify listeners with the final URL to keep the interactive
           // runtime's NavigationManager.Uri correct. This fires a second LocationChanged only when the URL

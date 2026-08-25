@@ -1,10 +1,24 @@
-﻿@page "/customer-home"
-@layout Components.TestServer.RazorComponents.Shared.MenuLayout
+﻿@page "/authorize-home"
+@layout Components.TestServer.RazorComponents.Shared.AuthorizeMenuLayout
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
 
-<h1>Home Page</h1>
-@if (RendererInfo.IsInteractive)
+<h1>Authorize Home Page</h1>
+
+@if (_interactive)
 {
-    <p id="interactive-ready">Interactive</p>
+	<p id="interactive-ready">Interactive</p>
+}
+
+@code {
+	private bool _interactive;
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_interactive = true;
+			StateHasChanged();
+		}
+	}
 }

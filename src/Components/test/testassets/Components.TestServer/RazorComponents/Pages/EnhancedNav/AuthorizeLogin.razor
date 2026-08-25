@@ -1,15 +1,15 @@
 ﻿@page "/account/login"
-@layout Components.TestServer.RazorComponents.Shared.MenuLayout
+@layout Components.TestServer.RazorComponents.Shared.AuthorizeMenuLayout
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
-@inject NavigationManager Nav
+@inject NavigationManager Navigation
 
 <h1>Login Page</h1>
 
 <p>ReturnUrl: <span id="login-returnurl">@ReturnUrl</span></p>
-<p>Current URL: <span id="login-nav-uri">@Nav.Uri</span></p>
+<p>Current URL: <span id="login-nav-uri">@Navigation.Uri</span></p>
 
 @code {
-
-    [SupplyParameterFromQuery] public string ReturnUrl { get; set; }
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
 }

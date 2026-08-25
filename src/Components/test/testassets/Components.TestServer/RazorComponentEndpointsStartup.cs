@@ -4,12 +4,13 @@
 using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -18,6 +19,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -131,16 +133,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
-        services.AddSingleton<AsyncOperationService>();
-
-        // Registers a cookie scheme so that hitting an [Authorize] endpoint while unauthenticated challenges and
-        // redirects to LoginPath (relied on by the ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation
-        // E2E test). It's not the source of truth for the current user - UseFakeAuthState (below) sets HttpContext.User.
-        // Only /weather (AuthorizeWeather.razor) carries authorization metadata, so other endpoints are unaffected.
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options => options.LoginPath = "/account/login");
+        services.AddAuthentication(AuthorizeRedirectAuthenticationHandler.SchemeName)
+            .AddScheme<AuthenticationSchemeOptions, AuthorizeRedirectAuthenticationHandler>(
+                AuthorizeRedirectAuthenticationHandler.SchemeName,
+                _ => { });
         services.AddAuthorization();
-
+        services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
         services.AddSingleton<WebSocketCompressionConfiguration>();
 
@@ -180,7 +178,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 });
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
-
+                reexecutionApp.UseAuthentication();
+                reexecutionApp.UseAuthorization();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
@@ -188,6 +187,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             {
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
+                reexecutionApp.UseAuthentication();
+                reexecutionApp.UseAuthorization();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
@@ -226,8 +227,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.UseWebSockets();
         app.UseRouting();
-        app.UseAuthentication();
         UseFakeAuthState(app);
+        app.UseAuthentication();
         app.UseAuthorization();
         app.UseAntiforgery();
 
@@ -413,6 +414,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             response.Redirect(request.Query["external"] == "true"
                 ? "https://microsoft.com"
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class AuthorizeRedirectAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        public const string SchemeName = "AuthorizeRedirect";
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+            => Task.FromResult(AuthenticateResult.NoResult());
+
+        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        {
+            var returnUrl = $"{Request.PathBase}{Request.Path}{Request.QueryString}";
+            Response.Redirect($"{Request.PathBase}/account/login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
+
             return Task.CompletedTask;
         }
     }

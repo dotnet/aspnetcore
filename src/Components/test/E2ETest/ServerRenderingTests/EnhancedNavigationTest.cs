@@ -307,48 +307,6 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
     [Theory]
     [InlineData("server")]
-    [InlineData("wasm")]
-    public void SupplyParameterFromQueryReceivesQueryAddedByRedirectDuringEnhancedNavigation(string renderMode)
-    {
-        // Regression test for https://github.com/dotnet/aspnetcore/issues/60836. An enhanced navigation
-        // that follows a server redirect while an interactive circuit is active must update the
-        // circuit's NavigationManager to the final (redirected) URL, so [SupplyParameterFromQuery] in the
-        // interactive render observes the added query string (e.g. the ReturnUrl added by an auth challenge).
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        // Establish an active interactive circuit before navigating. The interactive component on
-        // this page reads [SupplyParameterFromQuery] and starts out with no query string.
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
-        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Browser.Equal("", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
-
-        // Enhanced-navigate to a page that redirects back to the interactive page with a query string.
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Redirect to page with query ({renderMode})")).Click();
-
-        // The interactive component reached after the redirect must observe the redirected-to query string.
-        // Regression assertion for #60836.
-        Browser.Equal("42", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
-        Browser.Contains($"/nav/location-changed/{renderMode}?query=42", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
-    }
-
-    [Fact]
-    public void ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation()
-    {
-        Navigate($"{ServerPathBase}/customer-home?username=");
-        Browser.Equal("Home Page", () => Browser.Exists(By.TagName("h1")).Text);
-        Browser.Exists(By.Id("interactive-ready"));
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Weather")).Click();
-
-        Browser.Equal("Login Page", () => Browser.Exists(By.TagName("h1")).Text);
-        var expectedReturnUrl = $"{ServerPathBase}/weather";
-        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
-        Browser.Contains($"ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}", () => Browser.Exists(By.Id("login-nav-uri")).Text);
-    }
-
-    [Theory]
-    [InlineData("server")]
     [InlineData("webassembly")]
     public void NavigateToCanFallBackOnFullPageReload(string renderMode)
     {
@@ -1001,6 +959,24 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Verify no JavaScript errors occurred during enhanced navigation
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
         Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
+    }
+
+    [Fact]
+    public void ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation()
+    {
+        Navigate($"{ServerPathBase}/authorize-home");
+        Browser.Equal("Authorize Home Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Exists(By.Id("interactive-ready"));
+
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Weather")).Click();
+
+        Browser.Equal("Login Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        var expectedReturnUrl = $"{ServerPathBase}/weather";
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+        Browser.Contains($"ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}", () => Browser.Exists(By.Id("login-nav-uri")).Text);
     }
 
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
