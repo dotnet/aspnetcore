@@ -11,39 +11,41 @@ namespace Microsoft.AspNetCore.JsonPatch;
 public class JsonPatchDocumentTest
 {
     [Fact]
-    public void InvalidPathAtBeginningShouldThrowException()
+    public void DoubleSlashAtBeginningShouldParseCorrectly()
     {
         // Arrange
         var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject { [""] = new JObject() };
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() =>
-        {
-            patchDocument.Add("//NewInt", 1);
-        });
+        patchDocument.Add("//NewInt", 1);
+        patchDocument.ApplyTo(targetObject);
 
         // Assert
-        Assert.Equal(
-           "The provided string '//NewInt' is an invalid path.",
-            exception.Message);
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("add", operation.op);
+        Assert.Equal("//NewInt", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject[""]["NewInt"].Value<int>());
     }
 
     [Fact]
-    public void InvalidPathAtEndShouldThrowException()
+    public void DoubleSlashAtEndShouldParseCorrectly()
     {
         // Arrange
         var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject { ["NewInt"] = new JObject { [""] = new JObject() } };
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() =>
-        {
-            patchDocument.Add("NewInt//", 1);
-        });
+        patchDocument.Add("NewInt//", 1);
+        patchDocument.ApplyTo(targetObject);
 
         // Assert
-        Assert.Equal(
-           "The provided string 'NewInt//' is an invalid path.",
-            exception.Message);
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("add", operation.op);
+        Assert.Equal("/NewInt//", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject["NewInt"][""][""].Value<int>());
     }
 
     [Fact]

@@ -225,7 +225,7 @@ public class ObjectVisitorTest
     public void Visit_NullTarget_ReturnsNullAdapter()
     {
         // Arrange
-        var visitor = new ObjectVisitor(new ParsedPath("test"), new DefaultContractResolver());
+        var visitor = new ObjectVisitor(new ParsedPath("/test"), new DefaultContractResolver());
 
         // Act
         object target = null;

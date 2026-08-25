@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
