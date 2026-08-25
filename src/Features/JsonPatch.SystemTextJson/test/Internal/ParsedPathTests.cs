@@ -45,6 +45,8 @@ public class ParsedPathTests
     [Theory]
     [InlineData("//isSmth", new string[] { "", "isSmth" })]
     [InlineData("//", new string[] { "", "" })]
+    [InlineData("/", new string[] { "" })]
+    [InlineData("", new string[] { })]
     [InlineData("/foo/", new string[] { "foo", "" })]
     [InlineData("/foo//bar", new string[] { "foo", "", "bar" })]
     [InlineData("foo//bar", new string[] { "foo", "", "bar" })]
