@@ -329,4 +329,37 @@ app.MapGet("/2", (BindableStructWithMismatchedNullability<Todo> param) => "Hello
             index++;
         }
     }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_Provided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn param) => param.Value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = QueryString.Create("value", "bound");
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "bound");
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_SingleArgumentNullableStructReturn_NotProvided()
+    {
+        var source = """
+app.MapGet("/", (BindableStructWithSingleArgumentNullableReturn param) => param.Value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "", StatusCodes.Status400BadRequest);
+    }
 }
