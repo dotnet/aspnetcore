@@ -157,12 +157,13 @@ public class UIAgent : IDisposable
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
 
             var processUpdate = ApplyStateMapper(update);
+            assistantUpdates.Add(processUpdate);
+
             if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
             {
                 continue;
             }
 
-            assistantUpdates.Add(processUpdate);
             await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
             {
                 yield return block;
