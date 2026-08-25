@@ -26,3 +26,15 @@ Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.Name.get -> string?
 Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.Name.init -> void
 Microsoft.AspNetCore.Identity.Data.PasskeyUpdateRequest.PasskeyUpdateRequest() -> void
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasskeySignInAsync(string! credentialJson, bool isPersistent) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult!>!
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PasskeyEndpointsOptions() -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.set -> void
+Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions
+Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions
+static Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions.MapWellKnownPasskeyEndpoints(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions.AddPasskeyEndpoints(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

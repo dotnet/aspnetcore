@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Identity.Data;
 [JsonSerializable(typeof(PasskeyInfoResponse[]))]
 [JsonSerializable(typeof(PasskeyRequestOptionsRequest))]
 [JsonSerializable(typeof(PasskeyUpdateRequest))]
+[JsonSerializable(typeof(PasskeyEndpointsResponse))]
 internal sealed partial class IdentityEndpointsJsonSerializerContext : JsonSerializerContext
 {
 }

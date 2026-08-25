@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0031`)
+### ASP (`ASP0000-ASP0033`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -37,6 +37,7 @@
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
 |  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
 |  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
+|  __`ASP0033`__ | Experimental warning for well-known passkey endpoints APIs |
 
 ### API (`API1000-API1003`)
 
