@@ -33,6 +33,11 @@ internal sealed class ScriptedChatClient : IChatClient
                     "The weather in San Francisco is sunny with a temperature of 20\u00b0C.",
                 { CallId: "human-in-the-loop-steps-1" } result =>
                     CreateTaskStepsSummary(result.Result),
+                { CallId: var callId }
+                    when callId.StartsWith(
+                        "tool-generative-ui-haiku-",
+                        StringComparison.Ordinal) =>
+                    "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
                 _ => "Background changed to a sunset gradient.",
             };
             yield return new ChatResponseUpdate
@@ -124,6 +129,33 @@ internal sealed class ScriptedChatClient : IChatClient
                                 new { description = "Plan launch and Mars surface operations", status = "enabled" },
                                 new { description = "Prepare communications and contingency plans", status = "enabled" },
                             },
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
+        if (prompt.Contains("haiku", StringComparison.OrdinalIgnoreCase) &&
+            options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "generate_haiku") == true)
+        {
+            var callId = $"tool-generative-ui-haiku-{Guid.NewGuid():N}";
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        callId,
+                        "generate_haiku",
+                        new Dictionary<string, object?>
+                        {
+                            ["japanese"] = new[] { "\u53e4\u6c60\u3084", "\u86d9\u98db\u3073\u3053\u3080", "\u6c34\u306e\u97f3" },
+                            ["english"] = new[] { "An ancient pond\u2014", "A frog leaps in,", "The sound of water." },
+                            ["image_name"] = "ancient-pond.svg",
+                            ["gradient"] = "linear-gradient(135deg, #134e5e, #71b280)",
                         })
                 ],
                 FinishReason = ChatFinishReason.ToolCalls,
