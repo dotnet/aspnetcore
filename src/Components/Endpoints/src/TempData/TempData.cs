@@ -190,7 +190,7 @@ internal sealed class TempData : ITempData
             }
         }
 
-        object IEnumerator.Current => _innerEnumerator.Current;
+        object IEnumerator.Current => Current;
 
         public void Dispose()
         {

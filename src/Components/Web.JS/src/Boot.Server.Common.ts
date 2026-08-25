@@ -14,7 +14,7 @@ import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 
-let initializersPromise: Promise<void> | undefined;
+let circuitOptionsPromise: Promise<Partial<CircuitStartOptions>> | undefined;
 let appState: string;
 let circuit: CircuitManager;
 let options: CircuitStartOptions;
@@ -22,17 +22,12 @@ let logger: ConsoleLogger;
 let serverStartPromise: Promise<void>;
 let circuitStarting: Promise<boolean> | undefined;
 
-export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStartOptions>>) {
-  if (options) {
+export function setCircuitOptions(optionsReady: Promise<Partial<CircuitStartOptions>>) {
+  if (circuitOptionsPromise) {
     throw new Error('Circuit options have already been configured.');
   }
 
-  initializersPromise = setOptions(initializersReady);
-
-  async function setOptions(initializers: Promise<Partial<CircuitStartOptions>>): Promise<void> {
-    const configuredOptions = await initializers;
-    options = resolveOptions(configuredOptions);
-  }
+  circuitOptionsPromise = optionsReady;
 }
 
 export function startServer(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry): Promise<void> {
@@ -46,7 +41,7 @@ export function startServer(components: RootComponentManager<ServerComponentDesc
 }
 
 async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry, resolve: () => void, _: any) {
-  await initializersPromise;
+  options = resolveOptions(await circuitOptionsPromise);
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
   appState = discoverServerPersistedState(document) || '';

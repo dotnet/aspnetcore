@@ -101,7 +101,7 @@ public class RegisterModel : PageModel
 
                 await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                if (!await _signInManager.CanSignInAsync(user))
                 {
                     return RedirectToPage("RegisterConfirmation", new { email = Input.Email });
                 }

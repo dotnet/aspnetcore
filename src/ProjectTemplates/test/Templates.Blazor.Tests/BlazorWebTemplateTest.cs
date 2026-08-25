@@ -55,7 +55,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66708")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
@@ -63,6 +62,34 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var authenticationFeatures = AuthenticationFeatures.RegisterAndLogIn | AuthenticationFeatures.Passkeys;
 
         await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_CanRequireConfirmedEmail(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync(
+            args: ["-int", "None", "-au", "Individual"],
+            onlyCreate: true);
+
+        var programPath = Path.Combine(project.TemplateOutputDir, "Program.cs");
+        var program = await File.ReadAllTextAsync(programPath);
+        const string requireConfirmedAccount = "options.SignIn.RequireConfirmedAccount = true;";
+        Assert.Contains(requireConfirmedAccount, program);
+        program = program.Replace(
+            requireConfirmedAccount,
+            "options.SignIn.RequireConfirmedEmail = true;",
+            StringComparison.Ordinal);
+        await File.WriteAllTextAsync(programPath, program);
+
+        await project.RunDotNetPublishAsync(noRestore: false);
+        await project.RunDotNetBuildAsync();
+
+        await TestProjectCoreAsync(
+            project,
+            browserKind,
+            BlazorTemplatePages.Counter,
+            AuthenticationFeatures.RegisterAndLogIn);
     }
 
     private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures, bool verifyNavMenuCollapses = false)
