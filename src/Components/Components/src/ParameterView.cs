@@ -69,8 +69,20 @@ public readonly struct ParameterView
         {
             if (string.Equals(entry.Name, parameterName))
             {
-                result = (TValue)entry.Value;
-                return true;
+                try
+                {
+                    result = (TValue)entry.Value;
+                    return true;
+                }
+                catch (InvalidCastException ex)
+                {
+                    // The incoming value might be of any type, for example if the caller splatted
+                    // attributes onto the component, so help developers identify the problem by
+                    // naming the parameter and the involved types.
+                    var sourceType = entry.Value?.GetType().FullName ?? "null";
+                    throw new InvalidCastException(
+                        $"Unable to convert the value supplied for parameter '{parameterName}' from type '{sourceType}' to type '{typeof(TValue).FullName}'.", ex);
+                }
             }
         }
 
