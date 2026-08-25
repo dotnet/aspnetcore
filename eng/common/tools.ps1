@@ -42,7 +42,7 @@
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
 
 # Enable repos to use a particular version of the on-line dotnet-install scripts.
-#    default URL: https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1
+#    default URL: https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1
 [string]$dotnetInstallScriptVersion = if (Test-Path variable:dotnetInstallScriptVersion) { $dotnetInstallScriptVersion } else { 'v1' }
 
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
@@ -263,11 +263,11 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   if (!(Test-Path $installScript)) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    $uri = "https://dotnet.microsoft.com/download/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
+    $uri = "https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
 
     Retry({
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -OutFile $installScript
+      Invoke-WebRequest $uri -UseBasicParsing -OutFile $installScript
     })
   }
 
@@ -417,7 +417,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # Locate Visual Studio installation or download x-copy msbuild.
   $vsInfo = LocateVisualStudio $vsRequirements
-  if ($vsInfo -ne $null) {
+  if ($vsInfo -ne $null -and $env:ForceUseXCopyMSBuild -eq $null) {
     # Ensure vsInstallDir has a trailing slash
     $vsInstallDir = Join-Path $vsInfo.installationPath "\"
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
@@ -501,7 +501,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
     Write-Host "Downloading $packageName $packageVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
+      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -UseBasicParsing -OutFile $packagePath
     })
 
     Unzip $packagePath $packageDir
@@ -541,23 +541,30 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     Create-Directory $vsWhereDir
     Write-Host 'Downloading vswhere'
     Retry({
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
+      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -UseBasicParsing -OutFile $vswhereExe
     })
   }
 
-  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
+  if (!$vsRequirements) {
+    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs' -ErrorAction SilentlyContinue) {
+      $vsRequirements = $GlobalJson.tools.vs
+    } else {
+      $vsRequirements = $null
+    }
+  }
+
   $args = @('-latest', '-format', 'json', '-requires', 'Microsoft.Component.MSBuild', '-products', '*')
 
   if (!$excludePrereleaseVS) {
     $args += '-prerelease'
   }
 
-  if (Get-Member -InputObject $vsRequirements -Name 'version') {
+  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'version' -ErrorAction SilentlyContinue)) {
     $args += '-version'
     $args += $vsRequirements.version
   }
 
-  if (Get-Member -InputObject $vsRequirements -Name 'components') {
+  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'components' -ErrorAction SilentlyContinue)) {
     foreach ($component in $vsRequirements.components) {
       $args += '-requires'
       $args += $component

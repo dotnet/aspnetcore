@@ -338,14 +338,14 @@ public class MessageBodyTests : LoggedTest
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
             reader.StartAcceptingReads(body);
 
-            input.Add("5;\r\0");
+            input.Add("5;\r");
 
             var buffer = new byte[1024];
             var readTask = stream.ReadAsync(buffer, 0, buffer.Length);
 
             Assert.False(readTask.IsCompleted);
 
-            input.Add("\r\r\r\nHello\r\n0\r\n\r\n");
+            input.Add("\nHello\r\n0\r\n\r\n");
 
             Assert.Equal(5, await readTask.DefaultTimeout());
             try

@@ -22,8 +22,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * Mark APIs from the previous release as Shipped by running `.\eng\scripts\mark-shipped.cmd`. **Note that it's best to do this as early as possible after the API surface is finalized from the previous release** - make sure to be careful that any new API in `main` that isn't shipped as part of the previous release, stays in `PublicAPI.Unshipped.txt` files.
   * One way to ensure this is to check out the release branch shipping the previous release (**after API surface area has been finalized**), run `.\eng\scripts\mark-shipped.cmd` there, copy over all of the `PublicAPI.Unshipped.txt` and `PublicAPI.Shipped.txt` files into a new branch based off of `main`, and build the repo. Any failures there will tell you whether or not there are new APIs in main that need to be put back into the `PublicAPI.Unshipped.txt` files.
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
-* Update `.\eng\Baseline.xml` to reflect the set of RTM packages that were just shipped. Then, `dotnet run` `.\eng\tools\BaselineGenerator\BaselineGenerator.csproj`, which will update `.\eng\Baseline.Designer.props`. If RTM hasn't shipped yet, do this in a separate PR once it has.
-* Update `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. Download the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copy over the files from the `data` folder. This can be done in the same PR as the one updating `.\eng\Baseline.xml` and `.\eng\Baseline.Designer.props` (see https://github.com/dotnet/aspnetcore/pull/49269).
+* Update `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. Download the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copy over the files from the `data` folder.
 
 ### Validation
 

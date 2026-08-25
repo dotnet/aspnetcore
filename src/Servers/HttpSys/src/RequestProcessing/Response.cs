@@ -404,7 +404,7 @@ internal sealed class Response
         var statusCanHaveBody = CanSendResponseBody(RequestContext.Response.StatusCode);
 
         // Determine if the connection will be kept alive or closed.
-        var keepConnectionAlive = true;
+        var keepConnectionAlive = Request.KeepAlive;
 
         if (requestVersion < Constants.V1_0
             || (requestVersion == Constants.V1_1 && requestCloseSet)

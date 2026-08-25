@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Web Client-Side File Templates for Microsoft Template Engine</Description>
     <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
+    <ValidateTemplates>false</ValidateTemplates>
   </PropertyGroup>
 
 </Project>

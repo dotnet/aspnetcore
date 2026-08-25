@@ -15,17 +15,17 @@ steps:
   
 - ${{ if ne(parameters.overrideGuardianVersion, '') }}:
   - pwsh: |
-      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      Set-Location -Path $(System.DefaultWorkingDirectory)\eng\common\sdl
       . .\sdl.ps1
-      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts -Version ${{ parameters.overrideGuardianVersion }}
+      $guardianCliLocation = Install-Gdn -Path $(System.DefaultWorkingDirectory)\.artifacts -Version ${{ parameters.overrideGuardianVersion }}
       Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
     displayName: Install Guardian (Overridden)
 
 - ${{ if eq(parameters.overrideGuardianVersion, '') }}:
   - pwsh: |
-      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      Set-Location -Path $(System.DefaultWorkingDirectory)\eng\common\sdl
       . .\sdl.ps1
-      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts
+      $guardianCliLocation = Install-Gdn -Path $(System.DefaultWorkingDirectory)\.artifacts
       Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
     displayName: Install Guardian
 
@@ -40,7 +40,7 @@ steps:
 - ${{ if eq(parameters.overrideParameters, '') }}:
   - powershell: ${{ parameters.executeAllSdlToolsScript }}
       -GuardianCliLocation $(GuardianCliLocation)
-      -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
+      -NugetPackageDirectory $(System.DefaultWorkingDirectory)\.packages
       ${{ parameters.additionalParameters }}
     displayName: Execute SDL
     continueOnError: ${{ parameters.sdlContinueOnError }}
@@ -76,7 +76,7 @@ steps:
       flattenFolders: true
       sourceFolder:  $(Agent.BuildDirectory)/.gdn/rc/
       contents: '**/*.sarif'
-      targetFolder: $(Build.SourcesDirectory)/CodeAnalysisLogs
+      targetFolder: $(System.DefaultWorkingDirectory)/CodeAnalysisLogs
     condition: succeededOrFailed()
 
   # Use PublishBuildArtifacts because the SARIF extension only checks this case
@@ -84,6 +84,6 @@ steps:
   - task: PublishBuildArtifacts@1
     displayName: Publish SARIF files to CodeAnalysisLogs container
     inputs:
-      pathToPublish:  $(Build.SourcesDirectory)/CodeAnalysisLogs
+      pathToPublish:  $(System.DefaultWorkingDirectory)/CodeAnalysisLogs
       artifactName: CodeAnalysisLogs
     condition: succeededOrFailed()

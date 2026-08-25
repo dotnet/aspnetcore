@@ -8,6 +8,8 @@
     <MicrosoftNETCoreAppRuntimeVersion>{MicrosoftNETCoreAppRuntimeVersion}</MicrosoftNETCoreAppRuntimeVersion>
     <RepoRoot>{RepoRoot}</RepoRoot>
     <_ExtraTrimmerArgs>{ExtraTrimmerArgs} $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+    <!-- Should mitigate https://github.com/dotnet/aspnetcore/issues/61178 -->
+    <RestoreDisableParallel>true</RestoreDisableParallel>
     {AdditionalProperties}
   </PropertyGroup>
 

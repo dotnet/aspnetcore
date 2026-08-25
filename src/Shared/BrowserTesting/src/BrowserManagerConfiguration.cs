@@ -205,7 +205,6 @@ public class BrowserManagerConfiguration
         Env = configuration.GetValue<Dictionary<string, string>>(nameof(BrowserTypeLaunchOptions.Env)),
         DownloadsPath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.DownloadsPath)),
         ExecutablePath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.ExecutablePath)),
-        Devtools = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.Devtools)),
         Args = BindMultiValueMap(
             configuration.GetSection(nameof(BrowserTypeLaunchOptions.Args)),
             argsMap => argsMap.SelectMany(argNameValue => argNameValue.Value.Prepend(argNameValue.Key)).ToArray()),
@@ -342,7 +341,6 @@ public class BrowserManagerConfiguration
             Env = overrideOptions.Env != default ? overrideOptions.Env : defaultOptions.Env,
             DownloadsPath = overrideOptions.DownloadsPath != default ? overrideOptions.DownloadsPath : defaultOptions.DownloadsPath,
             ExecutablePath = overrideOptions.ExecutablePath != default ? overrideOptions.ExecutablePath : defaultOptions.ExecutablePath,
-            Devtools = overrideOptions.Devtools != default ? overrideOptions.Devtools : defaultOptions.Devtools,
             Args = overrideOptions.Args != default ? overrideOptions.Args : defaultOptions.Args,
             Headless = overrideOptions.Headless != default ? overrideOptions.Headless : defaultOptions.Headless,
             Timeout = overrideOptions.Timeout != default ? overrideOptions.Timeout : defaultOptions.Timeout,

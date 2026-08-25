@@ -133,6 +133,23 @@ std::wstring Environment::GetDllDirectoryValue()
     return expandedStr;
 }
 
+ProcessorArchitecture Environment::GetCurrentProcessArchitecture()
+{
+    // Use compile-time detection - we know which architectures we support
+    // and this is the most reliable and efficient approach. IsWow64Process2
+    // doesn't show the correct architecture when running under x64 emulation
+    // on ARM64.
+#if defined(_M_ARM64)
+    return ProcessorArchitecture::ARM64;
+#elif defined(_M_AMD64)
+    return ProcessorArchitecture::AMD64;
+#elif defined(_M_IX86)
+    return ProcessorArchitecture::x86;
+#else
+    static_assert(false, "Unknown target architecture");
+#endif
+}
+
 bool Environment::IsRunning64BitProcess()
 {
     // Check the bitness of the currently running process

@@ -6,7 +6,7 @@
 
 parameters:
   PackageVersion: 8.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+  BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
   PackageName: '.NET'
   ManifestDirPath: $(Build.ArtifactStagingDirectory)/sbom
   IgnoreDirectories: ''
@@ -35,7 +35,7 @@ steps:
       PackageName: ${{ parameters.packageName }}
       BuildDropPath: ${{ parameters.buildDropPath }}
       PackageVersion: ${{ parameters.packageVersion }}
-      ManifestDirPath: ${{ parameters.manifestDirPath }}
+      ManifestDirPath: ${{ parameters.manifestDirPath }}/$(ARTIFACT_NAME)
       ${{ if ne(parameters.IgnoreDirectories, '') }}:
         AdditionalComponentDetectorArgs: '--IgnoreDirectories ${{ parameters.IgnoreDirectories }}'
 

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API (native AOT)",
   "description": "用于使用发布为 native AOT 的 ASP.NET Core 最小 API 的 RESTful Web API 的项目模板。",

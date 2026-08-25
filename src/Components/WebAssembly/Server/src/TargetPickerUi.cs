@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using System.Dynamic;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
@@ -270,6 +271,9 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
         var debuggerTabsListUrl = $"{_browserHost}/json";
         IEnumerable<BrowserTab> availableTabs;
 
+        var targetApplicationUrlEncoded = WebUtility.HtmlEncode(targetApplicationUrl.ToString());
+        var debuggerTabsListUrlEncoded = WebUtility.HtmlEncode(debuggerTabsListUrl);
+
         try
         {
             availableTabs = await GetOpenedBrowserTabs();
@@ -279,17 +283,17 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
             await context.Response.WriteAsync($@"
 <h1>Unable to find debuggable browser tab</h1>
 <p>
-    Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
+    Could not get a list of browser tabs from <code>{debuggerTabsListUrlEncoded}</code>.
     Ensure your browser is running with debugging enabled.
 </p>
 <h2>Resolution</h2>
 <p>
     <h4>If you are using Google Chrome or Chromium for your development, follow these instructions:</h4>
-    {GetLaunchChromeInstructions(targetApplicationUrl.ToString())}
+    {GetLaunchChromeInstructions(targetApplicationUrlEncoded)}
 </p>
 <p>
     <h4>If you are using Microsoft Edge (80+) for your development, follow these instructions:</h4>
-    {GetLaunchEdgeInstructions(targetApplicationUrl.ToString())}
+    {GetLaunchEdgeInstructions(targetApplicationUrlEncoded)}
 </p>
 <strong>This should launch a new browser window with debugging enabled..</p>
 <h2>Underlying exception:</h2>
@@ -315,8 +319,8 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
 
             var suffix = string.IsNullOrEmpty(targetApplicationUrl)
                 ? string.Empty
-                : $" matching the URL {WebUtility.HtmlEncode(targetApplicationUrl)}";
-            await context.Response.WriteAsync($"<p>The list of targets returned by {WebUtility.HtmlEncode(debuggerTabsListUrl)} contains no entries{suffix}.</p>");
+                : $" matching the URL {targetApplicationUrlEncoded}";
+            await context.Response.WriteAsync($"<p>The list of targets returned by {debuggerTabsListUrlEncoded} contains no entries{suffix}.</p>");
             await context.Response.WriteAsync("<p>Make sure your browser is displaying the target application.</p>");
         }
         else
@@ -366,9 +370,31 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
     {
         var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
         var proxyEndpoint = new Uri(_debugProxyUrl);
-        var devToolsUrlAbsolute = new Uri(_browserHost + tabToDebug.DevtoolsFrontendUrl);
+        var devToolsUrlAbsolute = new Uri(new Uri(_browserHost), relativeUri: NormalizeDevtoolsFrontendUrl(tabToDebug.DevtoolsFrontendUrl));
         var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{underlyingV8Endpoint.Scheme}={proxyEndpoint.Authority}{underlyingV8Endpoint.PathAndQuery}";
         return devToolsUrlWithProxy;
+
+        static string NormalizeDevtoolsFrontendUrl(string devtoolsFrontendUrl)
+        {
+            // Currently frontend url can be:
+            // - absolute (since v135 of chrome and edge)
+            //      chrome example: https://chrome-devtools-frontend.appspot.com/serve_rev/@031848bc6ad02b97854f3d6154d3aefd0434756a/inspector.html?ws=localhost:9222/devtools/page/719FE9D3B43570193235446E0AB36859
+            //      edge example: https://aka.ms/docs-landing-page/serve_rev/@4e2c41645f24197463afa2ab6aa999352ee8255c/inspector.html?ws=localhost:9222/devtools/page/3A4D56E09776321628432588FC9299F4
+            // - relative (managed as fallback for brosers with prior version)
+            //      example: /devtools/inspector.html?ws=localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734
+            // The absolute url can't be used as-is because is not valid for debugging and cannot be made relative because of lack "devtools" segment
+            // before "inspector.html" but we can keep the query string and append to the default "devtools/inspector.html" browser devtools page
+
+            const string DefaultBrowserDevToolsPagePath = "devtools/inspector.html";
+
+            if (devtoolsFrontendUrl.AsSpan().TrimStart('/').StartsWith(DefaultBrowserDevToolsPagePath))
+            {
+                return devtoolsFrontendUrl;
+            }
+
+            UriHelper.FromAbsolute(devtoolsFrontendUrl, out _, out _, out _, out var query, out _);
+            return $"{DefaultBrowserDevToolsPagePath}{query}";
+        }
     }
 
     private string GetLaunchChromeInstructions(string targetApplicationUrl)

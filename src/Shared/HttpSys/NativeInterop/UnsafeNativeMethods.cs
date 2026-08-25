@@ -28,6 +28,7 @@ internal static unsafe partial class UnsafeNclNativeMethods
         internal const uint ERROR_HANDLE_EOF = 38;
         internal const uint ERROR_NOT_SUPPORTED = 50;
         internal const uint ERROR_INVALID_PARAMETER = 87;
+        internal const uint ERROR_INSUFFICIENT_BUFFER = 122;
         internal const uint ERROR_INVALID_NAME = 123;
         internal const uint ERROR_ALREADY_EXISTS = 183;
         internal const uint ERROR_MORE_DATA = 234;

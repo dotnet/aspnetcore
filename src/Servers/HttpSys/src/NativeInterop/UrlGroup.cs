@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -16,6 +17,8 @@ internal sealed partial class UrlGroup : IDisposable
         Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
     private static readonly int RequestPropertyInfoSize =
         Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
+    private static readonly int ChannelBindInfoSize =
+        Marshal.SizeOf<HttpApiTypes.HTTP_CHANNEL_BIND_INFO>();
 
     private readonly ILogger _logger;
 
@@ -42,6 +45,17 @@ internal sealed partial class UrlGroup : IDisposable
 
         Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
         Id = urlGroupId;
+
+        if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
+        {
+            var channelBindingSettings = new HTTP_CHANNEL_BIND_INFO
+            {
+                Hardening = HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
+                ServiceNames = IntPtr.Zero,
+                NumberOfServiceNames = 0,
+            };
+            SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new(&channelBindingSettings), (uint)ChannelBindInfoSize);
+        }
     }
 
     internal ulong Id { get; private set; }

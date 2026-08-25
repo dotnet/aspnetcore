@@ -969,7 +969,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         ThrowIfDisposed();
 
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        ArgumentNullThrowHelper.ThrowIfNull(code);
+        ArgumentNullThrowHelper.ThrowIfNullOrEmpty(code);
 
         var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken).ConfigureAwait(false) ?? "";
         var splitCodes = mergedCodes.Split(';');

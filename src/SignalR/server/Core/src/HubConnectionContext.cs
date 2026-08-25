@@ -203,7 +203,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -248,7 +248,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -269,7 +269,25 @@ public partial class HubConnectionContext
         {
             if (UsingStatefulReconnect())
             {
-                return _messageBuffer.WriteAsync(message, cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    HubMessage message, CancellationToken cancellationToken)
+                {
+                    var connectionToken = hubConnectionContext.ConnectionAborted;
+                    if (message is CloseMessage)
+                    {
+                        // If it's a CloseMessage, we might already have triggered the ConnectionAborted token
+                        // We would like to successfully send the CloseMessage for graceful close which means we can't use the ConnectionAborted token.
+                        connectionToken = CancellationToken.None;
+                    }
+
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(connectionToken, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -298,7 +316,17 @@ public partial class HubConnectionContext
             if (UsingStatefulReconnect())
             {
                 Debug.Assert(_messageBuffer is not null);
-                return _messageBuffer.WriteAsync(message, cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    SerializedHubMessage message, CancellationToken cancellationToken)
+                {
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(hubConnectionContext.ConnectionAborted, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -319,13 +347,16 @@ public partial class HubConnectionContext
         }
     }
 
-    private async Task CompleteWriteAsync(ValueTask<FlushResult> task)
+    private async Task CompleteWriteAsync(ValueTask<FlushResult> task, CancellationToken cancellationToken)
     {
         try
         {
             await task;
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -353,7 +384,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -379,7 +413,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);

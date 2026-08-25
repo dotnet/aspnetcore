@@ -45,5 +45,16 @@
     "typescript": "^4.5.4",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2"
+  },
+  "resolutions": {
+    "serialize-javascript": ">=7.0.5",
+    "cross-spawn": ">=7.0.5",
+    "braces": ">=3.0.3",
+    "micromatch": ">=4.0.8",
+    "picomatch": ">=2.3.2",
+    "flatted": ">=3.4.2",
+    "semver": ">=7.5.2",
+    "word-wrap": ">=1.2.4",
+    "@babel/traverse": ">=7.23.2"
   }
 }

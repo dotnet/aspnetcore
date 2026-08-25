@@ -106,6 +106,35 @@ public class RouteTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task ComplexParameter_NestedJsonNameQueryString_DoesNotOverwriteRouteValue()
+    {
+        // Arrange
+        Task<HelloReply> UnaryMethod(ComplextHelloRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new HelloReply { Message = $"Hello {request.Name.FirstName} {request.Name.LastName}!" });
+        }
+        var method = Fixture.DynamicGrpc.AddUnaryMethod<ComplextHelloRequest, HelloReply>(
+            UnaryMethod,
+            Greeter.Descriptor.FindMethodByName("SayHelloComplexCatchAll3"));
+        var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
+
+        // route.binding sets
+        // request.Name.LastName = "last_name";
+        // request.Name.FirstName = "complex_greeter/test2/b"
+        // ----
+        // query binding tries to overwrite with
+        // name.firstName=query_first
+        // name.lastName=query_last
+
+        // Act
+        var response = await client.GetAsync("/v1/last_name/complex_greeter/test2/b/c/d/two?name.firstName=query_first&name.lastName=query_last").DefaultTimeout();
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        using var result = await JsonDocument.ParseAsync(responseStream);
+        // Assert
+        Assert.Equal("Hello complex_greeter/test2/b last_name!", result.RootElement.GetProperty("message").GetString());
+    }
+
+    [Fact]
     public async Task SimpleCatchAllParameter_PrefixSuffixSlashes_MatchUrl_SuccessResult()
     {
         // Arrange

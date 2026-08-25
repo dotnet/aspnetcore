@@ -941,6 +941,8 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         Assert.Null(exception);
 
         await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+
+        Assert.Equal("{\"type\":7}", await innerConnection.ReadSentTextMessageAsync().DefaultTimeout());
     }
 
     private class SampleObject

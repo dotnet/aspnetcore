@@ -211,4 +211,106 @@ public class ResponseCachingKeyProviderTests
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
+
+    [Theory]
+    [InlineData("\u001e")]
+    [InlineData("\u001f")]
+    [InlineData("before\u001eafter")]
+    [InlineData("before\u001fafter")]
+    public void ThrowIfContainsDelimiters_ThrowsForValuesWithDelimiters(string value)
+    {
+        Assert.Throws<CacheKeyDelimiterException>(() => ResponseCachingKeyProvider.ThrowIfContainsDelimiters(value));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("normalvalue")]
+    [InlineData("/path/to/resource")]
+    [InlineData("value with spaces")]
+    public void ThrowIfContainsDelimiters_DoesNotThrowForSafeValues(string value)
+    {
+        ResponseCachingKeyProvider.ThrowIfContainsDelimiters(value);
+    }
+
+    [Fact]
+    public void CreateBaseKey_Throws_IfPathContainsDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.Request.Path = "/path\u001einjected";
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateBaseKey(context));
+    }
+
+    [Fact]
+    public void CreateBaseKey_Throws_IfPathBaseContainsDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.Request.PathBase = "/base\u001finjected";
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateBaseKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_Throws_IfHeaderValueContainsDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "Value\u001eInjected";
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            Headers = new string[] { "HeaderA" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_Throws_IfQueryKeyContainsDelimiter_WildcardMode()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?normal=value&injected\u001ekey=value");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "*" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_Throws_IfQueryValueContainsDelimiter_WildcardMode()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?key=value\u001einjected");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "*" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_Throws_IfQueryValueContainsDelimiter_ExplicitMode()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=value\u001finjected");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "QueryA" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
 }

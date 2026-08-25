@@ -26,10 +26,19 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.28.3"
+    "@azure/msal-browser": "^4.30.0"
   },
   "resolutions": {
     "ansi-regex": "5.0.1",
-    "minimist": ">=1.2.6"
+    "minimist": ">=1.2.6",
+    "serialize-javascript": ">=7.0.5",
+    "cross-spawn": ">=7.0.5",
+    "braces": ">=3.0.3",
+    "micromatch": ">=4.0.8",
+    "picomatch": ">=2.3.2",
+    "flatted": ">=3.4.2",
+    "semver": ">=7.5.2",
+    "word-wrap": ">=1.2.4",
+    "@babel/traverse": ">=7.23.2"
   }
 }
