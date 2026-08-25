@@ -43,17 +43,15 @@ public class ParsedPathTests
     }
 
     [Theory]
-    [InlineData("//isSmth")]
-    [InlineData("//")]
-    [InlineData("/foo/")]
-    [InlineData("/foo//bar")]
-    [InlineData("foo//bar")]
-    [InlineData("foo/")]
-    public void PathWithEmptyReferenceTokenShouldFail(string path)
+    [InlineData("//isSmth", new string[] { "", "isSmth" })]
+    [InlineData("//", new string[] { "", "" })]
+    [InlineData("/foo/", new string[] { "foo", "" })]
+    [InlineData("/foo//bar", new string[] { "foo", "", "bar" })]
+    [InlineData("foo//bar", new string[] { "foo", "", "bar" })]
+    [InlineData("foo/", new string[] { "foo", "" })]
+    public void PathWithEmptyReferenceTokenShouldNotFail(string path, string[] expectedSegments)
     {
-        Assert.Throws<JsonPatchException>(() =>
-        {
-            var parsedPath = new ParsedPath(path);
-        });
+        var parsedPath = new ParsedPath(path);
+        Assert.Equal(expectedSegments, parsedPath.Segments);
     }
 }

@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Microsoft.AspNetCore.Shared;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -17,7 +19,7 @@ internal readonly struct ParsedPath
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        _segments = ParsePath(path);
+        _segments = ParsePath(PathHelpers.NormalizePath(path));
     }
 
     public string LastSegment
@@ -42,59 +44,46 @@ internal readonly struct ParsedPath
             return Array.Empty<string>();
         }
 
-        var strings = new List<string>();
-        var sb = new StringBuilder(path.Length);
+        var span = path.AsSpan();
 
-        for (var i = 0; i < path.Length; i++)
+        if (span[0] != '/')
         {
-            if (path[i] == '/')
-            {
-                if (sb.Length > 0)
-                {
-                    strings.Add(sb.ToString());
-                    sb.Length = 0;
-                }
-                else if (i != 0)
-                {
-                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
-                }
-            }
-            else if (path[i] == '~')
-            {
-                ++i;
-                if (i >= path.Length)
-                {
-                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
-                }
-
-                if (path[i] == '0')
-                {
-                    sb.Append('~');
-                }
-                else if (path[i] == '1')
-                {
-                    sb.Append('/');
-                }
-                else
-                {
-                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
-                }
-            }
-            else
-            {
-                sb.Append(path[i]);
-            }
-        }
-
-        if (sb.Length > 0)
-        {
-            strings.Add(sb.ToString());
-        }
-        else
-        {
+            // This shouldn't be reachable as the constructor enforces it.
+            // But added to clarify and ensure that the Slice call below is always safe.
             throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
         }
 
+        // When we have a path like "/a/b/c//d/e", the expectation is
+        // to have the segments be ["a", "b", "c", "", "d", "e"].
+        // So, before splitting on "/", we want to slice off the leading "/".
+        // Without this slice, we will always have an extra empty string at the beginning.
+        span = span.Slice(1);
+
+        var strings = new List<string>();
+        foreach (var referenceTokenRange in span.Split('/'))
+        {
+            var referenceToken = span[referenceTokenRange].ToString();
+            ValidateReferenceToken(referenceToken);
+
+            referenceToken = referenceToken.Replace("~1", "/").Replace("~0", "~");
+
+            strings.Add(referenceToken);
+        }
+
         return strings.ToArray();
+    }
+
+    private static void ValidateReferenceToken(string referenceToken)
+    {
+        for (int i = 0; i < referenceToken.Length; i++)
+        {
+            if (referenceToken[i] == '~')
+            {
+                if (i + 1 >= referenceToken.Length || (referenceToken[i + 1] != '0' && referenceToken[i + 1] != '1'))
+                {
+                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(referenceToken), null);
+                }
+            }
+        }
     }
 }
