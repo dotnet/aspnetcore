@@ -182,14 +182,16 @@ function setDeferredElementValue(element: Element, value: any) {
     return;
   }
 
-  if (element instanceof HTMLInputElement) {
-    if (element.type === 'checkbox') {
-      element.checked = value === '' || value === true;
-    } else if (typeof value === 'string') {
-      element.value = value;
-    } else if (value === null) {
-      element.value = '';
-    }
+  // Blazor wire-format encodes bool as '' (true) or null (false); any other string is a form-post value and must go to .value.
+  if (element instanceof HTMLInputElement && element.type === 'checkbox' && (value === '' || value === null)) {
+    element.checked = value === '';
+    return;
+  }
+
+  if (typeof value === 'string') {
+    (element as any).value = value;
+  } else if (value === null) {
+    (element as any).value = '';
   }
 }
 
