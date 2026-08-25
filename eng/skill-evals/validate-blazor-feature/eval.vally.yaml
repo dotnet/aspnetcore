@@ -10,8 +10,9 @@ defaults:
 
 scoring:
   weights:
-    output-matches: 0.3
-    prompt: 0.7
+    output-matches: 0.1
+    output-not-matches: 0.41
+    prompt: 0.49
   threshold: 0.6
 
 stimuli:
@@ -120,11 +121,14 @@ stimuli:
           pattern: '(?i)(selenium|E2E)'
       - type: output-matches
         config:
-          pattern: '(?i)(behavior owner|production producer|final observable|lower-boundary false-pass)'
+          pattern: '(?is)(?=.*\bbehavior owner\b)(?=.*\bproduction producer\b)(?=.*\bfinal observable\b)(?=.*\bselected permanent surface\b)(?=.*\blower[- ]boundary false[- ]pass risk\b)'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )(?<!no need to )\b(?:keep|add|retain|include|use)\b.{0,80}(?:\bJest\b|\.test\.ts).{0,80}\b(?:permanent|primary|production|supplemental)\b.{0,20}\b(?:coverage|proof|test)\b|(?:\bJest\b|\.test\.ts).{0,50}\b(?:can|may|should)\s+(?:also\s+)?(?:remain|serve|stay|be kept|be used)\b(?:(?!\b(?:not|never|no)\b).){0,80}\b(?:permanent|primary|production|supplemental)\b.{0,20}\b(?:coverage|proof|test)\b|\b(?:permanent|primary|production|supplemental)\b.{0,30}(?:\bJest\b|\.test\.ts)\s+(?:test\s+)?(?:(?:is|would be|remains?)\s+)?(?:fine|okay|acceptable|allowed|useful|recommended)\b)'
       - type: prompt
     rubric:
       - "Selects permanent C# Selenium coverage under src/Components/test/E2ETest because the production behavior is owned by real browser geometry, scrolling, and observers"
-      - "Rejects the synthetic TypeScript/Jest test as production regression proof, including as supplemental coverage, while allowing it only as a temporary diagnostic outside the production change"
+      - "Rejects the synthetic TypeScript/Jest test as production regression proof, including as primary or supplemental coverage; merely mentioning Jest to reject it is correct, but permitting it anywhere in the production change fails this rubric"
       - "Records all five boundary fields: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
       - "Explains that mocked geometry and directly invoked observer callbacks can pass without proving that the browser producer reaches the shipped state"
       - "Requires strict Selenium red/green with the same assertion, the nearest opposite control, and adjacent same-producer controls"
@@ -141,11 +145,14 @@ stimuli:
       - type: output-matches
         config:
           pattern: '(?i)(block|blocked|not.*Jest|Jest.*not|only regression proof)'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )(?<!no need to )\b(?:keep|add|retain|include|use)\b.{0,80}(?:\bJest\b|\.test\.ts).{0,80}\b(?:permanent|primary|production|supplemental)\b.{0,20}\b(?:coverage|proof|test)\b|(?:\bJest\b|\.test\.ts).{0,50}\b(?:can|may|should)\s+(?:also\s+)?(?:remain|serve|stay|be kept|be used)\b(?:(?!\b(?:not|never|no)\b).){0,80}\b(?:permanent|primary|production|supplemental)\b.{0,20}\b(?:coverage|proof|test)\b|\b(?:permanent|primary|production|supplemental)\b.{0,30}(?:\bJest\b|\.test\.ts)\s+(?:test\s+)?(?:(?:is|would be|remains?)\s+)?(?:fine|okay|acceptable|allowed|useful|recommended)\b)'
       - type: prompt
     rubric:
       - "Fails closed despite the request for speed and requires a permanent C# Selenium scenario for the browser-owned ResizeObserver behavior"
       - "States that the fix remains blocked while mocked Jest coverage is its only regression proof"
-      - "Does not compromise by proposing the Jest test as primary, supplemental, faster, or more precise production coverage"
+      - "Does not compromise by proposing the Jest test as primary, supplemental, faster, or more precise production coverage; merely mentioning Jest to reject it is correct"
       - "Allows mocked observer or geometry work only as a temporary diagnostic outside the production change and removes it after Selenium supersedes it"
       - "Requires the identical Selenium assertion to fail without the fix and pass with it, with the nearest opposite control and adjacent same-producer controls"
 
@@ -154,9 +161,7 @@ stimuli:
       I extracted a TypeScript helper that parses a comma-separated component option string into a plain
       object. It accepts only a string, returns only strings and booleans, reads no globals, and does not
       touch the DOM, navigation, events, layout, observers, or JS interop. A bug is entirely in its escaping
-      rules. Should the permanent regression test use Selenium or a focused TypeScript unit test? For
-      comparison, where should behavior stay when a managed service owns it completely and its injected
-      service contract exposes every precondition and final observable without involving a browser?
+      rules. Should the permanent regression test use Selenium or a focused TypeScript unit test?
     graders:
       - type: output-matches
         config:
@@ -164,14 +169,62 @@ stimuli:
       - type: output-matches
         config:
           pattern: '(?i)(plain input|plain output|browser-independent|no.*fidelity|lower boundary)'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )\b(?:use|add|require)\b.{0,40}\b(?:Selenium|E2E)\b|(?<!no )(?<!not )(?<!n.t )(?<!never )\b(?:Selenium|E2E)\b.{0,30}\b(?:is|remains)\s+(?:required|blocking)\b)'
       - type: prompt
     rubric:
       - "Permits focused TypeScript unit coverage because both the helper's preconditions and observable are browser-independent plain inputs and outputs"
       - "Explains that Selenium adds no fidelity for a parsing and escaping defect wholly owned by the pure helper"
       - "Keeps the exception narrow and would disqualify it if the test mocked browser observers, layout APIs, geometry, navigation, events, or browser-dependent interop"
-      - "Does not reflexively require Selenium merely because the helper is written in TypeScript or used by Components"
+      - "Does not require Selenium or block the fix on E2E merely because the helper is written in TypeScript or used by Components"
       - "Still records a coherent five-field boundary decision with the pure helper as owner and the focused unit suite as the selected surface"
-      - "Keeps the fully owned and observable managed-service behavior at its faithful managed lower boundary rather than requiring Selenium"
+
+  - name: keep-dom-sync-at-faithful-lower-boundary
+    prompt: |
+      A regression in synchronizeDomContentCore reuses the wrong keyed node and changes sibling order while
+      recursively synchronizing source and destination fragments. The production function operates only on
+      ordinary DOM Node operations. The smallest faithful reproduction creates ordinary nodes with
+      document.createElement and innerHTML in the existing DOM test harness, then asserts object identity and
+      sibling order without mocking geometry, layout, observers, events, timers, navigation, focus, or
+      production callbacks. Which permanent regression surface should own this case, and what boundary
+      decision supports that choice?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(Jest|jsdom|TypeScript|\.test\.ts)'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )\b(?:use|add|require)\b.{0,40}\b(?:Selenium|E2E)\b|(?<!no )(?<!not )(?<!n.t )(?<!never )\b(?:Selenium|E2E)\b.{0,30}\b(?:is|remains)\s+(?:required|blocking)\b)'
+      - type: prompt
+    rubric:
+      - "Selects the existing Jest/jsdom TypeScript unit-test surface, such as DomSync.test.ts or an adjacent test, rather than Selenium"
+      - "Explains that ordinary jsdom nodes are the faithful production-shaped inputs for this deterministic Node-interface algorithm, not mocked browser producers"
+      - "Treats object identity and sibling order as the final observable and explains why browser E2E would add no fidelity for it"
+      - "Does not require or block on Selenium merely because the helper participates in rendering"
+      - "Records all five boundary fields: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
+
+  - name: keep-endpoint-persistence-at-managed-boundary
+    prompt: |
+      During EndpointHtmlRenderer prerender persistence, two RegisterOnPersisting callbacks both call
+      PersistentComponentState.PersistAsJson with the same key. The second call throws ArgumentException;
+      ComponentStatePersistenceManager catches and logs the callback failure, aborts persistence, and clears
+      the pending state instead of writing it to the store. There is no DOM, JavaScript, navigation, timing,
+      or browser dependency. Which permanent regression surface should own this case, and why?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(managed|C#|unit test|integration test)'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )\b(?:use|add|require)\b.{0,40}\b(?:Selenium|E2E)\b|(?<!no )(?<!not )(?<!n.t )(?<!never )\b(?:Selenium|E2E)\b.{0,30}\b(?:is|remains)\s+(?:required|blocking)\b)'
+      - type: prompt
+    rubric:
+      - "Selects a managed unit or integration test under src/Components/test rather than browser E2E"
+      - "Identifies the EndpointHtmlRenderer and ComponentStatePersistenceManager prerender-persistence path as the behavior owner and production producer"
+      - "Uses the logged callback failure, aborted store write, and cleared pending state as the final observable rather than claiming the duplicate-key exception escapes EndpointHtmlRenderer"
+      - "Explains that Selenium adds no fidelity because every precondition and observable is fully owned and observable below the browser"
+      - "Records all five boundary fields: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
 
   - name: keep-selenium-with-minimal-javascript-step
     prompt: |
@@ -185,11 +238,14 @@ stimuli:
           pattern: '(?i)(IJavaScriptExecutor|setSelectionRange|JavaScript)'
       - type: output-matches
         config:
-          pattern: '(?i)(C#|Selenium).*(final|assert|orchestrat)|(?:final|assert|orchestrat).*(C#|Selenium)'
+          pattern: '(?i)(?:(?:C#|Selenium).*(?:final|assert|orchestrat)|(?:final|assert|orchestrat).*(?:C#|Selenium))'
+      - type: output-not-matches
+        config:
+          pattern: '(?is)(?:(?<!not )(?<!n.t )(?<!never )(?<!to )\b(?:move|put|keep|implement|write|perform|run)\b.{0,80}\b(?:scenario orchestration|final (?:user-visible )?assertion)\b.{0,60}\b(?:in|into|with|using)\b.{0,20}(?:\bJavaScript\b|\bTypeScript\b|\bJS\b|\bTS\b)|(?<!not )(?<!n.t )(?<!never )\buse\b.{0,20}(?:\bJavaScript\b|\bTypeScript\b|\bJS\b|\bTS\b)\s+(?:for|to perform)\s+(?:the\s+)?(?:scenario orchestration|final (?:user-visible )?assertion)\b|(?:\bJavaScript\b|\bTypeScript\b|\bJS\b|\bTS\b).{0,30}\b(?:can|may|should|must)\s+(?:own|perform|contain|implement|run)\b.{0,40}\b(?:scenario orchestration|final (?:user-visible )?assertion)\b|\b(?:scenario orchestration|final (?:user-visible )?assertion)\b.{0,30}\b(?:can|may|should|must)\s+be\s+(?:written|implemented|performed|run|kept)\b.{0,30}(?:\bJavaScript\b|\bTypeScript\b|\bJS\b|\bTS\b))'
       - type: prompt
     rubric:
       - "Keeps the permanent scenario in C# Selenium rather than moving it to a JavaScript or TypeScript unit test"
       - "Names the exact limitation: WebDriver cannot precisely set the input selection range to exact UTF-16 offsets"
       - "Allows only a minimal existing helper or IJavaScriptExecutor snippet for the setSelectionRange step"
       - "Keeps navigation, rerender orchestration, and the final user-visible edited-value assertion in C# Selenium"
-      - "Does not generalize the exception into permission for JavaScript-owned scenario orchestration, mocked selection state, or a JavaScript final assertion"
+      - "Does not move scenario orchestration or the final assertion into JavaScript or TypeScript; any answer granting that permission fails even if some C# Selenium coverage remains"

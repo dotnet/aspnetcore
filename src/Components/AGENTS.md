@@ -24,7 +24,7 @@ For implementation work:
   - For browser-owned behavior, implement a C# Selenium E2E test and first execute its scenario interactively with Playwright.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
 - Only after the selected permanent tests are passing, remove the sample code you added in the Samples projects.
-  - Use `git checkout` and `git clean -fd` to remove the sample code.
+  - Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
 ### Permanent regression test boundary
 
@@ -92,7 +92,7 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 
 5. **Implement permanent tests** - Only after the sample is validated, select the permanent test surface using the boundary above. Browser-owned behavior requires a C# Selenium E2E test.
 
-6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
+6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
 ## Build Tips
 
