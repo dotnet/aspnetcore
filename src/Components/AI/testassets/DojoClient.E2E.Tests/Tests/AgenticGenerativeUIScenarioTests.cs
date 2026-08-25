@@ -16,6 +16,8 @@ namespace DojoClient.E2E.Tests.Tests;
 [UITest]
 public partial class AgenticGenerativeUIScenarioTests : BrowserTest
 {
+    private const string SimplePlanPrompt = "Please build a plan to go to mars in 5 steps.";
+
     private static readonly string[] s_stepDescriptions =
     [
         "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
@@ -35,7 +37,7 @@ public partial class AgenticGenerativeUIScenarioTests : BrowserTest
     {
         await base.InitializeCoreAsync();
 
-        _prompt = $"Please build a plan to go to mars in 5 steps. ({Guid.NewGuid():N})";
+        _prompt = SimplePlanPrompt;
         _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<DojoModelOverrides>(
@@ -59,12 +61,16 @@ public partial class AgenticGenerativeUIScenarioTests : BrowserTest
         var scenario = _page.Locator("[data-scenario='agentic_generative_ui']");
         var activity = scenario.Locator(".plan-activity");
         var send = scenario.Locator("button.sc-ai-input__send");
+        var suggestions = scenario.Locator(".plan-suggestion");
 
         await Expect(activity).ToHaveCountAsync(0);
-        await _page.FillAsync("textarea.sc-ai-input__textarea", _prompt);
-        await send.ClickAsync();
+        await Expect(suggestions).ToHaveCountAsync(2);
+        await Expect(suggestions.Nth(0)).ToContainTextAsync("Simple plan");
+        await Expect(suggestions.Nth(1)).ToContainTextAsync("Complex plan");
+        await suggestions.Nth(0).ClickAsync();
 
         await AssertPlanAsync(activity, completedCount: 0, isRunning: true);
+        await Expect(suggestions).ToHaveCountAsync(0);
         await Expect(send).ToBeDisabledAsync();
 
         for (var completedCount = 1; completedCount <= s_stepDescriptions.Length; completedCount++)
@@ -127,5 +133,57 @@ public partial class AgenticGenerativeUIScenarioTests : BrowserTest
             await Expect(step.Locator(".plan-step__processing"))
                 .ToHaveCountAsync(expectedState == "current" ? 1 : 0);
         }
+    }
+}
+
+[UITest]
+public partial class AgenticGenerativeUISuggestionTests : BrowserTest
+{
+    private const string ComplexPlanPrompt = "Please build a plan to go to make pizza in 10 steps.";
+
+    private ServerInstance _api = null!;
+    private ServerInstance _ui = null!;
+    private IPage _page = null!;
+
+    protected override async Task InitializeCoreAsync()
+    {
+        await base.InitializeCoreAsync();
+
+        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
+        {
+            options.EnvironmentVariables["OPENAI_BASE_URL"] = "";
+            options.EnvironmentVariables["OPENAI_API_KEY"] = "";
+        });
+        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
+        {
+            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
+        });
+
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        _page = await context.NewPageAsync();
+        await _page.GotoAsync($"{_ui.TestUrl}/agentic_generative_ui");
+        await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
+    }
+
+    [TestMethod]
+    public async Task ComplexPlanSuggestion_SubmitsTenStepPizzaPlan()
+    {
+        var scenario = _page.Locator("[data-scenario='agentic_generative_ui']");
+        var suggestion = scenario.Locator(".plan-suggestion").Filter(
+            new LocatorFilterOptions { HasText = "Complex plan" });
+
+        await Expect(suggestion).ToHaveCountAsync(1);
+        await suggestion.ClickAsync();
+
+        await Expect(scenario.Locator(".sc-ai-message--user"))
+            .ToContainTextAsync(ComplexPlanPrompt);
+        await Expect(scenario.Locator(".plan-step")).ToHaveCountAsync(10);
+        await Expect(scenario.Locator(".plan-progress-card__count"))
+            .ToHaveTextAsync("10/10 Complete", new() { Timeout = 20_000 });
+        await Expect(scenario.Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+            .ToHaveTextAsync(
+                "All 10 steps in the pizza plan are complete.",
+                new() { Timeout = 20_000 });
+        await Expect(scenario.Locator("button.sc-ai-input__send")).ToBeEnabledAsync();
     }
 }

@@ -13,6 +13,27 @@ namespace AGUIDojoApi;
 internal sealed class ScriptedChatClient : IChatClient
 {
     private static readonly TimeSpan TokenDelay = TimeSpan.FromMilliseconds(60);
+    private static readonly string[] MarsPlanSteps =
+    [
+        "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+        "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+        "Select and train astronaut crew for the mission.",
+        "Establish communication systems and infrastructure for Mars exploration.",
+        "Launch the spacecraft and execute the mission to Mars.",
+    ];
+    private static readonly string[] PizzaPlanSteps =
+    [
+        "Choose the pizza style and serving size.",
+        "Gather flour, yeast, water, salt, and olive oil.",
+        "Mix and knead the pizza dough.",
+        "Let the dough rise until doubled in size.",
+        "Prepare the tomato sauce.",
+        "Slice and organize the toppings.",
+        "Preheat the oven and baking surface.",
+        "Shape the dough and add sauce and toppings.",
+        "Bake the pizza until the crust is golden.",
+        "Rest, slice, and serve the pizza.",
+    ];
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -22,6 +43,11 @@ internal sealed class ScriptedChatClient : IChatClient
         ArgumentNullException.ThrowIfNull(messages);
 
         var messageList = messages.ToList();
+        var prompt = messageList.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? string.Empty;
+        var planSteps = prompt.Contains("pizza", StringComparison.OrdinalIgnoreCase)
+            ? PizzaPlanSteps
+            : MarsPlanSteps;
+
         if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
         {
             var functionResult = messageList[^1].Contents
@@ -37,7 +63,8 @@ internal sealed class ScriptedChatClient : IChatClient
                 "agentic-plan-step-",
                 StringComparison.Ordinal) == true &&
                 int.TryParse(functionResult.CallId["agentic-plan-step-".Length..], out var stepNumber) &&
-                stepNumber is >= 1 and < 5)
+                stepNumber >= 1 &&
+                stepNumber < planSteps.Length)
             {
                 yield return CreatePlanStepUpdate(
                     messageId: Guid.NewGuid().ToString("N"),
@@ -56,8 +83,10 @@ internal sealed class ScriptedChatClient : IChatClient
                         "tool-generative-ui-haiku-",
                         StringComparison.Ordinal) =>
                     "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
-                { CallId: "agentic-plan-step-5" } =>
-                    "All five steps in the Mars mission plan are complete.",
+                { CallId: var callId }
+                    when callId == $"agentic-plan-step-{planSteps.Length}" =>
+                    $"All {planSteps.Length} steps in the " +
+                    $"{(planSteps.Length == PizzaPlanSteps.Length ? "pizza" : "Mars mission")} plan are complete.",
                 _ => "Background changed to a sunset gradient.",
             };
             yield return new ChatResponseUpdate
@@ -68,15 +97,6 @@ internal sealed class ScriptedChatClient : IChatClient
                 FinishReason = ChatFinishReason.Stop,
             };
             yield break;
-        }
-
-        var prompt = string.Empty;
-        foreach (var message in messageList)
-        {
-            if (message.Role == ChatRole.User)
-            {
-                prompt = message.Text;
-            }
         }
 
         var messageId = Guid.NewGuid().ToString("N");
@@ -95,14 +115,7 @@ internal sealed class ScriptedChatClient : IChatClient
                         "create_plan",
                         new Dictionary<string, object?>
                         {
-                            ["steps"] = new[]
-                            {
-                                "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
-                                "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
-                                "Select and train astronaut crew for the mission.",
-                                "Establish communication systems and infrastructure for Mars exploration.",
-                                "Launch the spacecraft and execute the mission to Mars.",
-                            },
+                            ["steps"] = planSteps,
                         })
                 ],
                 FinishReason = ChatFinishReason.ToolCalls,

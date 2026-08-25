@@ -18,6 +18,7 @@
                         <p class="dojo-scenario__welcome">
                             Ask the agent to create and complete a multi-step plan.
                         </p>
+                        <InitialPlanSuggestions />
                     </EmptyContent>
                     <Footer Context="context">
                         @if (_agent.State.Value.Steps.Count > 0)
