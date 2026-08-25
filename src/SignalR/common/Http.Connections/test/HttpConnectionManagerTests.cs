@@ -40,6 +40,21 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public void HttpConnectionDispatcherOptionsNonPositiveMaximumAuthenticationExpirationThrows()
+    {
+        var options = new HttpConnectionDispatcherOptions();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaximumAuthenticationExpiration = TimeSpan.Zero);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaximumAuthenticationExpiration = TimeSpan.FromTicks(-1));
+
+        options.MaximumAuthenticationExpiration = TimeSpan.FromTicks(1);
+        Assert.Equal(TimeSpan.FromTicks(1), options.MaximumAuthenticationExpiration);
+
+        options.MaximumAuthenticationExpiration = null;
+        Assert.Null(options.MaximumAuthenticationExpiration);
+    }
+
+    [Fact]
     public void NewConnectionsHaveConnectionId()
     {
         using (StartVerifiableLog())
