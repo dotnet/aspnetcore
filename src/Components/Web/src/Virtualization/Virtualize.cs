@@ -650,8 +650,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _unusedItemCapacity,
             _itemCount,
             _loadedItemsStartIndex,
-            _lastRenderedItemCount,
-            _lastRenderedPlaceholderCount,
             _itemSize,
             _totalMeasuredHeight,
             _measuredItemCount,
@@ -1113,15 +1111,22 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
 
             _itemCount = result.TotalItemCount;
-            var loadedItems = result.Items.ToArray();
-            if (_itemsProvider != DefaultItemsProvider
-                || _lastLoadedItemsSnapshot is null
-                || !_lastLoadedItemsSnapshot.SequenceEqual(loadedItems))
+            if (isDefaultProvider)
+            {
+                var loadedItems = result.Items.ToArray();
+                if (_lastLoadedItemsSnapshot is null
+                    || !_lastLoadedItemsSnapshot.SequenceEqual(loadedItems))
+                {
+                    _contentRevision++;
+                }
+                _lastLoadedItemsSnapshot = loadedItems;
+                _loadedItems = loadedItems;
+            }
+            else
             {
                 _contentRevision++;
+                _loadedItems = result.Items;
             }
-            _lastLoadedItemsSnapshot = loadedItems;
-            _loadedItems = loadedItems;
             _loadedItemsStartIndex = _itemsBefore;
 
             // For DefaultItemsProvider, capture the first loaded item so we can detect
@@ -1275,8 +1280,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         int UnusedItemCapacity,
         int ItemCount,
         int LoadedItemsStartIndex,
-        int LastRenderedItemCount,
-        int LastRenderedPlaceholderCount,
         float ItemSize,
         float TotalMeasuredHeight,
         int MeasuredItemCount,
