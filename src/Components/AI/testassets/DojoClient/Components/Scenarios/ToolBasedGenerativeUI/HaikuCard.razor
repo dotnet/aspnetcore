@@ -1,18 +1,28 @@
 <article class="haiku-card" style="background: @Haiku.Gradient;">
     <div class="haiku-card__overlay">
-        <div class="haiku-card__japanese" lang="ja">
-            @foreach (var line in Haiku.Japanese)
+        <div class="haiku-card__lines">
+            @for (var index = 0; index < Haiku.Japanese.Count; index++)
             {
-                <p>@line</p>
+                <div class="haiku-card__line">
+                    <p class="haiku-card__japanese" lang="ja">
+                        @Haiku.Japanese[index]
+                    </p>
+                    @if (index < Haiku.English.Count)
+                    {
+                        <p class="haiku-card__english">
+                            @Haiku.English[index]
+                        </p>
+                    }
+                </div>
             }
         </div>
-        <div class="haiku-card__divider"></div>
-        <div class="haiku-card__english">
-            @foreach (var line in Haiku.English)
-            {
-                <p>@line</p>
-            }
-        </div>
+
+        @if (Haiku.ImageName is not null)
+        {
+            <img class="haiku-card__image"
+                 src="/images/@Haiku.ImageName"
+                 alt="Illustration selected for the generated haiku" />
+        }
     </div>
 </article>
 

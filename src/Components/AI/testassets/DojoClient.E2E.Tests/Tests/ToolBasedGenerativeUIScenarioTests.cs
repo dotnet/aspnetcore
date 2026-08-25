@@ -52,21 +52,24 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
         Assert.AreEqual(
             "linear-gradient(135deg, #667eea, #764ba2)",
             global::DojoClient.Components.Scenarios.ToolBasedGenerativeUI
-                .ToolBasedGenerativeUIScenario.GetSafeGradient(
+                .HaikuData.NormalizeGradient(
                     "linear-gradient(135deg, #134e5e, #71b280); background: url(https://example.com)"));
 
         var prompt = $"{HaikuPrompt} ({_runId})";
-        var carousel = _page.Locator(".haiku-carousel");
+        var carousel = _page.Locator(".tool-generative-ui__display .haiku-carousel");
 
-        await AssertPlaceholderHaikuAsync(carousel);
+        await AssertPlaceholderHaikuAsync(carousel.Locator(".haiku-card"));
         await Expect(carousel.Locator(".haiku-carousel__nav")).ToHaveCountAsync(0);
 
-        await _page.FillAsync("textarea.sc-ai-input__textarea", prompt);
-        await _page.ClickAsync("button.sc-ai-input__send");
+        await SendAsync(prompt);
 
-        await AssertGeneratedHaikuAsync(carousel);
-        await AssertGeneratedCarouselControlsAsync(carousel);
+        await AssertNatureHaikuAsync(carousel.Locator(".haiku-card"));
+        await Expect(carousel.Locator(".haiku-carousel__nav")).ToHaveCountAsync(0);
+        await Expect(carousel).Not.ToContainTextAsync("A placeholder verse");
         await Expect(_page.Locator(".haiku-action-status")).ToHaveTextAsync("Haiku ready");
+        var transcriptCards = _page.Locator(".tool-generative-ui__chat .haiku-card");
+        await Expect(transcriptCards).ToHaveCountAsync(1);
+        await AssertNatureHaikuAsync(transcriptCards.First);
 
         var assistant = _page.Locator(
             ".sc-ai-message--assistant .sc-ai-message__content");
@@ -74,23 +77,6 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
         await Expect(assistant).ToHaveClassAsync(
             "sc-ai-message__content sc-ai-message__content--streaming");
         await Expect(_page.Locator("button.sc-ai-input__send")).ToBeDisabledAsync();
-
-        var previous = carousel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Previous haiku", Exact = true });
-        var next = carousel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Next haiku", Exact = true });
-
-        await previous.ClickAsync();
-        await AssertPlaceholderHaikuAsync(carousel);
-        await Expect(carousel.Locator(".haiku-carousel__counter")).ToHaveTextAsync("1 / 2");
-        await Expect(previous).ToBeDisabledAsync();
-        await Expect(next).ToBeEnabledAsync();
-
-        await next.ClickAsync();
-        await AssertGeneratedHaikuAsync(carousel);
-        await AssertGeneratedCarouselControlsAsync(carousel);
 
         await _checkpoints.ReleaseAsync(prompt, "haiku-summary-start");
 
@@ -101,39 +87,33 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
         await Expect(_page.Locator(".sc-ai-typing")).ToHaveCountAsync(0);
     }
 
-    private static async Task AssertPlaceholderHaikuAsync(ILocator carousel)
+    private static async Task AssertPlaceholderHaikuAsync(ILocator card)
     {
-        var card = carousel.Locator(".haiku-card");
         await Expect(card).ToHaveAttributeAsync(
             "style",
             "background: linear-gradient(135deg, #667eea, #764ba2);");
-        await Expect(card.Locator(".haiku-card__japanese p"))
+        await Expect(card.Locator(".haiku-card__japanese"))
             .ToHaveTextAsync(["\u3053\u3053\u306b\u4e00\u53e5", "\u4eee\u306e\u3046\u305f\u7f6e\u304f", "\u6625\u3092\u5f85\u3064"]);
-        await Expect(card.Locator(".haiku-card__english p"))
+        await Expect(card.Locator(".haiku-card__english"))
             .ToHaveTextAsync(["A placeholder verse\u2014", "Resting here for now,", "Awaiting your words."]);
     }
 
-    private static async Task AssertGeneratedHaikuAsync(ILocator carousel)
+    private static async Task AssertNatureHaikuAsync(ILocator card)
     {
-        var card = carousel.Locator(".haiku-card");
         await Expect(card).ToHaveAttributeAsync(
             "style",
             "background: linear-gradient(135deg, #134e5e, #71b280);");
-        await Expect(card.Locator(".haiku-card__japanese p"))
+        await Expect(card.Locator(".haiku-card__japanese"))
             .ToHaveTextAsync(["\u53e4\u6c60\u3084", "\u86d9\u98db\u3073\u3053\u3080", "\u6c34\u306e\u97f3"]);
-        await Expect(card.Locator(".haiku-card__english p"))
+        await Expect(card.Locator(".haiku-card__english"))
             .ToHaveTextAsync(["An ancient pond\u2014", "A frog leaps in,", "The sound of water."]);
+        await Expect(card.Locator(".haiku-card__image"))
+            .ToHaveAttributeAsync("src", "/images/ancient-pond.svg");
     }
 
-    private static async Task AssertGeneratedCarouselControlsAsync(ILocator carousel)
+    private async Task SendAsync(string prompt)
     {
-        await Expect(carousel.Locator(".haiku-carousel__nav")).ToHaveCountAsync(1);
-        await Expect(carousel.Locator(".haiku-carousel__counter")).ToHaveTextAsync("2 / 2");
-        await Expect(carousel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Previous haiku", Exact = true })).ToBeEnabledAsync();
-        await Expect(carousel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Next haiku", Exact = true })).ToBeDisabledAsync();
+        await _page.FillAsync("textarea.sc-ai-input__textarea", prompt);
+        await _page.ClickAsync("button.sc-ai-input__send");
     }
 }

@@ -31,7 +31,8 @@ internal static class ChatClientAgentFactory
     internal const string ToolBasedGenerativeUISystemPrompt = """
         You are a Japanese haiku assistant.
         For every haiku request, call generate_haiku with exactly three Japanese lines, exactly
-        three English translation lines, a relevant image_name, and an attractive CSS gradient.
+        three English translation lines, image_name set to ancient-pond.svg, and a two-color CSS
+        linear-gradient written as linear-gradient(<angle>deg, <hex color>, <hex color>).
         Do not print the haiku as ordinary chat text before calling the tool.
         """;
 

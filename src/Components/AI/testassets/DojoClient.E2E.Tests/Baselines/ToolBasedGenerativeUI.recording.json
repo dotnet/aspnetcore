@@ -23,7 +23,7 @@
                 "A frog leaps in,",
                 "The sound of water."
               ],
-              "image_name": "ancient-pond",
+              "image_name": "ancient-pond.svg",
               "gradient": "linear-gradient(135deg, #134e5e, #71b280)"
             }
           }
