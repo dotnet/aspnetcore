@@ -1,41 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.IO;
+using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 
 namespace Microsoft.AspNetCore.Components.Performance;
 
-/// <summary>
-/// Measures the cost of serializing a <see cref="RenderBatch"/> reference-frame
-/// section through <see cref="RenderBatchWriter"/>. The ref-based <c>Write</c>
-/// overload avoids the per-property defensive copies that the <c>in</c>-based
-/// overload triggered inside the JIT-compiled body.
-/// </summary>
 [MemoryDiagnoser]
 public class RenderBatchWriterBenchmark
 {
-    // A handful of representative batch sizes — small, medium, large. Real-world
-    // batches for a typical Blazor Server page tend to be on the order of a few
-    // hundred reference frames.
     [Params(64, 512, 4096)]
     public int ReferenceFrameCount { get; set; }
 
-    private RenderBatch _batch = default!;
+    private RenderTreeFrame[] _frames = default!;
     private MemoryStream _output = default!;
 
     [GlobalSetup]
     public void Setup()
     {
-        // Build a frame array that exercises a representative set of RenderTreeFrameType values
-        // so the benchmark is closer to real workloads (and so it traverses multiple branches
-        // in the switch in Write).
-        var frames = new RenderTreeFrame[ReferenceFrameCount];
-        for (var i = 0; i < frames.Length; i++)
+        _frames = new RenderTreeFrame[ReferenceFrameCount];
+        for (var i = 0; i < _frames.Length; i++)
         {
-            frames[i] = (i % 12) switch
+            _frames[i] = (i % 12) switch
             {
                 0 => RenderTreeFrame.Attribute(i, $"attr-{i}", $"value-{i}"),
                 1 => RenderTreeFrame.Element(i, $"element-{i}").WithElementSubtreeLength(2),
@@ -52,29 +42,288 @@ public class RenderBatchWriterBenchmark
             };
         }
 
-        _batch = new RenderBatch(
-            default,
-            new ArrayRange<RenderTreeFrame>(frames, frames.Length),
-            default,
-            default,
-            default);
-
-        // A reused output stream. We only need the throughput signal — the
-        // exact byte contents are not consumed by the benchmark.
         _output = new MemoryStream(capacity: 64 * 1024);
     }
 
-    [Benchmark(Description = "RenderBatchWriter: serialize N reference frames.")]
-    public int WriteReferenceFrames()
+    [Benchmark(Baseline = true, Description = "in RenderTreeFrame (pre-PR)")]
+    public int WriteFrames_In()
     {
         _output.Position = 0;
         _output.SetLength(0);
+        using var w = new FramePassingWriter(_output);
+        w.WriteLoop_In(_frames, _frames.Length);
+        return (int)_output.Length;
+    }
 
-        using (var writer = new RenderBatchWriter(_output, leaveOpen: true))
+    [Benchmark(Description = "ref array[i] (current production)")]
+    public int WriteFrames_DirectRef()
+    {
+        _output.Position = 0;
+        _output.SetLength(0);
+        using var w = new FramePassingWriter(_output);
+        w.WriteLoop_DirectRef(_frames, _frames.Length);
+        return (int)_output.Length;
+    }
+
+    [Benchmark(Description = "local copy + ref")]
+    public int WriteFrames_LocalCopyRef()
+    {
+        _output.Position = 0;
+        _output.SetLength(0);
+        using var w = new FramePassingWriter(_output);
+        w.WriteLoop_LocalCopyRef(_frames, _frames.Length);
+        return (int)_output.Length;
+    }
+
+    [Benchmark(Description = "by-value RenderTreeFrame")]
+    public int WriteFrames_ByValue()
+    {
+        _output.Position = 0;
+        _output.SetLength(0);
+        using var w = new FramePassingWriter(_output);
+        w.WriteLoop_ByValue(_frames, _frames.Length);
+        return (int)_output.Length;
+    }
+    private sealed class FramePassingWriter : IDisposable
+    {
+        private readonly BinaryWriter _writer;
+        private readonly Dictionary<string, int> _deduplicatedStringIndices = new();
+        private readonly List<string> _strings = new();
+
+        public FramePassingWriter(Stream stream)
+            => _writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+
+        public void Dispose() => _writer.Dispose();
+        public void WriteLoop_DirectRef(RenderTreeFrame[] array, int count)
         {
-            writer.Write(_batch);
+            _writer.Write(count);
+            for (var i = 0; i < count; i++)
+            {
+                WriteFrame(ref array[i]);
+            }
+        }
+        public void WriteLoop_LocalCopyRef(RenderTreeFrame[] array, int count)
+        {
+            _writer.Write(count);
+            for (var i = 0; i < count; i++)
+            {
+                var f = array[i];
+                WriteFrame(ref f);
+            }
         }
 
-        return (int)_output.Length;
+        public void WriteLoop_ByValue(RenderTreeFrame[] array, int count)
+        {
+            _writer.Write(count);
+            for (var i = 0; i < count; i++)
+            {
+                WriteFrameByValue(array[i]);
+            }
+        }
+
+        public void WriteLoop_In(RenderTreeFrame[] array, int count)
+        {
+            _writer.Write(count);
+            for (var i = 0; i < count; i++)
+            {
+                WriteFrameIn(in array[i]);
+            }
+        }
+
+        private void WriteFrame(ref RenderTreeFrame frame)
+        {
+            _writer.Write((int)frame.FrameType);
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    WriteString(frame.AttributeName, allowDeduplication: true);
+                    if (frame.AttributeValue is bool boolValue)
+                    {
+                        WriteString(boolValue ? string.Empty : null, allowDeduplication: true);
+                    }
+                    else
+                    {
+                        var attrString = frame.AttributeValue as string;
+                        WriteString(attrString, allowDeduplication: string.IsNullOrEmpty(attrString));
+                    }
+                    _writer.Write(frame.AttributeEventHandlerId);
+                    break;
+                case RenderTreeFrameType.Component:
+                    _writer.Write(frame.ComponentSubtreeLength);
+                    _writer.Write(frame.ComponentId);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ComponentReferenceCapture:
+                case RenderTreeFrameType.ComponentRenderMode:
+                case RenderTreeFrameType.NamedEvent:
+                    WritePadding(16);
+                    break;
+                case RenderTreeFrameType.Element:
+                    _writer.Write(frame.ElementSubtreeLength);
+                    WriteString(frame.ElementName, allowDeduplication: true);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Region:
+                    _writer.Write(frame.RegionSubtreeLength);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Text:
+                    WriteString(frame.TextContent, allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Markup:
+                    WriteString(frame.MarkupContent, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
+            }
+        }
+        private void WriteFrameByValue(RenderTreeFrame frame)
+        {
+            _writer.Write((int)frame.FrameType);
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    WriteString(frame.AttributeName, allowDeduplication: true);
+                    if (frame.AttributeValue is bool boolValue)
+                    {
+                        WriteString(boolValue ? string.Empty : null, allowDeduplication: true);
+                    }
+                    else
+                    {
+                        var attrString = frame.AttributeValue as string;
+                        WriteString(attrString, allowDeduplication: string.IsNullOrEmpty(attrString));
+                    }
+                    _writer.Write(frame.AttributeEventHandlerId);
+                    break;
+                case RenderTreeFrameType.Component:
+                    _writer.Write(frame.ComponentSubtreeLength);
+                    _writer.Write(frame.ComponentId);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ComponentReferenceCapture:
+                case RenderTreeFrameType.ComponentRenderMode:
+                case RenderTreeFrameType.NamedEvent:
+                    WritePadding(16);
+                    break;
+                case RenderTreeFrameType.Element:
+                    _writer.Write(frame.ElementSubtreeLength);
+                    WriteString(frame.ElementName, allowDeduplication: true);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Region:
+                    _writer.Write(frame.RegionSubtreeLength);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Text:
+                    WriteString(frame.TextContent, allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Markup:
+                    WriteString(frame.MarkupContent, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
+            }
+        }
+        private void WriteFrameIn(in RenderTreeFrame frame)
+        {
+            _writer.Write((int)frame.FrameType);
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    WriteString(frame.AttributeName, allowDeduplication: true);
+                    if (frame.AttributeValue is bool boolValue)
+                    {
+                        WriteString(boolValue ? string.Empty : null, allowDeduplication: true);
+                    }
+                    else
+                    {
+                        var attrString = frame.AttributeValue as string;
+                        WriteString(attrString, allowDeduplication: string.IsNullOrEmpty(attrString));
+                    }
+                    _writer.Write(frame.AttributeEventHandlerId);
+                    break;
+                case RenderTreeFrameType.Component:
+                    _writer.Write(frame.ComponentSubtreeLength);
+                    _writer.Write(frame.ComponentId);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ComponentReferenceCapture:
+                case RenderTreeFrameType.ComponentRenderMode:
+                case RenderTreeFrameType.NamedEvent:
+                    WritePadding(16);
+                    break;
+                case RenderTreeFrameType.Element:
+                    _writer.Write(frame.ElementSubtreeLength);
+                    WriteString(frame.ElementName, allowDeduplication: true);
+                    WritePadding(8);
+                    break;
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Region:
+                    _writer.Write(frame.RegionSubtreeLength);
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Text:
+                    WriteString(frame.TextContent, allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
+                    WritePadding(12);
+                    break;
+                case RenderTreeFrameType.Markup:
+                    WriteString(frame.MarkupContent, allowDeduplication: false);
+                    WritePadding(12);
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
+            }
+        }
+
+        private void WriteString(string? value, bool allowDeduplication)
+        {
+            if (value is null)
+            {
+                _writer.Write(-1);
+            }
+            else
+            {
+                int stringIndex;
+                if (!allowDeduplication || !_deduplicatedStringIndices.TryGetValue(value, out stringIndex))
+                {
+                    stringIndex = _strings.Count;
+                    _strings.Add(value);
+                    if (allowDeduplication)
+                    {
+                        _deduplicatedStringIndices.Add(value, stringIndex);
+                    }
+                }
+                _writer.Write(stringIndex);
+            }
+        }
+
+        private void WritePadding(int numBytes)
+        {
+            while (numBytes >= 4)
+            {
+                _writer.Write(0);
+                numBytes -= 4;
+            }
+            while (numBytes > 0)
+            {
+                _writer.Write((byte)0);
+                numBytes--;
+            }
+        }
     }
 }

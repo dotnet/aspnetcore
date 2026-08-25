@@ -38,5 +38,22 @@ internal partial class Program
 
         //Console.WriteLine($"Done after {stopwatch.ElapsedMilliseconds}ms");
         //Environment.Exit(0);
+
+        // Call each variant many times across all param sizes to trigger Tier1 JIT compilation.
+        // Run with: $env:DOTNET_JitDisasm="WriteFrame"; dotnet run -c Release -- --profile
+        // foreach (var count in new[] { 64, 512, 4096 })
+        // {
+        //     var b = new RenderBatchWriterBenchmark { ReferenceFrameCount = count };
+        //     b.Setup();
+        //     for (var i = 0; i < 10000; i++)
+        //     {
+        //         b.WriteFrames_In();
+        //         b.WriteFrames_DirectRef();
+        //         b.WriteFrames_LocalCopyRef();
+        //         b.WriteFrames_ByValue();
+        //     }
+        // }
+        // Console.WriteLine("JIT disasm warmup complete.");
+        // Environment.Exit(0);
     }
 }
