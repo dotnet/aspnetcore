@@ -72,6 +72,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     // Tracks whether a bare LF line terminator was seen for the current request
     private bool _sawBareLineFeedTerminator;
 
+    // Tracks whether a chunked extension was seen for the current request
+    private bool _sawChunkedExtension;
+
     public Http1Connection(HttpConnectionContext context)
     {
         Initialize(context);
@@ -395,6 +398,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public void OnChunkedExtension(bool rejected)
     {
+        // Only record the metric and log once per request, even if multiple chunk extensions are present.
+        if (_sawChunkedExtension)
+        {
+            return;
+        }
+
+        _sawChunkedExtension = true;
+
         Log.Http1ChunkedExtension(ConnectionId, rejected);
         ServiceContext.Metrics.ChunkedExtension(MetricsContext, rejected);
     }
@@ -848,6 +859,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
         _sawBareLineFeedTerminator = false;
+        _sawChunkedExtension = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 
