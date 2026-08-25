@@ -13,7 +13,7 @@ internal static class PathHelpers
         // So, we never want to normalize an empty string.
         if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
         {
-            return "/" + path;
+            return $"/{path}";
         }
 
         return path;
