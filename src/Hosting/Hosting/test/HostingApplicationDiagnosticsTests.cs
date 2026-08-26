@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -1180,6 +1181,79 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             Assert.Equal(key, pair.Key);
             Assert.Equal(value, pair.Value);
         }
+    }
+
+    [Fact]
+    public void ActivityListeners_ClientAndNetworkPeerAddressTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c =>
+            {
+                c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1");
+                c.Connection.RemotePort = 65123;
+            });
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+        Assert.Equal(65123, tags[HostingTelemetryHelpers.AttributeNetworkPeerPort]);
+    }
+
+    [Fact]
+    public void ActivityListeners_NoRemoteIpAddress_ClientAndNetworkPeerAddressTagsNotAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeClientAddress));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerAddress));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerPort));
     }
 
     [Theory]

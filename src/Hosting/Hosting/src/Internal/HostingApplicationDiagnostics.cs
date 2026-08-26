@@ -464,12 +464,22 @@ internal sealed class HostingApplicationDiagnostics
         // https://github.com/open-telemetry/semantic-conventions/blob/27735ccca3746d7bb7fa061dfb73d93bcbae2b6e/docs/http/http-spans.md#L581-L592
         // Missing values recommended by the spec are:
         // - url.query (need configuration around redaction to do properly)
-        // - http.request.header.<key>
+        // - http.request.header.<key> (opt-in)
+        // - client.port (opt-in)
+        // - network.protocol.name (only required if not "http", which is never the case here)
         //
         // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
 
         var request = httpContext.Request;
         var creationTags = new TagList();
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+            creationTags.Add(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
+            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString);
+            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, httpContext.Connection.RemotePort);
+        }
 
         if (request.Host.HasValue)
         {
