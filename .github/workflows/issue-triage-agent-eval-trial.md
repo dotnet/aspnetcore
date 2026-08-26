@@ -467,6 +467,8 @@ Classify the issue into one of these types:
 |-----------|-------------|
 | `Bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
 | `Feature` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+| `Task` | The issue requests bounded maintenance or implementation work that does not add product behavior, such as a documentation-only update, test/infrastructure work, or refactoring. A request to update docs or guidance should be `Task`, not `Feature`, unless it also requires new product behavior. |
+| `Epic` | The issue is an umbrella or tracking item that intentionally coordinates multiple independently deliverable issues. Do not use this for a single feature request. |
 
 ## Step 3: Additional Labels
 
@@ -536,7 +538,7 @@ structure — no additional sections beyond what is listed below:
 ### Triage Summary
 
 **Area:** `area-xyz` (brief reason)
-**Type:** `Bug` | `Feature` (brief reason)
+**Type:** `Bug` | `Feature` | `Task` | `Epic` (brief reason)
 
 #### Regression Info
 - **Previously working version:** .NET x.y / ASP.NET Core x.y
