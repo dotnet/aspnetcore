@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globa
 import { Virtualize } from '../src/Virtualize';
 
 const renderedWindowVersionAttribute = 'data-blazor-virtualize-rendered-window-version';
+const parameterVersionAttribute = 'data-blazor-virtualize-parameter-version';
 
 describe('Virtualize exports', () => {
   test('exports expected functions', () => {
@@ -292,7 +293,45 @@ describe('Virtualize intersection measurements', () => {
     expect(invokeMethodAsync).toHaveBeenCalledTimes(expectedCallback ? 1 : 0);
   });
 
-  test('reobserves spacers only when managed code rejects a stale measurement', async () => {
+  test('reobserves spacers after a parameter-driven render', async () => {
+    const container = document.createElement('div');
+    container.style.overflowY = 'auto';
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    container.append(spacerBefore, item, spacerAfter);
+    document.body.append(container);
+
+    setElementMetrics(container, rect(0, 200), 200);
+    setElementMetrics(spacerBefore, rect(-10, 20), 20);
+    setElementMetrics(item, rect(10, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerBefore.setAttribute(parameterVersionAttribute, '1');
+    spacerAfter.setAttribute(parameterVersionAttribute, '1');
+
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter);
+    observe.mockClear();
+    unobserve.mockClear();
+
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '2');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '2');
+    await Promise.resolve();
+
+    expect(unobserve).not.toHaveBeenCalled();
+    expect(observe).not.toHaveBeenCalled();
+
+    spacerBefore.setAttribute(parameterVersionAttribute, '2');
+    spacerAfter.setAttribute(parameterVersionAttribute, '2');
+    await Promise.resolve();
+
+    expect(unobserve).toHaveBeenCalledTimes(2);
+    expect(observe).toHaveBeenCalledTimes(2);
+  });
+
+  test('reobserves spacers when managed code rejects a stale measurement', async () => {
     jest.useFakeTimers();
     const container = document.createElement('div');
     container.style.overflowY = 'auto';

@@ -89,6 +89,7 @@
     <button id="set-double-size" @onclick="SetDoubleSize">Item size 100</button>
     <button id="set-average-height-trap" @onclick="SetAverageHeightTrap">Tall rows before index 100</button>
     <button id="set-stale-measurement-scenario" @onclick="SetStaleMeasurementScenario">Stale measurement scenario</button>
+    <button id="shrink-rendered-content" @onclick="ShrinkRenderedContent">Shrink rendered content only</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -119,6 +120,7 @@
     private bool useVariableHeight = false;
     private bool useAverageHeightTrap;
     private bool useExactItemSize;
+    private double renderedItemScale = 1;
     private bool useItemsProvider = false;
     private bool omitItemComparer = false;
     private int itemSize = 50;
@@ -165,9 +167,12 @@
     }
 
     private string GetItemStyle(DynamicItem item)
-        => useExactItemSize
-            ? $"height: {item.Height}px;"
-            : $"border: 1px solid gray; padding: 5px; min-height: {item.Height}px;";
+    {
+        var renderedHeight = Math.Max(1, (int)Math.Round(item.Height * renderedItemScale));
+        return useExactItemSize
+            ? $"height: {renderedHeight}px; overflow: hidden;"
+            : $"border: 1px solid gray; padding: 5px; min-height: {renderedHeight}px;";
+    }
 
     private int GetHeight(int index)
     {
@@ -362,12 +367,19 @@
         useVariableHeight = false;
         useAverageHeightTrap = false;
         useExactItemSize = true;
+        renderedItemScale = 1;
         items = Enumerable.Range(0, 2000)
             .Select(i => new DynamicItem { Index = i, Height = itemSize })
             .ToList();
         nextPrependIndex = -1;
         nextAppendIndex = items.Count;
         statusMessage = "Stale measurement scenario: 2000 exact 50px items, overscan 3";
+    }
+
+    private void ShrinkRenderedContent()
+    {
+        renderedItemScale = 0.2;
+        statusMessage = "Shrank rendered content without changing Virtualize parameters";
     }
 
     private void ExpandVisibleItem()

@@ -799,7 +799,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task BeforeSpacerCallback_UsesVersionIdentityWhenRenderedItemCountsMatch()
+    public async Task BeforeSpacerCallback_RejectsPreviousRenderWhenRenderedItemCountsMatch()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 500);
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
@@ -882,7 +882,7 @@ public class VirtualizeTest
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public async Task SpacerCallback_GeometryNeutralRerenderPreservesVersion(bool beforeSpacer, bool useItemsProvider)
+    public async Task SpacerCallback_RenderInvalidatesPendingMeasurement(bool beforeSpacer, bool useItemsProvider)
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(
             itemSize: 50f,
@@ -901,22 +901,21 @@ public class VirtualizeTest
         var renderedWindowVersion = virtualize._renderedWindowVersion;
         await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
 
-        Assert.Equal(renderedWindowVersion, virtualize._renderedWindowVersion);
+        Assert.True(virtualize._renderedWindowVersion > renderedWindowVersion);
         var stateBeforeCallback = GetVirtualizeState(virtualize);
 
-        await renderer.Dispatcher.InvokeAsync(() =>
+        var accepted = await renderer.Dispatcher.InvokeAsync(() =>
         {
             if (beforeSpacer)
             {
-                callbacks.OnBeforeSpacerVisible(2500f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
+                return callbacks.OnBeforeSpacerVisible(2500f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
             }
-            else
-            {
-                callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
-            }
+
+            return callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill, renderedWindowVersion);
         });
 
-        Assert.NotEqual(stateBeforeCallback, GetVirtualizeState(virtualize));
+        Assert.False(accepted);
+        Assert.Equal(stateBeforeCallback, GetVirtualizeState(virtualize));
     }
 
     [Fact]
@@ -952,6 +951,45 @@ public class VirtualizeTest
         await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
 
         Assert.True(virtualize._renderedWindowVersion > renderedWindowVersion);
+    }
+
+    [Fact]
+    public async Task SpacerCallback_SameWindowGeometryChangeStartsNewMeasurementEpoch()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f,
+            totalItems: 500,
+            useItemsProvider: false);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        virtualize._itemsBefore = 0;
+        virtualize._lastRenderedItemCount = 10;
+        virtualize._lastRenderedPlaceholderCount = 0;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                500f,
+                500f,
+                SpacerVisibilityReason.ViewportFill,
+                virtualize._renderedWindowVersion));
+
+        Assert.True(virtualize._measuredItemCount > 0);
+        Assert.Equal(50f, virtualize._totalMeasuredHeight / virtualize._measuredItemCount);
+
+        await renderer.Dispatcher.InvokeAsync(() => virtualize.SetParametersAsync(ParameterView.Empty));
+        virtualize._itemsBefore = 0;
+        virtualize._lastRenderedItemCount = 10;
+        virtualize._lastRenderedPlaceholderCount = 0;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                100f,
+                500f,
+                SpacerVisibilityReason.ViewportFill,
+                virtualize._renderedWindowVersion));
+
+        Assert.Equal(10f, virtualize._totalMeasuredHeight / virtualize._measuredItemCount);
+        Assert.True(virtualize._measuredItemCount > 0);
     }
 
     [Fact]
