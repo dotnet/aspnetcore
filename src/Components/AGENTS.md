@@ -7,10 +7,13 @@ This guide provides step-by-step instructions for investigating, reviewing, and 
 You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
 * Add the applicable workflow steps to your `todos` and follow them strictly.
 
+The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
+
 For behavioral investigations and reviews:
 - Create or identify a scenario at the smallest faithful validation boundary.
 - Faithful validation includes the component, service, runtime, or browser mechanism that owns or produces each disputed precondition and observes the claimed material effect at the appropriate boundary.
 - Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
+- For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
 - Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
 - Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
 - Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
@@ -18,6 +21,7 @@ For behavioral investigations and reviews:
 For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
+  - Components and template files move. Resolve historical paths with `git log --follow --name-status` or `git ls-tree` before using `git show <commit>:<path>`.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.
 - Once the fix or feature is validated in the sample, implement E2E tests for it.
@@ -55,6 +59,8 @@ The `src/Components/Samples` folder contains canonical Blazor Web App samples, a
 - **BlazorWebAssemblyStandalone** - A standalone Blazor WebAssembly app (no server host), under `src/Components/WebAssembly/Samples`.
 
 Together these cover every interactivity platform (Server/WebAssembly/Auto/None) and location (Global/Per-page) by editing a single `@rendermode` rather than restructuring.
+
+Before expanding validation across this full matrix, state the render modes and lifecycle boundaries the task requires. Evaluate that requested matrix first, and report broader compatibility separately rather than silently redefining the task.
 
 **Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
