@@ -260,6 +260,11 @@ dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETest
 dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~TestName"
 ```
 
+**If that build fails, check these two first.** Both are common on the first E2E build in a fresh worktree:
+
+- Errors about **MessagePack** types or a missing `src/submodules/MessagePack-CSharp`: the submodule is not initialized. Run `git submodule update --init --recursive src/submodules/MessagePack-CSharp`, then rebuild.
+- An error saying **ANCM has not been built** (missing `AspNetCoreModuleV2` in-process handler): Components E2E tests do not need the IIS native assets. Re-run the build with `-p:UseIisNativeAssets=false` appended.
+
 For the first E2E run in a fresh worktree, or after relevant build, configuration, or output changes, run the dependency-aware build above. Do not use `--no-dependencies` to prepare E2E tests when referenced test-app outputs may be stale or missing. It may copy existing dependency outputs, but it does not rebuild referenced projects or apps. After the build succeeds, `--no-build` is the supported fast loop for repeated targeted tests while those inputs remain unchanged.
 
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
