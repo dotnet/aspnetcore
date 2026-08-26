@@ -6,7 +6,7 @@ description: >-
 
 # Validate a Blazor feature with the Components samples
 
-Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, check for errors, and reduce a reproduced failure to a deterministic diagnostic probe before selecting permanent coverage. Remove all temporary diagnostic and sample code once the selected permanent test covers it.
+Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. When the run reproduces a browser regression or failure that needs permanent coverage, also reduce it to a deterministic diagnostic probe before selecting permanent coverage. Remove any temporary diagnostic and sample code once the selected permanent test covers it.
 
 ## 1. Pick the sample and where the page goes
 
@@ -86,7 +86,9 @@ After interacting, inspect the console. **Scope it to the current page**: call `
 
 See [references/error-checks.md](references/error-checks.md) for the catalog of common failures, the symptom each produces, and the fix.
 
-## 6. Distill the reproduction and establish determinism
+## 6. Distill the reproduction and establish determinism (browser regressions only)
+
+Apply this section only when steps 4-5 reproduced a browser regression or failure that needs permanent coverage. Skip it for new-feature validation with no failure to reduce.
 
 After Playwright reproduces the failure, reduce the scenario to the smallest JavaScript probe and assertion that observes the same final browser state. Run it in the real page with Playwright evaluation or from temporary scratch code. This probe is diagnostic: do not add it to a Jest or `.test.ts` suite, do not include it in the production change, and remove it after the permanent scenario supersedes it.
 
@@ -99,7 +101,7 @@ If the runs do not agree, stop the permanent-test handoff and investigate the ow
 - When managed timing must be controlled for the browser scenario, introduce an explicit test gate such as a `TaskCompletionSource`, endpoint, or test-only release action and wait for observable browser state before and after releasing it.
 - Do not make the race appear stable by inserting an arbitrary fixed delay.
 
-When the browser reproduction is deterministic, record that the permanent C# Selenium scenario must preserve the same setup and final assertion. Prefer existing observable waits such as `Browser.True` and `Browser.Equal` (which poll with `WebDriverWait`) or an explicit test-controlled gate. A bounded polling helper may delay between observable checks when it also enforces a timeout; a fixed `Thread.Sleep` is not the synchronization mechanism for the regression assertion.
+When the browser reproduction is deterministic, record that the permanent C# Selenium scenario must preserve the same setup and final assertion. Prefer existing observable waits such as `Browser.True` and `Browser.Equal` (which poll with `WebDriverWait`) when the final observable is sufficient; use an explicit test-controlled gate only when deterministic managed or intermediate timing must be controlled. A bounded polling helper may delay between observable checks when it also enforces a timeout; a fixed `Thread.Sleep` is not the synchronization mechanism for the regression assertion.
 
 ## 7. Record the permanent regression boundary
 

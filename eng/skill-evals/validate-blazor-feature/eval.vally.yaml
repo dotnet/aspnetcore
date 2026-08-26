@@ -260,13 +260,13 @@ stimuli:
           pattern: '(?i)(producer|timing|ordering|precondition)'
       - type: output-matches
         config:
-          pattern: '(?i)(TaskCompletionSource|explicit (?:test )?gate|test-controlled gate|observable condition|faithful lower boundary)'
+          pattern: '(?i)(Browser\.True|Browser\.Equal|WebDriverWait|observable condition|faithful lower boundary|TaskCompletionSource|explicit (?:test )?gate|test-controlled gate)'
       - type: prompt
     rubric:
       - "Does not call the reproduction deterministic because not every run failed the same assertion for the same reason"
       - "Rejects Thread.Sleep(1000) as a synchronization mechanism and does not paper over the race"
       - "Investigates the real producer, preconditions, and timing with targeted observations or logging before finalizing permanent coverage"
-      - "Chooses a faithful lower-boundary test only if that boundary owns the final observable; otherwise introduces an explicit test-controlled gate and reruns the real browser scenario"
+      - "Chooses a faithful lower-boundary test only if that boundary owns the final observable; otherwise uses observable browser waits when the final observable is sufficient, or introduces an explicit test-controlled gate only when deterministic managed or intermediate timing must be controlled"
       - "Does not claim an immediate Selenium conversion is ready until the scenario is controlled and repeatable"
 
   - name: replace-arbitrary-selenium-sleep
@@ -278,14 +278,11 @@ stimuli:
       - type: output-matches
         config:
           pattern: '(?i)(Browser\.True|Browser\.Equal|WebDriverWait|observable condition)'
-      - type: output-matches
-        config:
-          pattern: '(?i)(TaskCompletionSource|test-controlled gate|release (?:action|button|endpoint))'
       - type: prompt
     rubric:
       - "Rejects the arbitrary two-second sleep as synchronization for the regression assertion"
       - "Prefers Browser.True/Browser.Equal or another WebDriverWait-backed observable browser condition"
-      - "When managed timing must be controlled, recommends an explicit test gate such as TaskCompletionSource and a release action"
+      - "Requires an explicit test gate such as TaskCompletionSource and a release action only when deterministic managed or intermediate timing must be controlled; accepts Browser.True/Browser.Equal or another WebDriverWait-backed wait when the final DOM observable is sufficient"
       - "Does not impose a syntactic ban on every Thread.Sleep; allows bounded polling helpers that repeatedly observe a condition and enforce a timeout"
 
   - name: split-manager-contract-from-browser-reachability

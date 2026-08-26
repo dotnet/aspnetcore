@@ -19,14 +19,14 @@ For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
 - Implement the fix or feature in the sample project first.
-- Reproduce the behavior interactively in the real browser using Playwright.
-- Reduce the reproduction to the smallest temporary JavaScript diagnostic probe and assertion that observes the same failure in that page. Keep the probe outside the production change; it is not permanent Jest or `.test.ts` coverage.
-- Repeat the unchanged browser scenario and probe a recorded, bounded number of times. Ten runs is a reasonable default confidence sample when repository evidence does not suggest another count, not proof across environments. Treat the issue as deterministic only when every run fails the same assertion for the same reason.
+- Exercise a new feature, or reproduce a behavioral failure, interactively in the real browser using Playwright.
+- For a browser regression or reproduced browser failure, reduce the reproduction to the smallest temporary JavaScript diagnostic probe and assertion that observes the same failure in that page. Keep the probe outside the production change; it is not permanent Jest or `.test.ts` coverage.
+- For that regression, repeat the unchanged browser scenario and probe a recorded, bounded number of times. Ten runs is a reasonable default confidence sample when repository evidence does not suggest another count, not proof across environments. Treat the issue as deterministic only when every run fails the same assertion for the same reason.
 - If the result is not deterministic, investigate the owning producer and timing before selecting permanent coverage. Use a faithful lower-boundary test when that boundary owns the final observable, or add an explicit test-controlled gate when managed timing must be controlled. Do not stabilize a regression assertion with an arbitrary fixed sleep.
 - Once the fix or feature is validated in the sample, select its permanent test surface using the boundary below.
-  - For deterministic browser-owned behavior, translate the same scenario and diagnostic assertion into a C# Selenium E2E test.
+  - For browser-owned behavior, translate the validated browser scenario and final observable into a C# Selenium E2E test; for a regression, preserve the diagnostic assertion.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
-- Only after the selected permanent tests are passing, remove the temporary JavaScript probe and the sample code you added in the Samples projects.
+- Only after the selected permanent tests are passing, remove any temporary JavaScript probe and the sample code you added in the Samples projects.
   - Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
 ### Permanent regression test boundary
