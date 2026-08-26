@@ -154,12 +154,12 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.27.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.64.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.64.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.83.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.83.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.83.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.83.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.83.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.302</MessagePackVersion>
     <!-- Extensions packages for Blazor WASM Service Defaults -->
     <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
@@ -216,11 +216,19 @@
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
-    <MicrosoftOpenApiVersion>[3.9.0,4.0.0)</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>[3.9.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
-    <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
-    <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
-    <DotnetServeVersion>1.10.93</DotnetServeVersion>
+    <MicrosoftOpenApiVersion>[3.10.0,4.0.0)</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>[3.10.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
+    <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
+    <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
+    <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
+    <MicrosoftExtensionsAIOpenAIVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIOpenAIVersion>
+    <!-- AG-UI packages (used by the Components.AI dojo test assets) -->
+    <AGUIVersion>0.0.5</AGUIVersion>
+    <AGUIAbstractionsVersion>$(AGUIVersion)</AGUIAbstractionsVersion>
+    <AGUIClientVersion>$(AGUIVersion)</AGUIClientVersion>
+    <AGUIFormattingVersion>$(AGUIVersion)</AGUIFormattingVersion>
+    <AGUIServerVersion>$(AGUIVersion)</AGUIServerVersion>
+    <!-- Playwright CLI version -->
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
 
