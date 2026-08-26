@@ -114,6 +114,7 @@ public partial class AgenticGenerativeUIScenarioTests : BrowserTest
             .ToHaveTextAsync($"{completedCount}/{s_stepDescriptions.Length} Complete");
         await Expect(card.Locator(".plan-progress-card__bar-fill"))
             .ToHaveAttributeAsync("style", $"width: {completedCount * 20}%");
+        await Expect(card.Locator(".plan-progress-card__bar-shimmer")).ToHaveCountAsync(1);
 
         var steps = card.Locator(".plan-step");
         await Expect(steps).ToHaveCountAsync(s_stepDescriptions.Length);

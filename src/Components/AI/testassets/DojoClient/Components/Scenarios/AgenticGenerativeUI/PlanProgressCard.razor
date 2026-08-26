@@ -1,14 +1,17 @@
 <div class="plan-progress-card">
-    <div class="plan-progress-card__header">
-        <h3>Task Progress</h3>
-        <span class="plan-progress-card__count">
-            @CompletedCount/@TotalCount Complete
-        </span>
-    </div>
+    <div class="plan-progress-card__summary">
+        <div class="plan-progress-card__header">
+            <h3>Task Progress</h3>
+            <span class="plan-progress-card__count">
+                @CompletedCount/@TotalCount Complete
+            </span>
+        </div>
 
-    <div class="plan-progress-card__bar">
-        <div class="plan-progress-card__bar-fill"
-             style="width: @ProgressPercent%"></div>
+        <div class="plan-progress-card__bar">
+            <div class="plan-progress-card__bar-fill"
+                 style="width: @ProgressPercent%"></div>
+            <div class="plan-progress-card__bar-shimmer"></div>
+        </div>
     </div>
 
     <ul class="plan-progress-card__steps">
