@@ -676,14 +676,19 @@ Order of operations matters. Do these in this exact order:
    (`by-design`, `question`, `external`, `docs`, `api-proposal`,
    `test-failure`, `performance`). It does **not** include `Bug` or
    `Feature` — those are issue types, applied via `set-issue-type` in
-   step 3 below.
+   step 3 below. Include `item_number` with the number of the issue being
+   triaged. For a frozen replay, use the issue number in the snapshot.
+   Otherwise, use `${{ github.event.issue.number }}` for `issues.opened` runs
+   or `${{ github.event.inputs.issue_number }}` for `workflow_dispatch` runs.
 
 3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
    `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
-   `set-issue-type` exactly once.
+   `set-issue-type` exactly once. Include `issue_number` with the same explicit
+   issue number used for `add-labels`.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
-   **remove `needs-area-label`** using `remove-labels`.
+   **remove `needs-area-label`** using `remove-labels`. Include `item_number`
+   with the same explicit issue number used for `add-labels`.
 
 5. **Apply the vulnerability gate.** If the issue is a vulnerability report
    per "Vulnerability Reports: Apply Labels, But Post No Comment" above,
