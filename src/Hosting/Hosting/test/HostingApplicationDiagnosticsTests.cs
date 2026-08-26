@@ -1226,6 +1226,45 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
+    public void ActivityListeners_NetworkPeerPortTagNotAddedWhenZero()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c =>
+            {
+                c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1");
+                c.Connection.RemotePort = 0;
+            });
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Scheme = "http",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkPeerPort));
+    }
+
+    [Fact]
     public void ActivityListeners_NoRemoteIpAddress_ClientAndNetworkPeerAddressTagsNotAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
