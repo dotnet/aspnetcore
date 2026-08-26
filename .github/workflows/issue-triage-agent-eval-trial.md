@@ -15,7 +15,7 @@ on:
         description: "Frozen replay case (forks only; all safe outputs are staged)"
         required: false
         type: choice
-        default: 68331-clean-control
+        default: 65910-type-subtype
         options:
           - none
           - 65910-type-subtype
@@ -147,27 +147,25 @@ Use this frozen point-in-time issue snapshot as the complete source of truth:
 ```json
 {
   "schema_version": 1,
-  "case_id": "68331-clean-control",
+  "case_id": "65910-type-subtype",
   "source": {
     "repository": "dotnet/aspnetcore",
-    "issue_number": 68331,
-    "issue_url": "https://github.com/dotnet/aspnetcore/issues/68331",
-    "created_at": "2026-08-10T20:04:57Z",
+    "issue_number": 65910,
+    "issue_url": "https://github.com/dotnet/aspnetcore/issues/65910",
+    "created_at": "2026-03-23T08:41:09Z",
     "snapshot_cutoff": "2026-08-26T00:00:00Z",
     "frozen_at": "2026-08-26T17:36:50Z",
     "title_and_body_edited": false,
-    "body_sha256": "3d3fcf642e78e594f6e48f75a552da24b6732e944f310ff70a27b3c2db64edb3"
+    "body_sha256": "eb8f5a82a7570b97267568a6aead6a5a37c56fe85af96848b4661bd6e8530e4f"
   },
   "issue": {
-    "number": 68331,
-    "title": "Add Map and Attribute for QUERY HTTP verb",
-    "body": "# [API Proposal]: Complete QUERY HTTP method support in ASP.NET Core\n\n## Background and Motivation\n\n[#61089](https://github.com/dotnet/aspnetcore/issues/61089) proposed support for the new `QUERY` verb, now published as [RFC 10008](https://datatracker.ietf.org/doc/html/rfc10008). That issue was closed once the core API was complete, but only a subset was approved. This issue proposes the remaining two APIs, so `QUERY` is supported in the same way as `GET` and `POST`.\n\nRelated to [dotnet/runtime#113522](https://github.com/dotnet/runtime/issues/113522), which proposes the corresponding `HttpClient.QueryAsync` APIs.\n\n## Proposed API\n\n### HttpQueryAttribute\n\n```diff\n  namespace Microsoft.AspNetCore.Mvc;\n\n+ /// <summary>\n+ /// Identifies an action that supports the HTTP QUERY method.\n+ /// </summary>\n+ public class HttpQueryAttribute : HttpMethodAttribute\n+ {\n+     /// <summary>\n+     /// Creates a new <see cref=\"HttpQueryAttribute\"/>.\n+     /// </summary>\n+     public HttpQueryAttribute();\n+\n+     /// <summary>\n+     /// Creates a new <see cref=\"HttpQueryAttribute\"/> with the given route template.\n+     /// </summary>\n+     /// <param name=\"template\">The route template. May not be null.</param>\n+     public HttpQueryAttribute([StringSyntax(\"Route\")] string template);\n+ }\n```\n\n### EndpointRouteBuilderExtensions\n\n```diff\n  namespace Microsoft.AspNetCore.Builder;\n\n  public static class EndpointRouteBuilderExtensions\n  {\n+     /// <summary>\n+     /// Adds a <see cref=\"RouteEndpoint\"/> to the <see cref=\"IEndpointRouteBuilder\"/> that matches HTTP QUERY requests\n+     /// for the specified pattern.\n+     /// </summary>\n+     /// <param name=\"endpoints\">The <see cref=\"IEndpointRouteBuilder\"/> to add the route to.</param>\n+     /// <param name=\"pattern\">The route pattern.</param>\n+     /// <param name=\"requestDelegate\">The delegate executed when the endpoint is matched.</param>\n+     /// <returns>A <see cref=\"IEndpointConventionBuilder\"/> that can be used to further customize the endpoint.</returns>\n+     public static IEndpointConventionBuilder MapQuery(\n+         this IEndpointRouteBuilder endpoints,\n+         [StringSyntax(\"Route\")] string pattern,\n+         RequestDelegate requestDelegate);\n+\n+     /// <summary>\n+     /// Adds a <see cref=\"RouteEndpoint\"/> to the <see cref=\"IEndpointRouteBuilder\"/> that matches HTTP QUERY requests\n+     /// for the specified pattern.\n+     /// </summary>\n+     /// <param name=\"endpoints\">The <see cref=\"IEndpointRouteBuilder\"/> to add the route to.</param>\n+     /// <param name=\"pattern\">The route pattern.</param>\n+     /// <param name=\"handler\">The delegate executed when the endpoint is matched.</param>\n+     /// <returns>A <see cref=\"RouteHandlerBuilder\"/> that can be used to further customize the endpoint.</returns>\n+     [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]\n+     [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]\n+     public static RouteHandlerBuilder MapQuery(\n+         this IEndpointRouteBuilder endpoints,\n+         [StringSyntax(\"Route\")] string pattern,\n+         Delegate handler);\n  }\n```\n\n## Usage Examples\n\nThese are all intended to be used in the same way that their existing counterparts for the other HTTP methods are used.\n\n```csharp\n[HttpQuery]\npublic async Task<ActionResult<IEnumerable<TodoItem>>> QueryForTodoItems(QueryParameters queryParameters)\n{\n    ...\n}\n```\n\n```csharp\nvar builder = WebApplication.CreateBuilder(args);\nvar app = builder.Build();\n\napp.MapQuery(\"/todos\", (QueryParameters queryParameters) => dataSource.Search(queryParameters));\n\napp.Run();\n```\n\n## Alternative Designs\n\n## Risks\n\n- `HttpClient.QueryAsync` is proposed in [dotnet/runtime#113522](https://github.com/dotnet/runtime/issues/113522), which is still unapproved (though I have it on good authority that no significant push back is anticipated there.).",
+    "number": 65910,
+    "title": "Update Multiple Hosted WebAssembly documentation to new 8.0+ model with App.razor",
+    "body": "Not sure if this is a feature request or documentation issue. \n\nThis page automatically reverts to the 7.0 version:\nhttps://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly/multiple-hosted-webassembly \n\nCan you please update the documentation and or guidance to get multiple hosted Blazor WebAssembly clients working with the new App.razor model, static asset fingerprinting and Static Server Side Rendering (SSR)?\n\n",
     "initial_labels": [
-      "api-proposal",
-      "api-ready-for-review",
-      "area-minimal"
+      "needs-area-label"
     ],
-    "initial_type": "Feature"
+    "initial_type": null
   }
 }
 ```
