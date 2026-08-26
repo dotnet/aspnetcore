@@ -30,6 +30,15 @@ For implementation work:
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
 
+### Cross-runtime design checkpoint
+
+Before editing behavior that crosses Components renderers, runtimes, or DI scopes:
+
+- Define the relevant behavior matrix: Server/WebAssembly/Auto, global/per-page interactivity, initial activation/enhanced navigation, prerendered/non-prerendered, and interactive `Router` present/absent. Mark intentionally excluded cells before implementation.
+- Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
+- Do not use component descriptors to transport unrelated framework state. Prefer a framework-owned persistent service when state must react to `PersistentComponentState` initial and value updates.
+- Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.
+
 ### Code clarity and durable knowledge
 
 - Before adding a comment, make local behavior discoverable through precise names,
@@ -81,6 +90,10 @@ Before expanding validation across this full matrix, state the render modes and 
 6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
 
 ## Build Tips
+
+### Build and retry discipline
+
+On Windows, serialize builds that share the `artifacts` directory and stop sample or test-server processes before rebuilding. After two consecutive failures at the same E2E boundary, stop rerunning the full command. Isolate the boundary with a focused unit or project check or a manually driven test server, then resume the E2E loop.
 
 ### Efficient Build Strategy
 
@@ -263,6 +276,8 @@ E2E tests are located in `src/Components/test/E2ETest`.
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
 3. When adding test coverage, prefer extending existing test components and assets over creating a set of new ones if it doesn't complicate the existing ones excessively. This reduces test infrastructure complexity and keeps related scenarios together.
+
+For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
 ### Running E2E Tests
 
