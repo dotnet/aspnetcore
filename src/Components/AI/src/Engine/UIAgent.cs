@@ -156,9 +156,15 @@ public class UIAgent : IDisposable
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
 
-            assistantUpdates.Add(update);
+            var processUpdate = ApplyStateMapper(update);
+            assistantUpdates.Add(processUpdate);
 
-            await foreach (var block in pipeline.Process(update, cancellationToken).ConfigureAwait(false))
+            if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
+            {
+                continue;
+            }
+
+            await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
             {
                 yield return block;
             }
@@ -179,6 +185,19 @@ public class UIAgent : IDisposable
         }
 
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+    }
+
+    internal virtual ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
+    {
+        if (_options.StateMapper is null)
+        {
+            return update;
+        }
+
+        var context = new StateMapperContext(update);
+        _options.StateMapper(context);
+
+        return context.HasHandledContent ? context.GetFilteredUpdate() : update;
     }
 
     private ChatOptions? BuildChatOptions()
