@@ -305,6 +305,10 @@ Authentication, Authorization, OAuth, OIDC, Bearer tokens, cookie auth, JWT.
 ASP.NET Core Identity, user/role management, identity providers, scaffolding.
 **Code:** `src/Identity/` (Core, UI, Extensions.Core, Extensions.Stores, EntityFrameworkCore)
 **Namespaces:** `Microsoft.AspNetCore.Identity.*`, `Microsoft.Extensions.Identity.Core.*`, `Microsoft.Extensions.Identity.Stores.*`
+**Boundary:** Identity UI scaffolding and Identity template markup belong here,
+including `.razor` files under generated or project-template `Components/Account`
+pages. Use `area-blazor` only when the defect is in Blazor component/runtime
+behavior rather than the Identity template that consumes it.
 **Packages:** `Microsoft.AspNetCore.Identity`, `Microsoft.AspNetCore.Identity.UI`, `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.Extensions.Identity.Core`, `Microsoft.Extensions.Identity.Stores`
 **Key types:** `UserManager<TUser>`, `SignInManager<TUser>`, `RoleManager<TRole>`, `IdentityOptions`, `IdentityResult`, `IdentityError`, `IdentityUser`, `IdentityRole`, `IUserStore<T>`, `IRoleStore<T>`, `IPasswordHasher<T>`, `IUserClaimsPrincipalFactory<T>`, `ExternalLoginInfo`, `IEmailSender`, `SecurityStampValidator`, `IPasskeyHandler<T>`
 **Config:** `AddIdentity<TUser,TRole>()`, `AddDefaultIdentity<TUser>()`, `MapIdentityApi<TUser>()`
@@ -442,7 +446,7 @@ When multiple areas could match, use these priorities:
 - **`MapGet`/`MapPost`, `Results.*`, endpoint filters** → `area-minimal`
 - **`[ApiController]`, `Controller`, action filters** → `area-mvc`
 - **`[Authorize]`, authentication schemes, JWT, OAuth** → `area-auth`
-- **`UserManager`, `SignInManager`, Identity scaffolding** → `area-identity`
+- **`UserManager`, `SignInManager`, Identity scaffolding/template markup** → `area-identity` (even when the template is implemented with `.razor` components)
 - **`UseCors()`, `UseStaticFiles()`, `UseSession()`, response caching** → `area-middleware`
 - **Route templates, constraints, `LinkGenerator`** → `area-routing`
 - **`IDataProtector`, key management, protect/unprotect** → `area-dataprotection`
