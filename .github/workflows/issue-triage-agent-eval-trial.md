@@ -676,7 +676,16 @@ no Notes section.
 
 Order of operations matters. Do these in this exact order:
 
-1. **Decide the labels and issue type** you will apply, based on Steps 1–5.
+1. **Decide the labels and issue type** you will apply, based on Steps 1–5,
+   then compare them with the issue's current labels and type. For a frozen
+   replay, `issue.initial_labels` and `issue.initial_type` are the current
+   state.
+
+   If the issue already has the chosen area, supported sub-type (if any), and
+   issue type; does not need `needs-area-label` removed; and has no newly
+   verified duplicate that the reporter did not already cite, call `noop` and
+   stop. A related issue or duplicate candidate already linked in the title or
+   body is not new triage information and does not prevent this no-op.
 
 2. **Apply the area label** and (if applicable from Step 3) one **additional
    sub-type label** using the `add-labels` safe output. The `add-labels`
@@ -688,11 +697,14 @@ Order of operations matters. Do these in this exact order:
    triaged. For a frozen replay, use the issue number in the snapshot.
    Otherwise, use `${{ github.event.issue.number }}` for `issues.opened` runs
    or `${{ github.event.inputs.issue_number }}` for `workflow_dispatch` runs.
+   Do not request labels the issue already has. Skip `add-labels` if no chosen
+   labels are missing.
 
 3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
-   `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
-   `set-issue-type` exactly once. Include `issue_number` with the same explicit
-   issue number used for `add-labels`.
+   `Feature`, `Task`, or `Epic` based on your Step 2 classification. Include
+   `issue_number` with the same explicit issue number used for `add-labels`.
+   Call `set-issue-type` at most once, and only if the issue's current type is
+   missing or differs from the chosen type.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
    **remove `needs-area-label`** using `remove-labels`. Include `item_number`
