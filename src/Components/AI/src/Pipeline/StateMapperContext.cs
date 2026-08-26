@@ -103,8 +103,13 @@ public class StateMapperContext
             AuthorName = Update.AuthorName,
             MessageId = Update.MessageId,
             ResponseId = Update.ResponseId,
+            ConversationId = Update.ConversationId,
+            CreatedAt = Update.CreatedAt,
             FinishReason = Update.FinishReason,
+            ModelId = Update.ModelId,
+            ContinuationToken = Update.ContinuationToken,
             RawRepresentation = Update.RawRepresentation,
+            AdditionalProperties = Update.AdditionalProperties,
             Contents = filtered,
         };
     }

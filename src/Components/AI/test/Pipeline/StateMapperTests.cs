@@ -69,23 +69,49 @@ public class StateMapperTests
     }
 
     [Fact]
-    public void StateMapper_FilteredUpdatePreservesRawRepresentation()
+    public void StateMapper_FilteredUpdatePreservesMetadata()
     {
         var agent = CreateAgent(new DelegatingStreamingChatClient());
         var rawRepresentation = new object();
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            ["property"] = "value",
+        };
+        var continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 });
+        var createdAt = new DateTimeOffset(2026, 8, 26, 8, 0, 0, TimeSpan.Zero);
         var stateContent = new StateContent
         {
             StateValue = new RecipeState { Title = "Pasta" },
         };
         var update = new ChatResponseUpdate
         {
+            Role = ChatRole.Assistant,
+            AuthorName = "Test assistant",
+            MessageId = "message-1",
+            ResponseId = "response-1",
+            ConversationId = "conversation-1",
+            CreatedAt = createdAt,
+            FinishReason = ChatFinishReason.Stop,
+            ModelId = "test-model",
+            ContinuationToken = continuationToken,
             RawRepresentation = rawRepresentation,
+            AdditionalProperties = additionalProperties,
             Contents = [stateContent, new TextContent("Enjoy this recipe!")],
         };
 
         var mappedUpdate = agent.ApplyStateMapper(update);
 
+        Assert.Equal(update.Role, mappedUpdate.Role);
+        Assert.Equal(update.AuthorName, mappedUpdate.AuthorName);
+        Assert.Equal(update.MessageId, mappedUpdate.MessageId);
+        Assert.Equal(update.ResponseId, mappedUpdate.ResponseId);
+        Assert.Equal(update.ConversationId, mappedUpdate.ConversationId);
+        Assert.Equal(createdAt, mappedUpdate.CreatedAt);
+        Assert.Equal(update.FinishReason, mappedUpdate.FinishReason);
+        Assert.Equal(update.ModelId, mappedUpdate.ModelId);
+        Assert.Same(continuationToken, mappedUpdate.ContinuationToken);
         Assert.Same(rawRepresentation, mappedUpdate.RawRepresentation);
+        Assert.Same(additionalProperties, mappedUpdate.AdditionalProperties);
         Assert.DoesNotContain(stateContent, mappedUpdate.Contents);
     }
 
