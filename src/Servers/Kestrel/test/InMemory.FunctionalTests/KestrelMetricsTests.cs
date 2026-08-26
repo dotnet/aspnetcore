@@ -1189,11 +1189,4 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal("1.1", (string)measurement.Tags["network.protocol.version"]);
         Assert.Equal("127.0.0.1", (string)measurement.Tags["server.address"]);
     }
-
-    private static void AssertChunkedExtension(CollectedMeasurement<long> measurement, bool rejected)
-    {
-        Assert.Equal(1, measurement.Value);
-        Assert.Equal(rejected ? "rejected" : "accepted", (string)measurement.Tags["kestrel.chunked_extension.outcome"]);
-        Assert.Equal("127.0.0.1", (string)measurement.Tags["server.address"]);
-    }
 }
