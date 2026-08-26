@@ -39,7 +39,9 @@ on:
 
   # Force a pre_activation job to be created because pat_pool depends on it.
   # This will skip the job if there are no open issues.
-  skip-if-no-match: "is:issue is:open"
+  skip-if-no-match:
+    query: "repo:dotnet/aspnetcore is:issue is:open"
+    scope: none
 
 description: >
   Triage newly opened issues in dotnet/aspnetcore. Classifies the area label,
