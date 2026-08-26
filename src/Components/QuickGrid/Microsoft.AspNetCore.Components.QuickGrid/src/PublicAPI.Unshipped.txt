@@ -11,6 +11,9 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNam
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNameOptions.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.InitialItemIndex.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.InitialItemIndex.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ScrollToItemAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void

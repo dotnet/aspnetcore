@@ -40,7 +40,7 @@ internal static class InputExtensions
             }
 
             result = default;
-            validationErrorMessage = $"The {input.DisplayName ?? input.FieldIdentifier.FieldName} field is not valid.";
+            validationErrorMessage = $"The {input.GetDisplayName()} field is not valid.";
             return false;
         }
         catch (InvalidOperationException ex)

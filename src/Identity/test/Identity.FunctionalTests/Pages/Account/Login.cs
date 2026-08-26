@@ -73,7 +73,7 @@ public class Login : DefaultUIPage
             Context.WithAuthenticatedUser().WithPasswordLogin());
     }
 
-    public async Task LoginWrongPasswordAsync(string userName, string password)
+    public async Task LoginFailsAsync(string userName, string password)
     {
         var failedLogin = await SendLoginForm(userName, password);
 
