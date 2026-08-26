@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
@@ -115,5 +117,36 @@ public class HandshakeTests : LoggedTest
             var result = await Client.GetStringAsync($"https://localhost:{server.Port}/");
             Assert.Equal("hello world HTTP/2", result);
         }
+    }
+
+    [Fact]
+    public async Task CleartextPriorKnowledgeProcessesAndReusesHttp2Connection()
+    {
+        var connectionIds = new List<string>();
+        await using var server = new TestServer(
+            context =>
+            {
+                connectionIds.Add(context.Connection.Id);
+                return context.Response.WriteAsync(context.Request.Protocol);
+            },
+            new TestServiceContext(LoggerFactory));
+
+        using var handler = new SocketsHttpHandler();
+        using var client = new HttpClient(handler)
+        {
+            DefaultRequestVersion = HttpVersion.Version20,
+            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
+        };
+
+        var uri = $"http://127.0.0.1:{server.Port}/";
+        using var firstResponse = await client.GetAsync(uri).DefaultTimeout();
+        Assert.Equal(HttpVersion.Version20, firstResponse.Version);
+        Assert.Equal("HTTP/2", await firstResponse.Content.ReadAsStringAsync().DefaultTimeout());
+
+        using var secondResponse = await client.GetAsync(uri).DefaultTimeout();
+        Assert.Equal(HttpVersion.Version20, secondResponse.Version);
+        Assert.Equal("HTTP/2", await secondResponse.Content.ReadAsStringAsync().DefaultTimeout());
+        Assert.Equal(2, connectionIds.Count);
+        Assert.Single(connectionIds.Distinct());
     }
 }
