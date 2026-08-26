@@ -160,6 +160,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             Assert.True(result.HasValue);
             var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
+            Assert.NotNull(authenticatorId);
 
             // Record the WebAuthn signal calls made by each page so that we can assert on them later.
             // We define the signal methods if they're missing so that the assertions don't depend on
@@ -454,7 +455,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)
         {
             var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
-            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => id.GetString())];
+            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id =>
+            {
+                var credentialId = id.GetString();
+                Assert.NotNull(credentialId);
+                return credentialId;
+            })];
         }
 
         static async Task AssertSignalRetriesAfterFailureAsync(IPage page, string selector, string method)
@@ -503,7 +509,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             });
             var credentials = result.Value.GetProperty("credentials").EnumerateArray();
             // The signal API uses base64url while CDP uses base64.
-            return [.. credentials.Select(c => Base64Url.EncodeToString(Convert.FromBase64String(c.GetProperty("credentialId").GetString())))];
+            return [.. credentials.Select(c =>
+            {
+                var credentialId = c.GetProperty("credentialId").GetString();
+                Assert.NotNull(credentialId);
+                return Base64Url.EncodeToString(Convert.FromBase64String(credentialId));
+            })];
         }
     }
 
