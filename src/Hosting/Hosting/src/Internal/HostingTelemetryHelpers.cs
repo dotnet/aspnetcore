@@ -22,8 +22,11 @@ internal static class HostingTelemetryHelpers
     public const string AttributeUrlScheme = "url.scheme";
     public const string AttributeUrlPath = "url.path";
     public const string AttributeUrlQuery = "url.query";
+    public const string AttributeClientAddress = "client.address";
     public const string AttributeServerAddress = "server.address";
     public const string AttributeServerPort = "server.port";
+    public const string AttributeNetworkPeerAddress = "network.peer.address";
+    public const string AttributeNetworkPeerPort = "network.peer.port";
     public const string AttributeUserAgentOriginal = "user_agent.original";
     public const string AttributeNetworkProtocolVersion = "network.protocol.version";
     public const string AttributeErrorType = "error.type";
