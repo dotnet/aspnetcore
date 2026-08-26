@@ -48,7 +48,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
             }
 
-
             // In other cases, just use the root project
             return rootProject;
         }
