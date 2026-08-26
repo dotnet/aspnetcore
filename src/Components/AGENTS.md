@@ -19,11 +19,14 @@ For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
 - Implement the fix or feature in the sample project first.
-- Test the fix or feature interactively using Playwright.
+- Reproduce the behavior interactively in the real browser using Playwright.
+- Reduce the reproduction to the smallest temporary JavaScript diagnostic probe and assertion that observes the same failure in that page. Keep the probe outside the production change; it is not permanent Jest or `.test.ts` coverage.
+- Repeat the unchanged browser scenario and probe a recorded, bounded number of times. Ten runs is a reasonable default confidence sample when repository evidence does not suggest another count, not proof across environments. Treat the issue as deterministic only when every run fails the same assertion for the same reason.
+- If the result is not deterministic, investigate the owning producer and timing before selecting permanent coverage. Use a faithful lower-boundary test when that boundary owns the final observable, or add an explicit test-controlled gate when managed timing must be controlled. Do not stabilize a regression assertion with an arbitrary fixed sleep.
 - Once the fix or feature is validated in the sample, select its permanent test surface using the boundary below.
-  - For browser-owned behavior, implement a C# Selenium E2E test and first execute its scenario interactively with Playwright.
+  - For deterministic browser-owned behavior, translate the same scenario and diagnostic assertion into a C# Selenium E2E test.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
-- Only after the selected permanent tests are passing, remove the sample code you added in the Samples projects.
+- Only after the selected permanent tests are passing, remove the temporary JavaScript probe and the sample code you added in the Samples projects.
   - Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
 ### Permanent regression test boundary
@@ -36,15 +39,17 @@ Before selecting a permanent test surface, record these five fields:
 - **Selected permanent surface**: the test suite that exercises that producer and observable.
 - **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
 
-Browser-owned behavior requires permanent C# Selenium coverage under `src/Components/test/E2ETest`. This includes DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser event ordering, browser-dependent JS interop, navigation, focus and selection, and rendering or rehydration. Extend existing test assets and classes when practical.
+Browser-owned user-visible behavior requires permanent C# Selenium coverage under `src/Components/test/E2ETest`. This includes claims that depend on real DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser scheduling or event ordering, browser-dependent JS interop, navigation, focus and selection, and rendering or rehydration. Extend existing test assets and classes when practical.
 
-Do not add or retain Jest or `.test.ts` coverage in the production change for the same browser scenario, whether described as primary, supplemental, faster, or more precise, including additions to an existing `.test.ts` file. Existing TypeScript tests are grandfathered exceptions, not precedent. Synthetic geometry, mocked observers or events, and direct state mutation or callback invocation are temporary diagnostic probes outside the production change; remove them after Selenium supersedes them.
+Do not add or retain Jest or `.test.ts` coverage in the production change as proof of the same browser scenario, whether described as primary, supplemental, faster, or more precise. When synthetic geometry, mocked observers or events, or direct state mutation or callback invocation stand in for that browser scenario's real producer, they are temporary diagnostic probes outside the production change and must be removed after Selenium supersedes them.
 
-Permanent JavaScript or TypeScript unit tests are appropriate only for genuinely pure helpers whose preconditions and observable are browser-independent plain inputs and outputs. The helper is not pure for this purpose when its test mocks or stubs browser observers, layout APIs, or geometry, including `getComputedStyle`, `getBoundingClientRect`, `getClientRects`, `scrollTop`, `scrollHeight`, `clientHeight`, `offsetHeight`, or geometry installed with `Object.defineProperty`. Managed or service behavior that is fully owned and observable below the browser remains at its faithful lower boundary.
+Permanent JavaScript or TypeScript unit tests remain appropriate when the JavaScript module's deterministic contract is the final observable and the harness faithfully supplies that contract's inputs. Examples include pure helpers, structural DOM algorithms that operate on ordinary nodes and assert identity or document structure, manager callback or timer-state contracts, and validation-engine contracts. Such tests do not establish that real browser scheduling, layout, observers, or user-visible producer paths are reachable; a claim about those behaviors still requires Selenium. Managed or service behavior that is fully owned and observable below the browser likewise remains at its faithful lower boundary.
 
 If WebDriver cannot perform or observe one operation, keep the permanent C# Selenium scenario, name the exact WebDriver limitation, and use only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep scenario orchestration and the final user-visible assertion in C#.
 
-For browser fixes, require strict red/green evidence: the identical Selenium assertion must fail for the expected reason without the fix and pass with it. Include the nearest opposite and adjacent same-producer controls. The fix remains blocked while Jest is its only regression proof.
+For browser fixes, require strict red/green evidence: the identical Selenium assertion must fail for the expected reason without the fix and pass with it. Include a nearest-opposite control, meaning the closest scenario that must remain green, and, when meaningful, an adjacent control driven by the same production producer. The fix remains blocked while Jest is its only regression proof.
+
+Synchronize Selenium assertions with observable conditions through existing waits such as `Browser.True` and `Browser.Equal`, which poll with `WebDriverWait`, or with explicit test-controlled gates such as `TaskCompletionSource` when managed timing must be controlled. Do not use an arbitrary `Thread.Sleep` as the synchronization mechanism for the regression assertion. Existing bounded polling helpers may sleep between checks when they repeatedly observe the condition and enforce a timeout.
 
 ### Code clarity and durable knowledge
 
