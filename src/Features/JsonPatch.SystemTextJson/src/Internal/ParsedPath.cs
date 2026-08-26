@@ -50,37 +50,39 @@ internal readonly struct ParsedPath
             throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
         }
 
+        var strings = new string[span.Count('/')];
+
         // When we have a path like "/a/b/c//d/e", the expectation is
         // to have the segments be ["a", "b", "c", "", "d", "e"].
         // So, before splitting on "/", we want to slice off the leading "/".
         // Without this slice, we will always have an extra empty string at the beginning.
         span = span.Slice(1);
 
-        var strings = new List<string>();
+        int index = 0;
         foreach (var referenceTokenRange in span.Split('/'))
         {
             var referenceToken = span[referenceTokenRange].ToString();
-            ValidateReferenceToken(referenceToken);
-
-            referenceToken = referenceToken.Replace("~1", "/").Replace("~0", "~");
-
-            strings.Add(referenceToken);
+            strings[index++] = ValidateAndUnescapeReferenceToken(referenceToken);
         }
 
-        return strings.ToArray();
+        return strings;
     }
 
-    private static void ValidateReferenceToken(string referenceToken)
+    private static string ValidateAndUnescapeReferenceToken(string referenceToken)
     {
+        var hasTilde = false;
         for (int i = 0; i < referenceToken.Length; i++)
         {
             if (referenceToken[i] == '~')
             {
+                hasTilde = true;
                 if (i + 1 >= referenceToken.Length || (referenceToken[i + 1] != '0' && referenceToken[i + 1] != '1'))
                 {
                     throw new JsonPatchException(Resources.FormatInvalidValueForPath(referenceToken), null);
                 }
             }
         }
+
+        return hasTilde ? referenceToken.Replace("~1", "/").Replace("~0", "~") : referenceToken;
     }
 }

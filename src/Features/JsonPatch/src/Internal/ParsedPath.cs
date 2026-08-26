@@ -60,26 +60,27 @@ public readonly struct ParsedPath
 
         for (int i = 0; i < referenceTokens.Length; i++)
         {
-            var referenceToken = referenceTokens[i];
-            ValidateReferenceToken(referenceToken);
-
-            referenceTokens[i] = referenceToken.Replace("~1", "/").Replace("~0", "~");
+            referenceTokens[i] = ValidateAndUnescapeReferenceToken(referenceTokens[i]);
         }
 
         return referenceTokens;
     }
 
-    private static void ValidateReferenceToken(string referenceToken)
+    private static string ValidateAndUnescapeReferenceToken(string referenceToken)
     {
+        var hasTilde = false;
         for (int i = 0; i < referenceToken.Length; i++)
         {
             if (referenceToken[i] == '~')
             {
+                hasTilde = true;
                 if (i + 1 >= referenceToken.Length || (referenceToken[i + 1] != '0' && referenceToken[i + 1] != '1'))
                 {
                     throw new JsonPatchException(Resources.FormatInvalidValueForPath(referenceToken), null);
                 }
             }
         }
+
+        return hasTilde ? referenceToken.Replace("~1", "/").Replace("~0", "~") : referenceToken;
     }
 }
