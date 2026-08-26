@@ -25,10 +25,6 @@ internal sealed class KestrelMetrics
     public const string BareLineFeedOutcomeAccepted = "accepted";
     public const string BareLineFeedOutcomeRejected = "rejected";
 
-    public const string ChunkedExtensionOutcomeAttributeName = "kestrel.chunked_extension.outcome";
-    public const string ChunkedExtensionOutcomeAccepted = "accepted";
-    public const string ChunkedExtensionOutcomeRejected = "rejected";
-
     public const string Http10 = "1.0";
     public const string Http11 = "1.1";
     public const string Http2 = "2";
@@ -39,7 +35,6 @@ internal sealed class KestrelMetrics
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
     private readonly Counter<long> _bareLineFeedRequestsCounter;
-    private readonly Counter<long> _chunkedExtensionRequestsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
@@ -70,11 +65,6 @@ internal sealed class KestrelMetrics
            "kestrel.bare_line_feed_requests",
             unit: "{request}",
             description: "Number of HTTP/1.x requests that used a bare LF (instead of CRLF) as a line terminator in the request line, headers, or trailers.");
-
-        _chunkedExtensionRequestsCounter = _meter.CreateCounter<long>(
-            "kestrel.chunked_extension_requests",
-            unit: "{request}",
-            description: "Number of HTTP/1.x requests that used chunked transfer encoding with a chunk extension.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_connections",
@@ -197,19 +187,6 @@ internal sealed class KestrelMetrics
         tags.Add("network.protocol.version", httpVersion);
         tags.TryAddTag(BareLineFeedOutcomeAttributeName, rejected ? BareLineFeedOutcomeRejected : BareLineFeedOutcomeAccepted);
         _bareLineFeedRequestsCounter.Add(1, tags);
-    }
-
-    public void ChunkedExtension(ConnectionMetricsContext metricsContext, bool rejected)
-    {
-        if (!_chunkedExtensionRequestsCounter.Enabled)
-        {
-            return;
-        }
-
-        var tags = new TagList();
-        InitializeConnectionTags(ref tags, metricsContext);
-        tags.TryAddTag(ChunkedExtensionOutcomeAttributeName, rejected ? ChunkedExtensionOutcomeRejected : ChunkedExtensionOutcomeAccepted);
-        _chunkedExtensionRequestsCounter.Add(1, tags);
     }
 
     public void ConnectionQueuedStart(ConnectionMetricsContext metricsContext)
