@@ -24,7 +24,7 @@ public class CookieTempDataProviderTest
         _cookieTempDataProvider = new CookieTempDataProvider(
             new EphemeralDataProtectionProvider(),
             Options.Create<RazorComponentsServiceOptions>(new()),
-            new JsonTempDataSerializer(),
+            new JsonStoredDataSerializer(),
             NullLogger<CookieTempDataProvider>.Instance);
     }
 
@@ -104,7 +104,7 @@ public class CookieTempDataProviderTest
         var loadedTempData = _cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.Equal("StringValue", loadedTempData["StringKey"]);
-        Assert.Equal(42, Assert.IsType<int>(loadedTempData["IntKey"]));
+        Assert.Equal(42, loadedTempData["IntKey"]);
     }
 
     private static DefaultHttpContext CreateHttpContext()

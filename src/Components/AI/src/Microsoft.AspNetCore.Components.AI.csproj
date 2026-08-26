@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="VersionPrefix;PreReleaseVersionLabel;PreReleaseVersionIteration">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      Components.AI builds out of band and is not part of the .NET platform release. IsShippingPackage=false keeps
+      the package out of the shipping asset set that the release publishes to nuget.org, while the official build
+      still packs, signs, and publishes it to the transport feed.
+    -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Blazor component library for building AI conversational UIs on top of Microsoft.Extensions.AI.</Description>
+    <PackageTags>blazor;ai;chat;components</PackageTags>
+    <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
+    <NoWarn>$(NoWarn);RS0026</NoWarn>
+    <!--
+      Components.AI versions independently from the shared framework. Keep producing dated 0.1.0-preview.1 packages
+      when the repo moves to RC or RTM. These properties are listed in TreatAsLocalProperty above so they override
+      repository-wide version properties.
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.AI.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.AI.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Components.AI.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.AI.SourceGenerators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

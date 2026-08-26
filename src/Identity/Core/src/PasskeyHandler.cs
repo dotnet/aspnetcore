@@ -443,7 +443,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var credentialRecord = new UserPasskeyInfo(
             credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
-            createdAt: DateTime.UtcNow,
+            createdAt: GetUtcNow(),
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
             isUserVerified: authenticatorData.IsUserVerified,
@@ -780,4 +780,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
     private string GetServerDomain(HttpContext httpContext)
         => _options.ServerDomain ?? httpContext.Request.Host.Host;
+
+    private DateTime GetUtcNow()
+        => (_options.TimeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 }

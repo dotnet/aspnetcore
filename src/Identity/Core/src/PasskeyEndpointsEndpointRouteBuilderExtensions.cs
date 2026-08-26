@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add the well-known passkey
 /// endpoints document.
 /// </summary>
-[Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0039", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
 {
     internal const string LoggerCategory = "Microsoft.AspNetCore.Identity.PasskeyEndpoints";
@@ -89,7 +89,7 @@ public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
     /// }
     /// </code>
     /// </example>
-    [Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    [Experimental("ASP0039", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public static IEndpointConventionBuilder MapWellKnownPasskeyEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);

@@ -19,6 +19,9 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.resx]
+trim_trailing_whitespace = false
+
 [*.cs]
 indent_size = 4
 dotnet_sort_system_directives_first = true
