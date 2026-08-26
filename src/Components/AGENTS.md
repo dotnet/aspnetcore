@@ -80,6 +80,8 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 
 To avoid unnecessary full repository builds, follow this optimized approach:
 
+After a build fails, identify whether the cause is a source error in the changed project, a missing or stale prerequisite, or unrelated repository infrastructure before changing commands. Use the smallest supported build that still exercises the change. Do not repeatedly retry broad builds with different exclusions unless each retry addresses an identified failure cause, and report any validation boundary that remains untested.
+
 #### 1. Initial Setup - Check for First Build
 Before running any commands, check if a full build has already been completed:
 - Look for `artifacts\agent-sentinel.txt` in the repository root
