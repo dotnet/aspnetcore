@@ -42,6 +42,16 @@ For implementation work:
 - Do not use public XML documentation to explain internal implementation details,
   including control flow or lifecycle state. Limit it to consumer-observable behavior.
 
+### JavaScript DOM lifecycle
+
+- When behavior targets DOM that can be replaced during the prerender-to-interactive
+  transition or enhanced navigation, bind it to the narrowest lifecycle owner that can
+  survive the replacement or re-register afterward, and clean up when that owner is
+  removed. This can be a component lifecycle, a custom element's
+  `connectedCallback`/`disconnectedCallback`, or a stable scoped ancestor. Do not move
+  element-specific listeners to `document` or `window` merely to survive replacement;
+  reserve global listeners for behavior genuinely owned by the document or window.
+
 ### Overview
 
 The workflow for implementing new features in the Components area follows these steps:
