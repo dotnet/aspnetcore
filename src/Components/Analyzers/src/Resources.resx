@@ -220,10 +220,10 @@
     <value>Virtualize with ItemsProvider requires ItemComparer</value>
   </data>
   <data name="VirtualizeSpacerElementIsInvalid_Description" xml:space="preserve">
-    <value>The default div spacer rendered by Virtualize is invalid inside some HTML elements. Set SpacerElement to an element permitted by the parent.</value>
+    <value>A spacer element rendered by Virtualize is invalid inside some HTML elements. Set SpacerElement to an element permitted by the parent.</value>
   </data>
   <data name="VirtualizeSpacerElementIsInvalid_Format" xml:space="preserve">
-    <value>Virtualize inside '{0}' must use {1} because the default 'div' element is not permitted.</value>
+    <value>Virtualize inside '{0}' cannot use spacer element '{1}'. Use {2} instead.</value>
   </data>
   <data name="VirtualizeSpacerElementIsInvalid_Title" xml:space="preserve">
     <value>Virtualize uses an invalid spacer element</value>

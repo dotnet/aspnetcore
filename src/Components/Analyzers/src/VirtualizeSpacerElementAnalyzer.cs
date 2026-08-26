@@ -55,10 +55,10 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
 
             compilationContext.RegisterOperationBlockAction(blockContext =>
             {
-                var renderTreeStack = new Stack<RenderTreeFrame>();
-
                 foreach (var operationBlock in blockContext.OperationBlocks)
                 {
+                    var renderTreeStacks = new Dictionary<ISymbol, Stack<RenderTreeFrame>>(SymbolEqualityComparer.Default);
+
                     foreach (var operation in operationBlock.DescendantsAndSelf())
                     {
                         if (operation is not IInvocationOperation invocation)
@@ -71,10 +71,21 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
                             AnalyzeGeneratedHelperInvocation(
                                 blockContext,
                                 invocation,
-                                renderTreeStack,
+                                renderTreeStacks,
                                 virtualizeType,
                                 renderTreeBuilderType);
                             continue;
+                        }
+
+                        if (GetReferencedSymbol(invocation.Instance) is not { } builderSymbol)
+                        {
+                            continue;
+                        }
+
+                        if (!renderTreeStacks.TryGetValue(builderSymbol, out var renderTreeStack))
+                        {
+                            renderTreeStack = new Stack<RenderTreeFrame>();
+                            renderTreeStacks.Add(builderSymbol, renderTreeStack);
                         }
 
                         switch (invocation.TargetMethod.Name)
@@ -103,6 +114,7 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
                                 });
                                 break;
 
+                            case "AddAttribute":
                             case "AddComponentParameter":
                                 if (renderTreeStack.Count > 0 &&
                                     renderTreeStack.Peek() is { IsVirtualize: true } virtualizeFrame &&
@@ -110,6 +122,16 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
                                 {
                                     virtualizeFrame.HasSpacerElement = true;
                                     virtualizeFrame.SpacerElement = GetConstantStringArgument(invocation, 2);
+                                }
+                                break;
+
+                            case "AddMultipleAttributes":
+                                if (renderTreeStack.Count > 0 &&
+                                    renderTreeStack.Peek() is { IsVirtualize: true } splattedVirtualizeFrame &&
+                                    !IsConstantNull(GetArgumentValue(invocation, 1)))
+                                {
+                                    splattedVirtualizeFrame.HasSpacerElement = true;
+                                    splattedVirtualizeFrame.SpacerElement = null;
                                 }
                                 break;
 
@@ -137,56 +159,70 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeGeneratedHelperInvocation(
         OperationBlockAnalysisContext context,
         IInvocationOperation invocation,
-        Stack<RenderTreeFrame> renderTreeStack,
+        Dictionary<ISymbol, Stack<RenderTreeFrame>> renderTreeStacks,
         INamedTypeSymbol virtualizeType,
         INamedTypeSymbol renderTreeBuilderType)
     {
-        if (renderTreeStack.Count == 0 ||
-            renderTreeStack.Peek().IsComponent ||
-            renderTreeStack.Peek().ElementName is not { } parentElementName ||
-            !AllowedSpacerElements.ContainsKey(parentElementName) ||
-            !TryGetVirtualizeHelperInfo(
+        if (!TryGetVirtualizeHelperInfo(
                 context.Compilation,
                 invocation.TargetMethod,
                 virtualizeType,
                 renderTreeBuilderType,
                 context.CancellationToken,
-                out var helperInfo))
+                out var helperInfo) ||
+            GetArgumentValue(invocation, helperInfo.BuilderParameterOrdinal) is not { } builderArgument ||
+            GetReferencedSymbol(builderArgument) is not { } builderSymbol ||
+            !renderTreeStacks.TryGetValue(builderSymbol, out var renderTreeStack) ||
+            renderTreeStack.Count == 0 ||
+            renderTreeStack.Peek().IsComponent ||
+            renderTreeStack.Peek().ElementName is not { } parentElementName ||
+            !AllowedSpacerElements.ContainsKey(parentElementName))
         {
             return;
         }
 
+        var hasSpacerElement = false;
         string? spacerElement = null;
-        if (helperInfo.HasSpacerElement)
+        foreach (var attributeUpdate in helperInfo.AttributeUpdates)
         {
-            if (helperInfo.SpacerParameterOrdinal is not { } spacerParameterOrdinal)
+            IOperation? value = null;
+            if (attributeUpdate.ParameterOrdinal is { } parameterOrdinal)
+            {
+                value = GetArgumentValue(invocation, parameterOrdinal);
+            }
+
+            var constantValue = value is not null
+                ? UnwrapConversion(value).ConstantValue
+                : attributeUpdate.ConstantValue;
+
+            if (attributeUpdate.IsSplat)
+            {
+                if (constantValue.HasValue && constantValue.Value is null)
+                {
+                    continue;
+                }
+
+                hasSpacerElement = true;
+                spacerElement = null;
+                continue;
+            }
+
+            hasSpacerElement = true;
+            if (!constantValue.HasValue || constantValue.Value is not string valueString)
             {
                 return;
             }
 
-            foreach (var argument in invocation.Arguments)
-            {
-                if (argument.Parameter?.Ordinal == spacerParameterOrdinal)
-                {
-                    var constantValue = UnwrapConversion(argument.Value).ConstantValue;
-                    if (!constantValue.HasValue || constantValue.Value is not string value)
-                    {
-                        return;
-                    }
-
-                    spacerElement = value;
-                    break;
-                }
-            }
+            spacerElement = valueString;
         }
 
         ReportInvalidSpacerElement(context, new RenderTreeFrame
         {
             IsVirtualize = true,
-            HasSpacerElement = helperInfo.HasSpacerElement,
+            HasSpacerElement = hasSpacerElement,
             ParentElementName = parentElementName,
             SpacerElement = spacerElement,
-            Location = invocation.Syntax.GetLocation(),
+            Location = GetDiagnosticLocation(invocation),
         });
     }
 
@@ -215,35 +251,81 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
+        IParameterSymbol? builderParameter = null;
+        foreach (var parameter in method.OriginalDefinition.Parameters)
+        {
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type, renderTreeBuilderType))
+            {
+                builderParameter = parameter;
+                break;
+            }
+        }
+
+        if (builderParameter is null)
+        {
+            return false;
+        }
+
         var createsVirtualize = false;
-        int? spacerParameterOrdinal = null;
-        var hasSpacerElement = false;
+        var attributeUpdates = ImmutableArray.CreateBuilder<VirtualizeAttributeUpdate>();
+        var renderTreeDepth = 0;
 
         foreach (var operation in methodBody.DescendantsAndSelf())
         {
             if (operation is not IInvocationOperation helperInvocation ||
-                !SymbolEqualityComparer.Default.Equals(helperInvocation.TargetMethod.ContainingType, renderTreeBuilderType))
+                !SymbolEqualityComparer.Default.Equals(helperInvocation.TargetMethod.ContainingType, renderTreeBuilderType) ||
+                GetReferencedSymbol(helperInvocation.Instance) is not { } helperBuilderSymbol ||
+                !SymbolEqualityComparer.Default.Equals(helperBuilderSymbol, builderParameter))
             {
                 continue;
             }
 
-            if (helperInvocation.TargetMethod.Name == "OpenComponent" &&
-                helperInvocation.TargetMethod.IsGenericMethod &&
-                helperInvocation.TargetMethod.TypeArguments.Length == 1 &&
-                helperInvocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol componentType &&
-                SymbolEqualityComparer.Default.Equals(componentType.OriginalDefinition, virtualizeType))
+            switch (helperInvocation.TargetMethod.Name)
             {
-                createsVirtualize = true;
-            }
-            else if (helperInvocation.TargetMethod.Name == "AddComponentParameter" &&
-                string.Equals(GetConstantStringArgument(helperInvocation, 1), "SpacerElement", StringComparison.Ordinal))
-            {
-                hasSpacerElement = true;
-                if (helperInvocation.Arguments.Length > 2 &&
-                    UnwrapConversion(helperInvocation.Arguments[2].Value) is IParameterReferenceOperation parameterReference)
-                {
-                    spacerParameterOrdinal = parameterReference.Parameter.Ordinal;
-                }
+                case "OpenElement":
+                    renderTreeDepth++;
+                    break;
+
+                case "OpenComponent":
+                    if (renderTreeDepth == 0 &&
+                        helperInvocation.TargetMethod.IsGenericMethod &&
+                        helperInvocation.TargetMethod.TypeArguments.Length == 1 &&
+                        helperInvocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol componentType &&
+                        SymbolEqualityComparer.Default.Equals(componentType.OriginalDefinition, virtualizeType))
+                    {
+                        createsVirtualize = true;
+                    }
+
+                    renderTreeDepth++;
+                    break;
+
+                case "AddAttribute":
+                case "AddComponentParameter":
+                    if (createsVirtualize &&
+                        renderTreeDepth == 1 &&
+                        string.Equals(GetConstantStringArgument(helperInvocation, 1), "SpacerElement", StringComparison.Ordinal))
+                    {
+                        if (GetArgumentValue(helperInvocation, 2) is { } spacerValue)
+                        {
+                            attributeUpdates.Add(VirtualizeAttributeUpdate.CreateSpacerElement(spacerValue));
+                        }
+                    }
+                    break;
+
+                case "AddMultipleAttributes":
+                    if (createsVirtualize &&
+                        renderTreeDepth == 1 &&
+                        GetArgumentValue(helperInvocation, 1) is { } attributesValue &&
+                        !IsConstantNull(attributesValue))
+                    {
+                        attributeUpdates.Add(VirtualizeAttributeUpdate.CreateSplat(attributesValue));
+                    }
+                    break;
+
+                case "CloseComponent":
+                case "CloseElement":
+                    renderTreeDepth--;
+                    break;
             }
         }
 
@@ -252,8 +334,63 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        helperInfo = new VirtualizeHelperInfo(hasSpacerElement, spacerParameterOrdinal);
+        helperInfo = new VirtualizeHelperInfo(builderParameter.Ordinal, attributeUpdates.ToImmutable());
         return true;
+    }
+
+    private static Location GetDiagnosticLocation(IInvocationOperation invocation)
+    {
+        foreach (var argument in invocation.Arguments)
+        {
+            var location = UnwrapConversion(argument.Value).Syntax.GetLocation();
+            if (location.GetMappedLineSpan().HasMappedPath)
+            {
+                return location;
+            }
+        }
+
+        return invocation.Syntax.GetLocation();
+    }
+
+    private static IOperation? GetArgumentValue(IInvocationOperation invocation, int parameterOrdinal)
+    {
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == parameterOrdinal)
+            {
+                return argument.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static ISymbol? GetReferencedSymbol(IOperation? operation)
+    {
+        if (operation is null)
+        {
+            return null;
+        }
+
+        return UnwrapConversion(operation) switch
+        {
+            IParameterReferenceOperation parameterReference => parameterReference.Parameter,
+            ILocalReferenceOperation localReference => localReference.Local,
+            IFieldReferenceOperation fieldReference => fieldReference.Field,
+            IPropertyReferenceOperation propertyReference => propertyReference.Property,
+            _ => null,
+        };
+    }
+
+    private static bool IsConstantNull(IOperation? operation)
+    {
+        if (operation is null)
+        {
+            return false;
+        }
+
+        var constantValue = UnwrapConversion(operation).ConstantValue;
+        return constantValue.HasValue && constantValue.Value is null;
     }
 
     private static IOperation UnwrapConversion(IOperation operation)
@@ -304,6 +441,7 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid,
             frame.Location,
             frame.ParentElementName,
+            spacerElement,
             allowedSpacerElementsMessage));
     }
 
@@ -320,13 +458,39 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
 
     private readonly struct VirtualizeHelperInfo
     {
-        public VirtualizeHelperInfo(bool hasSpacerElement, int? spacerParameterOrdinal)
+        public VirtualizeHelperInfo(int builderParameterOrdinal, ImmutableArray<VirtualizeAttributeUpdate> attributeUpdates)
         {
-            HasSpacerElement = hasSpacerElement;
-            SpacerParameterOrdinal = spacerParameterOrdinal;
+            BuilderParameterOrdinal = builderParameterOrdinal;
+            AttributeUpdates = attributeUpdates;
         }
 
-        public bool HasSpacerElement { get; }
-        public int? SpacerParameterOrdinal { get; }
+        public int BuilderParameterOrdinal { get; }
+        public ImmutableArray<VirtualizeAttributeUpdate> AttributeUpdates { get; }
+    }
+
+    private readonly struct VirtualizeAttributeUpdate
+    {
+        private VirtualizeAttributeUpdate(bool isSplat, int? parameterOrdinal, Optional<object?> constantValue)
+        {
+            IsSplat = isSplat;
+            ParameterOrdinal = parameterOrdinal;
+            ConstantValue = constantValue;
+        }
+
+        public bool IsSplat { get; }
+        public int? ParameterOrdinal { get; }
+        public Optional<object?> ConstantValue { get; }
+
+        public static VirtualizeAttributeUpdate CreateSpacerElement(IOperation value) => Create(value, isSplat: false);
+
+        public static VirtualizeAttributeUpdate CreateSplat(IOperation value) => Create(value, isSplat: true);
+
+        private static VirtualizeAttributeUpdate Create(IOperation value, bool isSplat)
+        {
+            value = UnwrapConversion(value);
+            return value is IParameterReferenceOperation parameterReference
+                ? new VirtualizeAttributeUpdate(isSplat, parameterReference.Parameter.Ordinal, default)
+                : new VirtualizeAttributeUpdate(isSplat, null, value.ConstantValue);
+        }
     }
 }

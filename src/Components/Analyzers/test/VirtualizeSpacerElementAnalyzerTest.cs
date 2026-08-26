@@ -19,7 +19,9 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
             public void OpenElement(int sequence, string elementName) { }
             public void CloseElement() { }
             public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent { }
+            public void AddAttribute(int sequence, string name, object value) { }
             public void AddComponentParameter(int sequence, string name, object value) { }
+            public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
             public void CloseComponent() { }
         }
     }
@@ -72,7 +74,7 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
-                Message = $"Virtualize inside '{parentElement}' must use {allowedSpacerElementsMessage} because the default 'div' element is not permitted.",
+                Message = $"Virtualize inside '{parentElement}' cannot use spacer element 'div'. Use {allowedSpacerElementsMessage} instead.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -150,7 +152,7 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
-                Message = $"Virtualize inside '{parentElement}' must use {allowedSpacerElementsMessage} because the default 'div' element is not permitted.",
+                Message = $"Virtualize inside '{parentElement}' cannot use spacer element '{spacerElement}'. Use {allowedSpacerElementsMessage} instead.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -270,7 +272,7 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
-                Message = "Virtualize inside 'tbody' must use SpacerElement=\"tr\" because the default 'div' element is not permitted.",
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'div'. Use SpacerElement=\"tr\" instead.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -341,5 +343,394 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
     }" + ComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void VirtualizeOpenedOnDifferentBuilder_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder, RenderTreeBuilder otherBuilder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                otherBuilder.OpenComponent<Virtualize<string>>(1);
+                otherBuilder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void VirtualizeInNestedRenderFragment_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                System.Action<RenderTreeBuilder> fragment = nestedBuilder =>
+                {
+                    nestedBuilder.OpenComponent<Virtualize<string>>(1);
+                    nestedBuilder.CloseComponent();
+                };
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void RazorTypeInferenceHelperWithWrappedVirtualize_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                TypeInference.CreateVirtualize_0<string>(builder, 1);
+                builder.CloseElement();
+            }
+        }
+
+        static class TypeInference
+        {
+            public static void CreateVirtualize_0<TItem>(RenderTreeBuilder builder, int sequence)
+            {
+                builder.OpenElement(0, ""div"");
+                builder.OpenComponent<Virtualize<TItem>>(sequence);
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void UnknownSplatAfterExplicitSpacerElement_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using System.Collections.Generic;
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenElement(0, ""tbody"");
+                builder.OpenComponent<Virtualize<string>>(1);
+                builder.AddAttribute(2, ""SpacerElement"", ""td"");
+                builder.AddMultipleAttributes(3, attributes);
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ExplicitSpacerElementAfterUnknownSplat_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using System.Collections.Generic;
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenElement(0, ""tbody"");
+                builder.OpenComponent<Virtualize<string>>(1);
+                builder.AddMultipleAttributes(2, attributes);
+                builder.AddComponentParameter(3, ""SpacerElement"", ""td"");
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'td'. Use SpacerElement=\"tr\" instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 13, 17)
+                }
+            });
+    }
+
+    [Fact]
+    public void AddAttributeWithInvalidSpacerElement_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                builder.OpenComponent<Virtualize<string>>(1);
+                builder.AddAttribute(2, ""SpacerElement"", ""td"");
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'td'. Use SpacerElement=\"tr\" instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 12, 17)
+                }
+            });
+    }
+
+    [Fact]
+    public void DiagnosticLocationMapsToRazorSource()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+#line hidden
+                TypeInference.CreateVirtualize_0<string>(builder, 1,
+#line 42 ""Pages/VirtualizeTest.razor""
+                    ""items"");
+#line default
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+
+        static class TypeInference
+        {
+            public static void CreateVirtualize_0<TItem>(RenderTreeBuilder builder, int sequence, string items)
+            {
+                builder.OpenComponent<Virtualize<TItem>>(sequence);
+                builder.CloseComponent();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        var document = CreateDocument(test);
+        var diagnostic = Assert.Single(GetSortedDiagnosticsFromDocuments(
+            GetCSharpDiagnosticAnalyzer(),
+            new[] { document }));
+        var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
+
+        Assert.Equal("Pages/VirtualizeTest.razor", mappedLineSpan.Path);
+        Assert.Equal(41, mappedLineSpan.StartLinePosition.Line);
+    }
+
+    [Fact]
+    public void NullSplatAfterExplicitSpacerElement_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                builder.OpenComponent<Virtualize<string>>(1);
+                builder.AddComponentParameter(2, ""SpacerElement"", ""td"");
+                builder.AddMultipleAttributes(3, null);
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'td'. Use SpacerElement=\"tr\" instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 12, 17)
+                }
+            });
+    }
+
+    [Fact]
+    public void RazorTypeInferenceHelperWithUnknownSplatAfterSpacerElement_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using System.Collections.Generic;
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenElement(0, ""tbody"");
+                TypeInference.CreateVirtualize_0<string>(builder, 1, ""td"", attributes);
+                builder.CloseElement();
+            }
+        }
+
+        static class TypeInference
+        {
+            public static void CreateVirtualize_0<TItem>(RenderTreeBuilder builder, int sequence, string spacerElement, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenComponent<Virtualize<TItem>>(sequence);
+                builder.AddComponentParameter(2, ""SpacerElement"", spacerElement);
+                builder.AddMultipleAttributes(3, attributes);
+                builder.CloseComponent();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void RazorTypeInferenceHelperWithSpacerElementAfterUnknownSplat_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using System.Collections.Generic;
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenElement(0, ""tbody"");
+                TypeInference.CreateVirtualize_0<string>(builder, 1, attributes, ""td"");
+                builder.CloseElement();
+            }
+        }
+
+        static class TypeInference
+        {
+            public static void CreateVirtualize_0<TItem>(RenderTreeBuilder builder, int sequence, IEnumerable<KeyValuePair<string, object>> attributes, string spacerElement)
+            {
+                builder.OpenComponent<Virtualize<TItem>>(sequence);
+                builder.AddMultipleAttributes(2, attributes);
+                builder.AddComponentParameter(3, ""SpacerElement"", spacerElement);
+                builder.CloseComponent();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'td'. Use SpacerElement=\"tr\" instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 13, 17)
+                }
+            });
+    }
+
+    [Fact]
+    public void RazorTypeInferenceHelperWithNullSplatAfterSpacerElement_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using System.Collections.Generic;
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                TypeInference.CreateVirtualize_0<string>(builder, 1, ""td"", null);
+                builder.CloseElement();
+            }
+        }
+
+        static class TypeInference
+        {
+            public static void CreateVirtualize_0<TItem>(RenderTreeBuilder builder, int sequence, string spacerElement, IEnumerable<KeyValuePair<string, object>> attributes)
+            {
+                builder.OpenComponent<Virtualize<TItem>>(sequence);
+                builder.AddComponentParameter(2, ""SpacerElement"", spacerElement);
+                builder.AddMultipleAttributes(3, attributes);
+                builder.CloseComponent();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.VirtualizeSpacerElementIsInvalid.Id,
+                Message = "Virtualize inside 'tbody' cannot use spacer element 'td'. Use SpacerElement=\"tr\" instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 13, 17)
+                }
+            });
     }
 }
