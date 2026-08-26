@@ -18,7 +18,6 @@ export const Virtualize = {
 const dispatcherObserversByDotNetIdPropname = Symbol();
 const THROTTLE_MS = 50;
 const renderedWindowVersionAttribute = 'data-blazor-virtualize-rendered-window-version';
-const parameterVersionAttribute = 'data-blazor-virtualize-parameter-version';
 const SpacerVisibilityReason = {
   UserScroll: 0,
   ProgrammaticScroll: 1,
@@ -157,23 +156,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
   // so on each spacer mutation we walk the sibling chain to reapply styles.
-  const processSpacerMutations = (records: MutationRecord[]): void => {
-    applyLayoutAttrsBetweenSpacers();
-    if (records.some(record => record.attributeName === parameterVersionAttribute)) {
-      reobserveSpacers();
-    }
-  };
-  const mutationObserver = new MutationObserver(processSpacerMutations);
+  const mutationObserver = new MutationObserver(applyLayoutAttrsBetweenSpacers);
 
   function flushPendingStyleMutations(): void {
-    const records = mutationObserver.takeRecords();
-    if (records.length > 0) {
-      processSpacerMutations(records);
+    if (mutationObserver.takeRecords().length > 0) {
+      applyLayoutAttrsBetweenSpacers();
     }
   }
   const spacerObserverOptions: MutationObserverInit = {
     attributes: true,
-    attributeFilter: [...layoutAttrNames, parameterVersionAttribute],
+    attributeFilter: layoutAttrNames,
   };
   mutationObserver.observe(spacerBefore, spacerObserverOptions);
   mutationObserver.observe(spacerAfter, spacerObserverOptions);

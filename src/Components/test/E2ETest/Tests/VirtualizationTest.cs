@@ -5555,8 +5555,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var expected = value.ToString(CultureInfo.InvariantCulture);
         var input = Browser.Exists(By.Id(elementId));
-        // Clear() on <input type=number> is unreliable across drivers; Ctrl+A + Delete works.
-        input.SendKeys(Keys.Control + "a");
+        // Clear() on <input type=number> is unreliable across drivers; select-all + Delete works.
+        input.SendKeys((OperatingSystem.IsMacOS() ? Keys.Command : Keys.Control) + "a");
         input.SendKeys(Keys.Delete);
         input.SendKeys(expected);
         input.SendKeys(Keys.Tab);

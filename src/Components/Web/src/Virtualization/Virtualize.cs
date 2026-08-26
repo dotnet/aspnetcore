@@ -50,6 +50,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
+    private RenderedWindowIdentity? _lastRenderedWindowIdentity;
+
     private TItem? _previousFirstLoadedItem;
 
     private bool CanDetectPrepend => _previousFirstLoadedItem is not null;
@@ -416,6 +418,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _lastSetItemSize = ItemSize;
             _totalMeasuredHeight = 0;
             _measuredItemCount = 0;
+            _skipNextDistributionRefresh = false;
         }
 
         if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
@@ -554,25 +557,27 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             throw oldRefreshException;
         }
 
-        // Item templates can change geometry without changing any Virtualize field. Invalidate
-        // measurements from every earlier render; JavaScript re-observes after a stale rejection.
-        _renderedWindowVersion++;
         _renderedParameterVersion = _parameterVersion;
+        var renderedWindowIdentity = GetRenderedWindowIdentity();
+        if (renderedWindowIdentity != _lastRenderedWindowIdentity)
+        {
+            _renderedWindowVersion++;
+        }
+        _lastRenderedWindowIdentity = renderedWindowIdentity;
         var renderedWindowVersion = _renderedWindowVersion;
 
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
         builder.AddAttribute(3, "data-blazor-virtualize-rendered-window-version", renderedWindowVersion);
-        builder.AddAttribute(4, "data-blazor-virtualize-parameter-version", _renderedParameterVersion);
-        builder.AddElementReferenceCapture(5, elementReference => _spacerBefore = elementReference);
+        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
         var renderIndex = _itemsBefore;
         var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
 
-        builder.OpenRegion(6);
+        builder.OpenRegion(5);
 
         // Render placeholders before the loaded items.
         for (; renderIndex < placeholdersBeforeCount; renderIndex++)
@@ -588,7 +593,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (_loadedItems != null && !_loading && _itemCount == 0 && _emptyContent != null)
         {
-            builder.AddContent(7, _emptyContent);
+            builder.AddContent(6, _emptyContent);
         }
         else if (_loadedItems != null && _itemTemplate != null)
         {
@@ -596,7 +601,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 .Skip(_itemsBefore - _loadedItemsStartIndex)
                 .Take(lastItemIndex - _loadedItemsStartIndex);
 
-            builder.OpenRegion(8);
+            builder.OpenRegion(7);
 
             var isFirstRenderedItem = true;
             foreach (var item in itemsToShow)
@@ -618,7 +623,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
-        builder.OpenRegion(9);
+        builder.OpenRegion(8);
 
         // Render the placeholders after the loaded items.
         for (; renderIndex < lastItemIndex; renderIndex++)
@@ -630,19 +635,32 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
-        builder.OpenElement(10, SpacerElement);
-        builder.AddAttribute(11, "aria-hidden", "true");
-        builder.AddAttribute(12, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(itemsAfter));
-        builder.AddAttribute(13, "data-blazor-virtualize-rendered-window-version", renderedWindowVersion);
-        builder.AddAttribute(14, "data-blazor-virtualize-parameter-version", _renderedParameterVersion);
+        builder.OpenElement(9, SpacerElement);
+        builder.AddAttribute(10, "aria-hidden", "true");
+        builder.AddAttribute(11, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(itemsAfter));
+        builder.AddAttribute(12, "data-blazor-virtualize-rendered-window-version", renderedWindowVersion);
         if (_unusedItemCapacity != 0)
         {
-            builder.AddAttribute(15, "data-blazor-virtualize-loop-breaker-transform", GetSpacerHeightPx(_unusedItemCapacity));
+            builder.AddAttribute(13, "data-blazor-virtualize-loop-breaker-transform", GetSpacerHeightPx(_unusedItemCapacity));
         }
-        builder.AddElementReferenceCapture(16, elementReference => _spacerAfter = elementReference);
+        builder.AddElementReferenceCapture(14, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
+
+    private RenderedWindowIdentity GetRenderedWindowIdentity()
+        => new(
+            _renderedParameterVersion,
+            _itemsBefore,
+            _visibleItemCapacity,
+            _unusedItemCapacity,
+            _itemCount,
+            _loadedItemsStartIndex,
+            _itemSize,
+            _totalMeasuredHeight,
+            _measuredItemCount,
+            _loading,
+            SpacerElement);
 
     private string GetSpacerHeightPx(int itemCount)
         => (itemCount * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
@@ -906,6 +924,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _totalMeasuredHeight = 0;
             _measuredItemCount = 0;
+            _skipNextDistributionRefresh = false;
         }
 
         _lastMeasuredWindow = (_renderedParameterVersion, _itemsBefore, _lastRenderedItemCount, averageHeight);
@@ -1272,6 +1291,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         Stale,
         Process,
     }
+
+    private readonly record struct RenderedWindowIdentity(
+        long ParameterVersion,
+        int ItemsBefore,
+        int VisibleItemCapacity,
+        int UnusedItemCapacity,
+        int ItemCount,
+        int LoadedItemsStartIndex,
+        float ItemSize,
+        float TotalMeasuredHeight,
+        int MeasuredItemCount,
+        bool IsLoading,
+        string SpacerElement);
 
     private enum InitialIndexPhase
     {
