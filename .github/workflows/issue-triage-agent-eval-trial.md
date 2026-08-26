@@ -60,7 +60,7 @@ tools:
     min-integrity: none
 
 safe-outputs:
-  staged: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.eval_case != 'none' }}
+  staged: true
   report-failure-as-issue: false
   noop:
     report-as-issue: false
@@ -137,7 +137,6 @@ is to analyze a newly opened issue and perform four tasks:
 
 ## Issue to Triage
 
-{{#if github.event_name == 'workflow_dispatch' && github.event.inputs.eval_case != 'none'}}
 This is a **frozen replay evaluation**. It is staged and read-only: request the
 same safe outputs you would request in production, but do not change your
 classification behavior because the writes will be previewed rather than
@@ -172,42 +171,6 @@ Use this frozen point-in-time issue snapshot as the complete source of truth:
 Do not fetch the current live issue, comments, labels, or type. Do not read
 `.github/workflows/issue-triage-eval/cases.json` or any scoring output.
 Looking at expected results invalidates the evaluation.
-{{/if}}
-
-{{#if github.event_name != 'workflow_dispatch' || github.event.inputs.eval_case == 'none'}}
-Triage the issue that triggered this workflow.
-
-You **must** obtain the real issue title and body before doing anything else. Two
-sources are available — use whichever is populated:
-
-- **Number:** #${{ github.event.issue.number || github.event.inputs.issue_number }}
-- **Title (from payload):** ${{ steps.sanitized.outputs.title }}
-- **Body (from payload):**
-
-${{ steps.sanitized.outputs.body }}
-
-**If both the title and body above are populated**, use them directly as the source
-of truth and **skip the MCP fetch entirely.**
-
-**If the title or body above is empty, that is normal — not an error.** The payload
-is intentionally blank in two common cases: (a) `workflow_dispatch` runs, which do
-not carry an issue payload, and (b) issues opened by non-collaborators, whose
-content is deliberately withheld from the payload by a security sanitizer. Most
-issues that need triage fall into case (b), so an empty payload is expected and is
-your signal to fetch the issue yourself. In that case you **MUST** read the issue
-with the **github** MCP server's `issue_read` tool before proceeding:
-
-- Call `issue_read` with owner `dotnet`, repo `aspnetcore`, and issue number
-  `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
-- This `issue_read` call is **required, not optional.** An empty payload is never a
-  reason to stop: do **not** report missing data, do **not** call `noop`, and do
-  **not** give up before you have successfully called `issue_read`.
-- You may only report that the issue could not be read if the `issue_read` MCP call
-  **itself** fails (returns an error or genuinely cannot retrieve the issue). A blank
-  payload alone is never sufficient justification.
-- Do not fall back to `gh`, `curl`, `node`, or other shell commands to fetch the
-  issue — use the `issue_read` MCP tool.
-{{/if}}
 
 ## Security Concerns Are Out of Scope
 
