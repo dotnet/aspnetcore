@@ -398,7 +398,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public void OnChunkedExtension(bool rejected)
     {
-        // Only record the metric and log once per request, even if multiple chunk extensions are present.
+        // Only record the log once per request, even if multiple chunk extensions are present.
+        // We intentionally didn't introduce a metric for this. We think the scenario is very
+        // unlikely to occur in practice and isn't worth adding a metric for.
         if (_sawChunkedExtension)
         {
             return;
@@ -407,7 +409,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _sawChunkedExtension = true;
 
         Log.Http1ChunkedExtension(ConnectionId, rejected);
-        ServiceContext.Metrics.ChunkedExtension(MetricsContext, rejected);
     }
 
     public void OnBareLineFeedTerminator(bool rejected)
