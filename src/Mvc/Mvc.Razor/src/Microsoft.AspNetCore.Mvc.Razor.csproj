@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="$(TargetPath)" Certificate="MicrosoftSHA2" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Visible="false" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">

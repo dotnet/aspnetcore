@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Analyzers.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="$(TargetPath)" Certificate="MicrosoftSHA2" PackagePath="analyzers/dotnet/cs/$(TargetFileName)" Visible="false" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
