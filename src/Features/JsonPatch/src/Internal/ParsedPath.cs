@@ -58,18 +58,15 @@ public readonly struct ParsedPath
         // Without this slice, we will always have an extra empty string at the beginning.
         var referenceTokens = path.Substring(1).Split('/');
 
-        var strings = new List<string>();
-        foreach (var token in referenceTokens)
+        for (int i = 0; i < referenceTokens.Length; i++)
         {
-            var referenceToken = token;
+            var referenceToken = referenceTokens[i];
             ValidateReferenceToken(referenceToken);
 
-            referenceToken = referenceToken.Replace("~1", "/").Replace("~0", "~");
-
-            strings.Add(referenceToken);
+            referenceTokens[i] = referenceToken.Replace("~1", "/").Replace("~0", "~");
         }
 
-        return strings.ToArray();
+        return referenceTokens;
     }
 
     private static void ValidateReferenceToken(string referenceToken)
