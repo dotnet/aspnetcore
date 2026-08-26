@@ -478,7 +478,11 @@ internal sealed class HostingApplicationDiagnostics
             var remoteIpAddressString = remoteIpAddress.ToString();
             creationTags.Add(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
             creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString);
-            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, httpContext.Connection.RemotePort);
+
+            if (httpContext.Connection.RemotePort is { } remotePort && remotePort > 0)
+            {
+                creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, remotePort);
+            }
         }
 
         if (request.Host.HasValue)
