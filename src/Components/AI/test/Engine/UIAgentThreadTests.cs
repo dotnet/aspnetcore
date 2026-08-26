@@ -128,12 +128,11 @@ public class UIAgentThreadTests
                 var state = context.UnhandledContents.OfType<TestStateContent>().SingleOrDefault();
                 if (state is null)
                 {
-                    return false;
+                    return;
                 }
 
                 context.MarkHandled(state);
                 context.SetState(state.Value);
-                return true;
             };
         });
 

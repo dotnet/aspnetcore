@@ -76,17 +76,16 @@
             {
                 if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
                 {
-                    return false;
+                    return;
                 }
 
                 var state = snapshot.Snapshot.Deserialize<RecipeState>(_jsonOptions);
                 if (state?.Recipe is null)
                 {
-                    return false;
+                    return;
                 }
 
                 context.SetState(state);
-                return true;
             };
         }, LoggerFactory, initialState);
     }
