@@ -67,6 +67,8 @@ Read the launch URL from stdout: Web App hosts print `Now listening on: http://l
 
 Use the `playwright-browser_*` tools. For an interactive behavior, prove it behaviorally; rendered markup alone is a false positive (static SSR emits the same HTML).
 
+For transient DOM or browser-state behavior, first run the probe against the unmodified baseline and confirm that it detects the reported transition. A passing probe that cannot observe the known failure is not evidence for the fix. Choose instrumentation whose timing matches the behavior: `MutationObserver` callbacks run after synchronous mutations, so reading live DOM state in the callback may expose only the final state. Inspect the mutation records or instrument the exact operation when an intermediate synchronous state matters.
+
 1. `playwright-browser_navigate` to `<base>/<route>`.
 2. For WebAssembly/Auto/standalone, the runtime boots asynchronously: `playwright-browser_wait_for` the expected text (e.g. `Current count`) before interacting. First paint can take many seconds.
 3. `playwright-browser_snapshot` to read current state.
