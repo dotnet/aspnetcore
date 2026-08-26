@@ -36,7 +36,6 @@ Before editing behavior that crosses Components renderers, runtimes, or DI scope
 
 - Define the relevant behavior matrix: Server/WebAssembly/Auto, global/per-page interactivity, initial activation/enhanced navigation, prerendered/non-prerendered, and interactive `Router` present/absent. Mark intentionally excluded cells before implementation.
 - Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
-- Do not use component descriptors to transport unrelated framework state. Prefer a framework-owned persistent service when state must react to `PersistentComponentState` initial and value updates.
 - Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.
 
 ### Code clarity and durable knowledge
