@@ -16,6 +16,9 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
+    // Use the group separator for delimiting a name from its value to avoid possible collisions.
+    // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
+    private const char KeyNameValueDelimiter = '\x1d';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly OutputCacheOptions _options;
@@ -68,7 +71,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     public static bool ContainsDelimiters(string? value)
     {
-        return !string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter);
+        return !string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter, KeyNameValueDelimiter);
     }
 
     public static bool TryAppendKeyPrefix(OutputCacheContext context, StringBuilder builder)
@@ -171,7 +174,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 builder
                     .Append(KeyDelimiter)
                     .Append(header)
-                    .Append('=');
+                    .Append(KeyNameValueDelimiter);
 
                 var headerValuesArray = headerValues.ToArray();
                 Array.Sort(headerValuesArray, StringComparer.Ordinal);
@@ -218,7 +221,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     builder
                         .Append(KeyDelimiter)
                         .AppendUpperInvariant(queryArray[i].Key)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryArray[i].Value.ToArray();
                     Array.Sort(queryValueArray, StringComparer.Ordinal);
@@ -252,7 +255,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     builder
                         .Append(KeyDelimiter)
                         .Append(queryKey)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var queryValueArray = queryKeyValues.ToArray();
                     Array.Sort(queryValueArray, StringComparer.Ordinal);
@@ -303,7 +306,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
                 builder.Append(KeyDelimiter)
                     .Append(routeValueName)
-                    .Append('=')
+                    .Append(KeyNameValueDelimiter)
                     .Append(stringRouteValue);
             }
         }
@@ -336,7 +339,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
                 builder.Append(KeyDelimiter)
                     .Append(key)
-                    .Append('=')
+                    .Append(KeyNameValueDelimiter)
                     .Append(value);
             }
         }
