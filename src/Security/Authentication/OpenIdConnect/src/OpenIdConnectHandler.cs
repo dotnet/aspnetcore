@@ -742,13 +742,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
             // Recover the nonce stored in the protected state during the challenge and drop it from
             // the properties so it never flows into the authentication ticket. It is only needed to
-            // clean up the nonce cookie on error responses below.
-            string? challengeNonce = null;
-            if (properties.Items.TryGetValue(NonceProperty, out var storedNonce))
-            {
-                properties.Items.Remove(NonceProperty);
-                challengeNonce = storedNonce;
-            }
+            // clean up the nonce cookie on error responses below, and stays null when absent.
+            properties.Items.Remove(NonceProperty, out var challengeNonce);
 
             // if any of the error fields are set, throw error null
             if (!string.IsNullOrEmpty(authorizationResponse.Error))
