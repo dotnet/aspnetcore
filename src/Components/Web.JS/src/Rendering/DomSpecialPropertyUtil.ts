@@ -24,7 +24,7 @@ export function tryApplySpecialProperty(element: Element, name: string, value: s
 }
 
 function tryApplyTypeProperty(element: Element, value: string | null): boolean {
-  if (element.tagName !== 'INPUT' || value === null) {
+  if (element.tagName !== 'INPUT') {
     return false;
   }
 
@@ -32,13 +32,18 @@ function tryApplyTypeProperty(element: Element, value: string | null): boolean {
   // If 'value' was applied before 'type' in the same render batch,
   // tryApplyValueProperty stashed it on the element. We need to re-apply it
   // because the browser will have wiped the IDL .value property.
-  const deferredValue = (inputElement as any)[deferredValuePropname] as string | undefined;
+  const deferredValue = (inputElement as any)[deferredValuePropname] as string | null | undefined;
 
-  inputElement.setAttribute('type', value);
+  if (value !== null) {
+    inputElement.setAttribute('type', value);
+  } else {
+    inputElement.removeAttribute('type');
+  }
 
   if (deferredValue !== undefined) {
     setDeferredElementValue(inputElement, deferredValue);
   }
+
   return true;
 }
 
