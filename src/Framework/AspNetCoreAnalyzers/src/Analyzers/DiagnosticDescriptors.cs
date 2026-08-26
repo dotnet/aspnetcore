@@ -222,6 +222,14 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true);
 
+    internal static readonly DiagnosticDescriptor DoNotUseLocalFunctionsInMarkup = CreateDiagnosticDescriptor(
+        "ASP0039",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Message)),
+        Usage,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static DiagnosticDescriptor CreateDiagnosticDescriptor(
         string id,
         LocalizableString title,
