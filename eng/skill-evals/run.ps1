@@ -6,6 +6,8 @@ param(
 
     [string]$Eval,
 
+    [string]$Experiment,
+
     [string]$OutputDirectory,
 
     [string]$Root,
@@ -32,7 +34,17 @@ $repoRoot = if ($Root) {
 }
 $evalRoot = Join-Path $repoRoot 'eng/skill-evals'
 $runtimeRoot = Join-Path $repoRoot '.github/skills'
-$experiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
+$standardExperiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
+$experiment = if ($Experiment) {
+    $candidate = if ([IO.Path]::IsPathRooted($Experiment)) {
+        $Experiment
+    } else {
+        Join-Path $repoRoot $Experiment
+    }
+    (Resolve-Path $candidate).Path
+} else {
+    $standardExperiment
+}
 $script:vallyInitialized = $false
 
 function Resolve-Eval {
@@ -155,8 +167,8 @@ function Test-IsLink {
 
 function Get-LayoutErrors {
     $errors = [Collections.Generic.List[string]]::new()
-    if (-not (Test-Path $experiment -PathType Leaf)) {
-        $errors.Add("Missing standard experiment: $experiment")
+    if (-not (Test-Path $standardExperiment -PathType Leaf)) {
+        $errors.Add("Missing standard experiment: $standardExperiment")
     }
 
     $standardSpecs = @(
@@ -237,6 +249,7 @@ switch ($Action) {
     'Test' {
         & (Join-Path $PSScriptRoot 'test_validate.ps1')
         & (Join-Path $PSScriptRoot 'test_run.ps1')
+        & (Join-Path $PSScriptRoot 'test_assert_results.ps1')
     }
     'Lint' {
         Invoke-VallyLint

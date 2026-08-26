@@ -43,8 +43,57 @@ Run these commands from any directory:
 # Model-bearing operations are explicit and are not part of validation
 ./eng/skill-evals/run.ps1 Run
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-public-api/eval.vally.yaml
+./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-public-api/eval.vally.yaml -Experiment eng/skill-evals/skills-smoke.experiment.yaml
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/<skill>/<specialized>.vally.yaml
 ```
+
+## Hosted entry point
+
+`.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
+requests or pushes to `main` change runtime skills, eval assets, or the workflow
+itself. Automatic runs never invoke a model or judge.
+
+Maintainers can also dispatch `Validate`, `Test`, or `Lint` manually. The
+model-bearing `Run` action requires selecting one standard skill and defaults to
+the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
+trial count. Both modes run through the `copilot-pat-pool` environment with one
+worker, serialize model-bearing runs, and retain the raw Vally output as a
+workflow artifact for seven days. The environment must provide `COPILOT_PAT_0`
+and allow the selected workflow ref. The hosted quality gate evaluates the
+`skilled` variant independently: a weak baseline is expected and does not fail
+the workflow, while incomplete trials or a skilled score below its threshold do.
+
+After the workflow is present on the repository's default branch, maintainers
+with `write`, `maintain`, or `admin` permission can request a smoke evaluation
+for an open, same-repository pull request:
+
+- Recommended: submit a PR review whose body starts with `/evaluate`. GitHub
+  supplies the exact reviewed commit.
+- In the PR conversation, comment `/evaluate <sha>`. A bare `/evaluate` posts
+  guidance because an `issue_comment` event does not identify a commit.
+
+The gate resolves the full commit, verifies it belongs to the PR, rejects fork
+content, and discovers standard evals affected by the change. A central runner,
+experiment, or workflow change selects every standard eval. The gate posts one
+pending `skill-evaluations` commit status so duplicate requests for the same
+commit normally stop at the gate. After acquiring the global model lane, the
+worker verifies that its run still owns the pending status before exposing PR
+content to the PAT-backed step, then rechecks after a short stabilization window
+that lets the preceding run's separate reporter replace any racing claim. A
+racing request therefore cannot cause a second model run. The model job has
+read-only repository permissions, checks out the validated commit, runs affected
+evals serially, and publishes a final commit status and PR comment linking to the
+retained artifacts. Smoke results validate execution and the skilled threshold,
+but Full runs remain the quality-evidence path.
+
+`workflow_dispatch` remains the first control surface. Supplying both
+`pr_number` and `head_sha` exercises the same exact-SHA PR gate while the
+selected `eval` acts as a bounded override; omitting them preserves the original
+one-skill manual run. Comment and review events always load workflow YAML from
+the default branch. The secret-bearing job still executes eval and skill content
+from the validated PR commit, so same-repository write access is an explicit
+trust boundary. Use required reviewers on `copilot-pat-pool` if repository write
+access alone should not authorize that execution.
 
 `Validate`, `Lint`, and `Run` use the exact
 `@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package
@@ -105,5 +154,5 @@ refresh to keep coverage representative and bounded.
 Validation does not judge prompt or rubric quality, run a model, validate
 runtime skill behavior, or decide whether a specialized suite is statistically
 persuasive. Those concerns belong in skill-specific review and runtime
-validation. Hosted execution, result publication, PR automation, and
-cross-repository comparison adapters are deliberate follow-ups.
+validation. Scheduled model evals and cross-repository comparison adapters are
+deliberate follow-ups.

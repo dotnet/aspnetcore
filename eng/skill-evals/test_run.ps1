@@ -89,6 +89,17 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     )
 
     & $runner Run `
+        -Eval eng/skill-evals/review-public-api/eval.vally.yaml `
+        -Experiment eng/skill-evals/skills-smoke.experiment.yaml `
+        -Vally $fakeVally `
+        -VallyPrefix @() `
+        -OutputDirectory $output
+    $smokeInvocation = Read-Invocation
+    Assert-True ($smokeInvocation -contains (
+        Join-Path $repoRoot 'eng/skill-evals/skills-smoke.experiment.yaml'
+    )) 'Smoke run did not use the selected experiment.'
+
+    & $runner Run `
         -Eval $specialized `
         -Vally $fakeVally `
         -VallyPrefix @() `
