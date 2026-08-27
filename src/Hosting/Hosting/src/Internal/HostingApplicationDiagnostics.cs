@@ -581,6 +581,15 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
             activity.SetStatus(ActivityStatusCode.Error);
         }
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+
+            // `client.address` is set again (see CreateInitializeActivityTags) in case of
+            // other middleware rewriting it (like ForwardedHeadersMiddleware)
+            activity.SetTag(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
+        }
     }
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
