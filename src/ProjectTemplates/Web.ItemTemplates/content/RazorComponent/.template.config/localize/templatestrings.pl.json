@@ -2,7 +2,7 @@
   "author": "Microsoft",
   "name": "Składnik Razor",
   "description": "Składnik interfejsu użytkownika wielokrotnego użytku implementowany przy użyciu składni Razor",
-  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu",
   "symbols/use-code-behind/description": "create component with a code-behind file",
   "symbols/use-code-behind/displayName": "Use Code Behind",
   "postActions/openInEditor/description": "Otwiera plik Component1.razor w edytorze"
