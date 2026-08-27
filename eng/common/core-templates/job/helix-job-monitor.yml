@@ -26,6 +26,11 @@ parameters:
   type: string
   default: ''
 
+# Whether failures in the monitor job should allow the pipeline to continue.
+- name: continueOnError
+  type: boolean
+  default: false
+
 # NuGet package id of the Helix job monitor tool.
 - name: toolPackageId
   type: string
@@ -103,6 +108,7 @@ jobs:
 - job: HelixJobMonitor
   displayName: Monitor Helix Jobs
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  continueOnError: ${{ parameters.continueOnError }}
   ${{ if ne(length(parameters.dependsOn), 0) }}:
     dependsOn: ${{ parameters.dependsOn }}
   ${{ if ne(parameters.condition, '') }}:

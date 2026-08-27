@@ -225,6 +225,60 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
+    public async Task QueryWithInvalidCharacter_Reset(string path)
+    {
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
+    }
+
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
+    public async Task QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, headers, endStream: true);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal(3, responseHeaders.Count);
+        Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
+    [Theory]
     [InlineData("/", "/")]
     [InlineData("/a%5E", "/a^")]
     [InlineData("/a%E2%82%AC", "/a€")]
