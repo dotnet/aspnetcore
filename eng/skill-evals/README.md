@@ -51,7 +51,8 @@ Run these commands from any directory:
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
 requests or pushes to `main` change runtime skills, eval assets, or the workflow
-itself. Automatic runs never invoke a model or judge.
+itself. Validation parses and dry-runs both the standard and smoke experiments
+without invoking a model or judge.
 
 Maintainers can also dispatch `Validate`, `Test`, or `Lint` manually. The
 model-bearing `Run` action requires selecting one standard skill and defaults to
@@ -72,6 +73,8 @@ for an open, same-repository pull request:
 - In the PR conversation, comment `/evaluate <sha>`. A bare `/evaluate` posts
   guidance because an `issue_comment` event does not identify a commit.
 
+Requests from actors whose repository permission cannot be verified or is below
+`write` are logged as notices and ignored before any PR or model work begins.
 The gate resolves the full commit, verifies it belongs to the PR, rejects fork
 content, and discovers standard evals affected by the change. A central runner,
 experiment, or workflow change selects every standard eval. The gate posts one

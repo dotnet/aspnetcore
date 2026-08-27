@@ -35,7 +35,9 @@ $repoRoot = if ($Root) {
 $evalRoot = Join-Path $repoRoot 'eng/skill-evals'
 $runtimeRoot = Join-Path $repoRoot '.github/skills'
 $standardExperiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
-$experiment = if ($Experiment) {
+$smokeExperiment = Join-Path $evalRoot 'skills-smoke.experiment.yaml'
+$hasExplicitExperiment = -not [string]::IsNullOrWhiteSpace($Experiment)
+$selectedExperiment = if ($hasExplicitExperiment) {
     $candidate = if ([IO.Path]::IsPathRooted($Experiment)) {
         $Experiment
     } else {
@@ -137,9 +139,11 @@ function Invoke-VallyIsolated {
 }
 
 function Invoke-VallyExperimentDryRun {
+    param([string]$ExperimentPath)
+
     Invoke-VallyIsolated @(
         'experiment',
-        'run', $experiment,
+        'run', $ExperimentPath,
         '--compare',
         '--dry-run',
         '--output-dir', 'plan-results'
@@ -169,6 +173,9 @@ function Get-LayoutErrors {
     $errors = [Collections.Generic.List[string]]::new()
     if (-not (Test-Path $standardExperiment -PathType Leaf)) {
         $errors.Add("Missing standard experiment: $standardExperiment")
+    }
+    if (-not (Test-Path $smokeExperiment -PathType Leaf)) {
+        $errors.Add("Missing smoke experiment: $smokeExperiment")
     }
 
     $standardSpecs = @(
@@ -244,7 +251,12 @@ switch ($Action) {
     'Validate' {
         Invoke-LayoutValidation
         Invoke-VallyLint
-        Invoke-VallyExperimentDryRun
+        if ($hasExplicitExperiment) {
+            Invoke-VallyExperimentDryRun $selectedExperiment
+        } else {
+            Invoke-VallyExperimentDryRun $standardExperiment
+            Invoke-VallyExperimentDryRun $smokeExperiment
+        }
     }
     'Test' {
         & (Join-Path $PSScriptRoot 'test_validate.ps1')
@@ -269,7 +281,7 @@ switch ($Action) {
         if (-not $resolvedEval -or (Split-Path $resolvedEval -Leaf) -eq 'eval.vally.yaml') {
             $vallyArguments = @(
                 'experiment',
-                'run', $experiment,
+                'run', $selectedExperiment,
                 '--compare',
                 '--output-dir', $output
             )

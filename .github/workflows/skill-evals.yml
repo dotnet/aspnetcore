@@ -183,10 +183,13 @@ jobs:
               ;;
           esac
 
-          PERMISSION="$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" --jq '.permission')"
+          if ! PERMISSION="$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" --jq '.permission' 2>/dev/null)"; then
+            echo "::notice::Unable to verify permission for $ACTOR; ignoring the evaluation request."
+            exit 0
+          fi
           if [[ "$PERMISSION" != 'admin' && "$PERMISSION" != 'maintain' && "$PERMISSION" != 'write' ]]; then
-            echo "::error::$ACTOR does not have permission to run model-bearing skill evaluations."
-            exit 1
+            echo "::notice::$ACTOR does not have permission to run model-bearing skill evaluations; ignoring the request."
+            exit 0
           fi
 
           PR_DATA="$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")"
