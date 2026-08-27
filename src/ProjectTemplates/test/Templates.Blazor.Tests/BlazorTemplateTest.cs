@@ -87,8 +87,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         string listeningUri,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None,
-        bool verifyNavMenuCollapses = false)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
     {
         if (!BrowserManager.IsAvailable(browserKind))
         {
@@ -102,7 +101,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         Output.WriteLine($"Opening browser at {listeningUri}...");
         await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await TestBasicInteractionAsync(browser, page, appName, pagesToExclude, authenticationFeatures, verifyNavMenuCollapses);
+        await TestBasicInteractionAsync(browser, page, appName, pagesToExclude, authenticationFeatures);
 
         await page.CloseAsync();
     }
@@ -112,8 +111,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         IPage page,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None,
-        bool verifyNavMenuCollapses = false)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
     {
         await page.WaitForSelectorAsync("nav");
 
@@ -301,7 +299,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
         }
 
-        if (verifyNavMenuCollapses)
+        if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
         {
             await VerifyNavMenuCollapsesAfterNavigationAsync(page);
         }
@@ -344,11 +342,14 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
         try
         {
-            await page.CheckAsync(".navbar-toggler");
-            Assert.True(await page.IsCheckedAsync(".navbar-toggler"), "The nav menu did not open.");
+            var navMenu = page.Locator(".nav-scrollable");
+
+            await page.ClickAsync(".navbar-toggler");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
             await page.ClickAsync("nav a[href='']");
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
-            await page.WaitForSelectorAsync(".navbar-toggler:not(:checked)");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
         }
         finally
         {
