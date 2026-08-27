@@ -334,6 +334,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Fail($"The counter did not increment after {MaxIncrementAttempts} attempts");
         }
     }
+
     private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
     {
         var originalViewportSize = page.ViewportSize;
