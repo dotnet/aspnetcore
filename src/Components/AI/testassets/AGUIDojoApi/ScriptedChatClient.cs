@@ -13,6 +13,27 @@ namespace AGUIDojoApi;
 internal sealed class ScriptedChatClient : IChatClient
 {
     private static readonly TimeSpan TokenDelay = TimeSpan.FromMilliseconds(60);
+    private static readonly string[] MarsPlanSteps =
+    [
+        "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+        "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+        "Select and train astronaut crew for the mission.",
+        "Establish communication systems and infrastructure for Mars exploration.",
+        "Launch the spacecraft and execute the mission to Mars.",
+    ];
+    private static readonly string[] PizzaPlanSteps =
+    [
+        "Choose the pizza style and serving size.",
+        "Gather flour, yeast, water, salt, and olive oil.",
+        "Mix and knead the pizza dough.",
+        "Let the dough rise until doubled in size.",
+        "Prepare the tomato sauce.",
+        "Slice and organize the toppings.",
+        "Preheat the oven and baking surface.",
+        "Shape the dough and add sauce and toppings.",
+        "Bake the pizza until the crust is golden.",
+        "Rest, slice, and serve the pizza.",
+    ];
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -22,11 +43,35 @@ internal sealed class ScriptedChatClient : IChatClient
         ArgumentNullException.ThrowIfNull(messages);
 
         var messageList = messages.ToList();
+        var prompt = messageList.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? string.Empty;
+        var planSteps = prompt.Contains("pizza", StringComparison.OrdinalIgnoreCase)
+            ? PizzaPlanSteps
+            : MarsPlanSteps;
+
         if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
         {
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
                 .FirstOrDefault();
+            if (functionResult is { CallId: "agentic-plan-create-1" })
+            {
+                yield return CreatePlanStepUpdate(messageId: Guid.NewGuid().ToString("N"), stepIndex: 0);
+                yield break;
+            }
+
+            if (functionResult?.CallId.StartsWith(
+                "agentic-plan-step-",
+                StringComparison.Ordinal) == true &&
+                int.TryParse(functionResult.CallId["agentic-plan-step-".Length..], out var stepNumber) &&
+                stepNumber >= 1 &&
+                stepNumber < planSteps.Length)
+            {
+                yield return CreatePlanStepUpdate(
+                    messageId: Guid.NewGuid().ToString("N"),
+                    stepIndex: stepNumber);
+                yield break;
+            }
+
             var response = functionResult switch
             {
                 { CallId: "backend-tool-weather-1" } =>
@@ -38,6 +83,10 @@ internal sealed class ScriptedChatClient : IChatClient
                         "tool-generative-ui-haiku-",
                         StringComparison.Ordinal) =>
                     "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
+                { CallId: var callId }
+                    when callId == $"agentic-plan-step-{planSteps.Length}" =>
+                    $"All {planSteps.Length} steps in the " +
+                    $"{(planSteps.Length == PizzaPlanSteps.Length ? "pizza" : "Mars mission")} plan are complete.",
                 _ => "Background changed to a sunset gradient.",
             };
             yield return new ChatResponseUpdate
@@ -50,16 +99,30 @@ internal sealed class ScriptedChatClient : IChatClient
             yield break;
         }
 
-        var prompt = string.Empty;
-        foreach (var message in messageList)
+        var messageId = Guid.NewGuid().ToString("N");
+        if (prompt.Contains("plan", StringComparison.OrdinalIgnoreCase) &&
+            options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "create_plan") == true)
         {
-            if (message.Role == ChatRole.User)
+            yield return new ChatResponseUpdate
             {
-                prompt = message.Text;
-            }
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "agentic-plan-create-1",
+                        "create_plan",
+                        new Dictionary<string, object?>
+                        {
+                            ["steps"] = planSteps,
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
         }
 
-        var messageId = Guid.NewGuid().ToString("N");
         if (prompt.Contains("weather", StringComparison.OrdinalIgnoreCase) &&
             options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "get_weather") == true)
@@ -198,6 +261,27 @@ internal sealed class ScriptedChatClient : IChatClient
 
     public void Dispose()
     {
+    }
+
+    private static ChatResponseUpdate CreatePlanStepUpdate(string messageId, int stepIndex)
+    {
+        return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = messageId,
+            Contents =
+            [
+                new FunctionCallContent(
+                    $"agentic-plan-step-{stepIndex + 1}",
+                    "update_plan_step",
+                    new Dictionary<string, object?>
+                    {
+                        ["index"] = stepIndex,
+                        ["status"] = "completed",
+                    })
+            ],
+            FinishReason = ChatFinishReason.ToolCalls,
+        };
     }
 
     private static string CreateTaskStepsSummary(object? result)
