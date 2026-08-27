@@ -597,7 +597,9 @@ on:
         # GITHUB_OUTPUT secret detector then skips the ENTIRE part1_data output
         # ("Skip output 'part1_data' since it may contain secret"), starving the agent of all
         # Part 1 data and producing a false noop. Scrubbing removes the trigger and avoids
-        # surfacing live tokens in the prompt and uploaded artifacts.
+        # surfacing live tokens in the prompt and uploaded artifacts. Only call this for
+        # captured failure text, never for the serialized payload: the broad fallback pattern
+        # also matches long test identifiers and would corrupt object keys.
         _SECRET_PATTERNS = [
             re.compile(r'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}'),         # JWT (header.payload.signature)
             re.compile(r'eyJ[A-Za-z0-9_-]{20,}'),                                               # bare JWT segment
@@ -1106,12 +1108,33 @@ on:
                 f.write(f"part1_data_{k}<<PART1_EOF\n{chunk}\nPART1_EOF\n")
 
 
+        def validate_part1_json(js):
+            """Fail closed if a future payload transformation produces duplicate JSON keys."""
+            duplicates = set()
+
+            def reject_duplicate_keys(pairs):
+                result = {}
+                for key, value in pairs:
+                    if key in result:
+                        duplicates.add(key)
+                    result[key] = value
+                return result
+
+            try:
+                json.loads(js, object_pairs_hook=reject_duplicate_keys)
+            except json.JSONDecodeError as ex:
+                sys.exit(f"FATAL: part1_data is invalid JSON: {ex}")
+            if duplicates:
+                examples = ", ".join(sorted(duplicates)[:3])
+                sys.exit(f"FATAL: part1_data contains duplicate JSON keys: {examples}")
+
+
         if __name__ == "__main__":
-            # Final safety net: scrub the fully serialized payload as well. GitHub skips a
-            # part1_data_N output if any token pattern is detected, so a leaked secret in
-            # any field (not just the three scrubbed above) would starve the agent. Scrubbing
-            # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
-            js = scrub_secrets(main())
+            # Error messages, stack traces, and Source C failure blocks are scrubbed before
+            # serialization. Do not scrub the complete JSON string because doing so can alter
+            # test-name keys and collapse unrelated failures into duplicate keys.
+            js = main()
+            validate_part1_json(js)
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if not gh_out:
                 sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")

@@ -1,15 +1,27 @@
 # Working on Issues in the Components Area
 
-This guide provides step-by-step instructions for working on issues in the ASP.NET Core Components area.
+This guide provides step-by-step instructions for investigating, reviewing, and implementing work in the ASP.NET Core Components area.
 
 ## Working on issues
 
-You MUST follow this workflow when implementing new features or fixing bugs in the Components area.
-* Add the workflow to your `todos` and follow it strictly.
-- Create a sample scenario.
-- If working on a bug, use playwright to reproduce the behavior/problem first.
-- You MUST have reproduced the problem before attempting to fix it.
+You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
+* Add the applicable workflow steps to your `todos` and follow them strictly.
+
+The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
+
+For behavioral investigations and reviews:
+- Create or identify a scenario at the smallest faithful validation boundary.
+- Faithful validation includes the component, service, runtime, or browser mechanism that owns or produces each disputed precondition and observes the claimed material effect at the appropriate boundary.
+- Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
+- For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
+- Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
+- Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
+- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
+
+For implementation work:
+- For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
+  - Components and template files move. Resolve historical paths with `git log --follow --name-status` or `git ls-tree` before using `git show <commit>:<path>`.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.
 - Once the fix or feature is validated in the sample, implement E2E tests for it.
@@ -17,6 +29,18 @@ You MUST follow this workflow when implementing new features or fixing bugs in t
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
+
+### Code clarity and durable knowledge
+
+- Before adding a comment, make local behavior discoverable through precise names,
+  named methods or variables, and smaller single-purpose responsibilities. A named
+  method can improve clarity even when it does not reduce duplication.
+- Add a concise implementation comment only when a durable nonlocal reason cannot
+  be expressed by structure alone, such as ordering across JavaScript and .NET
+  callbacks, lifecycle ownership transfer, compatibility constraints, or a
+  required negative guarantee. Do not narrate the call graph or restate the code.
+- Do not use public XML documentation to explain internal implementation details,
+  including control flow or lifecycle state. Limit it to consumer-observable behavior.
 
 ### Overview
 
@@ -35,6 +59,8 @@ The `src/Components/Samples` folder contains canonical Blazor Web App samples, a
 - **BlazorWebAssemblyStandalone** - A standalone Blazor WebAssembly app (no server host), under `src/Components/WebAssembly/Samples`.
 
 Together these cover every interactivity platform (Server/WebAssembly/Auto/None) and location (Global/Per-page) by editing a single `@rendermode` rather than restructuring.
+
+Before expanding validation across this full matrix, state the render modes and lifecycle boundaries the task requires. Evaluate that requested matrix first, and report broader compatibility separately rather than silently redefining the task.
 
 **Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
@@ -59,6 +85,8 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 ### Efficient Build Strategy
 
 To avoid unnecessary full repository builds, follow this optimized approach:
+
+After a build fails, identify whether the cause is a source error in the changed project, a missing or stale prerequisite, or unrelated repository infrastructure before changing commands. Use the smallest supported build that still exercises the change. Do not repeatedly retry broad builds with different exclusions unless each retry addresses an identified failure cause, and report any validation boundary that remains untested.
 
 #### 1. Initial Setup - Check for First Build
 Before running any commands, check if a full build has already been completed:
@@ -215,14 +243,15 @@ E2E tests are located in `src/Components/test/E2ETest`.
 The E2E tests use Selenium. To build and run tests:
 
 ```bash
-# Build the E2E test project (this includes all test assets as dependencies)
+# Build the E2E test project and its dependencies
 dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q
 
-# Run a specific test
+# After the build succeeds, run a specific test
 dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~TestName"
 ```
+
+For the first E2E run in a fresh worktree, or after relevant build, configuration, or output changes, run the dependency-aware build above. Do not use `--no-dependencies` to prepare E2E tests when referenced test-app outputs may be stale or missing. It may copy existing dependency outputs, but it does not rebuild referenced projects or apps. After the build succeeds, `--no-build` is the supported fast loop for repeated targeted tests while those inputs remain unchanged.
 
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
 
 If a test is failing, it's best to run the server manually and navigate to the test to investigate. The test output won't be very useful for debugging.
-

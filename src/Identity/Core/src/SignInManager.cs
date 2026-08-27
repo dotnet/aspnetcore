@@ -168,10 +168,14 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+    /// Refreshes the sign-in for the specified <paramref name="user"/>, whilst preserving the existing
     /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
     /// </summary>
-    /// <param name="user">The user to sign-in.</param>
+    /// <remarks>
+    /// The user must already be signed in, and the user ID must match the currently authenticated user.
+    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string?)"/> instead.
+    /// </remarks>
+    /// <param name="user">The user to refresh the sign-in for.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
@@ -207,8 +211,8 @@ public class SignInManager<TUser> where TUser : class
         }
 
         IList<Claim> claims = Array.Empty<Claim>();
-        var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-        var amr = auth.Principal?.FindFirst("amr");
+        var authenticationMethod = auth.Principal.FindFirst(ClaimTypes.AuthenticationMethod);
+        var amr = auth.Principal.FindFirst("amr");
 
         if (authenticationMethod != null || amr != null)
         {
@@ -224,7 +228,7 @@ public class SignInManager<TUser> where TUser : class
         }
 
         await SignInWithClaimsAsync(user, auth.Properties, claims);
-        return (true, auth.Properties?.IsPersistent ?? false);
+        return (true, auth.Properties?.IsPersistent);
     }
 
     /// <summary>
@@ -802,7 +806,21 @@ public class SignInManager<TUser> where TUser : class
 
     private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson)
     {
+        ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
+        if (passkeyInfo is null)
+        {
+            return SignInResult.Failed;
+        }
+
+        if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
+        }
 
         var assertionResult = await PerformPasskeyAssertionAsync(credentialJson);
         if (!assertionResult.Succeeded)

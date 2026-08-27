@@ -10,6 +10,11 @@
     <p id="localized-label"><DisplayName For="@(() => _product.LocalizedName)" /></p>
 </div>
 
+<EditForm Model="_product">
+    <InputNumber id="price-input" @bind-Value="_product.Price" />
+    <ValidationMessage For="@(() => _product.Price)" />
+</EditForm>
+
 @code {
     private Product _product = new Product();
 

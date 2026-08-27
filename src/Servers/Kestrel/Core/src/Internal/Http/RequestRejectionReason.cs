@@ -33,4 +33,5 @@ internal enum RequestRejectionReason
     MissingHostHeader,
     MultipleHostHeaders,
     InvalidHostHeader,
+    ChunkedExtensionNotAllowed,
 }
