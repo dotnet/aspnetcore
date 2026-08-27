@@ -1226,6 +1226,32 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
+    public void ActivityListeners_ClientAddressTagUpdatedWhenRemoteIpAddressChanges()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false,
+            configure: c => c.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.1"));
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.1");
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+        Assert.Equal("203.0.113.1", tags[HostingTelemetryHelpers.AttributeClientAddress]);
+        Assert.Equal("192.0.2.1", tags[HostingTelemetryHelpers.AttributeNetworkPeerAddress]);
+    }
+
+    [Fact]
     public void ActivityListeners_NetworkPeerPortTagNotAddedWhenZero()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
