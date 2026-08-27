@@ -93,7 +93,7 @@ internal static class HostingTelemetryHelpers
     {
         if (!string.IsNullOrEmpty(configuredKnownMethods))
         {
-            var knownHttpMethods = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var knownHttpMethods = new Dictionary<string, string>(StringComparer.Ordinal);
 
             foreach (var method in configuredKnownMethods.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
@@ -102,7 +102,7 @@ internal static class HostingTelemetryHelpers
 
             if (knownHttpMethods.Count > 0)
             {
-                return knownHttpMethods.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+                return knownHttpMethods.ToFrozenDictionary(StringComparer.Ordinal);
             }
         }
 

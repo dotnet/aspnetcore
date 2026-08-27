@@ -1407,13 +1407,19 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
     [Theory]
     [InlineData(null, "CONNECT", "CONNECT")]
+    [InlineData(null, "connect", "CONNECT")]
     [InlineData("", "GET", "GET")]
+    [InlineData("", "get", "GET")]
     [InlineData("GET,CUSTOM", "GET", "GET")]
     [InlineData("GET,CUSTOM", "CUSTOM", "CUSTOM")]
-    [InlineData("GET,CUSTOM", "custom", "CUSTOM")]
+    [InlineData("GET,CUSTOM", "custom", "_OTHER")]
     [InlineData("GET,CUSTOM", "POST", "_OTHER")]
-    [InlineData("get,Custom", "GET", "get")]
-    [InlineData("get,Custom", "custom", "Custom")]
+    [InlineData("get,Custom", "get", "get")]
+    [InlineData("get,Custom", "GET", "_OTHER")]
+    [InlineData("get,Custom", "Custom", "Custom")]
+    [InlineData("get,Custom", "custom", "_OTHER")]
+    [InlineData("CUSTOM,custom", "CUSTOM", "CUSTOM")]
+    [InlineData("CUSTOM,custom", "custom", "custom")]
     public void KnownHttpMethodsConfigurationOverridesDefaults(string configuredKnownMethods, string method, string expectedMethod)
     {
         var knownHttpMethods = HostingTelemetryHelpers.CreateKnownHttpMethods(configuredKnownMethods);
