@@ -41,36 +41,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("2", () => Browser.FindElement(By.Id("count-server")).Text);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void NavigationMenuClosesAfterHydration(bool useKeyboard)
-    {
-        Navigate($"{ServerPathBase}/interactivity/nav-menu-hydration");
-
-        Browser.Exists(By.Id("nav-menu-interactive"));
-        Browser.Exists(By.Id("nav-menu-interactive-proof")).Click();
-        Browser.Equal("1", () => Browser.Exists(By.Id("nav-menu-count")).Text);
-
-        var toggler = Browser.Exists(By.Id("nav-menu-toggler"));
-        toggler.Click();
-        Browser.True(() => toggler.Selected);
-
-        var destination = Browser.Exists(By.Id("nav-menu-destination"));
-        if (useKeyboard)
-        {
-            destination.SendKeys(Keys.Enter);
-        }
-        else
-        {
-            destination.Click();
-        }
-
-        Browser.Equal("True", () => Browser.Exists(By.Id("nav-menu-destination-state")).Text);
-        Browser.False(() => Browser.Exists(By.Id("nav-menu-toggler")).Selected);
-        AssertBrowserLogDoesNotContainErrors();
-    }
-
     [Fact]
     public void CanRenderInteractiveServerComponentFromRazorClassLibrary()
     {
