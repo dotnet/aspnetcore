@@ -106,9 +106,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract validatable types discovered in union cases and add them to the top-level list.
         var hasValidatableUnionCases = false;
-        if (IsUnionType(typeSymbol))
+        if (typeSymbol.IsUnion)
         {
-            foreach (var unionCaseType in GetUnionCaseTypes(typeSymbol))
+            foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
             {
                 hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
             }
@@ -189,13 +189,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             IsImplicitlyDeclared: true,
             DeclaredAccessibility: Accessibility.Public,
             ContainingType: { } containingType,
-        } && IsUnionType(containingType);
-
-#pragma warning disable RSEXPERIMENTAL006 // Union symbol APIs were still annotated as experimental in this branch's compiler.
-    private static bool IsUnionType(ITypeSymbol typeSymbol) => typeSymbol.IsUnion;
-
-    private static ImmutableArray<ITypeSymbol> GetUnionCaseTypes(ITypeSymbol typeSymbol) => typeSymbol.UnionCaseTypes;
-#pragma warning restore RSEXPERIMENTAL006
+        } && containingType.IsUnion;
 
     private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(
         ITypeSymbol typeSymbol,
