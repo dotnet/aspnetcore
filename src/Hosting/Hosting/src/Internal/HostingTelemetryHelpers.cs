@@ -9,9 +9,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+/// <summary>
+/// Follows OpenTelemetry Semantic Conventions for HTTP
+/// <a href="https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/http/http-spans.md">v1.44.0</a>
+/// </summary>
 internal static class HostingTelemetryHelpers
 {
-    // Semantic Conventions for HTTP.
     public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
     public const string AttributeHttpResponseStatusCode = "http.response.status_code";
@@ -26,7 +29,6 @@ internal static class HostingTelemetryHelpers
     public const string AttributeErrorType = "error.type";
 
     // The value "_OTHER" is used for non-standard HTTP methods.
-    // https://github.com/open-telemetry/semantic-conventions/blob/v1.40.0/docs/http/http-spans.md
     private const string OtherHttpMethod = "_OTHER";
     private const string KnownHttpMethodsEnvironmentVariable = "OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS";
     private const string RedactedQueryParameterValue = "REDACTED";
@@ -177,14 +179,12 @@ internal static class HostingTelemetryHelpers
         return IsSensitiveQueryParameterName(decodedName);
     }
 
-    // search `url.query` at https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-spans.md
+    // search `url.query` at OpenTelemetry Semantic Conventions doc to see which query string keys should have redacted values.
     private static bool IsSensitiveQueryParameterName(ReadOnlySpan<char> name) =>
         name is
             "X-Amz-Signature" or
             "X-Amz-Credential" or
             "X-Amz-Security-Token" or
-            "AWSAccessKeyId" or
-            "Signature" or
             "sig" or
             "X-Goog-Signature";
 

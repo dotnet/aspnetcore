@@ -1189,7 +1189,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData("", null)]
     [InlineData("?", null)]
     [InlineData("?q=OpenTelemetry", "q=OpenTelemetry")]
-    [InlineData("?X-Amz-Signature=signature&X-Amz-Credential=credential&X-Amz-Security-Token=token&AWSAccessKeyId=key&Signature=signature&sig=sas&X-Goog-Signature=google", "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=REDACTED&Signature=REDACTED&sig=REDACTED&X-Goog-Signature=REDACTED")]
+    [InlineData("?X-Amz-Signature=signature&X-Amz-Credential=credential&X-Amz-Security-Token=token&AWSAccessKeyId=key&Signature=signature&sig=sas&X-Goog-Signature=google", "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=key&Signature=signature&sig=REDACTED&X-Goog-Signature=REDACTED")]
     [InlineData("?x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google", "x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google")]
     [InlineData("?%73ig=encoded&sig=&sig", "%73ig=REDACTED&sig=REDACTED&sig")]
     public void ActivityListeners_QueryTagIsAvailableToSampler(string queryString, string expectedQuery)
