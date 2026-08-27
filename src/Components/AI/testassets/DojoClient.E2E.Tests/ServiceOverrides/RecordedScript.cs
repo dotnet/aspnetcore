@@ -63,6 +63,9 @@ internal sealed class RecordedCall
     /// <summary>The function result call IDs expected on this model request.</summary>
     public List<string>? ToolResultCallIds { get; init; }
 
+    /// <summary>The function results expected on this model request.</summary>
+    public List<RecordedToolResult>? ToolResults { get; init; }
+
     /// <summary>The response, split into the checkpoints a test can stop at.</summary>
     public required List<RecordedFrame> Frames { get; init; }
 }
@@ -86,4 +89,11 @@ internal sealed class RecordedFunctionCall
     public required string Name { get; init; }
 
     public Dictionary<string, object?> Arguments { get; init; } = [];
+}
+
+internal sealed class RecordedToolResult
+{
+    public required string CallId { get; init; }
+
+    public required string Result { get; init; }
 }

@@ -49,7 +49,9 @@
                 <hr />
                 <div class="d-flex flex-column">
                     <span class="text-secondary mx-auto mt-2">OR</span>
-                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
+                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email"
+                                   UnknownCredentialSignalOptionsJson="@unknownCredentialSignalOptionsJson"
+                                   class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
                 </div>
                 <hr />
                 <div>
@@ -77,6 +79,7 @@
 
 @code {
     private string? errorMessage;
+    private string? unknownCredentialSignalOptionsJson;
     private EditContext editContext = default!;
 
     [CascadingParameter]
@@ -151,6 +154,11 @@
         }
         else
         {
+            if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
+            {
+                unknownCredentialSignalOptionsJson = await SignInManager.MakeUnknownCredentialSignalOptionsAsync(Input.Passkey.CredentialJson);
+            }
+
             errorMessage = "Error: Invalid login attempt.";
         }
     }

@@ -851,6 +851,33 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task FinalizeCacheBody_DoNotCache_IfRequestAborted()
+    {
+        var cache = GetStore();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+        var context = TestUtils.CreateTestContext(cache: cache);
+
+        middleware.ShimResponseStream(context);
+        await context.HttpContext.Response.WriteAsync(new string('0', 10));
+
+        using var entry = new OutputCacheEntry(DateTimeOffset.UtcNow, StatusCodes.Status200OK);
+        context.CachedResponse = entry;
+        context.CacheKey = "BaseKey";
+        context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+        context.HttpContext.RequestAborted = new CancellationToken(canceled: true);
+
+        var isResponseCached = await middleware.FinalizeCacheBodyAsync(context);
+
+        Assert.Equal(0, cache.SetCount);
+        Assert.False(isResponseCached);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.ResponseNotCached);
+    }
+
+    [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfSizeTooBig()
     {
         var sink = new TestSink();
@@ -1009,6 +1036,69 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_IgnoresTruncatedResponses()
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var memoryStream1 = new MemoryStream();
+        var memoryStream2 = new MemoryStream();
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: async c =>
+        {
+            responseCounter++;
+
+            if (responseCounter == 1)
+            {
+                blocker1.SetResult(true);
+
+                // Announce more bytes than are written so the response is truncated
+                c.Response.ContentLength = 1000;
+            }
+
+            c.Response.Write("Hello" + responseCounter);
+
+            await blocker2.Task;
+        });
+
+        var context1 = TestUtils.CreateTestContext(cache: cache);
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+        context1.HttpContext.Response.Body = memoryStream1;
+
+        var context2 = TestUtils.CreateTestContext(cache: cache);
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+        context2.HttpContext.Response.Body = memoryStream2;
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for context1 to be processed
+        await blocker1.Task;
+
+        // Start context2 and let it run until it is blocked by the locking feature
+        var task2 = middleware.Invoke(context2.HttpContext);
+        Assert.False(task2.IsCompleted);
+
+        // Unblock context1
+        blocker2.SetResult(true);
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(2, responseCounter);
+
+        // Ensure the truncated response was not returned from cache
+        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        Assert.Equal("Hello2", Encoding.UTF8.GetString(memoryStream2.ToArray()));
+    }
+
+    [Fact]
     public async Task Locking_ExecuteAllRequestsWhenDisabled()
     {
         var responseCounter = 0;
@@ -1101,6 +1191,89 @@ public abstract class OutputCacheMiddlewareTests
         await Task.WhenAll(task1, task2);
 
         Assert.Equal(2, responseCounter);
+    }
+
+    [Fact]
+    public async Task AbortedRequest_DoesNotReExecuteRequest()
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: c =>
+        {
+            responseCounter++;
+
+            c.Response.Write("Hello" + responseCounter);
+
+            // Simulates an action result that aborts after a canceled write
+            c.RequestAborted = new CancellationToken(canceled: true);
+
+            return Task.CompletedTask;
+        });
+
+        var memoryStream = new MemoryStream();
+
+        var context = TestUtils.CreateTestContext(cache: cache);
+        context.HttpContext.Request.Method = "GET";
+        context.HttpContext.Request.Path = "/";
+        context.HttpContext.Response.Body = memoryStream;
+
+        await middleware.Invoke(context.HttpContext);
+
+        // The aborted request must not run the pipeline a second time
+        Assert.Equal(1, responseCounter);
+        Assert.Equal(0, cache.SetCount);
+        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream.ToArray()));
+    }
+
+    [Fact]
+    public async Task AbortedRequest_IsNotServedToSubsequentRequests()
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: c =>
+        {
+            responseCounter++;
+
+            c.Response.Write("Hello" + responseCounter);
+
+            if (responseCounter == 1)
+            {
+                c.RequestAborted = new CancellationToken(canceled: true);
+            }
+
+            return Task.CompletedTask;
+        });
+
+        var memoryStream1 = new MemoryStream();
+
+        var context1 = TestUtils.CreateTestContext(cache: cache);
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+        context1.HttpContext.Response.Body = memoryStream1;
+
+        await middleware.Invoke(context1.HttpContext);
+
+        var memoryStream2 = new MemoryStream();
+
+        var context2 = TestUtils.CreateTestContext(cache: cache);
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+        context2.HttpContext.Response.Body = memoryStream2;
+
+        await middleware.Invoke(context2.HttpContext);
+
+        // The later request runs its own delegate, not the aborted response
+        Assert.Equal(2, responseCounter);
+        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        Assert.Equal("Hello2", Encoding.UTF8.GetString(memoryStream2.ToArray()));
     }
 
     [Fact]
