@@ -85,13 +85,8 @@ internal static class HostingTelemetryHelpers
         return OtherHttpMethod;
     }
 
-    internal static string GetNormalizedHttpMethod(string method, string? configuredKnownMethods)
-    {
-        var knownHttpMethods = CreateKnownHttpMethods(configuredKnownMethods);
-        return knownHttpMethods.TryGetValue(method, out var result) ? result : OtherHttpMethod;
-    }
-
-    private static FrozenDictionary<string, string> CreateKnownHttpMethods(string? configuredKnownMethods)
+    // Internal for testing.
+    internal static FrozenDictionary<string, string> CreateKnownHttpMethods(string? configuredKnownMethods)
     {
         if (!string.IsNullOrEmpty(configuredKnownMethods))
         {
