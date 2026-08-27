@@ -60,9 +60,12 @@ the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
 trial count. Both modes run through the `copilot-pat-pool` environment with one
 worker, serialize model-bearing runs, and retain the raw Vally output as a
 workflow artifact for seven days. The environment must provide `COPILOT_PAT_0`
-and allow the selected workflow ref. The hosted quality gate evaluates the
-`skilled` variant independently: a weak baseline is expected and does not fail
-the workflow, while incomplete trials or a skilled score below its threshold do.
+and allow the selected workflow ref. It must also require a reviewer to approve
+each deployment before PR-controlled content reaches the PAT-backed step.
+Repository write access alone must not authorize that execution. The hosted
+quality gate evaluates the `skilled` variant independently: a weak baseline is
+expected and does not fail the workflow, while incomplete trials or a skilled
+score below its threshold do.
 
 After the workflow is present on the repository's default branch, maintainers
 with `write`, `maintain`, or `admin` permission can request a smoke evaluation
@@ -95,8 +98,8 @@ selected `eval` acts as a bounded override; omitting them preserves the original
 one-skill manual run. Comment and review events always load workflow YAML from
 the default branch. The secret-bearing job still executes eval and skill content
 from the validated PR commit, so same-repository write access is an explicit
-trust boundary. Use required reviewers on `copilot-pat-pool` if repository write
-access alone should not authorize that execution.
+trust boundary. Do not enable PR-triggered model runs until required reviewers
+are configured on `copilot-pat-pool`.
 
 `Validate`, `Lint`, and `Run` use the exact
 `@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package

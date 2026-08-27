@@ -461,7 +461,7 @@ jobs:
       always() &&
       needs.gate.result == 'success' &&
       needs.gate.outputs.should_eval == 'true' &&
-      needs.run.outputs.claimed == 'true'
+      needs.run.outputs.claimed != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
