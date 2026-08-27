@@ -2065,6 +2065,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 Browser.Exists(By.Id("qg-toggle-delay")).Click();
                 Browser.Contains("Provider delay for QuickGrid on", () => Browser.Exists(By.Id("qg-status")).Text);
             }
+
+            WaitForRenderToSettle(container, (IJavaScriptExecutor)Browser);
         }
 
         var select = new SelectElement(Browser.Exists(By.Id("qg-anchor-mode-select")));
@@ -2332,7 +2334,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68730")]
     public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider, delay: useItemsProvider);
