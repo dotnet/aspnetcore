@@ -244,13 +244,12 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 return true;
 
             case UsingStatementSyntax usingStatement when IsAwaitKeyword(usingStatement.AwaitKeyword):
-                span = usingStatement.Span;
+                span = TextSpan.FromBounds(usingStatement.Span.End, usingStatement.Span.End);
                 return true;
 
             case LocalDeclarationStatementSyntax declaration when IsAwaitKeyword(declaration.AwaitKeyword):
-                span = TextSpan.FromBounds(
-                    declaration.SpanStart,
-                    declaration.Parent is BlockSyntax enclosingBlock ? enclosingBlock.Span.End : declaration.Span.End);
+                var disposalPoint = declaration.Parent is BlockSyntax enclosingBlock ? enclosingBlock.Span.End : declaration.Span.End;
+                span = TextSpan.FromBounds(disposalPoint, disposalPoint);
                 return true;
 
             default:
