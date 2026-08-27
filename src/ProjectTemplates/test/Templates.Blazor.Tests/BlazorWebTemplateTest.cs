@@ -63,7 +63,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var loginWith2faPath = Path.Combine(project.TemplateOutputDir, "Components", "Account", "Pages", "LoginWith2fa.razor");
         var loginWith2fa = await File.ReadAllTextAsync(loginWith2faPath);
 
-•	    Assert.Contains("Input.RememberMachine", loginWith2fa);
+	    Assert.Contains("Input.RememberMachine", loginWith2fa);
         Assert.DoesNotContain("for=\"remember-machine\"", loginWith2fa);
     }
 
