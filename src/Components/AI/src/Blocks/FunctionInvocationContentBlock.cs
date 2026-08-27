@@ -8,6 +8,19 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// <summary>
 /// Represents a server-side function invocation and its eventual result.
 /// </summary>
+/// <remarks>
+/// Custom content blocks that represent function invocations should derive from this type
+/// and populate <see cref="Call"/>. This keeps the call, tool name, and arguments available
+/// when other features, such as function approval, wrap the custom block.
+/// </remarks>
+/// <example>
+/// <code>
+/// public sealed class WeatherContentBlock : FunctionInvocationContentBlock
+/// {
+///     public string? Location { get; set; }
+/// }
+/// </code>
+/// </example>
 public class FunctionInvocationContentBlock : ContentBlock
 {
     private FunctionCallContent? _call;

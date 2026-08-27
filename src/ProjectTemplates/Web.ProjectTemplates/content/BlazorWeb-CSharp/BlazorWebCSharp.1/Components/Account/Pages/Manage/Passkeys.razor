@@ -48,6 +48,11 @@ else
     <p>No passkeys are registered.</p>
 }
 
+@if (user is not null)
+{
+    <AllAcceptedCredentialsSignal User="user" />
+}
+
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     @if (currentPasskeys is { Count: >= MaxPasskeyCount })
     {

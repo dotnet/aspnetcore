@@ -114,6 +114,28 @@ internal sealed class RecordedChatClient : IChatClient
                     $"Expected tool results [{string.Join(", ", call.ToolResultCallIds)}], " +
                     $"received [{string.Join(", ", actualCallIds)}].");
             }
+
+            if (call.ToolResults is not null)
+            {
+                var actualResults = messages
+                    .Where(message => message.Role == ChatRole.Tool)
+                    .SelectMany(message => message.Contents)
+                    .OfType<FunctionResultContent>()
+                    .Select(result => new RecordedToolResult
+                    {
+                        CallId = result.CallId,
+                        Result = result.Result?.ToString() ?? "",
+                    })
+                    .ToList();
+                if (!actualResults.Select(result => (result.CallId, result.Result))
+                    .SequenceEqual(call.ToolResults.Select(result => (result.CallId, result.Result))))
+                {
+                    throw new InvalidOperationException(
+                        $"Expected tool results " +
+                        $"[{string.Join(", ", call.ToolResults.Select(result => $"{result.CallId}: {result.Result}"))}], " +
+                        $"received [{string.Join(", ", actualResults.Select(result => $"{result.CallId}: {result.Result}"))}].");
+                }
+            }
         }
     }
 

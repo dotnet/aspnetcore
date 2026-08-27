@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,28 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
+    // SignalR refreshes five minutes before this expiration, after Identity's default 30-minute
+    // security stamp validation interval has elapsed. Update this value if that interval is customized.
+    private static readonly TimeSpan s_maximumAuthenticationExpiration = TimeSpan.FromMinutes(40);
+
+    public static void ConfigureIdentityAuthenticationRefresh(this ServerComponentsEndpointOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var configureConnection = options.ConfigureConnection;
+        options.ConfigureConnection = connectionOptions =>
+        {
+            configureConnection?.Invoke(connectionOptions);
+
+            if (connectionOptions.MaximumAuthenticationExpiration is not { } maximumExpiration ||
+                maximumExpiration > s_maximumAuthenticationExpiration)
+            {
+                connectionOptions.MaximumAuthenticationExpiration = s_maximumAuthenticationExpiration;
+            }
+            connectionOptions.CloseOnAuthenticationExpiration = true;
+        };
+    }
+
     // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
     public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {

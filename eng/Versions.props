@@ -106,7 +106,7 @@
     <MicrosoftCodeAnalysisRazorVersion>6.0.0</MicrosoftCodeAnalysisRazorVersion>
     <!-- Partner teams -->
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
-    <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
+    <MicrosoftBuildLocatorVersion>1.11.2</MicrosoftBuildLocatorVersion>
     <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
@@ -154,12 +154,12 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.27.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.64.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.64.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.83.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.83.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.83.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.83.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.83.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.302</MessagePackVersion>
     <!-- Extensions packages for Blazor WASM Service Defaults -->
     <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
