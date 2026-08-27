@@ -13,6 +13,7 @@ on:
   push:
     branches:
       - main
+      - agentic-workflows
     paths:
       - '.github/skills/**'
       - 'eng/skill-evals/**'
@@ -81,6 +82,11 @@ jobs:
           ACTION: ${{ github.event_name == 'workflow_dispatch' && inputs.action || 'Validate' }}
         run: ./eng/skill-evals/run.ps1 -Action $env:ACTION
 
+      - name: Test trusted staging boundary
+        if: github.event_name != 'workflow_dispatch' || inputs.action == 'Validate'
+        shell: pwsh
+        run: ./eng/skill-evals/test_stage_run.ps1
+
   gate:
     name: Resolve PR evaluation
     if: >-
@@ -109,6 +115,18 @@ jobs:
       run_type: ${{ steps.resolve.outputs.run_type }}
       should_eval: ${{ steps.resolve.outputs.should_eval }}
     steps:
+      - name: Reject feature-branch PAT dispatch
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          github.ref_name != github.event.repository.default_branch
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref_name }}
+        run: |
+          echo "::error::PAT-backed workflow_dispatch runs must select the default branch '$DEFAULT_BRANCH', not '$SELECTED_REF'."
+          exit 1
+
       - name: Checkout trusted workflow revision
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -324,11 +342,26 @@ jobs:
       cancel-in-progress: false
     outputs:
       claimed: ${{ steps.claim.outputs.claimed }}
-    env:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
     steps:
+      - name: Require default branch control plane
+        id: control-plane
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          SELECTED_REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' && "$SELECTED_REF" != "$DEFAULT_BRANCH" ]]; then
+            echo "::error::PAT-backed workflow_dispatch runs must select the default branch '$DEFAULT_BRANCH', not '$SELECTED_REF'."
+            exit 1
+          fi
+          echo 'trusted=true' >> "$GITHUB_OUTPUT"
+
       - name: Claim serialized evaluation
         id: claim
+        if: steps.control-plane.outputs.trusted == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -370,11 +403,20 @@ jobs:
             echo "::notice::A newer or completed evaluation owns $HEAD_SHA; skipping this duplicate model run."
           fi
 
-      - name: Checkout repository
+      - name: Checkout trusted control plane
+        if: steps.claim.outputs.claimed == 'true'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: _trusted-control-plane
+          persist-credentials: false
+
+      - name: Checkout exact candidate revision
         if: steps.claim.outputs.claimed == 'true'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.gate.outputs.head_sha || github.sha }}
+          path: _candidate-source
           persist-credentials: false
 
       - name: Set up Node.js
@@ -383,12 +425,50 @@ jobs:
         with:
           node-version: 24.x
 
+      - name: Stage trusted skill eval inputs
+        if: steps.claim.outputs.claimed == 'true'
+        shell: pwsh
+        env:
+          CANDIDATE_ROOT: ${{ github.workspace }}/_candidate-source
+          CANDIDATE_SHA: ${{ needs.gate.outputs.head_sha || github.sha }}
+          EVALS_JSON: ${{ needs.gate.outputs.evals || format('["{0}"]', inputs.eval) }}
+          STAGING_ROOT: ${{ runner.temp }}/skill-eval-execution
+          TRUSTED_ROOT: ${{ github.workspace }}/_trusted-control-plane
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (Test-Path $env:STAGING_ROOT) {
+              Remove-Item $env:STAGING_ROOT -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $env:STAGING_ROOT | Out-Null
+
+          $evalNames = @($env:EVALS_JSON | ConvertFrom-Json)
+          foreach ($evalName in $evalNames) {
+              & "$env:TRUSTED_ROOT/eng/skill-evals/stage_run.ps1" `
+                  -TrustedRoot $env:TRUSTED_ROOT `
+                  -CandidateRoot $env:CANDIDATE_ROOT `
+                  -EvalName $evalName `
+                  -Destination (Join-Path $env:STAGING_ROOT $evalName)
+          }
+
+          $artifactRoot = Join-Path $env:GITHUB_WORKSPACE 'artifacts/skill-evals'
+          New-Item -ItemType Directory -Path $artifactRoot -Force | Out-Null
+          [ordered]@{
+              trusted_control_plane_sha = $env:TRUSTED_SHA
+              exact_candidate_sha = $env:CANDIDATE_SHA
+              evals = $evalNames
+          } |
+              ConvertTo-Json |
+              Set-Content (Join-Path $artifactRoot 'provenance.json')
+
       - name: Run skill eval
         if: steps.claim.outputs.claimed == 'true'
         shell: pwsh
         env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
           EVALS_JSON: ${{ needs.gate.outputs.evals || format('["{0}"]', inputs.eval) }}
           RUN_TYPE: ${{ needs.gate.outputs.run_type || inputs.run_type }}
+          STAGING_ROOT: ${{ runner.temp }}/skill-eval-execution
         run: |
           $ErrorActionPreference = 'Stop'
           if ([string]::IsNullOrWhiteSpace($env:COPILOT_GITHUB_TOKEN)) {
@@ -398,21 +478,22 @@ jobs:
           $failedEvals = @()
           $evalNames = @($env:EVALS_JSON | ConvertFrom-Json)
           foreach ($evalName in $evalNames) {
-              $outputDirectory = "artifacts/skill-evals/$evalName"
+              $executionRoot = Join-Path $env:STAGING_ROOT $evalName
+              $outputDirectory = Join-Path $env:GITHUB_WORKSPACE "artifacts/skill-evals/$evalName"
               $arguments = @(
                   '-NoProfile'
                   '-File'
-                  './eng/skill-evals/run.ps1'
+                  (Join-Path $executionRoot 'eng/skill-evals/run.ps1')
                   'Run'
                   '-Eval'
-                  "eng/skill-evals/$evalName/eval.vally.yaml"
+                  (Join-Path $executionRoot "eng/skill-evals/$evalName/eval.vally.yaml")
                   '-OutputDirectory'
                   $outputDirectory
               )
               if ($env:RUN_TYPE -eq 'Smoke') {
                   $arguments += @(
                       '-Experiment'
-                      'eng/skill-evals/skills-smoke.experiment.yaml'
+                      (Join-Path $executionRoot 'eng/skill-evals/skills-smoke.experiment.yaml')
                   )
               }
               $arguments += @('--workers', '1')
@@ -426,7 +507,7 @@ jobs:
               }
 
               try {
-                  ./eng/skill-evals/assert_results.ps1 `
+                  & (Join-Path $executionRoot 'eng/skill-evals/assert_results.ps1') `
                       -OutputDirectory $outputDirectory `
                       -Variant skilled
               } catch {

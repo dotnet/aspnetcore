@@ -50,22 +50,23 @@ Run these commands from any directory:
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
-requests or pushes to `main` change runtime skills, eval assets, or the workflow
-itself. Validation parses and dry-runs both the standard and smoke experiments
-without invoking a model or judge.
+requests, pushes to `main`, or pushes to the hosted fork's
+`agentic-workflows` default branch change runtime skills, eval assets, or the
+workflow itself. Validation parses and dry-runs both the standard and smoke
+experiments without invoking a model or judge.
 
 Maintainers can also dispatch `Validate`, `Test`, or `Lint` manually. The
 model-bearing `Run` action requires selecting one standard skill and defaults to
 the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
-trial count. Both modes run through the `copilot-pat-pool` environment with one
-worker, serialize model-bearing runs, and retain the raw Vally output as a
-workflow artifact for seven days. The environment must provide `COPILOT_PAT_0`
-and allow the selected workflow ref. It must also require a reviewer to approve
-each deployment before PR-controlled content reaches the PAT-backed step.
-Repository write access alone must not authorize that execution. The hosted
-quality gate evaluates the `skilled` variant independently: a weak baseline is
-expected and does not fail the workflow, while incomplete trials or a skilled
-score below its threshold do.
+trial count. Both modes use the repository-scoped `copilot-pat-pool`
+environment with one worker, serialize model-bearing runs, and retain the raw
+Vally output as a workflow artifact for seven days. The existing environment
+provides `COPILOT_PAT_0` and restricts deployment to the repository's default
+branch.
+The fine-grained PAT grants only `Copilot Requests (Read)` for public
+repositories and expires after eight days. It materializes only in the Vally
+execution step as `COPILOT_GITHUB_TOKEN`; checkout, target resolution, staging,
+artifact upload, and reporting never receive it.
 
 After the workflow is present on the repository's default branch, maintainers
 with `write`, `maintain`, or `admin` permission can request a smoke evaluation
@@ -78,28 +79,47 @@ for an open, same-repository pull request:
 
 Requests from actors whose repository permission cannot be verified or is below
 `write` are logged as notices and ignored before any PR or model work begins.
-The gate resolves the full commit, verifies it belongs to the PR, rejects fork
-content, and discovers standard evals affected by the change. A central runner,
-experiment, or workflow change selects every standard eval. The gate posts one
-pending `skill-evaluations` commit status so duplicate requests for the same
-commit normally stop at the gate. After acquiring the global model lane, the
-worker verifies that its run still owns the pending status before exposing PR
-content to the PAT-backed step, then rechecks after a short stabilization window
-that lets the preceding run's separate reporter replace any racing claim. A
-racing request therefore cannot cause a second model run. The model job has
-read-only repository permissions, checks out the validated commit, runs affected
-evals serially, and publishes a final commit status and PR comment linking to the
+Repository `write`, `maintain`, or `admin` permission is the authorization
+boundary for model-bearing requests. The gate resolves the full commit, verifies
+it belongs to the PR, refuses fork content, and discovers standard evals affected
+by the change. A central runner, experiment, or workflow change selects every
+standard eval, but candidate control-plane files are never executed. The gate
+posts one pending `skill-evaluations` commit status so duplicate requests for the
+same commit normally stop at the gate.
+
+After acquiring the global model lane, the worker verifies that its run still
+owns the pending status, then rechecks after a short stabilization window that
+lets the preceding run's separate reporter replace any racing claim. A racing
+request therefore cannot cause a second model run. The worker checks out
+`github.workflow_sha` as the trusted control plane and the validated PR commit
+as a separate exact-SHA candidate. For each selected eval, it creates a clean
+temporary tree containing only the trusted runner, assertion, and central
+experiments plus the candidate's selected skill, `eval.vally.yaml`, and fixture
+tree. Symlinks, reparse points, path traversal names, source-nested staging
+destinations, and missing inputs fail closed. The trusted runner and assertion
+execute from that staged tree, so candidate changes to `run.ps1`,
+`assert_results.ps1`, central experiments, or the workflow cannot gain code
+execution in the PAT-backed step. The final status and PR comment link to the
 retained artifacts. Smoke results validate execution and the skilled threshold,
 but Full runs remain the quality-evidence path.
 
-`workflow_dispatch` remains the first control surface. Supplying both
-`pr_number` and `head_sha` exercises the same exact-SHA PR gate while the
-selected `eval` acts as a bounded override; omitting them preserves the original
-one-skill manual run. Comment and review events always load workflow YAML from
-the default branch. The secret-bearing job still executes eval and skill content
-from the validated PR commit, so same-repository write access is an explicit
-trust boundary. Do not enable PR-triggered model runs until required reviewers
-are configured on `copilot-pat-pool`.
+Vally and Copilot still interpret the staged candidate skill and eval stimuli as
+agent instructions inside the token-bearing execution step. Authorizing only
+repository writers is therefore an explicit trust decision: a malicious writer
+could attempt to disclose the Copilot token through those instructions. The
+repository-scoped token's single read permission, public-repository restriction,
+and eight-day expiry bound that residual risk; the staging boundary does not
+make candidate instructions trusted.
+
+`workflow_dispatch` remains the first control surface. PAT-backed dispatches
+must select the repository default branch; selecting a feature branch fails
+before candidate checkout or token materialization. Supplying both `pr_number`
+and `head_sha` exercises the same exact-SHA PR gate while the selected `eval`
+acts as a bounded override; omitting them preserves the original one-skill
+manual run. Comment and review events load workflow YAML from the default
+branch. Candidate skill instructions and eval data come from the validated exact
+SHA, while every executable control-plane file comes from the trusted workflow
+revision.
 
 `Validate`, `Lint`, and `Run` use the exact
 `@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package
