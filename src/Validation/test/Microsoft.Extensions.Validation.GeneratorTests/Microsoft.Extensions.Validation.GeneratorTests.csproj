@@ -36,7 +36,6 @@
     <Reference Include="Microsoft.AspNetCore.Razor" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
@@ -51,6 +50,10 @@
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.XUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" IsImplicitlyDefined="true" Version="5.11.0-1.26411.119" />
   </ItemGroup>
 
   <ItemGroup>
