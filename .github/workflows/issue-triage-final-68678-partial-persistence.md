@@ -67,6 +67,7 @@ safe-outputs:
   set-issue-type:
     allowed: ["Bug", "Feature", "Task", "Epic"]
     max: 1
+    target: "*"
   add-labels:
     allowed:
       - area-auth
@@ -96,9 +97,11 @@ safe-outputs:
       - test-failure
       - performance
     max: 3
+    target: "*"
   remove-labels:
     allowed: [needs-area-label]
     max: 1
+    target: "*"
   add-comment:
     max: 1
     target: "*"
