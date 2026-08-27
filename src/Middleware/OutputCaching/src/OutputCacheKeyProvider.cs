@@ -34,10 +34,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     // <VaryByKeyPrefix><delimiter>
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH<delimiter>
-    // H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>
-    // Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>
-    // R<delimiter>RouteName1=RouteValue1<delimiter>RouteName2=RouteValue2
-    // V<delimiter>ValueName1=Value1<delimiter>ValueName2=Value2
+    // H<delimiter>HeaderName<key-value-delimiter>HeaderValue1<subdelimiter>HeaderValue2<delimiter>
+    // Q<delimiter>QueryName<key-value-delimiter>QueryValue1<subdelimiter>QueryValue2<delimiter>
+    // R<delimiter>RouteName1<key-value-delimiter>RouteValue1<delimiter>RouteName2<key-value-delimiter>RouteValue2
+    // V<delimiter>ValueName1<key-value-delimiter>Value1<delimiter>ValueName2<key-value-delimiter>Value2
     public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
