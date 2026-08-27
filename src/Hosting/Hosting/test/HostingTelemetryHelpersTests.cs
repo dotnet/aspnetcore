@@ -15,6 +15,7 @@ public class HostingTelemetryHelpersTests
         { "?sig=secret&name=value", "sig=REDACTED&name=value" },
         { "?name=value&sig=secret&other=value", "name=value&sig=REDACTED&other=value" },
         { "?name=value&sig=secret", "name=value&sig=REDACTED" },
+        { "?access_token=secret&Access_Token=value", "access_token=REDACTED&Access_Token=value" },
         {
             "?X-Amz-Signature=one&X-Amz-Credential=two&X-Amz-Security-Token=three&AWSAccessKeyId=four&Signature=five&sig=six&X-Goog-Signature=seven",
             "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=four&Signature=five&sig=REDACTED&X-Goog-Signature=REDACTED"
@@ -36,6 +37,7 @@ public class HostingTelemetryHelpersTests
         { "?%73ig=encoded-name", "%73ig=REDACTED" },
         { "?s%69g=encoded-name", "s%69g=REDACTED" },
         { "?%73%69%67=encoded-name", "%73%69%67=REDACTED" },
+        { "?access%5Ftoken=encoded-name", "access%5Ftoken=REDACTED" },
         { "?X%2DAmz%2DSignature=encoded-name", "X%2DAmz%2DSignature=REDACTED" },
         { "?%58-Amz-Signature=encoded-name", "%58-Amz-Signature=REDACTED" },
         { "?%53ig=value&%73IG=value", "%53ig=value&%73IG=value" },

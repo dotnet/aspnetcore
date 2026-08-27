@@ -525,7 +525,7 @@ internal sealed class HostingApplicationDiagnostics
         var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
         creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
 
-        if (!SuppressActivityUrlQuery && request.QueryString.Value is { Length: > 1 } queryString)
+        if (!SuppressActivityUrlQuery && request.QueryString.Value is { Length: > 0 } queryString)
         {
             creationTags.Add(HostingTelemetryHelpers.AttributeUrlQuery, HostingTelemetryHelpers.GetRedactedQueryString(queryString));
         }

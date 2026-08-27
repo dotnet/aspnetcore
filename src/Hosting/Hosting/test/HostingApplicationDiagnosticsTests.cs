@@ -1326,7 +1326,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
     [Theory]
     [InlineData("", null)]
-    [InlineData("?", null)]
+    [InlineData("?", "")]
     [InlineData("?q=OpenTelemetry",
                  "q=OpenTelemetry")]
     [InlineData("?X-Amz-Signature=signature&X-Amz-Credential=credential&X-Amz-Security-Token=token&AWSAccessKeyId=key&Signature=signature&sig=sas&X-Goog-Signature=google",

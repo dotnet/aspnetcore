@@ -192,7 +192,9 @@ internal static class HostingTelemetryHelpers
             "X-Amz-Credential" or
             "X-Amz-Security-Token" or
             "sig" or
-            "X-Goog-Signature";
+            "X-Goog-Signature" or
+            "access_token" // included because SignalR browser transports use it for bearer tokens.
+            ;
 
     public static bool TryGetHttpVersion(string protocol, [NotNullWhen(true)] out string? version)
     {
