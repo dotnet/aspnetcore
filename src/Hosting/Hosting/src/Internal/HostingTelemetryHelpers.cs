@@ -77,7 +77,7 @@ internal static class HostingTelemetryHelpers
 
     public static string GetNormalizedHttpMethod(string method)
     {
-        if (KnownHttpMethods.TryGetValue(method, out var result))
+        if (method is not null && KnownHttpMethods.TryGetValue(method, out var result))
         {
             // KnownHttpMethods ignores case. Use the value returned by the dictionary to have a consistent case.
             return result;
@@ -92,7 +92,7 @@ internal static class HostingTelemetryHelpers
         {
             var knownHttpMethods = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var method in configuredKnownMethods.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var method in configuredKnownMethods.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 knownHttpMethods[method] = method;
             }
@@ -170,8 +170,16 @@ internal static class HostingTelemetryHelpers
             return false;
         }
 
-        var decodedName = Uri.UnescapeDataString(name.ToString().Replace('+', ' '));
-        return IsSensitiveQueryParameterName(decodedName);
+        try
+        {
+            var decodedName = Uri.UnescapeDataString(name.ToString().Replace('+', ' '));
+            return IsSensitiveQueryParameterName(decodedName);
+        }
+        catch (Exception ex) when (ex is UriFormatException or ArgumentException)
+        {
+            // Invalid escape sequence; treat as non-sensitive to preserve the original query text.
+            return false;
+        }
     }
 
     // search `url.query` at OpenTelemetry Semantic Conventions doc to see which query string keys should have redacted values.

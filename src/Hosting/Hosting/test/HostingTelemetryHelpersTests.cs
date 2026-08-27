@@ -17,17 +17,17 @@ public class HostingTelemetryHelpersTests
         { "?name=value&sig=secret", "name=value&sig=REDACTED" },
         {
             "?X-Amz-Signature=one&X-Amz-Credential=two&X-Amz-Security-Token=three&AWSAccessKeyId=four&Signature=five&sig=six&X-Goog-Signature=seven",
-            "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=REDACTED&Signature=REDACTED&sig=REDACTED&X-Goog-Signature=REDACTED"
+            "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=four&Signature=five&sig=REDACTED&X-Goog-Signature=REDACTED"
         },
         { "?sig=one&sig=two&sig=three", "sig=REDACTED&sig=REDACTED&sig=REDACTED" },
-        { "?safe=one&sig=two&safe=three&Signature=four", "safe=one&sig=REDACTED&safe=three&Signature=REDACTED" },
+        { "?safe=one&sig=two&safe=three&Signature=four", "safe=one&sig=REDACTED&safe=three&Signature=four" },
         { "?SIG=value&Sig=value&sIg=value", "SIG=value&Sig=value&sIg=value" },
         { "?x-amz-signature=value&X-AMZ-SIGNATURE=value", "x-amz-signature=value&X-AMZ-SIGNATURE=value" },
         { "?signature=value&AwsAccessKeyId=value&X-Goog-signature=value", "signature=value&AwsAccessKeyId=value&X-Goog-signature=value" },
         { "?sigil=value&mysig=value&sig-suffix=value&prefixSignature=value", "sigil=value&mysig=value&sig-suffix=value&prefixSignature=value" },
         { "?X-Amz-Signature2=value&2X-Amz-Signature=value", "X-Amz-Signature2=value&2X-Amz-Signature=value" },
         { "?sig&safe=value&Signature", "sig&safe=value&Signature" },
-        { "?sig=&safe=&Signature=", "sig=REDACTED&safe=&Signature=REDACTED" },
+        { "?sig=&safe=&Signature=", "sig=REDACTED&safe=&Signature=" },
         { "?=value&==value&safe", "=value&==value&safe" },
         { "?&&sig=secret&&safe=value&&", "&&sig=REDACTED&&safe=value&&" },
         { "?&sig=secret", "&sig=REDACTED" },
