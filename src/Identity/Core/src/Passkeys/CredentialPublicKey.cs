@@ -158,13 +158,11 @@ internal sealed class CredentialPublicKey
             throw new CborContentException($"The COSE key type '{kty}' is not valid for crv '{crv}'.");
         }
 
-        // MapCoseCrvToECCurve throws NotSupportedException for OKP curves,
-        // so IsValidAlgCrvCombination below only needs to cover EC2 pairings.
         var curve = MapCoseCrvToECCurve(crv);
 
-        if (!IsValidAlgCrvCombination(alg, crv))
+        if (kty == COSEKeyType.EC2 && !IsValidAlgCrvCombination(alg, crv))
         {
-            throw new CborContentException($"The COSE algorithm '{alg}' is not valid for crv '{crv}'.");
+            throw new CborContentException($"The COSE algorithm '{alg}' is not valid for kty '{kty}' and crv '{crv}'.");
         }
 
         ecParams.Curve = curve;
