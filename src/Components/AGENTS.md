@@ -247,6 +247,8 @@ E2E tests are located in `src/Components/test/E2ETest`.
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
 3. When adding test coverage, prefer extending existing test components and assets over creating a set of new ones if it doesn't complicate the existing ones excessively. This reduces test infrastructure complexity and keeps related scenarios together.
+4. Regression tests for lifecycle-sensitive behavior must exercise the render boundary that owns the relevant DOM. A page-level render mode can leave the surrounding layout static, so verify that the DOM under test is actually hydrated or replaced.
+5. When the behavior under test is owned by generated template content, prefer extending the existing browser tests in `src/ProjectTemplates/test/Templates.Blazor.Tests` over duplicating the scenario in Components E2E.
 
 ### Running E2E Tests
 
