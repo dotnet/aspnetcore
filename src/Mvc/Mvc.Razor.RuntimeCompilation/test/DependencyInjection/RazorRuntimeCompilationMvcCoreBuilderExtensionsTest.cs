@@ -6,11 +6,38 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
+using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorRuntimeCompilationMvcCoreBuilderExtensionsTest
 {
+    [Fact]
+    public void AddRazorRuntimeCompilationOverloads_AreObsolete()
+    {
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
+        var extensionTypes = new[]
+        {
+            typeof(RazorRuntimeCompilationMvcBuilderExtensions),
+            typeof(RazorRuntimeCompilationMvcCoreBuilderExtensions),
+        };
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
+
+        var methods = extensionTypes.SelectMany(type => type.GetMethods(
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly));
+
+        foreach (var method in methods)
+        {
+            var attribute = method.GetCustomAttribute<ObsoleteAttribute>();
+
+            Assert.NotNull(attribute);
+            Assert.Equal("ASPDEPR003", attribute.DiagnosticId);
+            Assert.Equal(Obsoletions.AspNetCoreDeprecate003Url, attribute.UrlFormat);
+            Assert.Contains("use Hot Reload instead", attribute.Message);
+        }
+    }
+
     [Fact]
     public void AddServices_ReplacesRazorViewCompiler()
     {
