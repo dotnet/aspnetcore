@@ -27,8 +27,9 @@ public sealed class HeadOutlet : ComponentBase
     /// <inheritdoc/>
     protected override void OnInitialized()
     {
-        // WebAssembly supports synchronous JS interop, so seed the title before our first render to avoid a gap (#68346).
-        if (JSRuntime is IJSInProcessRuntime jsInProcessRuntime)
+        // Seed the first WebAssembly render synchronously so it can replace the prerendered title without a gap.
+        // Other in-process runtimes may rely on GetValue's default implementation, which throws.
+        if (OperatingSystem.IsBrowser() && JSRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
             _defaultTitle = GetDocumentTitle(jsInProcessRuntime);
         }
