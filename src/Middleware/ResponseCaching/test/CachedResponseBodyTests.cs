@@ -87,8 +87,14 @@ public class CachedResponseBodyTests
 
     static async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer)
     {
-        await body.CopyToAsync(writer, CancellationToken.None);
-        await writer.CompleteAsync();
+        try
+        {
+            await body.CopyToAsync(writer, CancellationToken.None);
+        }
+        finally
+        {
+            await writer.CompleteAsync();
+        }
     }
 
     static async Task ReceiveDataAsync(PipeReader reader, List<byte[]> receivedSegments)
