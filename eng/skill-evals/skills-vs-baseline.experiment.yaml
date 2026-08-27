@@ -15,9 +15,6 @@ name: skills-vs-baseline
 evals:
   - "*/eval.vally.yaml"
 
-overrides:
-  runs: 5
-
 vary:
   - /environment/skills
 

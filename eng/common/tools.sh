@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# Normalizes the value of a boolean build argument. Accepts 1/0 in addition to true/false so that
+# the same value works with the PowerShell scripts, whose [bool] parameters only bind 1/0.
+function NormalizeBoolArg {
+  case "${1:-}" in
+    1) echo true ;;
+    0) echo false ;;
+    *) echo "${1:-}" ;;
+  esac
+}
+
 # Initialize variables if they aren't already defined.
 
 # CI mode - set to true on CI server for PR validation build or official build.
@@ -43,17 +53,25 @@ restore=${restore:-true}
 verbosity=${verbosity:-'minimal'}
 
 # Set to true to reuse msbuild nodes. Recommended to not reuse on CI.
+node_reuse=$(NormalizeBoolArg "${node_reuse:-}")
 if [[ "$ci" == true ]]; then
   node_reuse=${node_reuse:-false}
 else
   node_reuse=${node_reuse:-true}
 fi
 
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
+# explicitly requested. It's intended to become the default for local builds once it has proven out.
+msbuild_multi_threaded=$(NormalizeBoolArg "${msbuild_multi_threaded:-}")
+msbuild_multi_threaded=${msbuild_multi_threaded:-false}
+
 # Configures warning treatment in msbuild.
+warn_as_error=$(NormalizeBoolArg "${warn_as_error:-}")
 warn_as_error=${warn_as_error:-true}
 
 # Specifies semi-colon delimited list of warning codes that should not be treated as errors.
-warn_not_as_error=${warn_not_as_error:-''}
+# Defaults to NuGet Audit warning codes NU1901-NU1904.
+warn_not_as_error="${warn_not_as_error:-NU1901;NU1902;NU1903;NU1904}"
 
 # True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
@@ -587,9 +605,9 @@ function MSBuild {
     }
   }
 
-  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
+  # Build with MSBuild's multi-threaded mode.
   local mt_switch=""
-  if [[ "${MSBUILD_MT_ENABLED:-}" == "1" ]]; then
+  if [[ "$msbuild_multi_threaded" == true ]]; then
     mt_switch="-mt"
   fi
 
