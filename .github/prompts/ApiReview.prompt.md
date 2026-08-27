@@ -153,7 +153,7 @@ Before marking your issue as `api-ready-for-review`, ensure:
 ## Process Notes
 
 1. **Label progression**: Issues move from `api-suggestion` → `api-ready-for-review` → `api-approved`
-2. **Team notification**: Notify @asp-net-api-reviews team when marking as `api-ready-for-review`
+2. **Team notification**: Notify @dotnet/aspnet-api-review team when marking as `api-ready-for-review`
 3. **Meeting attendance**: If your API is scheduled for review, you must have a representative in the meeting
 4. **Implementation changes**: If changes to the original proposal are required during implementation, the review becomes obsolete and the process starts over
 

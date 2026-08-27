@@ -35,6 +35,19 @@ app.MapDojoEndpoint(
     "/backend_tool_rendering",
     serverTools: ChatClientAgentFactory.CreateBackendToolRenderingTools(
         jsonOptions.Value.SerializerOptions));
+app.MapDojoEndpoint(
+    "/human_in_the_loop",
+    systemPrompt: ChatClientAgentFactory.HumanInTheLoopSystemPrompt);
+app.MapDojoEndpoint(
+    "/tool_based_generative_ui",
+    systemPrompt: ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt);
+app.MapDojoEndpoint(
+    "/agentic_generative_ui",
+    serverTools: ChatClientAgentFactory.CreateAgenticGenerativeUITools(
+        jsonOptions.Value.SerializerOptions),
+    systemPrompt: ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
+    configureStreamOptions: _ =>
+        ChatClientAgentFactory.CreateAgenticGenerativeUIStreamOptions());
 
 await app.RunAsync();
 

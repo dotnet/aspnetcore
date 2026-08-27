@@ -84,6 +84,15 @@ parameters:
   type: boolean
   default: false
 
+# Controls per-test output attachments. Defaults to Failed.
+- name: testResultAttachmentMode
+  type: string
+  default: Failed
+  values:
+  - Failed
+  - All
+  - None
+
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
 # a local tool-path; this bypasses the repo's .config/dotnet-tools.json manifest and is
@@ -210,6 +219,7 @@ jobs:
 
       organization='${{ parameters.organization }}'
       repository='${{ parameters.repository }}'
+      testResultAttachmentMode='${{ parameters.testResultAttachmentMode }}'
 
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
@@ -232,6 +242,9 @@ jobs:
 
       if [ -n "$organization" ]; then toolArgs+=( --organization "$organization" ); fi
       if [ -n "$repository" ];   then toolArgs+=( --repository   "$repository" );   fi
+      if [ -n "$testResultAttachmentMode" ]; then
+        toolArgs+=( --test-result-attachment-mode "$testResultAttachmentMode" )
+      fi
 
       # Build.Reason and Build.SourceBranch are required to derive the Helix source filter
       # the same way the Helix SDK submitter does (PR -> 'pr', internal -> 'official',
