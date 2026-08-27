@@ -161,6 +161,7 @@ public class GetDocumentTests(ITestOutputHelper output)
     [InlineData("custom-File_Name")]
     [InlineData("custom_File-Name")]
     [InlineData("custom1File2Name")]
+    [InlineData("custom.File_Name-1")]
     public void GetDocument_WithValidFileName_Works(string fileName)
     {
         // Arrange
@@ -188,6 +189,9 @@ public class GetDocumentTests(ITestOutputHelper output)
     [Theory]
     [InlineData("customFile=ù^*Name")]
     [InlineData("&$*")]
+    [InlineData("custom/fileName")]
+    [InlineData("custom\\fileName")]
+    [InlineData("../customFileName")]
     public void GetDocument_WithInvalideFileName_Errors(string fileName)
     {
         // Arrange
@@ -207,7 +211,7 @@ public class GetDocumentTests(ITestOutputHelper output)
 
         // Assert
 
-        Assert.Contains("FileName format invalid, only Alphanumeric and \"_ -\" authorized", _console.GetOutput());
+        Assert.Contains("FileName format invalid, only alphanumeric characters, \".\", \"_\" and \"-\" are authorized", _console.GetOutput());
         Assert.False(File.Exists(Path.Combine(outputPath.FullName, $"{fileName}.json")));
         Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
         Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
