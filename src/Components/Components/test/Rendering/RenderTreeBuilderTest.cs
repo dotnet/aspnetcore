@@ -2047,8 +2047,7 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed", ex.Message);
-        AssertUnbalancedFramesMessageBody(ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Element);
     }
 
     [Fact]
@@ -2063,8 +2062,7 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed", ex.Message);
-        AssertUnbalancedFramesMessageBody(ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Component);
     }
 
     [Fact]
@@ -2079,8 +2077,7 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed", ex.Message);
-        AssertUnbalancedFramesMessageBody(ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Region);
     }
 
     [Fact]
@@ -2089,39 +2086,33 @@ public class RenderTreeBuilderTest
         var builder = new RenderTreeBuilder();
         var component = new TestComponent();
 
-        RenderFragment fragment = fragmentBuilder =>
+        builder.OpenElement(0, "ul");
+        foreach (var item in new[] { "a", "b", "c" })
         {
-            fragmentBuilder.OpenElement(0, "ul");
-            foreach (var item in new[] { "a", "b", "c" })
+            builder.OpenElement(1, "li");
+            builder.AddContent(2, item);
+            if (item == "a")
             {
-                fragmentBuilder.OpenElement(1, "li");
-                fragmentBuilder.AddContent(2, item);
-                if (item == "a")
-                {
-                    break; // Exits the loop before the per-iteration CloseElement(), leaving <li> unclosed.
-                }
-                fragmentBuilder.CloseElement();
+                break;
             }
-            fragmentBuilder.CloseElement();
-        };
-
-        builder.AddContent(0, fragment);
+            builder.CloseElement();
+        }
+        builder.CloseElement();
 
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed", ex.Message);
-        AssertUnbalancedFramesMessageBody(ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Element);
     }
 
-    private static void AssertUnbalancedFramesMessageBody(string message)
+    private static void AssertUnbalancedFramesMessage(string message, RenderTreeFrameType frameType)
     {
-        Assert.Contains("CloseElement, CloseComponent, or CloseRegion", message);
-        Assert.Contains("break", message);
-        Assert.Contains("continue", message);
-        Assert.Contains("return", message);
-        Assert.Contains("throw", message);
-        Assert.Contains("goto", message);
-        Assert.Contains("try/catch", message);
-        Assert.Contains("https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios", message);
+        Assert.Equal(
+            $"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. " +
+            $"A frame of type '{frameType}' was left unclosed. Every frame opened by OpenElement, " +
+            $"OpenComponent, or OpenRegion must be closed by a matching call to CloseElement, CloseComponent, or " +
+            $"CloseRegion. This can occur when control flow skips a closing call but the render fragment still " +
+            $"completes normally, such as with break, continue, return, goto, or a caught exception. " +
+            $"See https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios.",
+            message);
     }
 
     [Fact]
