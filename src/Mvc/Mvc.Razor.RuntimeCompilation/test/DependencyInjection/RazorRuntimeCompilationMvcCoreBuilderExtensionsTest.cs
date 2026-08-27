@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Shared;
-using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +25,9 @@ public class RazorRuntimeCompilationMvcCoreBuilderExtensionsTest
 #pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         var methods = extensionTypes.SelectMany(type => type.GetMethods(
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly));
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)).ToArray();
+
+        Assert.Equal(4, methods.Length);
 
         foreach (var method in methods)
         {
