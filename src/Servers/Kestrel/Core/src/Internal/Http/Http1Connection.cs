@@ -711,7 +711,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // Path) would be silently normalized in a way RawTarget doesn't reflect. Per
             // RFC 3986, '\' is not a valid URI path character, so reject the request instead.
             // Only the target before the query string is checked (query is target[targetPath.Length..]).
-            if (target[..targetPath.Length].IndexOf(ByteBackSlash) >= 0)
+            if (target[..targetPath.Length].Contains(ByteBackSlash))
             {
                 ThrowRequestTargetRejected(target);
             }
