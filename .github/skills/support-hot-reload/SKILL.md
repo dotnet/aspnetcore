@@ -1,6 +1,6 @@
 ---
 name: support-hot-reload
-description: "Make an ASP.NET Core feature work correctly under .NET Hot Reload, and decide whether a feature needs hot-reload work at all. USE FOR: reviewing or writing a feature that caches type/member metadata (reflection results, compiled accessors, attribute lookups, route/endpoint tables, DI activators) and must stay correct when source is edited live; adding a MetadataUpdateHandler / wiring into HotReloadManager to clear caches and refresh on a delta; auditing a PR for a missing hot-reload cache invalidation; understanding what edits Hot Reload supports vs rude edits, and CoreCLR-vs-WebAssembly differences. Triggers on \"does this need hot reload support\", \"add hot reload support\", \"MetadataUpdateHandler\", \"cache not cleared on hot reload\", \"why doesn't my edit apply\". DO NOT USE FOR: writing hot-reload END-TO-END tests as the primary goal, general Blazor authoring, or diagnosing a build failure unrelated to live edits."
+description: "Make an ASP.NET Core feature work correctly under .NET Hot Reload, and decide whether a feature needs hot-reload work at all. USE FOR: reviewing or writing a feature that caches type/member metadata (reflection results, compiled accessors, attribute lookups, route/endpoint tables, model metadata, DI activators) and must stay correct when source is edited live; adding a MetadataUpdateHandler or integrating with an existing subsystem refresh mechanism; auditing a PR for missing cache invalidation or derived-state refresh; understanding supported versus rude edits and runtime capability differences. Triggers on \"does this need hot reload support\", \"add hot reload support\", \"MetadataUpdateHandler\", \"cache not cleared on hot reload\", \"why doesn't my edit apply\". DO NOT USE FOR: writing end-to-end tests as the primary goal, general application authoring, or diagnosing a build failure unrelated to live edits."
 ---
 
 # Support hot reload
@@ -13,7 +13,7 @@ A feature needs hot-reload handling when it holds **process-wide state derived f
 
 1. Does it keep a `static` (or singleton) cache keyed by `Type`, `MethodInfo`, `PropertyInfo`, or an assembly — holding reflection results, compiled getters/setters/factories, attribute lookups, a route/endpoint table, or model metadata?
 2. Is that cache populated once and reused for the life of the process?
-3. Would a plausible source edit change what the cache should contain — adding/removing a `[Parameter]`/`[Inject]`/`[Route]`/validation attribute, a member, a route, a render mode, a `[JSInvokable]` method?
+3. Would a plausible source edit change what the cache should contain — adding or changing a member, controller action, endpoint, route, model property, validation attribute, component parameter, render mode, or invokable method?
 
 If all three are yes, the feature needs hot-reload handling: the cache must be invalidated on a metadata delta, and any derived runtime structure (a rendered tree, a route/endpoint table, a change token) must be refreshed. If the feature only reads metadata on demand without caching, or its state is per-request, it usually needs nothing.
 
@@ -21,7 +21,7 @@ The trap is a cache added for performance with no hot-reload wiring. It works in
 
 ## Adding hot-reload support
 
-Two mechanisms; pick by whether the runtime hands you the change directly or you piggyback on a framework hub.
+Use the runtime metadata-update handler by default. Reuse an existing subsystem refresh mechanism when the owning subsystem already centralizes Hot Reload notifications and derived-state refresh.
 
 ### The metadata update handler (the .NET primitive)
 Mark an assembly with a handler type and implement the static methods the runtime calls after applying a delta:
@@ -41,8 +41,11 @@ internal static class MyFeatureHotReload
 
 `ClearCache` runs before `UpdateApplication`; implement whichever you need. Keep the handler type discoverable (a public or internal static type in the same assembly) and the methods exactly `ClearCache(Type[]?)` / `UpdateApplication(Type[]?)`.
 
-### The ASP.NET Core component hub
-Inside the Blazor components stack, the framework already receives the delta and fans it out through `HotReloadManager`: its `UpdateApplication` fires `OnDeltaApplied`. A component-layer cache subscribes and clears itself:
+### Subsystem-specific refresh mechanisms
+
+Some ASP.NET Core subsystems already receive the runtime delta and coordinate cache clearing with a broader refresh. Reuse that mechanism instead of adding a second independent handler.
+
+For example, the Components subsystem fans deltas out through `HotReloadManager`: its `UpdateApplication` fires `OnDeltaApplied`, and component-layer caches subscribe and clear themselves:
 
 ```csharp
 static MyComponentCache()
@@ -56,7 +59,7 @@ static MyComponentCache()
 public static void ClearCache() => _cache.Clear();
 ```
 
-This is the pattern the framework's own per-type component caches use (`ComponentProperties`, `DefaultComponentPropertyActivator`, `ComponentFactory`, `DefaultComponentActivator`), and the renderer additionally force-re-renders the root on a delta. Use the hub inside that stack; use the assembly attribute for standalone libraries and non-component features. Details and the ASP.NET Core cache catalog: [references/mechanisms.md](references/mechanisms.md).
+This is the pattern the framework's own per-type component caches use (`ComponentProperties`, `DefaultComponentPropertyActivator`, `ComponentFactory`, `DefaultComponentActivator`), and the renderer additionally force-renders roots on a delta. MVC uses its Hot Reload service to clear model/controller/Razor caches and signal action-descriptor changes. Details and the ASP.NET Core cache catalog: [references/mechanisms.md](references/mechanisms.md).
 
 ### Refresh retained runtime state
 
@@ -69,17 +72,17 @@ Prove the invalidation works by editing the relevant declaration in a running ap
 
 Permanent regression coverage and live-edit validation serve different purposes:
 
-- Use focused component or unit tests to deterministically cover cache clearing, retained-state recomputation, and subscription lifecycle.
-- Use `dotnet watch` plus a browser to prove the actual metadata delta applies without restart.
+- Use focused unit or integration tests to deterministically cover cache clearing, derived-state recomputation, and lifecycle behavior.
+- Use `dotnet watch` plus the appropriate observable boundary—HTTP response, endpoint/action discovery, rendered output, logs, or browser UI—to prove the actual metadata delta applies without restart.
 - Add E2E coverage only when the existing harness applies the real delta. Do not seed private caches or add test-only endpoints to imitate it.
 
 ## What edits are even possible
 
-Not every edit can hot-reload; some are "rude edits" that force a restart regardless of your cache handling. Design and test against the real capability set: method/lambda/Razor bodies, adding methods/fields/types/routes/attributes are supported; renaming or deleting a field, changing a field's type, changing a signature in unsupported ways, changing a `const`, and editing startup are rude. Added fields are not re-initialized on existing instances. WebAssembly/Mono supports fewer edits than CoreCLR. The full supported-vs-rude tables, the field-initialization semantics, and the runtime differences: [references/edit-limits.md](references/edit-limits.md).
+Not every edit can hot-reload; some are "rude edits" that force a restart regardless of cache handling. Design and test against the target runtime's real capability set. Added methods, fields, types, and custom attributes are commonly supported; renaming or deleting fields, changing field types, changing constants, and editing startup behavior generally require a restart. Added fields are not initialized on existing instances, and runtime capability sets can differ. See [references/edit-limits.md](references/edit-limits.md) for the detailed tables.
 
 ## References
 
 - [references/detection.md](references/detection.md) — the full signal list for "does this need hot-reload work", and how to audit a diff for a missing cache invalidation.
-- [references/mechanisms.md](references/mechanisms.md) — the metadata update handler and the `HotReloadManager` hub in depth, the refresh step (change tokens, re-render, endpoint rebuild), and the ASP.NET Core cache catalog with the edit that exercises each.
+- [references/mechanisms.md](references/mechanisms.md) — the metadata update handler, subsystem refresh mechanisms, the refresh step (change tokens, re-render, endpoint rebuild), and the ASP.NET Core cache catalog with the edit that exercises each.
 - [references/edit-limits.md](references/edit-limits.md) — supported vs rude edits with examples, added-field initialization semantics, and CoreCLR vs Blazor WebAssembly capability differences.
 - [references/validation.md](references/validation.md) — validating an invalidation works: driving `dotnet watch`, asserting on the watch log, and proving no restart occurred.

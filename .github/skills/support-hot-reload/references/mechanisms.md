@@ -2,7 +2,7 @@
 
 ## Table of contents
 - [The metadata update handler](#the-metadata-update-handler)
-- [The ASP.NET Core component hub](#the-aspnet-core-component-hub)
+- [Subsystem-specific refresh mechanisms](#subsystem-specific-refresh-mechanisms)
 - [Clear, then refresh](#clear-then-refresh)
 - [ASP.NET Core cache catalog](#aspnet-core-cache-catalog)
 
@@ -26,11 +26,13 @@ Rules that make it actually fire:
 - The handler type is referenced only by the attribute, so keep it from being trimmed; a static type in the same assembly as the cache is the normal placement.
 - Guard against doing work when hot reload is not active if the clear is expensive; the handler is only called under a delta, but the registration itself should be cheap.
 
-Use this for standalone libraries and any non-component feature that owns a metadata-derived cache.
+Use this by default for an assembly that owns a metadata-derived cache unless its subsystem already centralizes Hot Reload notifications and refresh.
 
-## The ASP.NET Core component hub
+## Subsystem-specific refresh mechanisms
 
-Inside the Blazor components stack the framework already receives the delta and re-broadcasts it, so component-layer caches do not each need an assembly attribute. `HotReloadManager` is itself the `[MetadataUpdateHandler]`; its `UpdateApplication` fires an `OnDeltaApplied` event. A cache subscribes in its static constructor:
+Some subsystems coordinate multiple caches and derived structures through one Hot Reload service. Reuse these mechanisms so cache clearing and application refresh remain ordered.
+
+In Components, `HotReloadManager` is itself the `[MetadataUpdateHandler]`; its `UpdateApplication` fires an `OnDeltaApplied` event. A cache subscribes in its static constructor:
 
 ```csharp
 static MyComponentCache()
@@ -44,7 +46,9 @@ static MyComponentCache()
 public static void ClearCache() => _cache.Clear();
 ```
 
-`HotReloadManager.IsSupported` gates the subscription so nothing is wired when hot reload is unavailable. The renderer subscribes too and, on a delta, clears the core component caches and force-re-renders every root component so the whole tree reflects the edit. Prefer the hub for anything in the components layer; it keeps all component caches on one coherent signal.
+`HotReloadManager.IsSupported` gates the subscription so nothing is wired when Hot Reload is unavailable. The renderer subscribes too and, on a delta, clears core component caches and force-renders every root component.
+
+MVC uses an assembly metadata-update handler on `HotReloadService`. Its clear phase invalidates model metadata, controller property activators, and Razor state; its update phase cancels the `IActionDescriptorChangeProvider` token so actions are rediscovered.
 
 ## Clear, then refresh
 
@@ -52,6 +56,7 @@ Clearing a cache is only half the job. The edit becomes visible only when someth
 
 - A route/endpoint table: rebuild it (Blazor's router clears `RouteTableFactory` and rebuilds on the next refresh; SSR endpoints refresh by cancelling a `CancellationTokenSource` that backs an `IChangeToken` the endpoint data source listens to).
 - MVC action/model state: the MVC hot-reload service cancels a token that drives `ActionDescriptorCollection` to rebuild, and clears model-metadata/view/tag-helper caches.
+- A property-backed dictionary or binder: clear its compiled property accessors so the next request sees the new member set.
 - Rendered UI: after clearing component caches, re-render (the renderer sets a flag that bypasses `ShouldRender` once so every component refreshes).
 
 If nothing re-reads the cleared cache until an unrelated later trigger, the visible state stays stale even though the cache is technically empty — so make the refresh explicit.
@@ -60,7 +65,15 @@ If nothing re-reads the cleared cache until an unrelated later trigger, the visi
 
 The framework's own hot-reload-aware caches, as concrete models. Each lists the metadata it holds and the source edit that must invalidate it.
 
-Blazor / components (cleared via the hub or the renderer):
+MVC:
+- `HotReloadService` — clears default model metadata, controller property activators, and Razor caches, then signals action-descriptor changes. Edit: add a controller action or change model/Razor metadata.
+- `HtmlAttributePropertyHelper` — cached property helpers used for HTML attribute dictionaries. Edit: add or change a model property.
+
+HTTP and shared infrastructure:
+- `RouteValueDictionary._propertyCache` — property accessors used to populate route values from objects. Edit: add or change a public property.
+- `PropertyHelper` `PropertiesCache`/`VisiblePropertiesCache` — public/visible properties per type, used by model binding and metadata. Edit: add a public property to a bound model.
+
+Components:
 - `ComponentProperties._cachedWritersByType` — `[Parameter]`/`[CascadingParameter]` setter writers per component type. Edit: add a `[Parameter]`.
 - `CascadingParameterState._cachedInfos` — `[CascadingParameterAttributeBase]` metadata per component type. It clears through `HotReloadManager`; the renderer then refreshes retained `ComponentState` matches and supplier subscriptions. Edit: add or change `[CascadingParameter]` or `[PersistentState]`.
 - `DefaultComponentPropertyActivator._cachedPropertyActivators` — compiled `[Inject]` property injectors. Edit: add an `[Inject]` property.
@@ -73,6 +86,3 @@ Blazor / components (cleared via the hub or the renderer):
 - `EditContextDataAnnotationsExtensions` `_propertyInfoCache` — validated model `PropertyInfo` per `(modelType, field)`. Edit: add a validation attribute to an `EditForm` model.
 - `DotNetDispatcher` method caches — `[JSInvokable]` methods per type/assembly. Edit: add a `[JSInvokable]` method.
 - Endpoints `HotReloadService` — an `IChangeToken` source that rebuilds the SSR endpoint list. Edit: add an `@page` or change `@rendermode` on an SSR component.
-
-Shared reflection (assembly `[MetadataUpdateHandler]`):
-- `PropertyHelper` `PropertiesCache`/`VisiblePropertiesCache` — public/visible properties per type, the base used by model binding and metadata. Edit: add a public property to a bound model.

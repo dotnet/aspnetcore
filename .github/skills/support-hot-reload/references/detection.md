@@ -5,7 +5,7 @@
 - [Signals that a feature needs handling](#signals-that-a-feature-needs-handling)
 - [Signals that it does not](#signals-that-it-does-not)
 - [Auditing a change](#auditing-a-change)
-- [A cautionary example](#a-cautionary-example)
+- [Worked examples](#worked-examples)
 
 ## The core question
 
@@ -42,8 +42,14 @@ When reviewing a diff for hot-reload correctness:
 3. Confirm the derived runtime structure is also refreshed, not just the cache: a cleared route table must be rebuilt, a cleared metadata cache backing an endpoint list must fire its change token, a component cache clear must be followed by a re-render. Clearing a cache that nothing re-reads until the next natural trigger can still leave stale visible state.
 4. Confirm consistency with sibling caches: if analogous caches in the same area subscribe to hot reload and this one does not, that asymmetry is almost always a bug.
 
-## A worked example
+## Worked examples
+
+### Components retained state
 
 `CascadingParameterState` in the Blazor components stack caches, per component type, the set of `[CascadingParameterAttributeBase]` properties in a static `ConcurrentDictionary<Type, CascadingParameterInfo[]>`, populated lazily and reused. It subscribes to the component Hot Reload hub and clears on a delta, matching sibling caches such as `ComponentProperties` and `DefaultComponentPropertyActivator`.
 
 Clearing is only half of this example. Existing `ComponentState` instances retain the matches and subscriptions derived from the cache, so the renderer also refreshes those retained instances during its forced Hot Reload render. This is the pattern to look for when auditing a metadata cache: invalidate the process-wide source and refresh every longer-lived structure that copied its result.
+
+### MVC action and model discovery
+
+MVC's `HotReloadService` coordinates several forms of derived metadata. During the clear phase it invalidates model metadata, controller property activators, and Razor caches. During the update phase it cancels the action-descriptor change token so actions are rediscovered. This demonstrates why cache invalidation and application refresh are separate responsibilities: clearing model metadata alone would not make a newly added action reachable.
