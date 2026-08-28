@@ -788,124 +788,124 @@ public class CascadingParameterTest
     [Fact]
     public async Task HotReloadRefreshesCascadingParametersForRetainedComponents()
     {
-            var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Hello", isFixed: true);
-            var services = new ServiceCollection();
-            services.AddSingleton<ICascadingValueSupplier>(supplier);
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Hello", isFixed: true);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
 
-            await using var renderer = new TestRenderer(services.BuildServiceProvider());
-            var hotReloadManager = new HotReloadManager();
-            renderer.HotReloadManager = hotReloadManager;
-            var component = new HotReloadCascadingParameterConsumer();
-            var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadCascadingParameterConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
 
-            Assert.Null(component.Value);
-            Assert.Equal(1, component.NumRenders);
+        Assert.Null(component.Value);
+        Assert.Equal(1, component.NumRenders);
 
-            supplier.AcceptRefreshedAttributes = true;
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal("Hello", component.Value);
-            Assert.Equal(2, component.NumRenders);
+        Assert.Equal("Hello", component.Value);
+        Assert.Equal(2, component.NumRenders);
     }
 
     [Fact]
     public async Task HotReloadRefreshesCascadingParameterSubscriptions()
     {
-            var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Initial value", isFixed: false);
-            var services = new ServiceCollection();
-            services.AddSingleton<ICascadingValueSupplier>(supplier);
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Initial value", isFixed: false);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
 
-            await using var renderer = new TestRenderer(services.BuildServiceProvider());
-            var hotReloadManager = new HotReloadManager();
-            renderer.HotReloadManager = hotReloadManager;
-            var component = new HotReloadCascadingParameterConsumer();
-            var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadCascadingParameterConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
 
-            supplier.AcceptRefreshedAttributes = true;
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal(1, supplier.SubscribeCount);
-            Assert.Equal(0, supplier.UnsubscribeCount);
-            Assert.Equal(1, supplier.SubscriberCount);
+        Assert.Equal(1, supplier.SubscribeCount);
+        Assert.Equal(0, supplier.UnsubscribeCount);
+        Assert.Equal(1, supplier.SubscriberCount);
 
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal(2, supplier.SubscribeCount);
-            Assert.Equal(1, supplier.UnsubscribeCount);
-            Assert.Equal(1, supplier.SubscriberCount);
+        Assert.Equal(2, supplier.SubscribeCount);
+        Assert.Equal(1, supplier.UnsubscribeCount);
+        Assert.Equal(1, supplier.SubscriberCount);
 
-            supplier.Value = "Updated value";
-            await supplier.NotifyChangedAsync();
+        supplier.Value = "Updated value";
+        await supplier.NotifyChangedAsync();
 
-            Assert.Equal("Updated value", component.Value);
+        Assert.Equal("Updated value", component.Value);
 
-            supplier.AcceptRefreshedAttributes = false;
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        supplier.AcceptRefreshedAttributes = false;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal(2, supplier.SubscribeCount);
-            Assert.Equal(2, supplier.UnsubscribeCount);
-            Assert.Equal(0, supplier.SubscriberCount);
+        Assert.Equal(2, supplier.SubscribeCount);
+        Assert.Equal(2, supplier.UnsubscribeCount);
+        Assert.Equal(0, supplier.SubscriberCount);
     }
 
     [Fact]
     public async Task HotReloadDoesNotRedeliverSingleDeliveryParametersToRetainedComponents()
     {
-            var supplier = new HotReloadCascadingValueSupplier<HotReloadSingleDeliveryCascadingParameterAttribute>("Restored value", isFixed: true);
-            var services = new ServiceCollection();
-            services.AddSingleton<ICascadingValueSupplier>(supplier);
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadSingleDeliveryCascadingParameterAttribute>("Restored value", isFixed: true);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
 
-            await using var renderer = new TestRenderer(services.BuildServiceProvider());
-            var hotReloadManager = new HotReloadManager();
-            renderer.HotReloadManager = hotReloadManager;
-            var retainedComponent = new HotReloadSingleDeliveryParameterConsumer();
-            var retainedComponentId = renderer.AssignRootComponentId(retainedComponent);
-            renderer.RenderRootComponent(retainedComponentId);
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var retainedComponent = new HotReloadSingleDeliveryParameterConsumer();
+        var retainedComponentId = renderer.AssignRootComponentId(retainedComponent);
+        renderer.RenderRootComponent(retainedComponentId);
 
-            supplier.AcceptRefreshedAttributes = true;
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal("Initial value", retainedComponent.Value);
-            Assert.Equal(0, supplier.GetCurrentValueCount);
+        Assert.Equal("Initial value", retainedComponent.Value);
+        Assert.Equal(0, supplier.GetCurrentValueCount);
 
-            var newComponent = new HotReloadSingleDeliveryParameterConsumer();
-            var newComponentId = renderer.AssignRootComponentId(newComponent);
-            renderer.RenderRootComponent(newComponentId);
+        var newComponent = new HotReloadSingleDeliveryParameterConsumer();
+        var newComponentId = renderer.AssignRootComponentId(newComponent);
+        renderer.RenderRootComponent(newComponentId);
 
-            Assert.Equal("Restored value", newComponent.Value);
-            Assert.Equal(1, supplier.GetCurrentValueCount);
+        Assert.Equal("Restored value", newComponent.Value);
+        Assert.Equal(1, supplier.GetCurrentValueCount);
     }
 
     [Fact]
     public async Task HotReloadPreservesCurrentPersistentStateValue()
     {
-            var persistentComponentState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-            persistentComponentState.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
-            var services = new ServiceCollection();
-            services.AddSingleton<ICascadingValueSupplier>(serviceProvider =>
-                new PersistentStateValueProvider(
-                    persistentComponentState,
-                    NullLogger<PersistentStateValueProvider>.Instance,
-                    serviceProvider));
+        var persistentComponentState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        persistentComponentState.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(serviceProvider =>
+            new PersistentStateValueProvider(
+                persistentComponentState,
+                NullLogger<PersistentStateValueProvider>.Instance,
+                serviceProvider));
 
-            await using var renderer = new TestRenderer(services.BuildServiceProvider());
-            var hotReloadManager = new HotReloadManager();
-            renderer.HotReloadManager = hotReloadManager;
-            var component = new HotReloadPersistentStateConsumer();
-            var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
-            component.Value = "Current value";
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadPersistentStateConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        component.Value = "Current value";
 
-            hotReloadManager.TriggerOnDeltaApplied();
-            await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
-            Assert.Equal("Current value", component.Value);
+        Assert.Equal("Current value", component.Value);
     }
 
     [Fact]
