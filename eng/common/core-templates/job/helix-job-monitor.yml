@@ -62,6 +62,12 @@ parameters:
   type: number
   default: 30
 
+# Maximum number of work items whose results may be downloaded, parsed, and
+# uploaded concurrently.
+- name: testResultUploadParallelism
+  type: number
+  default: 48
+
 # When 'true' (the default), Helix work items that exit 0 but have failed AzDO test results
 # are treated as failed: they count toward the monitor's exit code and are resubmitted by a
 # later invocation's retry pass. Set to 'false' to fall back to exit-code-only outcomes.
@@ -215,6 +221,8 @@ jobs:
         --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name                  '$(System.StageName)'
         --stage-attempt               '$(System.StageAttempt)'
+        --job-attempt                 '$(System.JobAttempt)'
+        --test-result-upload-parallelism '${{ parameters.testResultUploadParallelism }}'
       )
 
       organization='${{ parameters.organization }}'
