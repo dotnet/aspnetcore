@@ -1,2 +1,3 @@
 #nullable enable
-virtual Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.WriteLiteral(System.ReadOnlyMemory<byte> utf8Value) -> void
+static Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.CreateUtf8HtmlContent(System.ReadOnlySpan<byte> utf8Content) -> Microsoft.AspNetCore.Html.IHtmlContent!
+virtual Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.WriteLiteral(Microsoft.AspNetCore.Html.IHtmlContent? value) -> void

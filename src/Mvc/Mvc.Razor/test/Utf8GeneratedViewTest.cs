@@ -20,9 +20,8 @@ using Moq;
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
 /// <summary>
-/// Tests that simulate Razor-compiled views using <c>WriteLiteral(ReadOnlyMemory&lt;byte&gt;)</c>
-/// with UTF-8 string literals. These represent what the Razor compiler will emit once
-/// it supports the <c>"..."u8</c> literal syntax for HTML content blocks.
+/// Tests that simulate Razor-compiled views using static UTF-8 backed <see cref="IHtmlContent"/>
+/// instances for HTML content blocks.
 /// </summary>
 public class Utf8GeneratedViewTest
 {
@@ -160,14 +159,12 @@ public class Utf8GeneratedViewTest
     [CompilerGenerated]
     internal sealed class SimpleProductView : RazorPage
     {
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<html>\r\n<head><title>Products</title></head>\r\n<body>\r\n<h1>Product List</h1>\r\n</body>\r\n</html>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 =
+            CreateUtf8HtmlContent("<html>\r\n<head><title>Products</title></head>\r\n<body>\r\n<h1>Product List</h1>\r\n</body>\r\n</html>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(s_literal0);
             return Task.CompletedTask;
         }
     }
@@ -188,20 +185,17 @@ public class Utf8GeneratedViewTest
         public string ProductName { get; set; } = string.Empty;
         public decimal Price { get; set; }
 
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<div class=\"product\">\r\n    <h2>"u8.ToArray();
-            public static readonly byte[] Literal_1 = "</h2>\r\n    <span class=\"price\">"u8.ToArray();
-            public static readonly byte[] Literal_2 = "</span>\r\n</div>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 = CreateUtf8HtmlContent("<div class=\"product\">\r\n    <h2>"u8);
+        private static readonly IHtmlContent s_literal1 = CreateUtf8HtmlContent("</h2>\r\n    <span class=\"price\">"u8);
+        private static readonly IHtmlContent s_literal2 = CreateUtf8HtmlContent("</span>\r\n</div>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(s_literal0);
             Write(ProductName);
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_1));
+            WriteLiteral(s_literal1);
             Write(Price);
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_2));
+            WriteLiteral(s_literal2);
             return Task.CompletedTask;
         }
     }
@@ -223,24 +217,21 @@ public class Utf8GeneratedViewTest
     {
         public IReadOnlyList<string> Items { get; set; } = [];
 
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<ul>"u8.ToArray();
-            public static readonly byte[] Literal_1 = "\r\n    <li>"u8.ToArray();
-            public static readonly byte[] Literal_2 = "</li>"u8.ToArray();
-            public static readonly byte[] Literal_3 = "\r\n</ul>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 = CreateUtf8HtmlContent("<ul>"u8);
+        private static readonly IHtmlContent s_literal1 = CreateUtf8HtmlContent("\r\n    <li>"u8);
+        private static readonly IHtmlContent s_literal2 = CreateUtf8HtmlContent("</li>"u8);
+        private static readonly IHtmlContent s_literal3 = CreateUtf8HtmlContent("\r\n</ul>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(s_literal0);
             foreach (var item in Items)
             {
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_1));
+                WriteLiteral(s_literal1);
                 Write(item);
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_2));
+                WriteLiteral(s_literal2);
             }
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_3));
+            WriteLiteral(s_literal3);
             return Task.CompletedTask;
         }
     }
@@ -267,29 +258,26 @@ public class Utf8GeneratedViewTest
         public bool IsLoggedIn { get; set; }
         public string UserName { get; set; } = string.Empty;
 
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<nav>\r\n    "u8.ToArray();
-            public static readonly byte[] Literal_1 = "<span>Welcome, "u8.ToArray();
-            public static readonly byte[] Literal_2 = "!</span>"u8.ToArray();
-            public static readonly byte[] Literal_3 = "<a href=\"/login\">Sign In</a>"u8.ToArray();
-            public static readonly byte[] Literal_4 = "\r\n</nav>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 = CreateUtf8HtmlContent("<nav>\r\n    "u8);
+        private static readonly IHtmlContent s_literal1 = CreateUtf8HtmlContent("<span>Welcome, "u8);
+        private static readonly IHtmlContent s_literal2 = CreateUtf8HtmlContent("!</span>"u8);
+        private static readonly IHtmlContent s_literal3 = CreateUtf8HtmlContent("<a href=\"/login\">Sign In</a>"u8);
+        private static readonly IHtmlContent s_literal4 = CreateUtf8HtmlContent("\r\n</nav>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(s_literal0);
             if (IsLoggedIn)
             {
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_1));
+                WriteLiteral(s_literal1);
                 Write(UserName);
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_2));
+                WriteLiteral(s_literal2);
             }
             else
             {
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_3));
+                WriteLiteral(s_literal3);
             }
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_4));
+            WriteLiteral(s_literal4);
             return Task.CompletedTask;
         }
     }
@@ -300,14 +288,11 @@ public class Utf8GeneratedViewTest
     [CompilerGenerated]
     internal sealed class InternationalView : RazorPage
     {
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<p>Héllo Wörld — 日本語テスト</p>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 = CreateUtf8HtmlContent("<p>Héllo Wörld — 日本語テスト</p>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(s_literal0);
             return Task.CompletedTask;
         }
     }

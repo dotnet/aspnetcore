@@ -4,9 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
-using System.Text;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
@@ -122,15 +120,6 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
         return this;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void AppendHtml(ReadOnlyMemory<byte> utf8Value)
-    {
-        if (!utf8Value.IsEmpty)
-        {
-            AppendValue(new ViewBufferValue(utf8Value));
-        }
-    }
-
     // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AppendValue(ViewBufferValue value)
@@ -198,17 +187,16 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
             {
                 var value = page.Buffer[j];
 
-                switch (value.ValueType)
+                if (value.Value is string valueAsString)
                 {
-                    case ViewBufferValue.ViewBufferValueType.String:
-                        writer.Write(value.StringValue);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.Utf8:
-                        WriteUtf8LiteralTo(writer, value.Utf8Value);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.HtmlContent:
-                        value.HtmlContentValue.WriteTo(writer, encoder);
-                        break;
+                    writer.Write(valueAsString);
+                    continue;
+                }
+
+                if (value.Value is IHtmlContent valueAsHtmlContent)
+                {
+                    valueAsHtmlContent.WriteTo(writer, encoder);
+                    continue;
                 }
             }
         }
@@ -232,68 +220,39 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
             {
                 var value = page.Buffer[j];
 
-                switch (value.ValueType)
+                if (value.Value is string valueAsString)
                 {
-                    case ViewBufferValue.ViewBufferValueType.String:
-                        await writer.WriteAsync(value.StringValue);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.Utf8:
-                        await WriteUtf8LiteralToAsync(writer, value.Utf8Value);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.HtmlContent:
-                        var valueAsHtmlContent = value.HtmlContentValue;
-                        if (valueAsHtmlContent is ViewBuffer valueAsViewBuffer)
-                        {
-                            await valueAsViewBuffer.WriteToAsync(writer, encoder);
-                            break;
-                        }
+                    await writer.WriteAsync(valueAsString);
+                    continue;
+                }
 
-                        if (valueAsHtmlContent is IHtmlAsyncContent valueAsHtmlAsyncContent)
-                        {
-                            await valueAsHtmlAsyncContent.WriteToAsync(writer);
-                            await writer.FlushAsync();
-                            break;
-                        }
+                if (value.Value is ViewBuffer valueAsViewBuffer)
+                {
+                    await valueAsViewBuffer.WriteToAsync(writer, encoder);
+                    continue;
+                }
 
-                        valueAsHtmlContent.WriteTo(writer, encoder);
-                        await writer.FlushAsync();
-                        break;
+                if (value.Value is Utf8HtmlContent utf8HtmlContent)
+                {
+                    await utf8HtmlContent.WriteToAsync(writer);
+                    continue;
+                }
+
+                if (value.Value is IHtmlAsyncContent valueAsHtmlAsyncContent)
+                {
+                    await valueAsHtmlAsyncContent.WriteToAsync(writer);
+                    await writer.FlushAsync();
+                    continue;
+                }
+
+                if (value.Value is IHtmlContent valueAsHtmlContent)
+                {
+                    valueAsHtmlContent.WriteTo(writer, encoder);
+                    await writer.FlushAsync();
+                    continue;
                 }
             }
         }
-    }
-
-    private static void WriteUtf8LiteralTo(TextWriter writer, ReadOnlyMemory<byte> utf8Value)
-    {
-        if (writer is PagedBufferedTextWriter pagedWriter)
-        {
-            pagedWriter.WriteUtf8(utf8Value.Span);
-        }
-        else if (writer is HttpResponseStreamWriter responseWriter)
-        {
-            responseWriter.WriteUtf8(utf8Value.Span);
-        }
-        else
-        {
-            // Fallback: decode to string for writers that don't support direct UTF-8
-            writer.Write(Encoding.UTF8.GetString(utf8Value.Span));
-        }
-    }
-
-    private static Task WriteUtf8LiteralToAsync(TextWriter writer, ReadOnlyMemory<byte> utf8Value)
-    {
-        if (writer is PagedBufferedTextWriter pagedWriter)
-        {
-            return pagedWriter.WriteUtf8Async(utf8Value);
-        }
-
-        if (writer is HttpResponseStreamWriter responseWriter)
-        {
-            return responseWriter.WriteUtf8Async(utf8Value);
-        }
-
-        // Fallback: decode to string for writers that don't support direct UTF-8
-        return writer.WriteAsync(Encoding.UTF8.GetString(utf8Value.Span));
     }
 
     private string DebuggerToString() => _name;
@@ -309,25 +268,19 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
             {
                 var value = page.Buffer[j];
 
-                switch (value.ValueType)
+                string valueAsString;
+                IHtmlContentContainer valueAsContainer;
+                if ((valueAsString = value.Value as string) != null)
                 {
-                    case ViewBufferValue.ViewBufferValueType.String:
-                        destination.AppendHtml(value.StringValue);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.Utf8:
-                        destination.AppendHtml(Encoding.UTF8.GetString(value.Utf8Value.Span));
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.HtmlContent:
-                        if (value.HtmlContentValue is IHtmlContentContainer valueAsContainer)
-                        {
-                            valueAsContainer.CopyTo(destination);
-                        }
-                        else
-                        {
-                            destination.AppendHtml(value.HtmlContentValue);
-                        }
-
-                        break;
+                    destination.AppendHtml(valueAsString);
+                }
+                else if ((valueAsContainer = value.Value as IHtmlContentContainer) != null)
+                {
+                    valueAsContainer.CopyTo(destination);
+                }
+                else
+                {
+                    destination.AppendHtml((IHtmlContent)value.Value);
                 }
             }
         }
@@ -352,25 +305,19 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
             {
                 var value = page.Buffer[j];
 
-                switch (value.ValueType)
+                string valueAsString;
+                IHtmlContentContainer valueAsContainer;
+                if ((valueAsString = value.Value as string) != null)
                 {
-                    case ViewBufferValue.ViewBufferValueType.String:
-                        destination.AppendHtml(value.StringValue);
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.Utf8:
-                        destination.AppendHtml(Encoding.UTF8.GetString(value.Utf8Value.Span));
-                        break;
-                    case ViewBufferValue.ViewBufferValueType.HtmlContent:
-                        if (value.HtmlContentValue is IHtmlContentContainer valueAsContainer)
-                        {
-                            valueAsContainer.MoveTo(destination);
-                        }
-                        else
-                        {
-                            destination.AppendHtml(value.HtmlContentValue);
-                        }
-
-                        break;
+                    destination.AppendHtml(valueAsString);
+                }
+                else if ((valueAsContainer = value.Value as IHtmlContentContainer) != null)
+                {
+                    valueAsContainer.MoveTo(destination);
+                }
+                else
+                {
+                    destination.AppendHtml((IHtmlContent)value.Value);
                 }
             }
         }

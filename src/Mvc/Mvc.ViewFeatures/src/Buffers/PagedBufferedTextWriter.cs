@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
-internal sealed class PagedBufferedTextWriter : TextWriter
+internal sealed class PagedBufferedTextWriter : TextWriter, IUtf8TextWriter
 {
     private readonly TextWriter _inner;
     private readonly PagedCharBuffer _charBuffer;
@@ -188,6 +188,16 @@ internal sealed class PagedBufferedTextWriter : TextWriter
         }
 
         return WriteUtf8AsyncAwaited(flushTask, utf8Value);
+    }
+
+    void IUtf8TextWriter.WriteUtf8(ReadOnlySpan<byte> utf8Value)
+    {
+        WriteUtf8(utf8Value);
+    }
+
+    Task IUtf8TextWriter.WriteUtf8Async(ReadOnlyMemory<byte> utf8Value)
+    {
+        return WriteUtf8Async(utf8Value);
     }
 
     private Task ForwardUtf8ToInnerAsync(ReadOnlyMemory<byte> utf8Value)

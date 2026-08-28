@@ -23,7 +23,7 @@ using Moq;
 namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
 /// <summary>
-/// Benchmarks comparing <c>WriteLiteral(string)</c> vs <c>WriteLiteral(ReadOnlyMemory&lt;byte&gt;)</c>
+/// Benchmarks comparing <c>WriteLiteral(string)</c> with static UTF-8 backed <see cref="IHtmlContent"/> instances
 /// through the full MVC view rendering pipeline: ViewBuffer → PagedBufferedTextWriter →
 /// HttpResponseStreamWriter → Stream.
 /// </summary>
@@ -59,10 +59,9 @@ public class WriteLiteralUtf8Benchmark
     }
 
     /// <summary>
-    /// New: renders a view using <c>WriteLiteral(ReadOnlyMemory&lt;byte&gt;)</c>.
-    /// UTF-8 literal bytes flow directly to the response stream with zero string conversion.
+    /// Renders a view using static UTF-8 backed <see cref="IHtmlContent"/> instances.
     /// </summary>
-    [Benchmark(Description = "WriteLiteral(ROM<byte>)")]
+    [Benchmark(Description = "WriteLiteral(static IHtmlContent)")]
     public async Task WriteLiteral_Utf8()
     {
         _outputStream.Position = 0;
@@ -134,39 +133,36 @@ public class WriteLiteralUtf8Benchmark
         }
     }
 
-    // Simulated view using WriteLiteral(ReadOnlyMemory<byte>) — the new UTF-8 path
+    // Simulated generated view using static UTF-8 backed IHtmlContent instances.
     [CompilerGenerated]
     private sealed class Utf8WriteLiteralView : RazorPage
     {
-        private static class __Literals
-        {
-            public static readonly byte[] Literal_0 = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>Product Listing</title>\r\n    <link rel=\"stylesheet\" href=\"/css/site.css\" />\r\n</head>\r\n<body>\r\n    <header>\r\n        <nav class=\"navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3\">\r\n            <div class=\"container\">\r\n                <a class=\"navbar-brand\" href=\"/\">My Store</a>\r\n            </div>\r\n        </nav>\r\n    </header>\r\n    <div class=\"container\">\r\n        <main role=\"main\" class=\"pb-3\">\r\n            <h1>Products</h1>\r\n            <div class=\"row\">\r\n"u8.ToArray();
-            public static readonly byte[] Literal_1 = "                <div class=\"col-md-4 mb-3\">\r\n                    <div class=\"card\">\r\n                        <div class=\"card-body\">\r\n                            <h5 class=\"card-title\">"u8.ToArray();
-            public static readonly byte[] Literal_2 = "</h5>\r\n                            <p class=\"card-text text-muted\">"u8.ToArray();
-            public static readonly byte[] Literal_3 = "</p>\r\n                            <div class=\"d-flex justify-content-between align-items-center\">\r\n                                <span class=\"h5 mb-0\">"u8.ToArray();
-            public static readonly byte[] Literal_4 = "</span>\r\n                                <a href=\"/products/details/"u8.ToArray();
-            public static readonly byte[] Literal_5 = "\" class=\"btn btn-primary\">View Details</a>\r\n                            </div>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n"u8.ToArray();
-            public static readonly byte[] Literal_6 = "            </div>\r\n        </main>\r\n    </div>\r\n    <footer class=\"border-top footer text-muted\">\r\n        <div class=\"container\">\r\n            &copy; 2026 - My Store - <a href=\"/Home/Privacy\">Privacy</a>\r\n        </div>\r\n    </footer>\r\n    <script src=\"/js/site.js\"></script>\r\n</body>\r\n</html>"u8.ToArray();
-        }
+        private static readonly IHtmlContent s_literal0 = CreateUtf8HtmlContent("<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>Product Listing</title>\r\n    <link rel=\"stylesheet\" href=\"/css/site.css\" />\r\n</head>\r\n<body>\r\n    <header>\r\n        <nav class=\"navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3\">\r\n            <div class=\"container\">\r\n                <a class=\"navbar-brand\" href=\"/\">My Store</a>\r\n            </div>\r\n        </nav>\r\n    </header>\r\n    <div class=\"container\">\r\n        <main role=\"main\" class=\"pb-3\">\r\n            <h1>Products</h1>\r\n            <div class=\"row\">\r\n"u8);
+        private static readonly IHtmlContent s_literal1 = CreateUtf8HtmlContent("                <div class=\"col-md-4 mb-3\">\r\n                    <div class=\"card\">\r\n                        <div class=\"card-body\">\r\n                            <h5 class=\"card-title\">"u8);
+        private static readonly IHtmlContent s_literal2 = CreateUtf8HtmlContent("</h5>\r\n                            <p class=\"card-text text-muted\">"u8);
+        private static readonly IHtmlContent s_literal3 = CreateUtf8HtmlContent("</p>\r\n                            <div class=\"d-flex justify-content-between align-items-center\">\r\n                                <span class=\"h5 mb-0\">"u8);
+        private static readonly IHtmlContent s_literal4 = CreateUtf8HtmlContent("</span>\r\n                                <a href=\"/products/details/"u8);
+        private static readonly IHtmlContent s_literal5 = CreateUtf8HtmlContent("\" class=\"btn btn-primary\">View Details</a>\r\n                            </div>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n"u8);
+        private static readonly IHtmlContent s_literal6 = CreateUtf8HtmlContent("            </div>\r\n        </main>\r\n    </div>\r\n    <footer class=\"border-top footer text-muted\">\r\n        <div class=\"container\">\r\n            &copy; 2026 - My Store - <a href=\"/Home/Privacy\">Privacy</a>\r\n        </div>\r\n    </footer>\r\n    <script src=\"/js/site.js\"></script>\r\n</body>\r\n</html>"u8);
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(__Literals.Literal_0);
+            WriteLiteral(s_literal0);
 
             for (var i = 0; i < 500; i++)
             {
-                WriteLiteral(__Literals.Literal_1);
+                WriteLiteral(s_literal1);
                 Write("Model.Name"); // Simulates @Model.Name
-                WriteLiteral(__Literals.Literal_2);
+                WriteLiteral(s_literal2);
                 Write("Model.Description that's longer and needs more work"); // Simulates @Model.Description
-                WriteLiteral(__Literals.Literal_3);
+                WriteLiteral(s_literal3);
                 Write(123.45); // Simulates @Model.Price
-                WriteLiteral(__Literals.Literal_4);
+                WriteLiteral(s_literal4);
                 Write(123456); // Simulates @Model.Id
-                WriteLiteral(__Literals.Literal_5);
+                WriteLiteral(s_literal5);
             }
 
-            WriteLiteral(__Literals.Literal_6);
+            WriteLiteral(s_literal6);
 
             return Task.CompletedTask;
         }

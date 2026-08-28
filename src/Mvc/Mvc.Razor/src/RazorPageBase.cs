@@ -4,7 +4,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
@@ -474,35 +473,35 @@ public abstract class RazorPageBase : IRazorPage
     }
 
     /// <summary>
-    /// Writes the specified UTF-8 encoded <paramref name="utf8Value"/> without HTML encoding to <see cref="Output"/>.
+    /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
     /// </summary>
-    /// <param name="utf8Value">The UTF-8 encoded HTML literal bytes to write.</param>
-    /// <remarks>
-    /// This overload is used by the Razor compiler when emitting HTML literals as UTF-8 byte arrays
-    /// (C# <c>"..."u8</c> literals) instead of regular string literals, enabling more efficient
-    /// end-to-end UTF-8 output when the response encoding is UTF-8.
-    /// </remarks>
-    public virtual void WriteLiteral(ReadOnlyMemory<byte> utf8Value)
+    /// <param name="value">The HTML content to write.</param>
+    public virtual void WriteLiteral(IHtmlContent? value)
     {
-        if (utf8Value.IsEmpty)
+        if (value is null)
         {
             return;
         }
 
         var writer = Output;
-
-        if (writer is ViewBufferTextWriter { IsUtf8Encoding: true } viewBufferWriter)
+        if (writer is ViewBufferTextWriter bufferedWriter)
         {
-            // When the output encoding is UTF-8 and we're writing to a ViewBuffer,
-            // preserve the raw UTF-8 bytes through the buffer pipeline.
-            viewBufferWriter.Buffer.AppendHtml(utf8Value);
+            bufferedWriter.Buffer.AppendHtml(value);
         }
         else
         {
-            // For non-UTF-8 encodings or non-buffered writers, decode to string
-            // and use the existing string-based write path.
-            writer.Write(Encoding.UTF8.GetString(utf8Value.Span));
+            value.WriteTo(writer, HtmlEncoder);
         }
+    }
+
+    /// <summary>
+    /// Creates HTML content backed by UTF-8 encoded bytes.
+    /// </summary>
+    /// <param name="utf8Content">The UTF-8 encoded HTML literal.</param>
+    /// <returns>The HTML content.</returns>
+    protected static IHtmlContent CreateUtf8HtmlContent(ReadOnlySpan<byte> utf8Content)
+    {
+        return new Utf8HtmlContent(utf8Content);
     }
 
     /// <summary>
