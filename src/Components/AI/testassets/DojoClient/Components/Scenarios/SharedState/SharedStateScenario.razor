@@ -14,26 +14,51 @@
                               RecipeChanged="HandleRecipeChanged"
                               ChangedSections="_changedSections" />
             </main>
-            <aside class="shared-state-chat">
-                <header class="shared-state-chat__header">
+            <button class="shared-state-chat__open"
+                    aria-label="Open chat"
+                    @onclick="OpenChat">
+                <span aria-hidden="true">Chat</span>
+            </button>
+            <aside class="@GetChatClass()" aria-label="Copilot chat sidebar">
+                <header class="shared-state-chat__desktop-header">
                     <h1>AI Recipe Assistant</h1>
-                    <button aria-label="Reset recipe" @onclick="Reset">&times;</button>
+                    <button aria-label="Close chat" @onclick="CloseChat">&times;</button>
                 </header>
-                <div class="sc-ai-root sc-ai-chat-page dojo-chat-panel">
+                <button class="shared-state-chat__mobile-header"
+                        type="button"
+                        aria-expanded="@_isMobileChatOpen.ToString().ToLowerInvariant()"
+                        aria-controls="shared-state-chat-content"
+                        @onclick="ToggleMobileChat">
+                    <span>
+                        <strong>AI Recipe Assistant</strong>
+                        <small>Ask me to craft recipes</small>
+                    </span>
+                    <span class="shared-state-chat__chevron" aria-hidden="true"></span>
+                </button>
+                <div id="shared-state-chat-content"
+                     class="sc-ai-root sc-ai-chat-page dojo-chat-panel">
                     <div class="sc-ai-chat-page__body">
                         <MessageList>
                             <EmptyContent>
-                                <p class="dojo-scenario__welcome">
-                                    Edit the recipe yourself or ask the agent to improve it.
-                                </p>
+                                <h2 class="shared-state-chat__welcome">How can I help you today?</h2>
                             </EmptyContent>
                         </MessageList>
                     </div>
                     <RecipeSuggestions />
                     <div class="sc-ai-chat-page__footer">
                         <div class="sc-ai-chat-page__input-container">
-                            <MessageInput Placeholder="Type a message..." />
+                            <MessageInput Placeholder="Type a message...">
+                                <LeadingActions>
+                                    <button class="shared-state-chat__add"
+                                            type="button"
+                                            aria-label="Add attachment">+</button>
+                                </LeadingActions>
+                            </MessageInput>
+                            <StopResponseButton />
                         </div>
+                        <p class="shared-state-chat__disclaimer">
+                            AI can make mistakes. Please verify important information.
+                        </p>
                     </div>
                 </div>
             </aside>
@@ -51,6 +76,8 @@
     private IDisposable? _stateChangedRegistration;
     private Recipe _lastRecipe = default!;
     private bool _isApplyingLocalState;
+    private bool _isDesktopChatClosed;
+    private bool _isMobileChatOpen;
 
     [Inject(Key = DojoScenarios.SharedStateEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
@@ -112,6 +139,27 @@
         _lastRecipe = _agent.State.Value.Recipe;
         _changedSections.Clear();
         _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void CloseChat() => _isDesktopChatClosed = true;
+
+    private void OpenChat() => _isDesktopChatClosed = false;
+
+    private void ToggleMobileChat() => _isMobileChatOpen = !_isMobileChatOpen;
+
+    private string GetChatClass()
+    {
+        var cssClass = "shared-state-chat";
+        if (_isDesktopChatClosed)
+        {
+            cssClass += " shared-state-chat--desktop-closed";
+        }
+        if (_isMobileChatOpen)
+        {
+            cssClass += " shared-state-chat--mobile-open";
+        }
+
+        return cssClass;
     }
 
     private void OnStateChanged()

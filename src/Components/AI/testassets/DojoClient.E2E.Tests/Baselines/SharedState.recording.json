@@ -43,38 +43,50 @@
             "name": "generate_recipe",
             "arguments": {
               "recipe": {
-                "title": "Italian Garden Pasta",
-                "skill_level": "Beginner",
-                "cooking_time": "30 min",
-                "special_preferences": [
-                  "High Protein"
-                ],
+                "title": "Classic Italian Carbonara",
+                "skill_level": "Intermediate",
+                "cooking_time": "45 min",
+                "special_preferences": [],
                 "ingredients": [
                   {
                     "icon": "\ud83c\udf5d",
-                    "name": "Pasta",
-                    "amount": "12 oz"
+                    "name": "Spaghetti",
+                    "amount": "400g"
                   },
                   {
-                    "icon": "\ud83e\udd52",
-                    "name": "Zucchini",
-                    "amount": "2, sliced"
+                    "icon": "\ud83e\udd53",
+                    "name": "Guanciale (Pork Jowl)",
+                    "amount": "150g"
                   },
                   {
-                    "icon": "\ud83c\udf3e",
-                    "name": "All-Purpose Flour",
-                    "amount": "2 cups"
+                    "icon": "\ud83e\udd5a",
+                    "name": "Egg Yolks",
+                    "amount": "4 yolks"
                   },
                   {
-                    "icon": "\ud83c\udf45",
-                    "name": "Cherry Tomatoes",
-                    "amount": "2 cups"
+                    "icon": "\ud83e\uddc0",
+                    "name": "Pecorino Romano Cheese",
+                    "amount": "100g, grated"
+                  },
+                  {
+                    "icon": "\ud83e\uddc2",
+                    "name": "Salt",
+                    "amount": "to taste"
+                  },
+                  {
+                    "icon": "\u26ab",
+                    "name": "Black Pepper",
+                    "amount": "Freshly ground, to taste"
                   }
                 ],
                 "instructions": [
-                  "Boil the pasta until al dente.",
-                  "Saute the zucchini and tomatoes.",
-                  "Toss everything together and serve."
+                  "Start cooking your spaghetti in a large pot of lightly salted water until it's al dente.",
+                  "Meanwhile, dice the guanciale into small cubes and cook it in a skillet over medium heat until crispy.",
+                  "In a bowl, whisk together the egg yolks and grated cheese until smooth.",
+                  "Once the pasta is cooked, drain it, reserving half a cup of the cooking water.",
+                  "Combine the hot pasta with the guanciale, then remove the pan from the heat.",
+                  "Stir in the egg and cheese mixture, adding reserved pasta water until creamy.",
+                  "Season with freshly ground black pepper and serve immediately."
                 ]
               }
             }
@@ -124,7 +136,7 @@
         {
           "name": "italian-summary",
           "chunks": [
-            "I created an Italian garden pasta and kept your zucchini."
+            "The state now includes a detailed recipe for Classic Italian Carbonara, with specific ingredients, cooking instructions, and customization options for preferences like vegetarian alternatives. It also outlines the skill level, cooking time, and key steps for preparation."
           ]
         }
       ]

@@ -14,6 +14,7 @@ namespace AGUIDojoApi;
 // rendering) without any credentials.
 internal sealed class ScriptedChatClient : IChatClient
 {
+    private static readonly TimeSpan ModelDelay = TimeSpan.FromMilliseconds(750);
     private static readonly TimeSpan TokenDelay = TimeSpan.FromMilliseconds(60);
     private static readonly string[] MarsPlanSteps =
     [
@@ -89,10 +90,38 @@ internal sealed class ScriptedChatClient : IChatClient
                     when callId == $"agentic-plan-step-{planSteps.Length}" =>
                     $"All {planSteps.Length} steps in the " +
                     $"{(planSteps.Length == PizzaPlanSteps.Length ? "pizza" : "Mars mission")} plan are complete.",
+                { CallId: "shared-state-recipe-1" }
+                    when prompt.Contains("Italian", StringComparison.OrdinalIgnoreCase) =>
+                    "The state now includes a detailed recipe for Classic Italian Carbonara, " +
+                    "with specific ingredients, cooking instructions, and customization options " +
+                    "for preferences like vegetarian alternatives. It also outlines the skill " +
+                    "level, cooking time, and key steps for preparation.",
                 { CallId: "shared-state-recipe-1" } =>
-                    "I updated the shared recipe while preserving your existing ingredients.",
+                    "I updated the shared recipe.",
                 _ => "Background changed to a sunset gradient.",
             };
+            if (functionResult is { CallId: "shared-state-recipe-1" })
+            {
+                var responseMessageId = Guid.NewGuid().ToString("N");
+                var tokens = response.Split(' ');
+
+                for (var i = 0; i < tokens.Length; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Task.Delay(TokenDelay, cancellationToken);
+
+                    yield return new ChatResponseUpdate
+                    {
+                        Role = ChatRole.Assistant,
+                        MessageId = responseMessageId,
+                        Contents = [new TextContent(tokens[i] + " ")],
+                        FinishReason = i == tokens.Length - 1 ? ChatFinishReason.Stop : null,
+                    };
+                }
+
+                yield break;
+            }
+
             yield return new ChatResponseUpdate
             {
                 Role = ChatRole.Assistant,
@@ -107,6 +136,29 @@ internal sealed class ScriptedChatClient : IChatClient
         if (options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "generate_recipe") == true)
         {
+            await Task.Delay(ModelDelay, cancellationToken);
+
+            if (prompt.Contains("Italian", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = messageId,
+                    Contents =
+                    [
+                        new FunctionCallContent(
+                            "shared-state-recipe-1",
+                            "generate_recipe",
+                            new Dictionary<string, object?>
+                            {
+                                ["recipe"] = CreateItalianCarbonara(),
+                            })
+                    ],
+                    FinishReason = ChatFinishReason.ToolCalls,
+                };
+                yield break;
+            }
+
             options.TryGetRunAgentInput(out var input);
             var current = input?.State?.Deserialize<RecipeResponse>(
                 AIJsonUtilities.DefaultOptions)?.Recipe ?? new Recipe();
@@ -315,6 +367,32 @@ internal sealed class ScriptedChatClient : IChatClient
     public void Dispose()
     {
     }
+
+    private static Recipe CreateItalianCarbonara() => new()
+    {
+        Title = "Classic Italian Carbonara",
+        SkillLevel = "Intermediate",
+        CookingTime = "45 min",
+        Ingredients =
+        [
+            new() { Icon = "\U0001F35D", Name = "Spaghetti", Amount = "400g" },
+            new() { Icon = "\U0001F953", Name = "Guanciale (Pork Jowl)", Amount = "150g" },
+            new() { Icon = "\U0001F95A", Name = "Egg Yolks", Amount = "4 yolks" },
+            new() { Icon = "\U0001F9C0", Name = "Pecorino Romano Cheese", Amount = "100g, grated" },
+            new() { Icon = "\U0001F9C2", Name = "Salt", Amount = "to taste" },
+            new() { Icon = "\u26AB", Name = "Black Pepper", Amount = "Freshly ground, to taste" },
+        ],
+        Instructions =
+        [
+            "Start cooking your spaghetti in a large pot of lightly salted water until it's al dente.",
+            "Meanwhile, dice the guanciale into small cubes and cook it in a skillet over medium heat until crispy.",
+            "In a bowl, whisk together the egg yolks and grated cheese until smooth.",
+            "Once the pasta is cooked, drain it, reserving half a cup of the cooking water.",
+            "Combine the hot pasta with the guanciale, then remove the pan from the heat.",
+            "Stir in the egg and cheese mixture, adding reserved pasta water until creamy.",
+            "Season with freshly ground black pepper and serve immediately.",
+        ],
+    };
 
     private static ChatResponseUpdate CreatePlanStepUpdate(string messageId, int stepIndex)
     {

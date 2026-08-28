@@ -62,7 +62,7 @@ internal static class ChatClientAgentFactory
           `generate_recipe` tool with a COMPLETE recipe: a title, skill_level, cooking_time,
           special_preferences, the full list of ingredients (each with an icon, name and
           amount), and the step-by-step instructions.
-        - Always include every ingredient the recipe needs, keeping any the user already added.
+        - Always include every ingredient the recipe needs.
         - When the user only asks a question about the recipe, answer in plain text and do
           NOT call the tool.
         """;

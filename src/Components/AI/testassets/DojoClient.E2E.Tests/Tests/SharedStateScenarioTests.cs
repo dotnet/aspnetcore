@@ -21,7 +21,6 @@ public partial class SharedStateScenarioTests : BrowserTest
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _firstPrompt = null!;
-    private string _secondPrompt = null!;
 
     protected override async Task InitializeCoreAsync()
     {
@@ -29,7 +28,6 @@ public partial class SharedStateScenarioTests : BrowserTest
 
         var runId = Guid.NewGuid().ToString("N");
         _firstPrompt = $"Create a delicious Italian pasta recipe. ({runId})";
-        _secondPrompt = $"Improve the recipe with fresh herbs. ({runId})";
         _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<DojoModelOverrides>(
@@ -48,7 +46,7 @@ public partial class SharedStateScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task RecipeEditor_ForwardsLocalEditsAndPreservesThemAcrossAgentUpdates()
+    public async Task RecipeEditor_ReplacesLocalStateWithItalianRecipeSnapshot()
     {
         var scenario = _page.Locator("[data-scenario='shared_state']");
         var editor = scenario.Locator(".recipe-editor");
@@ -66,44 +64,73 @@ public partial class SharedStateScenarioTests : BrowserTest
         await input.FillAsync(_firstPrompt);
         await send.ClickAsync();
         await Expect(send).ToBeDisabledAsync();
+        var improve = editor.Locator(".recipe-editor__improve-btn");
+        await Expect(improve).ToBeDisabledAsync();
+        await Expect(improve).ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(improve.GetByRole(AriaRole.Status)).ToHaveTextAsync("Please Wait...");
+        await Expect(scenario.GetByRole(AriaRole.Button, new() { Name = "Stop response" }))
+            .ToBeVisibleAsync();
         await Expect(editor.GetByLabel("Recipe title"))
             .ToHaveValueAsync("Sunday Garden Pasta");
 
         await _checkpoints.ReleaseAsync(_firstPrompt, "before-italian-recipe");
 
         await Expect(editor.GetByLabel("Recipe title"))
-            .ToHaveValueAsync("Italian Garden Pasta");
-        await Expect(editor.GetByLabel("Cooking time")).ToHaveValueAsync("30 min");
-        await Expect(editor.GetByLabel("Ingredient name")).ToHaveCountAsync(4);
-        await Expect(editor.GetByLabel("Ingredient name").Nth(1)).ToHaveValueAsync("Zucchini");
-        await Expect(editor.GetByLabel("Ingredient amount").Nth(1)).ToHaveValueAsync("2, sliced");
-        await Expect(editor.GetByLabel("High Protein", new() { Exact = true })).ToBeCheckedAsync();
+            .ToHaveValueAsync("Classic Italian Carbonara");
+        await Expect(editor.GetByLabel("Skill level")).ToHaveValueAsync("Intermediate");
+        await Expect(editor.GetByLabel("Cooking time")).ToHaveValueAsync("45 min");
+        await Expect(editor.GetByLabel("Ingredient name")).ToHaveCountAsync(6);
+        await Expect(editor.GetByLabel("Ingredient name").Nth(0)).ToHaveValueAsync("Spaghetti");
+        await Expect(editor.GetByLabel("Ingredient amount").Nth(0)).ToHaveValueAsync("400g");
+        await Expect(editor.GetByLabel("Ingredient name").Nth(1))
+            .ToHaveValueAsync("Guanciale (Pork Jowl)");
+        await Expect(editor.GetByLabel("Ingredient name").Nth(5)).ToHaveValueAsync("Black Pepper");
+        await Expect(editor.GetByLabel("High Protein", new() { Exact = true }))
+            .Not.ToBeCheckedAsync();
 
         await _checkpoints.ReleaseAsync(_firstPrompt, "before-italian-summary");
         await Expect(scenario.Locator(
             ".sc-ai-message--assistant .sc-ai-message__content").Last)
-            .ToHaveTextAsync("I created an Italian garden pasta and kept your zucchini.");
+            .ToContainTextAsync("Classic Italian Carbonara");
         await Expect(send).ToBeEnabledAsync();
+        await Expect(scenario.GetByRole(AriaRole.Button, new() { Name = "Stop response" }))
+            .ToBeHiddenAsync();
+    }
 
-        await editor.GetByLabel("Ingredient amount").Nth(1).FillAsync("3, sliced");
-        await input.FillAsync(_secondPrompt);
-        await send.ClickAsync();
-        await Expect(send).ToBeDisabledAsync();
+    [TestMethod]
+    public async Task RecipeEditor_MatchesDojoChatAndResponsiveControls()
+    {
+        var scenario = _page.Locator("[data-scenario='shared_state']");
+        var editor = scenario.Locator(".recipe-editor");
+        var chat = scenario.GetByRole(
+            AriaRole.Complementary,
+            new() { Name = "Copilot chat sidebar" });
 
-        await _checkpoints.ReleaseAsync(_secondPrompt, "before-herbed-recipe");
+        await Expect(editor.GetByLabel("Cooking time").Locator("option"))
+            .ToHaveTextAsync(["5 min", "15 min", "30 min", "45 min", "60+ min"]);
+        await Expect(editor.GetByLabel("Budget-Friendly")).ToBeVisibleAsync();
+        await Expect(editor.GetByLabel("One-Pot Meal")).ToBeVisibleAsync();
+        await Expect(editor.GetByLabel("Gluten-Free")).ToHaveCountAsync(0);
 
-        await Expect(editor.GetByLabel("Recipe title"))
-            .ToHaveValueAsync("Herbed Italian Garden Pasta");
-        await Expect(editor.GetByLabel("Ingredient name")).ToHaveCountAsync(5);
-        await Expect(editor.GetByLabel("Ingredient name").Nth(1)).ToHaveValueAsync("Zucchini");
-        await Expect(editor.GetByLabel("Ingredient amount").Nth(1)).ToHaveValueAsync("3, sliced");
-        await Expect(editor.GetByLabel("Ingredient name").Last).ToHaveValueAsync("Fresh Basil");
-        await Expect(editor.GetByLabel("High Protein", new() { Exact = true })).ToBeCheckedAsync();
+        await scenario.GetByRole(AriaRole.Button, new() { Name = "Close chat" }).ClickAsync();
+        await Expect(chat).ToBeHiddenAsync();
+        await Expect(editor.GetByLabel("Recipe title")).ToHaveValueAsync("Make Your Recipe");
 
-        await _checkpoints.ReleaseAsync(_secondPrompt, "before-herbed-summary");
-        await Expect(scenario.Locator(
-            ".sc-ai-message--assistant .sc-ai-message__content").Last)
-            .ToHaveTextAsync("I added fresh basil while preserving your latest recipe edits.");
-        await Expect(send).ToBeEnabledAsync();
+        await scenario.GetByRole(AriaRole.Button, new() { Name = "Open chat" }).ClickAsync();
+        await Expect(chat).ToBeVisibleAsync();
+
+        await _page.SetViewportSizeAsync(390, 844);
+        var mobileToggle = scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "AI Recipe Assistant Ask me to craft recipes" });
+        var chatContent = scenario.Locator("#shared-state-chat-content");
+
+        await Expect(mobileToggle).ToBeVisibleAsync();
+        await Expect(mobileToggle).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(chatContent).ToBeHiddenAsync();
+
+        await mobileToggle.ClickAsync();
+        await Expect(mobileToggle).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(chatContent).ToBeVisibleAsync();
     }
 }
