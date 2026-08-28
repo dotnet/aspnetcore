@@ -5,6 +5,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
 
+internal enum CascadingParameterSubscriptionMode
+{
+    Initial,
+    MetadataRefresh,
+}
+
 internal interface ICascadingValueSupplier
 {
     bool IsFixed { get; }
@@ -14,6 +20,9 @@ internal interface ICascadingValueSupplier
     object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo);
 
     void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo);
+
+    void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo, CascadingParameterSubscriptionMode mode)
+        => Subscribe(subscriber, parameterInfo);
 
     void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo);
 }
