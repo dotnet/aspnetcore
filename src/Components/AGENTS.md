@@ -43,6 +43,9 @@ Before editing behavior that crosses Components renderers, runtimes, or DI scope
 - Before adding a comment, make local behavior discoverable through precise names,
   named methods or variables, and smaller single-purpose responsibilities. A named
   method can improve clarity even when it does not reduce duplication.
+- Rely on existing abstractions and extend them with the semantic operation or
+  context needed by the caller rather than downcasting to a concrete implementation.
+  Keep implementation-specific lifecycle and state handling behind the abstraction.
 - Add a concise implementation comment only when a durable nonlocal reason cannot
   be expressed by structure alone, such as ordering across JavaScript and .NET
   callbacks, lifecycle ownership transfer, compatibility constraints, or a
