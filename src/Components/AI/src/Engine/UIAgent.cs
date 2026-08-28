@@ -132,19 +132,6 @@ public class UIAgent : IDisposable
             _history.Add(message);
         }
 
-        if (messages.Count > 0)
-        {
-            thread?.AppendUserMessage(messages[0]);
-            foreach (var message in messages.Skip(1))
-            {
-                thread?.AppendUpdate(new ChatResponseUpdate
-                {
-                    Role = message.Role,
-                    Contents = [.. message.Contents],
-                });
-            }
-        }
-
         var pipeline = new BlockMappingPipeline(_options, _logger);
 
         // Process user messages through pipeline
@@ -168,6 +155,7 @@ public class UIAgent : IDisposable
 
         // Stream assistant response
         UIAgentLog.StreamingAssistantResponse(_logger);
+        var responseUpdates = new List<ChatResponseUpdate>();
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
         var chatOptions = BuildChatOptions();
@@ -185,8 +173,7 @@ public class UIAgent : IDisposable
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
 
-            thread?.AppendUpdate(update);
-
+            responseUpdates.Add(update);
             var processUpdate = ApplyStateMapper(update);
             assistantUpdates.Add(processUpdate);
 
@@ -215,7 +202,26 @@ public class UIAgent : IDisposable
             _history.Add(msg);
         }
 
-        thread?.CompleteTurn();
+        if (thread is not null && messages.Count > 0)
+        {
+            thread.AppendUserMessage(messages[0]);
+            foreach (var message in messages.Skip(1))
+            {
+                thread.AppendUpdate(new ChatResponseUpdate
+                {
+                    Role = message.Role,
+                    Contents = [.. message.Contents],
+                });
+            }
+
+            foreach (var update in responseUpdates)
+            {
+                thread.AppendUpdate(update);
+            }
+
+            thread.CompleteTurn();
+        }
+
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
     }
 

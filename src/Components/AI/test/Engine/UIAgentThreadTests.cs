@@ -27,7 +27,7 @@ public class UIAgentThreadTests
     }
 
     [Fact]
-    public async Task SendMessageAsync_FailedStream_DoesNotCommitTurn()
+    public async Task SendMessageAsync_FailedStream_DoesNotWriteToThread()
     {
         var thread = new InMemoryConversationThread("thread-1");
         var client = new DelegatingStreamingChatClient();
@@ -40,6 +40,7 @@ public class UIAgentThreadTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => CollectAsync(agent, "Hello"));
 
         Assert.Empty(thread.GetUpdates());
+        Assert.False(thread.HasPendingTurn);
     }
 
     [Fact]

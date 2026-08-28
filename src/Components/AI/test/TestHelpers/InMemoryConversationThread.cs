@@ -21,6 +21,8 @@ internal sealed class InMemoryConversationThread : IConversationThread
 
     public string? ConversationId { get; private set; }
 
+    internal bool HasPendingTurn => _currentTurn is not null;
+
     public void AppendUserMessage(ChatMessage message)
     {
         _currentTurn =
