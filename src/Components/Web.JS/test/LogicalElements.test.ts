@@ -5,8 +5,11 @@ import {
   insertLogicalChildBefore,
   removeLogicalChild,
   emptyLogicalElement,
+  createAndInsertLogicalContainer,
   getLogicalChildrenArray,
   getLogicalChild,
+  getLogicalParent,
+  permuteLogicalChildren,
   LogicalElement,
 } from '../src/Rendering/LogicalElements';
 
@@ -171,6 +174,107 @@ describe('insertLogicalChild', () => {
 });
 
 describe('HTMLTemplateElement handling (issue #50831)', () => {
+  test.each([
+    ['template', (element: HTMLElement) => (element as HTMLTemplateElement).content],
+    ['div', (element: HTMLElement) => element],
+  ])('permutes logical container ranges inside a %s without moving a later physical sibling', (tagName, getContainer) => {
+    const parent = document.createElement(tagName);
+    const container = getContainer(parent);
+    const logicalParent = toLogicalElement(parent);
+    const first = createAndInsertLogicalContainer(logicalParent, 0);
+    const second = createAndInsertLogicalContainer(logicalParent, 1);
+    const third = createAndInsertLogicalContainer(logicalParent, 2);
+    const firstContent = document.createTextNode('first');
+    const secondContent = document.createTextNode('second');
+    const thirdContent = document.createTextNode('third');
+    insertLogicalChild(firstContent, first, 0);
+    insertLogicalChild(secondContent, second, 0);
+    insertLogicalChild(thirdContent, third, 0);
+
+    permuteLogicalChildren(logicalParent, [
+      { fromSiblingIndex: 0, toSiblingIndex: 2 },
+      { fromSiblingIndex: 2, toSiblingIndex: 0 },
+    ]);
+
+    expect(container.textContent).toBe('thirdsecondfirst');
+  });
+
+  test('toLogicalElement discovers existing children in template.content', () => {
+    const template = document.createElement('template');
+    template.innerHTML = '<span>existing</span>';
+
+    const logicalTemplate = toLogicalElement(template, true);
+    const existingChild = template.content.firstChild as unknown as LogicalElement;
+
+    expect(getLogicalChildrenArray(logicalTemplate)).toEqual([existingChild]);
+    expect(getLogicalParent(existingChild)).toBe(logicalTemplate);
+  });
+
+  test('toLogicalElement rejects existing children in template.content unless explicitly allowed', () => {
+    const template = document.createElement('template');
+    template.innerHTML = '<span>existing</span>';
+
+    expect(() => toLogicalElement(template)).toThrow('New logical elements must start empty, or allowExistingContents must be true');
+  });
+
+  test('inserts and removes logical children among existing template.content nodes', () => {
+    const template = document.createElement('template');
+    template.innerHTML = '<span>first</span><span>third</span>';
+    const logicalTemplate = toLogicalElement(template, true);
+    const second = document.createElement('span');
+    second.textContent = 'second';
+
+    insertLogicalChild(second, logicalTemplate, 1);
+
+    expect(Array.from(template.content.children, child => child.textContent)).toEqual(['first', 'second', 'third']);
+    expect(getLogicalChild(logicalTemplate, 1) as unknown as Node).toBe(second);
+
+    removeLogicalChild(logicalTemplate, 1);
+
+    expect(Array.from(template.content.children, child => child.textContent)).toEqual(['first', 'third']);
+    expect(getLogicalChildrenArray(logicalTemplate)).toEqual(Array.from(template.content.childNodes));
+  });
+
+  test('permutes nested logical container ranges inside template.content', () => {
+    const template = document.createElement('template');
+    const logicalTemplate = toLogicalElement(template);
+    const first = createAndInsertLogicalContainer(logicalTemplate, 0);
+    const nested = createAndInsertLogicalContainer(first, 0);
+    insertLogicalChild(document.createTextNode('first'), nested, 0);
+    const second = createAndInsertLogicalContainer(logicalTemplate, 1);
+    insertLogicalChild(document.createTextNode('second'), second, 0);
+
+    permuteLogicalChildren(logicalTemplate, [
+      { fromSiblingIndex: 0, toSiblingIndex: 1 },
+      { fromSiblingIndex: 1, toSiblingIndex: 0 },
+    ]);
+
+    expect(template.content.textContent).toBe('secondfirst');
+    expect(template.childNodes).toHaveLength(0);
+  });
+
+  test('moves a logical container range between a template and an ordinary element', () => {
+    const template = document.createElement('template');
+    const ordinaryParent = document.createElement('div');
+    const logicalTemplate = toLogicalElement(template);
+    const logicalOrdinaryParent = toLogicalElement(ordinaryParent);
+    const range = createAndInsertLogicalContainer(logicalTemplate, 0);
+    insertLogicalChild(document.createTextNode('content'), range, 0);
+
+    insertLogicalChild(range as unknown as Node, logicalOrdinaryParent, 0);
+
+    expect(template.content.childNodes).toHaveLength(0);
+    expect(ordinaryParent.textContent).toBe('content');
+    expect(getLogicalParent(range)).toBe(logicalOrdinaryParent);
+
+    insertLogicalChild(range as unknown as Node, logicalTemplate, 0);
+
+    expect(template.content.textContent).toBe('content');
+    expect(template.childNodes).toHaveLength(0);
+    expect(ordinaryParent.childNodes).toHaveLength(0);
+    expect(getLogicalParent(range)).toBe(logicalTemplate);
+  });
+
   test('appendChild via logical element should put children into template.content, not template.childNodes', () => {
     // Repro of issue #50831: rendering a <template> with a RenderFragment child appended the
     // child directly to the <template> element instead of the standard HTMLTemplateElement
