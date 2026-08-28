@@ -206,6 +206,8 @@ public class ComponentState : IAsyncDisposable
 
     private void RefreshCascadingParameters()
     {
+        // A metadata update can change both the cascading parameter set and the supplier selected
+        // for each parameter, so retained component state must rebuild its subscriptions.
         if (_hasAnyCascadingParameterSubscriptions)
         {
             RemoveCascadingParameterSubscriptions();
