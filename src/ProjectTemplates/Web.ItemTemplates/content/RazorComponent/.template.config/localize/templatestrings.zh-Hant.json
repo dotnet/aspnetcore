@@ -3,7 +3,7 @@
   "name": "Razor 元件",
   "description": "透過 Razor 實作且可重複使用的 UI 元件",
   "symbols/namespace/description": "適用於產生之程式碼的命名空間",
-  "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code Behind",
+  "symbols/use-code-behind/description": "使用程式碼後置檔建立元件",
+  "symbols/use-code-behind/displayName": "使用程式碼後置",
   "postActions/openInEditor/description": "在編輯器中開啟 Component1.razor"
 }
