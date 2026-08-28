@@ -610,6 +610,113 @@ public class HttpResponseStreamWriter : TextWriter
         return WriteUtf8AsyncCore(utf8Value, cancellationToken);
     }
 
+    internal Task WriteUtf8EncodedAsync(string value)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        ThrowIfNotUtf8Encoding();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_charBufferCount > 0)
+        {
+            var flushTask = FlushInternalAsync(flushEncoder: true);
+            if (!flushTask.IsCompletedSuccessfully)
+            {
+                return WriteUtf8EncodedAfterFlushAsync(flushTask, value);
+            }
+        }
+
+        return WriteUtf8EncodedCoreAsync(value);
+    }
+
+    private Task WriteUtf8EncodedCoreAsync(string value)
+    {
+        var available = _byteBuffer.Length - _byteBufferCount;
+        var maxByteCount = Encoding.GetMaxByteCount(value.Length);
+        if (maxByteCount <= available)
+        {
+            EncodeIntoByteBuffer(value);
+            return Task.CompletedTask;
+        }
+
+        var byteCount = Encoding.GetByteCount(value);
+        if (byteCount <= available)
+        {
+            EncodeIntoByteBuffer(value);
+            return Task.CompletedTask;
+        }
+
+        if (_byteBufferCount > 0)
+        {
+            var flushTask = FlushByteBufferAsync();
+            if (!flushTask.IsCompletedSuccessfully)
+            {
+                return WriteUtf8EncodedAfterFlushAsync(flushTask, value);
+            }
+        }
+
+        if (byteCount <= _byteBuffer.Length)
+        {
+            EncodeIntoByteBuffer(value);
+            return Task.CompletedTask;
+        }
+
+        return WriteLargeUtf8EncodedAsync(value, byteCount);
+    }
+
+    private void EncodeIntoByteBuffer(string value)
+    {
+        var destination = _byteBuffer.AsSpan(_byteBufferCount);
+        _byteBufferCount += Encoding.GetBytes(value.AsSpan(), destination);
+    }
+
+    private async Task WriteUtf8EncodedAfterFlushAsync(Task flushTask, string value)
+    {
+        await flushTask;
+        await WriteUtf8EncodedCoreAsync(value);
+    }
+
+    private Task WriteLargeUtf8EncodedAsync(string value, int byteCount)
+    {
+        var buffer = _bytePool.Rent(byteCount);
+        try
+        {
+            var written = Encoding.GetBytes(value.AsSpan(), buffer);
+            var writeTask = WriteToStreamAsync(buffer.AsMemory(0, written));
+            if (writeTask.IsCompletedSuccessfully)
+            {
+                _bytePool.Return(buffer);
+                return Task.CompletedTask;
+            }
+
+            return ReturnBufferAfterWriteAsync(writeTask, buffer);
+        }
+        catch
+        {
+            _bytePool.Return(buffer);
+            throw;
+        }
+    }
+
+    private async Task ReturnBufferAfterWriteAsync(Task writeTask, byte[] buffer)
+    {
+        try
+        {
+            await writeTask;
+        }
+        finally
+        {
+            _bytePool.Return(buffer);
+        }
+    }
+
     private Task WriteUtf8AsyncCore(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
     {
         // Encode pending chars into byte buffer (may flush byte buffer to stream if needed)

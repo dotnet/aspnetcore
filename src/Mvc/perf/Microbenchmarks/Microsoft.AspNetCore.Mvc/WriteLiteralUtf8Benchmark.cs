@@ -71,7 +71,27 @@ public class WriteLiteralUtf8Benchmark
         await RenderViewAsync(view, _outputStream);
     }
 
-    private static async Task RenderViewAsync(RazorPage page, Stream outputStream)
+    [Benchmark(Description = "WriteLiteral(string, mixed sink)")]
+    public async Task WriteLiteral_String_MixedSink()
+    {
+        _outputStream.Position = 0;
+        _outputStream.SetLength(0);
+
+        var view = new StringWriteLiteralView();
+        await RenderViewAsync(view, _outputStream, useMixedSink: true);
+    }
+
+    [Benchmark(Description = "WriteLiteral(static IHtmlContent, mixed sink)")]
+    public async Task WriteLiteral_Utf8_MixedSink()
+    {
+        _outputStream.Position = 0;
+        _outputStream.SetLength(0);
+
+        var view = new Utf8WriteLiteralView();
+        await RenderViewAsync(view, _outputStream, useMixedSink: true);
+    }
+
+    private static async Task RenderViewAsync(RazorPage page, Stream outputStream, bool useMixedSink = false)
     {
         var bufferScope = new BenchmarkViewBufferScope();
         var buffer = new ViewBuffer(bufferScope, "benchmark-view", ViewBuffer.ViewPageSize);
@@ -98,8 +118,15 @@ public class WriteLiteralUtf8Benchmark
         // Execute the view (populates the ViewBuffer)
         await page.ExecuteAsync();
 
-        // Flush through the real writer chain: ViewBuffer → PagedBufferedTextWriter → HttpResponseStreamWriter → Stream
         using var responseWriter = new HttpResponseStreamWriter(outputStream, Encoding.UTF8);
+        if (useMixedSink)
+        {
+            await using var mixedWriter = new MixedUtf8BufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
+            await buffer.WriteToAsync(mixedWriter, HtmlEncoder.Default);
+            await mixedWriter.FlushAsync();
+            return;
+        }
+
         await using var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
         await buffer.WriteToAsync(pagedWriter, HtmlEncoder.Default);
         await pagedWriter.FlushAsync();

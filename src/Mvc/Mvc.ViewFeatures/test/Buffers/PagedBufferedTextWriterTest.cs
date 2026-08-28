@@ -424,4 +424,21 @@ public class PagedBufferedTextWriterTest
 
         Assert.Equal("prefix <p>test</p>", inner.ToString());
     }
+
+    [Fact]
+    public async Task MixedUtf8BufferedTextWriter_EncodesStringsAndCopiesUtf8InOrder()
+    {
+        var stream = new MemoryStream();
+        var responseWriter = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var writer = new MixedUtf8BufferedTextWriter(new TestArrayPool(), responseWriter);
+
+        await writer.WriteAsync("<html>");
+        await ((IUtf8TextWriter)writer).WriteUtf8Async("<body>"u8.ToArray());
+        await writer.WriteAsync("Héllo 日本語");
+        await ((IUtf8TextWriter)writer).WriteUtf8Async("</body></html>"u8.ToArray());
+        await writer.FlushAsync();
+        await responseWriter.FlushAsync();
+
+        Assert.Equal("<html><body>Héllo 日本語</body></html>", System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
 }

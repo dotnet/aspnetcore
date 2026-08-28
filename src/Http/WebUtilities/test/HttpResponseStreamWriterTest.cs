@@ -972,6 +972,34 @@ public class HttpResponseStreamWriterTest
     }
 
     [Fact]
+    public async Task WriteUtf8EncodedAsync_MixesEncodedStringsAndUtf8Bytes()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+        await writer.WriteUtf8EncodedAsync("<html>");
+        await writer.WriteUtf8Async("<body>"u8.ToArray());
+        await writer.WriteUtf8EncodedAsync("Héllo 日本語");
+        await writer.WriteUtf8Async("</body></html>"u8.ToArray());
+        await writer.FlushAsync();
+
+        Assert.Equal("<html><body>Héllo 日本語</body></html>", Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
+    public async Task WriteUtf8EncodedAsync_WritesStringsLargerThanBuffer()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8, bufferSize: 4);
+        var value = new string('a', 100);
+
+        await writer.WriteUtf8EncodedAsync(value);
+        await writer.FlushAsync();
+
+        Assert.Equal(value, Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
     public void WriteUtf8_MixedCharsAndBytes_InterleavedCorrectly()
     {
         var stream = new MemoryStream();

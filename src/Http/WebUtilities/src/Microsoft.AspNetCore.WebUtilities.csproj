@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Microbenchmarks" />
   </ItemGroup>
