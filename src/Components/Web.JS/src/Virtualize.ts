@@ -660,7 +660,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // Target row should be measured against the committed window, not a stale spacer height.
     flushPendingStyleMutations();
-    const delta = measureLocalChildOffset(localIndex);
+    const alignmentOffset = isTable
+      && scrollContainer
+      && (localIndex !== 0 || spacerBefore.offsetHeight !== 0)
+      ? Math.min(scrollContainer.clientTop * getScaleFactor(spacerBefore, spacerAfter), 1)
+      : 0;
+    const delta = measureLocalChildOffset(localIndex) + alignmentOffset;
     if (Number.isNaN(delta)) {
       // Target item isn't in the committed window.
       pendingAlignLocalIndex = localIndex;

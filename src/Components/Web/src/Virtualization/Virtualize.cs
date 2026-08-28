@@ -364,14 +364,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return null;
         }
 
-        var initialItemSize = _itemSize;
         var fillDirection = await _jsInterop.AlignToItemAsync(localIndex, token);
-        if (_initialIndex.Phase == InitialIndexPhase.Pending && _itemSize != initialItemSize)
-        {
-            StateHasChanged();
-            return null;
-        }
-
         return fillDirection;
     }
 
@@ -533,10 +526,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && _loadedItemsStartIndex == _itemsBefore
             && _lastRenderedItemCount > 0
             && _lastRenderedPlaceholderCount == 0
-            && _initialIndex.Phase == InitialIndexPhase.Pending)
+            && _initialIndex.IsPositioning)
         {
             var fillDirection = await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
-            UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
+            if (fillDirection is null && _initialIndex.Phase == InitialIndexPhase.Committing)
+            {
+                _initialIndex.Complete();
+            }
+            else
+            {
+                UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
+            }
         }
     }
 
@@ -635,6 +635,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         => (itemCount * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
     private float GetItemHeight()
+        => _initialIndex.IsPositioning
+            ? _initialIndex.SpacerItemSize
+            : GetMeasuredItemHeight();
+
+    private float GetMeasuredItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
     private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
@@ -683,7 +688,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             case SpacerVisibilityReason.ViewportFill:
                 // A fill callback while our own scroll is in flight is a side effect of that scroll —
                 // acting on it would move the target.
-                if (_currentScrollCts is not null)
+                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Committing)
                 {
                     return;
                 }
@@ -692,7 +697,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
-        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        if (_initialIndex.IsPositioning)
         {
             UpdateWindowFromViewport(
                 ViewportFillDirection.Before,
@@ -725,7 +730,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             CancelInFlightScrollForUserInteraction();
         }
-        else if (reason == SpacerVisibilityReason.ViewportFill && _currentScrollCts is not null)
+        else if (reason == SpacerVisibilityReason.ViewportFill
+            && (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Committing))
         {
             // Bottom-spacer fill while our own scroll is in flight: the window moved but scrollTop hasn't
             // landed, so acting on it would undo the target. The real fill runs once the scroll completes.
@@ -733,7 +739,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
         var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
-        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        if (_initialIndex.IsPositioning)
         {
             UpdateWindowFromViewport(
                 ViewportFillDirection.After,
@@ -771,9 +777,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         if (fillDirection == ViewportFillDirection.Covered)
         {
-            if (_initialIndex.Phase == InitialIndexPhase.Pending && _lastRenderedPlaceholderCount == 0)
+            if (_initialIndex.IsPositioning && _lastRenderedPlaceholderCount == 0)
             {
-                _initialIndex.Complete();
+                AdvanceInitialIndexPhase();
             }
             return;
         }
@@ -803,7 +809,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _visibleItemCapacity + addedItems,
                 unusedItemCapacity);
         }
-        else if (_initialIndex.Phase == InitialIndexPhase.Pending && !_loading)
+        else if (_initialIndex.IsPositioning && !_loading)
+        {
+            AdvanceInitialIndexPhase();
+        }
+    }
+
+    private void AdvanceInitialIndexPhase()
+    {
+        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        {
+            if (_lastRenderedItemCount == 0 || _lastRenderedPlaceholderCount > 0)
+            {
+                _initialIndex.Complete();
+                return;
+            }
+
+            var committedItemSize = _itemSize > 0 ? _itemSize : ItemSize;
+            _totalMeasuredHeight = committedItemSize * _lastRenderedItemCount;
+            _measuredItemCount = _lastRenderedItemCount;
+            _initialIndex.BeginCommit(committedItemSize);
+            StateHasChanged();
+        }
+        else
         {
             _initialIndex.Complete();
         }
@@ -1184,6 +1212,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         None,
         Pending,
+        Committing,
         Completed,
     }
 
@@ -1193,6 +1222,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         public InitialIndexPhase Phase { get; private set; }
 
+        public bool IsPositioning => Phase is InitialIndexPhase.Pending or InitialIndexPhase.Committing;
+
+        public float SpacerItemSize => _alignItemSize;
+
         public void Complete() => Phase = InitialIndexPhase.Completed;
 
         public void BeginPending(float itemSize)
@@ -1201,9 +1234,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _alignItemSize = itemSize;
         }
 
+        public void BeginCommit(float itemSize)
+        {
+            Phase = InitialIndexPhase.Committing;
+            _alignItemSize = itemSize;
+        }
+
         public void Abort()
         {
-            if (Phase == InitialIndexPhase.Pending)
+            if (IsPositioning)
             {
                 Phase = InitialIndexPhase.Completed;
             }

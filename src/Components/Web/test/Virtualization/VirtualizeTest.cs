@@ -136,6 +136,54 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task InitialIndex_MeasurementDoesNotChangeSpacerUntilPositioningCompletes()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 1000).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 950);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var spacerHeights = testRenderer.Batches
+            .SelectMany(batch => batch.ReferenceFrames)
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute
+                && frame.AttributeName == "data-blazor-virtualize-reserved-height")
+            .Select(frame => (string)frame.AttributeValue)
+            .ToList();
+
+        Assert.Equal(1253f, virtualize._totalMeasuredHeight);
+        Assert.Equal(7, virtualize._measuredItemCount);
+        Assert.Equal("47350", spacerHeights[^2]);
+    }
+
+    [Fact]
     public async Task Virtualize_ZeroSpacerSeparationDoesNotCorruptAverage()
     {
         // BuildVirtualizeWithContent provides Items + ChildContent so the test renderer
