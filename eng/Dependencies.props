@@ -14,6 +14,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
+    <LatestPackageReference Include="Microsoft.Bcl.Cryptography" />
     <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
     <LatestPackageReference Include="Microsoft.Bcl.TimeProvider" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
@@ -64,6 +65,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <LatestPackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <LatestPackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
@@ -227,6 +229,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
     <LatestPackageReference Include="Microsoft.Playwright" />
+    <LatestPackageReference Include="Microsoft.Playwright.TestAdapter" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="SharpFuzz" />
@@ -245,13 +248,23 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.assert" />
     <LatestPackageReference Include="xunit.extensibility.core" />
     <LatestPackageReference Include="xunit.extensibility.execution" />
-    <!-- Components.Testing (xUnit V3 + Playwright + YARP) -->
     <LatestPackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
-    <LatestPackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
+    <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
+    <LatestPackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
+    <LatestPackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <!-- Components.AI (Microsoft.Extensions.AI) -->
+    <LatestPackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
+    <!-- Components.AI dojo test assets (AG-UI protocol client and server) -->
+    <LatestPackageReference Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
+    <LatestPackageReference Include="AGUI.Client" Version="$(AGUIClientVersion)" />
+    <LatestPackageReference Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
+    <LatestPackageReference Include="AGUI.Server" Version="$(AGUIServerVersion)" />
     <!-- Components.Gateway OpenTelemetry + resilience dependencies -->
     <LatestPackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <LatestPackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />

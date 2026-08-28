@@ -7,6 +7,9 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 class E2EAppEntry
 {
+    internal const string StartupHookHarnessMode = "startupHook";
+    internal const string CompiledHarnessMode = "compiled";
+
     [JsonPropertyName("executable")]
     public string Executable { get; set; } = "";
 
@@ -21,4 +24,7 @@ class E2EAppEntry
 
     [JsonPropertyName("environmentVariables")]
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
+
+    [JsonPropertyName("harnessMode")]
+    public string HarnessMode { get; set; } = StartupHookHarnessMode;
 }

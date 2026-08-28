@@ -23,6 +23,24 @@
     public bool AppSetsEventArgsPath { get; set; }
 
     [Parameter]
+    [SupplyParameterFromQuery(Name = "auto-pause")]
+    public bool AutoPause { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")]
+    public int AutoPauseDelayMs { get; set; }
+
+    private BrowserOptions AutoPauseConfig
+    {
+        get
+        {
+            var options = new BrowserOptions();
+            options.AddAutoPause(pause => pause.HiddenDelay = TimeSpan.FromMilliseconds(AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200));
+            return options;
+        }
+    }
+
+    [Parameter]
     [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
     public bool ShouldDelayOnNavigateAsync { get; set; }
 
@@ -104,6 +122,11 @@
     <HeadOutlet />
 </head>
 <body>
+    @if (AutoPause)
+    {
+        <ConfigureBrowser Options="@AutoPauseConfig" />
+    }
+
     @if(string.Equals(UseCustomRouter, "true", StringComparison.OrdinalIgnoreCase))
     {
         <CustomRouter AppAssembly="@typeof(App).Assembly">
@@ -164,6 +187,7 @@
             const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
             const blockWebassemblySettings = sessionStorage.getItem('block-webassembly-settings') === 'true';
+            const keepCircuitAlive = sessionStorage.getItem('keep-circuit-alive') === 'true';
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
             sessionStorage.removeItem('block-webassembly-settings');
@@ -221,8 +245,10 @@
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
 
-                    // We use a short timeout so tests don't take too long
-                    circuitInactivityTimeoutMs: 100,
+                    // We use a short timeout so tests don't take too long, except for tests that
+                    // need the circuit to survive navigating through pages with no interactive
+                    // components so that components get reactivated on the existing circuit.
+                    circuitInactivityTimeoutMs: keepCircuitAlive ? 20000 : 100,
                 },
                 enableClassicInitializers: enableClassicInitializers,
                 webAssembly: webAssemblySettings,
