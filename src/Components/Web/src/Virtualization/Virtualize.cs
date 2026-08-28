@@ -512,7 +512,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             if (InitialItemIndex > 0)
             {
-                _initialIndex.BeginPending(_itemSize);
+                _initialIndex.BeginFillingViewport(_itemSize);
                 await ScrollToItemAsyncCore(InitialItemIndex, CancellationToken.None);
             }
             else if (_itemCount > 0)
@@ -529,7 +529,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && _initialIndex.IsPositioning)
         {
             var fillDirection = await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
-            if (fillDirection is null && _initialIndex.Phase == InitialIndexPhase.Committing)
+            if (fillDirection is null && _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry)
             {
                 _initialIndex.Complete();
             }
@@ -644,7 +644,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_initialIndex.Phase != InitialIndexPhase.Pending)
+        if (_initialIndex.Phase != InitialIndexPhase.FillingViewport)
         {
             return;
         }
@@ -688,7 +688,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             case SpacerVisibilityReason.ViewportFill:
                 // A fill callback while our own scroll is in flight is a side effect of that scroll —
                 // acting on it would move the target.
-                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Committing)
+                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry)
                 {
                     return;
                 }
@@ -731,7 +731,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             CancelInFlightScrollForUserInteraction();
         }
         else if (reason == SpacerVisibilityReason.ViewportFill
-            && (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Committing))
+            && (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry))
         {
             // Bottom-spacer fill while our own scroll is in flight: the window moved but scrollTop hasn't
             // landed, so acting on it would undo the target. The real fill runs once the scroll completes.
@@ -817,7 +817,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private void AdvanceInitialIndexPhase()
     {
-        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        if (_initialIndex.Phase == InitialIndexPhase.FillingViewport)
         {
             if (_lastRenderedItemCount == 0 || _lastRenderedPlaceholderCount > 0)
             {
@@ -828,7 +828,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             var committedItemSize = _itemSize > 0 ? _itemSize : ItemSize;
             _totalMeasuredHeight = committedItemSize * _lastRenderedItemCount;
             _measuredItemCount = _lastRenderedItemCount;
-            _initialIndex.BeginCommit(committedItemSize);
+            _initialIndex.BeginApplyingMeasuredGeometry(committedItemSize);
             StateHasChanged();
         }
         else
@@ -1211,33 +1211,33 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private enum InitialIndexPhase
     {
         None,
-        Pending,
-        Committing,
+        FillingViewport,
+        ApplyingMeasuredGeometry,
         Completed,
     }
 
     private sealed class InitialIndexState
     {
-        private float _alignItemSize;
+        private float _spacerItemSize;
 
         public InitialIndexPhase Phase { get; private set; }
 
-        public bool IsPositioning => Phase is InitialIndexPhase.Pending or InitialIndexPhase.Committing;
+        public bool IsPositioning => Phase is InitialIndexPhase.FillingViewport or InitialIndexPhase.ApplyingMeasuredGeometry;
 
-        public float SpacerItemSize => _alignItemSize;
+        public float SpacerItemSize => _spacerItemSize;
 
         public void Complete() => Phase = InitialIndexPhase.Completed;
 
-        public void BeginPending(float itemSize)
+        public void BeginFillingViewport(float itemSize)
         {
-            Phase = InitialIndexPhase.Pending;
-            _alignItemSize = itemSize;
+            Phase = InitialIndexPhase.FillingViewport;
+            _spacerItemSize = itemSize;
         }
 
-        public void BeginCommit(float itemSize)
+        public void BeginApplyingMeasuredGeometry(float itemSize)
         {
-            Phase = InitialIndexPhase.Committing;
-            _alignItemSize = itemSize;
+            Phase = InitialIndexPhase.ApplyingMeasuredGeometry;
+            _spacerItemSize = itemSize;
         }
 
         public void Abort()
