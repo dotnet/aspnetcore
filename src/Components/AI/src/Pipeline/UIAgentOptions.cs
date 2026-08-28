@@ -85,3 +85,20 @@ public class UIAgentOptions
         public IHandlerEntry CreateEntry() => new HandlerEntry<TState>(_handler);
     }
 }
+
+/// <summary>
+/// Configures a <see cref="UIAgent{TState}"/>.
+/// </summary>
+/// <typeparam name="TState">The type of state associated with the agent.</typeparam>
+public sealed class UIAgentOptions<TState> : UIAgentOptions where TState : class, new()
+{
+    internal UIAgentOptions(TState? initialState)
+    {
+        State = new AgentState<TState>(initialState);
+    }
+
+    /// <summary>
+    /// Gets the observable state associated with the agent.
+    /// </summary>
+    public AgentState<TState> State { get; }
+}

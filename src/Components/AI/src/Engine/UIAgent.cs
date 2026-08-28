@@ -91,6 +91,14 @@ public class UIAgent : IDisposable
         _logger = (ILogger?)loggerFactory?.CreateLogger<BlockMappingPipeline>() ?? NullLogger.Instance;
     }
 
+    internal UIAgent(IChatClient chatClient, UIAgentOptions options, ILoggerFactory? loggerFactory)
+    {
+        ArgumentNullException.ThrowIfNull(chatClient);
+        _chatClient = chatClient;
+        _options = options;
+        _logger = (ILogger?)loggerFactory?.CreateLogger<BlockMappingPipeline>() ?? NullLogger.Instance;
+    }
+
     /// <summary>
     /// Sends a message and streams the resulting content blocks. Blocks are yielded as soon as
     /// they are created; a block keeps changing (raising <see cref="ContentBlock.OnChanged(Action)"/>)

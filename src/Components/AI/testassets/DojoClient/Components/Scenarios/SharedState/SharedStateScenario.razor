@@ -96,7 +96,7 @@
                 RawRepresentationFactory = _ => new RunAgentInput
                 {
                     ThreadId = _thread.ThreadId,
-                    State = JsonSerializer.SerializeToElement(_agent.State.Value, _jsonOptions),
+                    State = JsonSerializer.SerializeToElement(options.State.Value, _jsonOptions),
                 },
             };
             options.StateMapper = context =>

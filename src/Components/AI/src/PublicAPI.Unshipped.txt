@@ -320,14 +320,16 @@ Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChat
 Microsoft.AspNetCore.Components.AI.UIAgent<TState>
 Microsoft.AspNetCore.Components.AI.UIAgent<TState>.State.get -> Microsoft.AspNetCore.Components.AI.AgentState<TState!>!
 Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, Microsoft.Extensions.AI.ChatOptions! chatOptions, TState? initialState = null) -> void
-Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions!>! configure, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory, TState? initialState = null) -> void
-Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions!>! configure, TState? initialState = null) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState!>!>! configure, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory, TState? initialState = null) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState!>!>! configure, TState? initialState = null) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, TState? initialState = null) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>! handler) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
+Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState>
+Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState>.State.get -> Microsoft.AspNetCore.Components.AI.AgentState<TState!>!
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Action<Microsoft.AspNetCore.Components.AI.StateMapperContext!>?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.Thread.get -> Microsoft.AspNetCore.Components.AI.IConversationThread?
