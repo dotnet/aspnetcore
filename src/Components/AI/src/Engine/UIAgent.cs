@@ -171,14 +171,16 @@ public class UIAgent : IDisposable
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
         var chatOptions = BuildChatOptions();
+        IEnumerable<ChatMessage> requestMessages = _history;
         if (thread is { IsStateful: true, ConversationId: not null })
         {
             chatOptions = chatOptions?.Clone() ?? new ChatOptions();
             chatOptions.ConversationId = thread.ConversationId;
+            requestMessages = messages;
         }
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
-            _history, chatOptions, cancellationToken).ConfigureAwait(false))
+            requestMessages, chatOptions, cancellationToken).ConfigureAwait(false))
         {
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);

@@ -43,13 +43,14 @@ public class UIAgentThreadTests
     }
 
     [Fact]
-    public async Task SendMessageAsync_StatefulThread_ForwardsConversationId()
+    public async Task SendMessageAsync_StatefulThread_ForwardsConversationIdWithoutReplayingHistory()
     {
         var thread = new InMemoryConversationThread("thread-1");
         var client = new DelegatingStreamingChatClient();
         ChatOptions? secondOptions = null;
+        List<ChatMessage>? secondMessages = null;
         var callCount = 0;
-        client.SetHandler((_, options, cancellationToken) =>
+        client.SetHandler((messages, options, cancellationToken) =>
         {
             callCount++;
             if (callCount == 1)
@@ -57,6 +58,7 @@ public class UIAgentThreadTests
                 return EmitConversationId("conversation-1", cancellationToken);
             }
 
+            secondMessages = messages.ToList();
             secondOptions = options;
             return ResponseEmitters.EmitTextResponse("Second response");
         });
@@ -66,6 +68,7 @@ public class UIAgentThreadTests
         await CollectAsync(agent, "Second");
 
         Assert.Equal("conversation-1", secondOptions?.ConversationId);
+        Assert.Equal(["Second"], secondMessages?.Select(message => message.Text));
     }
 
     [Fact]
