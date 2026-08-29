@@ -262,7 +262,7 @@ Kestrel, HttpSys, HTTP/2, HTTP/3, QUIC, YARP, WebSockets, HTTP abstractions, con
 
 #### `area-blazor`
 Blazor, Razor Components, WebAssembly, interactive rendering modes, circuits.
-**Code:** `src/Components/` (Components, Web, WebAssembly, Server, WebView, Endpoints), `src/JSInterop/`
+**Code:** `src/Components/` (Components, Web, WebAssembly, Server, WebView, Endpoints, Forms, QuickGrid, CustomElements), `src/JSInterop/`
 **Namespaces:** `Microsoft.AspNetCore.Components.*`, `Microsoft.AspNetCore.Components.Web.*`, `Microsoft.AspNetCore.Components.Forms.*`, `Microsoft.AspNetCore.Components.WebAssembly.*`, `Microsoft.AspNetCore.Components.Endpoints.*`, `Microsoft.JSInterop.*`
 **Packages:** `Microsoft.AspNetCore.Components`, `Microsoft.AspNetCore.Components.Web`, `Microsoft.AspNetCore.Components.Forms`, `Microsoft.AspNetCore.Components.Authorization`, `Microsoft.AspNetCore.Components.WebAssembly`, `Microsoft.AspNetCore.Components.WebAssembly.Authentication`, `Microsoft.AspNetCore.Components.WebAssembly.DevServer`, `Microsoft.AspNetCore.Components.CustomElements`, `Microsoft.AspNetCore.Components.QuickGrid`, `Microsoft.JSInterop`
 **Key types:** `ComponentBase`, `LayoutComponentBase`, `DynamicComponent`, `ErrorBoundary`, `NavigationManager`, `PersistentComponentState`, `CascadingValue<T>`, `RenderMode` (`InteractiveServer`, `InteractiveWebAssembly`, `InteractiveAuto`), `EditContext`, `DataAnnotationsValidator`, `CircuitHandler`, `NavLink`, `RouteView`, `HeadOutlet`, `StreamRendering`, `IComponentRenderMode`, `RenderFragment`, `EventCallback`, `IJSRuntime`, `IJSObjectReference`, `ProtectedBrowserStorage`
@@ -387,7 +387,7 @@ Security hardening, antiforgery, cookie policy, CSRF/XSRF protection.
 
 #### `area-ui-rendering`
 MVC Views, Razor Pages (rendering/templates), TagHelpers, view compilation.
-**Code:** `src/Razor/`, `src/Components/Forms/`, `src/Components/QuickGrid/`, `src/Components/CustomElements/`
+**Code:** `src/Razor/`
 **Namespaces:** `Microsoft.AspNetCore.Razor.*`, `Microsoft.AspNetCore.Html.*`
 **Packages:** `Microsoft.AspNetCore.Razor`, `Microsoft.AspNetCore.Razor.Runtime`, `Microsoft.AspNetCore.Html.Abstractions`
 **Key types:** `ViewResult`, `PartialViewResult`, `IHtmlHelper`, `ViewDataDictionary`, `TempDataDictionary`, `ViewComponent`, `ViewComponentResult`, `RazorPagesOptions`, `AnchorTagHelper`, `FormTagHelper`, `InputTagHelper`, `CacheTagHelper`, `EnvironmentTagHelper`, `ImageTagHelper`, `GlobbingUrlBuilder`
