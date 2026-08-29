@@ -12,6 +12,8 @@ namespace DojoClient.E2E.Tests.ServiceOverrides;
 internal sealed class RecordedScript
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private readonly object _threadLock = new();
+    private string? _threadId;
 
     public required List<RecordedCall> Calls { get; init; }
 
@@ -47,6 +49,21 @@ internal sealed class RecordedScript
             $"with {messageCount} messages. " +
             $"Recorded prompts: {string.Join(", ", Calls.Select(call => call.Prompt))}.");
     }
+
+    public void AssertStableThread(string threadId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(threadId);
+
+        lock (_threadLock)
+        {
+            _threadId ??= threadId;
+            if (_threadId != threadId)
+            {
+                throw new InvalidOperationException(
+                    $"Expected AG-UI thread '{_threadId}', received '{threadId}'.");
+            }
+        }
+    }
 }
 
 internal sealed class RecordedCall
@@ -65,6 +82,12 @@ internal sealed class RecordedCall
 
     /// <summary>The function results expected on this model request.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
+
+    /// <summary>The AG-UI state expected on this model request.</summary>
+    public JsonElement? State { get; init; }
+
+    /// <summary>Whether this call must use the same non-empty AG-UI thread as prior calls.</summary>
+    public bool RequireStableThread { get; init; }
 
     /// <summary>The response, split into the checkpoints a test can stop at.</summary>
     public required List<RecordedFrame> Frames { get; init; }

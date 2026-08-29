@@ -7,6 +7,7 @@ using System.Text.Json;
 using AGUI.Server;
 using AGUIDojoApi.AgenticGenerativeUI;
 using AGUIDojoApi.BackendToolRendering;
+using AGUIDojoApi.SharedState;
 using Microsoft.Extensions.AI;
 using OpenAI;
 
@@ -51,6 +52,19 @@ internal static class ChatClientAgentFactory
 
         Only one plan can be active at a time, so do not call the `create_plan` tool
         again until all the steps in current plan are completed.
+        """;
+
+    internal const string SharedStateSystemPrompt = """
+        You are a helpful recipe assistant that maintains a shared recipe state with the user.
+
+        IMPORTANT:
+        - When the user asks you to create, change, or improve a recipe, call the
+          `generate_recipe` tool with a COMPLETE recipe: a title, skill_level, cooking_time,
+          special_preferences, the full list of ingredients (each with an icon, name and
+          amount), and the step-by-step instructions.
+        - Always include every ingredient the recipe needs.
+        - When the user only asks a question about the recipe, answer in plain text and do
+          NOT call the tool.
         """;
 
     internal static IChatClient CreateAgenticChat(IConfiguration configuration)
@@ -129,6 +143,28 @@ internal static class ChatClientAgentFactory
         return options;
     }
 
+    internal static IList<AITool> CreateSharedStateTools(JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        return
+        [
+            AIFunctionFactory.Create(
+                GenerateRecipe,
+                name: "generate_recipe",
+                description: "Generate or update the shared recipe and display it to the user.",
+                options),
+        ];
+    }
+
+    internal static AGUIStreamOptions CreateSharedStateStreamOptions()
+    {
+        var options = new AGUIStreamOptions();
+        options.MapResultAsStateSnapshot("generate_recipe");
+
+        return options;
+    }
+
     [Description("Get the weather for a given location.")]
     private static WeatherInfo GetWeather(
         [Description("The location to get the weather for.")] string location) => new()
@@ -138,5 +174,12 @@ internal static class ChatClientAgentFactory
             Humidity = 50,
             WindSpeed = 10,
             FeelsLike = 25,
+        };
+
+    [Description("Generate or update the shared recipe and display it to the user.")]
+    private static RecipeResponse GenerateRecipe(
+        [Description("The complete recipe to display.")] Recipe recipe) => new()
+        {
+            Recipe = recipe,
         };
 }
