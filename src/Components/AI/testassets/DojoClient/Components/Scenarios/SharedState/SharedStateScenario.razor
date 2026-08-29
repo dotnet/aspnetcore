@@ -1,0 +1,236 @@
+@page "/shared_state"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Text.Json
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Shared State</PageTitle>
+
+<div class="shared-state" data-scenario="shared_state">
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="shared-state-layout">
+            <main class="recipe-panel">
+                <RecipeEditor Recipe="_agent.State.Value.Recipe"
+                              RecipeChanged="HandleRecipeChanged"
+                              ChangedSections="_changedSections" />
+            </main>
+            <button class="shared-state-chat__open"
+                    aria-label="Open chat"
+                    @onclick="OpenChat">
+                <span aria-hidden="true">Chat</span>
+            </button>
+            <aside class="@GetChatClass()" aria-label="Copilot chat sidebar">
+                <header class="shared-state-chat__desktop-header">
+                    <h1>AI Recipe Assistant</h1>
+                    <button aria-label="Close chat" @onclick="CloseChat">&times;</button>
+                </header>
+                <button class="shared-state-chat__mobile-header"
+                        type="button"
+                        aria-expanded="@_isMobileChatOpen.ToString().ToLowerInvariant()"
+                        aria-controls="shared-state-chat-content"
+                        @onclick="ToggleMobileChat">
+                    <span>
+                        <strong>AI Recipe Assistant</strong>
+                        <small>Ask me to craft recipes</small>
+                    </span>
+                    <span class="shared-state-chat__chevron" aria-hidden="true"></span>
+                </button>
+                <div id="shared-state-chat-content"
+                     class="sc-ai-root sc-ai-chat-page dojo-chat-panel">
+                    <div class="sc-ai-chat-page__body">
+                        <MessageList>
+                            <EmptyContent>
+                                <h2 class="shared-state-chat__welcome">How can I help you today?</h2>
+                            </EmptyContent>
+                        </MessageList>
+                    </div>
+                    <RecipeSuggestions />
+                    <div class="sc-ai-chat-page__footer">
+                        <div class="sc-ai-chat-page__input-container">
+                            <MessageInput Placeholder="Type a message...">
+                                <LeadingActions>
+                                    <button class="shared-state-chat__add"
+                                            type="button"
+                                            aria-label="Add attachment">+</button>
+                                </LeadingActions>
+                            </MessageInput>
+                            <StopResponseButton />
+                        </div>
+                        <p class="shared-state-chat__disclaimer">
+                            AI can make mistakes. Please verify important information.
+                        </p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions =
+        new(JsonSerializerDefaults.Web);
+
+    private readonly HashSet<string> _changedSections = new(StringComparer.Ordinal);
+    private UIAgent<RecipeState> _agent = default!;
+    private SharedStateConversationThread _thread = default!;
+    private IDisposable? _stateChangedRegistration;
+    private Recipe _lastRecipe = default!;
+    private bool _isApplyingLocalState;
+    private bool _isDesktopChatClosed;
+    private bool _isMobileChatOpen;
+
+    [Inject(Key = DojoScenarios.SharedStateEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized() => Reset();
+
+    private UIAgent<RecipeState> CreateAgent(RecipeState initialState)
+    {
+        _thread = new SharedStateConversationThread(Guid.NewGuid().ToString("N"));
+
+        return new UIAgent<RecipeState>(ChatClient, options =>
+        {
+            options.Thread = _thread;
+            options.ChatOptions = new ChatOptions
+            {
+                RawRepresentationFactory = _ => new RunAgentInput
+                {
+                    ThreadId = _thread.ThreadId,
+                    State = JsonSerializer.SerializeToElement(options.State.Value, _jsonOptions),
+                },
+            };
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
+                {
+                    return;
+                }
+
+                var state = snapshot.Snapshot.Deserialize<RecipeState>(_jsonOptions);
+                if (state?.Recipe is null)
+                {
+                    return;
+                }
+
+                context.SetState(state);
+            };
+        }, LoggerFactory, initialState);
+    }
+
+    private void HandleRecipeChanged(Recipe recipe)
+    {
+        _isApplyingLocalState = true;
+        try
+        {
+            _agent.State.Value = new RecipeState { Recipe = recipe };
+        }
+        finally
+        {
+            _isApplyingLocalState = false;
+        }
+    }
+
+    private void Reset()
+    {
+        var nextAgent = CreateAgent(CreateDefaultRecipe());
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = nextAgent;
+        _lastRecipe = _agent.State.Value.Recipe;
+        _changedSections.Clear();
+        _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void CloseChat() => _isDesktopChatClosed = true;
+
+    private void OpenChat() => _isDesktopChatClosed = false;
+
+    private void ToggleMobileChat() => _isMobileChatOpen = !_isMobileChatOpen;
+
+    private string GetChatClass()
+    {
+        var cssClass = "shared-state-chat";
+        if (_isDesktopChatClosed)
+        {
+            cssClass += " shared-state-chat--desktop-closed";
+        }
+        if (_isMobileChatOpen)
+        {
+            cssClass += " shared-state-chat--mobile-open";
+        }
+
+        return cssClass;
+    }
+
+    private void OnStateChanged()
+    {
+        var recipe = _agent.State.Value.Recipe;
+        _changedSections.Clear();
+        if (!_isApplyingLocalState)
+        {
+            AddChangedSections(_lastRecipe, recipe);
+        }
+
+        _lastRecipe = recipe;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void AddChangedSections(Recipe previous, Recipe current)
+    {
+        if (previous.Title != current.Title)
+        {
+            _changedSections.Add("title");
+        }
+        if (previous.SkillLevel != current.SkillLevel ||
+            previous.CookingTime != current.CookingTime)
+        {
+            _changedSections.Add("details");
+        }
+        if (!previous.SpecialPreferences.SequenceEqual(
+            current.SpecialPreferences,
+            StringComparer.Ordinal))
+        {
+            _changedSections.Add("preferences");
+        }
+        if (!previous.Ingredients.SequenceEqual(current.Ingredients))
+        {
+            _changedSections.Add("ingredients");
+        }
+        if (!previous.Instructions.SequenceEqual(current.Instructions, StringComparer.Ordinal))
+        {
+            _changedSections.Add("instructions");
+        }
+    }
+
+    private static RecipeState CreateDefaultRecipe() => new()
+    {
+        Recipe = new Recipe
+        {
+            Title = "Make Your Recipe",
+            SkillLevel = "Intermediate",
+            CookingTime = "45 min",
+            Ingredients =
+            [
+                new Ingredient
+                {
+                    Icon = "\U0001F955",
+                    Name = "Carrots",
+                    Amount = "3 large, grated",
+                },
+                new Ingredient
+                {
+                    Icon = "\U0001F33E",
+                    Name = "All-Purpose Flour",
+                    Amount = "2 cups",
+                },
+            ],
+            Instructions = ["Preheat oven to 350\u00B0F (175\u00B0C)"],
+        },
+    };
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

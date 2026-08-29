@@ -18,13 +18,23 @@ async function fetchWithErrorHandling(url, options = {}) {
 }
 
 async function createCredential(signal) {
-    const optionsResponse = await fetchWithErrorHandling('/Account/PasskeyCreationOptions', {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyCreationOptions', {
         method: 'POST',
         signal,
     });
     const optionsJson = await optionsResponse.json();
     const options = PublicKeyCredential.parseCreationOptionsFromJSON(optionsJson);
     return await navigator.credentials.create({ publicKey: options, signal });
+}
+
+async function reauthenticateCredential(signal) {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyReauthenticationOptions', {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
+    return await navigator.credentials.get({ publicKey: options, signal });
 }
 
 async function requestCredential(email, mediation, signal) {
@@ -96,6 +106,8 @@ customElements.define('passkey-submit', class extends HTMLElement {
 
         if (this.attrs.operation === 'Create') {
             return await createCredential(signal);
+        } else if (this.attrs.operation === 'Reauthenticate') {
+            return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
             const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;

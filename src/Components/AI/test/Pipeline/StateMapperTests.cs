@@ -69,6 +69,41 @@ public class StateMapperTests
     }
 
     [Fact]
+    public void TypedOptionsExposeAgentState()
+    {
+        var initialState = new RecipeState { Title = "Initial state" };
+        UIAgentOptions<RecipeState>? configuredOptions = null;
+
+        var agent = new UIAgent<RecipeState>(
+            new DelegatingStreamingChatClient(),
+            options => configuredOptions = options,
+            initialState);
+
+        Assert.NotNull(configuredOptions);
+        Assert.Same(agent.State, configuredOptions.State);
+        Assert.Same(initialState, configuredOptions.State.Value);
+
+        var updatedState = new RecipeState { Title = "Updated state" };
+        agent.State.Value = updatedState;
+
+        Assert.Same(updatedState, configuredOptions.State.Value);
+    }
+
+    [Fact]
+    public void TypedAgentAcceptsBaseOptionsConfiguration()
+    {
+        UIAgentOptions? configuredOptions = null;
+        Action<UIAgentOptions> configure = options => configuredOptions = options;
+
+        var agent = new UIAgent<RecipeState>(
+            new DelegatingStreamingChatClient(),
+            configure);
+
+        Assert.IsType<UIAgentOptions<RecipeState>>(configuredOptions);
+        Assert.Same(agent.State, ((UIAgentOptions<RecipeState>)configuredOptions).State);
+    }
+
+    [Fact]
     public void StateMapper_FilteredUpdatePreservesMetadata()
     {
         var agent = CreateAgent(new DelegatingStreamingChatClient());

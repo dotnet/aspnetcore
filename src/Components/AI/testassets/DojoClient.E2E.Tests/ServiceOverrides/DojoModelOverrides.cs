@@ -42,6 +42,14 @@ internal class DojoModelOverrides
             new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
     }
 
+    public static void SharedState(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("SharedState.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddScoped<IChatClient>(sp =>
+            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
+    }
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
