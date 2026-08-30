@@ -1,1 +1,37 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult
+Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult.AllAcceptedCredentialsSignalOptionsResult() -> void
+Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult.SignalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult.SignalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult
+Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult.CurrentUserDetailsSignalOptionsResult() -> void
+Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult.SignalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult.SignalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeAllAcceptedCredentialsSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeCurrentUserDetailsSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeUnknownCredentialSignalOptionsAsync(string! credentialJson, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult?>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.SupportsPasskeySignalOptions.get -> bool
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PasskeyEndpointsOptions() -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.set -> void
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeAllAcceptedCredentialsSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeCurrentUserDetailsSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.CurrentUserDetailsSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeUnknownCredentialSignalOptionsAsync(string! credentialJson, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult?>!
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.SupportsPasskeySignalOptions.get -> bool
+Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult
+Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult.SignalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult.SignalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.UnknownCredentialSignalOptionsResult.UnknownCredentialSignalOptionsResult() -> void
+Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions
+Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions
+static Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions.MapWellKnownPasskeyEndpoints(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions.AddPasskeyEndpoints(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakeAllAcceptedCredentialsSignalOptionsAsync(TUser! user) -> System.Threading.Tasks.Task<string!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakeCurrentUserDetailsSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity) -> System.Threading.Tasks.Task<string!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakeUnknownCredentialSignalOptionsAsync(string! credentialJson) -> System.Threading.Tasks.Task<string?>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SupportsPasskeySignalOptions.get -> bool
