@@ -278,6 +278,65 @@ public class FunctionalTest : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, transaction6.Response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PasskeyCeremonyStateSurvivesSecurityStampValidationWithZeroValidationInterval(bool testCore)
+    {
+        var timeProvider = new FakeTimeProvider();
+        var server = await CreateServer(services =>
+        {
+            services.AddSingleton<IPasskeyHandler<PocoUser>>(new TestPasskeyHandler());
+            services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.TimeProvider = timeProvider;
+                options.ValidationInterval = TimeSpan.Zero;
+            });
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
+            {
+                options.TimeProvider = timeProvider;
+            });
+        }, testCore: testCore);
+
+        var transaction1 = await SendAsync(server, "http://example.com/createMe");
+        Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+
+        // Begin a passkey ceremony. This stashes ceremony state in the TwoFactorUserId cookie
+        // using an empty principal (no user id / security stamp claim).
+        var transaction2 = await SendAsync(server, "http://example.com/makePasskeyRequestOptions");
+        Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+        Assert.Contains(IdentityConstants.TwoFactorUserIdScheme + "=", transaction2.SetCookie);
+
+        // Advance past the (zero) validation interval so the security stamp validator runs
+        // on the next request while the ceremony cookie is still within its 5 minute lifetime.
+        timeProvider.Advance(TimeSpan.FromMinutes(1));
+
+        // Retrieving the passkey ceremony state authenticates the TwoFactorUserId cookie, exactly
+        // as RetrievePasskeyAuthenticationInfoAsync does. The empty ceremony principal must not be
+        // rejected by the two-factor security stamp validator, otherwise the ceremony state is lost.
+        var transaction3 = await SendAsync(server, "http://example.com/hasTwoFactorUserId", transaction2.CookieNameValue);
+        Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+    }
+
+    private sealed class TestPasskeyHandler : IPasskeyHandler<PocoUser>
+    {
+        public Task<PasskeyRequestOptionsResult> MakeRequestOptionsAsync(PocoUser user, HttpContext httpContext)
+            => Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = "test-assertion-state",
+            });
+
+        public Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
+            => throw new NotSupportedException();
+
+        public Task<PasskeyAttestationResult> PerformAttestationAsync(PasskeyAttestationContext context)
+            => throw new NotSupportedException();
+
+        public Task<PasskeyAssertionResult<PocoUser>> PerformAssertionAsync(PasskeyAssertionContext context)
+            => throw new NotSupportedException();
+    }
+
     private static string FindClaimValue(Transaction transaction, string claimType)
     {
         var claim = transaction.ResponseElement.Elements("claim").SingleOrDefault(elt => elt.Attribute("type").Value == claimType);
@@ -354,6 +413,12 @@ public class FunctionalTest : LoggedTest
                         {
                             var result = await context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
                             res.StatusCode = result.Succeeded ? 200 : 500;
+                        }
+                        else if (req.Path == new PathString("/makePasskeyRequestOptions"))
+                        {
+                            var user = await userManager.FindByNameAsync("hao");
+                            await signInManager.MakePasskeyRequestOptionsAsync(user);
+                            res.StatusCode = 200;
                         }
                         else if (req.Path == new PathString("/me"))
                         {
