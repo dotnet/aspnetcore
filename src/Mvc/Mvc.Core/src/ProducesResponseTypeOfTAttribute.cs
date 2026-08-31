@@ -5,6 +5,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 /// <inheritdoc />
 /// <typeparam name="T">The <see cref="Type"/> of object that is going to be written in the response.</typeparam>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public class ProducesResponseTypeAttribute<T> : ProducesResponseTypeAttribute
 {
     /// <summary>
