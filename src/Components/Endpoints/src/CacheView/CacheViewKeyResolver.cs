@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal static class CacheViewKeyResolver
 {
     private static readonly ConcurrentDictionary<string, string[]> _sortedNamesByRawValue = new(StringComparer.Ordinal);
+    // Cache UTF8-encoded bytes for frequently-used small strings to avoid repeated encodings.
+    private static readonly ConcurrentDictionary<string, byte[]> _utf8Cache = new(StringComparer.Ordinal);
 
     static CacheViewKeyResolver()
     {
@@ -272,6 +274,13 @@ internal static class CacheViewKeyResolver
             hash.AppendData("\0"u8);
             return;
         }
+        // Try to reuse a cached UTF8 byte array for frequently used strings. Only cache
+        // reasonably-sized strings to avoid unbounded memory use.
+        if (_utf8Cache.TryGetValue(value, out var cachedBytes))
+        {
+            hash.AppendData(cachedBytes);
+            return;
+        }
 
         var byteCount = Encoding.UTF8.GetByteCount(value);
         const int stackAllocThreshold = 256;
@@ -281,7 +290,19 @@ internal static class CacheViewKeyResolver
             : (rented = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount));
 
         var written = Encoding.UTF8.GetBytes(value, buffer);
-        hash.AppendData(buffer[..written]);
+        // Copy to an owned array and cache it if it's small enough.
+        if (written <= 1024)
+        {
+            var owned = new byte[written];
+            buffer.Slice(0, written).CopyTo(owned);
+            // It's fine if TryAdd races; worst-case we drop the owned array.
+            _utf8Cache.TryAdd(value, owned);
+            hash.AppendData(owned);
+        }
+        else
+        {
+            hash.AppendData(buffer[..written]);
+        }
 
         if (rented is not null)
         {
