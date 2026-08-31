@@ -1,7 +1,4 @@
 #if (IndividualLocalAuth)
-#if (UseServer)
-using Microsoft.AspNetCore.Components.Authorization;
-#endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -47,9 +44,6 @@ public class Program
         #if (IndividualLocalAuth)
         builder.Services.AddCascadingAuthenticationState();
         builder.Services.AddScoped<IdentityRedirectManager>();
-        #if (UseServer)
-        builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-        #endif
 
         builder.Services.AddAuthentication(options =>
             {
@@ -85,15 +79,10 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-#if (UseWebAssembly || IndividualLocalAuth)
+#if (IndividualLocalAuth)
         if (app.Environment.IsDevelopment())
         {
-#if (UseWebAssembly)
-            app.UseWebAssemblyDebugging();
-#endif
-#if (IndividualLocalAuth)
             app.UseMigrationsEndPoint();
-#endif
         }
         else
 #else
@@ -107,20 +96,27 @@ public class Program
         #endif
         }
 
+        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
         #if (HasHttpsProfile)
         app.UseHttpsRedirection();
 
 #endif
-        app.UseAntiforgery();
-
         app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
+          #if (IndividualLocalAuth)
+            .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh())
+          #else
             .AddInteractiveServerRenderMode()
+          #endif
             .AddInteractiveWebAssemblyRenderMode()
         #elif (UseServer)
         app.MapRazorComponents<App>()
+          #if (IndividualLocalAuth)
+            .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh());
+          #else
             .AddInteractiveServerRenderMode();
+          #endif
         #elif (UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveWebAssemblyRenderMode()

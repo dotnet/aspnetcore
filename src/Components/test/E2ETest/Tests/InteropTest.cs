@@ -78,6 +78,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["testDtoAsync"] = "Same",
             ["returnPrimitiveAsync"] = "123",
             ["returnArrayAsync"] = "first,second",
+            ["elementReference"] = "Success",
             ["jsObjectReference.identity"] = "Invoked from JSObjectReference",
             ["jsObjectReference.nested.add"] = "5",
             ["addViaJSObjectReference"] = "5",

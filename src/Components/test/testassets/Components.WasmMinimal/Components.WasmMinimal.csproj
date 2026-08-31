@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StaticWebAssetBasePath>WasmMinimal</StaticWebAssetBasePath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WasmEnableHotReload>false</WasmEnableHotReload>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>

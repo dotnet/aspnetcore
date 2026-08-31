@@ -46,7 +46,8 @@ internal static class JsonConverterHelper
             WriteIndented = writeIndented,
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            TypeInfoResolver = typeInfoResolver
+            TypeInfoResolver = typeInfoResolver,
+            PropertyNameCaseInsensitive = context.Settings.PropertyNameCaseInsensitive,
         };
         options.Converters.Add(new NullValueConverter());
         options.Converters.Add(new ByteStringConverter());

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.InternalTesting;
 public static class TestPlatformHelper
 {
     public static bool IsMono =>
-        Type.GetType("Mono.Runtime") != null;
+        Type.GetType("Mono.Runtime") != null || Type.GetType("Mono.RuntimeStructs") != null;
 
     public static bool IsWindows =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

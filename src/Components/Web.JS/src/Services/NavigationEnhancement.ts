@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
-import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -44,6 +44,7 @@ let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
   enhancedNavigationStarted: () => void;
+  beforeDomUpdate: (source: Node) => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -81,7 +82,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   }
 
   if (!isForSamePath(absoluteInternalHref, originalLocation)) {
-    resetScrollAfterNextBatch();
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
   }
 
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
@@ -99,17 +100,16 @@ function onDocumentClick(event: MouseEvent) {
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     const originalLocation = location.href;
 
-    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
+    const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
-      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
+      const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
-        resetScrollAfterNextBatch();
-        resetScrollIfNeeded();
+        scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
       }
     }
   });
@@ -117,6 +117,11 @@ function onDocumentClick(event: MouseEvent) {
 
 function onPopState(state: PopStateEvent) {
   if (hasInteractiveRouter()) {
+    return;
+  }
+
+  if (state.state == null && isSamePageWithHash(currentContentUrl, location.href)) {
+    currentContentUrl = location.href;
     return;
   }
 
@@ -192,7 +197,7 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl: boolean = true) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -218,7 +223,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
-  await getResponsePartsWithFraming(responsePromise, abortSignal,
+  await getResponsePartsWithFraming(
+    responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
@@ -304,6 +310,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
+        navigationEnhancementCallbacks.beforeDomUpdate(parsedHtml);
         synchronizeDomContent(document, parsedHtml);
         navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
@@ -331,7 +338,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       while (fragment.firstChild) {
         document.body.appendChild(fragment.firstChild);
       }
-    });
+    }
+  );
 
   if (!abortSignal.aborted) {
     // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
@@ -394,7 +402,7 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
           } else {
             onStreamingElement(chunk);
           }
-        }
+        },
       }));
   } catch (ex) {
     if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
@@ -430,7 +438,7 @@ function splitStream(frameBoundaryMarker: string) {
     },
     flush(controller) {
       controller.enqueue(buffer);
-    }
+    },
   });
 }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
@@ -16,6 +18,7 @@ public class CommandLineOptions
     public bool IsHelp { get; private set; }
     public bool IsVerbose { get; private set; }
     public string Project { get; private set; }
+    public string File { get; private set; }
 
     public static CommandLineOptions Parse(string[] args, IConsole console)
     {
@@ -36,6 +39,9 @@ public class CommandLineOptions
         var optionProject = app.Option("-p|--project <PROJECT>", "Path to project. Defaults to searching the current directory.",
             CommandOptionType.SingleValue, inherited: true);
 
+        var optionFile = app.Option("-f|--file <FILE>", "Path to file-based app.",
+            CommandOptionType.SingleValue, inherited: true);
+
         var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", "The project configuration to use. Defaults to 'Debug'.",
             CommandOptionType.SingleValue, inherited: true);
 
@@ -50,7 +56,7 @@ public class CommandLineOptions
         app.Command("remove", c => RemoveCommand.Configure(c, options));
         app.Command("list", c => ListCommand.Configure(c, options));
         app.Command("clear", c => ClearCommand.Configure(c, options));
-        app.Command("init", c => InitCommandFactory.Configure(c, options));
+        app.Command("init", c => InitCommandFactory.Configure(c, options, optionFile));
 
         // Show help information if no subcommand/option was specified.
         app.OnExecute(() => app.ShowHelp());
@@ -66,6 +72,17 @@ public class CommandLineOptions
         options.IsHelp = app.IsShowingInformation;
         options.IsVerbose = optionVerbose.HasValue();
         options.Project = optionProject.Value();
+        options.File = optionFile.Value();
+
+        if (options.File != null && options.Project != null)
+        {
+            throw new CommandParsingException(app, Resources.Error_ProjectAndFileOptions);
+        }
+
+        if (options.File is not null && !string.Equals(Path.GetExtension(options.File), ".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CommandParsingException(app, Resources.Error_FileInvalidExtension);
+        }
 
         return options;
     }

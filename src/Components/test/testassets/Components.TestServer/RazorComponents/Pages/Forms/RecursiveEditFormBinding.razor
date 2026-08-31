@@ -1,0 +1,42 @@
+﻿@page "/forms/recursive-edit-form"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Home</PageTitle>
+
+<EditForm EditContext="FormContext" OnSubmit="Submit" FormName="RequestForm">
+        <InputText id="text-input" @bind-Value="Model!.Name" />
+        <button type="submit" id="submit-button">Submit</button>
+</EditForm>
+
+<p id="result-form">@ModelName</p>
+
+@code {
+    string ModelName;
+
+    [SupplyParameterFromForm(FormName = "RequestForm")]
+    private MyModel? Model { get; set; }
+
+    private EditContext FormContext = null!;
+
+    public class MyModel
+    {
+        public string? Name { get; set; }
+
+        public MyModel? Parent { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Model == null)
+        {
+            Model = new();
+        }
+
+        FormContext = new EditContext(Model);
+    }
+
+    private void Submit()
+    {
+        ModelName = Model?.Name ?? string.Empty;
+    }
+}

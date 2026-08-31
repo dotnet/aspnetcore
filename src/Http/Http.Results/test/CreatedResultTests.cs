@@ -65,7 +65,6 @@ public class CreatedResultTests
     {
         // Arrange
         Created MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -75,6 +74,8 @@ public class CreatedResultTests
         var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]

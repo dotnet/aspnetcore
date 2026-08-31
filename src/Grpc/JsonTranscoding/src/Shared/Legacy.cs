@@ -40,6 +40,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Type = System.Type;
 
 namespace Grpc.Shared;
@@ -364,45 +365,5 @@ internal static class Legacy
             }
         }
         return true;
-    }
-
-    // Effectively a cache of mapping from enum values to the original name as specified in the proto file,
-    // fetched by reflection.
-    // The need for this is unfortunate, as is its unbounded size, but realistically it shouldn't cause issues.
-    internal static class OriginalEnumValueHelper
-    {
-        private static readonly ConcurrentDictionary<Type, Dictionary<object, string>> _dictionaries
-            = new ConcurrentDictionary<Type, Dictionary<object, string>>();
-
-        internal static string? GetOriginalName(object value)
-        {
-            var enumType = value.GetType();
-            Dictionary<object, string>? nameMapping;
-            lock (_dictionaries)
-            {
-                if (!_dictionaries.TryGetValue(enumType, out nameMapping))
-                {
-                    nameMapping = GetNameMapping(enumType);
-                    _dictionaries[enumType] = nameMapping;
-                }
-            }
-
-            // If this returns false, originalName will be null, which is what we want.
-            nameMapping.TryGetValue(value, out var originalName);
-            return originalName;
-        }
-
-        private static Dictionary<object, string> GetNameMapping(Type enumType)
-        {
-            return enumType.GetTypeInfo().DeclaredFields
-                .Where(f => f.IsStatic)
-                .Where(f => f.GetCustomAttributes<OriginalNameAttribute>()
-                             .FirstOrDefault()?.PreferredAlias ?? true)
-                .ToDictionary(f => f.GetValue(null)!,
-                              f => f.GetCustomAttributes<OriginalNameAttribute>()
-                                    .FirstOrDefault()
-                                    // If the attribute hasn't been applied, fall back to the name of the field.
-                                    ?.Name ?? f.Name);
-        }
     }
 }

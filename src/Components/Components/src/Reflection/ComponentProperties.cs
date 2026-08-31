@@ -5,12 +5,21 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal static class ComponentProperties
 {
+    static ComponentProperties()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     internal const BindingFlags BindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
     // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
@@ -89,9 +98,15 @@ internal static class ComponentProperties
         {
             // Logic with components with a CaptureUnmatchedValues parameter
             var isCaptureUnmatchedValuesParameterSetExplicitly = false;
+            var parentSuppliedDirectParameters = false;
             Dictionary<string, object>? unmatched = null;
             foreach (var parameter in parameters)
             {
+                if (!parameter.Cascading)
+                {
+                    parentSuppliedDirectParameters = true;
+                }
+
                 var parameterName = parameter.Name;
                 if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -157,6 +172,10 @@ internal static class ComponentProperties
             {
                 // We had some unmatched values, set the CaptureUnmatchedValues property
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
+            }
+            else if (parentSuppliedDirectParameters && !isCaptureUnmatchedValuesParameterSetExplicitly)
+            {
+                SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, (object)null!);
             }
         }
 

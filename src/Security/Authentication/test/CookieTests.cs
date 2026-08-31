@@ -11,12 +11,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -84,6 +86,85 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("/", responded.Single());
     }
 
+    [Theory]
+    [InlineData("/\tfoo")]
+    [InlineData("/\rfoo")]
+    [InlineData("/\nfoo")]
+    [InlineData("/\r\nfoo")]
+    [InlineData("/\0foo")]
+    [InlineData("/\u0001foo")]
+    [InlineData("/\u001Ffoo")]
+    [InlineData("/\u007Ffoo")]
+    [InlineData("/foo\r\nLocation:%20evil")]
+    [InlineData("/foo\tbar")]
+    public async Task LogoutReturnUrlWithControlCharacterIsRejected(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        Assert.False(transaction.Response.Headers.Contains("Location"));
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/foo")]
+    [InlineData("/foo/bar")]
+    [InlineData("/foo?x=1#y")]
+    public async Task LogoutReturnUrlWithoutControlCharacterIsHonored(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        var location = Assert.Single(transaction.Response.Headers.GetValues("Location"));
+        Assert.Equal(returnUrl, location);
+    }
+
+    [Theory]
+    // Protocol-relative URLs (path[1] == '/').
+    [InlineData("//www.example.com")]
+    [InlineData("//www.example.com/foobar.html")]
+    [InlineData("///www.example.com")]
+    [InlineData("//////www.example.com")]
+    // Forward-then-backslash (path[1] == '\\').
+    [InlineData("/\\")]
+    [InlineData("/\\foo")]
+    [InlineData("/\\evil.com")]
+    // Application-relative (~) is rejected — cookie auth never resolves PathBase like MVC's IUrlHelper.Content does.
+    [InlineData("~/")]
+    [InlineData("~/foo")]
+    [InlineData("~/foo.html")]
+    // Absolute URLs (path[0] != '/').
+    [InlineData("http://www.example.com")]
+    [InlineData("https://www.example.com")]
+    [InlineData("HtTpS://www.example.com")]
+    [InlineData("http://localhost/foobar.html")]
+    [InlineData("javascript:alert(1)")]
+    // Relative URLs (path[0] != '/').
+    [InlineData("foo.html")]
+    [InlineData("../foo.html")]
+    [InlineData("fold/foo.html")]
+    // Single-slash scheme confusion.
+    [InlineData("http:/foo.html")]
+    [InlineData("hTtP:foo.html")]
+    // Whitespace-only (length 1, path[0] != '/').
+    [InlineData(" ")]
+    public async Task LogoutReturnUrlNonHostRelativeIsRejected(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        Assert.False(transaction.Response.Headers.Contains("Location"));
+    }
+
     [Fact]
     public async Task AjaxChallengeRedirectTurnsInto200WithLocationHeader()
     {
@@ -94,6 +175,54 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         var responded = transaction.Response.Headers.GetValues("Location");
         Assert.Single(responded);
         Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanConfigure401ChallengeInsteadOfRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/challenge");
+        Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanConfigure403ForbiddenInsteadOfRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/forbid");
+        Assert.Equal(HttpStatusCode.Forbidden, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/AccessDenied", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanReenableLoginRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/jk/challenge");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanReenableAccessDeniedRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/jk/forbid");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/AccessDenied", responded.Single());
     }
 
     [Fact]
@@ -254,6 +383,71 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
 
         Assert.Empty(sessionStore.Store.Keys);
         Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
+    }
+
+    [Fact]
+    public async Task SignOutClearsSessionKeySoSubsequentSignInGeneratesNewKey()
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                o.SessionStore = sessionStore;
+            });
+        }, async context =>
+        {
+            if (context.Request.Query.ContainsKey("signoutfirst"))
+            {
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                // Sign back in as a different principal to mirror the privilege-rotation
+                // scenario from https://github.com/dotnet/aspnetcore/issues/47503.
+                var bob = new ClaimsIdentity(new GenericIdentity("Bob", "Cookies"));
+                await context.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(bob),
+                    new AuthenticationProperties());
+            }
+            else
+            {
+                await SignInAsAlice(context);
+            }
+        });
+
+        using var server = host.GetTestServer();
+
+        // Establish an initial session as Alice with one key in the store.
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+
+        // In the same request, sign out and then sign back in as Bob while attaching the
+        // existing cookie. SignOutAsync must clear the cached session key so that the
+        // subsequent SignInAsync generates a fresh key via StoreAsync rather than reusing
+        // the just-removed key via RenewAsync.
+        // See https://github.com/dotnet/aspnetcore/issues/47503.
+        //
+        // Same-request SignOut + SignIn emits two Set-Cookie headers (the sign-out
+        // delete-cookie followed by the sign-in auth-cookie), so the shared SendAsync
+        // helper's SingleOrDefault on Set-Cookie can't be used here. Extract the
+        // auth-cookie (the last Set-Cookie value) manually.
+        var request2 = new HttpRequestMessage(HttpMethod.Get, "http://example.com/testpath?signoutfirst=1");
+        request2.Headers.Add("Cookie", transaction1.CookieNameValue);
+        using var response2 = await server.CreateClient().SendAsync(request2);
+        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+        Assert.NotEqual(key1, key2);
+
+        var setCookies = response2.Headers.GetValues("Set-Cookie").ToArray();
+        Assert.Equal(2, setCookies.Length);
+        var authCookieNameValue = setCookies[^1].Split(';', 2)[0];
+
+        // The new cookie must actually authenticate, and it must resolve to Bob rather
+        // than the pre-signout Alice identity.
+        var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", authCookieNameValue);
+        Assert.Equal("Bob", FindClaimValue(transaction3, ClaimTypes.Name));
     }
 
     [Fact]
@@ -1879,8 +2073,36 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                                 await next(context);
                             }
                         });
+
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            void AddChallengeAndForbidEndpoints(IEndpointRouteBuilder routeGroup)
+                            {
+                                routeGroup.MapGet("/challenge", async context =>
+                                {
+                                    await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                });
+
+                                routeGroup.MapGet("/forbid", async context =>
+                                {
+                                    await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                });
+                            }
+
+                            var apiRouteGroup = endpoints.MapGroup("/api").DisableCookieRedirect();
+                            AddChallengeAndForbidEndpoints(apiRouteGroup);
+
+                            // IAllowCookieRedirect always wins if present. Adding IDisableCookieRedirect before and afterwards does not override it.
+                            var overriddenRouteGroup = apiRouteGroup.MapGroup("/jk").AllowCookieRedirect().DisableCookieRedirect();
+                            AddChallengeAndForbidEndpoints(overriddenRouteGroup);
+                        });
                     })
-                    .ConfigureServices(configureServices))
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRoutingCore();
+                        configureServices(services);
+                    }))
             .Build();
 
         await host.StartAsync();

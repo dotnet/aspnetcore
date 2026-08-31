@@ -60,7 +60,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private bool _hasAdvanced;
     private bool _isLeasedMemoryInvalid = true;
     protected Exception? _applicationException;
-    private BadHttpRequestException? _requestRejectedException;
+    protected BadHttpRequestException? _requestRejectedException;
 
     protected HttpVersion _httpVersion;
     // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
@@ -265,8 +265,26 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
 
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     public IHeaderDictionary ResponseHeaders { get; set; } = default!;
@@ -407,20 +425,19 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         _manuallySetRequestAbortToken = null;
 
-        // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
-        CancellationTokenSource? localAbortCts = null;
-
         lock (_abortLock)
         {
             _preventRequestAbortedCancellation = false;
-            if (_abortedCts?.TryReset() == false)
+
+            // If the connection has already been aborted, allow that to be observed during the next request.
+            if (!_connectionAborted && _abortedCts is not null)
             {
-                localAbortCts = _abortedCts;
-                _abortedCts = null;
+                // _connectionAborted is terminal and only set inside the _abortLock, so if it isn't set here,
+                // _abortedCts has not been canceled yet.
+                var resetSuccess = _abortedCts.TryReset();
+                Debug.Assert(resetSuccess);
             }
         }
-
-        localAbortCts?.Dispose();
 
         Output?.Reset();
 
@@ -540,7 +557,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         IncrementRequestHeadersCount();
 
-        // This method should be overriden in specific implementations and the base should be
+        // This method should be overridden in specific implementations and the base should be
         // called to validate the header count.
     }
 
@@ -576,7 +593,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         try
         {
-            // We run the request processing loop in a seperate async method so per connection
+            // We run the request processing loop in a separate async method so per connection
             // exception handling doesn't complicate the generated asm for the loop.
             await ProcessRequests(application);
         }
@@ -760,7 +777,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
                 else if (!HasResponseStarted)
                 {
-                    // If the request was aborted and no response was sent, we use status code 499 for logging                    
+                    // If the request was aborted and no response was sent, we use status code 499 for logging
                     StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
             }
@@ -1234,6 +1251,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
             }
+        }
+
+        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
+        if (_httpVersion == Http.HttpVersion.Http11 &&
+            Method == HttpMethod.Connect &&
+            StatusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         responseHeaders.SetReadOnly();

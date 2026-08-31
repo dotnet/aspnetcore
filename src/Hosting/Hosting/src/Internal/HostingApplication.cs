@@ -17,6 +17,13 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
     private readonly DefaultHttpContextFactory? _defaultHttpContextFactory;
     private readonly HostingApplicationDiagnostics _diagnostics;
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityOpenTelemetryData
+    {
+        get => _diagnostics.SuppressActivityOpenTelemetryData;
+        set => _diagnostics.SuppressActivityOpenTelemetryData = value;
+    }
+
     public HostingApplication(
         RequestDelegate application,
         ILogger logger,

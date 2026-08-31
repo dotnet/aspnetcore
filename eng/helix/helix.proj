@@ -48,7 +48,16 @@
       we intentionally do not do that in this project.
     -->
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
+    <!--
+      Maximum number of small test assemblies grouped into a single Helix work item.
+      20 balances reducing per-work-item overhead (payload upload, machine acquisition,
+      result reporting) against keeping each batch's total runtime well within the
+      work item timeout. Override by setting HelixWorkItemMaxBatchSize.
+    -->
+    <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
+
+  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
@@ -69,15 +78,38 @@
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
 
-    <!-- Grab the tool packages for what HelixTestRunner installs. -->
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+    <!--
+      Tool nupkgs are included dynamically in the RestoreDotnetTools target below because
+      dotnet tool restore must run first to download them into the NuGet package cache.
+    -->
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net10.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net11.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
+
+  <!--
+    Restore dotnet tools so their nupkgs are in the NuGet package cache, then include them
+    in the correlation payload with AsArchive="false" so the Helix SDK ships them as plain files
+    instead of extracting them (nupkgs are zip files and would otherwise be auto-extracted).
+  -->
+  <Target Name="RestoreDotnetTools" BeforeTargets="IncludeAspNetRuntime">
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" />
+    <ItemGroup>
+      <_HelixTestRunnerTool Include="dotnet-dump;dotnet-ef;dotnet-serve" />
+    </ItemGroup>
+    <ResolveDotnetToolPackagePaths
+        ToolManifestPath="$([MSBuild]::NormalizePath('$(RepoRoot)', '.config', 'dotnet-tools.json'))"
+        NuGetPackageRoot="$(NUGET_PACKAGES)"
+        PackageIds="@(_HelixTestRunnerTool)">
+      <Output TaskParameter="ToolPackages" ItemName="_HelixTestRunnerToolPackage" />
+    </ResolveDotnetToolPackagePaths>
+    <ItemGroup>
+      <HelixCorrelationPayload Include="@(_HelixTestRunnerToolPackage)" AsArchive="false" />
+    </ItemGroup>
+    <Warning Text="%(_HelixTestRunnerToolPackage.PackageId) nupkg not found at '%(_HelixTestRunnerToolPackage.Identity)'. HelixTestRunner cannot install the tool."
+        Condition="!Exists('%(_HelixTestRunnerToolPackage.Identity)')" />
+  </Target>
 
   <Choose>
     <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
@@ -170,6 +202,29 @@
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
+  </Target>
+
+  <Target Name="BatchSmallWorkItems" AfterTargets="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' AND '@(HelixWorkItem)' != '' ">
+    <ItemGroup>
+      <_OriginalHelixWorkItem Remove="@(_OriginalHelixWorkItem)" />
+      <_OriginalHelixWorkItem Include="@(HelixWorkItem)" />
+    </ItemGroup>
+
+    <RepoTasks.BatchHelixWorkItems WorkItems="@(_OriginalHelixWorkItem)"
+        MaxBatchSize="$(HelixWorkItemMaxBatchSize)"
+        OutputDirectory="$(OutputPath)"
+        IsWindowsQueue="$(IsWindowsHelixQueue)">
+      <Output TaskParameter="BatchedWorkItems" ItemName="_BatchedHelixWorkItem" />
+      <Output TaskParameter="UnbatchedWorkItems" ItemName="_UnbatchedHelixWorkItem" />
+    </RepoTasks.BatchHelixWorkItems>
+
+    <ItemGroup>
+      <HelixWorkItem Remove="@(HelixWorkItem)" />
+      <HelixWorkItem Include="@(_UnbatchedHelixWorkItem)" />
+      <HelixWorkItem Include="@(_BatchedHelixWorkItem)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Helix work item batching updated @(HelixWorkItem->Count()) work items before submission." />
   </Target>
 
   <!--

@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Module Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Module V2 Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="Runtime IIS ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="Ajoute la prise en charge des applications asp.net core dans IIS."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Module Microsoft ASP.NET Core pour IIS Express"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Module V2 Microsoft ASP.NET Core pour IIS Express"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 ou version ultérieure n’est pas installé."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Un produit incompatible, [CONFLICTING_PRODUCT_NAME], est présent sur cet ordinateur. L’installation de [ProductName] ne peut pas continuer. Pour installer ce produit, utilisez l’option Ajouter/Supprimer des programme dans le Panneau de contrôle pour supprimer [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="AdminRequired" Overridable="yes" Value="Un privilège d’administrateur(-trice) est requis pour installer [ProductName]."/>
+  <String Id="IIS7Only" Overridable="yes" Value="La version 7.0 d’IIS est requise pour utiliser [ProductName]."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="IIS version 7.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="IIS version 7.5 ou ultérieure est nécessaire pour installer [ProductName]."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="IIS version 7 ou 7.5 est nécessaire pour installer [ProductName]."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="IIS version 8.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="La version bêta de [ProductName] a été détectée sur cet ordinateur."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="Une nouvelle version de [ProductName] a été détectée sur cet ordinateur."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="L’installation ne peut pas continuer car une autre instance de [ProductName] est déjà installée sur cet ordinateur. Veuillez la désinstaller d’abord, puis relancez cette installation."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="Les fonctionnalités IIS 7.0 CoreWebEngine et W3SVC doivent être installées pour utiliser [ProductName]."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="La console de gestion IIS doit être installée pour utiliser [ProductName]."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="Veuillez arrêter les services Windows Process Activation Service (WAS) et Web Management Service (WMSvc) avant d’installer [ProductName]. Vous devrez les redémarrer après l’installation de [ProductName]."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="La métabase IIS est requise pour installer [ProductName]."/>
+  <String Id="LaunchCondition_32BIT" Value="La version 64 bits de [ProductName] ne peut pas être installée sur une édition 32 bits de Microsoft Windows."/>
+  <String Id="LaunchCondition_64BIT" Value="La version 32 bits de [ProductName] ne peut pas être installée sur une édition 64 bits de Microsoft Windows."/>
+  <String Id="NetFX2OrGreaterRequired" Value="La version Microsoft .NET Framework 2.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
+  <String Id="NetFX35OrGreaterRequired" Value="La version Microsoft .NET Framework 3.5 ou ultérieure est nécessaire pour installer [ProductName]. Utilisez « Ajouter des fonctionnalités » dans le Gestionnaire de serveur pour installer Microsoft .NET version 3.5."/>
+  <String Id="NetFX4OrGreaterRequired" Value="La version Microsoft .NET Framework 4.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
+  <String Id="NetFX20SP1IsRequired" Value="Veuillez installer Microsoft .NET Framework version 2.0 Service Pack 1 (ou un Service Pack ultérieur) avant d’installer [ProductName]."/>
+  <String Id="WindowsUpdateEnabled" Value="Le service Windows Update (wuauserv) ne peut pas être désactivé, il est requis pour installer [ProductName]."/>
+  <String Id="GetFromOSforWin7" Value="Le composant logiciel enfichable PowerShell fait partie du système d’exploitation Windows. Veuillez l’installer via « Programmes et fonctionnalités » ou le « Gestionnaire de serveur »."/>
+  <String Id="WebPI3OrGreaterRequired" Value="Microsoft Web Platform Installer version 3.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
+
+  <String Id="Error30001" Overridable="yes" Value="Le programme d’installation n’a pas pu détecter la configuration partagée."/>
+  <String Id="Error30002" Overridable="yes" Value="La configuration partagée est activée pour IIS. L’installation de [ProductName] n’est pas prise en charge avec la configuration partagée. Veuillez la désactiver avant d’installer cette fonctionnalité."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="Veuillez arrêter le service de publication World Wide Web (W3SVC) avant d’installer [ProductName]. Vous devrez redémarrer ce service après l’installation."/>
+  <String Id="IISPowershellConsole" Value="Console de gestion IIS PowerShell"/>
+  <String Id="IISPowershellSnapin" Value="Composant logiciel enfichable PowerShell pour IIS"/>
+  <String Id="PowerShellRequired" Value="Le composant logiciel enfichable IIS PowerShell nécessite l’installation de PowerShell v1.0 ou v2.0"/>
+  <String Id="WasAndConfigRequired" Value="Le composant logiciel enfichable IIS PowerShell nécessite que WAS et la configuration soient installés"/>
+  <String Id="TestBogusString" Overridable="yes" Value="Il s’agit d’une chaîne invalide."/>
+
+</WixLocalization>

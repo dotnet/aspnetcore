@@ -1,9 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Components.Endpoints
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <base href="/subdir/" />
+    <BasePath />
 
     <HeadOutlet @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
 </head>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
+    <BasePath />
     <ResourcePreloader />
     @*#if (SampleContent)
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
@@ -46,6 +46,8 @@
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     @*#if (IndividualLocalAuth)
     <script src="@Assets["Components/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
+    <script src="@Assets["Components/Account/Shared/AllAcceptedCredentialsSignal.razor.js"]" type="module"></script>
+    <script src="@Assets["Components/Account/Shared/CurrentUserDetailsSignal.razor.js"]" type="module"></script>
     ##endif*@
 </body>
 

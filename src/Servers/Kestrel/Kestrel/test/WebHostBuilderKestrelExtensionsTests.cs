@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
@@ -26,9 +27,13 @@ public class WebHostBuilderKestrelExtensionsTests
     public void ApplicationServicesNotNullAfterUseKestrelWithoutOptions()
     {
         // Arrange
-        var hostBuilder = new WebHostBuilder()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         hostBuilder.ConfigureServices(services =>
         {
@@ -47,13 +52,17 @@ public class WebHostBuilderKestrelExtensionsTests
     public void ApplicationServicesNotNullDuringUseKestrelWithOptions()
     {
         // Arrange
-        var hostBuilder = new WebHostBuilder()
-            .UseKestrel(options =>
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                // Assert
-                Assert.NotNull(options.ApplicationServices);
-            })
-            .Configure(app => { });
+                webHostBuilder
+                    .UseKestrel(options =>
+                    {
+                        // Assert
+                        Assert.NotNull(options.ApplicationServices);
+                    })
+                    .Configure(app => { });
+            });
 
         // Act
         hostBuilder.Build();
@@ -62,9 +71,13 @@ public class WebHostBuilderKestrelExtensionsTests
     [Fact]
     public void DefaultTransportFactoriesConfigured()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         var transportFactories = hostBuilder.Build().Services.GetServices<IConnectionListenerFactory>();
 
@@ -84,18 +97,26 @@ public class WebHostBuilderKestrelExtensionsTests
     [Fact]
     public void SocketsTransportCanBeManuallySelectedIndependentOfOrder()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseKestrel()
-            .UseSockets()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .UseSockets()
+                    .Configure(app => { });
+            });
 
         var factories = hostBuilder.Build().Services.GetServices<IConnectionListenerFactory>();
         AssertContainsType<SocketTransportFactory, IConnectionListenerFactory>(factories);
 
-        var hostBuilderReversed = new WebHostBuilder()
-            .UseSockets()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilderReversed = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSockets()
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         var factoriesReversed = hostBuilderReversed.Build().Services.GetServices<IConnectionListenerFactory>();
         AssertContainsType<SocketTransportFactory, IConnectionListenerFactory>(factoriesReversed);
@@ -109,10 +130,14 @@ public class WebHostBuilderKestrelExtensionsTests
     [Fact]
     public void ServerIsKestrelServerImpl()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseSockets()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSockets()
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         var server = Assert.IsType<KestrelServerImpl>(hostBuilder.Build().Services.GetService<IServer>());
 
@@ -140,10 +165,14 @@ public class WebHostBuilderKestrelExtensionsTests
     [Fact]
     public void MemoryPoolFactorySetCorrectlyWithSockets()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseSockets()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSockets()
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         var host = hostBuilder.Build();
 
@@ -153,10 +182,14 @@ public class WebHostBuilderKestrelExtensionsTests
         Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
 
         // Swap order of UseKestrel and UseSockets
-        hostBuilder = new WebHostBuilder()
-            .UseKestrel()
-            .UseSockets()
-            .Configure(app => { });
+        hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .UseSockets()
+                    .Configure(app => { });
+            });
 
         host = hostBuilder.Build();
 
@@ -169,9 +202,13 @@ public class WebHostBuilderKestrelExtensionsTests
     [Fact]
     public void SocketsHasDefaultMemoryPool()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseSockets()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSockets()
+                    .Configure(app => { });
+            });
 
         var host = hostBuilder.Build();
 
@@ -186,10 +223,14 @@ public class WebHostBuilderKestrelExtensionsTests
     [NamedPipesSupported]
     public void MemoryPoolFactorySetCorrectlyWithNamedPipes()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseNamedPipes()
-            .UseKestrel()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseNamedPipes()
+                    .UseKestrel()
+                    .Configure(app => { });
+            });
 
         var host = hostBuilder.Build();
 
@@ -199,10 +240,14 @@ public class WebHostBuilderKestrelExtensionsTests
         Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<NamedPipeTransportOptions>>().Value.MemoryPoolFactory);
 
         // Swap order of UseKestrel and UseNamedPipes
-        hostBuilder = new WebHostBuilder()
-            .UseKestrel()
-            .UseNamedPipes()
-            .Configure(app => { });
+        hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .UseNamedPipes()
+                    .Configure(app => { });
+            });
 
         host = hostBuilder.Build();
 
@@ -216,9 +261,13 @@ public class WebHostBuilderKestrelExtensionsTests
     [NamedPipesSupported]
     public void NamedPipesHasDefaultMemoryPool()
     {
-        var hostBuilder = new WebHostBuilder()
-            .UseNamedPipes()
-            .Configure(app => { });
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseNamedPipes()
+                    .Configure(app => { });
+            });
 
         var host = hostBuilder.Build();
 

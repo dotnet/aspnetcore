@@ -22,7 +22,6 @@ public static class MockHelpers
         var services = new ServiceCollection();
         if (meterFactory != null)
         {
-            services.AddSingleton<SignInManagerMetrics>();
             services.AddSingleton(meterFactory);
         }
         if (passkeyHandler != null)
@@ -61,8 +60,6 @@ public static class MockHelpers
         var services = new ServiceCollection();
         if (meterFactory != null)
         {
-            services.AddSingleton<UserManagerMetrics>();
-            services.AddSingleton<SignInManagerMetrics>();
             services.AddSingleton(meterFactory);
         }
         var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),

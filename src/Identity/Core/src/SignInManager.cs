@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -23,6 +25,9 @@ public class SignInManager<TUser> where TUser : class
     private const string XsrfKey = "XsrfId";
     private const string PasskeyOperationKey = "PasskeyOperation";
     private const string PasskeyStateKey = "PasskeyState";
+
+    private static readonly bool AlwaysResetLockoutOnSuccess =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
 
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IAuthenticationSchemeProvider _schemes;
@@ -62,7 +67,8 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
+        // SignInManagerMetrics created from constructor because of difficulties registering internal type.
+        _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
@@ -162,22 +168,27 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+    /// Refreshes the sign-in for the specified <paramref name="user"/>, whilst preserving the existing
     /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
     /// </summary>
-    /// <param name="user">The user to sign-in.</param>
+    /// <remarks>
+    /// The user must already be signed in, and the user ID must match the currently authenticated user.
+    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string?)"/> instead.
+    /// </remarks>
+    /// <param name="user">The user to refresh the sign-in for.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var (success, isPersistent) = await RefreshSignInCoreAsync(user);
             var signInResult = success ? SignInResult.Success : SignInResult.Failed;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent, startTimestamp);
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, startTimestamp, ex);
             throw;
         }
     }
@@ -200,8 +211,8 @@ public class SignInManager<TUser> where TUser : class
         }
 
         IList<Claim> claims = Array.Empty<Claim>();
-        var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-        var amr = auth.Principal?.FindFirst("amr");
+        var authenticationMethod = auth.Principal.FindFirst(ClaimTypes.AuthenticationMethod);
+        var amr = auth.Principal.FindFirst("amr");
 
         if (authenticationMethod != null || amr != null)
         {
@@ -217,7 +228,7 @@ public class SignInManager<TUser> where TUser : class
         }
 
         await SignInWithClaimsAsync(user, auth.Properties, claims);
-        return (true, auth.Properties?.IsPersistent ?? false);
+        return (true, auth.Properties?.IsPersistent);
     }
 
     /// <summary>
@@ -391,6 +402,7 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ArgumentNullException.ThrowIfNull(user);
@@ -399,13 +411,13 @@ public class SignInManager<TUser> where TUser : class
             var result = attempt.Succeeded
                 ? await SignInOrTwoFactorAsync(user, isPersistent)
                 : attempt;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -423,10 +435,11 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         var user = await UserManager.FindByNameAsync(userName);
         if (user == null)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent, startTimestamp);
             return SignInResult.Failed;
         }
 
@@ -469,7 +482,7 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.CheckPasswordAsync(user, password))
         {
-            var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+            var alwaysLockout = AlwaysResetLockoutOnSuccess;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
@@ -508,6 +521,11 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
     /// </summary>
+    /// <remarks>
+    /// When adding a passkey as another credential to an existing account, callers should require the
+    /// user to confirm their identity with a credential the account already holds before calling this method.
+    /// This does not apply when the passkey is the account's initial credential.
+    /// </remarks>
     /// <param name="userEntity">The user entity for which to create passkey options.</param>
     /// <returns>A JSON string representing the created passkey options.</returns>
     public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity)
@@ -535,6 +553,142 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
+    /// generating passkey signal options.
+    /// </summary>
+    /// <remarks>
+    /// Check this before calling <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser)"/> or
+    /// <see cref="MakeCurrentUserDetailsSignalOptionsAsync(TUser, PasskeyUserEntity)"/>, which throw
+    /// when the handler does not support passkey signal options.
+    /// </remarks>
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsPasskeySignalOptions ?? false;
+
+    /// <summary>
+    /// Generates the options used to signal the credentials that are currently registered for a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// JavaScript API, which lets an authenticator stop offering passkeys that were removed from the server.
+    /// </para>
+    /// <para>
+    /// The authenticator treats the signaled list as authoritative: any passkey it holds for this user that is
+    /// not in the list may be hidden or permanently removed. Only call this when the list returned by
+    /// <see cref="UserManager{TUser}.GetPasskeysAsync(TUser)"/> is known to be complete. If a valid credential is
+    /// omitted, signaling a complete list as soon as possible may restore it if the authenticator supports recovery.
+    /// </para>
+    /// <para>
+    /// Because the options reveal how many passkeys a user has, only call this when the user is authenticated.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <returns>A JSON string representing the all accepted credentials signal options.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var result = await _passkeyHandler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates the options used to signal the current details of a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalCurrentUserDetails()</c>
+    /// JavaScript API, which keeps the user's details up to date on the authenticator.
+    /// </para>
+    /// <para>
+    /// Because the options reveal the user's details, only call this when the user is authenticated.
+    /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
+    /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
+    /// otherwise the authenticator will not recognize the user and the signal will have no effect.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose details should be signaled.</param>
+    /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
+    /// <returns>A JSON string representing the current user details signal options.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="user"/> or <paramref name="userEntity"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalCurrentUserDetails?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates options used to signal that a passkey credential is unknown to the server.
+    /// </summary>
+    /// <remarks>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalUnknownCredential()</c>
+    /// JavaScript API. Calling that API permanently deletes the passkey from the browser's passkey provider.
+    /// This method only returns options when no user on the server has the credential.
+    /// </remarks>
+    /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
+    /// <returns>
+    /// A JSON string representing the unknown credential signal options when the credential is unknown to the server,
+    /// otherwise <see langword="null"/>.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="credentialJson"/> is <see langword="null"/> or empty.</exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var result = await _passkeyHandler.MakeUnknownCredentialSignalOptionsAsync(credentialJson, Context);
+        return result?.SignalOptionsJson;
+    }
+
+    /// <summary>
     /// Performs passkey attestation for the given <paramref name="credentialJson"/>.
     /// </summary>
     /// <remarks>
@@ -546,7 +700,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
     /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson)
+    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -590,7 +744,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
     /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson)
+    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -633,30 +787,51 @@ public class SignInManager<TUser> where TUser : class
     /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.
     /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson)
+    public virtual async Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await PasskeySignInCoreAsync(credentialJson);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, startTimestamp, ex);
             throw;
         }
     }
 
     private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson)
     {
+        ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
+        if (passkeyInfo is null)
+        {
+            return SignInResult.Failed;
+        }
+
+        if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
+        }
 
         var assertionResult = await PerformPasskeyAssertionAsync(credentialJson);
         if (!assertionResult.Succeeded)
         {
             return SignInResult.Failed;
+        }
+
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
         }
 
         // After a successful assertion, we need to update the passkey so that it has the latest
@@ -787,16 +962,17 @@ public class SignInManager<TUser> where TUser : class
     /// <returns></returns>
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorRecoveryCodeSignInCoreAsync(recoveryCode);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp, ex);
             throw;
         }
     }
@@ -868,16 +1044,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorAuthenticatorSignInCoreAsync(code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -932,16 +1109,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorSignInCoreAsync(provider, code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -1021,16 +1199,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ExternalLoginSignInCoreAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, startTimestamp, ex);
             throw;
         }
     }

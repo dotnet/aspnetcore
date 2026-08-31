@@ -941,5 +941,130 @@ public class ClientCertificateAuthenticationTests
             return Task.CompletedTask;
         }
     };
+
+    [Fact]
+    public async Task VerifyCacheIsIsolatedAcrossSchemes()
+    {
+        var scheme1ValidationCount = 0;
+        var scheme2ValidationCount = 0;
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+                builder.UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Use((context, next) =>
+                        {
+                            context.Connection.ClientCertificate = Certificates.SelfSignedValidWithNoEku;
+                            return next(context);
+                        });
+
+                        app.UseAuthentication();
+
+                        app.Run(async context =>
+                        {
+                            var schemeName = context.Request.Query["scheme"].ToString();
+                            var result = await context.AuthenticateAsync(schemeName);
+
+                            if (result.Succeeded)
+                            {
+                                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                                context.Response.ContentType = "text/plain";
+                                await context.Response.WriteAsync("Authenticated");
+                            }
+                            else
+                            {
+                                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                                context.Response.ContentType = "text/plain";
+                                await context.Response.WriteAsync("Denied");
+                            }
+                        });
+                    })
+                .ConfigureServices(services =>
+                {
+                    services.AddAuthentication()
+                        .AddCertificate("scheme1", options =>
+                        {
+                            options.AllowedCertificateTypes = CertificateTypes.SelfSigned;
+                            options.Events = new CertificateAuthenticationEvents
+                            {
+                                OnCertificateValidated = context =>
+                                {
+                                    scheme1ValidationCount++;
+                                    context.Principal = new ClaimsPrincipal(
+                                        new ClaimsIdentity(
+                                            [new Claim(ClaimTypes.Name, "scheme1User")],
+                                            context.Scheme.Name));
+                                    context.Success();
+                                    return Task.CompletedTask;
+                                }
+                            };
+                        })
+                        .AddCertificate("scheme2", options =>
+                        {
+                            options.AllowedCertificateTypes = CertificateTypes.SelfSigned;
+                            options.Events = new CertificateAuthenticationEvents
+                            {
+                                OnCertificateValidated = context =>
+                                {
+                                    scheme2ValidationCount++;
+                                    context.Fail("Certificate does not meet scheme2 requirements");
+                                    return Task.CompletedTask;
+                                }
+                            };
+                        })
+                        .AddCertificateCache();
+                }))
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        // 1. Authenticate with the scheme1 — should succeed and cache
+        var response1 = await client.GetAsync("https://example.com/?scheme=scheme1");
+        Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
+        Assert.Equal(1, scheme1ValidationCount);
+
+        // 2. Authenticate with the scheme2 — must NOT reuse the scheme1's cached success
+        var response2 = await client.GetAsync("https://example.com/?scheme=scheme2");
+        Assert.Equal(HttpStatusCode.Forbidden, response2.StatusCode);
+        Assert.Equal(1, scheme2ValidationCount);
+
+        // 3. Authenticate with the scheme1 again — should use the cache (no re-validation)
+        var response3 = await client.GetAsync("https://example.com/?scheme=scheme1");
+        Assert.Equal(HttpStatusCode.OK, response3.StatusCode);
+        Assert.Equal(1, scheme1ValidationCount); // Still 1 — served from cache
+    }
+
+    [Fact]
+    public void VerifyCacheNoOpsWithoutSchemeInHttpContextItems()
+    {
+        var cache = new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()));
+        var certificate = Certificates.SelfSignedValidWithNoEku;
+
+        var httpContext = new DefaultHttpContext();
+        // Do NOT set httpContext.Items[CertificateAuthenticationHandler.CertificateSchemeCacheKeyItem]
+
+        // Put should no-op (no scheme = no cache key)
+        var successResult = AuthenticateResult.Success(
+            new AuthenticationTicket(
+                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "test") }, "test")),
+                "test"));
+        cache.Put(httpContext, certificate, successResult);
+
+        // Get should return null even after Put
+        var cached = cache.Get(httpContext, certificate);
+        Assert.Null(cached);
+
+        // Now set the scheme item — Put and Get should work
+        httpContext.Items[CertificateAuthenticationHandler.CertificateSchemeCacheKeyItem] = "MyScheme";
+        cache.Put(httpContext, certificate, successResult);
+
+        var cachedWithScheme = cache.Get(httpContext, certificate);
+        Assert.NotNull(cachedWithScheme);
+        Assert.True(cachedWithScheme.Succeeded);
+    }
 }
 

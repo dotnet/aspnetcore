@@ -10,56 +10,57 @@
   <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 9.0. -->
   <ItemGroup>
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAppHostPack->Count())' != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
-      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownRuntimePack->Count())' != '0' AND
         !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownFrameworkReference->Count())' != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownILLinkPack
-      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownILLinkPack->Count())' != '0' AND
         !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownILCompilerPack
-      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownILCompilerPack->Count())' != '0' AND
         !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownWebAssemblySdkPack
-      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
         !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownAspNetCorePack
-      Include="@(KnownAspNetCorePack->WithMetadataValue('TargetFramework', 'net9.0'))"
+      Include="@(KnownAspNetCorePack->WithMetadataValue('TargetFramework', 'net10.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
         !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownCrossgen2Pack
+      Include="@(KnownCrossgen2Pack->WithMetadataValue('TargetFramework', 'net10.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownCrossgen2Pack->Count())' != '0' AND
+        !(@(KnownCrossgen2Pack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
     <!--
       Reference base shared framework at incoming dependency flow version, not bundled sdk version.
-      Apply this to all projects that target the default tfm (e.g. net9.0) or a rid-based variant of it (e.g. net9.0-windows)
+      Apply this to all projects that target the default tfm (e.g. net10.0) or a rid-based variant of it (e.g. net10.0-windows)
     -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRefVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
-
-    <PackageReference Include="Microsoft.DotNet.ILCompiler"
-      Condition=" '$(PublishAot)' == 'true' "
-      Version="${MicrosoftNETCoreAppRefVersion}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -117,6 +118,11 @@
       <ILLinkPackVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</ILLinkPackVersion>
     </KnownILLinkPack>
+
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
+      <ILCompilerPackVersion
+        Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'">${MicrosoftNETCoreAppRefVersion}</ILCompilerPackVersion>
+    </KnownILCompilerPack>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App" Condition=" $(UpdateAspNetCoreKnownFramework) ">

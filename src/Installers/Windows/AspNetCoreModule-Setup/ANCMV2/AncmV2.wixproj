@@ -1,40 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>AspNetCoreModuleV2</Name>
     <IsShipping>true</IsShipping>
     <ProjectGuid>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</ProjectGuid>
     <OutputType>Package</OutputType>
-    <OutputName>$(Name)_$(Platform)</OutputName>
+    <OutputName>aspnetcoremodule_$(Platform)_en_v2_$(_ProductVersionForInstallers)</OutputName>
     <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
+    <!-- We import D.B.T ourselves in this file -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ANCMDepProviderKey Condition="'$(Platform)' == 'x86'">IIS_AspNetCore_Module_V2,x86</ANCMDepProviderKey>
+    <ANCMDepProviderKey Condition="'$(Platform)' != 'x86'">IIS_AspNetCore_Module_V2,x64</ANCMDepProviderKey>
+    <DefineConstants>$(DefineConstants);ANCMDepProviderKey=$(ANCMDepProviderKey)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixDependencyExtension">
-      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
-      <Name>WixDependencyExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
-    </WixExtension>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="aspnetcoremodulev2.wxs" />
-    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+    <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>
-    <EmbeddedResource Include="..\setupstrings.wxl">
+    <EmbeddedResource Include="..\LCID\1033\setupstrings.wxl">
       <Link>setupstrings.wxl</Link>
     </EmbeddedResource>
     <Content Include="$(IIS-Setup)include.wxi">
@@ -53,11 +43,12 @@
     </ProjectReference>
   </ItemGroup>
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>aspnetcoremodule_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <ProductNameShort>ASP.NET Core Module V2</ProductNameShort>
   </PropertyGroup>
 
@@ -69,7 +60,6 @@
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
-                      '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
@@ -79,7 +69,8 @@
                       '$(AspNetCoreMinorVersion)' ^
                       '$(PackageIcon)' ^
                       '$(PackageIconFullPath)' ^
-                      '$(PackageLicenseExpression)' " />
+                      '$(PackageLicenseExpression)' ^
+                      '$(DotNetTool)' " />
   </Target>
   
   <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64'">

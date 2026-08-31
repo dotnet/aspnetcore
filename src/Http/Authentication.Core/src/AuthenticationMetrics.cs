@@ -31,22 +31,22 @@ internal sealed class AuthenticationMetrics
 
         _challengeCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.challenges",
-            unit: "{request}",
+            unit: "{challenge}",
             description: "The total number of times a scheme is challenged.");
 
         _forbidCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.forbids",
-            unit: "{request}",
+            unit: "{forbid}",
             description: "The total number of times an authenticated user attempts to access a resource they are not permitted to access.");
 
         _signInCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_ins",
-            unit: "{request}",
+            unit: "{sign_in}",
             description: "The total number of times a principal is signed in with a scheme.");
 
         _signOutCount = _meter.CreateCounter<long>(
             "aspnetcore.authentication.sign_outs",
-            unit: "{request}",
+            unit: "{sign_out}",
             description: "The total number of times a principal is signed out with a scheme.");
     }
 

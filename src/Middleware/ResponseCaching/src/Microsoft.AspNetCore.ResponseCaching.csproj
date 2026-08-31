@@ -12,15 +12,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
     <Compile Include="$(RepoRoot)src\Shared\SegmentWriteStream.cs" Link="Streams\SegmentWriteStream.cs" />
   </ItemGroup>
 

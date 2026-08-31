@@ -33,7 +33,6 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     [Theory]
     [InlineData("server")]
     [InlineData("webassembly")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57766")]
     public void CanUseAntiforgeryAfterInitialRender(string target)
     {
         Navigate($"{ServerPathBase}/{target}-antiforgery-form");
@@ -47,7 +46,6 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         var submit = Browser.Exists(By.Id("submit"));
         submit.Click();
 
-        var result = Browser.Exists(By.Id("result"));
-        Browser.Equal("Test", () => result.Text);
+        Browser.Equal("Test", () => Browser.FindElement(By.Id("result")).Text);
     }
 }

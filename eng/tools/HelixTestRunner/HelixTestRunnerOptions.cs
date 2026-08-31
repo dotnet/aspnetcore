@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -19,8 +20,13 @@ public class HelixTestRunnerOptions
         {
             new Option(
                 aliases: new string[] { "--target", "-t" },
-                description: "The test dll to run")
-                { Argument = new Argument<string>(), Required = true },
+                description: "One or more test dlls to run")
+                { Argument = new Argument<string[]>() { Arity = ArgumentArity.OneOrMore }, Required = false },
+
+            new Option(
+                aliases: new string[] { "--targets-file" },
+                description: "A file containing one test dll path per line")
+                { Argument = new Argument<string>(), Required = false },
 
             new Option(
                 aliases: new string[] { "--runtime" },
@@ -60,6 +66,26 @@ public class HelixTestRunnerOptions
 
         var parseResult = command.Parse(args);
         var sharedFxVersion = parseResult.ValueForOption<string>("--runtime");
+        var targets = new List<string>();
+        var commandLineTargets = parseResult.ValueForOption<string[]>("--target");
+        if (commandLineTargets is not null)
+        {
+            targets.AddRange(commandLineTargets.Where(target => !string.IsNullOrWhiteSpace(target)));
+        }
+
+        var targetsFile = parseResult.ValueForOption<string>("--targets-file");
+        if (!string.IsNullOrWhiteSpace(targetsFile))
+        {
+            targets.AddRange(File.ReadLines(targetsFile)
+                .Select(line => line.Trim())
+                .Where(line => !string.IsNullOrWhiteSpace(line)));
+        }
+
+        if (targets.Count == 0)
+        {
+            throw new InvalidOperationException("At least one --target or --targets-file argument must be provided.");
+        }
+
         var options = new HelixTestRunnerOptions
         {
             Architecture = parseResult.ValueForOption<string>("--arch"),
@@ -67,7 +93,8 @@ public class HelixTestRunnerOptions
             InstallPlaywright = parseResult.ValueForOption<bool>("--playwright"),
             Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
             RuntimeVersion = sharedFxVersion,
-            Target = parseResult.ValueForOption<string>("--target"),
+            Targets = targets.ToArray(),
+            TargetsFile = targetsFile,
             Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"), CultureInfo.InvariantCulture),
 
             // When targeting pack builds, it has exactly the same version as the shared framework.
@@ -87,7 +114,8 @@ public class HelixTestRunnerOptions
     public bool InstallPlaywright { get; private set; }
     public bool Quarantined { get; private set; }
     public string RuntimeVersion { get; private set; }
-    public string Target { get; private set; }
+    public string[] Targets { get; private set; }
+    public string TargetsFile { get; private set; }
     public TimeSpan Timeout { get; private set; }
 
     public string AspNetRef { get; private set; }

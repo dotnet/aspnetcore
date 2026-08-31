@@ -24,6 +24,7 @@ internal sealed class OutputCacheMiddleware
     private readonly ILogger _logger;
     private readonly IOutputCacheStore _store;
     private readonly IOutputCacheKeyProvider _keyProvider;
+    private readonly IOutputCachePolicyProvider _policyProvider;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
@@ -35,18 +36,21 @@ internal sealed class OutputCacheMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="outputCache">The <see cref="IOutputCacheStore"/> store.</param>
     /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/> instances.</param>
+    /// <param name="policyProvider">The <see cref="IOutputCachePolicyProvider"/> used to resolve cache policies.</param>
     public OutputCacheMiddleware(
         RequestDelegate next,
         IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore outputCache,
-        ObjectPoolProvider poolProvider
+        ObjectPoolProvider poolProvider,
+        IOutputCachePolicyProvider policyProvider
         )
         : this(
             next,
             options,
             loggerFactory,
             outputCache,
+            policyProvider,
             new OutputCacheKeyProvider(poolProvider, options))
     { }
 
@@ -56,18 +60,21 @@ internal sealed class OutputCacheMiddleware
         IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore cache,
+        IOutputCachePolicyProvider policyProvider,
         IOutputCacheKeyProvider keyProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(policyProvider);
         ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
         _store = cache;
+        _policyProvider = policyProvider;
         _keyProvider = keyProvider;
         _outputCacheEntryDispatcher = new();
         _requestDispatcher = new();
@@ -133,7 +140,7 @@ internal sealed class OutputCacheMiddleware
 
                     var executed = false;
 
-                    if (context.AllowLocking)
+                    if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
                         var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
 
@@ -160,6 +167,8 @@ internal sealed class OutputCacheMiddleware
                         // Hook up to listen to the response stream
                         ShimResponseStream(context);
 
+                        var isResponseCached = false;
+
                         try
                         {
                             await _next(httpContext);
@@ -174,7 +183,7 @@ internal sealed class OutputCacheMiddleware
                             StartResponse(context);
 
                             // Finalize the cache entry
-                            await FinalizeCacheBodyAsync(context);
+                            isResponseCached = await FinalizeCacheBodyAsync(context);
 
                             executed = true;
                         }
@@ -183,9 +192,8 @@ internal sealed class OutputCacheMiddleware
                             UnshimResponseStream(context);
                         }
 
-                        // If the policies prevented this response from being cached we can't reuse it for other
-                        // pending requests
-                        if (!context.AllowCacheStorage)
+                        // If the response wasn't cached, we can't reuse it for other pending requests
+                        if (!isResponseCached)
                         {
                             context.ReleaseCachedResponse();
                         }
@@ -217,10 +225,11 @@ internal sealed class OutputCacheMiddleware
         policies = Array.Empty<IOutputCachePolicy>();
         List<IOutputCachePolicy>? result = null;
 
-        if (_options.BasePolicies != null)
+        var basePolicies = _policyProvider.GetBasePolicies();
+        if (basePolicies.Count > 0)
         {
             result = new();
-            result.AddRange(_options.BasePolicies);
+            result.AddRange(basePolicies);
         }
 
         var metadata = httpContext.GetEndpoint()?.Metadata;
@@ -268,13 +277,6 @@ internal sealed class OutputCacheMiddleware
         }
 
         context.IsCacheEntryFresh = true;
-
-        // Validate expiration
-        if (context.CachedEntryAge <= TimeSpan.Zero)
-        {
-            _logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
-            context.IsCacheEntryFresh = false;
-        }
 
         var cachedResponse = context.CachedResponse;
         if (context.IsCacheEntryFresh)
@@ -411,12 +413,15 @@ internal sealed class OutputCacheMiddleware
     }
 
     /// <summary>
-    /// Stores the response body
+    /// Attempts to store the response body.
     /// </summary>
-    internal async ValueTask FinalizeCacheBodyAsync(OutputCacheContext context)
+    /// <param name="context">The <see cref="OutputCacheContext"/>.</param>
+    /// <returns><c>true</c> if the response was cached; otherwise <c>false</c>.</returns>
+    internal async ValueTask<bool> FinalizeCacheBodyAsync(OutputCacheContext context)
     {
         if (context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled
-            && context.CachedResponse is not null)
+            && context.CachedResponse is not null
+            && !context.HttpContext.RequestAborted.IsCancellationRequested)
         {
             // If AllowCacheLookup is false, the cache key was not created
             CreateCacheKey(context);
@@ -441,6 +446,8 @@ internal sealed class OutputCacheMiddleware
 
                     await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.Tags, context.CachedResponseValidFor,
                         _store, _logger, context.HttpContext.RequestAborted);
+
+                    return true;
                 }
             }
             else
@@ -452,6 +459,8 @@ internal sealed class OutputCacheMiddleware
         {
             _logger.ResponseNotCached();
         }
+
+        return false;
     }
 
     /// <summary>

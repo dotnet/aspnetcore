@@ -9,18 +9,20 @@
 
   <!-- Additional parameters for Light/Candle-->
   <PropertyGroup>
-    <LinkerAdditionalOptions>-fv</LinkerAdditionalOptions>
     <SuppressIces>ICE61</SuppressIces>
     <SuppressWarnings>1033</SuppressWarnings>
+    <!-- Currently, WiX only supports 'full' for the -pdbType option. This affects both bundle and package projects. -->
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
-    <HostOptionsName>WindowsServerHostingBundleOptions</HostOptionsName>
+    <HostOptionsNameShort>AspNetCore.HostOptions</HostOptionsNameShort>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THESE. -->
     <HostingBundleNamespaceGuid>E1FD1271-E0F0-4B8B-B4BE-01F2EBA58F4E</HostingBundleNamespaceGuid>
     <SharedFrameworkNamespaceGuid>C43D5520-11B3-4D62-B6FE-5D6840B04101</SharedFrameworkNamespaceGuid>
+    <ANCMNamespaceGuid>EC59D6F5-B7E6-4E46-A617-EC8329960614</ANCMNamespaceGuid>
   </PropertyGroup>
 
   <PropertyGroup>

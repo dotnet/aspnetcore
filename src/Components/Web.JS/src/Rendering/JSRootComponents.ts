@@ -10,7 +10,9 @@ let nextPendingDynamicRootComponentIdentifier = 0;
 type ComponentParameters = object | null | undefined;
 
 let manager: DotNet.DotNetObject | undefined;
+let currentRendererId: number | undefined;
 let jsComponentParametersByIdentifier: JSComponentParametersByIdentifier;
+let hasInitializedJsComponents = false;
 
 // These are the public APIs at Blazor.rootComponents.*
 export const RootComponentsFunctions = {
@@ -116,28 +118,38 @@ class DynamicRootComponent {
 
 // Called by the framework
 export function enableJSRootComponents(
+  rendererId: number,
   managerInstance: DotNet.DotNetObject,
   jsComponentParameters: JSComponentParametersByIdentifier,
   jsComponentInitializers: JSComponentIdentifiersByInitializer
 ): void {
-  if (manager) {
-    // This will only happen in very nonstandard cases where someone has multiple hosts.
-    // It's up to the developer to ensure that only one of them enables dynamic root components.
+  if (manager && currentRendererId !== rendererId) {
+    // A different renderer type (e.g., Server vs WebAssembly) is trying to enable JS root components.
+    // This is a multi-host scenario which is not supported for dynamic root components.
     throw new Error('Dynamic root components have already been enabled.');
   }
 
+  // When the same renderer type re-enables (e.g., circuit restart or new circuit on same page),
+  // accept the new manager. The old manager's DotNetObjectReference is no longer valid anyway
+  // because the old circuit is gone. We don't dispose the old manager - doing so would cause
+  // JSDisconnectedException because the circuit that created it no longer exists.
+  currentRendererId = rendererId;
   manager = managerInstance;
   jsComponentParametersByIdentifier = jsComponentParameters;
 
-  // Call the registered initializers. This is an arbitrary subset of the JS component types that are registered
-  // on the .NET side - just those of them that require some JS-side initialization (e.g., to register them
-  // as custom elements).
-  for (const [initializerIdentifier, componentIdentifiers] of Object.entries(jsComponentInitializers)) {
-    const initializerFunc = DotNet.findJSFunction(initializerIdentifier, 0) as JSComponentInitializerCallback;
-    for (const componentIdentifier of componentIdentifiers) {
-      const parameters = jsComponentParameters[componentIdentifier];
-      initializerFunc(componentIdentifier, parameters);
+  if (!hasInitializedJsComponents) {
+    // Call the registered initializers. This is an arbitrary subset of the JS component types that are registered
+    // on the .NET side - just those of them that require some JS-side initialization (e.g., to register them
+    // as custom elements).
+    for (const [initializerIdentifier, componentIdentifiers] of Object.entries(jsComponentInitializers)) {
+      const initializerFunc = DotNet.findJSFunction(initializerIdentifier, 0) as JSComponentInitializerCallback;
+      for (const componentIdentifier of componentIdentifiers) {
+        const parameters = jsComponentParameters[componentIdentifier];
+        initializerFunc(componentIdentifier, parameters);
+      }
     }
+
+    hasInitializedJsComponents = true;
   }
 }
 

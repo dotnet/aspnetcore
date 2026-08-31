@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -25,12 +26,13 @@ public class TestingInfrastructureInheritanceTests
 
         // Assert
         Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-        Assert.True(factory.CreateServerCalled);
-        Assert.False(factory.CreateWebHostBuilderCalled);
+        Assert.True(factory.CreateServerIWebHostBuilderCalled);
+        Assert.False(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
         // GetTestAssemblies is not called when reading content roots from MvcAppManifest
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
-        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateHostCalled);
     }
 
     [Fact]
@@ -48,7 +50,8 @@ public class TestingInfrastructureInheritanceTests
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
         Assert.True(factory.CreateHostCalled);
-        Assert.True(factory.CreateServerCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
         Assert.False(factory.CreateWebHostBuilderCalled);
     }
 
@@ -61,6 +64,17 @@ public class TestingInfrastructureInheritanceTests
         // Assert
         Assert.NotNull(factory.Services);
         Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+    }
+
+    [Fact]
+    public void TestingInfrastructure_GenericHost_WithConfigureHostConfigurationOverride_Should_Throw()
+    {
+        // Act
+        using var factory = new CustomizedFactoryWithConfigureWebApplicationBuilder<GenericHostWebSite.Startup>();
+
+        // Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => factory.Services);
+        Assert.Equal("Overriding 'ConfigureWebApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.", ex.Message);
     }
 
     [Fact]
@@ -108,6 +122,42 @@ public class TestingInfrastructureInheritanceTests
         Assert.True(sink._asyncDisposed);
     }
 
+    [Fact]
+    public void TestingInfrastructure_WebApplicationBuilder_RespectsCustomizations()
+    {
+        // Arrange
+        using var factory = new CustomizedFactory<SimpleWebSiteWithWebApplicationBuilder.Program>();
+        factory.StartServer();
+
+        // Assert
+        Assert.Equal(["ConfigureWebHost"], factory.ConfigureWebHostCalled.ToArray());
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
+    }
+
+    [Fact]
+    public async Task TestingInfrastructure_WebApplicationBuilder_EarlyConfiguration()
+    {
+        // Arrange
+        using var factory = new CustomizedFactoryWithConfigureWebApplicationBuilder<SimpleWebSiteWithWebApplicationBuilder.Program>();
+        var client = factory.CreateClient();
+
+        // Assert
+        Assert.Equal(["ConfigureWebHost"], factory.ConfigureWebHostCalled.ToArray());
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
+
+        Assert.Equal("1", await client.GetStringAsync("/assert-early"));
+    }
+
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<GenericHostWebSite.Startup>()
         .ConfigureServices(s => s.AddScoped<DisposableService>());
@@ -126,12 +176,32 @@ public class TestingInfrastructureInheritanceTests
         }
     }
 
+    private class CustomizedFactoryWithConfigureWebApplicationBuilder<TEntryPoint> : CustomizedFactory<TEntryPoint> where TEntryPoint : class
+    {
+        protected override void ConfigureWebApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+        {
+            hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
+            base.ConfigureWebApplicationBuilder(hostApplicationBuilder);
+        }
+
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            builder.ConfigureHostConfiguration(configuration =>
+            {
+                configuration.AddInMemoryCollection([new KeyValuePair<string, string>("ASSERT_EARLY_DUMMY_CONFIGURATION_AVAILABLE", "1")]);
+            });
+
+            return base.CreateHost(builder);
+        }
+    }
+
     private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
     {
         public bool GetTestAssembliesCalled { get; private set; }
         public bool CreateWebHostBuilderCalled { get; private set; }
         public bool CreateHostBuilderCalled { get; private set; }
-        public bool CreateServerCalled { get; private set; }
+        public bool CreateServerIWebHostBuilderCalled { get; private set; }
+        public bool CreateServerWithServiceProviderCalled { get; private set; }
         public bool CreateHostCalled { get; private set; }
         public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
 
@@ -141,15 +211,19 @@ public class TestingInfrastructureInheritanceTests
             base.ConfigureWebHost(builder);
         }
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+#pragma warning disable CS0672 // Member overrides obsolete member
         protected override TestServer CreateServer(IWebHostBuilder builder)
+#pragma warning restore CS0672 // Member overrides obsolete member
         {
-            CreateServerCalled = true;
+            CreateServerIWebHostBuilderCalled = true;
             return base.CreateServer(builder);
         }
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider)
         {
-            CreateServerCalled = true;
+            CreateServerWithServiceProviderCalled = true;
             return base.CreateServer(serviceProvider);
         }
 
@@ -176,5 +250,16 @@ public class TestingInfrastructureInheritanceTests
             GetTestAssembliesCalled = true;
             return base.GetTestAssemblies();
         }
+    }
+
+    private sealed class MyCustomConfigSource : ConfigurationProvider, IConfigurationSource
+    {
+        public MyCustomConfigSource()
+        {
+            Data.Add("PingEarlyConfig", "PongEarlyConfig");
+        }
+
+        public IConfigurationProvider Build(IConfigurationBuilder builder)
+            => this;
     }
 }

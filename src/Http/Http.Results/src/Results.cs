@@ -821,7 +821,9 @@ public static partial class Results
         {
             foreach (var extension in extensions)
             {
-                problemDetails.Extensions.Add(extension);
+                // Use the indexer so duplicate keys overwrite earlier values instead of throwing,
+                // consistent with ControllerBase.Problem and ControllerBase.ValidationProblem.
+                problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
     }
@@ -1025,7 +1027,7 @@ public static partial class Results
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static IResult Empty { get; } = TypedResults.Empty;
+    public static IResult Empty => EmptyHttpResult.Instance;
 
     /// <summary>
     /// Provides a container for external libraries to extend

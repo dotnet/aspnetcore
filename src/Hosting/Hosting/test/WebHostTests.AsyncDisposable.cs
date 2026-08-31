@@ -11,6 +11,7 @@ public partial class WebHostTests
     public async Task DisposingHostCallsDisposeAsyncOnProvider()
     {
         var providerFactory = new AsyncServiceProviderFactory();
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         using (var host = CreateBuilder()
             .UseFakeServer()
             .ConfigureServices((context, services) =>
@@ -18,6 +19,7 @@ public partial class WebHostTests
                 ))
             .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
             .Build())
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
         {
             await host.StartAsync();
 

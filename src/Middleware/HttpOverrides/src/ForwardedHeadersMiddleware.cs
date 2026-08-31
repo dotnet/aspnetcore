@@ -213,11 +213,7 @@ public class ForwardedHeadersMiddleware
             // Host and Scheme initial values are never inspected, no need to set them here.
         };
 
-        var checkKnownIps = _options.KnownIPNetworks.Count > 0
-#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
-            || _options.KnownNetworks.Count > 0
-#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
-            || _options.KnownProxies.Count > 0;
+        var checkKnownIps = _options.KnownIPNetworks.Count > 0 || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
@@ -262,7 +258,7 @@ public class ForwardedHeadersMiddleware
 
             if (checkProto)
             {
-                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) < 0)
+                if (!string.IsNullOrEmpty(set.Scheme) && !set.Scheme.ContainsAnyExcept(SchemeChars))
                 {
                     applyChanges = true;
                     currentValues.Scheme = set.Scheme;
@@ -410,15 +406,6 @@ public class ForwardedHeadersMiddleware
                 return true;
             }
         }
-#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
-        foreach (var network in _options.KnownNetworks)
-        {
-            if (network.Contains(address))
-            {
-                return true;
-            }
-        }
-#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
         return false;
     }
 
@@ -488,7 +475,7 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+        return !hostText.AsSpan(offset + 1).ContainsAnyExceptInRange('0', '9');
     }
 
     private static string[] TruncateConsumedHeaderValues(string[] forwarded, int entriesConsumed)

@@ -12,7 +12,6 @@ The requirements that led to this system are:
 
 * Versions of external dependencies should be consistent and easily discovered.
 * Newer versions of packages should not have lower dependency versions than previous releases.
-* Minimize the cascading effect of servicing updates where possible by keeping a consistent baseline of dependencies.
 * Servicing releases should not add or remove dependencies in existing packages.
 
 As a minor point, the current system also makes our project files somewhat less verbose.
@@ -23,17 +22,15 @@ As a minor point, the current system also makes our project files somewhat less 
 * Do not use `<PackageReference>`.
 * If you need to use a new package, add it to `eng/Dependencies.props` and `eng/Versions.props`.
 * If the package comes from a partner team and needs to have versions automatically updated, also add an entry `eng/Version.Details.xml`.
+* Otherwise, add the package to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) so Dependabot can find and update it. See the README next to that file for details.
 * Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
 * Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) when adding new projects
-* Use [eng/tools/BaseLineGenerator/](/eng/tools/BaselineGenerator/README.md) if you need to update baselines.
-* If you need to make a breaking change to dependencies, you may need to add `<SuppressBaselineReference>`.
 
 ## Important files
 
-* [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch.
-  It should be modified and used to update the generated file, [eng/Baseline.Designer.props](eng/Baseline.Designer.props).
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
+* [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) - restates non-Maestro-managed packages from `eng/Dependencies.props` as ordinary `<PackageReference>` items so Dependabot can find and update them. Never built.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
@@ -85,20 +82,10 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 
         The attribute value should be `"Microsoft.CodeAnalysis.Razor"` for dotnet/runtime dependencies in
         dotnet/aspnetcore-tooling.
-
-## Example: make a breaking change to references
-
-If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.Orange`, but in 3.1 or 5.0 this reference
-is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make these changes to the .csproj file
-
-```diff
-<!-- in Microsoft.AspNetCore.Banana.csproj -->
-  <ItemGroup>
--    <Reference Include="Microsoft.AspNetCore.Orange" /> <!-- the old dependency -->
-+    <Reference Include="Microsoft.AspNetCore.BetterThanOrange" /> <!-- the new dependency -->
-+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Orange" /> <!-- suppress as a known breaking change -->
-  </ItemGroup>
-```
+4. Otherwise (no Maestro automation), add `<PackageReference Include="System.Banana" Version="$(SystemBananaVersion)" />`
+   to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj)
+   so Dependabot can find and update it. `CodeCheck.ps1` fails if this file isn't kept in sync with
+   `eng/Dependencies.props`.
 
 ## A darc cheatsheet
 

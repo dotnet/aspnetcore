@@ -100,5 +100,6 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status201Created, ContentTypeConstants.ApplicationJsonContentTypes));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

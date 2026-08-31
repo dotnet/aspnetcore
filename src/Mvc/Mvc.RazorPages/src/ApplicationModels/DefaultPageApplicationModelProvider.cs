@@ -94,7 +94,7 @@ internal sealed class DefaultPageApplicationModelProvider : IPageApplicationMode
 
             // If a PageModel is specified, combine the attributes specified on the Page and the Model type.
             // Attributes that appear earlier in the are more significant. In this case, we'll treat attributes on the model (code)
-            // to be more signficant than the page (code-generated).
+            // to be more significant than the page (code-generated).
             handlerTypeAttributes = modelTypeInfo.GetCustomAttributes(inherit: true).Concat(pageTypeAttributes).ToArray();
         }
         else

@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Modul Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Modul Microsoft ASP.NET Core V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS Runtime"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="Přidá do služby IIS podporu aplikace asp.net core."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Modul Microsoft ASP.NET Core pro IIS Express"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Modul Microsoft ASP.NET Core V2 pro IIS Express"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="Není nainstalovaná služba IIS Express 8.0 nebo novější."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Na tomto počítači je nekompatibilní produkt [CONFLICTING_PRODUCT_NAME]. Instalace produktu [ProductName] nemůže pokračovat. Chcete-li tento produkt nainstalovat, odeberte [CONFLICTING_PRODUCT_NAME] pomocí možnosti Přidat/Odebrat programy v Ovládacích panelech."/>
+  <String Id="AdminRequired" Overridable="yes" Value="Instalace produktu [ProductName] vyžaduje oprávnění správce."/>
+  <String Id="IIS7Only" Overridable="yes" Value="K použití produktu [ProductName] je vyžadována služba IIS verze 7.0."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="K instalaci [ProductName] je vyžadována služba IIS verze 7.0 nebo novější."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="K instalaci [ProductName] je vyžadována služba IIS verze 7.5 nebo novější."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="K instalaci [ProductName] je vyžadována služba IIS verze 7 nebo 7.5."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="K instalaci [ProductName] je vyžadována služba IIS verze 8.0 nebo novější."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="Na tomto počítači byla nalezena beta verze produktu [ProductName]."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="Na tomto počítači byla nalezena novější verze produktu [ProductName]."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="Instalace nemůže pokračovat, protože je na tomto počítači již nainstalována jiná instance produktu [ProductName]. Nejprve ji odinstalujte a pak tuto instalaci spusťte znovu."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="Pro používání produktu [ProductName] musí být nainstalované funkce IIS 7.0 CoreWebEngine a W3SVC."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="Aby bylo možné používat produkt [ProductName], musí být nainstalovaná konzola pro správu služby IIS."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="Před instalací produktu [ProductName] zastavte jak Aktivační službu procesů systému Windows (WAS), tak Službu webové správy služby IIS (WMSvc). Po instalaci produktu [ProductName] budete muset služby spustit."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="Instalace produktu [ProductName] vyžaduje metabázi služby IIS."/>
+  <String Id="LaunchCondition_32BIT" Value="64bitovou verzi produktu [ProductName] nelze nainstalovat v 32bitové edici systému Microsoft Windows."/>
+  <String Id="LaunchCondition_64BIT" Value="32bitovou verzi produktu [ProductName] nelze nainstalovat v 64bitové edici systému Microsoft Windows."/>
+  <String Id="NetFX2OrGreaterRequired" Value="Instalace produktu [ProductName] vyžaduje Microsoft .NET Framework verze 2.0 nebo vyšší."/>
+  <String Id="NetFX35OrGreaterRequired" Value="Instalace produktu [ProductName] vyžaduje Microsoft .NET Framework verze 3.5 nebo vyšší. Pro instalaci Microsoft .NET verze 3.5 použijte možnost Přidat funkce ve Správci serveru."/>
+  <String Id="NetFX4OrGreaterRequired" Value="Instalace produktu [ProductName] vyžaduje Microsoft .NET Framework verze 4.0 nebo vyšší."/>
+  <String Id="NetFX20SP1IsRequired" Value="Před instalací produktu [ProductName] nainstalujte Microsoft .NET Framework verze 2.0 Service Pack 1 (nebo novější aktualizaci Service Pack)."/>
+  <String Id="WindowsUpdateEnabled" Value="Službu Windows Update (wuauserv) nelze zakázat, je vyžadována k instalaci produktu [ProductName]."/>
+  <String Id="GetFromOSforWin7" Value="Modul snap-in pro PowerShell je součástí operačního systému Windows. Nainstalujte ho prosím přes Programy a funkce nebo Správce serveru."/>
+  <String Id="WebPI3OrGreaterRequired" Value="K instalaci produktu [ProductName] se vyžaduje Instalace webové platformy Microsoft verze 3.0 nebo vyšší."/>
+
+  <String Id="Error30001" Overridable="yes" Value="Instalační program nezjistil sdílenou konfiguraci."/>
+  <String Id="Error30002" Overridable="yes" Value="Sdílená konfigurace je pro službu IIS povolená. Instalace produktu [ProductName] není při použití sdílené konfigurace podporována. Před instalací této funkce prosím sdílenou konfiguraci zakažte."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="Před instalací produktu [ProductName] zastavte Službu publikování na webu (W3SVC). Po instalaci budete muset službu spustit."/>
+  <String Id="IISPowershellConsole" Value="Konzola pro správu prostředí PowerShell služby IIS"/>
+  <String Id="IISPowershellSnapin" Value="Modul snap-in pro PowerShell služby IIS"/>
+  <String Id="PowerShellRequired" Value="Modul snap-in pro PowerShell služby IIS vyžaduje nainstalované Prostředí PowerShell verze 1.0 nebo 2.0."/>
+  <String Id="WasAndConfigRequired" Value="Modul snap-in pro PowerShell služby IIS vyžaduje službu WAS a nainstalovanou konfiguraci."/>
+  <String Id="TestBogusString" Overridable="yes" Value="Toto je falešný řetězec."/>
+
+</WixLocalization>

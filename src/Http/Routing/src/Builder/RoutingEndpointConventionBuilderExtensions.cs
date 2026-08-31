@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -22,6 +23,20 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// An empty collection means any host will be accepted.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    /// <remarks>
+    /// APIs that depend on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, including
+    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to client spoofing.
+    ///
+    /// To safeguard against host and port spoofing:
+    /// <list type="bullet">
+    /// <item><description>
+    /// Verify the server name used during the TLS handshake using <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see>.
+    /// </description></item>
+    /// <item><description>
+    /// Verify the local port where the connection was accepted using <see cref="HttpContext.Connection"/> (specifically <see cref="ConnectionInfo.LocalPort"/>).
+    /// </description></item>
+    /// </list>
+    /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -167,7 +182,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// on the target <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>>.</param>
+    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
     /// <param name="maxRecursionDepth">The maximum depth allowed when recursively mapping form data. Defaults to 64.</param>
     /// <param name="maxKeySize">The maximum size of the buffer used to read form data keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/></param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
@@ -184,7 +199,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Configures <see cref="FormOptionsMetadata"/> for all endpoints produced
+    /// Configures <see cref="IFormOptionsMetadata"/> for all endpoints produced
     /// on the target <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
@@ -192,8 +207,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <param name="memoryBufferThreshold">Configures how many bytes of the body will be buffered in memory. Defaults to 65,536 bytes, which is approximately 64KB.</param>
     /// <param name="bufferBodyLengthLimit">Limit for the total number of bytes that will be buffered. Defaults to 128MB.</param>
     /// <param name="valueCountLimit">Limit for the number of form entries to allow. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
-    /// <param name="keyLengthLimit">Limit on the length of individual keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/>.</param>
-    /// <param name="valueLengthLimit">Limit on the length of individual form values. Defaults to <see cref="FormReader.DefaultValueLengthLimit"/>.</param>
+    /// <param name="keyLengthLimit">Limit on the length of individual keys for <c>application/x-www-form-urlencoded</c> forms. For <c>multipart/form-data</c> forms, the length of a key is limited by <paramref name="multipartHeadersLengthLimit"/>. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/>.</param>
+    /// <param name="valueLengthLimit">Limit on the length of individual form values for <c>application/x-www-form-urlencoded</c> forms. For <c>multipart/form-data</c> forms, use <paramref name="multipartBodyLengthLimit"/>. Defaults to <see cref="FormReader.DefaultValueLengthLimit"/>.</param>
     /// <param name="multipartBoundaryLengthLimit">Limit for the length of the boundary identifier. Defaults to 128 bytes.</param>
     /// <param name="multipartHeadersCountLimit">Limit for the number of headers to allow in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersCountLimit"/>.</param>
     /// <param name="multipartHeadersLengthLimit">Limit for the total length of the header keys and values in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersLengthLimit"/>.</param>

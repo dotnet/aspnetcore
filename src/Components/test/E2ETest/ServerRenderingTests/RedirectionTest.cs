@@ -5,22 +5,31 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
-public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class RedirectionTest :
+    ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>,
+    IClassFixture<BasicTestAppServerSiteFixture<ExternalNavigationStartup>>
 {
+    private readonly Uri _externalNavigationTargetUri;
+    private readonly Uri _externalNavigationTargetUriWithQuery;
     private IWebElement _originalH1Element;
 
     public RedirectionTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<ExternalNavigationStartup> externalNavigationFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        _externalNavigationTargetUri = new Uri(externalNavigationFixture.RootUri, "/external-navigation-target");
+        _externalNavigationTargetUriWithQuery = new Uri($"{_externalNavigationTargetUri}?foo=🙂");
+        serverFixture.AdditionalArguments.Add($"--ExternalNavigationTargetUri={_externalNavigationTargetUri.AbsoluteUri}");
     }
 
     public override async Task InitializeAsync()
@@ -58,7 +67,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.LinkText("Streaming GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -87,7 +96,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-streaming-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -120,7 +129,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.LinkText("Enhanced GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -148,7 +157,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-enhanced-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
@@ -177,9 +186,8 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
 
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
-    
 
     [Theory]
     [InlineData(true)]
@@ -207,12 +215,13 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
 
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-external button")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted();
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectEnhancedNonBlazorGetToInternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -236,7 +245,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
 
         Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with external redirection")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        AssertExternalNavigationCompleted(hasQuery: false);
     }
 
     [Theory]
@@ -283,12 +292,16 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66118")]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
 
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
+
+        // Wait for the circular redirects to settle.
+        Browser.Exists(By.Id("unobserved-exceptions-count"));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
@@ -309,5 +322,12 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
             return false;
         });
+    }
+
+    private void AssertExternalNavigationCompleted(bool hasQuery = true)
+    {
+        var expectedUri = hasQuery ? _externalNavigationTargetUriWithQuery : _externalNavigationTargetUri;
+        Browser.Equal(expectedUri, () => new Uri(Browser.Url));
+        Browser.Exists(By.Id("external-navigation-target"));
     }
 }

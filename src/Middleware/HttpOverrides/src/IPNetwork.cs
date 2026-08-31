@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpOverrides;
 /// A representation of an IP network based on CIDR notation.
 /// Please use <see cref="System.Net.IPNetwork"/> instead
 /// </summary>
-[Obsolete("Please use System.Net.IPNetwork instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005")]
+[Obsolete("Please use System.Net.IPNetwork instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005", UrlFormat = Obsoletions.AspNetCoreDeprecate005Url)]
 public class IPNetwork
 {
     /// <summary>

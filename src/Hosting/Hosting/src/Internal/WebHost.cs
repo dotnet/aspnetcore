@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+[Obsolete("WebHost is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead.")]
 internal sealed partial class WebHost : IWebHost, IAsyncDisposable
 {
     private const string DeprecatedServerUrlsKey = "server.urls";

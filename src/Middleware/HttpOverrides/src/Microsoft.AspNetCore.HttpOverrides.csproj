@@ -13,9 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

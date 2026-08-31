@@ -1,0 +1,83 @@
+@* Test component for MathML rendering with correct namespace *@
+
+<h3>MathML with Interactive Content</h3>
+<math xmlns="http://www.w3.org/1998/Math/MathML" id="mathml-with-callback">
+    <mrow>
+        <mi>x</mi>
+        <mo>=</mo>
+        <mn id="mathml-value">@value</mn>
+    </mrow>
+</math>
+
+<button id="increment-btn" @onclick=@(() => value++)>Increment</button>
+
+<h3>Static MathML</h3>
+<math xmlns="http://www.w3.org/1998/Math/MathML" id="mathml-static">
+    <mrow>
+        <msup>
+            <mi>a</mi>
+            <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <msup>
+            <mi>b</mi>
+            <mn>2</mn>
+        </msup>
+        <mo>=</mo>
+        <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+        </msup>
+    </mrow>
+</math>
+
+<h3>MathML with Child Component</h3>
+<math xmlns="http://www.w3.org/1998/Math/MathML" id="mathml-with-child-component">
+    <MathMLRowComponent />
+</math>
+
+<h3>Conditionally Rendered MathML</h3>
+<button id="toggle-btn" @onclick=@(() => showConditional = !showConditional)>Toggle</button>
+@if (showConditional)
+{
+    <math xmlns="http://www.w3.org/1998/Math/MathML" id="mathml-conditional">
+        <mrow>
+            <mi>y</mi>
+            <mo>=</mo>
+            <mn>42</mn>
+        </mrow>
+    </math>
+}
+
+<h3>Complex MathML (Quadratic Formula)</h3>
+<math xmlns="http://www.w3.org/1998/Math/MathML" id="mathml-complex">
+    <mrow>
+        <mi>x</mi>
+        <mo>=</mo>
+        <mfrac>
+            <mrow>
+                <mo>-</mo>
+                <mi>b</mi>
+                <mo>±</mo>
+                <msqrt>
+                    <mrow>
+                        <msup><mi>b</mi><mn>2</mn></msup>
+                        <mo>-</mo>
+                        <mn>4</mn>
+                        <mi>a</mi>
+                        <mi>c</mi>
+                    </mrow>
+                </msqrt>
+            </mrow>
+            <mrow>
+                <mn>2</mn>
+                <mi>a</mi>
+            </mrow>
+        </mfrac>
+    </mrow>
+</math>
+
+@code {
+    int value = 10;
+    bool showConditional = false;
+}

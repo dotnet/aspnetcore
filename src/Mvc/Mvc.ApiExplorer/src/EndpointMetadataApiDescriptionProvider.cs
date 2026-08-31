@@ -102,6 +102,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             HttpMethod = httpMethod,
             GroupName = routeEndpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>()?.EndpointGroupName,
             RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
+            RoutePattern = routeEndpoint.RoutePattern,
             ActionDescriptor = new ActionDescriptor
             {
                 DisplayName = routeEndpoint.DisplayName,
@@ -134,7 +135,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         if (acceptsMetadata is not null)
         {
             // Add a default body parameter if there was no explicitly defined parameter associated with
-            // either the body or a form and the user explicity defined some metadata describing the
+            // either the body or a form and the user explicitly defined some metadata describing the
             // content types the endpoint consumes (such as Accepts<TRequest>(...) or [Consumes(...)]).
             if (!hasBodyOrFormFileParameter)
             {
@@ -274,7 +275,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         {
             return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameterType);
         }
-        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                  parameterType == typeof(HttpContext) ||
                  parameterType == typeof(HttpRequest) ||
                  parameterType == typeof(HttpResponse) ||
@@ -332,21 +333,34 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         var defaultErrorType = errorMetadata?.Type ?? typeof(void);
         var contentTypes = new MediaTypeCollection();
 
-        // If the return type is an IResult or an awaitable IResult, then we should treat it as a void return type
-        // since we can't infer anything without additional metadata.
-        if (typeof(IResult).IsAssignableFrom(responseType) ||
-            producesResponseMetadata.Any(metadata => typeof(IResult).IsAssignableFrom(metadata.Type)))
+        // If the return type is an IResult or wrapped in a Task or ValueTask, then we should treat it as a void return type
+        // since we can't infer anything without additional metadata or requiring unreferenced code.
+        if (IsTaskOrValueTask(responseType) || typeof(IResult).IsAssignableFrom(responseType))
         {
             responseType = typeof(void);
         }
 
-        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadAttributeResponseMetadata(
             responseProviderMetadata, responseType, defaultErrorType, contentTypes, out var errorSetByDefault);
-        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(producesResponseMetadata, responseType);
+        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadEndpointResponseMetadata(producesResponseMetadata, responseType);
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
-        // over those that are added via attributes.
-        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes.Values);
+        // over those that are added via attributes (IApiResponseMetadataProvider).
+        //
+        // Note: TypedResults (e.g. TypedResults.Ok<Product>()) also add IProducesResponseTypeMetadata
+        // via IEndpointMetadataProvider, so they end up in the same bucket as .Produces<T>() and
+        // coexist for the same status code.
+        //
+        // Example:
+        //   [ProducesResponseType(typeof(string), 200)]             // attribute → IApiResponseMetadataProvider
+        //   app.MapPost("/", () => TypedResults.Ok(new Product()))  // TypedResults → IProducesResponseTypeMetadata (200, Product)
+        //       .Produces<Customer>(200);                           // extension  → IProducesResponseTypeMetadata (200, Customer)
+        //
+        // Result: (200, Product) and (200, Customer) both appear. The attribute (200, string) is
+        //         dropped because status 200 is already claimed by IProducesResponseTypeMetadata entries.
+        var producesStatusCodes = producesResponseMetadataTypes.Values.Select(metadata => metadata.StatusCode).ToHashSet();
+        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(
+            responseProviderMetadataTypes.Values.Where(metadata => !producesStatusCodes.Contains(metadata.StatusCode)));
 
         if (responseMetadataTypes.Any())
         {
@@ -377,7 +391,10 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
                 apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
 
-                if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
+                if (!supportedResponseTypes.Any(existingResponseType =>
+                    existingResponseType.StatusCode == apiResponseType.StatusCode &&
+                    existingResponseType.Type == apiResponseType.Type &&
+                    existingResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType == apiResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType))
                 {
                     supportedResponseTypes.Add(apiResponseType);
                 }
@@ -396,6 +413,23 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             }
 
             supportedResponseTypes.Add(defaultApiResponseType);
+        }
+
+        if (supportedResponseTypes.Count > 1)
+        {
+            // With multiple response types (e.g., different types for the same status code),
+            // we need deterministic ordering so that API documentation is stable across runs.
+            // This matches the ordering used by the controller path in ApiResponseTypeProvider.
+            var sorted = supportedResponseTypes
+                .OrderBy(rt => rt.StatusCode)
+                .ThenBy(rt => rt.Type?.Name)
+                .ThenBy(rt => rt.ApiResponseFormats.FirstOrDefault()?.MediaType)
+                .ToArray();
+            supportedResponseTypes.Clear();
+            foreach (var sortedResponseType in sorted)
+            {
+                supportedResponseTypes.Add(sortedResponseType);
+            }
         }
 
         static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)
@@ -426,6 +460,23 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             // For more information, check the related bug: https://github.com/dotnet/aspnetcore/issues/60518
             return apiResponseType == metadataType ||
                 metadataType?.IsAssignableFrom(apiResponseType) == true;
+        }
+
+        static bool IsTaskOrValueTask(Type returnType)
+        {
+            // If this method did not need to be trim-safe, we would use CoercedAwaitableInfo.IsTypeAwaitable, but we cannot.
+            if (returnType.IsAssignableFrom(typeof(Task)) || returnType.IsAssignableFrom(typeof(ValueTask)))
+            {
+                return true;
+            }
+
+            if (returnType.FullName is null)
+            {
+                return false;
+            }
+
+            return returnType.FullName.StartsWith("System.Threading.Tasks.Task`1[", StringComparison.Ordinal) ||
+                returnType.FullName.StartsWith("System.Threading.Tasks.ValueTask`1[", StringComparison.Ordinal);
         }
     }
 

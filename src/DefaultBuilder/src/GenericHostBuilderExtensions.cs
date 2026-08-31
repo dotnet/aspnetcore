@@ -61,7 +61,9 @@ public static class GenericHostBuilderExtensions
 
         return builder.ConfigureWebHost(webHostBuilder =>
         {
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             WebHost.ConfigureWebDefaults(webHostBuilder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
             configure(webHostBuilder);
         }, configureOptions);

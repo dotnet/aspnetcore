@@ -52,7 +52,6 @@ public class AuthenticationStartupBase
         // Mount the server-side Blazor app on /subdir
         app.Map("/subdir", app =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
@@ -62,7 +61,11 @@ public class AuthenticationStartupBase
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapBlazorHub()
+                endpoints.MapBlazorHub(options =>
+                {
+                    options.MaximumAuthenticationExpiration = TimeSpan.FromMinutes(40);
+                    options.CloseOnAuthenticationExpiration = true;
+                })
                     .AddEndpointFilter(async (context, next) =>
                     {
                         if (context.HttpContext.WebSockets.IsWebSocketRequest)

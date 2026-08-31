@@ -1,0 +1,12 @@
+﻿<h3>MultipleErrorsChild</h3>
+
+@{
+    throw new Exception("BuildRenderTreeError");
+}
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        return Task.FromException(new Exception("OnInitializedAsyncError"));
+    }
+}

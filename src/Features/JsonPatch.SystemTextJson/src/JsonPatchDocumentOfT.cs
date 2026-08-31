@@ -9,6 +9,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 // including type data in the JsonPatchDocument serialized as JSON (to allow for correct deserialization) - that's
 // not according to RFC 6902, and would thus break cross-platform compatibility.
 [JsonConverter(typeof(JsonPatchDocumentConverterFactory))]
-public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
+public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterMetadataProvider where TModel : class
 {
     public List<Operation<TModel>> Operations { get; private set; }
 
@@ -32,7 +34,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
     public JsonPatchDocument()
     {
-        Operations = new List<Operation<TModel>>();
+        Operations = [];
         SerializerOptions = JsonSerializerOptions.Default;
     }
 
@@ -657,11 +659,20 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
         return allOps;
     }
 
+    /// <inheritdoc/>
+    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], typeof(TModel)));
+    }
+
     // Internal for testing
     internal string GetPath<TProp>(Expression<Func<TModel, TProp>> expr, string position)
     {
         var segments = GetPathSegments(expr.Body);
-        var path = String.Join("/", segments);
+        var path = string.Join('/', segments);
         if (position != null)
         {
             path += "/" + position;

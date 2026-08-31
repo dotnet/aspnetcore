@@ -16,7 +16,6 @@
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />
-        <file src="$ASPNETCORE_CAB_FILE$" />
         <file src="$PackageIconFullPath$" target="$PackageIcon$" />
     </files>
 </package>

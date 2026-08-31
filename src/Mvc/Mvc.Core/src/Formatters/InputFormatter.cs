@@ -118,7 +118,7 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
     public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context);
 
     /// <inheritdoc />
-    public virtual IReadOnlyList<string>? GetSupportedContentTypes(string contentType, Type objectType)
+    public virtual IReadOnlyList<string>? GetSupportedContentTypes(string? contentType, Type objectType)
     {
         if (SupportedMediaTypes.Count == 0)
         {

@@ -17,10 +17,9 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
@@ -35,7 +34,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results" />
   </ItemGroup>
@@ -61,5 +59,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
   </ItemGroup>
 </Project>

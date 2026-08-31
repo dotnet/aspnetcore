@@ -211,8 +211,14 @@ public class DefaultModelMetadataProviderTest
         // Assert
         var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
 
-        // Not exactly "no attributes" due to SerializableAttribute on object.
-        Assert.IsType<SerializableAttribute>(Assert.Single(defaultMetadata.Attributes.Attributes));
+        // The parameter itself has no attributes
+        Assert.Empty(defaultMetadata.Attributes.ParameterAttributes);
+
+        // Type attributes exist (but we don't care what they are - that's runtime implementation detail)
+        Assert.NotEmpty(defaultMetadata.Attributes.TypeAttributes);
+
+        // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
+        Assert.Equal(defaultMetadata.Attributes.TypeAttributes, defaultMetadata.Attributes.Attributes);
     }
 
     [Fact]

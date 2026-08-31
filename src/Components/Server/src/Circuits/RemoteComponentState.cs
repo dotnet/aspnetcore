@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RemoteComponentState : ComponentState
 {
-    private readonly RemoteRenderer _renderer;
-
     public RemoteComponentState(
         RemoteRenderer renderer,
         int componentId,
@@ -19,12 +17,11 @@ internal sealed class RemoteComponentState : ComponentState
         ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        _renderer = renderer;
     }
 
     protected override object? GetComponentKey()
     {
-        var markerKey = _renderer.GetMarkerKey(this);
+        var markerKey = ((RemoteRenderer)Renderer).GetMarkerKey(this);
 
         // If we have a ComponentMarkerKey, return it for state persistence consistency
         if (markerKey != default)

@@ -36,8 +36,6 @@ public class SaveState
         {
             app.UseDeveloperExceptionPage();
         }
-
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.UseRouting();

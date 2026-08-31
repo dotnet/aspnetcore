@@ -10,8 +10,4 @@
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Primitives" />
-  </ItemGroup>
-
 </Project>

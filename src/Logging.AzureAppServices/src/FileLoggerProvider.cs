@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// A <see cref="BatchingLoggerProvider"/> which writes out to a file.
+/// Represents a <see cref="BatchingLoggerProvider"/> that writes out to a file.
 /// </summary>
 [ProviderAlias("AzureAppServicesFile")]
 public class FileLoggerProvider : BatchingLoggerProvider
@@ -25,7 +25,7 @@ public class FileLoggerProvider : BatchingLoggerProvider
     /// <summary>
     /// Creates a new instance of <see cref="FileLoggerProvider"/>.
     /// </summary>
-    /// <param name="options">The options to use when creating a provider.</param>
+    /// <param name="options">The options to use when creating the provider.</param>
     [SuppressMessage("ApiDesign", "RS0022:Constructor make noninheritable base class inheritable", Justification = "Required for backwards compatibility")]
     public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
     {

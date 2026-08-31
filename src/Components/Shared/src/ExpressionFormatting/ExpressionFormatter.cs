@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -14,7 +15,10 @@ internal static class ExpressionFormatter
 {
     static ExpressionFormatter()
     {
-        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
     }
 
     internal const int StackAllocBufferSize = 128;
@@ -74,7 +78,7 @@ internal static class ExpressionFormatter
                     builder.InsertFront("]");
                     FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
                     builder.InsertFront("[");
-                    
+
                     break;
 
                 case ExpressionType.ArrayIndex:
@@ -249,22 +253,22 @@ internal static class ExpressionFormatter
 
         if (memberType == typeof(int))
         {
-            var func = CompileMemberEvaluator<int>(memberExpression);
+            var func = CreateMemberEvaluator<int>(memberExpression);
             return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
         else if (memberType == typeof(string))
         {
-            var func = CompileMemberEvaluator<string>(memberExpression);
+            var func = CreateMemberEvaluator<string>(memberExpression);
             return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
         else if (typeof(ISpanFormattable).IsAssignableFrom(memberType))
         {
-            var func = CompileMemberEvaluator<ISpanFormattable>(memberExpression);
+            var func = CreateMemberEvaluator<ISpanFormattable>(memberExpression);
             return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
         else if (typeof(IFormattable).IsAssignableFrom(memberType))
         {
-            var func = CompileMemberEvaluator<IFormattable>(memberExpression);
+            var func = CreateMemberEvaluator<IFormattable>(memberExpression);
             return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
         else
@@ -272,6 +276,26 @@ internal static class ExpressionFormatter
             throw new InvalidOperationException($"Cannot format an index argument of type '{memberType}'.");
         }
 
+        static Func<object, TResult> CreateMemberEvaluator<TResult>(MemberExpression memberExpression)
+        {
+            if (!RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return memberExpression.Member switch
+                {
+                    PropertyInfo property => closure => (TResult)property.GetValue(closure)!,
+                    FieldInfo field => closure => (TResult)field.GetValue(closure)!,
+                    var member => throw new InvalidOperationException(
+                        $"Cannot read an index argument from a {member.GetType().Name}."),
+                };
+            }
+
+            return CompileMemberEvaluator<TResult>(memberExpression);
+        }
+
+        [UnconditionalSuppressMessage(
+            "AOT",
+            "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+            Justification = "Guarded by RuntimeFeature.IsDynamicCodeSupported.")]
         static Func<object, TResult> CompileMemberEvaluator<TResult>(MemberExpression memberExpression)
         {
             var parameterExpression = Expression.Parameter(typeof(object));

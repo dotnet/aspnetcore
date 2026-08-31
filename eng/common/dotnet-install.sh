@@ -16,9 +16,10 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 version='Latest'
 architecture=''
 runtime='dotnet'
+dotnetPath=''
 runtimeSourceFeed=''
 runtimeSourceFeedKey=''
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
   opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     -version|-v)
@@ -32,6 +33,10 @@ while [[ $# > 0 ]]; do
     -runtime|-r)
       shift
       runtime="$1"
+      ;;
+    -dotnetpath)
+      shift
+      dotnetPath="$1"
       ;;
     -runtimesourcefeed)
       shift
@@ -80,7 +85,13 @@ case $cpuname in
     ;;
 esac
 
-dotnetRoot="${repo_root}.dotnet"
+if [[ -n "${dotnetPath:-}" ]]; then
+  dotnetRoot="$dotnetPath"
+elif [[ -n "${DOTNET_GLOBAL_INSTALL_DIR:-}" ]]; then
+  dotnetRoot="$DOTNET_GLOBAL_INSTALL_DIR"
+else
+  dotnetRoot="${repo_root}.dotnet"
+fi
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

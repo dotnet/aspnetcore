@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -72,4 +68,12 @@ public class IdentityPasskeyData
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata"/>.
     /// </remarks>
     public virtual byte[] ClientDataJson { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the AAGUID of the authenticator that created this passkey.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#aaguid"/>.
+    /// </remarks>
+    public virtual byte[]? Aaguid { get; set; }
 }
