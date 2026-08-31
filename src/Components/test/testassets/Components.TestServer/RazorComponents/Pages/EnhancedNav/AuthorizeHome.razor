@@ -11,14 +11,14 @@
 }
 
 @code {
-	private bool _interactive;
+    private bool _interactive;
 
-	protected override void OnAfterRender(bool firstRender)
-	{
-		if (firstRender)
-		{
-			_interactive = true;
-			StateHasChanged();
-		}
-	}
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
 }
