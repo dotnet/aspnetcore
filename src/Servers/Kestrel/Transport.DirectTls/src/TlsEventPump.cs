@@ -7,10 +7,13 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.UserCallbacks;
@@ -27,6 +30,9 @@ internal partial class TlsEventPump : IDisposable
 {
     private readonly ILogger _logger;
     private readonly int _id;
+    private readonly KestrelMetrics? _kestrelMetrics;
+    private readonly DirectTlsMetrics _directTlsMetrics;
+    private int _ownedConnectionCount;
 
     // Maximum time a connection is allowed to spend handshaking before the pump drops it. Stored as
     // milliseconds for cheap comparison against Environment.TickCount64. long.MaxValue means "no timeout"
@@ -161,12 +167,28 @@ internal partial class TlsEventPump : IDisposable
         /// (fd recycled, connection already torn down) is discarded instead of resuming a stale handshake.
         /// </summary>
         public HandshakeUserCallback? PendingUserCallback;
+        /// <summary>
+        /// Kestrel metric state captured when the handshake began. Null when neither TLS handshake instrument
+        /// was enabled at accept time.
+        /// </summary>
+        public TlsHandshakeMetricsContext? MetricsContext;
+        /// <summary>
+        /// Stopwatch timestamp captured immediately before the active-handshake metric was started.
+        /// </summary>
+        public long HandshakeStartTimestamp;
     }
 
-    public TlsEventPump(ILogger tlsPumpLogger, int id, TimeSpan handshakeTimeout)
+    public TlsEventPump(
+        ILogger tlsPumpLogger,
+        int id,
+        TimeSpan handshakeTimeout,
+        KestrelMetrics? kestrelMetrics = null,
+        DirectTlsMetrics? directTlsMetrics = null)
     {
         _id = id;
         _logger = tlsPumpLogger;
+        _kestrelMetrics = kestrelMetrics;
+        _directTlsMetrics = directTlsMetrics ?? DirectTlsMetrics.Disabled;
         _handshakeTimeoutMs = handshakeTimeout == Timeout.InfiniteTimeSpan || handshakeTimeout == TimeSpan.MaxValue
             ? long.MaxValue
             : (long)handshakeTimeout.TotalMilliseconds;
@@ -263,9 +285,15 @@ internal partial class TlsEventPump : IDisposable
     // tight-spins the pump thread at 100% CPU and starves every other connection this pump owns.
     private void DropEstablishedConnection(int fd)
     {
-        _connections.TryRemove(fd, out _);
+        if (_connections.TryRemove(fd, out _))
+        {
+            ConnectionReleased();
+        }
+
         DeregisterFromEpoll(fd);
     }
+
+    internal int Id => _id;
 
     // The single epoll de-registration syscall, isolated as a virtual seam (like RawRead/AcceptOne) so
     // tests can observe which fds the pump removes from its interest set without a live epoll instance.
@@ -520,6 +548,8 @@ internal partial class TlsEventPump : IDisposable
                 continue;
             }
 
+            StopTlsHandshakeMetrics(kvp.Value, failed: true);
+            ConnectionReleased();
             ReleaseHandshakeResources(kvp.Value);
         }
 
@@ -577,7 +607,7 @@ internal partial class TlsEventPump : IDisposable
         if (errorOrHangup)
         {
             DropEstablishedConnection(fd);
-            conn.OnError(new IOException("Connection error or hangup (EPOLLERR/EPOLLHUP)"));
+            conn.OnError(new ConnectionResetException("Connection error or hangup (EPOLLERR/EPOLLHUP)"));
             return;
         }
 
@@ -588,13 +618,19 @@ internal partial class TlsEventPump : IDisposable
             {
                 // No data to read, peer closed - signal error.
                 DropEstablishedConnection(fd);
-                conn.OnError(new IOException("Peer closed connection"));
+                conn.OnError(new ConnectionResetException("Peer closed connection"));
             }
         }
     }
 
     // internal for testing: seed an established connection without running the native handshake.
-    internal void TrackConnectionForTest(int fd, ConnectionIoState conn) => _connections[fd] = conn;
+    internal void TrackConnectionForTest(int fd, ConnectionIoState conn)
+    {
+        if (_connections.TryAdd(fd, conn))
+        {
+            ConnectionOwned();
+        }
+    }
 
     /// <summary>
     /// Accept new connections from the listen fd via <c>accept4</c>.
@@ -640,6 +676,8 @@ internal partial class TlsEventPump : IDisposable
                 _logger.LogDebug("Accept failed: errno={Errno}", errno);
                 break;
             }
+
+            DirectTlsEventSource.Log.Accepted(_id);
 
             Socket socket = WrapAcceptedFd(accepted);
             try
@@ -718,6 +756,14 @@ internal partial class TlsEventPump : IDisposable
         // Create a socket-bound TLS session and attach the shared server context.
         // SetContext configures SSL_set_fd + server accept state internally.
         var session = new TlsSocketSession(socketHandle);
+        TlsHandshakeMetricsContext? metricsContext = null;
+        long handshakeStartTimestamp = 0;
+
+        if (_kestrelMetrics?.TlsHandshakeMetricsEnabled == true)
+        {
+            metricsContext = StartTlsHandshakeMetrics(remoteEndPoint, out handshakeStartTimestamp);
+        }
+
         try
         {
             session.SetContext(_tlsContext!);
@@ -725,6 +771,7 @@ internal partial class TlsEventPump : IDisposable
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
+            StopTlsHandshakeMetrics(metricsContext, handshakeStartTimestamp, protocol: null, ex);
             session.Dispose();
             _connectionTracker.ReleaseHandshake();
             return;
@@ -733,6 +780,7 @@ internal partial class TlsEventPump : IDisposable
         // Register client socket with epoll for handshake events
         if (!TryArmHandshakeInterest(clientFd, DefaultEpollInterest))
         {
+            StopTlsHandshakeMetrics(metricsContext, handshakeStartTimestamp, protocol: null, exception: null);
             session.Dispose();
             _connectionTracker.ReleaseHandshake();
             return;
@@ -747,7 +795,10 @@ internal partial class TlsEventPump : IDisposable
             RemoteEndPoint = remoteEndPoint,
             HandshakeDeadlineTimestamp = ComputeHandshakeDeadline(Environment.TickCount64),
             CurrentEpollInterest = DefaultEpollInterest,
+            MetricsContext = metricsContext,
+            HandshakeStartTimestamp = handshakeStartTimestamp,
         };
+        ConnectionOwned();
 
         // Try handshake immediately (might complete for resumed sessions)
         TryAdvanceHandshake(clientFd, _handshaking[clientFd]);
@@ -792,7 +843,7 @@ internal partial class TlsEventPump : IDisposable
             // throw would tear down the whole process. Isolate it and drop just this
             // connection - one bad client must not affect the others.
             _logger.LogDebug(ex, "Handshake threw for fd={Fd}", fd);
-            DropHandshake(fd, conn);
+            DropHandshake(fd, conn, ex);
             return;
         }
 
@@ -887,7 +938,7 @@ internal partial class TlsEventPump : IDisposable
             bool firstSuspension = conn.Connection is null;
             if (firstSuspension && _memoryPool is not null)
             {
-                var earlyState = new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
+                var earlyState = new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger, _directTlsMetrics) { Pump = this };
                 var earlyConnection = new DirectTlsConnection(
                     earlyState,
                     this,
@@ -954,7 +1005,7 @@ internal partial class TlsEventPump : IDisposable
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Resolving the TLS context failed for fd={Fd}; dropping connection.", fd);
-            DropHandshake(fd, conn);
+            DropHandshake(fd, conn, ex);
             return;
         }
 
@@ -965,7 +1016,7 @@ internal partial class TlsEventPump : IDisposable
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Installing the resolved TLS context failed for fd={Fd}", fd);
-            DropHandshake(fd, conn);
+            DropHandshake(fd, conn, ex);
             return;
         }
 
@@ -1003,7 +1054,7 @@ internal partial class TlsEventPump : IDisposable
             // ConnectionId the listener already observed. Otherwise create both now. Its ConnectionIoState
             // has Pump already set (early path) or set here (default path).
             connectionState = earlyConnection?.ConnectionState
-                ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
+                ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger, _directTlsMetrics) { Pump = this };
             connectionState.SetHandshakeComplete();
 
             // Create DirectTlsConnection using fd directly (no Socket wrapper).
@@ -1034,7 +1085,7 @@ internal partial class TlsEventPump : IDisposable
         {
             // Post-handshake activities failed. De-register fd here
             _logger.LogDebug(ex, "Completing handshake threw for fd={Fd}", fd);
-            DropHandshake(fd, conn);
+            DropHandshake(fd, conn, ex);
             return;
         }
 
@@ -1044,10 +1095,12 @@ internal partial class TlsEventPump : IDisposable
             // connection whose epoll interest is wrong (it would spin the pump on a stuck EPOLLOUT). It was
             // built but never Started and the fd is still registered as handshaking, so tear it down on
             // that path.
+            StopTlsHandshakeMetrics(conn, failed: true);
             DropCompletedHandshake(fd, directConnection);
             return;
         }
 
+        StopTlsHandshakeMetrics(conn, failed: false);
         directConnection.Start();
 
         if (!_readyConnections.TryWrite(directConnection))
@@ -1130,7 +1183,11 @@ internal partial class TlsEventPump : IDisposable
     // and default connection paths - instead of releasing the raw handshake session a second time.
     private void DropCompletedHandshake(int fd, DirectTlsConnection connection)
     {
-        _handshaking.Remove(fd);
+        if (_handshaking.Remove(fd))
+        {
+            ConnectionReleased();
+        }
+
         _connectionTracker.ReleaseHandshake();
         NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
         connection.AbortBeforeStart();
@@ -1175,12 +1232,91 @@ internal partial class TlsEventPump : IDisposable
     // released without the graceful TLS close_notify - a half-open session cannot shut down cleanly, so
     // AbortBeforeStart just completes the (never-started) pipes and closes the socket fd. Otherwise the
     // session is disposed directly, which closes the fd.
-    private void DropHandshake(int fd, in HandshakingConnection conn)
+    private void DropHandshake(int fd, in HandshakingConnection conn, Exception? exception = null)
     {
-        _handshaking.Remove(fd);
+        StopTlsHandshakeMetrics(conn, failed: true, exception);
+        if (_handshaking.Remove(fd))
+        {
+            ConnectionReleased();
+        }
+
         _connectionTracker.ReleaseHandshake();
         NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
         ReleaseHandshakeResources(conn);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private TlsHandshakeMetricsContext StartTlsHandshakeMetrics(IPEndPoint? remoteEndPoint, out long startTimestamp)
+    {
+        var connectionContext = new DefaultConnectionContext
+        {
+            LocalEndPoint = _listenEndPoint,
+            RemoteEndPoint = remoteEndPoint
+        };
+        var metricsContext = _kestrelMetrics!.CreateTlsHandshakeContext(connectionContext);
+        startTimestamp = Stopwatch.GetTimestamp();
+        _kestrelMetrics.TlsHandshakeStart(metricsContext);
+
+        return metricsContext;
+    }
+
+    private void StopTlsHandshakeMetrics(in HandshakingConnection connection, bool failed, Exception? exception = null)
+    {
+        if (connection.MetricsContext is { } metricsContext)
+        {
+            StopTlsHandshakeMetrics(
+                metricsContext,
+                connection.HandshakeStartTimestamp,
+                failed ? null : connection.Session.NegotiatedProtocol,
+                failed ? exception : null);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void StopTlsHandshakeMetrics(
+        TlsHandshakeMetricsContext? metricsContext,
+        long startTimestamp,
+        SslProtocols? protocol,
+        Exception? exception)
+    {
+        if (metricsContext is not { } context)
+        {
+            return;
+        }
+
+        if (protocol is null)
+        {
+            exception ??= new AuthenticationException("The DirectTls handshake failed.");
+        }
+
+        _kestrelMetrics!.TlsHandshakeStop(
+            context,
+            startTimestamp,
+            Stopwatch.GetTimestamp(),
+            protocol,
+            exception);
+    }
+
+    private void ConnectionOwned()
+    {
+        var count = Interlocked.Increment(ref _ownedConnectionCount);
+        DirectTlsEventSource.Log.ConnectionOwned(_id, count);
+    }
+
+    private void ConnectionReleased()
+    {
+        int current;
+        do
+        {
+            current = Volatile.Read(ref _ownedConnectionCount);
+            if (current == 0)
+            {
+                return;
+            }
+        }
+        while (Interlocked.CompareExchange(ref _ownedConnectionCount, current - 1, current) != current);
+
+        DirectTlsEventSource.Log.ConnectionReleased(_id, current - 1);
     }
 
     // Releases the native resources of a dropped handshake. Split out from DropHandshake (which owns the

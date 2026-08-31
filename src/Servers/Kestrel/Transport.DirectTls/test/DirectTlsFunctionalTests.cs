@@ -4,6 +4,10 @@
 #nullable enable
 
 using System.Buffers;
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -17,15 +21,144 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests;
 
 // DirectTls terminates TLS through the runtime's native, file-descriptor-bound OpenSSL session, which is
 // Linux-only. These end-to-end tests start a real Kestrel host on the DirectTls transport and drive it with
 // a standard SslStream client.
-public class DirectTlsFunctionalTests
+public class DirectTlsFunctionalTests : LoggedTest
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task Handshake_RecordsExistingKestrelTlsMetrics()
+    {
+        using var metrics = new HandshakeMetricCollector();
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+
+        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+        var port = host.GetPort();
+
+        using var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]);
+        await metrics.WaitForDurationAsync(port);
+
+        Assert.Equal([1L, -1L], metrics.ActiveHandshakesForPort(port).Select(measurement => measurement.Value));
+        var duration = Assert.Single(metrics.HandshakeDurationsForPort(port));
+        Assert.True(duration.Value > 0);
+        Assert.Equal(
+            sslStream.SslProtocol == System.Security.Authentication.SslProtocols.Tls13 ? "1.3" : "1.2",
+            duration.GetTag("tls.protocol.version"));
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task FailedHandshake_RecordsExistingKestrelTlsMetrics()
+    {
+        using var metrics = new HandshakeMetricCollector();
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+
+        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+        var port = host.GetPort();
+
+        using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+        {
+            await socket.ConnectAsync(IPAddress.Loopback, port);
+            await socket.SendAsync("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"u8.ToArray());
+        }
+
+        await metrics.WaitForDurationAsync(port);
+
+        Assert.Equal([1L, -1L], metrics.ActiveHandshakesForPort(port).Select(measurement => measurement.Value));
+        var duration = Assert.Single(metrics.HandshakeDurationsForPort(port));
+        Assert.True(duration.Value > 0);
+        Assert.NotNull(duration.GetTag("error.type"));
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task Request_RecordsPumpTelemetry()
+    {
+        using var telemetry = new DirectTlsTelemetryListener();
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+
+        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+
+        using (var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]))
+        {
+            await telemetry.WaitForCounterAsync("connections-owned", value => value > 0);
+            var response = await SendRequestAsync(sslStream, "localhost");
+            Assert.Contains("200 OK", response);
+        }
+
+        await telemetry.WaitForCounterAsync("accepts", value => value > 0);
+        await telemetry.WaitForCounterAsync("bytes-read", value => value > 0);
+        await telemetry.WaitForCounterAsync("bytes-written", value => value > 0);
+
+        Assert.Contains(telemetry.Events, eventData => eventData.EventName == "ConnectionAccepted");
+        Assert.Contains(telemetry.Events, eventData =>
+            eventData.EventName == "PumpConnections" &&
+            eventData.Payload is [_, int connectionCount] &&
+            connectionCount > 0);
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task InputBackpressure_RecordsPauseAndResumeTelemetry()
+    {
+        using var telemetry = new DirectTlsTelemetryListener();
+        using var metrics = new PausedConnectionMetricCollector();
+        var startReading = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var applicationStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+
+        using var host = await StartHostAsync(
+            endpoint,
+            async context =>
+            {
+                applicationStarted.TrySetResult();
+                await startReading.Task;
+                await context.Request.Body.CopyToAsync(Stream.Null);
+                await context.Response.WriteAsync("ok");
+            },
+            configureTransport: options => options.MaxReadBufferSize = 1024);
+
+        using var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]);
+        const int contentLength = 64 * 1024;
+        await sslStream.WriteAsync(
+            Encoding.ASCII.GetBytes(
+                $"POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: {contentLength}\r\nConnection: close\r\n\r\n"));
+        var bodyWrite = sslStream.WriteAsync(new byte[contentLength]).AsTask();
+
+        await applicationStarted.Task.WaitAsync(Timeout);
+        await WaitForLogAsync("ConnectionPause");
+        await metrics.WaitForMeasurementAsync(1);
+        await telemetry.WaitForCounterAsync("connections-paused", value => value >= 1);
+
+        startReading.TrySetResult();
+        await bodyWrite.WaitAsync(Timeout);
+        await sslStream.FlushAsync();
+        var response = await new StreamReader(sslStream, Encoding.ASCII).ReadToEndAsync().WaitAsync(Timeout);
+
+        Assert.Contains("200 OK", response);
+        await WaitForLogAsync("ConnectionResume");
+        await metrics.WaitForMeasurementAsync(-1);
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
@@ -538,13 +671,20 @@ public class DirectTlsFunctionalTests
         await host.StopAsync().WaitAsync(Timeout);
     }
 
-    private static async Task<IHost> StartHostAsync(
+    private async Task<IHost> StartHostAsync(
         DirectTlsEndpoint endpoint,
         RequestDelegate app,
         Action<DirectTlsTransportOptions>? configureTransport = null,
         Action<KestrelServerOptions>? configureKestrel = null)
     {
         var host = new HostBuilder()
+            .ConfigureLogging(logging =>
+            {
+                logging.AddProvider(new TestLoggerProvider(TestSink));
+                logging.AddFilter(
+                    "Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls",
+                    LogLevel.Debug);
+            })
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder.UseKestrel();
@@ -570,6 +710,15 @@ public class DirectTlsFunctionalTests
 
         await host.StartAsync().WaitAsync(Timeout);
         return host;
+    }
+
+    private async Task WaitForLogAsync(string eventName)
+    {
+        using var cts = new CancellationTokenSource(Timeout);
+        while (!TestSink.Writes.Any(write => write.EventId.Name == eventName))
+        {
+            await Task.Delay(10, cts.Token);
+        }
     }
 
     private static async Task<SslStream> ConnectAsync(
@@ -630,5 +779,153 @@ public class DirectTlsFunctionalTests
             total += read;
         }
         return total;
+    }
+
+    private sealed class HandshakeMetricCollector : IDisposable
+    {
+        private const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
+        private const string ActiveHandshakesName = "kestrel.active_tls_handshakes";
+        private const string HandshakeDurationName = "kestrel.tls_handshake.duration";
+
+        private readonly MeterListener _listener = new();
+        private readonly ConcurrentQueue<MetricMeasurement<long>> _activeHandshakes = new();
+        private readonly ConcurrentQueue<MetricMeasurement<double>> _handshakeDurations = new();
+
+        public HandshakeMetricCollector()
+        {
+            _listener.InstrumentPublished = static (instrument, listener) =>
+            {
+                if (instrument.Meter.Name == MeterName &&
+                    instrument.Name is ActiveHandshakesName or HandshakeDurationName)
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            };
+            _listener.SetMeasurementEventCallback<long>((_, value, tags, _) =>
+                _activeHandshakes.Enqueue(new MetricMeasurement<long>(value, tags.ToArray())));
+            _listener.SetMeasurementEventCallback<double>((_, value, tags, _) =>
+                _handshakeDurations.Enqueue(new MetricMeasurement<double>(value, tags.ToArray())));
+            _listener.Start();
+        }
+
+        public IEnumerable<MetricMeasurement<long>> ActiveHandshakesForPort(int port)
+            => _activeHandshakes.Where(measurement => measurement.GetTag("server.port") is int measuredPort && measuredPort == port);
+
+        public IEnumerable<MetricMeasurement<double>> HandshakeDurationsForPort(int port)
+            => _handshakeDurations.Where(measurement => measurement.GetTag("server.port") is int measuredPort && measuredPort == port);
+
+        public async Task WaitForDurationAsync(int port)
+        {
+            using var cts = new CancellationTokenSource(Timeout);
+            while (!HandshakeDurationsForPort(port).Any())
+            {
+                await Task.Delay(10, cts.Token);
+            }
+        }
+
+        public void Dispose()
+        {
+            _listener.Dispose();
+        }
+    }
+
+    private sealed class PausedConnectionMetricCollector : IDisposable
+    {
+        private readonly MeterListener _listener = new();
+        private readonly ConcurrentQueue<long> _measurements = new();
+
+        public PausedConnectionMetricCollector()
+        {
+            _listener.InstrumentPublished = static (instrument, listener) =>
+            {
+                if (instrument.Meter.Name == "Microsoft.AspNetCore.Server.Kestrel" &&
+                    instrument.Name == DirectTlsMetrics.PausedConnectionsInstrumentName)
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            };
+            _listener.SetMeasurementEventCallback<long>((_, value, _, _) => _measurements.Enqueue(value));
+            _listener.Start();
+        }
+
+        public async Task WaitForMeasurementAsync(long expected)
+        {
+            using var cts = new CancellationTokenSource(Timeout);
+            while (!_measurements.Contains(expected))
+            {
+                await Task.Delay(10, cts.Token);
+            }
+        }
+
+        public void Dispose() => _listener.Dispose();
+    }
+
+    private sealed class DirectTlsTelemetryListener : EventListener
+    {
+        private readonly ConcurrentQueue<EventWrittenEventArgs> _events = new();
+        private readonly ConcurrentDictionary<string, double> _counterValues = new();
+
+        public DirectTlsTelemetryListener()
+        {
+            foreach (var eventSource in EventSource.GetSources())
+            {
+                EnableIfDirectTls(eventSource);
+            }
+        }
+
+        public EventWrittenEventArgs[] Events => _events.ToArray();
+
+        public async Task WaitForCounterAsync(string name, Func<double, bool> predicate)
+        {
+            using var cts = new CancellationTokenSource(Timeout);
+            while (!_counterValues.TryGetValue(name, out var value) || !predicate(value))
+            {
+                await Task.Delay(10, cts.Token);
+            }
+        }
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+            => EnableIfDirectTls(eventSource);
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            if (eventData.EventName == "EventCounters" &&
+                eventData.Payload?[0] is IDictionary<string, object> payload &&
+                payload["Name"] is string counterName)
+            {
+                if (payload.TryGetValue("Mean", out var mean))
+                {
+                    _counterValues[counterName] = Convert.ToDouble(mean, CultureInfo.InvariantCulture);
+                }
+                else if (payload.TryGetValue("Increment", out var increment))
+                {
+                    _counterValues[counterName] = Convert.ToDouble(increment, CultureInfo.InvariantCulture);
+                }
+
+                return;
+            }
+
+            _events.Enqueue(eventData);
+        }
+
+        private void EnableIfDirectTls(EventSource eventSource)
+        {
+            if (eventSource.Name == DirectTlsEventSource.EventSourceName)
+            {
+                EnableEvents(
+                    eventSource,
+                    EventLevel.Informational,
+                    EventKeywords.All,
+                    new Dictionary<string, string?> { ["EventCounterIntervalSec"] = "0.1" });
+            }
+        }
+    }
+
+    private sealed record MetricMeasurement<T>(
+        T Value,
+        KeyValuePair<string, object?>[] Tags)
+    {
+        public object? GetTag(string name)
+            => Tags.FirstOrDefault(tag => tag.Key == name).Value;
     }
 }

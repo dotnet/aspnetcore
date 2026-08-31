@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.Extensions.Logging;
 
@@ -22,10 +23,19 @@ internal sealed class TlsEventPumpPool : IDisposable
 {
     private readonly TlsEventPump[] _pumps;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly KestrelMetrics? _kestrelMetrics;
+    private readonly DirectTlsMetrics _directTlsMetrics;
 
-    public TlsEventPumpPool(int pumpCount, ILoggerFactory loggerFactory, TimeSpan? handshakeTimeout = null)
+    public TlsEventPumpPool(
+        int pumpCount,
+        ILoggerFactory loggerFactory,
+        TimeSpan? handshakeTimeout = null,
+        KestrelMetrics? kestrelMetrics = null,
+        DirectTlsMetrics? directTlsMetrics = null)
     {
         _loggerFactory = loggerFactory;
+        _kestrelMetrics = kestrelMetrics;
+        _directTlsMetrics = directTlsMetrics ?? DirectTlsMetrics.Disabled;
 
         // Default: 1 pump per CPU core
         pumpCount = pumpCount > 0 ? pumpCount : Environment.ProcessorCount;
@@ -37,7 +47,12 @@ internal sealed class TlsEventPumpPool : IDisposable
         _pumps = new TlsEventPump[pumpCount];
         for (int i = 0; i < pumpCount; i++)
         {
-            _pumps[i] = new TlsEventPump(loggerFactory.CreateLogger<TlsEventPump>(), i, effectiveHandshakeTimeout);
+            _pumps[i] = new TlsEventPump(
+                loggerFactory.CreateLogger<TlsEventPump>(),
+                i,
+                effectiveHandshakeTimeout,
+                _kestrelMetrics,
+                _directTlsMetrics);
         }
     }
 

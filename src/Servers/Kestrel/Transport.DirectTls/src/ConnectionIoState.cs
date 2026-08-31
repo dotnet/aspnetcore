@@ -31,6 +31,8 @@ internal class ConnectionIoState : IDisposable
 {
     private readonly ILogger _logger;
     private readonly TlsSocketSession _session;
+    private readonly DirectTlsMetrics _metrics;
+    private string? _connectionId;
 
     // Serializes every native SSL operation (SSL_read / SSL_write / SSL_shutdown) on this connection's
     // session. TlsSocketSession is not safe for concurrent Read/Write from different threads - one SSL*
@@ -84,13 +86,24 @@ internal class ConnectionIoState : IDisposable
     private bool _writeWantsRead;                // Write needs the socket to become readable (renegotiation)
     private bool _writeWantsWrite;               // Write hit WouldBlock and needs the socket to become writable
     private bool _readInterestSuspended;         // Receive loop parked on backpressure; drop EPOLLIN to avoid a level-triggered spin
+    private bool? _pausedConnectionsCounterEnabled;
 
-    public ConnectionIoState(int fd, TlsSocketSession session, ILogger logger)
+    public ConnectionIoState(
+        int fd,
+        TlsSocketSession session,
+        ILogger logger,
+        DirectTlsMetrics? metrics = null)
     {
         _logger = logger;
+        _metrics = metrics ?? DirectTlsMetrics.Disabled;
 
         Fd = fd;
         _session = session;
+    }
+
+    internal void SetConnectionId(string connectionId)
+    {
+        _connectionId = connectionId;
     }
 
     /// <summary>
@@ -141,6 +154,11 @@ internal class ConnectionIoState : IDisposable
     private TlsOperationStatus TlsRead(Span<byte> buffer, out int bytesRead)
     {
         var status = RawRead(buffer, out bytesRead);
+        if (bytesRead > 0)
+        {
+            _metrics.BytesRead(bytesRead);
+        }
+
         return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
             or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
             ? status
@@ -152,6 +170,11 @@ internal class ConnectionIoState : IDisposable
     private TlsOperationStatus TlsWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
     {
         var status = RawWrite(buffer, out bytesWritten);
+        if (bytesWritten > 0)
+        {
+            _metrics.BytesWritten(bytesWritten);
+        }
+
         return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
             or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
             ? status
@@ -202,6 +225,12 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = true;
             UpdateEvents();
+
+            _pausedConnectionsCounterEnabled = _metrics.ConnectionPaused();
+            if (_connectionId is { } connectionId)
+            {
+                DirectTlsLog.ConnectionPause(_logger, connectionId);
+            }
         }
     }
 
@@ -216,7 +245,24 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = false;
             UpdateEvents();
+
+            ReleasePauseTelemetry();
+            if (_connectionId is { } connectionId)
+            {
+                DirectTlsLog.ConnectionResume(_logger, connectionId);
+            }
         }
+    }
+
+    private void ReleasePauseTelemetry()
+    {
+        if (_pausedConnectionsCounterEnabled is not { } pausedConnectionsCounterEnabled)
+        {
+            return;
+        }
+
+        _pausedConnectionsCounterEnabled = null;
+        _metrics.ConnectionResumed(pausedConnectionsCounterEnabled);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -543,6 +589,16 @@ internal class ConnectionIoState : IDisposable
             // on an fd DisposeAsync is about to unregister from epoll.
             _readAwaitable.Cancel();
             _writeAwaitable.Cancel();
+
+            // DisposeAsync unregisters the fd before it cancels a backpressured pipe flush. Release the gauge
+            // here so the receive loop's eventual ResumeReadInterest does not try to re-arm an unregistered fd
+            // and leave the connection counted as paused after teardown.
+            if (_readInterestSuspended)
+            {
+                _readInterestSuspended = false;
+            }
+
+            ReleasePauseTelemetry();
         }
     }
 

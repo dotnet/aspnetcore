@@ -28,6 +28,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
     // Mirrors the sockets transport's SocketConnection.MinAllocBufferSize (PinnedBlockMemoryPool.BlockSize / 2).
     // Avoids defragmentation of the transport's shared memory pool
     private const int MinAllocBufferSize = 4096 / 2;
+    private const string GracefulSendLoopCompletion = "The DirectTls transport's send loop completed gracefully.";
 
     private readonly ConnectionIoState _connectionState;
     private readonly TlsEventPump _pump;
@@ -64,6 +65,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         _pump = pump;
         _memoryPool = memoryPool;
         _logger = logger;
+        _connectionState.SetConnectionId(ConnectionId);
 
         LocalEndPoint = localEndPoint;
         RemoteEndPoint = remoteEndPoint;
@@ -270,6 +272,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
                 else if (bytesRead == 0)
                 {
                     // Connection closed (EOF)
+                    DirectTlsLog.ConnectionReadFin(_logger, ConnectionId);
                     break;
                 }
                 else
@@ -287,6 +290,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         catch (Exception ex)
         {
             error = ex;
+            LogConnectionError(ex);
         }
         finally
         {
@@ -330,6 +334,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
                             if (written == 0)
                             {
                                 // Peer closed the connection mid-send.
+                                DirectTlsLog.ConnectionReset(_logger, ConnectionId);
                                 Application.Input.AdvanceTo(buffer.End);
                                 return;
                             }
@@ -342,6 +347,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
                 // Check completion AFTER processing and advancing (matches Kestrel's DoSend pattern)
                 if (result.IsCompleted)
                 {
+                    DirectTlsLog.ConnectionWriteFin(_logger, ConnectionId, GracefulSendLoopCompletion);
                     break;
                 }
             }
@@ -353,6 +359,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         catch (Exception ex)
         {
             error = ex;
+            LogConnectionError(ex);
         }
         finally
         {
@@ -367,6 +374,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             return;
         }
         _aborted = true;
+        DirectTlsLog.ConnectionWriteRst(_logger, ConnectionId, abortReason.Message);
 
         // Unblock BOTH loops so the connection tears down immediately instead of leaving the socket
         // half-open until the peer times out. SocketConnection.Abort closes the socket synchronously
@@ -396,7 +404,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             return;
         }
 
-        _logger.LogDebug(ex, "TLS fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
+        LogConnectionError(ex);
 
         // Just abort to cancel pending operations - don't trigger disposal here. Kestrel calls DisposeAsync
         // when it's done with the connection, which prevents premature disposal while SendLoop is still writing.
@@ -414,6 +422,18 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         {
             // a throwing callback must not escape and abandon the rest of the teardown
             _logger.LogError(0, ex, $"Unexpected exception in {nameof(DirectTlsConnection)}.{nameof(CancelConnectionClosedToken)}.");
+        }
+    }
+
+    private void LogConnectionError(Exception exception)
+    {
+        if (exception is ConnectionResetException)
+        {
+            DirectTlsLog.ConnectionReset(_logger, ConnectionId);
+        }
+        else
+        {
+            DirectTlsLog.ConnectionError(_logger, ConnectionId, exception);
         }
     }
 
@@ -461,7 +481,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "TLS shutdown failed for fd={Fd}", _connectionState.Fd);
+            DirectTlsLog.ConnectionError(_logger, ConnectionId, ex);
         }
 
         // 7. Signal connection closed
