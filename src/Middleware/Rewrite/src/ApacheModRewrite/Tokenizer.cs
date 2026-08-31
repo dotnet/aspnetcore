@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
@@ -106,7 +106,37 @@ internal sealed class Tokenizer
         {
             var token = tokens[i];
             var trimmed = token.Trim('\"');
-            tokens[i] = Regex.Unescape(trimmed);
+            tokens[i] = UnescapeToken(trimmed);
         }
+    }
+
+    private static string UnescapeToken(string token)
+    {
+        var escapeIndex = token.IndexOf(Escape);
+        if (escapeIndex == -1)
+        {
+            return token;
+        }
+
+        var builder = new StringBuilder(token.Length);
+        builder.Append(token, 0, escapeIndex);
+
+        for (var i = escapeIndex; i < token.Length; i++)
+        {
+            if (token[i] == Escape && i + 1 < token.Length)
+            {
+                var next = token[i + 1];
+                if (next == Space || next == Tab || next == Quote || next == Escape)
+                {
+                    builder.Append(next);
+                    i++;
+                    continue;
+                }
+            }
+
+            builder.Append(token[i]);
+        }
+
+        return builder.ToString();
     }
 }
