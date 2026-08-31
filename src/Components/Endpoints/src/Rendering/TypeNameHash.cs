@@ -18,17 +18,31 @@ internal class TypeNameHash
             throw new InvalidOperationException($"Cannot compute a hash for a type without a {nameof(Type.FullName)}.");
         }
 
+        // Try to encode into a stack buffer first to avoid allocations.
         Span<byte> typeNameBytes = stackalloc byte[MaxStackBufferSize];
-
-        if (!Encoding.UTF8.TryGetBytes(typeName, typeNameBytes, out var written))
+        int written;
+        byte[]? rented = null;
+        try
         {
-            typeNameBytes = Encoding.UTF8.GetBytes(typeName);
-            written = typeNameBytes.Length;
+            if (!Encoding.UTF8.TryGetBytes(typeName, typeNameBytes, out written))
+            {
+                // Larger than the stack buffer - rent an array from the pool.
+                var byteCount = Encoding.UTF8.GetByteCount(typeName);
+                rented = ArrayPool<byte>.Shared.Rent(byteCount);
+                written = Encoding.UTF8.GetBytes(typeName, rented);
+                typeNameBytes = rented;
+            }
+
+            Span<byte> typeNameHashBytes = stackalloc byte[SHA256.HashSizeInBytes];
+            SHA256.HashData(typeNameBytes[..written], typeNameHashBytes);
+            return Convert.ToHexString(typeNameHashBytes);
         }
-
-        Span<byte> typeNameHashBytes = stackalloc byte[SHA256.HashSizeInBytes];
-        SHA256.HashData(typeNameBytes[..written], typeNameHashBytes);
-
-        return Convert.ToHexString(typeNameHashBytes);
+        finally
+        {
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
     }
 }
