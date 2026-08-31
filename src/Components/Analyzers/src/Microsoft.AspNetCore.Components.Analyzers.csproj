@@ -5,6 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
+    <NoWarn>$(NoWarn);RS1036</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

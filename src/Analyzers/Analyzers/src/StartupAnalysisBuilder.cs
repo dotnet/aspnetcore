@@ -34,7 +34,8 @@ internal sealed class StartupAnalysisBuilder
                 StartupSymbols,
                 _analysesByType.ToImmutableDictionary(
                     k => k.Key,
-                    v => v.Value.ToImmutableArray()));
+                    v => v.Value.ToImmutableArray(),
+                    (IEqualityComparer<INamedTypeSymbol>)SymbolEqualityComparer.Default));
         }
     }
 

@@ -10,6 +10,7 @@
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <NoWarn>$(NoWarn);RS1036</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
