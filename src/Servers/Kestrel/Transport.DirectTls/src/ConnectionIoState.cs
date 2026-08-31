@@ -226,6 +226,8 @@ internal class ConnectionIoState : IDisposable
     // that still needs to read (_writeWantsRead) keeps EPOLLIN armed. Re-armed by ResumeReadInterest.
     internal void SuspendReadInterest()
     {
+        string? connectionId;
+
         lock (_sslLock)
         {
             if (_readInterestSuspended)
@@ -235,17 +237,20 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = true;
             UpdateEvents();
-
             _pausedConnectionsCounterEnabled = _metrics.ConnectionPaused();
-            if (_connectionId is { } connectionId)
-            {
-                DirectTlsLog.ConnectionPause(_logger, connectionId);
-            }
+            connectionId = _connectionId;
+        }
+
+        if (connectionId is not null)
+        {
+            DirectTlsLog.ConnectionPause(_logger, connectionId);
         }
     }
 
     internal void ResumeReadInterest()
     {
+        string? connectionId;
+
         lock (_sslLock)
         {
             if (!_readInterestSuspended)
@@ -255,12 +260,13 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = false;
             UpdateEvents();
-
             ReleasePauseTelemetry();
-            if (_connectionId is { } connectionId)
-            {
-                DirectTlsLog.ConnectionResume(_logger, connectionId);
-            }
+            connectionId = _connectionId;
+        }
+
+        if (connectionId is not null)
+        {
+            DirectTlsLog.ConnectionResume(_logger, connectionId);
         }
     }
 
