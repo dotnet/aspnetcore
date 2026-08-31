@@ -17,4 +17,6 @@ internal static class DojoScenarios
     internal const string ToolBasedGenerativeUIEndpoint = "/tool_based_generative_ui";
 
     internal const string AgenticGenerativeUIEndpoint = "/agentic_generative_ui";
+
+    internal const string SharedStateEndpoint = "/shared_state";
 }

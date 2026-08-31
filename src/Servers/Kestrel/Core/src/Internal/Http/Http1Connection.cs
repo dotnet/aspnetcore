@@ -43,6 +43,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private const byte ByteLF = (byte)'\n';
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
+    private const byte ByteBackSlash = (byte)'\\';
     private const string Asterisk = "*";
     private const string ForwardSlash = "/";
 
@@ -704,6 +705,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // Validation of absolute URIs is slow, but clients
             // should not be sending this form anyways, so perf optimization
             // not high priority
+
+            // System.Uri treats '\' as a path separator (a Windows/WinINet compatibility
+            // behavior) and collapses dot-segments around it, so uri.AbsolutePath (and thus
+            // Path) would be silently normalized in a way RawTarget doesn't reflect. Per
+            // RFC 3986, '\' is not a valid URI path character, so reject the request instead.
+            // Only the target before the query string is checked (query is target[targetPath.Length..]).
+            if (target[..targetPath.Length].Contains(ByteBackSlash))
+            {
+                ThrowRequestTargetRejected(target);
+            }
 
             if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
             {
