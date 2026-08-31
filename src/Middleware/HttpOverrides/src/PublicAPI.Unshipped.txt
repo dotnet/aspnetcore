@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.RequireKnownProxyAddress.get -> bool
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.RequireKnownProxyAddress.set -> void

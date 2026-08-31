@@ -227,19 +227,16 @@ public class ForwardedHeadersMiddleware
                 if (currentValues.RemoteIpAndPort is null)
                 {
                     // A request that arrives without a peer IP (e.g. over a Unix socket or named pipe) cannot
-                    // be attested as a known proxy. By default, allow remoteIp to be null for servers that don't
-                    // support it natively. When RequireKnownProxyAddress is set, fail closed and stop applying
-                    // forwarders rather than trusting the headers implicitly.
-                    if (_options.RequireKnownProxyAddress)
+                    // be attested as a known proxy, so fail closed and stop applying forwarders rather than
+                    // trusting the headers implicitly.
+                    if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        if (_logger.IsEnabled(LogLevel.Debug))
-                        {
-                            _logger.LogDebug(1, "Unknown proxy: no remote IP address available.");
-                        }
-                        break;
+                        _logger.LogDebug(1, "Unknown proxy: no remote IP address available.");
                     }
+                    break;
                 }
-                else if (!CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+
+                if (!CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
                 {
                     // Stop at the first unknown remote IP, but still apply changes processed so far.
                     if (_logger.IsEnabled(LogLevel.Debug))

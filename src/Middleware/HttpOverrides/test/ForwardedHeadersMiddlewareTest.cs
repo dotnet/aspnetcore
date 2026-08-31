@@ -38,12 +38,13 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-For"] = "11.111.111.11:9090";
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
         Assert.Equal(9090, context.Connection.RemotePort);
-        // No Original set if RemoteIpAddress started null.
-        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+        // Original captured from the known-proxy peer that was replaced.
+        Assert.True(context.Request.Headers.ContainsKey("X-Original-For"));
         // Should have been consumed and removed
         Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
     }
@@ -322,7 +323,6 @@ public class ForwardedHeadersMiddlewareTests
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        RequireKnownProxyAddress = true,
                     };
                     options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
                     app.UseForwardedHeaders(options);
@@ -359,7 +359,6 @@ public class ForwardedHeadersMiddlewareTests
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        RequireKnownProxyAddress = true,
                     };
                     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
                     app.UseForwardedHeaders(options);
@@ -381,7 +380,7 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Fact]
-    public async Task XForwardedForWithRequireKnownProxyAddressStillAppliesWhenPeerIsKnown()
+    public async Task XForwardedForWithKnownProxiesStillAppliesWhenPeerIsKnown()
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -393,7 +392,6 @@ public class ForwardedHeadersMiddlewareTests
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        RequireKnownProxyAddress = true,
                     };
                     options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
                     app.UseForwardedHeaders(options);
@@ -407,7 +405,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-For"] = "11.111.111.11:12345";
-            // The peer is a known proxy, so the forwarded header is applied even with enforcement enabled.
+            // The peer is a known proxy, so the forwarded header is applied.
             c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
             c.Connection.RemotePort = 99;
         });
@@ -417,7 +415,7 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Fact]
-    public async Task XForwardedForWithoutRequireKnownProxyAddressStillAppliesWhenNoRemoteIp()
+    public async Task XForwardedForWithEmptyKnownProxiesStillAppliesWhenNoRemoteIp()
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -426,13 +424,15 @@ public class ForwardedHeadersMiddlewareTests
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    // RequireKnownProxyAddress defaults to false, so the legacy allowance for a null peer IP
-                    // applies and the forwarded header is honored even though known-proxy enforcement is
-                    // active by default (KnownProxies contains the loopback address).
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    // With an empty known-proxy allowlist, enforcement is not requested, so the legacy
+                    // allowance for a null peer IP applies and the forwarded header is honored.
+                    var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                    });
+                    };
+                    options.KnownProxies.Clear();
+                    options.KnownIPNetworks.Clear();
+                    app.UseForwardedHeaders(options);
                 });
             }).Build();
 
@@ -503,6 +503,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Host"] = "testhost";
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal("testhost", context.Request.Host.ToString());
@@ -575,6 +576,7 @@ public class ForwardedHeadersMiddlewareTests
         await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Host"] = hostHeader;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
         Assert.True(assertsExecuted);
     }
@@ -710,6 +712,7 @@ public class ForwardedHeadersMiddlewareTests
         var response = await server.SendAsync(ctx =>
         {
             ctx.Request.Headers["X-forwarded-Host"] = hostHeader;
+            ctx.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
         Assert.True(assertsExecuted);
     }
@@ -797,6 +800,7 @@ public class ForwardedHeadersMiddlewareTests
         var response = await server.SendAsync(ctx =>
         {
             ctx.Request.Headers["X-forwarded-Host"] = "stuff:523, bar.foo.com:432, bar.com:80";
+            ctx.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
         Assert.True(assertsExecuted);
     }
@@ -833,6 +837,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Proto"] = header;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expected, context.Request.Scheme);
@@ -887,6 +892,7 @@ public class ForwardedHeadersMiddlewareTests
         await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Proto"] = scheme;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
         Assert.True(assertsExecuted);
     }
@@ -983,6 +989,7 @@ public class ForwardedHeadersMiddlewareTests
         {
             c.Request.Headers["X-Forwarded-Proto"] = protoHeader;
             c.Request.Headers["X-Forwarded-For"] = forHeader;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expected, context.Request.Scheme);
@@ -1025,6 +1032,7 @@ public class ForwardedHeadersMiddlewareTests
         {
             c.Request.Headers["X-Forwarded-Proto"] = protoHeader;
             c.Request.Headers["X-Forwarded-For"] = forHeader;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expected, context.Request.Scheme);
@@ -1171,6 +1179,7 @@ public class ForwardedHeadersMiddlewareTests
             c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
             c.Request.Headers["X-Forwarded-Host"] = "testhost";
             c.Request.Headers["X-Forwarded-Prefix"] = "/pathbase";
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
@@ -1312,6 +1321,7 @@ public class ForwardedHeadersMiddlewareTests
         {
             c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
             c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
@@ -1365,6 +1375,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-For"] = forHeader;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expectedRemoteIp, context.Connection.RemoteIpAddress.ToString());
@@ -1561,6 +1572,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expectedUnescapedPathBase, context.Request.PathBase.Value);
@@ -1604,6 +1616,7 @@ public class ForwardedHeadersMiddlewareTests
         {
             c.Request.PathBase = new PathString(pathBase);
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expectedUnescapedPathBase, context.Request.PathBase.Value);
@@ -1729,6 +1742,7 @@ public class ForwardedHeadersMiddlewareTests
         var context = await server.SendAsync(c =>
         {
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+            c.Connection.RemoteIpAddress = IPAddress.IPv6Loopback;
         });
 
         Assert.Equal(expectedforwardedPrefix, context.Request.Headers["X-Forwarded-Prefix"].ToString());

@@ -120,13 +120,4 @@ public class ForwardedHeadersOptions
     /// The default is 'false'.
     /// </summary>
     public bool RequireHeaderSymmetry { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, and known-proxy enforcement is configured via <see cref="KnownProxies"/> or
-    /// <see cref="KnownIPNetworks"/>, requests that arrive without a peer IP address are treated as untrusted and
-    /// the forwarded headers are ignored. This can happen for non-IP transports such as Unix domain sockets or
-    /// named pipes, where the immediate peer cannot be attested as a known proxy.
-    /// The default is <see langword="false"/>.
-    /// </summary>
-    public bool RequireKnownProxyAddress { get; set; }
 }
