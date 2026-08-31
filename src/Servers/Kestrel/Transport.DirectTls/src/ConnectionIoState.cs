@@ -33,6 +33,7 @@ internal class ConnectionIoState : IDisposable
     private readonly TlsSocketSession _session;
     private readonly DirectTlsMetrics _metrics;
     private string? _connectionId;
+    private uint _currentEpollInterest;
 
     // Serializes every native SSL operation (SSL_read / SSL_write / SSL_shutdown) on this connection's
     // session. TlsSocketSession is not safe for concurrent Read/Write from different threads - one SSL*
@@ -104,6 +105,15 @@ internal class ConnectionIoState : IDisposable
     internal void SetConnectionId(string connectionId)
     {
         _connectionId = connectionId;
+    }
+
+    internal string ConnectionId => _connectionId ?? string.Empty;
+
+    internal uint CurrentEpollInterest => Volatile.Read(ref _currentEpollInterest);
+
+    internal void SetCurrentEpollInterest(uint events)
+    {
+        Volatile.Write(ref _currentEpollInterest, events);
     }
 
     /// <summary>

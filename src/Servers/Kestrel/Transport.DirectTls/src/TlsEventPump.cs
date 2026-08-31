@@ -285,9 +285,13 @@ internal partial class TlsEventPump : IDisposable
     // tight-spins the pump thread at 100% CPU and starves every other connection this pump owns.
     private void DropEstablishedConnection(int fd)
     {
-        if (_connections.TryRemove(fd, out _))
+        if (_connections.TryRemove(fd, out var connection))
         {
             ConnectionReleased();
+            DeregisterFromEpoll(fd);
+            DirectTlsLog.EpollConnectionUnregistered(_logger, connection.ConnectionId, _id, fd, connection.CurrentEpollInterest);
+            DirectTlsEventSource.Log.RecordEpollConnectionUnregistered(_id, fd, connection.ConnectionId, connection.CurrentEpollInterest);
+            return;
         }
 
         DeregisterFromEpoll(fd);
@@ -350,7 +354,7 @@ internal partial class TlsEventPump : IDisposable
     /// kernel never applied - a blocked write waiting on an EPOLLOUT that was never armed, or a level-triggered
     /// spin on writable interest that could not be cleared.
     /// </returns>
-    public virtual bool ModifyEvents(int fd, uint events)
+    public bool ModifyEvents(int fd, uint events)
     {
         // Level-triggered mode (no EPOLLET) for stability. EPOLLRDHUP (peer half-close) rides with read interest:
         // arm it only when EPOLLIN is requested, so a connection whose read interest is suspended for backpressure
@@ -360,6 +364,27 @@ internal partial class TlsEventPump : IDisposable
             events |= NativeTls.EPOLLRDHUP;
         }
 
+        if (!TryModifyEstablishedInterest(fd, events))
+        {
+            return false;
+        }
+
+        if (_connections.TryGetValue(fd, out var connection))
+        {
+            uint previousEvents = connection.CurrentEpollInterest;
+            connection.SetCurrentEpollInterest(events);
+            if (previousEvents != events)
+            {
+                DirectTlsLog.EpollInterestChanged(_logger, connection.ConnectionId, _id, fd, previousEvents, events);
+                DirectTlsEventSource.Log.RecordEpollInterestChanged(_id, fd, connection.ConnectionId, previousEvents, events);
+            }
+        }
+
+        return true;
+    }
+
+    private protected virtual bool TryModifyEstablishedInterest(int fd, uint events)
+    {
         var ev = new EpollEvent
         {
             Events = events,
@@ -442,6 +467,8 @@ internal partial class TlsEventPump : IDisposable
 
                         break;
                     }
+
+                    DirectTlsEventSource.Log.EpollWaitCompleted(numEvents);
 
                     for (int i = 0; i < numEvents; i++)
                     {
@@ -565,6 +592,8 @@ internal partial class TlsEventPump : IDisposable
             return;
         }
 
+        DirectTlsEventSource.Log.RecordEpollReady(_id, fd, conn.ConnectionId, mask);
+
         // EPOLLERR/EPOLLHUP are terminal: the socket is errored or fully hung up and can make no further
         // progress. They are also level-triggered, so the event re-fires on every epoll_wait until the fd is
         // de-registered. Force a final read/write dispatch below so an active awaitable can observe the real
@@ -628,7 +657,10 @@ internal partial class TlsEventPump : IDisposable
     {
         if (_connections.TryAdd(fd, conn))
         {
+            conn.SetCurrentEpollInterest(DefaultEpollInterest);
             ConnectionOwned();
+            DirectTlsLog.EpollConnectionRegistered(_logger, conn.ConnectionId, _id, fd, DefaultEpollInterest);
+            DirectTlsEventSource.Log.RecordEpollConnectionRegistered(_id, fd, conn.ConnectionId, DefaultEpollInterest);
         }
     }
 
@@ -1172,7 +1204,10 @@ internal partial class TlsEventPump : IDisposable
         }
 
         _connections[fd] = connectionState;
+        connectionState.SetCurrentEpollInterest(DefaultEpollInterest);
         _handshaking.Remove(fd);
+        DirectTlsLog.EpollConnectionRegistered(_logger, connectionState.ConnectionId, _id, fd, DefaultEpollInterest);
+        DirectTlsEventSource.Log.RecordEpollConnectionRegistered(_id, fd, connectionState.ConnectionId, DefaultEpollInterest);
         return true;
     }
 

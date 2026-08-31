@@ -104,6 +104,10 @@ public class DirectTlsFunctionalTests : LoggedTest
         await telemetry.WaitForCounterAsync("accepts", value => value > 0);
         await telemetry.WaitForCounterAsync("bytes-read", value => value > 0);
         await telemetry.WaitForCounterAsync("bytes-written", value => value > 0);
+        await telemetry.WaitForCounterAsync("epoll-waits", value => value > 0);
+        await telemetry.WaitForCounterAsync("epoll-wakeups", value => value > 0);
+        await telemetry.WaitForCounterAsync("epoll-ready-events", value => value > 0);
+        await telemetry.WaitForCounterAsync("epoll-ready-batch-size", value => value > 0);
 
         Assert.Contains(telemetry.Events, eventData => eventData.EventName == "ConnectionAccepted");
         Assert.Contains(telemetry.Events, eventData =>

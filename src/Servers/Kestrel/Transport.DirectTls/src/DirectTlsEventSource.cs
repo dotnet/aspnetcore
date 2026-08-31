@@ -19,12 +19,21 @@ internal sealed class DirectTlsEventSource : EventSource
     private PollingCounter? _connectionsPausedCounter;
     private IncrementingPollingCounter? _bytesReadCounter;
     private IncrementingPollingCounter? _bytesWrittenCounter;
+    private IncrementingPollingCounter? _epollWaitsCounter;
+    private IncrementingPollingCounter? _epollWakeupsCounter;
+    private IncrementingPollingCounter? _epollTimeoutsCounter;
+    private IncrementingPollingCounter? _epollReadyEventsCounter;
+    private EventCounter? _epollReadyBatchSizeCounter;
 
     private long _connectionsOwned;
     private long _accepts;
     private long _connectionsPaused;
     private long _bytesRead;
     private long _bytesWritten;
+    private long _epollWaits;
+    private long _epollWakeups;
+    private long _epollTimeouts;
+    private long _epollReadyEvents;
 
     public DirectTlsEventSource()
     {
@@ -123,6 +132,89 @@ internal sealed class DirectTlsEventSource : EventSource
         Interlocked.Add(ref _bytesWritten, count);
     }
 
+    [NonEvent]
+    public void EpollWaitCompleted(int readyEventCount)
+    {
+        if (IsEnabled())
+        {
+            EpollWaitCompletedCore(readyEventCount);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [NonEvent]
+    private void EpollWaitCompletedCore(int readyEventCount)
+    {
+        Debug.Assert(readyEventCount >= 0);
+        Interlocked.Increment(ref _epollWaits);
+
+        if (readyEventCount == 0)
+        {
+            Interlocked.Increment(ref _epollTimeouts);
+            return;
+        }
+
+        Interlocked.Increment(ref _epollWakeups);
+        Interlocked.Add(ref _epollReadyEvents, readyEventCount);
+        _epollReadyBatchSizeCounter?.WriteMetric(readyEventCount);
+    }
+
+    [NonEvent]
+    public void RecordEpollConnectionRegistered(int pumpId, int fileDescriptor, string connectionId, uint events)
+    {
+        if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
+        {
+            EpollConnectionRegisteredCore(pumpId, fileDescriptor, connectionId, events);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [NonEvent]
+    private void EpollConnectionRegisteredCore(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => EpollConnectionRegistered(pumpId, fileDescriptor, connectionId, events);
+
+    [NonEvent]
+    public void RecordEpollInterestChanged(int pumpId, int fileDescriptor, string connectionId, uint previousEvents, uint events)
+    {
+        if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
+        {
+            EpollInterestChangedCore(pumpId, fileDescriptor, connectionId, previousEvents, events);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [NonEvent]
+    private void EpollInterestChangedCore(int pumpId, int fileDescriptor, string connectionId, uint previousEvents, uint events)
+        => EpollInterestChanged(pumpId, fileDescriptor, connectionId, previousEvents, events);
+
+    [NonEvent]
+    public void RecordEpollReady(int pumpId, int fileDescriptor, string connectionId, uint events)
+    {
+        if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
+        {
+            EpollReadyCore(pumpId, fileDescriptor, connectionId, events);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [NonEvent]
+    private void EpollReadyCore(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => EpollReady(pumpId, fileDescriptor, connectionId, events);
+
+    [NonEvent]
+    public void RecordEpollConnectionUnregistered(int pumpId, int fileDescriptor, string connectionId, uint events)
+    {
+        if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
+        {
+            EpollConnectionUnregisteredCore(pumpId, fileDescriptor, connectionId, events);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [NonEvent]
+    private void EpollConnectionUnregisteredCore(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => EpollConnectionUnregistered(pumpId, fileDescriptor, connectionId, events);
+
     [Event(1, Level = EventLevel.Informational)]
     private void ConnectionAccepted(int pumpId)
         => WriteEvent(1, pumpId);
@@ -131,6 +223,22 @@ internal sealed class DirectTlsEventSource : EventSource
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void PumpConnections(int pumpId, int connectionCount)
         => WriteEvent(2, pumpId, connectionCount);
+
+    [Event(3, Level = EventLevel.Verbose)]
+    private void EpollConnectionRegistered(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => WriteEvent(3, pumpId, fileDescriptor, connectionId, events);
+
+    [Event(4, Level = EventLevel.Verbose)]
+    private void EpollInterestChanged(int pumpId, int fileDescriptor, string connectionId, uint previousEvents, uint events)
+        => WriteEvent(4, pumpId, fileDescriptor, connectionId, previousEvents, events);
+
+    [Event(5, Level = EventLevel.Verbose)]
+    private void EpollReady(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => WriteEvent(5, pumpId, fileDescriptor, connectionId, events);
+
+    [Event(6, Level = EventLevel.Verbose)]
+    private void EpollConnectionUnregistered(int pumpId, int fileDescriptor, string connectionId, uint events)
+        => WriteEvent(6, pumpId, fileDescriptor, connectionId, events);
 
     protected override void OnEventCommand(EventCommandEventArgs command)
     {
@@ -158,6 +266,30 @@ internal sealed class DirectTlsEventSource : EventSource
             {
                 DisplayName = "Bytes Written",
                 DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+            };
+            _epollWaitsCounter ??= new IncrementingPollingCounter("epoll-waits", this, () => Interlocked.Read(ref _epollWaits))
+            {
+                DisplayName = "Epoll Waits",
+                DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+            };
+            _epollWakeupsCounter ??= new IncrementingPollingCounter("epoll-wakeups", this, () => Interlocked.Read(ref _epollWakeups))
+            {
+                DisplayName = "Epoll Wakeups",
+                DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+            };
+            _epollTimeoutsCounter ??= new IncrementingPollingCounter("epoll-timeouts", this, () => Interlocked.Read(ref _epollTimeouts))
+            {
+                DisplayName = "Epoll Timeouts",
+                DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+            };
+            _epollReadyEventsCounter ??= new IncrementingPollingCounter("epoll-ready-events", this, () => Interlocked.Read(ref _epollReadyEvents))
+            {
+                DisplayName = "Epoll Ready Events",
+                DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+            };
+            _epollReadyBatchSizeCounter ??= new EventCounter("epoll-ready-batch-size", this)
+            {
+                DisplayName = "Epoll Ready Batch Size"
             };
         }
     }

@@ -85,4 +85,37 @@ internal static partial class DirectTlsLog
             ConnectionResetCore(logger, connectionId);
         }
     }
+
+    [LoggerMessage(20, LogLevel.Trace, @"Connection id ""{ConnectionId}"" registered with epoll pump {PumpId} as fd {FileDescriptor} with events {Events}.", EventName = "EpollConnectionRegistered", SkipEnabledCheck = true)]
+    private static partial void EpollConnectionRegisteredCore(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint events);
+
+    public static void EpollConnectionRegistered(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint events)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            EpollConnectionRegisteredCore(logger, connectionId, pumpId, fileDescriptor, events);
+        }
+    }
+
+    [LoggerMessage(21, LogLevel.Trace, @"Connection id ""{ConnectionId}"" changed epoll interest on pump {PumpId}, fd {FileDescriptor}, from {PreviousEvents} to {Events}.", EventName = "EpollInterestChanged", SkipEnabledCheck = true)]
+    private static partial void EpollInterestChangedCore(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint previousEvents, uint events);
+
+    public static void EpollInterestChanged(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint previousEvents, uint events)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            EpollInterestChangedCore(logger, connectionId, pumpId, fileDescriptor, previousEvents, events);
+        }
+    }
+
+    [LoggerMessage(22, LogLevel.Trace, @"Connection id ""{ConnectionId}"" unregistered from epoll pump {PumpId} as fd {FileDescriptor}; last events were {Events}.", EventName = "EpollConnectionUnregistered", SkipEnabledCheck = true)]
+    private static partial void EpollConnectionUnregisteredCore(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint events);
+
+    public static void EpollConnectionUnregistered(ILogger logger, string connectionId, int pumpId, int fileDescriptor, uint events)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            EpollConnectionUnregisteredCore(logger, connectionId, pumpId, fileDescriptor, events);
+        }
+    }
 }
