@@ -1386,9 +1386,7 @@ public static partial class RequestDelegateFactory
         {
             object? defaultBodyValue = null;
 
-            var isNullableType = bodyType.IsGenericType && bodyType.GetGenericTypeDefinition() == typeof(Nullable<>);
-
-            if (allowEmptyRequestBody && bodyType.IsValueType && !isNullableType) // Nullable types should be left null
+            if (allowEmptyRequestBody && bodyType.IsValueType)
             {
                 defaultBodyValue = CreateValueType(bodyType);
             }
@@ -1456,7 +1454,9 @@ public static partial class RequestDelegateFactory
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern",
         Justification = "CreateValueType is only called on a ValueType. You can always create an instance of a ValueType.")]
-    private static object? CreateValueType(Type t) => RuntimeHelpers.GetUninitializedObject(t);
+    private static object? CreateValueType(Type t) =>
+        // Nullable value types should be left null.
+        Nullable.GetUnderlyingType(t) is not null ? null : RuntimeHelpers.GetUninitializedObject(t);
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForForm(
         Expression responseWritingMethodCall,
