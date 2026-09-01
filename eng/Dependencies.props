@@ -21,7 +21,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Features.ExternalAccess" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
@@ -310,7 +310,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
-    <LatestPackageReference Update="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore">
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Features.ExternalAccess">
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
     <LatestPackageReference Update="Microsoft.CodeAnalysis.Razor">
