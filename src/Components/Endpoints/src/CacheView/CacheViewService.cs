@@ -78,9 +78,12 @@ internal sealed partial class CacheViewService : IDisposable
 
     public async Task<CacheViewRenderState?> PrepareAsync(CacheView cacheView, HttpContext httpContext)
     {
-        // Skip cache if method is not GET, caching is disabled, or the cacheView is rendered inside a
-        // streaming render context (not yet supported).
-        if (!cacheView.Enabled || !HttpMethods.IsGet(httpContext.Request.Method) || cacheView.IsInStreamingContext)
+        // Skip cache if the method is not GET or HEAD, caching is disabled, or the cacheView is rendered
+        // inside a streaming render context (not yet supported). HEAD shares GET's cache entries because it
+        // renders the identical representation; the response body is dropped by the server below the
+        // capturing writer, so a HEAD-populated entry is identical to a GET-populated one.
+        var method = httpContext.Request.Method;
+        if (!cacheView.Enabled || !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method)) || cacheView.IsInStreamingContext)
         {
             return null;
         }
