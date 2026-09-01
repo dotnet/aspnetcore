@@ -121,7 +121,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisCommonPackageVersion>5.11.0-1.26420.103</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>5.11.0-1.26420.103</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.11.0-1.26420.103</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>5.11.0-1.26420.103</MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>
+    <MicrosoftCodeAnalysisFeaturesExternalAccessPackageVersion>5.11.0-1.26420.103</MicrosoftCodeAnalysisFeaturesExternalAccessPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
