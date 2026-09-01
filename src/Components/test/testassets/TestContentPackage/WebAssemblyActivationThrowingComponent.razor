@@ -1,0 +1,12 @@
+@namespace TestContentPackage
+
+<p id="wasm-activation-throwing-component">This should never render because activation throws.</p>
+
+@code {
+    // Throwing from the constructor simulates a failure during interactive component activation
+    // on the WebAssembly runtime (e.g. a ctor-injected DI service that fails to construct).
+    public WebAssemblyActivationThrowingComponent()
+    {
+        throw new InvalidOperationException("Simulated: component activation fails on the WebAssembly runtime.");
+    }
+}

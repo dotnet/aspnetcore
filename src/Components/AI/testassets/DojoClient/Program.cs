@@ -24,13 +24,22 @@ builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
 });
 
 builder.Services.AddScoped<IChatClient>(sp =>
-{
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>()
-        .CreateClient(DojoScenarios.ApiHttpClientName);
-    var aguiClient = new AGUIChatClient(
-        new AGUIChatClientOptions(httpClient, DojoScenarios.AgenticChatEndpoint));
-    return new FormattedChatClient(aguiClient);
-});
+    CreateChatClient(sp, DojoScenarios.AgenticChatEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.BackendToolRenderingEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.BackendToolRenderingEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.HumanInTheLoopEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.HumanInTheLoopEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.ToolBasedGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.ToolBasedGenerativeUIEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.AgenticGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.AgenticGenerativeUIEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.SharedStateEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
 
 var app = builder.Build();
 
@@ -41,3 +50,12 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static IChatClient CreateChatClient(IServiceProvider services, string endpoint)
+{
+    var httpClient = services.GetRequiredService<IHttpClientFactory>()
+        .CreateClient(DojoScenarios.ApiHttpClientName);
+    var aguiClient = new AGUIChatClient(new AGUIChatClientOptions(httpClient, endpoint));
+
+    return new FormattedChatClient(aguiClient);
+}

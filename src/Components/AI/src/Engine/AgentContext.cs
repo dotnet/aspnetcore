@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
@@ -74,7 +75,7 @@ public class AgentContext : IDisposable
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (Status == ConversationStatus.Streaming)
+        if (Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput)
         {
             throw new InvalidOperationException("A message is already being processed.");
         }
@@ -89,6 +90,43 @@ public class AgentContext : IDisposable
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         await StreamIntoTurnAsync(message, turn, _streamingCts.Token, cancellationToken);
+    }
+
+    /// <summary>
+    /// Restores the committed turns from the agent's configured conversation thread.
+    /// </summary>
+    /// <param name="cancellationToken">A token that cancels restoration.</param>
+    /// <returns>A task that completes when the turns have been restored.</returns>
+    public async Task RestoreAsync(CancellationToken cancellationToken = default)
+    {
+        if (Status == ConversationStatus.Streaming)
+        {
+            throw new InvalidOperationException("A message is already being processed.");
+        }
+
+        var blocks = await _agent.RestoreAsync(cancellationToken);
+        _turns.Clear();
+
+        ConversationTurn? currentTurn = null;
+        foreach (var block in blocks)
+        {
+            if (block.Role == ChatRole.User)
+            {
+                currentTurn = new ConversationTurn();
+                _turns.Add(currentTurn);
+                currentTurn.AddRequestBlock(block);
+            }
+            else
+            {
+                if (currentTurn is null)
+                {
+                    currentTurn = new ConversationTurn();
+                    _turns.Add(currentTurn);
+                }
+
+                currentTurn.AddResponseBlock(block);
+            }
+        }
     }
 
     /// <summary>
@@ -195,19 +233,46 @@ public class AgentContext : IDisposable
 
         try
         {
-            await foreach (var block in _agent.SendMessageAsync(message, cancellationToken)
-                .WithCancellation(cancellationToken))
+            IReadOnlyList<ChatMessage>? currentMessages = [message];
+            while (currentMessages is not null)
             {
-                if (block.Role == message.Role)
+                var interactiveBlocks = new List<IInteractiveBlock>();
+
+                await foreach (var block in _agent.SendMessagesAsync(currentMessages, cancellationToken)
+                    .WithCancellation(cancellationToken))
                 {
-                    turn.AddRequestBlock(block);
-                }
-                else
-                {
-                    turn.AddResponseBlock(block);
+                    if (block.Role == message.Role)
+                    {
+                        turn.AddRequestBlock(block);
+                    }
+                    else
+                    {
+                        turn.AddResponseBlock(block);
+                    }
+
+                    if (block is IInteractiveBlock interactiveBlock)
+                    {
+                        interactiveBlocks.Add(interactiveBlock);
+                    }
+
+                    NotifyBlockAdded(turn, block);
                 }
 
-                NotifyBlockAdded(turn, block);
+                if (interactiveBlocks.Count == 0)
+                {
+                    currentMessages = null;
+                    continue;
+                }
+
+                Status = ConversationStatus.AwaitingInput;
+                NotifyStatusChanged();
+
+                var results = await Task.WhenAll(
+                    interactiveBlocks.Select(block => block.GetResultAsync(cancellationToken)));
+
+                currentMessages = CreateContinuationMessages(results);
+                Status = ConversationStatus.Streaming;
+                NotifyStatusChanged();
             }
 
             Status = ConversationStatus.Idle;
@@ -238,6 +303,26 @@ public class AgentContext : IDisposable
         // completes as canceled. Cancellation driven by CancelAsync() (the internal token only)
         // is a graceful stop and completes normally.
         callerToken.ThrowIfCancellationRequested();
+    }
+
+    private static IReadOnlyList<ChatMessage> CreateContinuationMessages(
+        IReadOnlyList<AIContent> results)
+    {
+        var messages = new List<ChatMessage>();
+        foreach (var result in results)
+        {
+            var role = result is FunctionResultContent ? ChatRole.Tool : ChatRole.User;
+            if (messages.Count > 0 && messages[^1].Role == role)
+            {
+                messages[^1].Contents.Add(result);
+            }
+            else
+            {
+                messages.Add(new ChatMessage(role, [result]));
+            }
+        }
+
+        return messages;
     }
 
     private void NotifyStatusChanged()

@@ -140,7 +140,7 @@ internal sealed class OutputCacheMiddleware
 
                     var executed = false;
 
-                    if (context.AllowLocking)
+                    if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
                         var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
 
