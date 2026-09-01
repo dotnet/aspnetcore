@@ -338,21 +338,21 @@
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
-    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="5.10.0-1.26357.6" Label="Manual">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="5.11.0-1.26420.103" Label="Manual">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>1d599674e31ad86ca9e6e1dad7055b531e4d58e4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Features.ExternalAccess" Version="5.10.0-1.26357.6" Label="Manual">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.Features.ExternalAccess" Version="5.11.0-1.26420.103" Label="Manual">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>1d599674e31ad86ca9e6e1dad7055b531e4d58e4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="5.10.0-1.26357.6" Label="Manual">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="5.11.0-1.26420.103" Label="Manual">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>1d599674e31ad86ca9e6e1dad7055b531e4d58e4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.10.0-1.26357.6" Label="Manual">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.11.0-1.26420.103" Label="Manual">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>1d599674e31ad86ca9e6e1dad7055b531e4d58e4</Sha>
     </Dependency>
     <!-- End of manually updated dependencies -->
     <Dependency Name="Microsoft.Bcl.Cryptography" Version="11.0.0-rc.1.26427.131">
