@@ -1,0 +1,65 @@
+@if (!Block.HasResult)
+{
+    <div class="weather-card weather-card--loading" role="status">
+        <span>&#x2699;&#xfe0f; Retrieving weather...</span>
+    </div>
+}
+else
+{
+    var weather = Block.Weather;
+    var themeColor = GetThemeColor(weather?.Conditions);
+
+    <div class="weather-card" style="--weather-accent: @themeColor;">
+        <div class="weather-card__header">
+            <span class="weather-card__icon">@GetConditionIcon(weather?.Conditions)</span>
+            <span class="weather-card__location">@Block.Location</span>
+        </div>
+
+        <div class="weather-card__temp">
+            <span class="weather-card__temp-value">@weather?.Temperature</span>
+            <span class="weather-card__temp-unit">&deg;C</span>
+        </div>
+
+        <div class="weather-card__condition">@weather?.Conditions</div>
+
+        <div class="weather-card__stats">
+            <div class="weather-card__stat">
+                <span class="weather-card__stat-label">Humidity</span>
+                <span class="weather-card__stat-value">@weather?.Humidity%</span>
+            </div>
+            <div class="weather-card__stat">
+                <span class="weather-card__stat-label">Wind</span>
+                <span class="weather-card__stat-value">@weather?.WindSpeed km/h</span>
+            </div>
+            <div class="weather-card__stat">
+                <span class="weather-card__stat-label">Feels Like</span>
+                <span class="weather-card__stat-value">@weather?.FeelsLike&deg;C</span>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public WeatherToolBlock Block { get; set; } = default!;
+
+    private static string GetConditionIcon(string? conditions) =>
+        conditions?.ToLowerInvariant() switch
+        {
+            "sunny" => "\u2600\ufe0f",
+            "cloudy" => "\u2601\ufe0f",
+            "rainy" => "\ud83c\udf27\ufe0f",
+            "snowy" => "\u2744\ufe0f",
+            _ => "\ud83c\udf24\ufe0f",
+        };
+
+    private static string GetThemeColor(string? conditions) =>
+        conditions?.ToLowerInvariant() switch
+        {
+            "sunny" => "#f59e0b",
+            "cloudy" => "#6b7280",
+            "rainy" => "#3b82f6",
+            "snowy" => "#93c5fd",
+            _ => "#60a5fa",
+        };
+}

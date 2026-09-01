@@ -4,5 +4,6 @@ public enum PasskeyOperation
 {
     Create = 0,
     Request = 1,
-    Upgrade = 2,
+    Reauthenticate = 2,
+    Upgrade = 3,
 }

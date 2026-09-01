@@ -24,7 +24,7 @@ async function fetchWithErrorHandling(url, options = {}) {
 async function createCredential(optionsJson, mediation, signal) {
     let options;
     if (!optionsJson) {
-        const optionsResponse = await fetchWithErrorHandling('/Account/PasskeyCreationOptions', {
+        const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyCreationOptions', {
             method: 'POST',
             signal,
         });
@@ -45,6 +45,16 @@ async function browserSupportsConditionalCreate() {
     }
 }
 
+async function reauthenticateCredential(signal) {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyReauthenticationOptions', {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
+    return await navigator.credentials.get({ publicKey: options, signal });
+}
+
 async function requestCredential(email, mediation, signal) {
     const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?username=${email}`, {
         method: 'POST',
@@ -57,8 +67,9 @@ async function requestCredential(email, mediation, signal) {
 
 customElements.define('passkey-submit', class extends HTMLElement {
     static formAssociated = true;
+    static observedAttributes = ['unknown-credential-signal-options'];
 
-    connectedCallback() {
+    async connectedCallback() {
         this.internals = this.attachInternals();
         this.attrs = {
             operation: this.getAttribute('operation'),
@@ -74,8 +85,34 @@ customElements.define('passkey-submit', class extends HTMLElement {
             }
         });
 
-        this.tryAutofillPasskey();
-        this.tryUpgradeToPasskey();
+        try {
+            await this.signalUnknownCredential();
+        } finally {
+            this.tryAutofillPasskey();
+            this.tryUpgradeToPasskey();
+        }
+    }
+
+    attributeChangedCallback() {
+        // Enhanced navigation updates the attribute in place without reconnecting the element,
+        // so connectedCallback does not run again. It also runs before connectedCallback when the
+        // element is upgraded, which is why the initial signal is left to connectedCallback.
+        if (this.isConnected && this.internals) {
+            this.signalUnknownCredential();
+        }
+    }
+
+    async signalUnknownCredential() {
+        const options = this.getAttribute('unknown-credential-signal-options');
+        if (!options) {
+            return;
+        }
+        try {
+            // Not all browsers support this, and it is best-effort, so failures are not surfaced.
+            await window.PublicKeyCredential?.signalUnknownCredential?.(JSON.parse(options));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     disconnectedCallback() {
@@ -94,6 +131,8 @@ customElements.define('passkey-submit', class extends HTMLElement {
                 throw new Error('Passkey creation options were not provided.');
             }
             return await createCredential(this.attrs.creationOptions, 'conditional', signal);
+        } else if (this.attrs.operation === 'Reauthenticate') {
+            return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
             const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;

@@ -106,7 +106,7 @@
     <MicrosoftCodeAnalysisRazorVersion>6.0.0</MicrosoftCodeAnalysisRazorVersion>
     <!-- Partner teams -->
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
-    <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
+    <MicrosoftBuildLocatorVersion>1.11.2</MicrosoftBuildLocatorVersion>
     <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
@@ -115,7 +115,7 @@
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <!-- Pin the version of the M.CA dependencies that we utilize with a custom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
     consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
-    <MicrosoftCodeAnalysisVersion_LatestVS>4.13.0-3.24613.7</MicrosoftCodeAnalysisVersion_LatestVS>
+    <MicrosoftCodeAnalysisVersion_LatestVS>5.10.0-1.26357.6</MicrosoftCodeAnalysisVersion_LatestVS>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
@@ -154,12 +154,12 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.27.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.64.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.64.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.83.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.83.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.83.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.83.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.83.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.302</MessagePackVersion>
     <!-- Extensions packages for Blazor WASM Service Defaults -->
     <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
@@ -169,7 +169,7 @@
     <MicrosoftIdentityWebDownstreamApiVersion>3.15.1</MicrosoftIdentityWebDownstreamApiVersion>
     <MicrosoftWindowsCsWin32Version>0.3.296</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
-    <ModelContextProtocolVersion>1.2.0</ModelContextProtocolVersion>
+    <ModelContextProtocolVersion>2.1.0</ModelContextProtocolVersion>
     <ModelContextProtocolAspNetCoreVersion>$(ModelContextProtocolVersion)</ModelContextProtocolAspNetCoreVersion>
     <MoqVersion>4.20.72</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
@@ -185,6 +185,7 @@
     <OpenTelemetryInstrumentationRuntimeVersion>1.15.1</OpenTelemetryInstrumentationRuntimeVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
     <MicrosoftPlaywrightVersion>1.61.0</MicrosoftPlaywrightVersion>
+    <MicrosoftPlaywrightTestAdapterVersion>$(MicrosoftPlaywrightVersion)</MicrosoftPlaywrightTestAdapterVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.4</PollyVersion>
     <SeleniumSupportVersion>4.45.0</SeleniumSupportVersion>
@@ -204,19 +205,30 @@
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <XUnitRunnerVisualStudioVersion>3.1.3</XUnitRunnerVisualStudioVersion>
-    <!-- xUnit v3 packages (used by Components.Testing E2E infrastructure) -->
+    <!-- xUnit v3 packages (used by Components.Testing library unit tests) -->
     <XunitV3Version>3.2.2</XunitV3Version>
     <XunitV3ExtensibilityCoreVersion>$(XunitV3Version)</XunitV3ExtensibilityCoreVersion>
-    <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
+    <!-- MSTest + MTP packages (used by Components.Testing E2E infrastructure) -->
+    <MSTestVersion>4.2.3</MSTestVersion>
+    <MSTestTestFrameworkVersion>$(MSTestVersion)</MSTestTestFrameworkVersion>
+    <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
-    <MicrosoftOpenApiVersion>[3.9.0,4.0.0)</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>[3.9.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
-    <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
-    <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
-    <DotnetServeVersion>1.10.93</DotnetServeVersion>
+    <MicrosoftOpenApiVersion>[3.10.0,4.0.0)</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>[3.10.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
+    <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
+    <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
+    <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
+    <MicrosoftExtensionsAIOpenAIVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIOpenAIVersion>
+    <!-- AG-UI packages (used by the Components.AI dojo test assets) -->
+    <AGUIVersion>0.0.5</AGUIVersion>
+    <AGUIAbstractionsVersion>$(AGUIVersion)</AGUIAbstractionsVersion>
+    <AGUIClientVersion>$(AGUIVersion)</AGUIClientVersion>
+    <AGUIFormattingVersion>$(AGUIVersion)</AGUIFormattingVersion>
+    <AGUIServerVersion>$(AGUIVersion)</AGUIServerVersion>
+    <!-- Playwright CLI version -->
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
 
