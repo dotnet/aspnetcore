@@ -25,6 +25,10 @@ if ($Hosted) {
     $templateArguments += "--hosted"
 }
 
+if ($Args) {
+    $templateArguments += $Args
+}
+
 Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
 
 Test-Template `
