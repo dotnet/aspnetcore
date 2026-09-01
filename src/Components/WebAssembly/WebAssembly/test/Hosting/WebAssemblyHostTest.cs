@@ -28,7 +28,7 @@ public class WebAssemblyHostTest
         var jsMethods = new TestInternalJSImportMethods
         {
             HostStartupValuesJson =
-                """{"document.baseURI":"https://www.example.com/","location.href":"https://www.example.com/page","custom.value":"expected"}""",
+                """{"document.baseURI":"https://www.example.com/awesome-part-that-will-be-truncated-in-tests","location.href":"https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool","custom.value":"expected"}""",
         };
         var builder = new WebAssemblyHostBuilder(jsMethods);
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
@@ -46,6 +46,23 @@ public class WebAssemblyHostTest
         Assert.Equal(
             "expected",
             host.Services.GetRequiredService<IHostStartupValues>().GetRequired("custom.value"));
+    }
+
+    [Fact]
+    public async Task RunAsyncRejectsNavigationValuesThatChangedAfterBuild()
+    {
+        var jsMethods = new TestInternalJSImportMethods
+        {
+            HostStartupValuesJson =
+                """{"document.baseURI":"https://www.example.com/other/","location.href":"https://www.example.com/other/page"}""",
+        };
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var host = builder.Build();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+
+        Assert.Equal("The browser navigation values changed during host initialization.", exception.Message);
     }
 
     [Fact]
@@ -86,6 +103,86 @@ public class WebAssemblyHostTest
             () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
 
         Assert.Equal("The browser returned invalid host startup values.", exception.Message);
+    }
+
+    [Fact]
+    public async Task RunAsyncRunsHostInitializersInStableOrderIncludingJSInterop()
+    {
+        var calls = new List<string>();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        NavigationManager navigationManager = null;
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("lower", -100, calls));
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("first-tie", 0, calls));
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("second-tie", 0, calls, requiresJSInterop: true));
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("navigation", 100, calls, callback: token =>
+            {
+                Assert.Equal(cancellationTokenSource.Token, token);
+                Assert.Equal("https://www.example.com/", navigationManager!.BaseUri);
+                Assert.Equal(
+                    "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool",
+                    navigationManager.Uri);
+                cancellationTokenSource.Cancel();
+            }));
+        var host = builder.Build();
+        navigationManager = host.Services.GetRequiredService<NavigationManager>();
+
+        await host.RunAsyncCore(cancellationTokenSource.Token, new TestSatelliteResourcesLoader());
+
+        Assert.Equal(["lower", "first-tie", "second-tie", "navigation"], calls);
+    }
+
+    [Fact]
+    public async Task RunAsyncStopsAndSurfacesHostInitializerFailure()
+    {
+        var calls = new List<string>();
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("failure", -300, calls, exception: new InvalidOperationException("Initializer failed.")));
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("not-run", -200, calls));
+        var host = builder.Build();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+
+        Assert.Equal("Initializer failed.", exception.Message);
+        Assert.Equal(["failure"], calls);
+    }
+
+    [Fact]
+    public async Task RunAsyncStopsAndSurfacesHostInitializerCancellation()
+    {
+        var calls = new List<string>();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("canceled", -300, calls, callback: token =>
+            {
+                cancellationTokenSource.Cancel();
+                token.ThrowIfCancellationRequested();
+            }));
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer("not-run", -200, calls));
+        var host = builder.Build();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            host.RunAsyncCore(cancellationTokenSource.Token, new TestSatelliteResourcesLoader()));
+
+        Assert.Equal(["canceled"], calls);
+    }
+
+    [Fact]
+    public void HostEnvironmentBaseAddressIsAvailableBeforeRunAsync()
+    {
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+
+        Assert.Equal("https://www.example.com/", builder.HostEnvironment.BaseAddress);
     }
 
     // This won't happen in the product code, but we need to be able to safely call RunAsync
@@ -327,6 +424,27 @@ public class WebAssemblyHostTest
         {
             StopCalled = true;
             throw new InvalidOperationException("Simulated hosted service stop error");
+        }
+    }
+
+    private sealed class TestHostInitializer(
+        string name,
+        int order,
+        List<string> calls,
+        bool requiresJSInterop = false,
+        Exception exception = null,
+        Action<CancellationToken> callback = null) : IHostInitializer
+    {
+        public int Order => order;
+
+        public bool RequiresJSInterop => requiresJSInterop;
+
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            calls.Add(name);
+            callback?.Invoke(cancellationToken);
+
+            return exception is null ? Task.CompletedTask : Task.FromException(exception);
         }
     }
 

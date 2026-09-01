@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 
@@ -8,6 +9,22 @@ namespace Microsoft.AspNetCore.Components.Hosting;
 
 internal static class HostStartupValuesJson
 {
+    internal static string SerializeKeys(IReadOnlyList<string> keys)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartArray();
+            foreach (var key in keys)
+            {
+                writer.WriteStringValue(key);
+            }
+            writer.WriteEndArray();
+        }
+
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
+    }
+
     internal static bool TryDeserialize(string? json, out Dictionary<string, string> values)
     {
         values = new Dictionary<string, string>(StringComparer.Ordinal);

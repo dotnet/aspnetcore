@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
@@ -137,6 +138,13 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         _started = true;
 
         InitializeHostStartupValues();
+
+        var hostInitializers = Services.GetServices<IHostInitializer>()
+            .OrderBy(initializer => initializer.Order);
+        foreach (var initializer in hostInitializers)
+        {
+            await initializer.InitializeAsync(cancellationToken);
+        }
 
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
         var store = !string.IsNullOrEmpty(_persistedState) ?

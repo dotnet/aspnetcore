@@ -107,8 +107,15 @@ internal sealed partial class ComponentHub : Hub
         return Task.CompletedTask;
     }
 
-    public string[] GetStartupValueKeys()
-        => BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders);
+    public string GetStartupValueKeys()
+        => HostStartupValuesJson.SerializeKeys(
+            BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders));
+
+    public async Task CompleteHostInitialization()
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        circuitHost?.BeginHostInitialization(Context.ConnectionAborted);
+    }
 
     public ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
         => StartCircuitCore(baseUri, uri, serializedComponentRecords, applicationState, null, hasStartupValues: false);
@@ -195,7 +202,9 @@ internal sealed partial class ComponentHub : Hub
                 startupValues,
                 Context.User,
                 store,
-                resourceCollection);
+                resourceCollection,
+                supportsDeferredHostInitialization: hasStartupValues,
+                cancellationToken: Context.ConnectionAborted);
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
@@ -204,8 +213,8 @@ internal sealed partial class ComponentHub : Hub
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
             _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
-            // It's safe to *publish* the circuit now because nothing will be able
-            // to run inside it until after InitializeAsync completes.
+            // Publish before initialization completes so new clients can complete deferred host initialization.
+            // Root component rendering remains blocked until that handshake finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 
@@ -552,7 +561,9 @@ internal sealed partial class ComponentHub : Hub
                 startupValues,
                 Context.User,
                 store: null,
-                resourceCollection);
+                resourceCollection,
+                supportsDeferredHostInitialization: hasStartupValues,
+                cancellationToken: Context.ConnectionAborted);
 
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
 
@@ -564,8 +575,8 @@ internal sealed partial class ComponentHub : Hub
 
             circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
-            // It's safe to *publish* the circuit now because nothing will be able
-            // to run inside it until after InitializeAsync completes.
+            // Publish before initialization completes so new clients can complete deferred host initialization.
+            // Root component rendering remains blocked until that handshake finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 

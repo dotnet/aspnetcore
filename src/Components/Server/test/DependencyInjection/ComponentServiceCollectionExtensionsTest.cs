@@ -1,17 +1,72 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class ComponentServiceCollectionExtensionsTest
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EqualOrderInitializersPreserveServiceRegistrationOrder(bool registerUserFirst)
+    {
+        var services = new ServiceCollection();
+        var userInitializer = new TestHostInitializer();
+        if (registerUserFirst)
+        {
+            services.AddSingleton<IHostInitializer>(userInitializer);
+        }
+
+        services.AddServerSideBlazor();
+
+        if (!registerUserFirst)
+        {
+            services.AddSingleton<IHostInitializer>(userInitializer);
+        }
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var initializers = scope.ServiceProvider.GetServices<IHostInitializer>()
+            .OrderBy(initializer => initializer.Order)
+            .ToArray();
+        var navigationInitializerIndex = Array.FindIndex(
+            initializers,
+            initializer => initializer.GetType() == typeof(NavigationManagerInitializer));
+        var userInitializerIndex = Array.IndexOf(initializers, userInitializer);
+
+        Assert.Equal(registerUserFirst, userInitializerIndex < navigationInitializerIndex);
+    }
+
+    [Fact]
+    public async Task ServerInitializersDoNotResolveInteractiveServicesInStaticScope()
+    {
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        services.AddScoped<NavigationManager>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<INavigationInterception>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<IScrollToLocationHash>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<IJSRuntime>(_ => throw new InvalidOperationException("Unexpected resolution."));
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var initializers = scope.ServiceProvider.GetServices<IHostInitializer>();
+
+        foreach (var initializer in initializers)
+        {
+            await initializer.InitializeAsync();
+        }
+    }
+
     [Fact]
     public void AddServerSideSignalR_RegistersBlazorPack()
     {
@@ -142,5 +197,14 @@ public class ComponentServiceCollectionExtensionsTest
         Assert.Equal(
             countAfterFirstCall,
             services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues)));
+        Assert.Equal(3, services.Count(descriptor => descriptor.ServiceType == typeof(IHostInitializer)));
+    }
+
+    private sealed class TestHostInitializer : IHostInitializer
+    {
+        public int Order => -200;
+
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

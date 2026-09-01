@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -27,7 +28,13 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
+    private readonly IHostInitializer[] _deferredHostInitializers;
+    private readonly TaskCompletionSource _deferredHostInitializationCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly object _hostInitializationLock = new();
+    private readonly object _rootComponentUpdateLock = new();
+    private Task _rootComponentUpdateQueue = Task.CompletedTask;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
+    private Task _completeHostInitializationTask;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
@@ -54,6 +61,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
+        IHostInitializer[] deferredHostInitializers,
         CircuitHandler[] circuitHandlers,
         CircuitMetrics circuitMetrics,
         CircuitActivitySource circuitActivitySource,
@@ -73,6 +81,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _deferredHostInitializers = deferredHostInitializers ?? throw new ArgumentNullException(nameof(deferredHostInitializers));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
         _circuitActivitySource = circuitActivitySource;
@@ -92,6 +101,11 @@ internal partial class CircuitHost : IAsyncDisposable
         JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
 
         _navigationManager.UnhandledException += ReportAndInvoke_UnhandledException;
+
+        if (_deferredHostInitializers.Length == 0)
+        {
+            _deferredHostInitializationCompletion.SetResult();
+        }
     }
 
     public CircuitHandle Handle { get; }
@@ -133,6 +147,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+
+                await _deferredHostInitializationCompletion.Task.WaitAsync(cancellationToken);
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
                 // the components immediately during start.
@@ -189,6 +205,78 @@ internal partial class CircuitHost : IAsyncDisposable
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
         }));
+    }
+
+    internal void BeginHostInitialization(CancellationToken cancellationToken)
+    {
+        lock (_hostInitializationLock)
+        {
+            _completeHostInitializationTask ??= RunDeferredHostInitializersAsync(cancellationToken);
+        }
+    }
+
+    private async Task RunDeferredHostInitializersAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Renderer.Dispatcher.InvokeAsync(
+                () => ExecuteDeferredHostInitializersAsync(cancellationToken));
+        }
+        catch (Exception exception)
+        {
+            await FailHostInitializationAsync(exception);
+        }
+    }
+
+    private async Task ExecuteDeferredHostInitializersAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            foreach (var initializer in _deferredHostInitializers)
+            {
+                await initializer.InitializeAsync(cancellationToken);
+            }
+
+            _deferredHostInitializationCompletion.TrySetResult();
+            await NotifyHostInitializationCompletionAsync(succeeded: true, error: null);
+        }
+        catch (Exception exception)
+        {
+            await FailHostInitializationAsync(exception);
+        }
+    }
+
+    private async Task FailHostInitializationAsync(Exception exception)
+    {
+        if (exception is OperationCanceledException cancellationException)
+        {
+            _deferredHostInitializationCompletion.TrySetCanceled(cancellationException.CancellationToken);
+        }
+        else
+        {
+            _deferredHostInitializationCompletion.TrySetException(exception);
+        }
+
+        await NotifyHostInitializationCompletionAsync(
+            succeeded: false,
+            error: GetClientErrorMessage(exception));
+    }
+
+    private async Task NotifyHostInitializationCompletionAsync(bool succeeded, string error)
+    {
+        if (!Client.Connected)
+        {
+            return;
+        }
+
+        try
+        {
+            await Client.SendAsync("JS.EndHostInitialization", succeeded, error);
+        }
+        catch (Exception exception)
+        {
+            Log.CircuitTransmitErrorFailed(_logger, CircuitId, exception);
+        }
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -769,7 +857,59 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.UpdateRootComponentsStarted(_logger);
 
-        return Renderer.Dispatcher.InvokeAsync(async () =>
+        Task predecessor;
+        var queueCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (_rootComponentUpdateLock)
+        {
+            predecessor = _rootComponentUpdateQueue;
+            _rootComponentUpdateQueue = queueCompletion.Task;
+        }
+
+        return ProcessQueuedRootComponentUpdate(
+            operationBatch,
+            store,
+            isRestore,
+            cancellation,
+            predecessor,
+            queueCompletion);
+    }
+
+    private async Task ProcessQueuedRootComponentUpdate(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation,
+        Task predecessor,
+        TaskCompletionSource queueCompletion)
+    {
+        try
+        {
+            await predecessor;
+            await UpdateRootComponentsCore(operationBatch, store, isRestore, cancellation);
+        }
+        finally
+        {
+            queueCompletion.TrySetResult();
+        }
+    }
+
+    private async Task UpdateRootComponentsCore(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            await _deferredHostInitializationCompletion.Task.WaitAsync(cancellation);
+        }
+        catch
+        {
+            // InitializeAsync owns reporting host initialization failures.
+            return;
+        }
+
+        await Renderer.Dispatcher.InvokeAsync(async () =>
         {
             var shouldClearStore = false;
             var shouldWaitForQuiescence = false;

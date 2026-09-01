@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,7 +46,9 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
-        ResourceAssetCollection resourceCollection)
+        ResourceAssetCollection resourceCollection,
+        bool supportsDeferredHostInitialization,
+        CancellationToken cancellationToken)
     {
         var scope = _scopeFactory.CreateAsyncScope();
         scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
@@ -59,21 +60,48 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         jsRuntime.Initialize(client);
 
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
-        var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
-        var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
         var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
 
-        if (client.Connected)
+        IHostInitializer[] deferredHostInitializers;
+        try
         {
-            navigationManager.AttachJsRuntime(jsRuntime);
-            navigationManager.Initialize(baseUri, uri);
+            var hostInitializers = scope.ServiceProvider.GetServices<IHostInitializer>()
+                .OrderBy(initializer => initializer.Order)
+                .ToArray();
 
-            navigationInterception.AttachJSRuntime(jsRuntime);
-            scrollToLocationHash.AttachJSRuntime(jsRuntime);
+            if (supportsDeferredHostInitialization)
+            {
+                var firstDeferredInitializerIndex = Array.FindIndex(
+                    hostInitializers,
+                    initializer => initializer.RequiresJSInterop);
+                var initializersToRun = firstDeferredInitializerIndex < 0
+                    ? hostInitializers
+                    : hostInitializers[..firstDeferredInitializerIndex];
+                foreach (var initializer in initializersToRun)
+                {
+                    await initializer.InitializeAsync(cancellationToken);
+                }
+
+                deferredHostInitializers = firstDeferredInitializerIndex < 0
+                    ? []
+                    : hostInitializers[firstDeferredInitializerIndex..];
+            }
+            else
+            {
+                deferredHostInitializers = [];
+                foreach (var initializer in hostInitializers)
+                {
+                    if (!initializer.RequiresJSInterop || initializer is IServerHostInitializer)
+                    {
+                        await initializer.InitializeAsync(cancellationToken);
+                    }
+                }
+            }
         }
-        else
+        catch
         {
-            navigationManager.Initialize(baseUri, uri);
+            await scope.DisposeAsync();
+            throw;
         }
 
         if (components.Count > 0)
@@ -119,6 +147,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             components,
             jsRuntime,
             navigationManager,
+            deferredHostInitializers,
             circuitHandlers,
             _circuitMetrics,
             circuitActivitySource,

@@ -1,0 +1,22 @@
+@page "/host-initialization"
+@rendermode RenderMode.InteractiveServer
+@inject HostInitializationState State
+
+<h1>Host initialization</h1>
+
+<p id="host-initialization-renderer">@RendererInfo.Name:@RendererInfo.IsInteractive</p>
+<ol id="host-initialization-events">
+    @foreach (var entry in State.Events)
+    {
+        <li>@entry</li>
+    }
+</ol>
+<p id="host-initialization-click-count">@State.ClickCount</p>
+<button id="host-initialization-click" @onclick="Increment">Increment</button>
+
+@code {
+    private void Increment()
+    {
+        State.ClickCount++;
+    }
+}

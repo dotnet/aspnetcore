@@ -190,6 +190,7 @@ public sealed class WebAssemblyHostBuilder
         var baseUri = _jsMethods.NavigationManager_GetBaseUri();
         var uri = _jsMethods.NavigationManager_GetLocationHref();
 
+        // NavigationManager is available between Build and RunAsync for compatibility with existing applications.
         WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
     }
 
@@ -337,6 +338,8 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<InteractiveHostStartupValues>();
         Services.TryAddSingleton<IHostStartupValues>(
             static services => services.GetRequiredService<InteractiveHostStartupValues>());
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
         Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
