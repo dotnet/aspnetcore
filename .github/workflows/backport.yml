@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   backport:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@1353cab671305cff0ae5afc0d96ff3d03f239e0c
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@306225d7029934938d109e18df390f04e366a68d
     with:
       pr_description_template: |
         Backport of #%source_pr_number% to %target_branch%
