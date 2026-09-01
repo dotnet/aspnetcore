@@ -185,8 +185,18 @@ function Test-Template {
 
         $mainProject = $mainProjects[0].FullName
         if ('--auth' -in $TemplateArguments -and 'Individual' -in $TemplateArguments) {
+            Invoke-DotNet -Arguments @("restore", $mainProject)
             Write-Verbose "Running dotnet ef migrations"
-            Invoke-DotNet -Arguments @("ef", "migrations", "add", "Initial", "--project", $mainProject)
+            Invoke-DotNet -Arguments @(
+                "ef",
+                "migrations",
+                "add",
+                "Initial",
+                "--project",
+                $mainProject,
+                "--startup-project",
+                $mainProject
+            )
         }
 
         $publishOutputDir = Join-Path $mainProjectDirectory ".publish"
