@@ -1,6 +1,6 @@
 # Getting started
 
-To get the process of adding/modifying API going, file a new issue using [the API Proposal issue template](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=api-suggestion&template=30_api_proposal.md&title=). Below is more information about the process.
+API changes are reviewed in a separate API proposal issue from the issue that tracks the feature or implementation. When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](/.github/skills/api-review/SKILL.md) to create the proposal issue from the originating issue and pull request.
 
 ## Process
 
@@ -12,9 +12,10 @@ The process is visualized in the diagram below:
 ```mermaid
 flowchart TD
     identify["Identify an API change or addition"]
-    suggestion["Apply the api-suggestion label"]
-    proposal["Develop or update the API proposal"]
-    implementation["Implement the API; open, mark ready, or merge a PR"]
+    implementation["Implementation work may begin"]
+    open["Open the implementation PR"]
+    proposal["Use the api-review skill to file a separate API proposal issue"]
+    merge["The implementation PR may become ready or merge"]
     ready["Apply the api-ready-for-review label and notify the review team"]
     review["Review the proposal"]
     approved{"Is the proposal approved?"}
@@ -22,19 +23,20 @@ flowchart TD
     final{"Is the final implemented API shape approved?"}
     rtm["The API may ship at RTM"]
 
-    identify --> suggestion --> proposal
-    identify --> implementation
+    identify --> implementation --> open
+    identify -. The proposal may be filed earlier .-> proposal
+    open --> proposal
+    open --> merge --> final
     proposal --> ready --> review --> approved
     approved -- No --> proposal
     approved -- Yes --> label --> final
-    implementation --> final
     final -- No --> proposal
     final -- Yes --> rtm
 ```
 
 1. The API review process kicks in after the owner of the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
-1. If the proposed design adds new APIs, mark those issues with the `api-suggestion` label
 1. API review may happen before, during, or after implementation. Contributors may implement the API, open or mark a pull request ready, and merge the work before the proposal receives `api-approved`.
+1. When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](/.github/skills/api-review/SKILL.md) to file a separate API proposal issue. The proposal issue must link to the originating issue and implementation pull request, and use the `api-suggestion` and `api-proposal` labels.
 1. When the issue owner thinks the proposal is in good shape, he/she marks the issue with `api-ready-for-review` label. Also, the @dotnet/aspnet-api-review team should be notified of the issue.
 1. The `aspnet-api-review` team will host a weekly API review meeting and will review your proposed API change during the next meeting. If you have an API scheduled for review, you must have a representative in the meeting.
 1. Some API reviews can happen through a shorter process. For these situations, simply ping the API review crew for a quicker review, so that it can happen as a conversation.
