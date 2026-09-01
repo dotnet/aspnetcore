@@ -226,10 +226,11 @@ public abstract class CacheViewTestBase : ServerTestBase<BasicTestAppServerSiteF
         using var httpClient = new HttpClient();
         var requestUri = new Uri(_serverFixture.RootUri, relativeUrl);
 
-        for (var i = 0; i < count; i++)
-        {
-            using var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, requestUri));
-            response.EnsureSuccessStatusCode();
-        }
+for (var i = 0; i < count; i++)
+{
+    using var request = new HttpRequestMessage(HttpMethod.Head, requestUri);
+    using var response = await httpClient.SendAsync(request);
+    response.EnsureSuccessStatusCode();
+}
     }
 }
