@@ -126,7 +126,7 @@ internal sealed class Tokenizer
             if (token[i] == Escape && (uint)(i + 1) < token.Length)
             {
                 var next = token[i + 1];
-                if (next == Space || next == Tab || next == Quote || next == Escape)
+                if (next is Space or Tab or Quote or Escape)
                 {
                     builder.Append(next);
                     i++;
