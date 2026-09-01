@@ -592,6 +592,7 @@ public class CustomParsableType
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
@@ -618,6 +619,7 @@ public interface NonParsableType
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
@@ -693,6 +695,7 @@ class Program
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
