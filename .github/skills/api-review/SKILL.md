@@ -59,8 +59,8 @@ Present a checklist of the available inputs. If either input is missing, use the
 - The Proposed API section must use ref-assembly diff format with complete namespaces and type declarations.
 - `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval.
 - API review may happen before, during, or after implementation. Pull request readiness and merge do not require `api-approved`.
-- The final implemented API shape must receive `api-approved` before RTM.
-- If implementation changes the proposed or previously approved shape, update the proposal and return it to API review before RTM.
+- The API proposal issue must have the `api-approved` label covering the final implemented API shape before the API is included in an RTM release.
+- If implementation changes the proposed or previously approved shape, update the proposal and return it to API review before the API is included in an RTM release.
 - Notify `@dotnet/aspnet-api-review` when applying `api-ready-for-review`. A representative must attend the API review meeting.
 
 ## Completion

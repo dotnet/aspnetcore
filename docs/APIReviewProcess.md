@@ -20,18 +20,20 @@ flowchart TD
     review["Review the proposal"]
     approved{"Is the proposal approved?"}
     label["Apply the api-approved label"]
-    final{"Is the final implemented API shape approved?"}
-    rtm["The API may ship at RTM"]
+    final{"Does the approved proposal match the final implementation?"}
+    verify["Verify the proposal issue has the api-approved label"]
+    rtm["The API may be included in an RTM release"]
 
     identify --> implementation --> open
     identify -. The proposal may be filed earlier .-> proposal
+    proposal -. Implementation may begin after proposal development .-> implementation
     open --> proposal
     open --> merge --> final
     proposal --> ready --> review --> approved
     approved -- No --> proposal
     approved -- Yes --> label --> final
     final -- No --> proposal
-    final -- Yes --> rtm
+    final -- Yes --> verify --> rtm
 ```
 
 1. The API review process kicks in after the owner of the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
@@ -40,8 +42,8 @@ flowchart TD
 1. When the issue owner thinks the proposal is in good shape, he/she marks the issue with `api-ready-for-review` label. Also, the @dotnet/aspnet-api-review team should be notified of the issue.
 1. The `aspnet-api-review` team will host a weekly API review meeting and will review your proposed API change during the next meeting. If you have an API scheduled for review, you must have a representative in the meeting.
 1. Some API reviews can happen through a shorter process. For these situations, simply ping the API review crew for a quicker review, so that it can happen as a conversation.
-1. When an API change/suggestion gets approved, the `api-approved` label should be added to the issue. The issue owner is responsible for ensuring that the final implemented API shape is approved before it ships at RTM.
-1. If implementation changes the proposed or previously approved API shape, update the proposal and return the revised shape to API review before RTM.
+1. When an API change/suggestion gets approved, the `api-approved` label should be added to the issue. The issue owner is responsible for ensuring that the label covers the final implemented API shape before the API is included in an RTM release.
+1. If implementation changes the proposed or previously approved API shape, update the proposal and return the revised shape to API review before the API is included in an RTM release.
 
 ## Learnings and growth
 
