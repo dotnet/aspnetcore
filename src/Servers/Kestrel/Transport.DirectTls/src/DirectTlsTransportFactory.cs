@@ -171,7 +171,8 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
             _loggerFactory,
             endpointOptions.HandshakeTimeout,
             _kestrelMetrics,
-            _directTlsMetrics);
+            _directTlsMetrics,
+            endpointOptions.SslProtocols);
 
         var memoryPool = _options.MemoryPoolFactory.Create(DirectTlsTransportOptions.MemoryPoolOptions);
 

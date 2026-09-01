@@ -38,14 +38,17 @@ public class DirectTlsFunctionalTests : LoggedTest
     public async Task Handshake_RecordsExistingKestrelTlsMetrics()
     {
         using var metrics = new HandshakeMetricCollector();
+        using var events = new KestrelHandshakeEventListener();
         var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
         endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
 
         using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
         var port = host.GetPort();
+        const string targetHost = "directtls-event-source-success.test";
 
-        using var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]);
+        using var sslStream = await ConnectAsync(host.GetPort(), targetHost, applicationProtocols: [SslApplicationProtocol.Http11]);
         await metrics.WaitForDurationAsync(port);
+        await events.WaitForStopAsync(targetHost);
 
         Assert.Equal([1L, -1L], metrics.ActiveHandshakesForPort(port).Select(measurement => measurement.Value));
         var duration = Assert.Single(metrics.HandshakeDurationsForPort(port));
@@ -53,6 +56,16 @@ public class DirectTlsFunctionalTests : LoggedTest
         Assert.Equal(
             sslStream.SslProtocol == System.Security.Authentication.SslProtocols.Tls13 ? "1.3" : "1.2",
             duration.GetTag("tls.protocol.version"));
+        var handshakeStop = Assert.Single(events.Events, eventData =>
+            eventData.EventName == "TlsHandshakeStop" &&
+            Equals(eventData.Payload![3], targetHost));
+        var handshakeStart = Assert.Single(events.Events, eventData =>
+            eventData.EventName == "TlsHandshakeStart" &&
+            Equals(eventData.Payload![0], handshakeStop.Payload![0]));
+        Assert.Equal(handshakeStart.Payload![0], handshakeStop.Payload![0]);
+        Assert.Equal(sslStream.SslProtocol.ToString(), handshakeStop.Payload[1]);
+        Assert.Equal("http/1.1", handshakeStop.Payload[2]);
+        Assert.Equal(targetHost, handshakeStop.Payload[3]);
 
         await host.StopAsync().WaitAsync(Timeout);
     }
@@ -62,24 +75,35 @@ public class DirectTlsFunctionalTests : LoggedTest
     public async Task FailedHandshake_RecordsExistingKestrelTlsMetrics()
     {
         using var metrics = new HandshakeMetricCollector();
+        using var events = new KestrelHandshakeEventListener();
         var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
         endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+        endpoint.Options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
 
         using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
         var port = host.GetPort();
 
-        using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-        {
-            await socket.ConnectAsync(IPAddress.Loopback, port);
-            await socket.SendAsync("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"u8.ToArray());
-        }
+        const string targetHost = "directtls-event-source-failure.test";
+        using var sslStream = await ConnectAsync(port, targetHost, applicationProtocols: [SslApplicationProtocol.Http11]);
 
         await metrics.WaitForDurationAsync(port);
+        await events.WaitForStopAsync(targetHost);
 
         Assert.Equal([1L, -1L], metrics.ActiveHandshakesForPort(port).Select(measurement => measurement.Value));
         var duration = Assert.Single(metrics.HandshakeDurationsForPort(port));
         Assert.True(duration.Value > 0);
         Assert.NotNull(duration.GetTag("error.type"));
+        var handshakeStop = Assert.Single(events.Events, eventData =>
+            eventData.EventName == "TlsHandshakeStop" &&
+            Equals(eventData.Payload![3], targetHost));
+        var handshakeStart = Assert.Single(events.Events, eventData =>
+            eventData.EventName == "TlsHandshakeStart" &&
+            Equals(eventData.Payload![0], handshakeStop.Payload![0]));
+        var handshakeFailed = Assert.Single(events.Events, eventData =>
+            eventData.EventName == "TlsHandshakeFailed" &&
+            Equals(eventData.Payload![0], handshakeStop.Payload![0]));
+        Assert.Equal(handshakeStart.Payload![0], handshakeFailed.Payload![0]);
+        Assert.Equal(handshakeStart.Payload[0], handshakeStop.Payload![0]);
 
         await host.StopAsync().WaitAsync(Timeout);
     }
@@ -150,7 +174,7 @@ public class DirectTlsFunctionalTests : LoggedTest
         await applicationStarted.Task.WaitAsync(Timeout);
         await WaitForLogAsync("ConnectionPause");
         await metrics.WaitForMeasurementAsync(1);
-        await telemetry.WaitForCounterAsync("connections-paused", value => value >= 1);
+        await telemetry.WaitForCounterAsync("read-connections-paused", value => value >= 1);
 
         startReading.TrySetResult();
         await bodyWrite.WaitAsync(Timeout);
@@ -843,7 +867,7 @@ public class DirectTlsFunctionalTests : LoggedTest
             _listener.InstrumentPublished = static (instrument, listener) =>
             {
                 if (instrument.Meter.Name == "Microsoft.AspNetCore.Server.Kestrel" &&
-                    instrument.Name == DirectTlsMetrics.PausedConnectionsInstrumentName)
+                    instrument.Name == DirectTlsMetrics.ReadBackpressureConnectionsInstrumentName)
                 {
                     listener.EnableMeasurementEvents(instrument);
                 }
@@ -875,6 +899,7 @@ public class DirectTlsFunctionalTests : LoggedTest
             {
                 EnableIfDirectTls(eventSource);
             }
+
         }
 
         public EventWrittenEventArgs[] Events => _events.ToArray();
@@ -921,6 +946,40 @@ public class DirectTlsFunctionalTests : LoggedTest
                     EventLevel.Informational,
                     EventKeywords.All,
                     new Dictionary<string, string?> { ["EventCounterIntervalSec"] = "0.1" });
+            }
+        }
+    }
+
+    private sealed class KestrelHandshakeEventListener : EventListener
+    {
+        private readonly ConcurrentQueue<EventWrittenEventArgs> _events = new();
+
+        public EventWrittenEventArgs[] Events => _events.ToArray();
+
+        public async Task WaitForStopAsync(string hostName)
+        {
+            using var cts = new CancellationTokenSource(Timeout);
+            while (!_events.Any(eventData =>
+                eventData.EventName == "TlsHandshakeStop" &&
+                Equals(eventData.Payload![3], hostName)))
+            {
+                await Task.Delay(10, cts.Token);
+            }
+        }
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+        {
+            if (eventSource.Name == "Microsoft-AspNetCore-Server-Kestrel")
+            {
+                EnableEvents(eventSource, EventLevel.Informational);
+            }
+        }
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            if (eventData.EventName is "TlsHandshakeStart" or "TlsHandshakeStop" or "TlsHandshakeFailed")
+            {
+                _events.Enqueue(eventData);
             }
         }
     }

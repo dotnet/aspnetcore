@@ -14,7 +14,8 @@ public class DirectTlsEventSourceTests
     [
         "connections-owned",
         "accepts",
-        "connections-paused",
+        "read-connections-paused",
+        "write-connections-paused",
         "bytes-read",
         "bytes-written",
         "epoll-waits",
@@ -93,7 +94,8 @@ public class DirectTlsEventSourceTests
 
         eventSource.ConnectionOwned(pumpId: 0, pumpConnectionCount: 1);
         eventSource.Accepted(pumpId: 0);
-        eventSource.ConnectionPaused();
+        eventSource.ReadConnectionPaused();
+        eventSource.WriteConnectionPaused();
         eventSource.BytesRead(10);
         eventSource.BytesWritten(20);
         eventSource.EpollWaitCompleted(readyEventCount: 0);
@@ -103,7 +105,8 @@ public class DirectTlsEventSourceTests
 
         Assert.Equal(ExpectedCounterNames.Order(), listener.CounterNames.Order());
 
-        eventSource.ConnectionResumed();
+        eventSource.ReadConnectionResumed();
+        eventSource.WriteConnectionResumed();
         eventSource.ConnectionReleased(pumpId: 0, pumpConnectionCount: 0);
     }
 

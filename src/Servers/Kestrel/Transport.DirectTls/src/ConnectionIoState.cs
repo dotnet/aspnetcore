@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable SYSLIB5007 // TlsSocketSession/TlsOperationStatus are experimental.
@@ -32,7 +33,7 @@ internal class ConnectionIoState : IDisposable
     private readonly ILogger _logger;
     private readonly TlsSocketSession _session;
     private readonly DirectTlsMetrics _metrics;
-    private string? _connectionId;
+    private BaseConnectionContext? _connection;
     private uint _currentEpollInterest;
 
     // Serializes every native SSL operation (SSL_read / SSL_write / SSL_shutdown) on this connection's
@@ -87,7 +88,8 @@ internal class ConnectionIoState : IDisposable
     private bool _writeWantsRead;                // Write needs the socket to become readable (renegotiation)
     private bool _writeWantsWrite;               // Write hit WouldBlock and needs the socket to become writable
     private bool _readInterestSuspended;         // Receive loop parked on backpressure; drop EPOLLIN to avoid a level-triggered spin
-    private bool? _pausedConnectionsCounterEnabled;
+    private bool? _readBackpressureCounterEnabled;
+    private bool? _writeBackpressureCounterEnabled;
 
     public ConnectionIoState(
         int fd,
@@ -102,12 +104,12 @@ internal class ConnectionIoState : IDisposable
         _session = session;
     }
 
-    internal void SetConnectionId(string connectionId)
+    internal void SetConnection(BaseConnectionContext connection)
     {
-        _connectionId = connectionId;
+        _connection = connection;
     }
 
-    internal string ConnectionId => _connectionId ?? string.Empty;
+    internal string ConnectionId => _connection?.ConnectionId ?? string.Empty;
 
     internal uint CurrentEpollInterest => Volatile.Read(ref _currentEpollInterest);
 
@@ -237,8 +239,8 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = true;
             UpdateEvents();
-            _pausedConnectionsCounterEnabled = _metrics.ConnectionPaused();
-            connectionId = _connectionId;
+            _readBackpressureCounterEnabled = _metrics.ReadConnectionPaused(_connection);
+            connectionId = _connection?.ConnectionId;
         }
 
         if (connectionId is not null)
@@ -260,8 +262,8 @@ internal class ConnectionIoState : IDisposable
 
             _readInterestSuspended = false;
             UpdateEvents();
-            ReleasePauseTelemetry();
-            connectionId = _connectionId;
+            ReleaseReadBackpressureTelemetry();
+            connectionId = _connection?.ConnectionId;
         }
 
         if (connectionId is not null)
@@ -270,15 +272,31 @@ internal class ConnectionIoState : IDisposable
         }
     }
 
-    private void ReleasePauseTelemetry()
+    private void ReleaseReadBackpressureTelemetry()
     {
-        if (_pausedConnectionsCounterEnabled is not { } pausedConnectionsCounterEnabled)
+        if (_readBackpressureCounterEnabled is not { } counterEnabled)
         {
             return;
         }
 
-        _pausedConnectionsCounterEnabled = null;
-        _metrics.ConnectionResumed(pausedConnectionsCounterEnabled);
+        _readBackpressureCounterEnabled = null;
+        _metrics.ReadConnectionResumed(counterEnabled, _connection);
+    }
+
+    private void StartWriteBackpressureTelemetry()
+    {
+        _writeBackpressureCounterEnabled = _metrics.WriteConnectionPaused(_connection);
+    }
+
+    private void ReleaseWriteBackpressureTelemetry()
+    {
+        if (_writeBackpressureCounterEnabled is not { } counterEnabled)
+        {
+            return;
+        }
+
+        _writeBackpressureCounterEnabled = null;
+        _metrics.WriteConnectionResumed(counterEnabled, _connection);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -450,6 +468,7 @@ internal class ConnectionIoState : IDisposable
                     _writeWantsWrite = true;
                     var pending = _writeAwaitable.Reset();
                     UpdateEvents();
+                    StartWriteBackpressureTelemetry();
                     return pending;
 
                 case TlsOperationStatus.NeedMoreData:
@@ -484,6 +503,7 @@ internal class ConnectionIoState : IDisposable
         if (!_writeAwaitable.IsActive)
         {
             // Spurious EPOLLOUT - no write is pending, so drop the write side's writable interest.
+            ReleaseWriteBackpressureTelemetry();
             _writeWantsWrite = false;
             UpdateEvents();
             return;
@@ -494,6 +514,7 @@ internal class ConnectionIoState : IDisposable
         switch (status)
         {
             case TlsOperationStatus.Complete:
+                ReleaseWriteBackpressureTelemetry();
                 _writeBuffer = default;
                 _writeWantsRead = false;
                 _writeWantsWrite = false;
@@ -506,6 +527,7 @@ internal class ConnectionIoState : IDisposable
                 _writeBuffer = _writeBuffer.Slice(written);
                 if (_writeWantsRead || !_writeWantsWrite)
                 {
+                    StartWriteBackpressureTelemetry();
                     _writeWantsRead = false;
                     _writeWantsWrite = true;
                     UpdateEvents();
@@ -517,6 +539,7 @@ internal class ConnectionIoState : IDisposable
                 _writeBuffer = _writeBuffer.Slice(written);
                 if (!_writeWantsRead)
                 {
+                    ReleaseWriteBackpressureTelemetry();
                     _writeWantsRead = true;
                     _writeWantsWrite = false;
                     UpdateEvents();
@@ -525,6 +548,7 @@ internal class ConnectionIoState : IDisposable
 
             case TlsOperationStatus.Closed:
             default:
+                ReleaseWriteBackpressureTelemetry();
                 _writeBuffer = default;
                 _writeWantsRead = false;
                 _writeWantsWrite = false;
@@ -593,6 +617,8 @@ internal class ConnectionIoState : IDisposable
     /// </summary>
     internal void Cancel()
     {
+        string? resumedConnectionId = null;
+
         // Hold _sslLock so cancellation waits out any in-flight SSL_read/SSL_write (both run under it):
         // completing the awaitable while the pump is mid SSL_read would let the receive loop complete the pipe
         // and recycle _readBuffer while the native write is still filling it (mirror race: SSL_write reading a
@@ -609,12 +635,19 @@ internal class ConnectionIoState : IDisposable
             // DisposeAsync unregisters the fd before it cancels a backpressured pipe flush. Release the gauge
             // here so the receive loop's eventual ResumeReadInterest does not try to re-arm an unregistered fd
             // and leave the connection counted as paused after teardown.
-            if (_readInterestSuspended)
+            if (_readBackpressureCounterEnabled is not null)
             {
-                _readInterestSuspended = false;
+                resumedConnectionId = _connection?.ConnectionId;
             }
 
-            ReleasePauseTelemetry();
+            _readInterestSuspended = false;
+            ReleaseReadBackpressureTelemetry();
+            ReleaseWriteBackpressureTelemetry();
+        }
+
+        if (resumedConnectionId is not null)
+        {
+            DirectTlsLog.ConnectionResume(_logger, resumedConnectionId);
         }
     }
 

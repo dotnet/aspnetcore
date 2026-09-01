@@ -93,7 +93,7 @@ internal partial class TlsEventPump
     {
         foreach (var conn in _handshakesAwaitingCallback)
         {
-            StopTlsHandshakeMetrics(conn, failed: true);
+            StopTlsHandshakeTelemetry(conn, failed: true);
             ConnectionReleased();
             ReleaseHandshakeResources(conn);
         }

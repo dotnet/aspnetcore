@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Net;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -31,7 +32,8 @@ internal sealed class TlsEventPumpPool : IDisposable
         ILoggerFactory loggerFactory,
         TimeSpan? handshakeTimeout = null,
         KestrelMetrics? kestrelMetrics = null,
-        DirectTlsMetrics? directTlsMetrics = null)
+        DirectTlsMetrics? directTlsMetrics = null,
+        SslProtocols enabledSslProtocols = SslProtocols.None)
     {
         _loggerFactory = loggerFactory;
         _kestrelMetrics = kestrelMetrics;
@@ -52,7 +54,8 @@ internal sealed class TlsEventPumpPool : IDisposable
                 i,
                 effectiveHandshakeTimeout,
                 _kestrelMetrics,
-                _directTlsMetrics);
+                _directTlsMetrics,
+                enabledSslProtocols);
         }
     }
 

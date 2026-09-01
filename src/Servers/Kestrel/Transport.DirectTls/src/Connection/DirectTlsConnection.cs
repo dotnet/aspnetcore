@@ -65,10 +65,9 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         _pump = pump;
         _memoryPool = memoryPool;
         _logger = logger;
-        _connectionState.SetConnectionId(ConnectionId);
-
         LocalEndPoint = localEndPoint;
         RemoteEndPoint = remoteEndPoint;
+        _connectionState.SetConnection(this);
         ConnectionClosed = _connectionClosedTokenSource.Token;
 
         // A managed Socket over the raw fd (non-owning) is offered, matching the standard sockets

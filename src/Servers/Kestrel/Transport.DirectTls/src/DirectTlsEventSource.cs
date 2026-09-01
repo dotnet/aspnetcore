@@ -16,7 +16,8 @@ internal sealed class DirectTlsEventSource : EventSource
 
     private PollingCounter? _connectionsOwnedCounter;
     private IncrementingPollingCounter? _acceptsCounter;
-    private PollingCounter? _connectionsPausedCounter;
+    private PollingCounter? _readConnectionsPausedCounter;
+    private PollingCounter? _writeConnectionsPausedCounter;
     private IncrementingPollingCounter? _bytesReadCounter;
     private IncrementingPollingCounter? _bytesWrittenCounter;
     private IncrementingPollingCounter? _epollWaitsCounter;
@@ -27,7 +28,8 @@ internal sealed class DirectTlsEventSource : EventSource
 
     private long _connectionsOwned;
     private long _accepts;
-    private long _connectionsPaused;
+    private long _readConnectionsPaused;
+    private long _writeConnectionsPaused;
     private long _bytesRead;
     private long _bytesWritten;
     private long _epollWaits;
@@ -85,16 +87,30 @@ internal sealed class DirectTlsEventSource : EventSource
     }
 
     [NonEvent]
-    public void ConnectionPaused()
+    public void ReadConnectionPaused()
     {
-        var count = Interlocked.Increment(ref _connectionsPaused);
+        var count = Interlocked.Increment(ref _readConnectionsPaused);
         Debug.Assert(count > 0);
     }
 
     [NonEvent]
-    public void ConnectionResumed()
+    public void ReadConnectionResumed()
     {
-        var count = Interlocked.Decrement(ref _connectionsPaused);
+        var count = Interlocked.Decrement(ref _readConnectionsPaused);
+        Debug.Assert(count >= 0);
+    }
+
+    [NonEvent]
+    public void WriteConnectionPaused()
+    {
+        var count = Interlocked.Increment(ref _writeConnectionsPaused);
+        Debug.Assert(count > 0);
+    }
+
+    [NonEvent]
+    public void WriteConnectionResumed()
+    {
+        var count = Interlocked.Decrement(ref _writeConnectionsPaused);
         Debug.Assert(count >= 0);
     }
 
@@ -253,9 +269,13 @@ internal sealed class DirectTlsEventSource : EventSource
                 DisplayName = "Connections Accepted",
                 DisplayRateTimeScale = TimeSpan.FromSeconds(1)
             };
-            _connectionsPausedCounter ??= new PollingCounter("connections-paused", this, () => Interlocked.Read(ref _connectionsPaused))
+            _readConnectionsPausedCounter ??= new PollingCounter("read-connections-paused", this, () => Interlocked.Read(ref _readConnectionsPaused))
             {
-                DisplayName = "Connections Paused by Backpressure"
+                DisplayName = "Connections Paused by Read Backpressure"
+            };
+            _writeConnectionsPausedCounter ??= new PollingCounter("write-connections-paused", this, () => Interlocked.Read(ref _writeConnectionsPaused))
+            {
+                DisplayName = "Connections Paused by Write Backpressure"
             };
             _bytesReadCounter ??= new IncrementingPollingCounter("bytes-read", this, () => Interlocked.Read(ref _bytesRead))
             {

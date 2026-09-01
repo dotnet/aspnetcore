@@ -32,6 +32,7 @@ internal partial class TlsEventPump : IDisposable
     private readonly int _id;
     private readonly KestrelMetrics? _kestrelMetrics;
     private readonly DirectTlsMetrics _directTlsMetrics;
+    private readonly SslProtocols _enabledSslProtocols;
     private int _ownedConnectionCount;
 
     // Maximum time a connection is allowed to spend handshaking before the pump drops it. Stored as
@@ -173,6 +174,10 @@ internal partial class TlsEventPump : IDisposable
         /// </summary>
         public TlsHandshakeMetricsContext? MetricsContext;
         /// <summary>
+        /// Connection identity and endpoints shared by Kestrel handshake events and metrics.
+        /// </summary>
+        public BaseConnectionContext ConnectionContext;
+        /// <summary>
         /// Stopwatch timestamp captured immediately before the active-handshake metric was started.
         /// </summary>
         public long HandshakeStartTimestamp;
@@ -183,12 +188,14 @@ internal partial class TlsEventPump : IDisposable
         int id,
         TimeSpan handshakeTimeout,
         KestrelMetrics? kestrelMetrics = null,
-        DirectTlsMetrics? directTlsMetrics = null)
+        DirectTlsMetrics? directTlsMetrics = null,
+        SslProtocols enabledSslProtocols = SslProtocols.None)
     {
         _id = id;
         _logger = tlsPumpLogger;
         _kestrelMetrics = kestrelMetrics;
         _directTlsMetrics = directTlsMetrics ?? DirectTlsMetrics.Disabled;
+        _enabledSslProtocols = enabledSslProtocols;
         _handshakeTimeoutMs = handshakeTimeout == Timeout.InfiniteTimeSpan || handshakeTimeout == TimeSpan.MaxValue
             ? long.MaxValue
             : (long)handshakeTimeout.TotalMilliseconds;
@@ -575,7 +582,7 @@ internal partial class TlsEventPump : IDisposable
                 continue;
             }
 
-            StopTlsHandshakeMetrics(kvp.Value, failed: true);
+            StopTlsHandshakeTelemetry(kvp.Value, failed: true);
             ConnectionReleased();
             ReleaseHandshakeResources(kvp.Value);
         }
@@ -788,13 +795,12 @@ internal partial class TlsEventPump : IDisposable
         // Create a socket-bound TLS session and attach the shared server context.
         // SetContext configures SSL_set_fd + server accept state internally.
         var session = new TlsSocketSession(socketHandle);
-        TlsHandshakeMetricsContext? metricsContext = null;
-        long handshakeStartTimestamp = 0;
-
-        if (_kestrelMetrics?.TlsHandshakeMetricsEnabled == true)
+        var connectionContext = new DefaultConnectionContext
         {
-            metricsContext = StartTlsHandshakeMetrics(remoteEndPoint, out handshakeStartTimestamp);
-        }
+            LocalEndPoint = _listenEndPoint,
+            RemoteEndPoint = remoteEndPoint
+        };
+        var metricsContext = StartTlsHandshakeTelemetry(connectionContext, out var handshakeStartTimestamp);
 
         try
         {
@@ -803,7 +809,7 @@ internal partial class TlsEventPump : IDisposable
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
-            StopTlsHandshakeMetrics(metricsContext, handshakeStartTimestamp, protocol: null, ex);
+            StopTlsHandshakeTelemetry(connectionContext, metricsContext, handshakeStartTimestamp, protocol: null, applicationProtocol: default, hostName: null, ex);
             session.Dispose();
             _connectionTracker.ReleaseHandshake();
             return;
@@ -812,7 +818,7 @@ internal partial class TlsEventPump : IDisposable
         // Register client socket with epoll for handshake events
         if (!TryArmHandshakeInterest(clientFd, DefaultEpollInterest))
         {
-            StopTlsHandshakeMetrics(metricsContext, handshakeStartTimestamp, protocol: null, exception: null);
+            StopTlsHandshakeTelemetry(connectionContext, metricsContext, handshakeStartTimestamp, protocol: null, applicationProtocol: default, hostName: null, exception: null);
             session.Dispose();
             _connectionTracker.ReleaseHandshake();
             return;
@@ -828,6 +834,7 @@ internal partial class TlsEventPump : IDisposable
             HandshakeDeadlineTimestamp = ComputeHandshakeDeadline(Environment.TickCount64),
             CurrentEpollInterest = DefaultEpollInterest,
             MetricsContext = metricsContext,
+            ConnectionContext = connectionContext,
             HandshakeStartTimestamp = handshakeStartTimestamp,
         };
         ConnectionOwned();
@@ -980,6 +987,7 @@ internal partial class TlsEventPump : IDisposable
                     _maxReadBufferSize,
                     _maxWriteBufferSize,
                     _directTlsConnectionLogger!);
+                earlyConnection.ConnectionId = conn.ConnectionContext.ConnectionId;
                 conn.Connection = earlyConnection;
                 _handshaking[fd] = conn;
             }
@@ -1111,6 +1119,7 @@ internal partial class TlsEventPump : IDisposable
                     _directTlsConnectionLogger!,
                     negotiatedApplicationProtocol: conn.Session.NegotiatedApplicationProtocol,
                     clientCertificate: clientCertificate);  // Non-null only when the peer presented a client cert (mTLS)
+                directConnection.ConnectionId = conn.ConnectionContext.ConnectionId;
             }
         }
         catch (Exception ex)
@@ -1127,12 +1136,12 @@ internal partial class TlsEventPump : IDisposable
             // connection whose epoll interest is wrong (it would spin the pump on a stuck EPOLLOUT). It was
             // built but never Started and the fd is still registered as handshaking, so tear it down on
             // that path.
-            StopTlsHandshakeMetrics(conn, failed: true);
+            StopTlsHandshakeTelemetry(conn, failed: true);
             DropCompletedHandshake(fd, directConnection);
             return;
         }
 
-        StopTlsHandshakeMetrics(conn, failed: false);
+        StopTlsHandshakeTelemetry(conn, failed: false);
         directConnection.Start();
 
         if (!_readyConnections.TryWrite(directConnection))
@@ -1269,7 +1278,7 @@ internal partial class TlsEventPump : IDisposable
     // session is disposed directly, which closes the fd.
     private void DropHandshake(int fd, in HandshakingConnection conn, Exception? exception = null)
     {
-        StopTlsHandshakeMetrics(conn, failed: true, exception);
+        StopTlsHandshakeTelemetry(conn, failed: true, exception);
         if (_handshaking.Remove(fd))
         {
             ConnectionReleased();
@@ -1281,13 +1290,18 @@ internal partial class TlsEventPump : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private TlsHandshakeMetricsContext StartTlsHandshakeMetrics(IPEndPoint? remoteEndPoint, out long startTimestamp)
+    private TlsHandshakeMetricsContext? StartTlsHandshakeTelemetry(
+        BaseConnectionContext connectionContext,
+        out long startTimestamp)
     {
-        var connectionContext = new DefaultConnectionContext
+        KestrelEventSource.Log.TlsHandshakeStart(connectionContext, _enabledSslProtocols);
+
+        if (_kestrelMetrics?.TlsHandshakeMetricsEnabled != true)
         {
-            LocalEndPoint = _listenEndPoint,
-            RemoteEndPoint = remoteEndPoint
-        };
+            startTimestamp = 0;
+            return null;
+        }
+
         var metricsContext = _kestrelMetrics!.CreateTlsHandshakeContext(connectionContext);
         startTimestamp = Stopwatch.GetTimestamp();
         _kestrelMetrics.TlsHandshakeStart(metricsContext);
@@ -1295,41 +1309,54 @@ internal partial class TlsEventPump : IDisposable
         return metricsContext;
     }
 
-    private void StopTlsHandshakeMetrics(in HandshakingConnection connection, bool failed, Exception? exception = null)
+    private void StopTlsHandshakeTelemetry(in HandshakingConnection connection, bool failed, Exception? exception = null)
     {
-        if (connection.MetricsContext is { } metricsContext)
-        {
-            StopTlsHandshakeMetrics(
-                metricsContext,
-                connection.HandshakeStartTimestamp,
-                failed ? null : connection.Session.NegotiatedProtocol,
-                failed ? exception : null);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopTlsHandshakeMetrics(
-        TlsHandshakeMetricsContext? metricsContext,
-        long startTimestamp,
-        SslProtocols? protocol,
-        Exception? exception)
-    {
-        if (metricsContext is not { } context)
+        if (connection.ConnectionContext is not { } connectionContext)
         {
             return;
         }
 
+        StopTlsHandshakeTelemetry(
+            connectionContext,
+            connection.MetricsContext,
+            connection.HandshakeStartTimestamp,
+            failed ? null : connection.Session.NegotiatedProtocol,
+            failed ? default : connection.Session.NegotiatedApplicationProtocol.Protocol,
+            connection.Session.TargetHostName,
+            failed ? exception : null);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void StopTlsHandshakeTelemetry(
+        BaseConnectionContext connectionContext,
+        TlsHandshakeMetricsContext? metricsContext,
+        long startTimestamp,
+        SslProtocols? protocol,
+        ReadOnlyMemory<byte> applicationProtocol,
+        string? hostName,
+        Exception? exception)
+    {
         if (protocol is null)
         {
-            exception ??= new AuthenticationException("The DirectTls handshake failed.");
+            KestrelEventSource.Log.TlsHandshakeFailed(connectionContext.ConnectionId);
         }
 
-        _kestrelMetrics!.TlsHandshakeStop(
-            context,
-            startTimestamp,
-            Stopwatch.GetTimestamp(),
-            protocol,
-            exception);
+        KestrelEventSource.Log.TlsHandshakeStop(connectionContext, protocol, applicationProtocol, hostName);
+
+        if (metricsContext is { } context)
+        {
+            if (protocol is null)
+            {
+                exception ??= new AuthenticationException("The DirectTls handshake failed.");
+            }
+
+            _kestrelMetrics!.TlsHandshakeStop(
+                context,
+                startTimestamp,
+                Stopwatch.GetTimestamp(),
+                protocol,
+                exception);
+        }
     }
 
     private void ConnectionOwned()
