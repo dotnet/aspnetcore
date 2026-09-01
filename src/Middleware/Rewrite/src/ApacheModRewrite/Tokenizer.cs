@@ -123,7 +123,7 @@ internal sealed class Tokenizer
 
         for (var i = escapeIndex; i < token.Length; i++)
         {
-            if (token[i] == Escape && i + 1 < token.Length)
+            if (token[i] == Escape && (uint)(i + 1) < token.Length)
             {
                 var next = token[i + 1];
                 if (next == Space || next == Tab || next == Quote || next == Escape)
