@@ -110,7 +110,7 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
                                     ParentElementName = isVirtualize && renderTreeStack.Count > 0 && !renderTreeStack.Peek().IsComponent
                                         ? renderTreeStack.Peek().ElementName
                                         : null,
-                                    Location = invocation.Syntax.GetLocation(),
+                                    Location = GetDiagnosticLocation(invocation),
                                 });
                                 break;
 
@@ -343,6 +343,15 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
         foreach (var argument in invocation.Arguments)
         {
             var location = UnwrapConversion(argument.Value).Syntax.GetLocation();
+            if (location.GetMappedLineSpan().HasMappedPath)
+            {
+                return location;
+            }
+        }
+
+        foreach (var syntax in invocation.Syntax.DescendantNodes())
+        {
+            var location = syntax.GetLocation();
             if (location.GetMappedLineSpan().HasMappedPath)
             {
                 return location;

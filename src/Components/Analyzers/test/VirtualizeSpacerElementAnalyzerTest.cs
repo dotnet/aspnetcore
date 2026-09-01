@@ -574,6 +574,44 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void DirectVirtualizeWithExplicitTItemDiagnosticLocationMapsToRazorSource()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+#line hidden
+                builder.OpenComponent<Virtualize<
+#line 42 ""Pages/VirtualizeTest.razor""
+                    string
+#line default
+#line hidden
+                >>(1);
+#line default
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        var document = CreateDocument(test);
+        var diagnostic = Assert.Single(GetSortedDiagnosticsFromDocuments(
+            GetCSharpDiagnosticAnalyzer(),
+            new[] { document }));
+        var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
+
+        Assert.Equal("Pages/VirtualizeTest.razor", mappedLineSpan.Path);
+        Assert.Equal(41, mappedLineSpan.StartLinePosition.Line);
+    }
+
+    [Fact]
     public void NullSplatAfterExplicitSpacerElement_ReportsDiagnostic()
     {
         var test = @"
