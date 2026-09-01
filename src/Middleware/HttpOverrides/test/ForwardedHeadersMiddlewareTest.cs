@@ -343,7 +343,7 @@ public class ForwardedHeadersMiddlewareTests
         // The forwarded header must be ignored because the peer cannot be attested as a known proxy.
         Assert.Null(context.Connection.RemoteIpAddress);
         Assert.Equal("11.111.111.11:12345", context.Request.Headers["X-Forwarded-For"].ToString());
-        Assert.Equal(string.Empty, context.Request.Headers["X-Original-For"].ToString());
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
     }
 
     [Fact]
@@ -377,6 +377,7 @@ public class ForwardedHeadersMiddlewareTests
 
         Assert.Null(context.Connection.RemoteIpAddress);
         Assert.Equal("11.111.111.11:12345", context.Request.Headers["X-Forwarded-For"].ToString());
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
     }
 
     [Fact]
