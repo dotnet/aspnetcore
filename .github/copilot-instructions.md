@@ -13,9 +13,10 @@
 
 ## Public API Changes
 
-* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change. Before implementing it, verify that the linked issue is `api-approved`.
-* If approval is missing, stop and explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature. Implementation starts only after `api-approved`.
-* When reporting this gate, explicitly say that `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval, and that any implementation change to the approved API shape must return to API review.
+* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change.
+* Implementation, pull request readiness, and merge may proceed before the linked issue is `api-approved`. Before the API ships at RTM, verify that the final implemented API shape is approved.
+* If approval is missing before RTM, explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature.
+* `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval. Any implementation change to the proposed or previously approved API shape must return to API review before RTM.
 
 ## Framework assembly boundaries
 
