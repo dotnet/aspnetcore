@@ -167,7 +167,7 @@
     <MicrosoftIdentityWebGraphServiceClientVersion>3.15.1</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.15.1</MicrosoftIdentityWebUIVersion>
     <MicrosoftIdentityWebDownstreamApiVersion>3.15.1</MicrosoftIdentityWebDownstreamApiVersion>
-    <MicrosoftWindowsCsWin32Version>0.3.296</MicrosoftWindowsCsWin32Version>
+    <MicrosoftWindowsCsWin32Version>0.3.298</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <ModelContextProtocolVersion>2.1.0</ModelContextProtocolVersion>
     <ModelContextProtocolAspNetCoreVersion>$(ModelContextProtocolVersion)</ModelContextProtocolAspNetCoreVersion>
