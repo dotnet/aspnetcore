@@ -22,10 +22,12 @@ Present a checklist of the available inputs. If either input is missing, use the
 1. **Gather the evidence.** Read the originating issue and all comments, then inspect the implementation pull request, commits, and diff. Account for every changed public or protected type, member, signature, default, or convention. *Artifact:* a checklist containing the originating issue and implementation source. *Check:* both sources are available and every public API change is represented.
 2. **Draft the proposal.** Fill each section of [the issue body template](assets/issue-template.md) using [the section guidelines](references/section-guidelines.md):
    - Background and Motivation
-   - Proposed API
    - Usage Examples
-   - Alternative Designs
-   - Risks
+   - Proposed API
+   - Alternative Designs, when available
+   - Risks, when available
+
+   Background and Motivation, Usage Examples, and Proposed API are required. Before writing `N/A` for Alternative Designs or Risks, ask the user one focused question for each optional section whose information is not present in the originating issue or implementation changes.
 3. **Add source justifications.** At the end of the issue body, map every substantive claim to a quote from the originating issue or implementation changes:
 
    ```text
@@ -38,7 +40,8 @@ Present a checklist of the available inputs. If either input is missing, use the
    - [ ] The originating issue and implementation pull request or commits are linked
    - [ ] Larger changes include proportionate explanation
    - [ ] Usage examples demonstrate the intended consumption
-   - [ ] Risks and breaking changes are identified
+   - [ ] Alternative designs are documented when available; otherwise the section is `N/A`
+   - [ ] Risks and breaking changes are documented when available; otherwise the section is `N/A`
    - [ ] A champion is identified for the API review meeting
 5. **File a separate issue.** Create an issue in `dotnet/aspnetcore` with:
    - A concise title prefixed with `[API Proposal]`
@@ -52,7 +55,7 @@ Present a checklist of the available inputs. If either input is missing, use the
 ## Rules
 
 - Do not invent information. Every statement must come from the originating issue or implementation changes. General C# and API knowledge may interpret evidence but must not create missing section content.
-- If the evidence is insufficient for a section, request the missing information or write `N/A`.
+- If the evidence is insufficient for a required section, request the missing information. For Alternative Designs and Risks, ask the user one focused question per section; write `N/A` only when they confirm there is none.
 - The Proposed API section must use ref-assembly diff format with complete namespaces and type declarations.
 - `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval.
 - API review may happen before, during, or after implementation. Pull request readiness and merge do not require `api-approved`.

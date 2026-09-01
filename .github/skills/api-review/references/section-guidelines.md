@@ -17,6 +17,27 @@ Bad:
 
 > Adding a string overload for Widget.ConfigureFactory.
 
+## Usage Examples
+
+Demonstrate how the proposed API is consumed so reviewers can evaluate its shape, functionality, performance, and usability.
+
+- Use realistic, practical examples.
+- Show simple and complex scenarios when both are relevant.
+- Include synchronous and asynchronous variants when applicable.
+- Use correctly labeled code fences.
+
+Example:
+
+```csharp
+@inject IJSRuntime JSRuntime
+
+string title = await JSRuntime.GetValueAsync<string>("document.title");
+await JSRuntime.SetValueAsync("document.title", "Hello there");
+
+IJSObjectReference chartRef = await JSRuntime.InvokeNewAsync("Chart", chartParameters);
+var chartProperty = await chartRef.GetValueAsync<int>("somePropName");
+```
+
 ## Proposed API
 
 Provide the complete public API signature diff being proposed.
@@ -55,31 +76,12 @@ namespace Microsoft.JSInterop
 }
 ```
 
-## Usage Examples
-
-Demonstrate how the proposed API is consumed so reviewers can evaluate its shape, functionality, performance, and usability.
-
-- Use realistic, practical examples.
-- Show simple and complex scenarios when both are relevant.
-- Include synchronous and asynchronous variants when applicable.
-- Use correctly labeled code fences.
-
-Example:
-
-```csharp
-@inject IJSRuntime JSRuntime
-
-string title = await JSRuntime.GetValueAsync<string>("document.title");
-await JSRuntime.SetValueAsync("document.title", "Hello there");
-
-IJSObjectReference chartRef = await JSRuntime.InvokeNewAsync("Chart", chartParameters);
-var chartProperty = await chartRef.GetValueAsync<int>("somePropName");
-```
-
-## Alternative Designs
+## Alternative Designs (optional)
 
 Show that other approaches were considered and explain why the proposal is preferred.
 
+- Ask the user whether alternatives were considered when the available evidence does not say.
+- Write `N/A` when the user confirms there are no alternative designs to document.
 - Describe other API shapes considered.
 - Compare analogous APIs where the evidence includes them.
 - Explain the tradeoffs.
@@ -89,9 +91,12 @@ Example:
 
 > We considered supporting the additional operations with only the existing `InvokeAsync` method and selecting its behavior according to what JavaScript entity is found based on the `identifier`. However, this approach has clarity and predictability issues. There is also no general way to differentiate between normal and constructor functions in JavaScript.
 
-## Risks
+## Risks (optional)
 
 Identify concerns raised by the proposal or implementation.
+
+- Ask the user whether they know of relevant risks when the available evidence does not identify any.
+- Write `N/A` when the user confirms there are no risks to document.
 
 Consider:
 
