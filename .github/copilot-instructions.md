@@ -56,6 +56,7 @@
 * For behavioral findings and bug-fix verification, E2E validation is unnecessary when the disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
 * If faithful validation is impractical, state the observed boundary and limitation, and do not describe the behavioral claim as verified.
 * If that red/green verification isn't practical, explain why, state what you did verify, and don't describe the fix as verified.
+* When a requested automated test cannot reach its assertion, name that test in the final response, state the prerequisite that blocked it, and identify the faithful validation boundary used instead.
 
 ## .NET Environment
 
