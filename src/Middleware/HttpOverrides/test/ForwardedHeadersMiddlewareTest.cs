@@ -324,6 +324,8 @@ public class ForwardedHeadersMiddlewareTests
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
                     };
+                    // Clear the default networks so only KnownProxies makes the allowlist non-empty.
+                    options.KnownIPNetworks.Clear();
                     options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
                     app.UseForwardedHeaders(options);
                 });
@@ -360,6 +362,8 @@ public class ForwardedHeadersMiddlewareTests
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
                     };
+                    // Clear the default proxies so only KnownIPNetworks makes the allowlist non-empty.
+                    options.KnownProxies.Clear();
                     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
                     app.UseForwardedHeaders(options);
                 });
