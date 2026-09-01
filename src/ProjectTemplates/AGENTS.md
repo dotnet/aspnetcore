@@ -16,6 +16,7 @@
 
 - Use the `src\ProjectTemplates\build.cmd` or `build.sh` area entry point for template generation, build, and package validation.
 - Use `Templates.Tests` when the change must be validated by creating, restoring, building, publishing, or running generated applications. An area package build does not establish generated-application behavior.
+- For manual generated-application validation, follow the README workflow through the full package/runtime producers, the matching `Run-*-Locally.ps1` script, and an application-boundary probe. Do not treat script completion alone as runtime validation.
 - Prefer the smallest generated-app test that reaches the changed template and requested assertion. If a prerequisite prevents that assertion from running, report the blocked test and prerequisite, then identify the lower faithful boundary that was validated.
 
 Do not create an empty artifact or package-source directory to bypass restore validation. Produce the missing artifacts with the responsible build or pack step.
