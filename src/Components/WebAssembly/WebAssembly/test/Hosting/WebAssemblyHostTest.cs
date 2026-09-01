@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +14,80 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 public class WebAssemblyHostTest
 {
+    [Fact]
+    public void HostStartupValuesRejectsNullKeyBeforeInitialization()
+    {
+        var startupValues = new InteractiveHostStartupValues();
+
+        Assert.Throws<ArgumentNullException>(() => startupValues.GetValue(null!));
+    }
+
+    [Fact]
+    public async Task RunAsyncCollectsAndInitializesBrowserStartupValues()
+    {
+        var jsMethods = new TestInternalJSImportMethods
+        {
+            HostStartupValuesJson =
+                """{"document.baseURI":"https://www.example.com/","location.href":"https://www.example.com/page","custom.value":"expected"}""",
+        };
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        builder.Services.AddSingleton<IBrowserStartupValueProvider>(
+            new TestBrowserStartupValueProvider("custom.value"));
+        var host = builder.Build();
+        var cts = new CancellationTokenSource();
+
+        var task = host.RunAsyncCore(cts.Token, new TestSatelliteResourcesLoader());
+        cts.Cancel();
+        await task.TimeoutAfter(TimeSpan.FromSeconds(3));
+
+        var keys = JsonSerializer.Deserialize<string[]>(jsMethods.HostStartupValueKeysJson);
+        Assert.Equal(["document.baseURI", "location.href", "custom.value"], keys);
+        Assert.Equal(
+            "expected",
+            host.Services.GetRequiredService<IHostStartupValues>().GetRequired("custom.value"));
+    }
+
+    [Fact]
+    public async Task RunAsyncRejectsDuplicateBrowserStartupValueKeysBeforeJSImport()
+    {
+        var jsMethods = new TestInternalJSImportMethods();
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        builder.Services.AddSingleton<IBrowserStartupValueProvider>(
+            new TestBrowserStartupValueProvider("duplicate.value"));
+        builder.Services.AddSingleton<IBrowserStartupValueProvider>(
+            new TestBrowserStartupValueProvider("duplicate.value"));
+        var host = builder.Build();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+
+        Assert.Equal(
+            "The browser startup value key 'duplicate.value' was provided more than once.",
+            exception.Message);
+        Assert.Empty(jsMethods.HostStartupValueKeysJson);
+    }
+
+    [Theory]
+    [InlineData("""{"document.baseURI":"base","location.href":"uri","unexpected":"value"}""")]
+    [InlineData("""{"document.baseURI":"base"}""")]
+    [InlineData("""{"document.baseURI":42,"location.href":"uri"}""")]
+    [InlineData("""{"document.baseURI":"first","document.baseURI":"second","location.href":"uri"}""")]
+    public async Task RunAsyncRejectsInvalidBrowserStartupValues(string startupValuesJson)
+    {
+        var jsMethods = new TestInternalJSImportMethods
+        {
+            HostStartupValuesJson = startupValuesJson,
+        };
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var host = builder.Build();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+
+        Assert.Equal("The browser returned invalid host startup values.", exception.Message);
+    }
+
     // This won't happen in the product code, but we need to be able to safely call RunAsync
     // to be able to test a few of the other details.
     [Fact]
@@ -208,6 +283,11 @@ public class WebAssemblyHostTest
         var testService = hostedServices.First();
         Assert.IsType<TestHostedService>(testService);
         Assert.True(((TestHostedService)testService).StartCalled);
+    }
+
+    private sealed class TestBrowserStartupValueProvider(params string[] keys) : IBrowserStartupValueProvider
+    {
+        public IReadOnlyList<string> Keys { get; } = keys;
     }
 
     private class TestHostedService : IHostedService

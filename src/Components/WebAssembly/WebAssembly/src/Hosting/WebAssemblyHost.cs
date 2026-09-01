@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -135,6 +136,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
+        InitializeHostStartupValues();
+
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
         var store = !string.IsNullOrEmpty(_persistedState) ?
             new PrerenderComponentApplicationStore(_persistedState) :
@@ -226,6 +229,39 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             await tcs.Task;
         }
+    }
+
+    private void InitializeHostStartupValues()
+    {
+        var keys = BrowserStartupValueProviderUtilities.GetKeys(
+            Services.GetServices<IBrowserStartupValueProvider>());
+        var keysJson = HostStartupValuesJson.SerializeKeys(keys);
+        var valuesJson = Services.GetRequiredService<IInternalJSImportMethods>().GetHostStartupValues(keysJson);
+        if (!HostStartupValuesJson.TryDeserialize(valuesJson, out var values) ||
+            !ContainsExactly(values, keys))
+        {
+            throw new InvalidOperationException("The browser returned invalid host startup values.");
+        }
+
+        Services.GetRequiredService<InteractiveHostStartupValues>().Initialize(values);
+    }
+
+    private static bool ContainsExactly(IReadOnlyDictionary<string, string> values, IReadOnlyList<string> keys)
+    {
+        if (values.Count != keys.Count)
+        {
+            return false;
+        }
+
+        foreach (var key in keys)
+        {
+            if (!values.ContainsKey(key))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]

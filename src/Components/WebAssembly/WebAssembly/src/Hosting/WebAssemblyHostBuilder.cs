@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -332,6 +334,11 @@ public sealed class WebAssemblyHostBuilder
     [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
+        Services.AddSingleton<InteractiveHostStartupValues>();
+        Services.TryAddSingleton<IHostStartupValues>(
+            static services => services.GetRequiredService<InteractiveHostStartupValues>());
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);

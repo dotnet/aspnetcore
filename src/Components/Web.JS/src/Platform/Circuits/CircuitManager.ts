@@ -19,6 +19,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { evaluateHostStartupValues } from '../../Services/HostStartupValues';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -112,13 +113,28 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
-    this._circuitId = await this._connection.invoke<string>(
-      'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
-      componentsJson,
-      this._applicationState || ''
-    );
+    const baseUri = navigationManagerFunctions.getBaseURI();
+    const uri = navigationManagerFunctions.getLocationHref();
+    const applicationState = this._applicationState || '';
+    const startupValuesJson = await this.getStartupValuesJson();
+    if (startupValuesJson === undefined) {
+      this._circuitId = await this._connection.invoke<string>(
+        'StartCircuit',
+        baseUri,
+        uri,
+        componentsJson,
+        applicationState
+      );
+    } else {
+      this._circuitId = await this._connection.invoke<string>(
+        'StartCircuitWithStartupValues',
+        baseUri,
+        uri,
+        componentsJson,
+        applicationState,
+        startupValuesJson
+      );
+    }
 
     if (!this._circuitId) {
       return false;
@@ -131,6 +147,19 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return true;
+  }
+
+  private async getStartupValuesJson(): Promise<string | undefined> {
+    try {
+      const keys = await this._connection!.invoke<string[]>('GetStartupValueKeys');
+      return JSON.stringify(evaluateHostStartupValues(keys));
+    } catch (error) {
+      if (error instanceof Error && error.message.endsWith('HubException: Method does not exist.')) {
+        return undefined;
+      }
+
+      throw error;
+    }
   }
 
   private async startConnection(): Promise<HubConnection> {
@@ -466,14 +495,25 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
-      const newCircuitId = await this._connection!.invoke<string>(
-        'ResumeCircuit',
-        this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
-        persistedCircuitState?.components ?? '[]',
-        persistedCircuitState?.applicationState ?? '',
-      );
+      const startupValuesJson = await this.getStartupValuesJson();
+      const newCircuitId = startupValuesJson === undefined
+        ? await this._connection!.invoke<string>(
+          'ResumeCircuit',
+          this._circuitId,
+          navigationManagerFunctions.getBaseURI(),
+          navigationManagerFunctions.getLocationHref(),
+          persistedCircuitState?.components ?? '[]',
+          persistedCircuitState?.applicationState ?? '',
+        )
+        : await this._connection!.invoke<string>(
+          'ResumeCircuitWithStartupValues',
+          this._circuitId,
+          navigationManagerFunctions.getBaseURI(),
+          navigationManagerFunctions.getLocationHref(),
+          persistedCircuitState?.components ?? '[]',
+          persistedCircuitState?.applicationState ?? '',
+          startupValuesJson,
+        );
       if (!newCircuitId) {
         this._resumingState.complete(false);
         return resumingPromise;

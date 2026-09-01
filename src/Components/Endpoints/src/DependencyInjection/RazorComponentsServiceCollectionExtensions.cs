@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
@@ -65,6 +66,14 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
+        services.TryAddKeyedScoped<HttpContextHostStartupValues>(typeof(IHostStartupValues));
+        services.TryAddKeyedScoped<IHostStartupValues>(
+            typeof(IHostStartupValues),
+            static (services, key) => services.GetRequiredKeyedService<HttpContextHostStartupValues>(key));
+        services.TryAddScoped<IHostStartupValues>(
+            static services => services.GetRequiredKeyedService<IHostStartupValues>(typeof(IHostStartupValues)));
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHttpContextStartupValueProvider, NavigationHttpContextStartupValueProvider>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();

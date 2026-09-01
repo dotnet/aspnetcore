@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -83,6 +84,29 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddScoped<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        services.TryAddScoped<InteractiveServerContext>();
+        services.TryAddKeyedScoped<InteractiveHostStartupValues>(typeof(ComponentHub));
+        services.TryAddKeyedScoped<IHostStartupValues>(
+            typeof(ComponentHub),
+            static (services, key) => services.GetRequiredKeyedService<InteractiveHostStartupValues>(key));
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
+
+        if (!HasHostStartupValuesRegistrationMarker(services))
+        {
+            services.AddSingleton<HostStartupValuesRegistrationMarker>();
+            services.AddScoped<IHostStartupValues>(static services =>
+            {
+                var context = services.GetRequiredService<InteractiveServerContext>();
+                if (context.IsInteractive)
+                {
+                    return services.GetRequiredKeyedService<IHostStartupValues>(typeof(ComponentHub));
+                }
+
+                return services.GetKeyedService<IHostStartupValues>(typeof(IHostStartupValues))
+                    ?? services.GetRequiredKeyedService<IHostStartupValues>(typeof(ComponentHub));
+            });
+        }
 
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
@@ -132,6 +156,19 @@ public static class ComponentServiceCollectionExtensions
         return builder;
     }
 
+    private static bool HasHostStartupValuesRegistrationMarker(IServiceCollection services)
+    {
+        foreach (var descriptor in services)
+        {
+            if (descriptor.ServiceType == typeof(HostStartupValuesRegistrationMarker))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
     {
         public DefaultServerSideBlazorBuilder(IServiceCollection services)
@@ -140,5 +177,9 @@ public static class ComponentServiceCollectionExtensions
         }
 
         public IServiceCollection Services { get; }
+    }
+
+    private sealed class HostStartupValuesRegistrationMarker
+    {
     }
 }
