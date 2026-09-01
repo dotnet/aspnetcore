@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
@@ -46,6 +47,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitRegistry _circuitRegistry;
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
+    private readonly IEnumerable<IBrowserStartupValueProvider> _browserStartupValueProviders;
     private readonly ILogger _logger;
 
     public ComponentHub(
@@ -56,6 +58,7 @@ internal sealed partial class ComponentHub : Hub
         CircuitRegistry circuitRegistry,
         CircuitPersistenceManager circuitPersistenceProvider,
         ICircuitHandleRegistry circuitHandleRegistry,
+        IEnumerable<IBrowserStartupValueProvider> browserStartupValueProviders,
         ILogger<ComponentHub> logger)
     {
         _serverComponentSerializer = serializer;
@@ -65,6 +68,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitRegistry = circuitRegistry;
         _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
+        _browserStartupValueProviders = browserStartupValueProviders;
         _logger = logger;
     }
 
@@ -103,7 +107,27 @@ internal sealed partial class ComponentHub : Hub
         return Task.CompletedTask;
     }
 
-    public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
+    public string[] GetStartupValueKeys()
+        => BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders);
+
+    public ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
+        => StartCircuitCore(baseUri, uri, serializedComponentRecords, applicationState, null, hasStartupValues: false);
+
+    public ValueTask<string> StartCircuitWithStartupValues(
+        string baseUri,
+        string uri,
+        string serializedComponentRecords,
+        string applicationState,
+        string startupValuesJson)
+        => StartCircuitCore(baseUri, uri, serializedComponentRecords, applicationState, startupValuesJson, hasStartupValues: true);
+
+    private async ValueTask<string> StartCircuitCore(
+        string baseUri,
+        string uri,
+        string serializedComponentRecords,
+        string applicationState,
+        string? startupValuesJson,
+        bool hasStartupValues)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
         if (circuitHost != null)
@@ -132,6 +156,22 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        Dictionary<string, string> startupValues;
+        if (hasStartupValues)
+        {
+            if (!TryGetStartupValues(startupValuesJson, baseUri, uri, out startupValues))
+            {
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
+                Context.Abort();
+                return null;
+            }
+        }
+        else
+        {
+            startupValues = CreateNavigationStartupValues(baseUri, uri);
+        }
+
         if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
         {
             Log.InvalidInputData(_logger);
@@ -152,6 +192,7 @@ internal sealed partial class ComponentHub : Hub
                 circuitClient,
                 baseUri,
                 uri,
+                startupValues,
                 Context.User,
                 store,
                 resourceCollection);
@@ -184,6 +225,61 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
     }
+
+    private static bool HasConflictingValue(
+        IReadOnlyDictionary<string, string> values,
+        string key,
+        string expectedValue)
+        => values.TryGetValue(key, out var value) && !string.Equals(value, expectedValue, StringComparison.Ordinal);
+
+    private static bool ContainsExactly(
+        IReadOnlyDictionary<string, string> values,
+        IReadOnlyList<string> expectedKeys)
+    {
+        if (values.Count != expectedKeys.Count)
+        {
+            return false;
+        }
+
+        foreach (var key in expectedKeys)
+        {
+            if (!values.ContainsKey(key))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryGetStartupValues(
+        string? startupValuesJson,
+        string baseUri,
+        string uri,
+        out Dictionary<string, string> startupValues)
+    {
+        if (!HostStartupValuesJson.TryDeserialize(startupValuesJson, out startupValues) ||
+            !ContainsExactly(
+                startupValues,
+                BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders)) ||
+            HasConflictingValue(startupValues, NavigationBrowserStartupValueProvider.BaseUriKey, baseUri) ||
+            HasConflictingValue(startupValues, NavigationBrowserStartupValueProvider.LocationHrefKey, uri))
+        {
+            return false;
+        }
+
+        startupValues[NavigationBrowserStartupValueProvider.BaseUriKey] = baseUri;
+        startupValues[NavigationBrowserStartupValueProvider.LocationHrefKey] = uri;
+
+        return true;
+    }
+
+    private static Dictionary<string, string> CreateNavigationStartupValues(string baseUri, string uri)
+        => new(StringComparer.Ordinal)
+        {
+            [NavigationBrowserStartupValueProvider.BaseUriKey] = baseUri,
+            [NavigationBrowserStartupValueProvider.LocationHrefKey] = uri,
+        };
 
     public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
     {
@@ -297,12 +393,45 @@ internal sealed partial class ComponentHub : Hub
     // On the server we are going to have a public method on Circuit.cs to trigger pausing a circuit from the server
     // that returns the root components and application state as strings data-protected by the data protection provider.
     // Those can be then passed to this method for resuming the circuit.
-    public async ValueTask<string> ResumeCircuit(
+    public ValueTask<string> ResumeCircuit(
         string circuitIdSecret,
         string baseUri,
         string uri,
         string rootComponents,
         string applicationState)
+        => ResumeCircuitCore(
+            circuitIdSecret,
+            baseUri,
+            uri,
+            rootComponents,
+            applicationState,
+            startupValuesJson: null,
+            hasStartupValues: false);
+
+    public ValueTask<string> ResumeCircuitWithStartupValues(
+        string circuitIdSecret,
+        string baseUri,
+        string uri,
+        string rootComponents,
+        string applicationState,
+        string startupValuesJson)
+        => ResumeCircuitCore(
+            circuitIdSecret,
+            baseUri,
+            uri,
+            rootComponents,
+            applicationState,
+            startupValuesJson,
+            hasStartupValues: true);
+
+    private async ValueTask<string> ResumeCircuitCore(
+        string circuitIdSecret,
+        string baseUri,
+        string uri,
+        string rootComponents,
+        string applicationState,
+        string? startupValuesJson,
+        bool hasStartupValues)
     {
         // TryParseCircuitId will not throw.
         if (!_circuitIdFactory.TryParseCircuitId(circuitIdSecret, out var circuitId))
@@ -337,6 +466,22 @@ internal sealed partial class ComponentHub : Hub
             await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
             Context.Abort();
             return null;
+        }
+
+        Dictionary<string, string> startupValues;
+        if (hasStartupValues)
+        {
+            if (!TryGetStartupValues(startupValuesJson, baseUri, uri, out startupValues))
+            {
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
+                Context.Abort();
+                return null;
+            }
+        }
+        else
+        {
+            startupValues = CreateNavigationStartupValues(baseUri, uri);
         }
 
         PersistedCircuitState? persistedCircuitState;
@@ -404,6 +549,7 @@ internal sealed partial class ComponentHub : Hub
                 circuitClient,
                 baseUri,
                 uri,
+                startupValues,
                 Context.User,
                 store: null,
                 resourceCollection);

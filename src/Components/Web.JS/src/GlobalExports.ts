@@ -79,6 +79,7 @@ export interface IBlazor {
     getConfig?: (fileName: string) => Uint8Array | undefined;
     getApplicationEnvironment?: () => string;
     getApplicationCulture?: () => string;
+    getHostStartupValues?: (keysJson: string) => string;
     dotNetCriticalError?: any;
     loadLazyAssembly?: any;
     loadSatelliteAssemblies?: any;

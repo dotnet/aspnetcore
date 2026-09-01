@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -86,10 +86,14 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         string? handler = null,
         IFormCollection? form = null)
     {
+        httpContext.RequestServices
+            .GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues))
+            .Initialize(httpContext);
+
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            GetContextBaseUri(httpContext.Request),
-            GetFullUri(httpContext.Request),
+            NavigationHttpContextStartupValueProvider.GetContextBaseUri(httpContext.Request),
+            NavigationHttpContextStartupValueProvider.GetFullUri(httpContext.Request),
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
@@ -240,25 +244,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             await writerToFlush.FlushAsync();
             await completion;
         }
-    }
-
-    private static string GetFullUri(HttpRequest request)
-    {
-        return UriHelper.BuildAbsolute(
-            request.Scheme,
-            request.Host,
-            request.PathBase,
-            request.Path,
-            request.QueryString);
-    }
-
-    private static string GetContextBaseUri(HttpRequest request)
-    {
-        var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
-
-        // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
-        // it has to end with a trailing slash
-        return result.EndsWith('/') ? result : result += "/";
     }
 
     private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>

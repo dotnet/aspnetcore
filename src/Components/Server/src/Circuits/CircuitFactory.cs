@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -43,11 +44,17 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         CircuitClientProxy client,
         string baseUri,
         string uri,
+        IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
         ResourceAssetCollection resourceCollection)
     {
         var scope = _scopeFactory.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
+        scope.ServiceProvider
+            .GetRequiredKeyedService<InteractiveHostStartupValues>(typeof(ComponentHub))
+            .Initialize(startupValues);
+
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
         jsRuntime.Initialize(client);
 

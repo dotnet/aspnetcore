@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
@@ -46,6 +47,105 @@ public class ComponentHubTest
         Assert.Null(circuitSecret);
         var errorMessage = "The uris provided are invalid.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public void GetStartupValueKeysReturnsProviderKeysInRegistrationOrder()
+    {
+        var providers = new IBrowserStartupValueProvider[]
+        {
+            new TestBrowserStartupValueProvider("first.value"),
+            new TestBrowserStartupValueProvider("second.value"),
+        };
+        var (_, hub) = InitializeComponentHub(browserStartupValueProviders: providers);
+
+        Assert.Equal(["first.value", "second.value"], hub.GetStartupValueKeys());
+    }
+
+    [Fact]
+    public void GetStartupValueKeysRejectsDuplicates()
+    {
+        var providers = new IBrowserStartupValueProvider[]
+        {
+            new TestBrowserStartupValueProvider("duplicate.value"),
+            new TestBrowserStartupValueProvider("duplicate.value"),
+        };
+        var (_, hub) = InitializeComponentHub(browserStartupValueProviders: providers);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => hub.GetStartupValueKeys());
+        Assert.Equal("The browser startup value key 'duplicate.value' was provided more than once.", exception.Message);
+    }
+
+    [Fact]
+    public async Task StartCircuitLegacyPathSeedsNavigationStartupValues()
+    {
+        var circuitFactory = new TestCircuitFactory();
+        var (_, hub) = InitializeComponentHub(circuitFactory: circuitFactory);
+
+        var circuitSecret = await hub.StartCircuit(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null);
+
+        Assert.NotNull(circuitSecret);
+        Assert.Equal("https://localhost:5000/", circuitFactory.StartupValues["document.baseURI"]);
+        Assert.Equal("https://localhost:5000/page", circuitFactory.StartupValues["location.href"]);
+        Assert.Equal(2, circuitFactory.StartupValues.Count);
+    }
+
+    [Fact]
+    public async Task StartCircuitWithStartupValuesPassesValidatedValues()
+    {
+        var circuitFactory = new TestCircuitFactory();
+        var (_, hub) = InitializeComponentHub(
+            circuitFactory: circuitFactory,
+            browserStartupValueProviders:
+            [
+                new TestBrowserStartupValueProvider("document.baseURI", "location.href", "custom.value"),
+            ]);
+
+        var circuitSecret = await hub.StartCircuitWithStartupValues(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null,
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""");
+
+        Assert.NotNull(circuitSecret);
+        Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("""{"value":"first","value":"second"}""")]
+    [InlineData("""{"value":42}""")]
+    [InlineData("""{"document.baseURI":"https://other.example/","location.href":"https://localhost:5000/page"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/other"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","unexpected":"value"}""")]
+    public async Task StartCircuitWithStartupValuesRejectsInvalidValues(string startupValuesJson)
+    {
+        var (mockClientProxy, hub) = InitializeComponentHub(
+            browserStartupValueProviders:
+            [
+                new TestBrowserStartupValueProvider("document.baseURI", "location.href"),
+            ]);
+
+        var circuitSecret = await hub.StartCircuitWithStartupValues(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null,
+            startupValuesJson);
+
+        Assert.Null(circuitSecret);
+        mockClientProxy.Verify(
+            proxy => proxy.SendCoreAsync(
+                "JS.Error",
+                new[] { "The startup values provided are invalid." },
+                It.IsAny<CancellationToken>()),
+            Times.Once());
     }
 
     [Fact]
@@ -277,6 +377,84 @@ public class ComponentHubTest
     }
 
     [Fact]
+    public async Task ResumeCircuitWithStartupValuesPassesValidatedValues()
+    {
+        var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
+        var providerMock = new Mock<ICircuitPersistenceProvider>();
+        providerMock.Setup(m => m.RestoreCircuitAsync(It.IsAny<CircuitId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PersistedCircuitState
+            {
+                RootComponents = [.. """{}"""u8],
+                ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
+            });
+        var circuitFactory = new TestCircuitFactory();
+        var (_, hub) = InitializeComponentHub(
+            handleRegistry: handleRegistryMock.Object,
+            provider: providerMock.Object,
+            circuitFactory: circuitFactory,
+            browserStartupValueProviders:
+            [
+                new TestBrowserStartupValueProvider("document.baseURI", "location.href", "custom.value"),
+            ]);
+        var circuitSecret = await hub.StartCircuit(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null);
+
+        var result = await hub.ResumeCircuitWithStartupValues(
+            circuitSecret,
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "[]",
+            "",
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""");
+
+        Assert.NotNull(result);
+        Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("""{"value":"first","value":"second"}""")]
+    [InlineData("""{"value":42}""")]
+    [InlineData("""{"document.baseURI":"https://other.example/","location.href":"https://localhost:5000/page"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/other"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","unexpected":"value"}""")]
+    public async Task ResumeCircuitWithStartupValuesRejectsInvalidValues(string startupValuesJson)
+    {
+        var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
+        var (mockClientProxy, hub) = InitializeComponentHub(
+            handleRegistry: handleRegistryMock.Object,
+            browserStartupValueProviders:
+            [
+                new TestBrowserStartupValueProvider("document.baseURI", "location.href"),
+            ]);
+        var circuitSecret = await hub.StartCircuit(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null);
+
+        var result = await hub.ResumeCircuitWithStartupValues(
+            circuitSecret,
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "[]",
+            "",
+            startupValuesJson);
+
+        Assert.Null(result);
+        mockClientProxy.Verify(
+            proxy => proxy.SendCoreAsync(
+                "JS.Error",
+                new[] { "The startup values provided are invalid." },
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    [Fact]
     public async Task StartCircuitFailsWithUnresolvedCircuitHandlerDependency_NotifiesClientToCheckServerLogs()
     {
         var circuitFactoryMock = new Mock<ICircuitFactory>();
@@ -286,6 +464,7 @@ public class ComponentHubTest
                 It.IsAny<CircuitClientProxy>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
+                It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
                 It.IsAny<ResourceAssetCollection>()))
@@ -318,6 +497,7 @@ public class ComponentHubTest
                 It.IsAny<CircuitClientProxy>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
+                It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
                 It.IsAny<ResourceAssetCollection>()))
@@ -397,7 +577,8 @@ public class ComponentHubTest
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,
         ClaimsPrincipal user = null,
-        IConnectionAuthenticationRefreshFeature userRefreshFeature = null)
+        IConnectionAuthenticationRefreshFeature userRefreshFeature = null,
+        IEnumerable<IBrowserStartupValueProvider> browserStartupValueProviders = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -426,6 +607,7 @@ public class ComponentHubTest
             circuitRegistry: circuitRegistry,
             circuitPersistenceProvider: circuitPersistenceManager,
             circuitHandleRegistry: circuitHandleRegistry,
+            browserStartupValueProviders: browserStartupValueProviders ?? [],
             logger: NullLogger<ComponentHub>.Instance);
 
         // Here we mock out elements of the Hub that are typically configured
@@ -518,12 +700,19 @@ public class ComponentHubTest
 
     private class TestCircuitFactory : ICircuitFactory
     {
+        public TestCircuitFactory()
+        {
+        }
+
         public TestCircuitFactory(
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
         IOptions<CircuitOptions> options)
         { }
+
+        public IReadOnlyDictionary<string, string> StartupValues { get; private set; } =
+            new Dictionary<string, string>();
 
         // Implement a `CreateCircuitHostAsync` that mocks the construction
         // of the CircuitHost.
@@ -532,10 +721,12 @@ public class ComponentHubTest
             CircuitClientProxy client,
             string baseUri,
             string uri,
+            IReadOnlyDictionary<string, string> startupValues,
             ClaimsPrincipal user,
             IPersistentComponentStateStore store,
             ResourceAssetCollection resourceCollection)
         {
+            StartupValues = startupValues;
             var clientProxy = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "123");
 
             var serviceScope = new Mock<IServiceScope>();
@@ -545,5 +736,10 @@ public class ComponentHubTest
                 clientProxy: clientProxy);
             return ValueTask.FromResult(circuitHost);
         }
+    }
+
+    private sealed class TestBrowserStartupValueProvider(params string[] keys) : IBrowserStartupValueProvider
+    {
+        public IReadOnlyList<string> Keys { get; } = keys;
     }
 }

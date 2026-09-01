@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 
@@ -75,5 +77,70 @@ public class ComponentServiceCollectionExtensionsTest
 
         // Configuring Blazor options is kept separate from the global options.
         Assert.Equal(TimeSpan.FromMinutes(10), globalOptions.Value.HandshakeTimeout);
+    }
+
+    [Theory]
+    [InlineData("Endpoints")]
+    [InlineData("Server")]
+    [InlineData("EndpointsThenServer")]
+    [InlineData("ServerThenEndpoints")]
+    public void HostStartupValuesRegistrationUsesTheExpectedNonInteractiveHolder(string registrations)
+    {
+        var services = new ServiceCollection();
+        switch (registrations)
+        {
+            case "Endpoints":
+                services.AddRazorComponents();
+                break;
+            case "Server":
+                services.AddServerSideBlazor();
+                break;
+            case "EndpointsThenServer":
+                services.AddRazorComponents();
+                services.AddServerSideBlazor();
+                break;
+            case "ServerThenEndpoints":
+                services.AddServerSideBlazor();
+                services.AddRazorComponents();
+                break;
+        }
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
+        var expectedAssembly = registrations is "Server"
+            ? "Microsoft.AspNetCore.Components.Server"
+            : "Microsoft.AspNetCore.Components.Endpoints";
+
+        Assert.Equal(expectedAssembly, startupValues.GetType().Assembly.GetName().Name);
+    }
+
+    [Fact]
+    public void HostStartupValuesRegistrationSelectsServerHolderForInteractiveScope()
+    {
+        var services = new ServiceCollection();
+        services.AddRazorComponents();
+        services.AddServerSideBlazor();
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
+
+        var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
+        Assert.IsType<InteractiveHostStartupValues>(startupValues);
+    }
+
+    [Fact]
+    public void AddServerSideBlazorRepeatedlyDoesNotDuplicateHostStartupValueRegistrations()
+    {
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        var countAfterFirstCall = services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues));
+
+        services.AddServerSideBlazor();
+
+        Assert.Equal(
+            countAfterFirstCall,
+            services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues)));
     }
 }
