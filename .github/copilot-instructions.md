@@ -13,9 +13,11 @@
 
 ## Public API Changes
 
-* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change. Before implementing it, verify that the linked issue is `api-approved`.
-* If approval is missing, stop and explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature. Implementation starts only after `api-approved`.
-* When reporting this gate, explicitly say that `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval, and that any implementation change to the approved API shape must return to API review.
+* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change.
+* When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](./skills/api-review/SKILL.md) to create a separate API proposal issue. Link the proposal to the originating issue and implementation pull request.
+* Implementation, pull request readiness, and merge may proceed before the linked issue is `api-approved`. Before the API can be included in an RTM release, verify that the API proposal issue has the `api-approved` label and that the approval covers the final implemented API shape.
+* If the `api-approved` label is missing when preparing an RTM release, explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature.
+* `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval. Any implementation change to the proposed or previously approved API shape must return to API review before the API is included in an RTM release.
 
 ## Framework assembly boundaries
 
@@ -54,6 +56,7 @@
 * For behavioral findings and bug-fix verification, E2E validation is unnecessary when the disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
 * If faithful validation is impractical, state the observed boundary and limitation, and do not describe the behavioral claim as verified.
 * If that red/green verification isn't practical, explain why, state what you did verify, and don't describe the fix as verified.
+* When a requested automated test cannot reach its assertion, name that test in the final response, state the prerequisite that blocked it, and identify the faithful validation boundary used instead.
 
 ## .NET Environment
 
