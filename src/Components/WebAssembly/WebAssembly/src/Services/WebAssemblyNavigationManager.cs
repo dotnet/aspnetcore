@@ -26,6 +26,17 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         Initialize(baseUri, uri);
     }
 
+    internal void InitializeNavigation(string baseUri, string uri)
+    {
+        var lastSlashIndex = baseUri.LastIndexOf('/');
+        var normalizedBaseUri = lastSlashIndex >= 0 ? baseUri[..(lastSlashIndex + 1)] : baseUri;
+        if (!string.Equals(BaseUri, normalizedBaseUri, StringComparison.Ordinal) ||
+            !string.Equals(Uri, uri, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("The browser navigation values changed during host initialization.");
+        }
+    }
+
     public void CreateLogger(ILoggerFactory loggerFactory)
     {
         if (_logger is not null)

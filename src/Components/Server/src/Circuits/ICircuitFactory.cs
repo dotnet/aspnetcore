@@ -15,5 +15,7 @@ internal interface ICircuitFactory
         IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
-        ResourceAssetCollection resourceCollection);
+        ResourceAssetCollection resourceCollection,
+        bool supportsDeferredHostInitialization,
+        CancellationToken cancellationToken);
 }

@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -90,12 +91,17 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             .GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues))
             .Initialize(httpContext);
 
-        var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            NavigationHttpContextStartupValueProvider.GetContextBaseUri(httpContext.Request),
-            NavigationHttpContextStartupValueProvider.GetFullUri(httpContext.Request),
-            uri => GetErrorHandledTask(OnNavigateTo(uri)));
+        var hostInitializers = httpContext.RequestServices.GetServices<IHostInitializer>()
+            .OrderBy(initializer => initializer.Order);
+        foreach (var initializer in hostInitializers)
+        {
+            if (!initializer.RequiresJSInterop)
+            {
+                await initializer.InitializeAsync(httpContext.RequestAborted);
+            }
+        }
 
+        var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();

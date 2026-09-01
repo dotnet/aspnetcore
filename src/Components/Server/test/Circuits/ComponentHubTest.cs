@@ -59,7 +59,7 @@ public class ComponentHubTest
         };
         var (_, hub) = InitializeComponentHub(browserStartupValueProviders: providers);
 
-        Assert.Equal(["first.value", "second.value"], hub.GetStartupValueKeys());
+        Assert.Equal("""["first.value","second.value"]""", hub.GetStartupValueKeys());
     }
 
     [Fact]
@@ -92,6 +92,7 @@ public class ComponentHubTest
         Assert.Equal("https://localhost:5000/", circuitFactory.StartupValues["document.baseURI"]);
         Assert.Equal("https://localhost:5000/page", circuitFactory.StartupValues["location.href"]);
         Assert.Equal(2, circuitFactory.StartupValues.Count);
+        Assert.False(circuitFactory.SupportsDeferredHostInitialization);
     }
 
     [Fact]
@@ -114,6 +115,52 @@ public class ComponentHubTest
 
         Assert.NotNull(circuitSecret);
         Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
+        Assert.True(circuitFactory.SupportsDeferredHostInitialization);
+    }
+
+    [Fact]
+    public async Task CompleteHostInitializationReturnsBeforeDeferredInitializerCompletes()
+    {
+        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completionNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var circuitFactory = new TestCircuitFactory
+        {
+            DeferredHostInitializers =
+            [
+                new TestHostInitializer(() =>
+                {
+                    initializerStarted.TrySetResult();
+                    return continueInitializer.Task;
+                }),
+            ],
+        };
+        var (client, hub) = InitializeComponentHub(circuitFactory: circuitFactory);
+        client.Setup(proxy => proxy.SendCoreAsync(
+                "JS.EndHostInitialization",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, object[], CancellationToken>((_, _, _) => completionNotification.TrySetResult())
+            .Returns(Task.CompletedTask);
+        await hub.StartCircuitWithStartupValues(
+            "https://localhost:5000/",
+            "https://localhost:5000/page",
+            "{}",
+            null,
+            "{}");
+
+        var hubInvocation = hub.CompleteHostInitialization();
+        await initializerStarted.Task;
+
+        Assert.True(hubInvocation.IsCompletedSuccessfully);
+        Assert.False(completionNotification.Task.IsCompleted);
+
+        continueInitializer.SetResult();
+        await completionNotification.Task;
+        client.Verify(proxy => proxy.SendCoreAsync(
+            "JS.EndHostInitialization",
+            It.Is<object[]>(arguments => (bool)arguments[0] && ReferenceEquals(arguments[1], null)),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -412,6 +459,7 @@ public class ComponentHubTest
 
         Assert.NotNull(result);
         Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
+        Assert.True(circuitFactory.SupportsDeferredHostInitialization);
     }
 
     [Theory]
@@ -467,7 +515,9 @@ public class ComponentHubTest
                 It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
-                It.IsAny<ResourceAssetCollection>()))
+                It.IsAny<ResourceAssetCollection>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
 
         var (mockClientProxy, hub) = InitializeComponentHub(circuitFactory: circuitFactoryMock.Object);
@@ -500,7 +550,9 @@ public class ComponentHubTest
                 It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
-                It.IsAny<ResourceAssetCollection>()))
+                It.IsAny<ResourceAssetCollection>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
 
         var (mockClientProxy, hub) = InitializeComponentHub(
@@ -714,6 +766,10 @@ public class ComponentHubTest
         public IReadOnlyDictionary<string, string> StartupValues { get; private set; } =
             new Dictionary<string, string>();
 
+        public bool SupportsDeferredHostInitialization { get; private set; }
+
+        public IHostInitializer[] DeferredHostInitializers { get; init; } = [];
+
         // Implement a `CreateCircuitHostAsync` that mocks the construction
         // of the CircuitHost.
         public ValueTask<CircuitHost> CreateCircuitHostAsync(
@@ -724,18 +780,26 @@ public class ComponentHubTest
             IReadOnlyDictionary<string, string> startupValues,
             ClaimsPrincipal user,
             IPersistentComponentStateStore store,
-            ResourceAssetCollection resourceCollection)
+            ResourceAssetCollection resourceCollection,
+            bool supportsDeferredHostInitialization,
+            CancellationToken cancellationToken)
         {
             StartupValues = startupValues;
-            var clientProxy = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "123");
-
+            SupportsDeferredHostInitialization = supportsDeferredHostInitialization;
             var serviceScope = new Mock<IServiceScope>();
             var circuitHost = TestCircuitHost.Create(
                 circuitId: TestCircuitIdFactory.Instance.CreateCircuitId(),
                 serviceScope: new AsyncServiceScope(serviceScope.Object),
-                clientProxy: clientProxy);
+                clientProxy: client,
+                deferredHostInitializers: DeferredHostInitializers);
             return ValueTask.FromResult(circuitHost);
         }
+    }
+
+    private sealed class TestHostInitializer(Func<Task> initialize) : IHostInitializer
+    {
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
+            => initialize();
     }
 
     private sealed class TestBrowserStartupValueProvider(params string[] keys) : IBrowserStartupValueProvider

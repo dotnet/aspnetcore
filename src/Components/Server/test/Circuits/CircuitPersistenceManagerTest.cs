@@ -437,6 +437,7 @@ public class CircuitPersistenceManagerTest
             [],
             jsRuntime,
             navigationManager,
+            [],
             circuitHandlers,
             circuitMetrics,
             componentsActivitySource,
