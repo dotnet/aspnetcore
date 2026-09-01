@@ -5,10 +5,8 @@ registries:
     url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 updates:
 - package-ecosystem: "nuget"
-  directories:
-  - "/"
   # Exposes packages Dependabot otherwise can't see; see eng/tools/DependabotDiscovery/README.md
-  - "/eng/tools/DependabotDiscovery"
+  directory: "/eng/tools/DependabotDiscovery"
   registries:
   - dotnet-public
   open-pull-requests-limit: 10
@@ -90,7 +88,8 @@ updates:
   - dependency-name: "Microsoft.IdentityModel.Protocols.OpenIdConnect"
   - dependency-name: "Microsoft.IdentityModel.Protocols.WsFederation"
   - dependency-name: "System.IdentityModel.Tokens.Jwt"
-  # Packages managed by Maestro dependency flow (eng/Version.Details.xml on main)
+  # Dependencies managed by Maestro flow, including eng/Version.Details.xml packages
+  # and tool manifest versions brought in through dotnet/dotnet codeflow.
   - dependency-name: "Microsoft.Bcl.AsyncInterfaces"
   - dependency-name: "Microsoft.Bcl.TimeProvider"
   - dependency-name: "Microsoft.Build"
@@ -100,7 +99,7 @@ updates:
   - dependency-name: "Microsoft.CodeAnalysis.CSharp"
   - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
   - dependency-name: "Microsoft.CodeAnalysis.Common"
-  - dependency-name: "Microsoft.CodeAnalysis.ExternalAccess.AspNetCore"
+  - dependency-name: "Microsoft.CodeAnalysis.Features.ExternalAccess"
   - dependency-name: "Microsoft.DotNet.Arcade.Sdk"
   - dependency-name: "Microsoft.DotNet.Build.Tasks.Archives"
   - dependency-name: "Microsoft.DotNet.Build.Tasks.Installers"
@@ -164,6 +163,7 @@ updates:
   - dependency-name: "Microsoft.NETCore.BrowserDebugHost.Transport"
   - dependency-name: "Microsoft.NETCore.Platforms"
   - dependency-name: "Microsoft.Web.Xdt"
+  - dependency-name: "Microsoft.Wix*"
   - dependency-name: "NuGet.Frameworks"
   - dependency-name: "NuGet.Packaging"
   - dependency-name: "NuGet.Versioning"
@@ -195,7 +195,9 @@ updates:
   - dependency-name: "System.Threading.AccessControl"
   - dependency-name: "System.Threading.Channels"
   - dependency-name: "System.Threading.RateLimiting"
+  - dependency-name: "dotnet-dump"
   - dependency-name: "dotnet-ef"
+  - dependency-name: "dotnet-serve"
   - dependency-name: "optimization.linux-arm64.MIBC.Runtime"
   - dependency-name: "optimization.linux-x64.MIBC.Runtime"
   - dependency-name: "optimization.windows_nt-arm64.MIBC.Runtime"
@@ -288,4 +290,3 @@ updates:
   schedule:
     interval: monthly
   target-branch: release/10.0
-

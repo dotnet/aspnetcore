@@ -152,6 +152,23 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("4", () => countWasmElem.Text);
     }
 
+    [Fact]
+    public void SurfacesExceptionThrownDuringWebAssemblyRootComponentActivation()
+    {
+        // Boot the WebAssembly runtime on the launcher page so the subsequent navigation
+        // adds the failing component through the OnUpdateRootComponents runtime update path
+        // (rather than the initial component batch, which surfaces faults separately).
+        Navigate($"{ServerPathBase}/wasm-activation-failure-launcher");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-launcher")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-launcher")).Text);
+
+        // Enhanced-navigate to a page whose component throws during activation. Before the fix,
+        // this fault was fire-and-forgotten and never logged or surfaced.
+        Browser.Click(By.Id("go-to-activation-failure"));
+
+        AssertBrowserLogContainsMessage("Simulated: component activation fails on the WebAssembly runtime.");
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -1549,6 +1566,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
         Assert404ReExecuted();
         AssertReExecutedPageIsInteractive();
+    }
+
+    [Fact]
+    public void PersistedState_IsEmitted_OnReExecutedPage()
+    {
+        Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
+
+        Assert404ReExecuted();
+        AssertReExecutedPageIsInteractive();
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
     }
 
     private void AssertReExecutedPageIsInteractive()

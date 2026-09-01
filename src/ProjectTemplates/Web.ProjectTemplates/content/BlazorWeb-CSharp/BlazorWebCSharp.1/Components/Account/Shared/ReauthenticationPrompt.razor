@@ -162,9 +162,13 @@
             return;
         }
 
-        // Persist the updated sign counter. A failed write is not a reason to reject an otherwise
-        // valid confirmation.
-        await UserManager.AddOrUpdatePasskeyAsync(user, assertionResult.Passkey);
+        var updateResult = await UserManager.AddOrUpdatePasskeyAsync(user, assertionResult.Passkey);
+        if (!updateResult.Succeeded)
+        {
+            message = $"Error: {string.Join(",", updateResult.Errors.Select(error => error.Description))}";
+            return;
+        }
+
         await MarkReauthenticatedAsync();
     }
 

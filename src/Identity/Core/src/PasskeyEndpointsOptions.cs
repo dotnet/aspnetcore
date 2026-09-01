@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// }
 /// </code>
 /// </example>
-[Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0039", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class PasskeyEndpointsOptions
 {
     /// <summary>

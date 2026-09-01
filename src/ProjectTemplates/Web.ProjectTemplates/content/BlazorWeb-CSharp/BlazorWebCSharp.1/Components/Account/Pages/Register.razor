@@ -208,7 +208,7 @@
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        if (!await SignInManager.CanSignInAsync(user))
         {
             RedirectManager.RedirectTo(
                 "Account/RegisterConfirmation",
