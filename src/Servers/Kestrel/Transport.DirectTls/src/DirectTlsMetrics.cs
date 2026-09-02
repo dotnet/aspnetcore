@@ -21,6 +21,10 @@ internal sealed class DirectTlsMetrics
     private readonly UpDownCounter<long>? _writeBackpressureConnections;
     private readonly DirectTlsEventSource _eventSource = DirectTlsEventSource.Log;
 
+    private DirectTlsMetrics()
+    {
+    }
+
     public DirectTlsMetrics(IMeterFactory meterFactory)
         : this(meterFactory.Create(KestrelMetrics.MeterName))
     {
