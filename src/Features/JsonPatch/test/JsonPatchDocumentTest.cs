@@ -11,39 +11,109 @@ namespace Microsoft.AspNetCore.JsonPatch;
 public class JsonPatchDocumentTest
 {
     [Fact]
-    public void InvalidPathAtBeginningShouldThrowException()
+    public void DoubleSlashAtBeginningShouldParseCorrectly()
     {
         // Arrange
         var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject { [""] = new JObject() };
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() =>
-        {
-            patchDocument.Add("//NewInt", 1);
-        });
+        patchDocument.Add("//NewInt", 1);
+        patchDocument.ApplyTo(targetObject);
 
         // Assert
-        Assert.Equal(
-           "The provided string '//NewInt' is an invalid path.",
-            exception.Message);
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("add", operation.op);
+        Assert.Equal("//NewInt", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject[""]["NewInt"].Value<int>());
     }
 
     [Fact]
-    public void InvalidPathAtEndShouldThrowException()
+    public void DoubleSlashAtEndShouldParseCorrectly()
     {
         // Arrange
         var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject { ["NewInt"] = new JObject { [""] = new JObject() } };
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() =>
-        {
-            patchDocument.Add("NewInt//", 1);
-        });
+        patchDocument.Add("NewInt//", 1);
+        patchDocument.ApplyTo(targetObject);
 
         // Assert
-        Assert.Equal(
-           "The provided string 'NewInt//' is an invalid path.",
-            exception.Message);
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("add", operation.op);
+        Assert.Equal("/NewInt//", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject["NewInt"][""][""].Value<int>());
+    }
+
+    [Fact]
+    public void SingleSlashShouldReferToEmptyStringKey()
+    {
+        // Arrange
+        // Per RFC 6901, "/" references the member with the empty string ("") as its key,
+        // which is distinct from an empty path that references the whole document.
+        var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject { [""] = 0 };
+
+        // Act
+        patchDocument.Replace("/", 1);
+        patchDocument.ApplyTo(targetObject);
+
+        // Assert
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("replace", operation.op);
+        Assert.Equal("/", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject[""].Value<int>());
+    }
+
+    [Fact]
+    public void SingleSlashShouldAddEmptyStringKey()
+    {
+        // Arrange
+        var patchDocument = new JsonPatchDocument();
+        var targetObject = new JObject();
+
+        // Act
+        patchDocument.Add("/", 1);
+        patchDocument.ApplyTo(targetObject);
+
+        // Assert
+        var operation = Assert.Single(patchDocument.Operations);
+        Assert.Equal("add", operation.op);
+        Assert.Equal("/", operation.path);
+        Assert.Equal(1, operation.value);
+        Assert.Equal(1, targetObject[""].Value<int>());
+    }
+
+    [Fact]
+    public void EmptyStringPathIsPreservedAndDistinctFromSingleSlash()
+    {
+        // Arrange
+        // Per RFC 6901, an empty string references the whole document and must never be
+        // normalized to "/", which references the member with the empty string key.
+        var patchDocument = new JsonPatchDocument();
+
+        // Act
+        patchDocument.Add("", 1);
+        patchDocument.Add("/", 2);
+
+        // Assert
+        Assert.Collection(patchDocument.Operations,
+            operation =>
+            {
+                Assert.Equal("add", operation.op);
+                Assert.Equal("", operation.path);
+                Assert.Equal(1, operation.value);
+            },
+            operation =>
+            {
+                Assert.Equal("add", operation.op);
+                Assert.Equal("/", operation.path);
+                Assert.Equal(2, operation.value);
+            });
     }
 
     [Fact]
