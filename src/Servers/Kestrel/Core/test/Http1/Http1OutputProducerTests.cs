@@ -151,7 +151,7 @@ public class Http1OutputProducerTests : IDisposable
         var beforeStartMemoryLength = output.GetMemory(0).Length;
         var beforeStartSpanLength = output.GetSpan(0).Length;
 
-        output.Dispose();
+        output.Stop();
 
         var completedMemoryLength = output.GetMemory(0).Length;
         var completedSpanLength = output.GetSpan(0).Length;
