@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Hosting;
 
 internal sealed class NavigationManagerInitializer(
     IServiceProvider services,
-    InteractiveServerContext context) : IServerHostInitializer
+    InteractiveServerContext context) : IHostInitializer
 {
     public int Order => -200;
 

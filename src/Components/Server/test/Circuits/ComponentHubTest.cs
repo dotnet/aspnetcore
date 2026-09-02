@@ -24,14 +24,17 @@ namespace Microsoft.AspNetCore.Components.Server;
 
 public class ComponentHubTest
 {
+    private const string NavigationStartupValuesJson =
+        """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/subdir"}""";
+
     [Fact]
     public async Task CannotStartMultipleCircuits()
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+        var circuitSecret = await StartCircuitAsync(hub);
         Assert.NotNull(circuitSecret);
 
-        var circuit2Secret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+        var circuit2Secret = await StartCircuitAsync(hub);
         Assert.Null(circuit2Secret);
 
         var errorMessage = "The circuit host '.*?' has already been initialized.";
@@ -42,10 +45,10 @@ public class ComponentHubTest
     public async Task StartCircuitFailsWithNullData()
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
-        var circuitSecret = await hub.StartCircuit(null, null, "foo", null);
+        var circuitSecret = await hub.StartCircuit(null, "foo", null);
 
         Assert.Null(circuitSecret);
-        var errorMessage = "The uris provided are invalid.";
+        var errorMessage = "The startup values provided are invalid.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -77,26 +80,21 @@ public class ComponentHubTest
     }
 
     [Fact]
-    public async Task StartCircuitLegacyPathSeedsNavigationStartupValues()
+    public async Task StartCircuitPassesNavigationStartupValues()
     {
         var circuitFactory = new TestCircuitFactory();
         var (_, hub) = InitializeComponentHub(circuitFactory: circuitFactory);
 
-        var circuitSecret = await hub.StartCircuit(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
-            "{}",
-            null);
+        var circuitSecret = await hub.StartCircuit(NavigationStartupValuesJson, "{}", null);
 
         Assert.NotNull(circuitSecret);
         Assert.Equal("https://localhost:5000/", circuitFactory.StartupValues["document.baseURI"]);
-        Assert.Equal("https://localhost:5000/page", circuitFactory.StartupValues["location.href"]);
+        Assert.Equal("https://localhost:5000/subdir", circuitFactory.StartupValues["location.href"]);
         Assert.Equal(2, circuitFactory.StartupValues.Count);
-        Assert.False(circuitFactory.SupportsDeferredHostInitialization);
     }
 
     [Fact]
-    public async Task StartCircuitWithStartupValuesPassesValidatedValues()
+    public async Task StartCircuitPassesValidatedCustomValues()
     {
         var circuitFactory = new TestCircuitFactory();
         var (_, hub) = InitializeComponentHub(
@@ -106,16 +104,13 @@ public class ComponentHubTest
                 new TestBrowserStartupValueProvider("document.baseURI", "location.href", "custom.value"),
             ]);
 
-        var circuitSecret = await hub.StartCircuitWithStartupValues(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
+        var circuitSecret = await hub.StartCircuit(
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""",
             "{}",
-            null,
-            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""");
+            null);
 
         Assert.NotNull(circuitSecret);
         Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
-        Assert.True(circuitFactory.SupportsDeferredHostInitialization);
     }
 
     [Fact]
@@ -142,12 +137,7 @@ public class ComponentHubTest
                 It.IsAny<CancellationToken>()))
             .Callback<string, object[], CancellationToken>((_, _, _) => completionNotification.TrySetResult())
             .Returns(Task.CompletedTask);
-        await hub.StartCircuitWithStartupValues(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
-            "{}",
-            null,
-            "{}");
+        await hub.StartCircuit(NavigationStartupValuesJson, "{}", null);
 
         var hubInvocation = hub.CompleteHostInitialization();
         await initializerStarted.Task;
@@ -167,11 +157,11 @@ public class ComponentHubTest
     [InlineData("not json")]
     [InlineData("""{"value":"first","value":"second"}""")]
     [InlineData("""{"value":42}""")]
-    [InlineData("""{"document.baseURI":"https://other.example/","location.href":"https://localhost:5000/page"}""")]
-    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/other"}""")]
+    [InlineData("""{"document.baseURI":"relative","location.href":"https://localhost:5000/page"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"relative"}""")]
     [InlineData("""{"document.baseURI":"https://localhost:5000/"}""")]
     [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","unexpected":"value"}""")]
-    public async Task StartCircuitWithStartupValuesRejectsInvalidValues(string startupValuesJson)
+    public async Task StartCircuitRejectsInvalidStartupValues(string startupValuesJson)
     {
         var (mockClientProxy, hub) = InitializeComponentHub(
             browserStartupValueProviders:
@@ -179,12 +169,7 @@ public class ComponentHubTest
                 new TestBrowserStartupValueProvider("document.baseURI", "location.href"),
             ]);
 
-        var circuitSecret = await hub.StartCircuitWithStartupValues(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
-            "{}",
-            null,
-            startupValuesJson);
+        var circuitSecret = await hub.StartCircuit(startupValuesJson, "{}", null);
 
         Assert.Null(circuitSecret);
         mockClientProxy.Verify(
@@ -276,7 +261,7 @@ public class ComponentHubTest
                 return true;
             };
         var (mockClientProxy, hub) = InitializeComponentHub(deserializer);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "[]", null);
+        var circuitSecret = await StartCircuitAsync(hub, "[]");
         Assert.NotNull(circuitSecret);
         await hub.UpdateRootComponents("""{ batchId: 1, operations: [] }""", "");
         Assert.True(called);
@@ -318,9 +303,9 @@ public class ComponentHubTest
             });
 
         var (mockClientProxy, hub) = InitializeComponentHub(deserializer, handleRegistryMock.Object, providerMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "[]", null);
+        var circuitSecret = await StartCircuitAsync(hub, "[]");
         lastCircuit = null;
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
+        var result = await ResumeCircuitAsync(hub, circuitSecret, "[]", "");
         await hub.UpdateRootComponents("""{ batchId: 1, operations: [] }""", "");
         Assert.False(lastCircuit.HasPendingPersistedCircuitState);
     }
@@ -330,7 +315,7 @@ public class ComponentHubTest
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
         var invalidCircuitId = "invalid-circuit-id";
-        var result = await hub.ResumeCircuit(invalidCircuitId, null, null, null, null);
+        var result = await hub.ResumeCircuit(invalidCircuitId, null, null, null);
         Assert.Null(result);
     }
 
@@ -338,23 +323,23 @@ public class ComponentHubTest
     public async Task CannotResumeConnectedCircuit()
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+        var circuitSecret = await StartCircuitAsync(hub);
         Assert.NotNull(circuitSecret);
-        var result = await hub.ResumeCircuit(circuitSecret, null, null, null, null);
+        var result = await hub.ResumeCircuit(circuitSecret, null, null, null);
         Assert.Null(result);
         var errorMessage = "The circuit host '.*?' has already been initialized.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", It.Is<object[]>(s => Regex.Match((string)s[0], errorMessage).Success), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
-    public async Task CannotResumeInvalidUrls()
+    public async Task CannotResumeInvalidStartupValues()
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, null, null, null, null);
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await hub.ResumeCircuit(circuitSecret, null, null, null);
         Assert.Null(result);
-        var errorMessage = "The uris provided are invalid.";
+        var errorMessage = "The startup values provided are invalid.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -365,8 +350,8 @@ public class ComponentHubTest
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "unused", appState);
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await ResumeCircuitAsync(hub, circuitSecret, "unused", appState);
         Assert.Null(result);
         var errorMessage = "The application state provided is invalid.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
@@ -380,8 +365,8 @@ public class ComponentHubTest
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", rootComponents, "app-state");
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await ResumeCircuitAsync(hub, circuitSecret, rootComponents, "app-state");
         Assert.Null(result);
         var errorMessage = "The root components provided are invalid.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
@@ -392,8 +377,8 @@ public class ComponentHubTest
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await ResumeCircuitAsync(hub, circuitSecret, "[]", "");
         Assert.Null(result);
     }
 
@@ -416,15 +401,15 @@ public class ComponentHubTest
             });
 
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object, providerMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await ResumeCircuitAsync(hub, circuitSecret, "[]", "");
         Assert.NotNull(result);
         Assert.NotEqual(circuitSecret, result);
         Assert.True(lastCircuit.HasPendingPersistedCircuitState);
     }
 
     [Fact]
-    public async Task ResumeCircuitWithStartupValuesPassesValidatedValues()
+    public async Task ResumeCircuitPassesValidatedValues()
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var providerMock = new Mock<ICircuitPersistenceProvider>();
@@ -444,33 +429,29 @@ public class ComponentHubTest
                 new TestBrowserStartupValueProvider("document.baseURI", "location.href", "custom.value"),
             ]);
         var circuitSecret = await hub.StartCircuit(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"initial"}""",
             "{}",
             null);
 
-        var result = await hub.ResumeCircuitWithStartupValues(
+        var result = await hub.ResumeCircuit(
             circuitSecret,
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""",
             "[]",
-            "",
-            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","custom.value":"expected"}""");
+            "");
 
         Assert.NotNull(result);
         Assert.Equal("expected", circuitFactory.StartupValues["custom.value"]);
-        Assert.True(circuitFactory.SupportsDeferredHostInitialization);
     }
 
     [Theory]
     [InlineData("not json")]
     [InlineData("""{"value":"first","value":"second"}""")]
     [InlineData("""{"value":42}""")]
-    [InlineData("""{"document.baseURI":"https://other.example/","location.href":"https://localhost:5000/page"}""")]
-    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/other"}""")]
+    [InlineData("""{"document.baseURI":"relative","location.href":"https://localhost:5000/page"}""")]
+    [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"relative"}""")]
     [InlineData("""{"document.baseURI":"https://localhost:5000/"}""")]
     [InlineData("""{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page","unexpected":"value"}""")]
-    public async Task ResumeCircuitWithStartupValuesRejectsInvalidValues(string startupValuesJson)
+    public async Task ResumeCircuitRejectsInvalidStartupValues(string startupValuesJson)
     {
         var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
         var (mockClientProxy, hub) = InitializeComponentHub(
@@ -480,18 +461,15 @@ public class ComponentHubTest
                 new TestBrowserStartupValueProvider("document.baseURI", "location.href"),
             ]);
         var circuitSecret = await hub.StartCircuit(
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
+            """{"document.baseURI":"https://localhost:5000/","location.href":"https://localhost:5000/page"}""",
             "{}",
             null);
 
-        var result = await hub.ResumeCircuitWithStartupValues(
+        var result = await hub.ResumeCircuit(
             circuitSecret,
-            "https://localhost:5000/",
-            "https://localhost:5000/page",
+            startupValuesJson,
             "[]",
-            "",
-            startupValuesJson);
+            "");
 
         Assert.Null(result);
         mockClientProxy.Verify(
@@ -516,12 +494,11 @@ public class ComponentHubTest
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
                 It.IsAny<ResourceAssetCollection>(),
-                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
 
         var (mockClientProxy, hub) = InitializeComponentHub(circuitFactory: circuitFactoryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+        var circuitSecret = await StartCircuitAsync(hub);
 
         Assert.Null(circuitSecret);
         var errorMessage = "The circuit failed to initialize. See the server logs for more information.";
@@ -551,7 +528,6 @@ public class ComponentHubTest
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
                 It.IsAny<ResourceAssetCollection>(),
-                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
 
@@ -560,8 +536,8 @@ public class ComponentHubTest
             handleRegistry: handleRegistryMock.Object,
             provider: providerMock.Object,
             circuitFactory: circuitFactoryMock.Object);
-        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
-        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
+        var circuitSecret = await StartCircuitAsync(hub);
+        var result = await ResumeCircuitAsync(hub, circuitSecret, "[]", "");
 
         Assert.Null(result);
         var errorMessage = "The circuit failed to initialize. See the server logs for more information.";
@@ -659,7 +635,10 @@ public class ComponentHubTest
             circuitRegistry: circuitRegistry,
             circuitPersistenceProvider: circuitPersistenceManager,
             circuitHandleRegistry: circuitHandleRegistry,
-            browserStartupValueProviders: browserStartupValueProviders ?? [],
+            browserStartupValueProviders: browserStartupValueProviders ??
+            [
+                new TestBrowserStartupValueProvider("document.baseURI", "location.href"),
+            ],
             logger: NullLogger<ComponentHub>.Instance);
 
         // Here we mock out elements of the Hub that are typically configured
@@ -686,6 +665,19 @@ public class ComponentHubTest
 
         return (mockClientProxy, hub);
     }
+
+    private static ValueTask<string> StartCircuitAsync(
+        ComponentHub hub,
+        string serializedComponentRecords = "{}",
+        string applicationState = null)
+        => hub.StartCircuit(NavigationStartupValuesJson, serializedComponentRecords, applicationState);
+
+    private static ValueTask<string> ResumeCircuitAsync(
+        ComponentHub hub,
+        string circuitId,
+        string rootComponents,
+        string applicationState)
+        => hub.ResumeCircuit(circuitId, NavigationStartupValuesJson, rootComponents, applicationState);
 
     private class TestCircuitHandleRegistry : ICircuitHandleRegistry
     {
@@ -766,8 +758,6 @@ public class ComponentHubTest
         public IReadOnlyDictionary<string, string> StartupValues { get; private set; } =
             new Dictionary<string, string>();
 
-        public bool SupportsDeferredHostInitialization { get; private set; }
-
         public IHostInitializer[] DeferredHostInitializers { get; init; } = [];
 
         // Implement a `CreateCircuitHostAsync` that mocks the construction
@@ -781,11 +771,9 @@ public class ComponentHubTest
             ClaimsPrincipal user,
             IPersistentComponentStateStore store,
             ResourceAssetCollection resourceCollection,
-            bool supportsDeferredHostInitialization,
             CancellationToken cancellationToken)
         {
             StartupValues = startupValues;
-            SupportsDeferredHostInitialization = supportsDeferredHostInitialization;
             var serviceScope = new Mock<IServiceScope>();
             var circuitHost = TestCircuitHost.Create(
                 circuitId: TestCircuitIdFactory.Instance.CreateCircuitId(),

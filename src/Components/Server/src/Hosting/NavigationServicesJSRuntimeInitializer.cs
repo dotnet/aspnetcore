@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Hosting;
 
 internal sealed class NavigationServicesJSRuntimeInitializer(
     IServiceProvider services,
-    InteractiveServerContext context) : IServerHostInitializer
+    InteractiveServerContext context) : IHostInitializer
 {
     public int Order => -100;
 

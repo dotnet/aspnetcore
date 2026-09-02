@@ -117,24 +117,10 @@ internal sealed partial class ComponentHub : Hub
         circuitHost?.BeginHostInitialization(Context.ConnectionAborted);
     }
 
-    public ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
-        => StartCircuitCore(baseUri, uri, serializedComponentRecords, applicationState, null, hasStartupValues: false);
-
-    public ValueTask<string> StartCircuitWithStartupValues(
-        string baseUri,
-        string uri,
+    public async ValueTask<string> StartCircuit(
+        string startupValuesJson,
         string serializedComponentRecords,
-        string applicationState,
-        string startupValuesJson)
-        => StartCircuitCore(baseUri, uri, serializedComponentRecords, applicationState, startupValuesJson, hasStartupValues: true);
-
-    private async ValueTask<string> StartCircuitCore(
-        string baseUri,
-        string uri,
-        string serializedComponentRecords,
-        string applicationState,
-        string? startupValuesJson,
-        bool hasStartupValues)
+        string applicationState)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
         if (circuitHost != null)
@@ -147,36 +133,14 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (baseUri == null ||
-            uri == null ||
-            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
-            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
         {
-            // We do some really minimal validation here to prevent obviously wrong data from getting in
-            // without duplicating too much logic.
-            //
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
             Log.InvalidInputData(_logger);
-            await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
+            await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
             Context.Abort();
             return null;
-        }
-
-        Dictionary<string, string> startupValues;
-        if (hasStartupValues)
-        {
-            if (!TryGetStartupValues(startupValuesJson, baseUri, uri, out startupValues))
-            {
-                Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
-                Context.Abort();
-                return null;
-            }
-        }
-        else
-        {
-            startupValues = CreateNavigationStartupValues(baseUri, uri);
         }
 
         if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
@@ -203,7 +167,6 @@ internal sealed partial class ComponentHub : Hub
                 Context.User,
                 store,
                 resourceCollection,
-                supportsDeferredHostInitialization: hasStartupValues,
                 cancellationToken: Context.ConnectionAborted);
 
             // Fire-and-forget the initialization process, because we can't block the
@@ -213,7 +176,7 @@ internal sealed partial class ComponentHub : Hub
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
             _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
-            // Publish before initialization completes so new clients can complete deferred host initialization.
+            // Publish before initialization completes so the client can complete deferred host initialization.
             // Root component rendering remains blocked until that handshake finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
@@ -234,12 +197,6 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
     }
-
-    private static bool HasConflictingValue(
-        IReadOnlyDictionary<string, string> values,
-        string key,
-        string expectedValue)
-        => values.TryGetValue(key, out var value) && !string.Equals(value, expectedValue, StringComparison.Ordinal);
 
     private static bool ContainsExactly(
         IReadOnlyDictionary<string, string> values,
@@ -263,32 +220,26 @@ internal sealed partial class ComponentHub : Hub
 
     private bool TryGetStartupValues(
         string? startupValuesJson,
-        string baseUri,
-        string uri,
-        out Dictionary<string, string> startupValues)
+        out Dictionary<string, string> startupValues,
+        out string baseUri,
+        out string uri)
     {
         if (!HostStartupValuesJson.TryDeserialize(startupValuesJson, out startupValues) ||
             !ContainsExactly(
                 startupValues,
                 BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders)) ||
-            HasConflictingValue(startupValues, NavigationBrowserStartupValueProvider.BaseUriKey, baseUri) ||
-            HasConflictingValue(startupValues, NavigationBrowserStartupValueProvider.LocationHrefKey, uri))
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.BaseUriKey, out baseUri) ||
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.LocationHrefKey, out uri) ||
+            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
+            !Uri.TryCreate(uri, UriKind.Absolute, out _))
         {
+            baseUri = null;
+            uri = null;
             return false;
         }
 
-        startupValues[NavigationBrowserStartupValueProvider.BaseUriKey] = baseUri;
-        startupValues[NavigationBrowserStartupValueProvider.LocationHrefKey] = uri;
-
         return true;
     }
-
-    private static Dictionary<string, string> CreateNavigationStartupValues(string baseUri, string uri)
-        => new(StringComparer.Ordinal)
-        {
-            [NavigationBrowserStartupValueProvider.BaseUriKey] = baseUri,
-            [NavigationBrowserStartupValueProvider.LocationHrefKey] = uri,
-        };
 
     public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
     {
@@ -402,45 +353,11 @@ internal sealed partial class ComponentHub : Hub
     // On the server we are going to have a public method on Circuit.cs to trigger pausing a circuit from the server
     // that returns the root components and application state as strings data-protected by the data protection provider.
     // Those can be then passed to this method for resuming the circuit.
-    public ValueTask<string> ResumeCircuit(
+    public async ValueTask<string> ResumeCircuit(
         string circuitIdSecret,
-        string baseUri,
-        string uri,
+        string startupValuesJson,
         string rootComponents,
         string applicationState)
-        => ResumeCircuitCore(
-            circuitIdSecret,
-            baseUri,
-            uri,
-            rootComponents,
-            applicationState,
-            startupValuesJson: null,
-            hasStartupValues: false);
-
-    public ValueTask<string> ResumeCircuitWithStartupValues(
-        string circuitIdSecret,
-        string baseUri,
-        string uri,
-        string rootComponents,
-        string applicationState,
-        string startupValuesJson)
-        => ResumeCircuitCore(
-            circuitIdSecret,
-            baseUri,
-            uri,
-            rootComponents,
-            applicationState,
-            startupValuesJson,
-            hasStartupValues: true);
-
-    private async ValueTask<string> ResumeCircuitCore(
-        string circuitIdSecret,
-        string baseUri,
-        string uri,
-        string rootComponents,
-        string applicationState,
-        string? startupValuesJson,
-        bool hasStartupValues)
     {
         // TryParseCircuitId will not throw.
         if (!_circuitIdFactory.TryParseCircuitId(circuitIdSecret, out var circuitId))
@@ -461,36 +378,14 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (baseUri == null ||
-            uri == null ||
-            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
-            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
         {
-            // We do some really minimal validation here to prevent obviously wrong data from getting in
-            // without duplicating too much logic.
-            //
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
             Log.InvalidInputData(_logger);
-            await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
+            await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
             Context.Abort();
             return null;
-        }
-
-        Dictionary<string, string> startupValues;
-        if (hasStartupValues)
-        {
-            if (!TryGetStartupValues(startupValuesJson, baseUri, uri, out startupValues))
-            {
-                Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
-                Context.Abort();
-                return null;
-            }
-        }
-        else
-        {
-            startupValues = CreateNavigationStartupValues(baseUri, uri);
         }
 
         PersistedCircuitState? persistedCircuitState;
@@ -562,7 +457,6 @@ internal sealed partial class ComponentHub : Hub
                 Context.User,
                 store: null,
                 resourceCollection,
-                supportsDeferredHostInitialization: hasStartupValues,
                 cancellationToken: Context.ConnectionAborted);
 
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
@@ -575,7 +469,7 @@ internal sealed partial class ComponentHub : Hub
 
             circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
-            // Publish before initialization completes so new clients can complete deferred host initialization.
+            // Publish before initialization completes so the client can complete deferred host initialization.
             // Root component rendering remains blocked until that handshake finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
