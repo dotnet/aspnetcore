@@ -169,6 +169,14 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         Task runTask;
         lock (_runningTasksLock)
         {
+            // If shutdown has already started, don't begin a new publish. StopAsync signals
+            // _stopping before it snapshots _runningTasks, so a callback that reaches this point
+            // after that snapshot would otherwise start work that outlives StopAsync.
+            if (_stopping.IsCancellationRequested)
+            {
+                return;
+            }
+
             runTask = RunAsync(timerOptions);
             _runningTasks.Add(runTask);
         }
