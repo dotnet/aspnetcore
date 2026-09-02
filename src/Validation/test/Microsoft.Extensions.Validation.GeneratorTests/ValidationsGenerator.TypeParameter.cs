@@ -231,7 +231,7 @@ public class Command<T>
         });
     }
 
-    // ASP0039 is the author-facing half of the guard above: the generator can never emit
+    // ASP0040 is the author-facing half of the guard above: the generator can never emit
     // validation info for a [ValidatableType] whose type tree still contains a type
     // parameter, so the analyzer reports the silent skip at the declaration. Uses the same
     // ContainsTypeParameter walk as the emit-time guard so the two can't drift apart.
@@ -253,7 +253,7 @@ public class Wrapper<T>
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0039", diagnostic.Id);
+        Assert.Equal("ASP0040", diagnostic.Id);
         Assert.Contains("Wrapper", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
@@ -275,7 +275,7 @@ public class Outer<T>
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0039", diagnostic.Id);
+        Assert.Equal("ASP0040", diagnostic.Id);
         Assert.Contains("Inner", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 

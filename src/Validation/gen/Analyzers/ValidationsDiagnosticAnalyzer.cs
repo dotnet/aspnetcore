@@ -67,14 +67,14 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         WellKnownDiagnosticTags.CompilationEnd);
 
     internal static readonly DiagnosticDescriptor ValidatableTypeIsOpenGeneric = new(
-        "ASP0039",
+        "ASP0040",
         "[ValidatableType] is applied to an open generic type",
         "The type '{0}' is marked with [ValidatableType] but declares type parameters that cannot be resolved statically. The generated validation code can only reference closed types, so it is skipped by the validation source generator. Validation still applies to closed constructions of this type used as endpoint parameters.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0039"));
+        helpLinkUri: GetHelpLinkUri("ASP0040"));
 
     internal static readonly DiagnosticDescriptor ValidatableTypeIsUsedWithoutAddValidation = new(
         "ASP0038",

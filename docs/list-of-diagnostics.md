@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0039`)
+### ASP (`ASP0000-ASP0040`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -44,7 +44,7 @@
 |  __`ASP0036`__ | Validatable property or its type on an endpoint parameter type is not accessible |
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
-|  __`ASP0039`__ | \[ValidatableType] is applied to an open generic type |
+|  __`ASP0040`__ | \[ValidatableType] is applied to an open generic type |
 
 ### API (`API1000-API1003`)
 
