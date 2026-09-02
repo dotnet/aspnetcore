@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -87,6 +88,63 @@ public class OutputCachePolicyProviderTests
 
         Assert.False(context.AllowCacheStorage);
         Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task AttemptOutputCaching_AuthenticatedUser_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"));
+
+        var policy = new OutputCachePolicyBuilder().Build();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task AttemptOutputCaching_AuthenticatedByNonPrimaryIdentity_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.User = new ClaimsPrincipal(new[]
+        {
+            new ClaimsIdentity(),
+            new ClaimsIdentity(authenticationType: "custom"),
+        });
+
+        Assert.False(context.HttpContext.User.Identity?.IsAuthenticated);
+
+        var policy = new OutputCachePolicyBuilder().Build();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task IsResponseCacheable_AuthenticatedByNonPrimaryIdentity_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.User = new ClaimsPrincipal(new[]
+        {
+            new ClaimsIdentity(),
+            new ClaimsIdentity(authenticationType: "custom"),
+        });
+
+        Assert.False(context.HttpContext.User.Identity?.IsAuthenticated);
+
+        var policy = new OutputCachePolicyBuilder().Build();
+        await policy.ServeResponseAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
     }
 
     [Fact]
