@@ -47,7 +47,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
         ResourceAssetCollection resourceCollection,
-        bool supportsDeferredHostInitialization,
         CancellationToken cancellationToken)
     {
         var scope = _scopeFactory.CreateAsyncScope();
@@ -69,34 +68,20 @@ internal sealed partial class CircuitFactory : ICircuitFactory
                 .OrderBy(initializer => initializer.Order)
                 .ToArray();
 
-            if (supportsDeferredHostInitialization)
+            var firstDeferredInitializerIndex = Array.FindIndex(
+                hostInitializers,
+                initializer => initializer.RequiresJSInterop);
+            var initializersToRun = firstDeferredInitializerIndex < 0
+                ? hostInitializers
+                : hostInitializers[..firstDeferredInitializerIndex];
+            foreach (var initializer in initializersToRun)
             {
-                var firstDeferredInitializerIndex = Array.FindIndex(
-                    hostInitializers,
-                    initializer => initializer.RequiresJSInterop);
-                var initializersToRun = firstDeferredInitializerIndex < 0
-                    ? hostInitializers
-                    : hostInitializers[..firstDeferredInitializerIndex];
-                foreach (var initializer in initializersToRun)
-                {
-                    await initializer.InitializeAsync(cancellationToken);
-                }
+                await initializer.InitializeAsync(cancellationToken);
+            }
 
-                deferredHostInitializers = firstDeferredInitializerIndex < 0
-                    ? []
-                    : hostInitializers[firstDeferredInitializerIndex..];
-            }
-            else
-            {
-                deferredHostInitializers = [];
-                foreach (var initializer in hostInitializers)
-                {
-                    if (!initializer.RequiresJSInterop || initializer is IServerHostInitializer)
-                    {
-                        await initializer.InitializeAsync(cancellationToken);
-                    }
-                }
-            }
+            deferredHostInitializers = firstDeferredInitializerIndex < 0
+                ? []
+                : hostInitializers[firstDeferredInitializerIndex..];
         }
         catch
         {

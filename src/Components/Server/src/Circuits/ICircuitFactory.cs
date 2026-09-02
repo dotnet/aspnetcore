@@ -16,6 +16,5 @@ internal interface ICircuitFactory
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
         ResourceAssetCollection resourceCollection,
-        bool supportsDeferredHostInitialization,
         CancellationToken cancellationToken);
 }

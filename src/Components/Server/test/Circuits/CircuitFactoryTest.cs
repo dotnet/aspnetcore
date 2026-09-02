@@ -16,27 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 public class CircuitFactoryTest
 {
     [Fact]
-    public async Task LegacyClientRunsNonJSInitializersAndFrameworkAttachmentsInOrder()
-    {
-        var calls = new List<string>();
-        using var provider = CreateServices(
-            new TestHostInitializer("lower", -300, calls),
-            new TestHostInitializer("user-js", -150, calls, requiresJSInterop: true),
-            new TestHostInitializer("later", 0, calls));
-
-        await using var circuitHost = await CreateCircuitHostAsync(
-            provider.GetRequiredService<ICircuitFactory>(),
-            supportsDeferredHostInitialization: false);
-
-        Assert.Equal(["lower", "later"], calls);
-        Assert.Equal("https://localhost/", circuitHost.Services.GetRequiredService<NavigationManager>().BaseUri);
-        Assert.True(((RemoteNavigationManager)circuitHost.Services.GetRequiredService<NavigationManager>()).HasAttachedJSRuntime);
-        Assert.True(((RemoteNavigationInterception)circuitHost.Services.GetRequiredService<INavigationInterception>()).HasAttachedJSRuntime);
-        Assert.True(((RemoteScrollToLocationHash)circuitHost.Services.GetRequiredService<IScrollToLocationHash>()).HasAttachedJSRuntime);
-    }
-
-    [Fact]
-    public async Task NewClientDefersEntireOrderedSuffixAfterFirstJSInitializer()
+    public async Task DefersEntireOrderedSuffixAfterFirstJSInitializer()
     {
         var calls = new List<string>();
         using var provider = CreateServices(
@@ -45,8 +25,7 @@ public class CircuitFactoryTest
             new TestHostInitializer("later-non-js", 0, calls));
 
         await using var circuitHost = await CreateCircuitHostAsync(
-            provider.GetRequiredService<ICircuitFactory>(),
-            supportsDeferredHostInitialization: true);
+            provider.GetRequiredService<ICircuitFactory>());
         var navigationManager = (RemoteNavigationManager)circuitHost.Services.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)circuitHost.Services.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)circuitHost.Services.GetRequiredService<IScrollToLocationHash>();
@@ -67,7 +46,7 @@ public class CircuitFactoryTest
     }
 
     [Fact]
-    public async Task NewClientPreservesRegistrationOrderForEqualOrderAcrossDeferredBoundary()
+    public async Task PreservesRegistrationOrderForEqualOrderAcrossDeferredBoundary()
     {
         var calls = new List<string>();
         using var provider = CreateServices(
@@ -76,8 +55,7 @@ public class CircuitFactoryTest
             new TestHostInitializer("third", -250, calls));
 
         await using var circuitHost = await CreateCircuitHostAsync(
-            provider.GetRequiredService<ICircuitFactory>(),
-            supportsDeferredHostInitialization: true);
+            provider.GetRequiredService<ICircuitFactory>());
 
         Assert.Equal(["first"], calls);
 
@@ -95,12 +73,16 @@ public class CircuitFactoryTest
         using var provider = CreateCombinedServices(addServerFirst);
 
         await using var circuitHost = await CreateCircuitHostAsync(
-            provider.GetRequiredService<ICircuitFactory>(),
-            supportsDeferredHostInitialization: false);
+            provider.GetRequiredService<ICircuitFactory>());
 
         var navigationManager = (RemoteNavigationManager)circuitHost.Services.GetRequiredService<NavigationManager>();
         Assert.Equal("https://localhost/", navigationManager.BaseUri);
         Assert.Equal("https://localhost/page", navigationManager.Uri);
+        Assert.False(navigationManager.HasAttachedJSRuntime);
+
+        circuitHost.BeginHostInitialization(CancellationToken.None);
+        await WaitForAsync(() => navigationManager.HasAttachedJSRuntime);
+
         Assert.True(navigationManager.HasAttachedJSRuntime);
     }
 
@@ -115,8 +97,7 @@ public class CircuitFactoryTest
 
         var actualException = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await CreateCircuitHostAsync(
-                provider.GetRequiredService<ICircuitFactory>(),
-                supportsDeferredHostInitialization: true));
+                provider.GetRequiredService<ICircuitFactory>()));
 
         Assert.Same(exception, actualException);
         Assert.Equal(["failure"], calls);
@@ -138,7 +119,6 @@ public class CircuitFactoryTest
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await CreateCircuitHostAsync(
                 provider.GetRequiredService<ICircuitFactory>(),
-                supportsDeferredHostInitialization: true,
                 cancellationTokenSource.Token));
 
         Assert.Equal(["canceled"], calls);
@@ -193,7 +173,6 @@ public class CircuitFactoryTest
 
     private static ValueTask<CircuitHost> CreateCircuitHostAsync(
         ICircuitFactory circuitFactory,
-        bool supportsDeferredHostInitialization,
         CancellationToken cancellationToken = default)
         => circuitFactory.CreateCircuitHostAsync(
             [],
@@ -208,7 +187,6 @@ public class CircuitFactoryTest
             new ClaimsPrincipal(),
             store: null,
             resourceCollection: null,
-            supportsDeferredHostInitialization,
             cancellationToken);
 
     private sealed class TestHostInitializer(

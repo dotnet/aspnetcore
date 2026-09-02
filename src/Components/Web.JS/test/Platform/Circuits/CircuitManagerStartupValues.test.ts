@@ -26,7 +26,7 @@ describe('CircuitManager startup values', () => {
     globals.testCircuitStartup = { value: 'expected' };
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        return '["testCircuitStartup.value"]';
+        return '["document.baseURI","location.href","testCircuitStartup.value"]';
       }
 
       return 'circuit-id';
@@ -37,12 +37,15 @@ describe('CircuitManager startup values', () => {
 
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
     ]);
-    expect(invoke.mock.calls[1][0]).toBe('StartCircuitWithStartupValues');
-    expect(JSON.parse(invoke.mock.calls[1][5] as string))
-      .toEqual({ 'testCircuitStartup.value': 'expected' });
+    expect(JSON.parse(invoke.mock.calls[1][1] as string))
+      .toEqual({
+        'document.baseURI': document.baseURI,
+        'location.href': location.href,
+        'testCircuitStartup.value': 'expected',
+      });
   });
 
   test('completes host initialization before reporting the circuit as opened', async () => {
@@ -63,7 +66,7 @@ describe('CircuitManager startup values', () => {
 
     expect(events).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
       'server completion',
       'opened',
@@ -90,7 +93,7 @@ describe('CircuitManager startup values', () => {
 
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
     ]);
     expect(startCompleted).toBe(false);
@@ -110,14 +113,14 @@ describe('CircuitManager startup values', () => {
     await expect(circuit.start()).rejects.toThrow('Initializer failed.');
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
     ]);
   });
 
   test('rejects host initialization when the circuit fails before completion notification', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) =>
-      method === 'GetStartupValueKeys' ? [] : 'circuit-id');
+      method === 'GetStartupValueKeys' ? '[]' : 'circuit-id');
     const circuit = createCircuit(
       invoke,
       undefined,
@@ -126,12 +129,12 @@ describe('CircuitManager startup values', () => {
     await expect(circuit.start()).rejects.toThrow('Initializer failed through circuit error.');
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
     ]);
   });
 
-  test('uses legacy start only when the capability method is absent', async () => {
+  test('fails when the required key query is unavailable without invoking start', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
         throw new Error(
@@ -142,12 +145,12 @@ describe('CircuitManager startup values', () => {
     });
     const circuit = createCircuit(invoke);
 
-    await expect(circuit.start()).resolves.toBe(true);
+    await expect(circuit.start()).rejects.toThrow('Method does not exist.');
 
-    expect(invoke.mock.calls.map(call => call[0])).toEqual(['GetStartupValueKeys', 'StartCircuit']);
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(['GetStartupValueKeys']);
   });
 
-  test('does not fall back after startup-values capability succeeds', async () => {
+  test('does not fall back after start fails', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
         return '[]';
@@ -160,17 +163,17 @@ describe('CircuitManager startup values', () => {
     await expect(circuit.start()).rejects.toThrow('New start failed.');
 
     expect(invoke.mock.calls.map(call => call[0]))
-      .toEqual(['GetStartupValueKeys', 'StartCircuitWithStartupValues']);
+      .toEqual(['GetStartupValueKeys', 'StartCircuit']);
   });
 
-  test('renegotiates and reevaluates startup values when resuming', async () => {
+  test('queries and reevaluates startup values when resuming', async () => {
     globals.testCircuitStartup = { value: 'expected' };
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
         return '["testCircuitStartup.value"]';
       }
 
-      return method === 'ResumeCircuitWithStartupValues' ? 'resumed-circuit-id' : 'circuit-id';
+      return method === 'ResumeCircuit' ? 'resumed-circuit-id' : 'circuit-id';
     });
     const circuit = createCircuit(invoke);
     await circuit.start();
@@ -181,42 +184,47 @@ describe('CircuitManager startup values', () => {
 
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
       'GetStartupValueKeys',
-      'ResumeCircuitWithStartupValues',
+      'ResumeCircuit',
       'CompleteHostInitialization',
     ]);
-    expect(JSON.parse(invoke.mock.calls[4][6] as string))
+    expect(JSON.parse(invoke.mock.calls[4][2] as string))
       .toEqual({ 'testCircuitStartup.value': 'changed' });
   });
 
-  test('uses legacy resume when startup values are unsupported', async () => {
+  test('fails resume when the required key query is unavailable without invoking resume', async () => {
+    let startupValueQueryCount = 0;
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        throw new Error(
-          "Failed to invoke 'GetStartupValueKeys' due to an error on the server. HubException: Method does not exist.");
+        startupValueQueryCount++;
+        if (startupValueQueryCount > 1) {
+          throw new Error(
+            "Failed to invoke 'GetStartupValueKeys' due to an error on the server. HubException: Method does not exist.");
+        }
+        return '[]';
       }
 
-      return method === 'ResumeCircuit' ? 'resumed-circuit-id' : 'circuit-id';
+      return 'circuit-id';
     });
     const circuit = createCircuit(invoke);
     await circuit.start();
     setPaused(circuit);
 
-    await expect(circuit.resume()).resolves.toBe(true);
+    await expect(circuit.resume()).rejects.toThrow('Method does not exist.');
 
     expect(invoke.mock.calls.map(call => call[0]))
-      .toEqual(['GetStartupValueKeys', 'StartCircuit', 'GetStartupValueKeys', 'ResumeCircuit']);
+      .toEqual(['GetStartupValueKeys', 'StartCircuit', 'CompleteHostInitialization', 'GetStartupValueKeys']);
   });
 
-  test('does not fall back when startup-values resume fails', async () => {
+  test('does not fall back when resume fails', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
         return '[]';
       }
 
-      if (method === 'ResumeCircuitWithStartupValues') {
+      if (method === 'ResumeCircuit') {
         throw new Error('New resume failed.');
       }
 
@@ -230,10 +238,10 @@ describe('CircuitManager startup values', () => {
 
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
       'GetStartupValueKeys',
-      'ResumeCircuitWithStartupValues',
+      'ResumeCircuit',
     ]);
   });
 
@@ -244,7 +252,7 @@ describe('CircuitManager startup values', () => {
         return '[]';
       }
 
-      return method === 'ResumeCircuitWithStartupValues' ? 'resumed-circuit-id' : 'circuit-id';
+      return method === 'ResumeCircuit' ? 'resumed-circuit-id' : 'circuit-id';
     });
     const circuit = createCircuit(
       invoke,
@@ -259,10 +267,10 @@ describe('CircuitManager startup values', () => {
     await expect(circuit.resume()).rejects.toThrow('Resume initializer failed.');
     expect(invoke.mock.calls.map(call => call[0])).toEqual([
       'GetStartupValueKeys',
-      'StartCircuitWithStartupValues',
+      'StartCircuit',
       'CompleteHostInitialization',
       'GetStartupValueKeys',
-      'ResumeCircuitWithStartupValues',
+      'ResumeCircuit',
       'CompleteHostInitialization',
     ]);
   });
