@@ -1,0 +1,301 @@
+name: issue-triage
+description: A/B eval for the dotnet/aspnetcore issue-triage classification skill.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 420s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+
+scoring: {}
+
+stimuli:
+  - name: classify-docs-only-work-as-task
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/65910
+      Snapshot captured: 2026-08-27
+      Trusted current issue type: none
+      Title: Update Multiple Hosted WebAssembly documentation to new 8.0+ model with App.razor
+      Body:
+        Not sure if this is a feature request or documentation issue.
+
+        This page automatically reverts to the 7.0 version:
+        https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly/multiple-hosted-webassembly
+
+        Can you please update the documentation and or guidance to get multiple hosted
+        Blazor WebAssembly clients working with the new App.razor model, static asset
+        fingerprinting and Static Server Side Rendering (SSR)?
+
+      No duplicate candidates are supplied.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)area-blazor.*Task.*docs'
+      - type: prompt
+    rubric:
+      - "Recommends exactly area-blazor, issue type Task, and supported subtype docs"
+      - "Explains that the requested deliverable is documentation/guidance for existing behavior, not a product Feature or a broken-product Bug"
+      - "Does not recommend a second area or any unsupported label"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
+      - "Does not claim that 8.0 is preview, stable, released, or unreleased"
+
+  - name: keep-broken-identity-template-output-as-bug
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/67614
+      Snapshot captured: 2026-08-27
+      Trusted current issue type: none
+      Title: Accessibility: scaffolded Identity validation summary produces an invalid ul with role=alert
+      Body:
+        The Blazor Web App Individual Accounts template scaffolds its Identity pages with
+        `<ValidationSummary class="text-danger" role="alert" />`. ValidationSummary renders
+        a `<ul>`, so role=alert overrides the list's implicit role and automated
+        accessibility tooling reports aria-allowed-role and listitem violations.
+
+        Reproduction: create a Blazor Web App with Individual Accounts, submit an empty
+        Login form, and inspect the rendered validation summary.
+
+        Expected: the `<ul>` keeps its list role and its `<li>` children remain valid list
+        items.
+
+        Actual:
+        `<ul class="validation-errors" role="alert"><li class="validation-message">The Email field is required.</li></ul>`
+
+        Root cause: template markup in
+        `src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWeb-CSharp/BlazorWebCSharp.1/Components/Account/Pages/Login.razor`
+        and sibling Account pages. ValidationSummary itself correctly forwards attributes.
+
+      No duplicate candidates are supplied.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)area-identity.*Bug'
+      - type: prompt
+    rubric:
+      - "Recommends exactly area-identity because the defect is Identity scaffolding/template markup, not area-blazor or area-ui-rendering"
+      - "Recommends Bug because generated shipped output reproducibly violates the expected baseline; it does not downgrade the issue to Task because the fix is mechanical"
+      - "Explicitly recommends no supported subtype rather than inventing accessibility, severity, or another unsupported label"
+      - "Does not emit a second area"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
+
+  - name: classify-visual-studio-browser-link-as-external
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/68678
+      Snapshot captured: 2026-08-27
+      Trusted current issue type: none
+      Title: Browser Link triggers "Permissions policy violation: unload is not allowed in this document" in Edge during Blazor Web App debugging
+      Body:
+        A default .NET 11 Blazor Web App launched from Visual Studio in Microsoft Edge logs
+        `Permissions policy violation: unload is not allowed in this document`.
+
+        Investigation identifies `/_vs/browserLink` as the source rather than the Blazor
+        application. It reproduces across Static SSR, Interactive Server, Interactive
+        WebAssembly, and Interactive Auto; it does not reproduce in a published app.
+
+        Expected: a default app launches without browser-console errors.
+        Actual: the Browser Link debugging integration produces the console violation.
+
+      No duplicate candidates are supplied.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)Bug.*external|external.*Bug'
+      - type: prompt
+    rubric:
+      - "Recommends issue type Bug and supported subtype external because the frozen evidence assigns the root cause and required fix to Visual Studio Browser Link"
+      - "Does not misclassify the subtype as performance, test-failure, by-design, or another supported label"
+      - "Abstains from an ASP.NET Core area, or clearly states that no ASP.NET-owned area is justified; it does not infer area-blazor merely because the host app is Blazor"
+      - "Does not emit multiple areas or an unsupported Visual Studio label"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
+
+  - name: route-triage-workflow-policy-to-infrastructure
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/68802
+      Snapshot captured: 2026-08-27
+      Trusted current issue type: none
+      Title: Issue triage agent maps Blazor component projects to area-ui-rendering
+      Body:
+        `.github/workflows/issue-triage-agent.md` lists
+        `src/Components/Forms/`, `src/Components/QuickGrid/`, and
+        `src/Components/CustomElements/` under area-ui-rendering even though their projects,
+        namespaces, and packages are Blazor-owned.
+
+        Expected: all projects and paths under src/Components map to area-blazor, while
+        area-ui-rendering retains Razor/MVC view ownership.
+
+        Reproduction: compare the area-blazor and area-ui-rendering policy sections and
+        observe the contradictory source-path assignment.
+
+      No duplicate candidates are supplied.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)area-infrastructure.*Bug'
+      - type: prompt
+    rubric:
+      - "Recommends exactly area-infrastructure because the reported defect is in repository automation/policy, not in the Blazor product components mentioned by that policy"
+      - "Recommends Bug because the policy has a reproducible internal contradiction"
+      - "Recommends no supported subtype and does not invent automation, workflow, or area-blazor as extra labels"
+      - "Does not emit a second area"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
+
+  - name: identify-a-verified-jwt-regression-duplicate
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Assess only the supplied candidate; do not fetch live GitHub state.
+
+      Issue source: https://github.com/dotnet/aspnetcore/issues/54321
+      Snapshot captured: 2026-08-27
+      Trusted current issue type: none
+      Issue title: JWT Token Validation Fails after Upgrade from .NET 6 to .NET 8
+      Issue body:
+        After updating an ASP.NET backend from .NET 6 to .NET 8, incoming requests using
+        AddAuthentication().AddJwtBearer() fail with
+        `SecurityTokenSignatureKeyNotFoundException: IDX10500: Signature validation failed.
+        No security keys were provided to validate the signature.`
+
+        The same authentication configuration worked for two years on .NET 6. The identity
+        provider still publishes metadata and signing keys and the backend can reach its
+        endpoints. The reporter asks whether this is a known upgrade issue and links #52075.
+
+      Candidate source: https://github.com/dotnet/aspnetcore/issues/52075
+      Candidate title: .NET 8 behaves differently for JwtBearerOptions in AddJwtBearer
+      Candidate body:
+        Upgrading JWT authentication from .NET 7 to .NET 8 changes AddJwtBearer and
+        JwtBearerOptions behavior. A custom SignatureValidator using JwtSecurityToken no
+        longer bypasses signature validation and requests return 401 invalid_signature.
+        A maintainer explains that .NET 8 switched from JwtSecurityToken/JwtTokenValidators
+        to JsonWebToken/TokenHandler and recommends the documented compatibility option.
+
+      Frozen maintainer evidence on #54321:
+        "This was indeed a breaking change that we've discussed in the linked issue.
+        Specifically, this comment from @halter73 is what you should try to follow:
+        https://github.com/dotnet/aspnetcore/issues/52075#issuecomment-1815025177"
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)area-auth.*Bug.*52075|52075.*area-auth.*Bug'
+      - type: prompt
+    rubric:
+      - "Recommends exactly area-auth and Bug; it does not use area-security or emit a second area"
+      - "Identifies a regression from the stated working .NET 6 behavior to the failing .NET 8 behavior without adding release-status claims"
+      - "Calls #52075 a high-confidence duplicate because the component, upgrade boundary, signature-validation behavior, and maintainer cross-reference align"
+      - "Recommends no supported subtype; it does not confuse duplicate resolution metadata with a supported subtype"
+      - "Includes #52075 under Potential Duplicates and does not invent any other issue number or unsupported label"
+
+  - name: keep-large-single-api-request-as-feature
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/66391
+      Snapshot captured: 2026-09-02
+      Trusted current issue type: none
+      Title: API Proposal: Media components (Image, Video, FileDownload)
+      Body:
+        Blazor has no built-in way to display images or videos, or trigger file downloads
+        from non-HTTP sources such as byte arrays, streams, and database BLOBs. Current
+        workarounds require base64 allocations or separate HTTP endpoints.
+
+        The proposal adds a standalone Microsoft.AspNetCore.Components.Media package with
+        Image, Video, FileDownload, MediaComponentBase, MediaSource, MediaContext, and
+        FileDownloadContext APIs. It includes streaming JS interop, browser Cache Storage,
+        accessible rendering, loading/error state, and examples for byte arrays and
+        streams. The proposal links prior Image work and multiple implementation PRs, but
+        requests one coherent product capability: built-in media components.
+
+      Existing labels: area-blazor, api-suggestion, api-proposal
+      No duplicate candidates are supplied.
+    graders:
+      - name: require-area-blazor
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Area\s*:\s*(?:\*\*)?\s*`?area-blazor`?\b'
+      - name: require-feature-type
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?Feature`?\b'
+      - name: require-api-proposal-subtype
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?(?:Supported\s+)?Subtype\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?api-proposal`?\b'
+      - name: reject-epic-type-choice
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:(?:recommend(?:ed)?|preserve(?:d)?)\s+)?`?Epic`?\b|(?:\*\*)?(?:Selected|Recommended|Preserved)\s+type\s*:\s*(?:\*\*)?\s*`?Epic`?\b|(?:I\s+)?(?:recommend|preserve)\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?type\s+`?Epic`?\b)'
+          negate: true
+      - name: reject-bug-or-task-type-choice
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?(?:Bug|Task)`?\b'
+          negate: true
+      - type: prompt
+    rubric:
+      - "Recommends exactly area-blazor, issue type Feature, and supported subtype api-proposal"
+      - "Treats the media-component suite as one broad product capability and explicitly does not recommend Epic merely because the API surface and implementation are large"
+      - "Does not claim to preserve a current type because the trusted current issue type is none"
+      - "Does not emit a second area, Task, Bug, Epic, or an unsupported subtype"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
+
+  - name: preserve-maintainer-assigned-epic
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/68375
+      Snapshot captured: 2026-09-02
+      Trusted current issue type: Epic
+      Title: Components.AI attachments, media, and voice
+      Body:
+        The built-in UI has incomplete attachment validation and transfer behavior,
+        hand-rolled media rendering, no inline rich media, and no reusable voice-input
+        capability.
+
+        Track three independently deliverable capability groups: attachment validation,
+        acquisition, transfer, progress, and cancellation; standalone and inline media
+        rendering through Microsoft.AspNetCore.Components.Media; and a minimal JS interop
+        module with a reusable microphone input part. This is a workstream under #68227,
+        with capability groups and implementation tasks represented as native sub-issues.
+
+      Existing labels: area-blazor, feature-blazor-builtin-components
+      No duplicate candidates are supplied.
+    graders:
+      - name: require-area-blazor
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Area\s*:\s*(?:\*\*)?\s*`?area-blazor`?\b'
+      - name: require-epic-preservation
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?(?:Type(?:\s+action)?|Current\s+type)\s*:\s*(?:\*\*)?\s*(?:(?:preserve(?:d)?|keep)\s+`?Epic`?|`?Epic`?\s*(?:\([^)\n]*preserv(?:e|ed|ation)[^)\n]*\)|[-:]\s*preserv(?:e|ed)))'
+      - name: reject-replacement-type
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?(?:Bug|Feature|Task)`?\b|(?:\*\*)?(?:Replacement|Recommended)\s+type\s*:\s*(?:\*\*)?\s*`?(?:Bug|Feature|Task|Epic)`?\b|(?:[^;\n]*[;,.]\s*)?(?:I\s+)?recommend\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?(?:type\s+)?`?(?:Bug|Feature|Task|Epic)`?\b|(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*recommend(?:ed)?\s+`?Epic`?\b)'
+          negate: true
+      - type: prompt
+    rubric:
+      - "Reports the trusted current Epic type as preserved and recommends no replacement type"
+      - "Does not recommend assigning Epic, Feature, Task, or Bug and does not treat preservation as a set-type action"
+      - "Still completes area, subtype, duplicate, abstention, and summary analysis instead of stopping after type preservation"
+      - "Keeps exactly area-blazor, recommends no supported subtype, and does not emit feature-blazor-builtin-components as a supported subtype"
+      - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
