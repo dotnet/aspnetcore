@@ -62,6 +62,12 @@ parameters:
   type: number
   default: 30
 
+# Maximum number of work items whose results may be downloaded, parsed, and
+# uploaded concurrently.
+- name: testResultUploadParallelism
+  type: number
+  default: 48
+
 # When 'true' (the default), Helix work items that exit 0 but have failed AzDO test results
 # are treated as failed: they count toward the monitor's exit code and are resubmitted by a
 # later invocation's retry pass. Set to 'false' to fall back to exit-code-only outcomes.
@@ -83,6 +89,15 @@ parameters:
 - name: useFullyQualifiedTestName
   type: boolean
   default: false
+
+# Controls per-test output attachments. Defaults to Failed.
+- name: testResultAttachmentMode
+  type: string
+  default: Failed
+  values:
+  - Failed
+  - All
+  - None
 
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
@@ -206,10 +221,13 @@ jobs:
         --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name                  '$(System.StageName)'
         --stage-attempt               '$(System.StageAttempt)'
+        --job-attempt                 '$(System.JobAttempt)'
+        --test-result-upload-parallelism '${{ parameters.testResultUploadParallelism }}'
       )
 
       organization='${{ parameters.organization }}'
       repository='${{ parameters.repository }}'
+      testResultAttachmentMode='${{ parameters.testResultAttachmentMode }}'
 
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
@@ -232,6 +250,9 @@ jobs:
 
       if [ -n "$organization" ]; then toolArgs+=( --organization "$organization" ); fi
       if [ -n "$repository" ];   then toolArgs+=( --repository   "$repository" );   fi
+      if [ -n "$testResultAttachmentMode" ]; then
+        toolArgs+=( --test-result-attachment-mode "$testResultAttachmentMode" )
+      fi
 
       # Build.Reason and Build.SourceBranch are required to derive the Helix source filter
       # the same way the Helix SDK submitter does (PR -> 'pr', internal -> 'official',

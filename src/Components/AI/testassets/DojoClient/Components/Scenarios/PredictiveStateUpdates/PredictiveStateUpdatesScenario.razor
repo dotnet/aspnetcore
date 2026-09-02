@@ -1,0 +1,196 @@
+@page "/predictive_state_updates"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Text.Json
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Predictive State Updates</PageTitle>
+
+<div class="predictive-state-updates" data-scenario="predictive_state_updates">
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="predictive-layout">
+            <div class="document-panel @(_runActive ? "document-panel--streaming" : "")">
+                <DocumentPreview Document="@_agent.State.Value.Document"
+                                 BaselineDocument="@_runStartDocument"
+                                 IsReadOnly="_runActive"
+                                 ShowDiff="_showDiff"
+                                 IsComplete="_candidateComplete"
+                                 DocumentChanged="UpdateDocument"
+                                 StatusChanged="HandleConversationStatusChanged" />
+            </div>
+            <aside class="predictive-chat">
+                <header class="predictive-chat__header">
+                    <h1>AI Document Editor</h1>
+                    <button aria-label="Reset document"
+                            disabled="@_runActive"
+                            @onclick="Reset">&times;</button>
+                </header>
+                <div class="sc-ai-root sc-ai-chat-page dojo-chat-panel">
+                    <div class="sc-ai-chat-page__body">
+                        <MessageList>
+                            <EmptyContent>
+                                <p class="dojo-scenario__welcome">
+                                    Write directly or ask the agent to propose an edit.
+                                </p>
+                            </EmptyContent>
+                            <ChildContent>
+                                <BlockRenderer TBlock="UIActionBlock"
+                                               Context="action"
+                                               When="@(block => block.ToolName == "confirm_changes")">
+                                    <ConfirmChangesDialog Block="action" />
+                                </BlockRenderer>
+                            </ChildContent>
+                        </MessageList>
+                    </div>
+                    <DocumentSuggestions />
+                    <div class="sc-ai-chat-page__footer">
+                        <div class="sc-ai-chat-page__input-container">
+                            <MessageInput Placeholder="Type a message..." />
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions =
+        new(JsonSerializerDefaults.Web);
+
+    private UIAgent<DocumentState> _agent = default!;
+    private DojoConversationThread _thread = default!;
+    private IDisposable? _stateChangedRegistration;
+    private string _runStartDocument = "";
+    private bool _runActive;
+    private bool _showDiff;
+    private bool _candidateComplete;
+
+    [Inject(Key = DojoScenarios.PredictiveStateUpdatesEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized() => Reset();
+
+    private UIAgent<DocumentState> CreateAgent(DocumentState initialState)
+    {
+        _thread = new DojoConversationThread(Guid.NewGuid().ToString("N"));
+
+        return new UIAgent<DocumentState>(ChatClient, options =>
+        {
+            options.Thread = _thread;
+            options.ChatOptions = new ChatOptions
+            {
+                RawRepresentationFactory = _ => new RunAgentInput
+                {
+                    ThreadId = _thread.ThreadId,
+                    State = JsonSerializer.SerializeToElement(_agent.State.Value, _jsonOptions),
+                },
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        WriteDocument,
+                        name: "write_document_local",
+                        description: "Write the full document in Markdown format."),
+                ],
+            };
+            options.StateMapper = context =>
+            {
+                if (context.Update.Contents
+                    .OfType<FunctionCallContent>()
+                    .Any(call => call.Name == "confirm_changes"))
+                {
+                    _candidateComplete = true;
+                    _ = InvokeAsync(StateHasChanged);
+                }
+
+                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
+                {
+                    return;
+                }
+
+                var state = snapshot.Snapshot.Deserialize<DocumentState>(_jsonOptions);
+                if (state is null)
+                {
+                    return;
+                }
+
+                context.SetPredictiveState(state);
+            };
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                ConfirmChanges,
+                name: "confirm_changes",
+                description: "Confirm the document changes with the user."));
+        }, LoggerFactory, initialState);
+    }
+
+    private static string WriteDocument(string document) => "Document written.";
+
+    private string ConfirmChanges(bool accepted = true)
+    {
+        if (accepted)
+        {
+            _agent.State.AcceptPredictiveState();
+        }
+        else
+        {
+            _agent.State.RejectPredictiveState();
+        }
+
+        _showDiff = false;
+        return accepted
+            ? "The user confirmed the changes."
+            : "The user rejected the changes.";
+    }
+
+    private void Reset()
+    {
+        if (_runActive)
+        {
+            return;
+        }
+
+        var nextAgent = CreateAgent(new DocumentState());
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = nextAgent;
+        _runStartDocument = "";
+        _showDiff = false;
+        _candidateComplete = false;
+        _stateChangedRegistration = _agent.State.OnChanged(
+            () => _ = InvokeAsync(StateHasChanged));
+    }
+
+    private void UpdateDocument(string document)
+    {
+        if (!_runActive)
+        {
+            _agent.State.Value = new DocumentState { Document = document };
+        }
+    }
+
+    private void HandleConversationStatusChanged(ConversationStatus status)
+    {
+        if (status == ConversationStatus.Streaming && !_runActive)
+        {
+            _runStartDocument = _agent.State.Value.Document;
+            _runActive = true;
+            _showDiff = true;
+            _candidateComplete = false;
+        }
+        else if (status is ConversationStatus.Idle or ConversationStatus.Error)
+        {
+            _runActive = false;
+            _showDiff = false;
+            _candidateComplete = false;
+            _runStartDocument = _agent.State.Value.Document;
+        }
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

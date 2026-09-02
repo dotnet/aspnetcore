@@ -1,23 +1,49 @@
 # Getting started
 
-To get the process of adding/modifying API going, file a new issue using [the API Proposal issue template](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=api-suggestion&template=30_api_proposal.md&title=). Below is more information about the process.
+API changes are reviewed in a separate API proposal issue from the issue that tracks the feature or implementation. When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](/.github/skills/api-review/SKILL.md) to create the proposal issue from the originating issue and pull request.
 
 ## Process
 
 The goal of the API Review process is to ensure that the new APIs are following common patterns and best practices.
 Also, it's aimed to help and guide engineers towards better API design decisions. People should feel empowered to submit their APIs for review as besides all the benefits it's also a learning and knowledge sharing experience.
 
-The process is visualized in the below diagram:
-![A sequence diagram illustrating the same process described below.](https://user-images.githubusercontent.com/34246760/66542496-95052c80-eae7-11e9-9c7c-549b82a8d492.png)
+The process is visualized in the diagram below:
+
+```mermaid
+flowchart TD
+    identify["Identify an API change or addition"]
+    implementation["Implementation work may begin"]
+    open["Open the implementation PR"]
+    proposal["Use the api-review skill to file a separate API proposal issue"]
+    merge["The implementation PR may become ready or merge"]
+    ready["Apply the api-ready-for-review label and notify the review team"]
+    review["Review the proposal"]
+    approved{"Is the proposal approved?"}
+    label["Apply the api-approved label"]
+    final{"Does the approved proposal match the final implementation?"}
+    verify["Verify the proposal issue has the api-approved label"]
+    rtm["The API may be included in an RTM release"]
+
+    identify --> implementation --> open
+    identify -. The proposal may be filed earlier .-> proposal
+    proposal -. Implementation may begin after proposal development .-> implementation
+    open --> proposal
+    open --> merge --> final
+    proposal --> ready --> review --> approved
+    approved -- No --> proposal
+    approved -- Yes --> label --> final
+    final -- No --> proposal
+    final -- Yes --> verify --> rtm
+```
 
 1. The API review process kicks in after the owner of the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
-1. If the proposed design adds new APIs, mark those issues with the `api-suggestion` label
+1. API review may happen before, during, or after implementation. Contributors may implement the API, open or mark a pull request ready, and merge the work before the proposal receives `api-approved`.
+1. When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](/.github/skills/api-review/SKILL.md) to file a separate API proposal issue. The proposal issue must link to the originating issue and implementation pull request, and use the `api-suggestion` and `api-proposal` labels.
 1. When the issue owner thinks the proposal is in good shape, he/she marks the issue with `api-ready-for-review` label. Also, the @dotnet/aspnet-api-review team should be notified of the issue.
 1. The `aspnet-api-review` team will host a weekly API review meeting and will review your proposed API change during the next meeting. If you have an API scheduled for review, you must have a representative in the meeting.
 1. Some API reviews can happen through a shorter process. For these situations, simply ping the API review crew for a quicker review, so that it can happen as a conversation.
-1. When an API change/suggestion gets approved, the `api-approved` label should be added to the issue.
-1. The owner of the issue is now free to work on the implementation of the proposed API.
-1. In case during implementation changes to the original proposal are required, the review should become obsolete and the process should start from the beginning.
+1. When an API change/suggestion gets approved, the `api-approved` label should be added to the issue. The issue owner is responsible for ensuring that the label covers the final implemented API shape before the API is included in an RTM release.
+1. If implementation changes the proposed or previously approved API shape, update the proposal and return the revised shape to API review before the API is included in an RTM release.
 
 ## Learnings and growth
 

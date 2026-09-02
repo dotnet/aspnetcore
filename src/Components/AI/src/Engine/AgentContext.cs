@@ -93,6 +93,43 @@ public class AgentContext : IDisposable
     }
 
     /// <summary>
+    /// Restores the committed turns from the agent's configured conversation thread.
+    /// </summary>
+    /// <param name="cancellationToken">A token that cancels restoration.</param>
+    /// <returns>A task that completes when the turns have been restored.</returns>
+    public async Task RestoreAsync(CancellationToken cancellationToken = default)
+    {
+        if (Status == ConversationStatus.Streaming)
+        {
+            throw new InvalidOperationException("A message is already being processed.");
+        }
+
+        var blocks = await _agent.RestoreAsync(cancellationToken);
+        _turns.Clear();
+
+        ConversationTurn? currentTurn = null;
+        foreach (var block in blocks)
+        {
+            if (block.Role == ChatRole.User)
+            {
+                currentTurn = new ConversationTurn();
+                _turns.Add(currentTurn);
+                currentTurn.AddRequestBlock(block);
+            }
+            else
+            {
+                if (currentTurn is null)
+                {
+                    currentTurn = new ConversationTurn();
+                    _turns.Add(currentTurn);
+                }
+
+                currentTurn.AddResponseBlock(block);
+            }
+        }
+    }
+
+    /// <summary>
     /// Replays the last message after a failed turn.
     /// </summary>
     /// <param name="cancellationToken">A token that cancels the response.</param>
@@ -178,6 +215,7 @@ public class AgentContext : IDisposable
         _disposed = true;
         _streamingCts?.Cancel();
         _streamingCts?.Dispose();
+        _agent.RejectPendingPredictiveState();
         _turnAddedCallbacks.Clear();
         _statusChangedCallbacks.Clear();
         _blockAddedCallbacks.Clear();
@@ -238,6 +276,7 @@ public class AgentContext : IDisposable
                 NotifyStatusChanged();
             }
 
+            _agent.RejectPendingPredictiveState();
             Status = ConversationStatus.Idle;
             if (cancellationToken.IsCancellationRequested)
             {
@@ -248,6 +287,7 @@ public class AgentContext : IDisposable
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             turn.ClearResponseBlocks();
+            _agent.RejectPendingPredictiveState();
             Status = ConversationStatus.Idle;
             NotifyStatusChanged();
         }
@@ -256,6 +296,7 @@ public class AgentContext : IDisposable
             // A failing turn is surfaced as conversation state (Status/Error) rather than a
             // faulted Task: the UI renders the error and RetryAsync replays the last message.
             // This is the engine's error contract, not a swallowed exception.
+            _agent.RejectPendingPredictiveState();
             Error = ex;
             Status = ConversationStatus.Error;
             NotifyStatusChanged();
