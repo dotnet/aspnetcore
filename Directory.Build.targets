@@ -171,6 +171,15 @@
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
 
+  <!-- Ensure runtime-async=off is explicitly set when disabled -->
+  <PropertyGroup Condition="('$(UseRuntimeAsync)' == 'false' or '$(DotNetBuildUseMonoRuntime)' == 'true') AND
+     $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
+     '$(TargetOS)' != 'browser' AND
+     !$(RuntimeIdentifier.StartsWith('browser-'))">
+   <Features Condition="!$(Features.Contains('runtime-async='))">$(Features);runtime-async=off</Features>
+   <Features Condition="$(Features.Contains('runtime-async=on'))">$(Features.Replace('runtime-async=on', 'runtime-async=off'))</Features>
+  </PropertyGroup>
+
   <!-- Properties for Package Validation -->
   <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
