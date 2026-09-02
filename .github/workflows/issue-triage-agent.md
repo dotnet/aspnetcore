@@ -34,6 +34,9 @@ permissions:
   issues: read
   pull-requests: read
 
+concurrency:
+  job-discriminator: ${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+
 tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
   github:
@@ -653,14 +656,18 @@ Order of operations matters. Do these in this exact order:
    (`by-design`, `question`, `external`, `docs`, `api-proposal`,
    `test-failure`, `performance`). It does **not** include `Bug` or
    `Feature` — those are issue types, applied via `set-issue-type` in
-   step 3 below.
+   step 3 below. Pass `item_number` explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
    `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
-   `set-issue-type` exactly once.
+   `set-issue-type` exactly once and pass `issue_number` explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
-   **remove `needs-area-label`** using `remove-labels`.
+   **remove `needs-area-label`** using `remove-labels`. Pass `item_number`
+   explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 5. **Apply the vulnerability gate.** If the issue is a vulnerability report
    per "Vulnerability Reports: Apply Labels, But Post No Comment" above,
@@ -710,8 +717,10 @@ these two cases:
    {"noop": {"message": "Triage comment suppressed: issue is a vulnerability report"}}
    ```
 
-2. **There is nothing to say** — e.g. the issue already has an area label
-   and an issue type, and there are no duplicates worth flagging.
+2. **There is nothing to say** — the issue already has a label whose name
+   starts with `area-`, already has an issue type, and there are no duplicates
+   worth flagging. Sub-type labels such as `docs`, `question`, or `external`
+   are not area labels and do not satisfy this condition.
 
    ```json
    {"noop": {"message": "No action needed: issue already has area and type labels"}}
