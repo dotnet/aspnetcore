@@ -34,6 +34,31 @@ internal class DojoModelOverrides
     public static void ToolBasedGenerativeUI(IServiceCollection services)
         => AddRecordedModel(services, "ToolBasedGenerativeUI.recording.json");
 
+    public static void AgenticGenerativeUI(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("AgenticGenerativeUI.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddScoped<IChatClient>(sp =>
+            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
+    }
+
+    public static void SharedState(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("SharedState.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddScoped<IChatClient>(sp =>
+            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
+    }
+
+    public static void PredictiveStateUpdates(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("PredictiveStateUpdates.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddKeyedScoped<IChatClient>(
+            "predictive-state-updates-model",
+            (sp, _) => sp.GetRequiredService<RecordedChatClient>());
+    }
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
