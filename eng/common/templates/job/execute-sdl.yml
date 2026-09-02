@@ -36,7 +36,6 @@ jobs:
   displayName: Run SDL tool
   condition: and(succeededOrFailed(), eq( ${{ parameters.enable }}, 'true'))
   variables:
-    - group: DotNet-VSTS-Bot
     - name: AzDOProjectName
       value: ${{ parameters.AzDOProjectName }}
     - name: AzDOPipelineId
@@ -108,18 +107,6 @@ jobs:
   - powershell: eng/common/sdl/trim-assets-version.ps1
       -InputPath $(Build.ArtifactStagingDirectory)\artifacts
     displayName: Trim the version from the NuGet packages
-    continueOnError: ${{ parameters.sdlContinueOnError }}
-
-  - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
-      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
-    displayName: Extract Blob Artifacts
-    continueOnError: ${{ parameters.sdlContinueOnError }}
-
-  - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
-      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
-    displayName: Extract Package Artifacts
     continueOnError: ${{ parameters.sdlContinueOnError }}
 
   - ${{ if ne(parameters.extractArchiveArtifacts, 'false') }}:
