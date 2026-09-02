@@ -24,6 +24,9 @@
     <!-- The package doesn't produce any lib or ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
+    <!-- The required assets aren't available when the JavaScript build is intentionally disabled. -->
+    <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
+
     <!-- Validate the package inputs before NuGet evaluates its incremental GenerateNuspec target. -->
     <BeforePack>_ValidateBlazorPackageInputs;$(BeforePack)</BeforePack>
   </PropertyGroup>
@@ -69,17 +72,15 @@
     Condition="'$(BuildNodeJS)' != 'false'"
     DependsOnTargets="_ValidateBlazorJSFiles" />
 
-  <Target Name="_ValidateBlazorPackageInputs" DependsOnTargets="_ValidateBlazorPackageConfiguration;_ValidateBlazorJSFiles" />
-
-  <Target Name="_ValidateBlazorPackageConfiguration">
-    <Error
-      Condition="'$(BuildNodeJS)' == 'false'"
-      Text="Microsoft.AspNetCore.App.Internal.Assets cannot be packed when BuildNodeJS is false because its required Blazor assets are not included." />
-  </Target>
+  <Target Name="_ValidateBlazorPackageInputs"
+    Condition="'$(IsPackable)' == 'true'"
+    DependsOnTargets="_ValidateBlazorJSFiles" />
 
   <!-- Validate the final NuGet input list after the static web assets pack targets have populated it.
        _PackageFiles is the list passed directly to NuGet's PackTask. -->
-  <Target Name="_ValidateBlazorPackageContents" BeforeTargets="GenerateNuspec">
+  <Target Name="_ValidateBlazorPackageContents"
+    BeforeTargets="GenerateNuspec"
+    Condition="'$(IsPackable)' == 'true'">
     <ItemGroup>
       <_ExpectedBlazorPackagePath Include="@(_BlazorJSFile->'staticwebassets\_framework\%(FileName)%(Extension)')" />
       <_ActualPackagePath Include="@(_PackageFiles->'%(PackagePath)')" />
