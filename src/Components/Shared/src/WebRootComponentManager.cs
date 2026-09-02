@@ -74,30 +74,6 @@ internal partial class WebAssemblyRenderer
             _webRootComponents.Remove(ssrComponentId);
         }
 
-        public bool TryRemoveRootComponent(int ssrComponentId)
-        {
-            if (!_webRootComponents.TryGetValue(ssrComponentId, out var component))
-            {
-                return false;
-            }
-            component.Remove(renderer);
-            _webRootComponents.Remove(ssrComponentId);
-            return true;
-        }
-
-        public Task TryUpdateOrAddRootComponentAsync(
-            int ssrComponentId,
-            [DynamicallyAccessedMembers(Component)] Type newComponentType,
-            ComponentMarkerKey? newKey,
-            WebRootComponentParameters newParameters)
-        {
-            if (_webRootComponents.TryGetValue(ssrComponentId, out var component))
-            {
-                return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask);
-            }
-            return AddRootComponentAsync(ssrComponentId, newComponentType, newKey, newParameters);
-        }
-
         private WebRootComponent GetRequiredWebRootComponent(int ssrComponentId)
         {
             if (!_webRootComponents.TryGetValue(ssrComponentId, out var component))
