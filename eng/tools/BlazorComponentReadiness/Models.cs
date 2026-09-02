@@ -1,0 +1,137 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace BlazorComponentReadiness;
+
+internal sealed class SkillLayout
+{
+    private const string AgentSuffix = ".agent.md";
+
+    private SkillLayout(string rootOrProfile)
+    {
+        var candidate = Path.GetFullPath(rootOrProfile);
+        if (candidate.EndsWith(AgentSuffix, StringComparison.Ordinal))
+        {
+            AgentProfilePath = candidate;
+            var agentDirectory = Path.GetDirectoryName(candidate)!;
+            var agentName = Path.GetFileName(candidate)[..^AgentSuffix.Length];
+            Root = Path.Combine(agentDirectory, agentName);
+        }
+        else
+        {
+            Root = candidate;
+            var agentDirectory = Path.GetDirectoryName(Root)!;
+            AgentProfilePath = Path.Combine(
+                agentDirectory,
+                Path.GetFileName(Root) + AgentSuffix);
+        }
+
+        var skillName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Root));
+        var repositoryRoot = Path.GetFullPath(Path.Combine(Root, "..", "..", ".."));
+        EvalRoot = Path.Combine(repositoryRoot, "eng", "skill-evals", skillName);
+        EvalPolicyPath = Path.Combine(EvalRoot, "eval-policy.md");
+        RepresentativeVallyPath = Path.Combine(EvalRoot, "representative.vally.yaml");
+        ExecutorPluginPath = Path.Combine(EvalRoot, "copilot-agent-executor.mjs");
+        ExecutorTestPath = Path.Combine(EvalRoot, "copilot-agent-executor.test.mjs");
+        ChecklistPath = Path.Combine(Root, "references", "checklist.md");
+        AreasIndexPath = Path.Combine(Root, "references", "areas", "index.md");
+        LegacySkillPath = Path.Combine(
+            repositoryRoot,
+            ".github",
+            "skills",
+            skillName,
+            "SKILL.md");
+        ReportTemplatePath = Path.Combine(Root, "references", "report-template.md");
+        VallyPath = Path.Combine(EvalRoot, "regression.vally.yaml");
+        OverlayPaths = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["scaffolder"] = Path.Combine(Root, "references", "overlays", "scaffolder.md"),
+            ["ai-skill"] = Path.Combine(Root, "references", "overlays", "ai-skill.md"),
+        };
+        OverlayPrefixes = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["scaffolder"] = "SCF",
+            ["ai-skill"] = "AI",
+        };
+    }
+
+    internal string Root { get; }
+
+    internal string AgentProfilePath { get; }
+
+    internal string EvalRoot { get; }
+
+    internal string EvalPolicyPath { get; }
+
+    internal string RepresentativeVallyPath { get; }
+
+    internal string ExecutorPluginPath { get; }
+
+    internal string ExecutorTestPath { get; }
+
+    internal string ChecklistPath { get; }
+
+    internal string AreasIndexPath { get; }
+
+    internal string LegacySkillPath { get; }
+
+    internal string ReportTemplatePath { get; }
+
+    internal string VallyPath { get; }
+
+    internal IReadOnlyDictionary<string, string> OverlayPaths { get; }
+
+    internal IReadOnlyDictionary<string, string> OverlayPrefixes { get; }
+
+    internal static SkillLayout Create(string root)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+
+        return new SkillLayout(root);
+    }
+}
+
+internal sealed record Requirement(
+    string Identifier,
+    string Text,
+    string? Scope,
+    bool IsCore);
+
+internal sealed record RubricSnapshot(
+    string Path,
+    string Version,
+    int ScopeSchemaVersion,
+    string Sha256,
+    IReadOnlyList<Requirement> Requirements,
+    ReadOnlyMemory<byte> Bytes);
+
+internal sealed record ScorecardRow(
+    string Identifier,
+    string Requirement,
+    string Scope,
+    string Status,
+    string Evidence,
+    string MaintainerAction,
+    string ReviewerFollowUp,
+    int LineNumber);
+
+internal sealed record EvidenceLedger(
+    IReadOnlyDictionary<string, int> Identifiers,
+    IReadOnlyList<string> Errors);
+
+internal sealed record ReportSnapshot(
+    string Path,
+    string Content,
+    ReadOnlyMemory<byte> Bytes);
+
+internal sealed record VallyStimulus(
+    string Name,
+    IReadOnlyDictionary<string, string> Tags,
+    int RubricCount,
+    IReadOnlyList<VallyFixture> Fixtures,
+    string Prompt,
+    IReadOnlyList<string> RubricItems);
+
+internal sealed record VallyFixture(
+    string Source,
+    string Destination);

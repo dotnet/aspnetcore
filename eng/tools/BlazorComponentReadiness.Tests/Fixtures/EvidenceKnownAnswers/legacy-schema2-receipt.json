@@ -1,0 +1,20 @@
+{
+  "canonical_row_count": 2,
+  "checklist_sha256": "f249491a9e6097d128713b10db1a98560bc187177a33cec003d3de1e29b569bc",
+  "limitation": "Structural validation does not establish factual evidence or classification quality.",
+  "mode": "targeted",
+  "report_filename": "legacy-report.md",
+  "report_sha256": "b8f437a3f67d067679bef94e036fff3bb2dc1a3597831780c337c20d6f2a861d",
+  "rubric_identity": "blazor-component-readiness/1.3.0\u002Bsha256:f249491a9e6097d128713b10db1a98560bc187177a33cec003d3de1e29b569bc",
+  "rubric_version": "1.3.0",
+  "schema_version": 2,
+  "scope_schema_version": 1,
+  "selected_ids": [
+    "LP-01",
+    "LP-02"
+  ],
+  "selected_overlays": [],
+  "structural_validation": "passed",
+  "valid_row_count": 2,
+  "validated_at_utc": "2026-08-13T18:00:00Z"
+}
