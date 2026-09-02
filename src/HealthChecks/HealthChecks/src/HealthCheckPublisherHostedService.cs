@@ -25,6 +25,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     private readonly IHealthCheckPublisher[] _publishers;
     private List<Timer>? _timers;
 
+    private readonly object _runningTasksLock = new object();
+    private readonly HashSet<Task> _runningTasks = new HashSet<Task>();
+
     private readonly CancellationTokenSource _stopping;
     private CancellationTokenSource? _runTokenSource;
 
@@ -73,7 +76,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -86,7 +89,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
         if (_publishers.Length == 0)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (_timers != null)
@@ -99,7 +102,32 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             _timers = null;
         }
 
-        return Task.CompletedTask;
+        // Disposing the timers above doesn't wait for a publish that is already running. Wait here for
+        // any in-flight publish operations to finish, bounded by the caller's cancellation token (the
+        // host links this to its shutdown timeout). Publishers that observe cancellation were already
+        // signaled via _stopping above. RunAsync handles all of its own exceptions, so awaiting these
+        // tasks can't throw.
+        Task[] runningTasks;
+        lock (_runningTasksLock)
+        {
+            runningTasks = _runningTasks.ToArray();
+        }
+
+        if (runningTasks.Length == 0)
+        {
+            return;
+        }
+
+        var runningTask = Task.WhenAll(runningTasks);
+#if NET
+        await runningTask.WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+#else
+        var canceledTcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), canceledTcs))
+        {
+            await Task.WhenAny(runningTask, canceledTcs.Task).ConfigureAwait(false);
+        }
+#endif
     }
 
     private List<Timer> CreateTimers()
@@ -125,13 +153,37 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     {
         return
             NonCapturingTimer.Create(
-            async (state) =>
+            (state) =>
             {
-                await RunAsync(timerOptions).ConfigureAwait(false);
+                _ = RunTimerCallbackAsync(timerOptions);
             },
             null,
             dueTime: timerOptions.Delay,
             period: timerOptions.Period);
+    }
+
+    // The timer callback can't be awaited by the caller, so track the RunAsync task here to let
+    // StopAsync wait for a publish that is in flight when shutdown starts (https://github.com/dotnet/aspnetcore/issues/67304).
+    private async Task RunTimerCallbackAsync((TimeSpan Delay, TimeSpan Period) timerOptions)
+    {
+        Task runTask;
+        lock (_runningTasksLock)
+        {
+            runTask = RunAsync(timerOptions);
+            _runningTasks.Add(runTask);
+        }
+
+        try
+        {
+            await runTask.ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_runningTasksLock)
+            {
+                _runningTasks.Remove(runTask);
+            }
+        }
     }
 
     // Internal for testing
