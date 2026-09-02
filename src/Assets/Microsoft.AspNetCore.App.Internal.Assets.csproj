@@ -23,6 +23,11 @@
 
     <!-- The package doesn't produce any lib or ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- When BuildNodeJS is explicitly disabled (e.g. -NoBuildNodeJS, or source-build), the Blazor JS
+         assets this package exists to ship aren't available. Rather than producing an incomplete
+         shipping package with none of its expected framework assets, skip packing entirely. -->
+    <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -52,6 +57,8 @@
     <ItemGroup>
       <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.web.js')" />
       <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.server.js')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js.map" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.web.js.map')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js.map" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.server.js.map')" />
     </ItemGroup>
 
     <Error
