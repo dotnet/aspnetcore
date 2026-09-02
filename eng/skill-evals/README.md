@@ -50,10 +50,9 @@ Run these commands from any directory:
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
-requests, pushes to `main`, or pushes to the hosted fork's
-`agentic-workflows` default branch change runtime skills, eval assets, or the
-workflow itself. Validation parses and dry-runs both the standard and smoke
-experiments without invoking a model or judge.
+requests or pushes to `main` change runtime skills, eval assets, or the workflow
+itself. Validation parses and dry-runs both the standard and smoke experiments
+without invoking a model or judge.
 
 Maintainers can also dispatch `Validate`, `Test`, or `Lint` manually. The
 model-bearing `Run` action requires selecting one standard skill and defaults to
