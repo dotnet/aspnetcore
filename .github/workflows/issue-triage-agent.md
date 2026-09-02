@@ -35,7 +35,9 @@ permissions:
   pull-requests: read
 
 concurrency:
+  group: gh-aw-${{ github.workflow }}-${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
   job-discriminator: ${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+  queue: max
 
 tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
