@@ -53,6 +53,16 @@ Before editing behavior that crosses Components renderers, runtimes, or DI scope
 - Do not use public XML documentation to explain internal implementation details,
   including control flow or lifecycle state. Limit it to consumer-observable behavior.
 
+### JavaScript DOM lifecycle
+
+- When behavior targets DOM that can be replaced during the prerender-to-interactive
+  transition or enhanced navigation, bind it to the narrowest lifecycle owner that can
+  survive the replacement or re-register afterward, and clean up when that owner is
+  removed. This can be a component lifecycle, a custom element's
+  `connectedCallback`/`disconnectedCallback`, or a stable scoped ancestor. Do not move
+  element-specific listeners to `document` or `window` merely to survive replacement;
+  reserve global listeners for behavior genuinely owned by the document or window.
+
 ### Overview
 
 The workflow for implementing new features in the Components area follows these steps:
@@ -278,6 +288,8 @@ E2E tests are located in `src/Components/test/E2ETest`.
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
 3. When adding test coverage, prefer extending existing test components and assets over creating a set of new ones if it doesn't complicate the existing ones excessively. This reduces test infrastructure complexity and keeps related scenarios together.
+4. Regression tests for lifecycle-sensitive behavior must exercise the render boundary that owns the relevant DOM. A page-level render mode can leave the surrounding layout static, so verify that the DOM under test is actually hydrated or replaced.
+5. When the behavior under test is owned by generated template content, prefer extending the existing browser tests in `src/ProjectTemplates/test/Templates.Blazor.Tests` over duplicating the scenario in Components E2E.
 
 For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
