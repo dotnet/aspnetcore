@@ -6,6 +6,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,8 +26,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -89,8 +90,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -125,8 +126,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -169,8 +170,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient(userIdentifier: "stable-user"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -198,6 +199,179 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task UserRefreshingAllowsStandardIdentityClaimChangeWhenUserIdProviderIsStable()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthenticationRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddSingleton<IUserIdProvider, StableClaimUserIdProvider>();
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthenticationRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "old-name-identifier"))
+            {
+                client.Connection.User!.AddIdentity(new ClaimsIdentity([new Claim("stable-id", "stable-user")]));
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim(ClaimTypes.NameIdentifier, "new-name-identifier"),
+                    new Claim("stable-id", "stable-user"),
+                ], "Test"));
+
+                Assert.True(await feature.Validate(refreshedUser));
+
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                var identifiers = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(identifiers.Error);
+                Assert.Equal("new-name-identifier:stable-user", identifiers.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserRefreshingRejectsUserIdentifierChangeBeforePublication()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangeRejected"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient(userIdentifier: "user-1"))
+            {
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+                var originalUser = client.Connection.User;
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim(ClaimTypes.NameIdentifier, "user-2"),
+                ], "Test"));
+
+                Assert.False(await feature.Validate(refreshedUser));
+                Assert.Same(originalUser, client.Connection.User);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserRefreshingUsesStandardIdentityWhenUserIdProviderReturnsNull()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangeRejected"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("sub", "user-a"),
+                ], "Test"));
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var sameUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("sub", "user-a"),
+                    new Claim(ClaimTypes.Role, "admin"),
+                ], "Test"));
+                var differentUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("sub", "user-b"),
+                ], "Test"));
+
+                Assert.True(await feature.Validate(sameUser));
+                Assert.False(await feature.Validate(differentUser));
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserRefreshingRejectsAuthenticatedPrincipalWithoutStableIdentity()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangeRejected"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("employeeId", "1"),
+                ], "Test"));
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                Assert.True(await feature.Validate(client.Connection.User));
+
+                var equivalentUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("employeeId", "1"),
+                ], "Test"));
+                Assert.True(await feature.Validate(equivalentUser));
+
+                var differentUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("employeeId", "2"),
+                ], "Test"));
+                Assert.False(await feature.Validate(differentUser));
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserRefreshingAllowsDistinctAnonymousPrincipalsWithoutStableIdentity()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User = new ClaimsPrincipal(new ClaimsIdentity());
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                Assert.True(await feature.Validate(new ClaimsPrincipal(new ClaimsIdentity())));
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task ExceptionFromOnAuthenticationRefreshedAsyncIsLoggedAndConnectionSurvives()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "FailedInvokingHubMethod"))
@@ -209,8 +383,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -249,8 +423,8 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -279,6 +453,51 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task OlderAuthenticationRefreshNotificationDoesNotOverwriteNewerHubUser()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthenticationRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton(hubObserver), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthenticationRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "alice"))
+            {
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var olderUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "alice"),
+                    new Claim(ClaimTypes.Name, "older"),
+                }, "Test"));
+                var newerUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "alice"),
+                    new Claim(ClaimTypes.Name, "newer"),
+                }, "Test"));
+                client.Connection.User = newerUser;
+                feature.Raise(newerUser);
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                // The lower-layer connection has already advanced to newerUser. A delayed callback for
+                // olderUser must not overwrite the HubCallerContext with a principal that is no longer current.
+                feature.Raise(olderUser);
+
+                var seenUser = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserName)).DefaultTimeout();
+                Assert.Null(seenUser.Error);
+                Assert.Equal("newer", seenUser.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task ConnectionWithoutUserRefreshFeatureStillWorks()
     {
         using (StartVerifiableLog())
@@ -288,7 +507,7 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
-                Assert.Null(client.Connection.Features.Get<IConnectionUserRefreshFeature>());
+                Assert.Null(client.Connection.Features.Get<IConnectionAuthenticationRefreshFeature>());
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -303,57 +522,83 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
-    public async Task UserIdentifierChangeOnRefreshAbortsConnection()
+    public async Task ReplacementPolicyCanAllowPrincipalChangeWithoutChangingUserIdentifier()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangedOnRefresh"))
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var hubObserver = new AuthenticationRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton(hubObserver), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthenticationRefreshHub>>();
 
             using (var client = new TestClient(userIdentifier: "user-1"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, "user-2"),
                 }, "Test"));
+
+                Assert.False(await feature.Validate(refreshedUser));
+                feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+                Assert.True(await feature.Validate(refreshedUser));
+
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
 
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                var identifiers = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(identifiers.Error);
+                Assert.Equal("user-2:user-1", identifiers.Result);
+
+                client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
             }
         }
     }
 
     [Fact]
-    public async Task UserIdProviderExceptionOnRefreshIsLoggedAndAbortsConnection()
+    public async Task UserIdProviderExceptionAfterReplacementPolicyDoesNotAbortConnection()
     {
-        using (StartVerifiableLog(write => write.EventId.Name == "ErrorApplyingAuthenticationRefresh"))
+        using (StartVerifiableLog(write => write.EventId.Name == "ErrorResolvingRefreshedUserIdentifier"))
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
-                services => services.AddSingleton<IUserIdProvider, ThrowingRefreshUserIdProvider>(),
-                LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var hubObserver = new AuthenticationRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddSingleton<IUserIdProvider, ThrowingRefreshUserIdProvider>();
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthenticationRefreshHub>>();
 
             using (var client = new TestClient(userIdentifier: "stable-user"))
             {
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, "stable-user"),
+                    new Claim(ClaimTypes.NameIdentifier, "refreshed-user"),
+                    new Claim(ClaimTypes.Name, "refreshed-user"),
                     new Claim("throw", "true"),
                 }, "Test"));
+                feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+                Assert.True(await feature.Validate(refreshedUser));
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
 
+                Assert.Equal("refreshed-user", await hubObserver.RefreshedTask.DefaultTimeout());
+
+                var identifiers = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(identifiers.Error);
+                Assert.Equal("refreshed-user:stable-user", identifiers.Result);
+
+                client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
             }
         }
@@ -382,8 +627,8 @@ public partial class HubConnectionHandlerTests
             using (var client = new TestClient(userIdentifier: "alice"))
             {
                 client.Connection.User!.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "alice") }));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -439,8 +684,8 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.NameIdentifier, "alice"),
                     new Claim("scope", "admin"),
                 }));
-                var feature = new TestConnectionUserRefreshFeature();
-                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+                var feature = new TestConnectionAuthenticationRefreshFeature();
+                client.Connection.Features.Set<IConnectionAuthenticationRefreshFeature>(feature);
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -467,25 +712,41 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    private sealed class TestConnectionUserRefreshFeature : IConnectionUserRefreshFeature
+    private sealed class TestConnectionAuthenticationRefreshFeature : IConnectionAuthenticationRefreshFeature
     {
-        private Action<ClaimsPrincipal, object?>? _callback;
+        private Action<AuthenticationRefreshContext, object?>? _callback;
         private object? _state;
 
-        public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+        public Func<AuthenticationRefreshContext, Task<bool>> OnAuthenticationRefresh { get; set; } = static _ => Task.FromResult(true);
+
+        public IDisposable OnAuthenticationRefreshed(Action<AuthenticationRefreshContext, object?> callback, object? state)
         {
             _callback = callback;
             _state = state;
 
-            return new CallbackRegistration(this);
+            return new UserRefreshedRegistration(this);
+        }
+
+        public Task<bool> Validate(ClaimsPrincipal user)
+        {
+            return OnAuthenticationRefresh(CreateContext(user));
         }
 
         public void Raise(ClaimsPrincipal current)
         {
-            _callback?.Invoke(current, _state);
+            _callback?.Invoke(CreateContext(current), _state);
         }
 
-        private sealed class CallbackRegistration(TestConnectionUserRefreshFeature feature) : IDisposable
+        private static AuthenticationRefreshContext CreateContext(ClaimsPrincipal user) => new()
+        {
+            HttpContext = new DefaultHttpContext(),
+            ConnectionId = "test-connection",
+            PreviousUser = user,
+            NewUser = user,
+            NewExpiration = null,
+        };
+
+        private sealed class UserRefreshedRegistration(TestConnectionAuthenticationRefreshFeature feature) : IDisposable
         {
             public void Dispose()
             {
@@ -602,6 +863,14 @@ public partial class HubConnectionHandlerTests
             }
 
             return connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+    }
+
+    private sealed class StableClaimUserIdProvider : IUserIdProvider
+    {
+        public string? GetUserId(HubConnectionContext connection)
+        {
+            return connection.User.FindFirst("stable-id")?.Value;
         }
     }
 }
