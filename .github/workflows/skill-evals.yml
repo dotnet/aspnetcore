@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - main
-      - agentic-workflows
     paths:
       - '.github/skills/**'
       - 'eng/skill-evals/**'
