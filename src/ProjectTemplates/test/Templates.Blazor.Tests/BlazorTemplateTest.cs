@@ -117,6 +117,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
     {
         await page.WaitForSelectorAsync("nav");
 
+        var navigationLink = page.Locator("a.nav-link").First;
+        await navigationLink.FocusAsync();
+        var focusIndicator = await navigationLink.EvaluateAsync<string>("element => getComputedStyle(element).boxShadow");
+        Assert.Contains("rgb(37, 140, 251)", focusIndicator);
+
         if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
         {
             // Initially displays the home page
