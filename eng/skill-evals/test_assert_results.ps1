@@ -9,26 +9,44 @@ $testRoot = Join-Path ([IO.Path]::GetTempPath()) (
 )
 $output = Join-Path $testRoot 'output'
 $run = Join-Path $output 'run'
-$skilled = Join-Path $run 'skilled'
 
 function Write-Results {
     param(
+        [ValidateSet('baseline', 'skilled')]
+        [string]$Variant,
+
         [double]$Score,
-        [string]$Status = 'success'
+
+        [string]$Status = 'success',
+
+        [switch]$OmitScore
     )
 
-    @{
+    $variantDirectory = Join-Path $run $Variant
+    New-Item -ItemType Directory -Path $variantDirectory -Force | Out-Null
+    $result = [ordered]@{
         type = 'trial-result'
-        variant = 'skilled'
+        variant = $Variant
         status = $Status
-        gradeResult = @{ score = $Score }
-    } | ConvertTo-Json -Compress | Set-Content (Join-Path $skilled 'results.jsonl')
+    }
+    if (-not $OmitScore) {
+        $result.gradeResult = @{ score = $Score }
+    }
+    $result |
+        ConvertTo-Json -Compress |
+        Set-Content (Join-Path $variantDirectory 'results.jsonl')
+}
+
+function Reset-Results {
+    Remove-Item (Join-Path $run 'baseline') -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $run 'skilled') -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 function Assert-Throws {
     param(
         [scriptblock]$Action,
-        [string]$Message
+        [string]$ExpectedMessage,
+        [string]$FailureMessage
     )
 
     $threw = $false
@@ -36,13 +54,16 @@ function Assert-Throws {
         & $Action
     } catch {
         $threw = $true
+        if ($_.Exception.Message -notlike "*$ExpectedMessage*") {
+            throw "Expected failure containing '$ExpectedMessage'; got '$($_.Exception.Message)'."
+        }
     }
     if (-not $threw) {
-        throw $Message
+        throw $FailureMessage
     }
 }
 
-New-Item -ItemType Directory -Path $skilled | Out-Null
+New-Item -ItemType Directory -Path $run -Force | Out-Null
 try {
     @{
         type = 'experiment-plan-snapshot'
@@ -62,23 +83,51 @@ try {
         )
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
 
-    Write-Results -Score 0.8
+    Write-Results -Variant baseline -Score 0.1
+    Write-Results -Variant skilled -Score 0.8
     & $assertResults -OutputDirectory $output
 
-    Write-Results -Score 0.5
+    Reset-Results
+    Write-Results -Variant skilled -Score 0.8
     Assert-Throws {
         & $assertResults -OutputDirectory $output
-    } 'A below-threshold skilled result was accepted.'
+    } 'Missing Vally results' 'Missing baseline results were accepted.'
 
-    Write-Results -Score 0.8 -Status error
+    Reset-Results
+    Write-Results -Variant baseline -Score 0.1 -Status error
+    Write-Results -Variant skilled -Score 0.8
     Assert-Throws {
         & $assertResults -OutputDirectory $output
-    } 'An incomplete skilled result was accepted.'
+    } "'baseline' variant has 1 incomplete" 'An incomplete baseline result was accepted.'
 
-    Remove-Item (Join-Path $skilled 'results.jsonl')
+    Reset-Results
+    Write-Results -Variant baseline -Score 0.1 -OmitScore
+    Write-Results -Variant skilled -Score 0.8
     Assert-Throws {
         & $assertResults -OutputDirectory $output
-    } 'Missing skilled results were accepted.'
+    } "'baseline' variant has trial results without grader scores" (
+        'A baseline result without a grader score was accepted.'
+    )
+
+    Reset-Results
+    Write-Results -Variant baseline -Score 0.1
+    Write-Results -Variant skilled -Score 0.5
+    Assert-Throws {
+        & $assertResults -OutputDirectory $output
+    } "'skilled' score 0.5 is below" 'A below-threshold skilled result was accepted.'
+
+    Reset-Results
+    Write-Results -Variant baseline -Score 0.1
+    Write-Results -Variant skilled -Score 0.8 -Status error
+    Assert-Throws {
+        & $assertResults -OutputDirectory $output
+    } "'skilled' variant has 1 incomplete" 'An incomplete skilled result was accepted.'
+
+    Reset-Results
+    Write-Results -Variant baseline -Score 0.1
+    Assert-Throws {
+        & $assertResults -OutputDirectory $output
+    } 'Missing Vally results' 'Missing skilled results were accepted.'
 
     Write-Host 'Skill-eval result assertion self-test passed.'
 } finally {

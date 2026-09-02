@@ -60,9 +60,12 @@ model-bearing `Run` action requires selecting one standard skill and defaults to
 the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
 trial count. Both modes use the repository-scoped `copilot-pat-pool`
 environment with one worker, serialize model-bearing runs, and retain the raw
-Vally output as a workflow artifact for seven days. The existing environment
-provides `COPILOT_PAT_0` and restricts deployment to the repository's default
-branch.
+Vally output as a workflow artifact for seven days. Before this workflow merges,
+repository administrators must configure `copilot-pat-pool` to provide
+`COPILOT_PAT_0` and restrict deployment to the repository's default or protected
+branch. The in-file default-ref checks are defense in depth; they cannot prevent
+a feature-branch `workflow_dispatch` from deleting those checks before the
+environment releases its secret.
 The fine-grained PAT grants only `Copilot Requests (Read)` for public
 repositories and expires after eight days. It materializes only in the Vally
 execution step as `COPILOT_GITHUB_TOKEN`; checkout, target resolution, staging,
@@ -72,10 +75,10 @@ After the workflow is present on the repository's default branch, maintainers
 with `write`, `maintain`, or `admin` permission can request a smoke evaluation
 for an open, same-repository pull request:
 
-- Recommended: submit a PR review whose body starts with `/evaluate`. GitHub
-  supplies the exact reviewed commit.
 - In the PR conversation, comment `/evaluate <sha>`. A bare `/evaluate` posts
-  guidance because an `issue_comment` event does not identify a commit.
+  guidance because an `issue_comment` event does not identify a commit. This
+  event loads the workflow from the default branch rather than the PR merge
+  context.
 
 Requests from actors whose repository permission cannot be verified or is below
 `write` are logged as notices and ignored before any PR or model work begins.
@@ -99,9 +102,11 @@ tree. Symlinks, reparse points, path traversal names, source-nested staging
 destinations, and missing inputs fail closed. The trusted runner and assertion
 execute from that staged tree, so candidate changes to `run.ps1`,
 `assert_results.ps1`, central experiments, or the workflow cannot gain code
-execution in the PAT-backed step. The final status and PR comment link to the
-retained artifacts. Smoke results validate execution and the skilled threshold,
-but Full runs remain the quality-evidence path.
+execution in the PAT-backed step. Both baseline and skilled variants must
+produce the exact planned result count, successful trial statuses, and grader
+scores; only the skilled score is threshold-gated. The final status and PR
+comment link to the retained artifacts. Smoke results validate execution and
+the skilled threshold, but Full runs remain the quality-evidence path.
 
 Vally and Copilot still interpret the staged candidate skill and eval stimuli as
 agent instructions inside the token-bearing execution step. Authorizing only
@@ -113,13 +118,14 @@ make candidate instructions trusted.
 
 `workflow_dispatch` remains the first control surface. PAT-backed dispatches
 must select the repository default branch; selecting a feature branch fails
-before candidate checkout or token materialization. Supplying both `pr_number`
-and `head_sha` exercises the same exact-SHA PR gate while the selected `eval`
-acts as a bounded override; omitting them preserves the original one-skill
-manual run. Comment and review events load workflow YAML from the default
-branch. Candidate skill instructions and eval data come from the validated exact
-SHA, while every executable control-plane file comes from the trusted workflow
-revision.
+before candidate checkout or token materialization when the trusted workflow is
+running, while the required environment branch policy enforces the boundary
+against modified feature-branch workflows. Supplying both `pr_number` and
+`head_sha` exercises the same exact-SHA PR gate while the selected `eval` acts
+as a bounded override; omitting them preserves the original one-skill manual
+run. Comment events load workflow YAML from the default branch. Candidate skill
+instructions and eval data come from the validated exact SHA, while every
+executable control-plane file comes from the trusted workflow revision.
 
 `Validate`, `Lint`, and `Run` use the exact
 `@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package

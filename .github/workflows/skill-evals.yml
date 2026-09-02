@@ -3,8 +3,6 @@ name: Skill evaluations
 on:
   issue_comment:
     types: [created]
-  pull_request_review:
-    types: [submitted]
   pull_request:
     paths:
       - '.github/skills/**'
@@ -93,20 +91,18 @@ jobs:
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        startsWith(github.event.comment.body, '/evaluate')) ||
-      (github.event_name == 'pull_request_review' &&
-       startsWith(github.event.review.body, '/evaluate')) ||
       (github.event_name == 'workflow_dispatch' &&
        inputs.action == 'Run' &&
        inputs.pr_number != '')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
-      group: skill-eval-gate-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number }}
+      group: skill-eval-gate-${{ github.event.issue.number || inputs.pr_number }}
       cancel-in-progress: false
     permissions:
       contents: read
       issues: write
-      pull-requests: write
+      pull-requests: read
       statuses: write
     outputs:
       evals: ${{ steps.resolve.outputs.evals }}
@@ -115,21 +111,24 @@ jobs:
       run_type: ${{ steps.resolve.outputs.run_type }}
       should_eval: ${{ steps.resolve.outputs.should_eval }}
     steps:
-      - name: Reject feature-branch PAT dispatch
-        if: >-
-          github.event_name == 'workflow_dispatch' &&
-          github.ref_name != github.event.repository.default_branch
+      - name: Require default branch control plane
         shell: bash
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          SELECTED_REF: ${{ github.ref_name }}
+          SELECTED_REF: ${{ github.ref }}
         run: |
-          echo "::error::PAT-backed workflow_dispatch runs must select the default branch '$DEFAULT_BRANCH', not '$SELECTED_REF'."
-          exit 1
+          set -euo pipefail
+
+          EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"
+          if [[ "$SELECTED_REF" != "$EXPECTED_REF" ]]; then
+            echo "::error::PAT-backed evaluations require the trusted default branch '$EXPECTED_REF', not '$SELECTED_REF'."
+            exit 1
+          fi
 
       - name: Checkout trusted workflow revision
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ github.workflow_sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -143,10 +142,6 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_ACTOR: ${{ github.event.comment.user.login }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          REVIEW_BODY: ${{ github.event.review.body }}
-          REVIEW_ACTOR: ${{ github.event.review.user.login }}
-          REVIEW_SHA: ${{ github.event.review.commit_id }}
-          REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
           DISPATCH_ACTOR: ${{ github.actor }}
           DISPATCH_PR_NUMBER: ${{ inputs.pr_number }}
           DISPATCH_HEAD_SHA: ${{ inputs.head_sha }}
@@ -178,17 +173,6 @@ jobs:
                 echo 'Ignoring malformed /evaluate command.'
                 exit 0
               fi
-              ;;
-            pull_request_review)
-              ACTOR="$REVIEW_ACTOR"
-              PR_NUMBER="$REVIEW_PR_NUMBER"
-              FIRST_LINE="${REVIEW_BODY%%$'\n'*}"
-              FIRST_LINE="${FIRST_LINE//$'\r'/}"
-              if [[ ! "$FIRST_LINE" =~ ^[[:space:]]*/evaluate[[:space:]]*$ ]]; then
-                echo 'Ignoring malformed /evaluate review command.'
-                exit 0
-              fi
-              REQUESTED_SHA="$REVIEW_SHA"
               ;;
             workflow_dispatch)
               ACTOR="$DISPATCH_ACTOR"
@@ -227,7 +211,7 @@ jobs:
 
           if [[ -z "$REQUESTED_SHA" ]]; then
             gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
-              --body "👋 Bind the evaluation to an exact commit. Submit a PR review whose body contains \`/evaluate\`, or comment \`/evaluate $PR_HEAD\`."
+              --body "👋 Bind the evaluation to an exact commit by commenting \`/evaluate $PR_HEAD\`."
             exit 0
           fi
           if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
@@ -348,13 +332,13 @@ jobs:
         shell: bash
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          EVENT_NAME: ${{ github.event_name }}
-          SELECTED_REF: ${{ github.ref_name }}
+          SELECTED_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
 
-          if [[ "$EVENT_NAME" == 'workflow_dispatch' && "$SELECTED_REF" != "$DEFAULT_BRANCH" ]]; then
-            echo "::error::PAT-backed workflow_dispatch runs must select the default branch '$DEFAULT_BRANCH', not '$SELECTED_REF'."
+          EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"
+          if [[ "$SELECTED_REF" != "$EXPECTED_REF" ]]; then
+            echo "::error::PAT-backed evaluations require the trusted default branch '$EXPECTED_REF', not '$SELECTED_REF'."
             exit 1
           fi
           echo 'trusted=true' >> "$GITHUB_OUTPUT"
@@ -508,16 +492,15 @@ jobs:
 
               try {
                   & (Join-Path $executionRoot 'eng/skill-evals/assert_results.ps1') `
-                      -OutputDirectory $outputDirectory `
-                      -Variant skilled
+                      -OutputDirectory $outputDirectory
               } catch {
-                  Write-Error "The skilled result gate failed for '$evalName': $_" -ErrorAction Continue
+                  Write-Error "The complete result-set gate failed for '$evalName': $_" -ErrorAction Continue
                   $failedEvals += $evalName
                   continue
               }
 
               if ($vallyExitCode -eq 1) {
-                  Write-Warning "Vally reported a non-passing baseline for '$evalName'; the skilled variant passed its quality gate."
+                  Write-Warning "Vally exited with code 1 for '$evalName'; both variants produced complete successful results and the skilled score met its threshold."
               }
           }
 

@@ -1,10 +1,7 @@
 #requires -Version 7.0
 param(
     [Parameter(Mandatory = $true)]
-    [string]$OutputDirectory,
-
-    [ValidateSet('baseline', 'skilled')]
-    [string]$Variant = 'skilled'
+    [string]$OutputDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,41 +20,62 @@ if (-not (Test-Path $snapshotPath -PathType Leaf)) {
 }
 
 $snapshot = Get-Content $snapshotPath -Raw | ConvertFrom-Json -Depth 100
-$plans = @($snapshot.evals | Where-Object variant -eq $Variant)
-if ($plans.Count -ne 1) {
-    throw "Expected exactly one '$Variant' plan; found $($plans.Count)."
+$scoresByVariant = @{}
+$plansByVariant = @{}
+foreach ($variant in @('baseline', 'skilled')) {
+    $plans = @($snapshot.evals | Where-Object variant -eq $variant)
+    if ($plans.Count -ne 1) {
+        throw "Expected exactly one '$variant' plan; found $($plans.Count)."
+    }
+
+    $plan = $plans[0]
+    $plansByVariant[$variant] = $plan
+    $resultsPath = Join-Path $runDirectory "$variant/results.jsonl"
+    if (-not (Test-Path $resultsPath -PathType Leaf)) {
+        throw "Missing Vally results at '$resultsPath'."
+    }
+
+    $results = @(
+        Get-Content $resultsPath |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            ForEach-Object { $_ | ConvertFrom-Json -Depth 100 }
+    )
+    $expectedCount = [int]$plan.plannedStimulusCount * [int]$plan.runs
+    if ($results.Count -ne $expectedCount) {
+        throw "Expected $expectedCount '$variant' trial results; found $($results.Count)."
+    }
+
+    $incomplete = @(
+        $results |
+            Where-Object {
+                -not $_.PSObject.Properties['status'] -or
+                $_.status -ne 'success'
+            }
+    )
+    if ($incomplete.Count -gt 0) {
+        throw "The '$variant' variant has $($incomplete.Count) incomplete or failed trial(s)."
+    }
+
+    $scores = [Collections.Generic.List[double]]::new()
+    foreach ($result in $results) {
+        $gradeResultProperty = $result.PSObject.Properties['gradeResult']
+        $scoreProperty = if ($gradeResultProperty -and $null -ne $gradeResultProperty.Value) {
+            $gradeResultProperty.Value.PSObject.Properties['score']
+        }
+        if (-not $scoreProperty -or $null -eq $scoreProperty.Value) {
+            throw "The '$variant' variant has trial results without grader scores."
+        }
+        $scores.Add([double]$scoreProperty.Value)
+    }
+
+    $scoresByVariant[$variant] = ($scores | Measure-Object -Average).Average
 }
 
-$plan = $plans[0]
-$resultsPath = Join-Path $runDirectory "$Variant/results.jsonl"
-if (-not (Test-Path $resultsPath -PathType Leaf)) {
-    throw "Missing Vally results at '$resultsPath'."
+$baselineScore = $scoresByVariant['baseline']
+$skilledScore = $scoresByVariant['skilled']
+$skilledThreshold = [double]$plansByVariant['skilled'].threshold
+if ($skilledScore -lt $skilledThreshold) {
+    throw "The 'skilled' score $skilledScore is below the required threshold $skilledThreshold."
 }
 
-$results = @(
-    Get-Content $resultsPath |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        ForEach-Object { $_ | ConvertFrom-Json -Depth 100 }
-)
-$expectedCount = [int]$plan.plannedStimulusCount * [int]$plan.runs
-if ($results.Count -ne $expectedCount) {
-    throw "Expected $expectedCount '$Variant' trial results; found $($results.Count)."
-}
-
-$incomplete = @($results | Where-Object status -ne 'success')
-if ($incomplete.Count -gt 0) {
-    throw "The '$Variant' variant has $($incomplete.Count) incomplete or failed trial(s)."
-}
-
-$scores = @($results | ForEach-Object { $_.gradeResult.score })
-if ($scores.Count -ne $results.Count -or $scores -contains $null) {
-    throw "The '$Variant' variant has trial results without grader scores."
-}
-
-$score = ($scores | Measure-Object -Average).Average
-$threshold = [double]$plan.threshold
-if ($score -lt $threshold) {
-    throw "The '$Variant' score $score is below the required threshold $threshold."
-}
-
-Write-Host "The '$Variant' variant passed with score $score (threshold: $threshold)."
+Write-Host "Both variants produced complete successful results. Baseline score: $baselineScore. Skilled score: $skilledScore (threshold: $skilledThreshold)."
