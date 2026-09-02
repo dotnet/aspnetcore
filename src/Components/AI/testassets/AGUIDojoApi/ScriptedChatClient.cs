@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AGUI.Server;
+using AGUIDojoApi.PredictiveStateUpdates;
 using AGUIDojoApi.SharedState;
 using Microsoft.Extensions.AI;
 
@@ -56,6 +57,12 @@ internal sealed class ScriptedChatClient : IChatClient
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
                 .FirstOrDefault();
+            var functionCall = functionResult is null
+                ? null
+                : messageList
+                    .SelectMany(message => message.Contents)
+                    .OfType<FunctionCallContent>()
+                    .LastOrDefault(call => call.CallId == functionResult.CallId);
             if (functionResult is { CallId: "agentic-plan-create-1" })
             {
                 yield return CreatePlanStepUpdate(messageId: Guid.NewGuid().ToString("N"), stepIndex: 0);
@@ -98,6 +105,13 @@ internal sealed class ScriptedChatClient : IChatClient
                     "level, cooking time, and key steps for preparation.",
                 { CallId: "shared-state-recipe-1" } =>
                     "I updated the shared recipe.",
+                _ when functionCall?.Name == "confirm_changes" &&
+                    functionResult?.Result?.ToString()?.Contains(
+                        "rejected",
+                        StringComparison.OrdinalIgnoreCase) == true =>
+                    "I left the document unchanged.",
+                _ when functionCall?.Name == "confirm_changes" =>
+                    "The document changes are ready.",
                 _ => "Background changed to a sunset gradient.",
             };
             if (functionResult is { CallId: "shared-state-recipe-1" })
@@ -133,6 +147,39 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
+        if (options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "write_document_local") == true)
+        {
+            options.TryGetRunAgentInput(out var input);
+            var current = input?.State?.Deserialize<DocumentState>(
+                AIJsonUtilities.DefaultOptions)?.Document ?? "";
+            var document = prompt.Contains("Courage", StringComparison.OrdinalIgnoreCase)
+                ? current +
+                    "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon."
+                : """
+                    # Candy Beard's Voyage
+
+                    Candy Beard sailed from Gumdrop Harbor in search of the Sugar Star.
+
+                    When dark clouds gathered, the crew shared their courage and found the way home.
+                    """;
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        $"predictive-document-{Guid.NewGuid():N}",
+                        "write_document_local",
+                        new Dictionary<string, object?> { ["document"] = document }),
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         if (options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "generate_recipe") == true)
         {
