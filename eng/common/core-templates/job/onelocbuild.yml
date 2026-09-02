@@ -9,9 +9,8 @@ parameters:
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
   # Service connection for WIF-based Entra authentication to ceapex feeds (replaces CeapexPat).
-  # When set, dnceng/internal builds acquire a federated Entra token instead of using a PAT.
-  # All other projects (e.g. DevDiv, public), where this dnceng-scoped service connection does not
-  # exist, and any pipeline that sets this to '' fall back to PAT-based auth via the CeapexPat parameter.
+  # The `internal` and `DevDiv` System.TeamProject values have same-named, project-scoped
+  # connections. Other values, and any pipeline that sets this to '', use the CeapexPat parameter.
   CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
 
   # GitHub App authentication for the OneLoc check-in PR.
@@ -89,9 +88,8 @@ jobs:
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
 
-    # Acquire an Entra token for ceapex feed access via WIF (dnceng/internal only).
-    # All other projects use PAT-based auth, since the ceapex service connection is scoped to dnceng/internal.
-    - ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
+    # Acquire an Entra token when System.TeamProject is `internal` or `DevDiv`.
+    - ${{ if and(ne(parameters.CeapexServiceConnection, ''), or(eq(variables['System.TeamProject'], 'internal'), eq(variables['System.TeamProject'], 'DevDiv'))) }}:
       - template: /eng/common/templates/steps/get-federated-access-token.yml
         parameters:
           federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
@@ -130,9 +128,9 @@ jobs:
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
           isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
-        ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
+        ${{ if and(ne(parameters.CeapexServiceConnection, ''), or(eq(variables['System.TeamProject'], 'internal'), eq(variables['System.TeamProject'], 'DevDiv'))) }}:
           patVariable: $(CeapexEntraToken)
-        ${{ if or(eq(parameters.CeapexServiceConnection, ''), ne(variables['System.TeamProject'], 'internal')) }}:
+        ${{ if or(eq(parameters.CeapexServiceConnection, ''), and(ne(variables['System.TeamProject'], 'internal'), ne(variables['System.TeamProject'], 'DevDiv'))) }}:
           patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
