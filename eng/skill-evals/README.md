@@ -60,12 +60,12 @@ model-bearing `Run` action requires selecting one standard skill and defaults to
 the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
 trial count. Both modes use the repository-scoped `copilot-pat-pool`
 environment with one worker, serialize model-bearing runs, and retain the raw
-Vally output as a workflow artifact for seven days. Before this workflow merges,
-repository administrators must configure `copilot-pat-pool` to provide
-`COPILOT_PAT_0` and restrict deployment to the repository's default or protected
-branch. The in-file default-ref checks are defense in depth; they cannot prevent
-a feature-branch `workflow_dispatch` from deleting those checks before the
-environment releases its secret.
+Vally output as a workflow artifact for seven days. The shared environment
+provides `COPILOT_PAT_0`; same-repository `write`, `maintain`, or `admin` access
+is the authorization boundary for selecting and running a host workflow
+revision. The in-file default-ref checks prevent accidental non-default
+dispatches of the unmodified workflow, but a trusted writer could deliberately
+change those checks in a branch-selected workflow revision.
 The fine-grained PAT grants only `Copilot Requests (Read)` for public
 repositories and expires after eight days. It materializes only in the Vally
 execution step as `COPILOT_GITHUB_TOKEN`; checkout, target resolution, staging,
@@ -109,23 +109,29 @@ comment link to the retained artifacts. Smoke results validate execution and
 the skilled threshold, but Full runs remain the quality-evidence path.
 
 Vally and Copilot still interpret the staged candidate skill and eval stimuli as
-agent instructions inside the token-bearing execution step. Authorizing only
-repository writers is therefore an explicit trust decision: a malicious writer
-could attempt to disclose the Copilot token through those instructions. The
-repository-scoped token's single read permission, public-repository restriction,
-and eight-day expiry bound that residual risk; the staging boundary does not
-make candidate instructions trusted.
+agent instructions inside the token-bearing execution step. The staging boundary
+also does not defend against a trusted writer deliberately modifying the host
+workflow revision itself. Authorizing repository writers is therefore an
+explicit trust decision: a malicious writer could attempt to disclose the
+Copilot token through either surface. The repository-scoped token's single read
+permission, public-repository restriction, and eight-day expiry bound that
+accepted risk.
 
 `workflow_dispatch` remains the first control surface. PAT-backed dispatches
 must select the repository default branch; selecting a feature branch fails
-before candidate checkout or token materialization when the trusted workflow is
-running, while the required environment branch policy enforces the boundary
-against modified feature-branch workflows. Supplying both `pr_number` and
-`head_sha` exercises the same exact-SHA PR gate while the selected `eval` acts
-as a bounded override; omitting them preserves the original one-skill manual
-run. Comment events load workflow YAML from the default branch. Candidate skill
-instructions and eval data come from the validated exact SHA, while every
-executable control-plane file comes from the trusted workflow revision.
+before candidate checkout or token materialization when the unmodified workflow
+is running. Supplying both `pr_number` and `head_sha` exercises the same
+exact-SHA PR gate while the selected `eval` acts as a bounded override; omitting
+them preserves the original one-skill manual run. Comment events load workflow
+YAML from the default branch. Candidate skill instructions and eval data come
+from the validated exact SHA, while every executable control-plane file comes
+from the selected host workflow revision.
+
+Environment deployment-branch policies or required reviewers are optional,
+broader hardening if repository owners decide write access alone should not
+authorize PAT use. Because `copilot-pat-pool` is shared, apply that decision
+consistently across all workflows that consume the environment rather than
+uniquely to this workflow.
 
 `Validate`, `Lint`, and `Run` use the exact
 `@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package
