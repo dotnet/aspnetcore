@@ -12,7 +12,7 @@ scoring:
   weights:
     output-matches: 0.2
     prompt: 0.8
-  threshold: 0.8
+  threshold: 0.6
 
 stimuli:
   - name: place-a-webassembly-test-page

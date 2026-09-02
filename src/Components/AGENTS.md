@@ -249,10 +249,9 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 ### E2E Testing Structure
 
-Tests live in `src/Components/test`. The structure includes:
+Components E2E tests use xUnit and Selenium and live in `src/Components/test/E2ETest`. Their applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
 
-- **testassets folder** - Contains test assets and scenarios
-- **Components.TestServer project** - A web application that launches multiple web servers with different scenarios (different project startups). Avoid adding new startup files unless strictly necessary.
+Do not use `Microsoft.AspNetCore.Components.Testing` unless the request explicitly targets that project or asks to use it.
 
 ### Running E2E Tests Manually
 
@@ -317,7 +316,7 @@ Use `browser_console_messages` to see JavaScript console output including .NET l
 
 ### Creating E2E Tests
 
-E2E tests are located in `src/Components/test/E2ETest`.
+The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
@@ -329,7 +328,7 @@ For telemetry or distributed-state behavior, assert the real consumer-visible ou
 
 ### Running E2E Tests
 
-The E2E tests use Selenium. To build and run tests:
+This E2E suite uses Selenium. To build and run tests:
 
 ```bash
 # Build the E2E test project and its dependencies
