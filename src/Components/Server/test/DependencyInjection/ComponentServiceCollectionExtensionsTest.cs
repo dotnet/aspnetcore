@@ -36,15 +36,16 @@ public class ComponentServiceCollectionExtensionsTest
 
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
-        var initializers = scope.ServiceProvider.GetServices<IHostInitializer>()
-            .OrderBy(initializer => initializer.Order)
-            .ToArray();
+        var collection = provider.GetRequiredService<HostInitializerCollection>();
+        var initializers = collection.Initializers;
         var navigationInitializerIndex = Array.FindIndex(
-            initializers,
+            initializers.ToArray(),
             initializer => initializer.GetType() == typeof(NavigationManagerInitializer));
-        var userInitializerIndex = Array.IndexOf(initializers, userInitializer);
+        var userInitializerIndex = initializers.IndexOf(userInitializer);
 
         Assert.Equal(registerUserFirst, userInitializerIndex < navigationInitializerIndex);
+        Assert.Same(collection, scope.ServiceProvider.GetRequiredService<HostInitializerCollection>());
+        Assert.Equal(1, userInitializer.OrderAccessCount);
     }
 
     [Fact]
@@ -63,7 +64,7 @@ public class ComponentServiceCollectionExtensionsTest
 
         foreach (var initializer in initializers)
         {
-            await initializer.InitializeAsync();
+            await initializer.InitializeAsync(scope.ServiceProvider);
         }
     }
 
@@ -198,13 +199,28 @@ public class ComponentServiceCollectionExtensionsTest
             countAfterFirstCall,
             services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues)));
         Assert.Equal(3, services.Count(descriptor => descriptor.ServiceType == typeof(IHostInitializer)));
+        Assert.All(
+            services.Where(descriptor => descriptor.ServiceType == typeof(IHostInitializer)),
+            descriptor => Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime));
+        Assert.Equal(
+            ServiceLifetime.Singleton,
+            Assert.Single(services.Where(descriptor => descriptor.ServiceType == typeof(HostInitializerCollection))).Lifetime);
     }
 
     private sealed class TestHostInitializer : IHostInitializer
     {
-        public int Order => -200;
+        public int Order
+        {
+            get
+            {
+                OrderAccessCount++;
+                return -200;
+            }
+        }
 
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public int OrderAccessCount { get; private set; }
+
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 }

@@ -90,11 +90,12 @@ public static class ComponentServiceCollectionExtensions
             typeof(ComponentHub),
             static (services, key) => services.GetRequiredKeyedService<InteractiveHostStartupValues>(key));
         services.TryAddEnumerable(
-            ServiceDescriptor.Scoped<IHostInitializer, NavigationManagerInitializer>());
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
         services.TryAddEnumerable(
-            ServiceDescriptor.Scoped<IHostInitializer, NavigationManagerJSRuntimeInitializer>());
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerJSRuntimeInitializer>());
         services.TryAddEnumerable(
-            ServiceDescriptor.Scoped<IHostInitializer, NavigationServicesJSRuntimeInitializer>());
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationServicesJSRuntimeInitializer>());
+        services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
 

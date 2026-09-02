@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -91,13 +90,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             .GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues))
             .Initialize(httpContext);
 
-        var hostInitializers = httpContext.RequestServices.GetServices<IHostInitializer>()
-            .OrderBy(initializer => initializer.Order);
-        foreach (var initializer in hostInitializers)
+        var hostInitializers = httpContext.RequestServices.GetRequiredService<HostInitializerCollection>();
+        foreach (var initializer in hostInitializers.Initializers)
         {
             if (!initializer.RequiresJSInterop)
             {
-                await initializer.InitializeAsync(httpContext.RequestAborted);
+                await initializer.InitializeAsync(httpContext.RequestServices, httpContext.RequestAborted);
             }
         }
 

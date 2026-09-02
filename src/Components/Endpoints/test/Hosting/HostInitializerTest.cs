@@ -36,13 +36,14 @@ public class HostInitializerTest
 
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
-        var initializers = scope.ServiceProvider.GetServices<IHostInitializer>()
-            .OrderBy(initializer => initializer.Order)
-            .ToArray();
+        var collection = provider.GetRequiredService<HostInitializerCollection>();
+        var initializers = collection.Initializers;
 
         Assert.Equal(2, initializers.Length);
         Assert.Same(userInitializer, initializers[registerUserFirst ? 0 : 1]);
         Assert.IsType<NavigationManagerInitializer>(initializers[registerUserFirst ? 1 : 0]);
+        Assert.Same(collection, scope.ServiceProvider.GetRequiredService<HostInitializerCollection>());
+        Assert.Equal(1, userInitializer.OrderAccessCount);
     }
 
     [Fact]
@@ -53,9 +54,19 @@ public class HostInitializerTest
         services.AddRazorComponents();
         services.AddRazorComponents();
 
+        Assert.All(
+            services.Where(descriptor => descriptor.ServiceType == typeof(IHostInitializer)),
+            descriptor => Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime));
+        Assert.Equal(
+            ServiceLifetime.Singleton,
+            Assert.Single(services.Where(descriptor => descriptor.ServiceType == typeof(HostInitializerCollection))).Lifetime);
+
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         Assert.Single(scope.ServiceProvider.GetServices<IHostInitializer>());
+        Assert.Same(
+            provider.GetRequiredService<HostInitializerCollection>(),
+            scope.ServiceProvider.GetRequiredService<HostInitializerCollection>());
     }
 
     [Fact]
@@ -71,7 +82,42 @@ public class HostInitializerTest
         using var scope = provider.CreateScope();
         var initializer = Assert.Single(scope.ServiceProvider.GetServices<IHostInitializer>());
 
-        await initializer.InitializeAsync();
+        await initializer.InitializeAsync(scope.ServiceProvider);
+    }
+
+    [Fact]
+    public async Task SingletonInitializerUsesTheActiveRequestScope()
+    {
+        var initializer = new ScopeRecordingInitializer();
+        var services = CreateBaseServices();
+        services.AddRazorComponents();
+        services.AddScoped<ScopedDependency>();
+        services.AddSingleton<IHostInitializer>(initializer);
+
+        using var provider = services.BuildServiceProvider();
+        using (var firstScope = provider.CreateScope())
+        {
+            var context = CreateHttpContext(firstScope.ServiceProvider);
+            await firstScope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>()
+                .InitializeStandardComponentServicesAsync(context);
+        }
+
+        using (var secondScope = provider.CreateScope())
+        {
+            var context = CreateHttpContext(secondScope.ServiceProvider);
+            await secondScope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>()
+                .InitializeStandardComponentServicesAsync(context);
+        }
+
+        Assert.Collection(
+            initializer.ScopedDependencyIds,
+            first => Assert.NotEqual(Guid.Empty, first),
+            second => Assert.NotEqual(Guid.Empty, second));
+        Assert.NotEqual(initializer.ScopedDependencyIds[0], initializer.ScopedDependencyIds[1]);
+        Assert.Same(
+            initializer,
+            provider.GetRequiredService<HostInitializerCollection>().Initializers.Single(
+                candidate => candidate is ScopeRecordingInitializer));
     }
 
     [Fact]
@@ -180,11 +226,20 @@ public class HostInitializerTest
         Exception? exception = null,
         Action<CancellationToken>? callback = null) : IHostInitializer
     {
-        public int Order => order;
+        public int Order
+        {
+            get
+            {
+                OrderAccessCount++;
+                return order;
+            }
+        }
+
+        public int OrderAccessCount { get; private set; }
 
         public bool RequiresJSInterop => requiresJSInterop;
 
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);
@@ -200,6 +255,22 @@ public class HostInitializerTest
 
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class ScopeRecordingInitializer : IHostInitializer
+    {
+        public List<Guid> ScopedDependencyIds { get; } = [];
+
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        {
+            ScopedDependencyIds.Add(services.GetRequiredService<ScopedDependency>().Id);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ScopedDependency
+    {
+        public Guid Id { get; } = Guid.NewGuid();
     }
 
     private sealed class TestHostStartupValues : IHostStartupValues

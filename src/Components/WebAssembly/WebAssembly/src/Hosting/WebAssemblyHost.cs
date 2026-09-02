@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
@@ -139,11 +138,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         InitializeHostStartupValues();
 
-        var hostInitializers = Services.GetServices<IHostInitializer>()
-            .OrderBy(initializer => initializer.Order);
-        foreach (var initializer in hostInitializers)
+        var hostInitializers = Services.GetRequiredService<HostInitializerCollection>();
+        foreach (var initializer in hostInitializers.Initializers)
         {
-            await initializer.InitializeAsync(cancellationToken);
+            await initializer.InitializeAsync(Services, cancellationToken);
         }
 
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();

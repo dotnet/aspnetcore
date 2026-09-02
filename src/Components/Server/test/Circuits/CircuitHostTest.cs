@@ -24,17 +24,10 @@ public class CircuitHostTest
     private readonly ServerComponentInvocationSequence _invocationSequence = new();
 
     [Fact]
-    public async Task DeferredHostInitializersCompleteOnceBeforeRootComponentsRender()
+    public async Task DeferredHostInitializersCompleteBeforeRootComponentsRender()
     {
         var calls = new List<string>();
-        var completionNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(client => client.SendCoreAsync(
-                "JS.EndHostInitialization",
-                It.IsAny<object[]>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((_, _, _) => completionNotification.TrySetResult())
-            .Returns(Task.CompletedTask);
         DeferredInitializerRootComponent.Reset();
         var circuitHost = TestCircuitHost.Create(
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
@@ -57,38 +50,20 @@ public class CircuitHostTest
             new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
             default,
             CancellationToken.None);
-        await Task.Yield();
-        Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
-
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await completionNotification.Task;
         await initializeTask;
         await DeferredInitializerRootComponent.Rendered.Task;
 
         Assert.Equal(["first", "second"], calls);
-        proxy.Verify(client => client.SendCoreAsync(
-            "JS.EndHostInitialization",
-            It.Is<object[]>(arguments => (bool)arguments[0] && ReferenceEquals(arguments[1], null)),
-            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task DeferredHostInitializerFailureStopsExecutionAndUnblocksInitialization()
+    public async Task DeferredHostInitializerFailureStopsExecutionAndIsReportedByInitialization()
     {
         var calls = new List<string>();
         var exception = new InvalidOperationException("Initializer failed.");
         var reportedException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var completionNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(client => client.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((method, _, _) =>
-            {
-                if (method == "JS.EndHostInitialization")
-                {
-                    completionNotification.TrySetResult();
-                }
-            })
             .Returns(Task.CompletedTask);
         var circuitHost = TestCircuitHost.Create(
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
@@ -101,35 +76,20 @@ public class CircuitHostTest
             reportedException.TrySetResult((Exception)eventArgs.ExceptionObject);
 
         var initializeTask = circuitHost.InitializeAsync(null, default, CancellationToken.None);
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await completionNotification.Task;
         await initializeTask;
 
         Assert.Same(exception, await reportedException.Task);
         Assert.Equal(["failure"], calls);
-        proxy.Verify(client => client.SendCoreAsync(
-            "JS.EndHostInitialization",
-            It.Is<object[]>(arguments => !(bool)arguments[0]),
-            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task DeferredHostInitializerCancellationStopsExecutionAndUnblocksInitialization()
+    public async Task DeferredHostInitializerCancellationStopsExecutionAndIsReportedByInitialization()
     {
         var calls = new List<string>();
         using var cancellationTokenSource = new CancellationTokenSource();
         var reportedException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var completionNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(client => client.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((method, _, _) =>
-            {
-                if (method == "JS.EndHostInitialization")
-                {
-                    completionNotification.TrySetResult();
-                }
-            })
             .Returns(Task.CompletedTask);
         var circuitHost = TestCircuitHost.Create(
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
@@ -146,16 +106,10 @@ public class CircuitHostTest
             reportedException.TrySetResult((Exception)eventArgs.ExceptionObject);
 
         var initializeTask = circuitHost.InitializeAsync(null, default, cancellationTokenSource.Token);
-        circuitHost.BeginHostInitialization(cancellationTokenSource.Token);
-        await completionNotification.Task;
         await initializeTask;
 
         Assert.IsAssignableFrom<OperationCanceledException>(await reportedException.Task);
         Assert.Equal(["canceled"], calls);
-        proxy.Verify(client => client.SendCoreAsync(
-            "JS.EndHostInitialization",
-            It.Is<object[]>(arguments => !(bool)arguments[0]),
-            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -173,8 +127,16 @@ public class CircuitHostTest
         var services = new ServiceCollection()
             .AddSingleton(handler.Object)
             .BuildServiceProvider();
+        var completedBatches = new List<long>();
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(client => client.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback<string, object[], CancellationToken>((method, arguments, _) =>
+            {
+                if (method == "JS.EndUpdateRootComponents")
+                {
+                    completedBatches.Add((long)arguments[0]);
+                }
+            })
             .Returns(Task.CompletedTask);
         DeferredInitializerRootComponent.Reset();
         var circuitHost = TestCircuitHost.Create(
@@ -194,25 +156,28 @@ public class CircuitHostTest
             ]);
 
         var initializeTask = circuitHost.InitializeAsync(null, default, CancellationToken.None);
-        var updateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 1);
+        var firstUpdateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 1, batchId: 1);
+        var secondUpdateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 2, batchId: 2);
         await Task.Yield();
 
-        Assert.False(updateTask.IsCompleted);
+        Assert.False(firstUpdateTask.IsCompleted);
+        Assert.False(secondUpdateTask.IsCompleted);
         Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
         handler.Verify(
             instance => instance.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()),
             Times.Never);
 
-        circuitHost.BeginHostInitialization(CancellationToken.None);
         await initializerStarted.Task;
-        Assert.False(updateTask.IsCompleted);
+        Assert.False(firstUpdateTask.IsCompleted);
+        Assert.False(secondUpdateTask.IsCompleted);
         Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
 
         continueInitializer.SetResult();
         await initializeTask;
-        await updateTask;
+        await Task.WhenAll(firstUpdateTask, secondUpdateTask);
 
         Assert.Equal(["deferred"], calls);
+        Assert.Equal([1L, 2L], completedBatches);
         Assert.True(DeferredInitializerRootComponent.Rendered.Task.IsCompletedSuccessfully);
         handler.Verify(
             instance => instance.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()),
@@ -220,94 +185,6 @@ public class CircuitHostTest
         handler.Verify(
             instance => instance.OnConnectionUpAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()),
             Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateRootComponentsPreservesArrivalOrderWhileWaitingForDeferredHostInitialization()
-    {
-        var calls = new List<string>();
-        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var handler = new Mock<CircuitHandler>();
-        SetupMockInboundActivityHandler(handler);
-        handler.Setup(instance => instance.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
-            .Callback(() => calls.Add("circuit-opened"))
-            .Returns(Task.CompletedTask);
-        handler.Setup(instance => instance.OnConnectionUpAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
-            .Callback(() => calls.Add("connection-up"))
-            .Returns(Task.CompletedTask);
-        var services = new ServiceCollection()
-            .AddSingleton(handler.Object)
-            .BuildServiceProvider();
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(client => client.SendCoreAsync(
-                "JS.EndUpdateRootComponents",
-                It.IsAny<object[]>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((_, arguments, _) => calls.Add($"batch-{arguments[0]}"))
-            .Returns(Task.CompletedTask);
-        var circuitHost = TestCircuitHost.Create(
-            clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
-            remoteRenderer: GetRemoteRenderer(),
-            serviceScope: services.CreateAsyncScope(),
-            deferredHostInitializers:
-            [
-                new TestHostInitializer("initializer", calls, asyncCallback: _ =>
-                {
-                    initializerStarted.SetResult();
-                    return continueInitializer.Task;
-                }),
-            ]);
-
-        var initializeTask = circuitHost.InitializeAsync(null, default, CancellationToken.None);
-        var firstUpdate = AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, batchId: 1);
-        var secondUpdate = AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 2, batchId: 2);
-
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await initializerStarted.Task;
-        Assert.Equal(["initializer"], calls);
-
-        continueInitializer.SetResult();
-        await Task.WhenAll(initializeTask, firstUpdate, secondUpdate);
-
-        Assert.Equal(["initializer", "circuit-opened", "connection-up", "batch-1", "batch-2"], calls);
-    }
-
-    [Fact]
-    public async Task UpdateRootComponentsQueueAdvancesAfterCanceledUpdate()
-    {
-        var calls = new List<string>();
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(client => client.SendCoreAsync(
-                "JS.EndUpdateRootComponents",
-                It.IsAny<object[]>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((_, arguments, _) => calls.Add($"batch-{arguments[0]}"))
-            .Returns(Task.CompletedTask);
-        var circuitHost = TestCircuitHost.Create(
-            clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
-            remoteRenderer: GetRemoteRenderer(),
-            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
-            deferredHostInitializers:
-            [
-                new TestHostInitializer("initializer", calls),
-            ]);
-        using var cancellationTokenSource = new CancellationTokenSource();
-
-        var initializeTask = circuitHost.InitializeAsync(null, default, CancellationToken.None);
-        var canceledUpdate = AddComponentAsync<DynamicallyAddedComponent>(
-            circuitHost,
-            1,
-            batchId: 1,
-            cancellationToken: cancellationTokenSource.Token);
-        var succeedingUpdate = AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 2, batchId: 2);
-
-        cancellationTokenSource.Cancel();
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await Task.WhenAll(initializeTask, canceledUpdate, succeedingUpdate).WaitAsync(TimeSpan.FromSeconds(10));
-
-        Assert.Equal(["initializer", "batch-2"], calls);
-        Assert.Single(circuitHost.Renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
     }
 
     [Fact]
@@ -1716,7 +1593,7 @@ public class CircuitHostTest
         Action<CancellationToken> callback = null,
         Func<CancellationToken, Task> asyncCallback = null) : IHostInitializer
     {
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);

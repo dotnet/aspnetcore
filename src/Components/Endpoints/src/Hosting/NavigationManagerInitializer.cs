@@ -7,16 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Hosting;
 
-internal sealed class NavigationManagerInitializer(
-    IServiceProvider services,
-    IHostStartupValues startupValues) : IHostInitializer
+internal sealed class NavigationManagerInitializer : IHostInitializer
 {
     public int Order => -200;
 
-    public Task InitializeAsync(CancellationToken cancellationToken = default)
+    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var startupValues = services.GetRequiredService<IHostStartupValues>();
         var httpContextStartupValues =
             services.GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues));
         if (!ReferenceEquals(startupValues, httpContextStartupValues))

@@ -6,16 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Hosting;
 
-internal sealed class NavigationManagerInitializer(
-    IServiceProvider services,
-    InteractiveServerContext context) : IHostInitializer
+internal sealed class NavigationManagerInitializer : IHostInitializer
 {
     public int Order => -200;
 
-    public Task InitializeAsync(CancellationToken cancellationToken = default)
+    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var context = services.GetRequiredService<InteractiveServerContext>();
         if (!context.IsInteractive)
         {
             return Task.CompletedTask;

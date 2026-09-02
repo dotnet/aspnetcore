@@ -111,12 +111,6 @@ internal sealed partial class ComponentHub : Hub
         => HostStartupValuesJson.SerializeKeys(
             BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders));
 
-    public async Task CompleteHostInitialization()
-    {
-        var circuitHost = await GetActiveCircuitAsync();
-        circuitHost?.BeginHostInitialization(Context.ConnectionAborted);
-    }
-
     public async ValueTask<string> StartCircuit(
         string startupValuesJson,
         string serializedComponentRecords,
@@ -176,8 +170,8 @@ internal sealed partial class ComponentHub : Hub
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
             _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
-            // Publish before initialization completes so the client can complete deferred host initialization.
-            // Root component rendering remains blocked until that handshake finishes.
+            // Publish before initialization completes so JS interop responses can flow.
+            // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 
@@ -469,8 +463,8 @@ internal sealed partial class ComponentHub : Hub
 
             circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
-            // Publish before initialization completes so the client can complete deferred host initialization.
-            // Root component rendering remains blocked until that handshake finishes.
+            // Publish before initialization completes so JS interop responses can flow.
+            // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 

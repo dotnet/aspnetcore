@@ -67,8 +67,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
-  private _hostInitializationCompletion?: HostInitializationCompletion;
-
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -127,8 +125,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._circuitId) {
       return false;
     }
-
-    await this.completeHostInitialization();
 
     for (const handler of this._options.circuitHandlers) {
       if (handler.onCircuitOpened) {
@@ -208,20 +204,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
-    connection.on('JS.EndHostInitialization', (succeeded: boolean, error: string | null) => {
-      const completion = this._hostInitializationCompletion;
-      if (!completion) {
-        return;
-      }
-
-      this._hostInitializationCompletion = undefined;
-      if (succeeded) {
-        completion.resolve();
-      } else {
-        completion.reject(new Error(error || 'The circuit failed to initialize.'));
-      }
-    });
-
     connection.on('JS.RequestPause', async () => {
       try {
         await this.handleServerInitiatedPause();
@@ -231,7 +213,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this.rejectHostInitialization(error || new Error('The connection closed during host initialization.'));
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
       this.handleConnectionDown();
@@ -248,7 +229,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
     });
     connection.on('JS.Error', error => {
-      this.rejectHostInitialization(new Error(error));
       this._renderingFailed = true;
       this.unhandledError(error);
       showErrorNotification();
@@ -287,31 +267,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return connection;
-  }
-
-  private async completeHostInitialization(): Promise<void> {
-    const completionPromise = new Promise<void>((resolve, reject) => {
-      this._hostInitializationCompletion = { resolve, reject };
-    });
-    completionPromise.catch(() => { /* The invocation is awaited before this promise. */ });
-
-    try {
-      await this._connection!.invoke('CompleteHostInitialization');
-    } catch (error) {
-      this.rejectHostInitialization(error);
-    }
-
-    await completionPromise;
-  }
-
-  private rejectHostInitialization(error: unknown): void {
-    const completion = this._hostInitializationCompletion;
-    if (!completion) {
-      return;
-    }
-
-    this._hostInitializationCompletion = undefined;
-    completion.reject(error instanceof Error ? error : new Error(`${error}`));
   }
 
   public async disconnect(): Promise<void> {
@@ -530,8 +485,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         return resumingPromise;
       }
 
-      await this.completeHostInitialization();
-
       this._pausingState.transitionTo(false);
       this._resumingState.complete(true);
 
@@ -716,11 +669,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
     }
   }
-}
-
-interface HostInitializationCompletion {
-  resolve(): void;
-  reject(error: Error): void;
 }
 
 class CircuitState<T> {
