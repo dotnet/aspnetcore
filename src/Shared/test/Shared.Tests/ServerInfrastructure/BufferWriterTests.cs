@@ -13,16 +13,16 @@ public class BufferWriterTests
         var output = new StrictBufferWriter();
         var writer = new BufferWriter<StrictBufferWriter>(output);
 
-        writer.Write(new byte[] { 1, 2, 3 });
+        writer.Write([1, 2, 3]);
         writer.Commit();
-        writer.Write(new byte[] { 4, 5 });
+        writer.Write([4, 5]);
         writer.Commit();
 
         Assert.Equal(2, output.BufferAcquisitions);
         Assert.Collection(
             output.CommittedBuffers,
-            buffer => Assert.Equal(new byte[] { 1, 2, 3 }, buffer),
-            buffer => Assert.Equal(new byte[] { 4, 5 }, buffer));
+            buffer => Assert.Equal([ 1, 2, 3 ], buffer),
+            buffer => Assert.Equal([ 4, 5 ], buffer));
     }
 
     private sealed class StrictBufferWriter : IBufferWriter<byte>
@@ -55,10 +55,7 @@ public class BufferWriterTests
 
         private byte[] AcquireBuffer(int sizeHint)
         {
-            if (sizeHint < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(sizeHint));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
 
             _currentLease = new byte[Math.Max(sizeHint, 16)];
             BufferAcquisitions++;
