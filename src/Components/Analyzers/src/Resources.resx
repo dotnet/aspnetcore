@@ -273,4 +273,13 @@
   <data name="UnguardedJSInteropCall_FixTitle" xml:space="preserve">
     <value>Wrap JS interop call in a try/catch block.</value>
   </data>
+  <data name="JsInteropUsageWithoutIsInteractiveCheck_Description" xml:space="preserve">
+    <value>JS interop calls outside of OnAfterRender/OnAfterRenderAsync may fail during static or prerendered server-side rendering when the component is not yet interactive. Guard the call by checking RendererInfo.IsInteractive before invoking JS interop.</value>
+  </data>
+  <data name="JsInteropUsageWithoutIsInteractiveCheck_Format" xml:space="preserve">
+    <value>JS interop call '{0}' is used outside of OnAfterRender/OnAfterRenderAsync without checking RendererInfo.IsInteractive.</value>
+  </data>
+  <data name="JsInteropUsageWithoutIsInteractiveCheck_Title" xml:space="preserve">
+    <value>JS interop used without checking RendererInfo.IsInteractive.</value>
+  </data>
 </root>
