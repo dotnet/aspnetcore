@@ -1,7 +1,5 @@
 # Working on Issues in the Components Area
 
-Read the repository-level [AGENTS.md](../../AGENTS.md) first. This file adds Components-specific guidance.
-
 This guide provides step-by-step instructions for investigating, reviewing, and implementing work in the ASP.NET Core Components area.
 
 ## Working on issues
@@ -226,11 +224,9 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 ### E2E Testing Structure
 
-The Components area has distinct E2E test stacks. Keep their frameworks and infrastructure separate:
+Components E2E tests use xUnit and Selenium and live in `src/Components/test/E2ETest`. Their applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
 
-- `src/Components/test/E2ETest` uses xUnit and Selenium. Its applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
-- Projects that consume `Microsoft.AspNetCore.Components.Testing` use MSTest on Microsoft.Testing.Platform and Playwright. Follow [Testing/AGENTS.md](Testing/AGENTS.md) when working in that stack; do not copy xUnit or Selenium patterns into it.
-- `src/Components/WebView/test/E2ETest` is a platform-hosted executable with its own entry point and application lifecycle. Follow that project's existing structure instead of either browser-test stack.
+Do not use `Microsoft.AspNetCore.Components.Testing` unless the request explicitly targets that project or asks to use it.
 
 ### Running E2E Tests Manually
 

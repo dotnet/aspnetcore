@@ -1,7 +1,5 @@
 # ProjectTemplates guidance
 
-Read the repository-level [AGENTS.md](../../AGENTS.md) first. This file adds ProjectTemplates-specific guidance.
-
 ## Validation preflight
 
 1. Read [README.md](README.md), including the focused `Templates.Tests` workflow, before choosing a build or test command.

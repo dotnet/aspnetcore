@@ -1,7 +1,5 @@
 # MVC contributor guidance
 
-Read the repository-level [AGENTS.md](../../AGENTS.md) first. This file adds conventions specific to `src/Mvc`.
-
 ## Test organization
 
 - Keep unit tests under each product project's `test/` directory. MVC generally uses singular `.Test` project names; preserve each project's exact existing name rather than deriving or normalizing it.

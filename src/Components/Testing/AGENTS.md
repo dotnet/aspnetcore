@@ -21,13 +21,6 @@ Keep public APIs focused on customer scenarios. Hide storage layout, path compos
 
 Use `testassets/**` for sample consumer configuration, scenarios, and ASP.NET Core source-tree development hooks. Test assets should exercise the package as an external consumer would; they must not cause repository assumptions to leak into shipped assets.
 
-### E2E test layout
-
-- Name test runners `<App>.E2E.Tests`, keep test classes under `Tests/`, and keep per-assembly setup under `Fixtures/`.
-- Use MSTest on Microsoft.Testing.Platform with Playwright. Use `[UITest]` on partial test classes, `[TestMethod]` on test methods, and the nearest suitable `PlaywrightTest`, `BrowserTest`, `ContextTest`, or `PageTest` base; do not use the Components xUnit/Selenium conventions.
-- Keep each application under test in a separate sibling project and reference it from the runner with `<E2EApp>true</E2EApp>`.
-- Reuse the runner's assembly-level `ServerFactory` and existing application scenarios rather than creating per-class infrastructure.
-
 Before changing repository-wide `eng/**` infrastructure, search Arcade, the .NET SDK, and existing ASP.NET Core mechanisms. Add repository-wide behavior only when the requirement is genuinely shared and no suitable extension point exists.
 
 For changes that affect packaging or build integration:
