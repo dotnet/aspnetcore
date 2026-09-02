@@ -129,9 +129,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
         services.AddScoped<HostInitializationState>();
-        services.AddScoped<IBrowserStartupValueProvider, TestBrowserStartupValueProvider>();
-        services.AddScoped<IHostInitializer, StartupValuesHostInitializer>();
-        services.AddScoped<IHostInitializer, JSReadyHostInitializer>();
+        services.AddSingleton<IBrowserStartupValueProvider, TestBrowserStartupValueProvider>();
+        services.AddSingleton<IHostInitializer, StartupValuesHostInitializer>();
+        services.AddSingleton<IHostInitializer, JSReadyHostInitializer>();
 
         // Register custom serializer for E2E testing of persistent component state serialization extensibility
         services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();

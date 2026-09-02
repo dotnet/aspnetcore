@@ -340,6 +340,7 @@ public sealed class WebAssemblyHostBuilder
             static services => services.GetRequiredService<InteractiveHostStartupValues>());
         Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+        Services.TryAddSingleton<HostInitializerCollection>();
         Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);

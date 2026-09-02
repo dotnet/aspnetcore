@@ -35,9 +35,7 @@ public class CircuitFactoryTest
         Assert.False(navigationInterception.HasAttachedJSRuntime);
         Assert.False(scrollToLocationHash.HasAttachedJSRuntime);
 
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await WaitForAsync(() => calls.Count == 3);
+        await circuitHost.InitializeAsync(null, default, CancellationToken.None);
 
         Assert.Equal(["lower", "user-js", "later-non-js"], calls);
         Assert.True(navigationManager.HasAttachedJSRuntime);
@@ -59,8 +57,7 @@ public class CircuitFactoryTest
 
         Assert.Equal(["first"], calls);
 
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await WaitForAsync(() => calls.Count == 3);
+        await circuitHost.InitializeAsync(null, default, CancellationToken.None);
 
         Assert.Equal(["first", "second-js", "third"], calls);
     }
@@ -80,8 +77,7 @@ public class CircuitFactoryTest
         Assert.Equal("https://localhost/page", navigationManager.Uri);
         Assert.False(navigationManager.HasAttachedJSRuntime);
 
-        circuitHost.BeginHostInitialization(CancellationToken.None);
-        await WaitForAsync(() => navigationManager.HasAttachedJSRuntime);
+        await circuitHost.InitializeAsync(null, default, CancellationToken.None);
 
         Assert.True(navigationManager.HasAttachedJSRuntime);
     }
@@ -124,6 +120,24 @@ public class CircuitFactoryTest
         Assert.Equal(["canceled"], calls);
     }
 
+    [Fact]
+    public async Task SingletonInitializerUsesTheActiveCircuitScope()
+    {
+        var initializer = new ScopeRecordingInitializer();
+        using var provider = CreateServices(initializer);
+        var circuitFactory = provider.GetRequiredService<ICircuitFactory>();
+
+        await using var firstCircuit = await CreateCircuitHostAsync(circuitFactory);
+        await using var secondCircuit = await CreateCircuitHostAsync(circuitFactory);
+
+        Assert.Equal(2, initializer.ScopedDependencyIds.Count);
+        Assert.NotEqual(initializer.ScopedDependencyIds[0], initializer.ScopedDependencyIds[1]);
+        Assert.Same(
+            initializer,
+            provider.GetRequiredService<HostInitializerCollection>().Initializers.Single(
+                candidate => candidate is ScopeRecordingInitializer));
+    }
+
     private static ServiceProvider CreateServices(params IHostInitializer[] initializers)
     {
         var services = new ServiceCollection();
@@ -131,6 +145,7 @@ public class CircuitFactoryTest
         services.AddMetrics();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+        services.AddScoped<ScopedDependency>();
         services.AddServerSideBlazor();
         foreach (var initializer in initializers)
         {
@@ -159,16 +174,6 @@ public class CircuitFactoryTest
         }
 
         return services.BuildServiceProvider();
-    }
-
-    private static async Task WaitForAsync(Func<bool> condition)
-    {
-        for (var i = 0; i < 100 && !condition(); i++)
-        {
-            await Task.Delay(10);
-        }
-
-        Assert.True(condition());
     }
 
     private static ValueTask<CircuitHost> CreateCircuitHostAsync(
@@ -201,13 +206,31 @@ public class CircuitFactoryTest
 
         public bool RequiresJSInterop => requiresJSInterop;
 
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);
 
             return exception is null ? Task.CompletedTask : Task.FromException(exception);
         }
+    }
+
+    private sealed class ScopeRecordingInitializer : IHostInitializer
+    {
+        public int Order => -300;
+
+        public List<Guid> ScopedDependencyIds { get; } = [];
+
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        {
+            ScopedDependencyIds.Add(services.GetRequiredService<ScopedDependency>().Id);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ScopedDependency
+    {
+        public Guid Id { get; } = Guid.NewGuid();
     }
 
     private sealed class TestWebHostEnvironment : IWebHostEnvironment

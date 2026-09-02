@@ -114,13 +114,22 @@ public class ComponentHubTest
     }
 
     [Fact]
-    public async Task CompleteHostInitializationReturnsBeforeDeferredInitializerCompletes()
+    public async Task StartCircuitReturnsWhileDeferredInitializerAndRenderingRemainIncomplete()
     {
         var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var completionNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        DeferredInitializerRootComponent.Reset();
         var circuitFactory = new TestCircuitFactory
         {
+            Descriptors =
+            [
+                new ComponentDescriptor
+                {
+                    ComponentType = typeof(DeferredInitializerRootComponent),
+                    Parameters = ParameterView.Empty,
+                    Sequence = 0,
+                },
+            ],
             DeferredHostInitializers =
             [
                 new TestHostInitializer(() =>
@@ -130,27 +139,16 @@ public class ComponentHubTest
                 }),
             ],
         };
-        var (client, hub) = InitializeComponentHub(circuitFactory: circuitFactory);
-        client.Setup(proxy => proxy.SendCoreAsync(
-                "JS.EndHostInitialization",
-                It.IsAny<object[]>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<string, object[], CancellationToken>((_, _, _) => completionNotification.TrySetResult())
-            .Returns(Task.CompletedTask);
-        await hub.StartCircuit(NavigationStartupValuesJson, "{}", null);
-
-        var hubInvocation = hub.CompleteHostInitialization();
+        var (_, hub) = InitializeComponentHub(circuitFactory: circuitFactory);
+        var circuitSecret = await hub.StartCircuit(NavigationStartupValuesJson, "{}", null);
         await initializerStarted.Task;
 
-        Assert.True(hubInvocation.IsCompletedSuccessfully);
-        Assert.False(completionNotification.Task.IsCompleted);
+        Assert.NotNull(circuitSecret);
+        Assert.False(continueInitializer.Task.IsCompleted);
+        Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
 
         continueInitializer.SetResult();
-        await completionNotification.Task;
-        client.Verify(proxy => proxy.SendCoreAsync(
-            "JS.EndHostInitialization",
-            It.Is<object[]>(arguments => (bool)arguments[0] && ReferenceEquals(arguments[1], null)),
-            It.IsAny<CancellationToken>()), Times.Once);
+        await DeferredInitializerRootComponent.Rendered.Task;
     }
 
     [Theory]
@@ -760,6 +758,8 @@ public class ComponentHubTest
 
         public IHostInitializer[] DeferredHostInitializers { get; init; } = [];
 
+        public IReadOnlyList<ComponentDescriptor> Descriptors { get; init; } = [];
+
         // Implement a `CreateCircuitHostAsync` that mocks the construction
         // of the CircuitHost.
         public ValueTask<CircuitHost> CreateCircuitHostAsync(
@@ -779,6 +779,7 @@ public class ComponentHubTest
                 circuitId: TestCircuitIdFactory.Instance.CreateCircuitId(),
                 serviceScope: new AsyncServiceScope(serviceScope.Object),
                 clientProxy: client,
+                descriptors: Descriptors,
                 deferredHostInitializers: DeferredHostInitializers);
             return ValueTask.FromResult(circuitHost);
         }
@@ -786,12 +787,30 @@ public class ComponentHubTest
 
     private sealed class TestHostInitializer(Func<Task> initialize) : IHostInitializer
     {
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
             => initialize();
     }
 
     private sealed class TestBrowserStartupValueProvider(params string[] keys) : IBrowserStartupValueProvider
     {
         public IReadOnlyList<string> Keys { get; } = keys;
+    }
+
+    private sealed class DeferredInitializerRootComponent : IComponent
+    {
+        public static TaskCompletionSource Rendered { get; private set; }
+
+        public static void Reset()
+            => Rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            Rendered.TrySetResult();
+            return Task.CompletedTask;
+        }
     }
 }

@@ -131,10 +131,12 @@ public class WebAssemblyHostTest
             }));
         var host = builder.Build();
         navigationManager = host.Services.GetRequiredService<NavigationManager>();
+        var initializerCollection = host.Services.GetRequiredService<HostInitializerCollection>();
 
         await host.RunAsyncCore(cancellationTokenSource.Token, new TestSatelliteResourcesLoader());
 
         Assert.Equal(["lower", "first-tie", "second-tie", "navigation"], calls);
+        Assert.Same(initializerCollection, host.Services.GetRequiredService<HostInitializerCollection>());
     }
 
     [Fact]
@@ -439,7 +441,7 @@ public class WebAssemblyHostTest
 
         public bool RequiresJSInterop => requiresJSInterop;
 
-        public Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);

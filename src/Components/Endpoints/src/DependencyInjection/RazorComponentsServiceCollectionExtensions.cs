@@ -73,7 +73,8 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IHostStartupValues>(
             static services => services.GetRequiredKeyedService<IHostStartupValues>(typeof(IHostStartupValues)));
         services.TryAddEnumerable(
-            ServiceDescriptor.Scoped<IHostInitializer, NavigationManagerInitializer>());
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+        services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHttpContextStartupValueProvider, NavigationHttpContextStartupValueProvider>());
         services.TryAddEnumerable(

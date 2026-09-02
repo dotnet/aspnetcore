@@ -7,18 +7,17 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Hosting;
 
-internal sealed class NavigationManagerJSRuntimeInitializer(
-    IServiceProvider services,
-    InteractiveServerContext context) : IHostInitializer
+internal sealed class NavigationManagerJSRuntimeInitializer : IHostInitializer
 {
     public int Order => -150;
 
     public bool RequiresJSInterop => true;
 
-    public Task InitializeAsync(CancellationToken cancellationToken = default)
+    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var context = services.GetRequiredService<InteractiveServerContext>();
         if (!context.IsInteractive)
         {
             return Task.CompletedTask;

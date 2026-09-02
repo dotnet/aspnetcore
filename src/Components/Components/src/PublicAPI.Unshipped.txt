@@ -33,7 +33,7 @@ Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> v
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
 Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
 Microsoft.AspNetCore.Components.Hosting.IHostInitializer
-Microsoft.AspNetCore.Components.Hosting.IHostInitializer.InitializeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Hosting.IHostInitializer.InitializeAsync(System.IServiceProvider! services, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Hosting.IHostInitializer.Order.get -> int
 Microsoft.AspNetCore.Components.Hosting.IHostInitializer.RequiresJSInterop.get -> bool
 Microsoft.AspNetCore.Components.Hosting.IHostStartupValues

@@ -19,6 +19,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly ILoggerFactory _loggerFactory;
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
+    private readonly HostInitializerCollection _hostInitializers;
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
 
@@ -27,11 +28,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
         CircuitMetrics circuitMetrics,
+        HostInitializerCollection hostInitializers,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
         _loggerFactory = loggerFactory;
         _circuitIdFactory = circuitIdFactory;
+        _hostInitializers = hostInitializers;
         _options = options.Value;
         _logger = _loggerFactory.CreateLogger<CircuitFactory>();
 
@@ -64,24 +67,29 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         IHostInitializer[] deferredHostInitializers;
         try
         {
-            var hostInitializers = scope.ServiceProvider.GetServices<IHostInitializer>()
-                .OrderBy(initializer => initializer.Order)
-                .ToArray();
+            var hostInitializers = _hostInitializers.Initializers;
 
-            var firstDeferredInitializerIndex = Array.FindIndex(
-                hostInitializers,
-                initializer => initializer.RequiresJSInterop);
-            var initializersToRun = firstDeferredInitializerIndex < 0
-                ? hostInitializers
-                : hostInitializers[..firstDeferredInitializerIndex];
-            foreach (var initializer in initializersToRun)
+            var firstDeferredInitializerIndex = -1;
+            for (var i = 0; i < hostInitializers.Length; i++)
             {
-                await initializer.InitializeAsync(cancellationToken);
+                if (hostInitializers[i].RequiresJSInterop)
+                {
+                    firstDeferredInitializerIndex = i;
+                    break;
+                }
+            }
+
+            var initializersToRun = firstDeferredInitializerIndex < 0
+                ? hostInitializers.Length
+                : firstDeferredInitializerIndex;
+            for (var i = 0; i < initializersToRun; i++)
+            {
+                await hostInitializers[i].InitializeAsync(scope.ServiceProvider, cancellationToken);
             }
 
             deferredHostInitializers = firstDeferredInitializerIndex < 0
                 ? []
-                : hostInitializers[firstDeferredInitializerIndex..];
+                : hostInitializers.AsSpan(firstDeferredInitializerIndex..).ToArray();
         }
         catch
         {
