@@ -378,17 +378,7 @@ internal sealed class OpenApiSchemaService(
             // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
             foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
-                if (propertyValue is OpenApiSchema targetSchema &&
-                    targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
-                    isNullableProperty is true)
-                {
-                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
-                }
-                else
-                {
-                    schema.Properties[key] = resolvedProperty;
-                }
+                schema.Properties[key] = ResolveReferenceForSchemaWithNullableWrapper(document, propertyValue, rootSchemaId);
             }
         }
 
@@ -410,12 +400,12 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.AdditionalProperties is not null)
         {
-            schema.AdditionalProperties = ResolveReferenceForSchema(document, schema.AdditionalProperties, rootSchemaId);
+            schema.AdditionalProperties = ResolveReferenceForSchemaWithNullableWrapper(document, schema.AdditionalProperties, rootSchemaId);
         }
 
         if (schema.Items is not null)
         {
-            schema.Items = ResolveReferenceForSchema(document, schema.Items, rootSchemaId);
+            schema.Items = ResolveReferenceForSchemaWithNullableWrapper(document, schema.Items, rootSchemaId);
         }
 
         if (schema.Not is not null)
@@ -429,6 +419,16 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
+    }
+
+    private static IOpenApiSchema ResolveReferenceForSchemaWithNullableWrapper(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId)
+    {
+        var resolvedSchema = ResolveReferenceForSchema(document, inputSchema, rootSchemaId);
+        return inputSchema is OpenApiSchema schema &&
+            schema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
+            isNullableProperty is true
+            ? resolvedSchema.CreateOneOfNullableWrapper()
+            : resolvedSchema;
     }
 
     private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
