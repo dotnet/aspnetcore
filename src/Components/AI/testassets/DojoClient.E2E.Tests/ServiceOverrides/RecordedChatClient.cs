@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using AGUI.Abstractions;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Extensions.AI;
 
@@ -81,7 +83,7 @@ internal sealed class RecordedChatClient : IChatClient
     internal static string GetLockKey(string lastUserMessage, string frameName)
         => $"replay:{lastUserMessage}:{frameName}";
 
-    private static void AssertRequest(
+    private void AssertRequest(
         RecordedCall call,
         IReadOnlyList<ChatMessage> messages,
         ChatOptions? options)
@@ -113,6 +115,50 @@ internal sealed class RecordedChatClient : IChatClient
                 throw new InvalidOperationException(
                     $"Expected tool results [{string.Join(", ", call.ToolResultCallIds)}], " +
                     $"received [{string.Join(", ", actualCallIds)}].");
+            }
+
+            if (call.ToolResults is not null)
+            {
+                var actualResults = messages
+                    .Where(message => message.Role == ChatRole.Tool)
+                    .SelectMany(message => message.Contents)
+                    .OfType<FunctionResultContent>()
+                    .Select(result => new RecordedToolResult
+                    {
+                        CallId = result.CallId,
+                        Result = result.Result?.ToString() ?? "",
+                    })
+                    .ToList();
+                if (!actualResults.Select(result => (result.CallId, result.Result))
+                    .SequenceEqual(call.ToolResults.Select(result => (result.CallId, result.Result))))
+                {
+                    throw new InvalidOperationException(
+                        $"Expected tool results " +
+                        $"[{string.Join(", ", call.ToolResults.Select(result => $"{result.CallId}: {result.Result}"))}], " +
+                        $"received [{string.Join(", ", actualResults.Select(result => $"{result.CallId}: {result.Result}"))}].");
+                }
+            }
+        }
+
+        if (call.State is { } || call.RequireStableThread)
+        {
+            var input = options?.AdditionalProperties?.Values
+                .OfType<RunAgentInput>()
+                .SingleOrDefault()
+                ?? throw new InvalidOperationException("Expected an AG-UI RunAgentInput.");
+
+            if (call.State is { } expectedState &&
+                (input.State is not { } actualState ||
+                    !JsonElement.DeepEquals(expectedState, actualState)))
+            {
+                throw new InvalidOperationException(
+                    $"Expected state {expectedState.GetRawText()}, received " +
+                    $"{input.State?.GetRawText() ?? "<null>"}.");
+            }
+
+            if (call.RequireStableThread)
+            {
+                _script.AssertStableThread(input.ThreadId);
             }
         }
     }

@@ -6,6 +6,10 @@ Microsoft.AspNetCore.Components.AI.AgentBoundary.AgentBoundary() -> void
 Microsoft.AspNetCore.Components.AI.AgentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.AI.AgentBoundary.ChildContent.set -> void
 Microsoft.AspNetCore.Components.AI.AgentBoundary.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.AgentState<T>
+Microsoft.AspNetCore.Components.AI.AgentState<T>.OnChanged(System.Action! callback) -> System.IDisposable!
+Microsoft.AspNetCore.Components.AI.AgentState<T>.Value.get -> T!
+Microsoft.AspNetCore.Components.AI.AgentState<T>.Value.set -> void
 Microsoft.AspNetCore.Components.AI.AgentContext
 Microsoft.AspNetCore.Components.AI.AgentContext.AgentContext(Microsoft.AspNetCore.Components.AI.UIAgent! agent) -> void
 Microsoft.AspNetCore.Components.AI.AgentContext.CancelAsync() -> System.Threading.Tasks.Task!
@@ -15,16 +19,30 @@ Microsoft.AspNetCore.Components.AI.AgentContext.RegisterOnBlockAdded(System.Acti
 Microsoft.AspNetCore.Components.AI.AgentContext.RegisterOnStatusChanged(System.Action<Microsoft.AspNetCore.Components.AI.ConversationStatus>! callback) -> System.IDisposable!
 Microsoft.AspNetCore.Components.AI.AgentContext.RegisterOnTurnAdded(System.Action<Microsoft.AspNetCore.Components.AI.ConversationTurn!>! callback) -> System.IDisposable!
 Microsoft.AspNetCore.Components.AI.AgentContext.RetryAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AI.AgentContext.RestoreAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.AgentContext.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.AgentContext.SendMessageAsync(string! text, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.AgentContext.Status.get -> Microsoft.AspNetCore.Components.AI.ConversationStatus
 Microsoft.AspNetCore.Components.AI.AgentContext.Turns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ConversationTurn!>!
+Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Approved = 1 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Pending = 0 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Rejected = 2 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock.ActivityContentBlock() -> void
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock.ActivityType.get -> string!
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock.ActivityType.set -> void
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock.Content.get -> System.Text.Json.JsonElement
+Microsoft.AspNetCore.Components.AI.ActivityContentBlock.Content.set -> void
+Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>
+Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.ActivityHandler() -> void
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Active = 1 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Inactive = 2 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Pending = 0 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockMappingContext
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.AllHandled.get -> bool
+Microsoft.AspNetCore.Components.AI.BlockMappingContext.CreateInnerBlock(Microsoft.Extensions.AI.AIContent! content) -> Microsoft.AspNetCore.Components.AI.ContentBlock?
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.MarkHandled(Microsoft.Extensions.AI.AIContent! content) -> void
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.MarkUpdateHandled() -> void
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.UnhandledContents.get -> Microsoft.AspNetCore.Components.AI.BlockMappingContext.UnhandledContentsEnumerable
@@ -117,6 +135,18 @@ Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode() -> void
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.ApprovalRequest.get -> Microsoft.Extensions.AI.ToolApprovalRequestContent!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Approve() -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.HasResult.get -> bool
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.ContentBlock!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Reject(string? reason = null) -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Status.get -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
@@ -136,6 +166,16 @@ Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode() -> void
 Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode(string! value) -> void
 Microsoft.AspNetCore.Components.AI.HtmlNode.Value.get -> string!
 Microsoft.AspNetCore.Components.AI.HtmlNode.Value.set -> void
+Microsoft.AspNetCore.Components.AI.IInteractiveBlock
+Microsoft.AspNetCore.Components.AI.IInteractiveBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
+Microsoft.AspNetCore.Components.AI.IConversationThread
+Microsoft.AspNetCore.Components.AI.IConversationThread.AppendUpdate(Microsoft.Extensions.AI.ChatResponseUpdate! update) -> void
+Microsoft.AspNetCore.Components.AI.IConversationThread.AppendUserMessage(Microsoft.Extensions.AI.ChatMessage! message) -> void
+Microsoft.AspNetCore.Components.AI.IConversationThread.CompleteTurn() -> void
+Microsoft.AspNetCore.Components.AI.IConversationThread.ConversationId.get -> string?
+Microsoft.AspNetCore.Components.AI.IConversationThread.GetUpdates() -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate!>!
+Microsoft.AspNetCore.Components.AI.IConversationThread.IsStateful.get -> bool
+Microsoft.AspNetCore.Components.AI.IConversationThread.ThreadId.get -> string!
 Microsoft.AspNetCore.Components.AI.ImageNode
 Microsoft.AspNetCore.Components.AI.ImageNode.Alt.get -> string?
 Microsoft.AspNetCore.Components.AI.ImageNode.Alt.set -> void
@@ -232,6 +272,11 @@ Microsoft.AspNetCore.Components.AI.StrikethroughNode
 Microsoft.AspNetCore.Components.AI.StrikethroughNode.StrikethroughNode() -> void
 Microsoft.AspNetCore.Components.AI.StrongNode
 Microsoft.AspNetCore.Components.AI.StrongNode.StrongNode() -> void
+Microsoft.AspNetCore.Components.AI.StateMapperContext
+Microsoft.AspNetCore.Components.AI.StateMapperContext.MarkHandled(Microsoft.Extensions.AI.AIContent! content) -> void
+Microsoft.AspNetCore.Components.AI.StateMapperContext.SetState(object! value) -> void
+Microsoft.AspNetCore.Components.AI.StateMapperContext.UnhandledContents.get -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent!>!
+Microsoft.AspNetCore.Components.AI.StateMapperContext.Update.get -> Microsoft.Extensions.AI.ChatResponseUpdate!
 Microsoft.AspNetCore.Components.AI.TableCellNode
 Microsoft.AspNetCore.Components.AI.TableCellNode.TableCellNode() -> void
 Microsoft.AspNetCore.Components.AI.TableColumnAlignment
@@ -265,28 +310,46 @@ Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.AI.ToolResultAttribute.ToolResultAttribute() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent
 Microsoft.AspNetCore.Components.AI.UIAgent.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.UIAgent.RestoreAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ContentBlock!>!>!
 Microsoft.AspNetCore.Components.AI.UIAgent.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, Microsoft.Extensions.AI.ChatOptions! chatOptions) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, Microsoft.Extensions.AI.ChatOptions! chatOptions, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions!>? configure) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions!>? configure, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.State.get -> Microsoft.AspNetCore.Components.AI.AgentState<TState!>!
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, Microsoft.Extensions.AI.ChatOptions! chatOptions, TState? initialState = null) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState!>!>! configure, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory, TState? initialState = null) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, System.Action<Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState!>!>! configure, TState? initialState = null) -> void
+Microsoft.AspNetCore.Components.AI.UIAgent<TState>.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient, TState? initialState = null) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>! handler) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
+Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState>
+Microsoft.AspNetCore.Components.AI.UIAgentOptions<TState>.State.get -> Microsoft.AspNetCore.Components.AI.AgentState<TState!>!
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Action<Microsoft.AspNetCore.Components.AI.StateMapperContext!>?
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.set -> void
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.Thread.get -> Microsoft.AspNetCore.Components.AI.IConversationThread?
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.Thread.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.UIAgentOptions() -> void
 Microsoft.AspNetCore.Components.AI.UIActionBlock
 Microsoft.AspNetCore.Components.AI.UIActionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
 Microsoft.AspNetCore.Components.AI.UIActionBlock.InvokeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.UIActionBlock.IsComplete.get -> bool
 Microsoft.AspNetCore.Components.AI.UIActionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
 Microsoft.AspNetCore.Components.AI.UIActionBlock.ToolName.get -> string!
 abstract Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
+abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryCreateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state) -> bool
+abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryUpdateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state, out bool isCompleted) -> bool
+override sealed Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TBlock!>
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnParametersSet() -> void
+virtual Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.OnContentUpdated(TBlock! state) -> void
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Complete() -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Emit(Microsoft.AspNetCore.Components.AI.ContentBlock! block, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Pass() -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>

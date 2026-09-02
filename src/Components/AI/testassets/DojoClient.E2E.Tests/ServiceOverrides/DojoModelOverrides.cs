@@ -28,6 +28,28 @@ internal class DojoModelOverrides
             new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
     }
 
+    public static void HumanInTheLoop(IServiceCollection services)
+        => AddRecordedModel(services, "HumanInTheLoop.recording.json");
+
+    public static void ToolBasedGenerativeUI(IServiceCollection services)
+        => AddRecordedModel(services, "ToolBasedGenerativeUI.recording.json");
+
+    public static void AgenticGenerativeUI(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("AgenticGenerativeUI.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddScoped<IChatClient>(sp =>
+            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
+    }
+
+    public static void SharedState(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("SharedState.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddScoped<IChatClient>(sp =>
+            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
+    }
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));

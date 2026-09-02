@@ -1,3 +1,7 @@
+nav-menu {
+    display: contents;
+}
+
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
