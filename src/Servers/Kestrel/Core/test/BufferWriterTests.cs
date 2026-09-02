@@ -171,11 +171,12 @@ public class BufferWriterTests : IDisposable
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
 
         writer.Write(new byte[] { 1, 2, 3 });
+        Assert.Equal(initialLength - 3, writer.Span.Length);
+
         writer.Commit();
 
         Assert.Equal(3, writer.BytesCommitted);
-        Assert.Equal(initialLength - 3, writer.Span.Length);
-        Assert.Equal(Pipe.Writer.GetMemory().Length, writer.Span.Length);
+        Assert.True(writer.Span.IsEmpty);
         Assert.Equal(new byte[] { 1, 2, 3 }, Read());
     }
 
