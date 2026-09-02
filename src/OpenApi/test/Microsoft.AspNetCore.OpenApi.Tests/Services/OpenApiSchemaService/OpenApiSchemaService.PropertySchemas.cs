@@ -323,6 +323,34 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiSchema_HandlesNullableComponentizedCollectionElementsWithOneOf()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/api", (NullableCollectionElementPropertiesModel model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var nullableStatusesProperty = schema.Properties["nullableStatuses"];
+            Assert.Equal(JsonSchemaType.Array, nullableStatusesProperty.Type);
+            Assert.Collection(nullableStatusesProperty.Items.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id));
+
+            var nullableTodosProperty = schema.Properties["nullableTodos"];
+            Assert.Equal(JsonSchemaType.Array, nullableTodosProperty.Type);
+            Assert.Collection(nullableTodosProperty.Items.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiSchema_HandlesNullablePropertiesWithValidationAttributesAndNullInType()
     {
         // Arrange
@@ -821,6 +849,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         public List<Todo>? NullableTodoList { get; set; }
         public Todo[]? NullableTodoArray { get; set; }
         public Dictionary<string, Todo>? NullableDictionary { get; set; }
+    }
+
+    private class NullableCollectionElementPropertiesModel
+    {
+        public List<Status?> NullableStatuses { get; set; } = [];
+        public List<Todo?> NullableTodos { get; set; } = [];
     }
 
     private class NullableEnumPropertiesModel

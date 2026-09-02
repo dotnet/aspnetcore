@@ -829,6 +829,40 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_HandlesNullableComponentizedArrayElementsWithOneOf()
+    {
+        var builder = CreateBuilder();
+
+#nullable enable
+        static Status?[] GetStatuses() => [Status.Pending, null];
+        static Todo?[] GetTodos() => [new Todo(1, "Test Title", true, DateTime.Now), null];
+        builder.MapGet("/statuses", GetStatuses);
+        builder.MapGet("/todos", GetTodos);
+#nullable restore
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var statusesOperation = document.Paths["/statuses"].Operations[HttpMethod.Get];
+            var statusesResponse = Assert.Single(statusesOperation.Responses);
+            Assert.True(statusesResponse.Value.Content.TryGetValue("application/json", out var statusesMediaType));
+            var statusesSchema = statusesMediaType.Schema;
+            Assert.Equal(JsonSchemaType.Array, statusesSchema.Type);
+            Assert.Collection(statusesSchema.Items.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id));
+
+            var todosOperation = document.Paths["/todos"].Operations[HttpMethod.Get];
+            var todosResponse = Assert.Single(todosOperation.Responses);
+            Assert.True(todosResponse.Value.Content.TryGetValue("application/json", out var todosMediaType));
+            var todosSchema = todosMediaType.Schema;
+            Assert.Equal(JsonSchemaType.Array, todosSchema.Type);
+            Assert.Collection(todosSchema.Items.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_HandlesGenericType()
     {
         // Arrange
