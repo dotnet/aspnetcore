@@ -44,6 +44,7 @@
 |  __`ASP0036`__ | Validatable property or its type on an endpoint parameter type is not accessible |
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
+|  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
 |  __`ASP0040`__ | \[ValidatableType] is applied to an open generic type |
 
 ### API (`API1000-API1003`)

@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -783,6 +786,129 @@ public class CascadingParameterTest
     }
 
     [Fact]
+    public async Task HotReloadRefreshesCascadingParametersForRetainedComponents()
+    {
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Hello", isFixed: true);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
+
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadCascadingParameterConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+
+        Assert.Null(component.Value);
+        Assert.Equal(1, component.NumRenders);
+
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal("Hello", component.Value);
+        Assert.Equal(2, component.NumRenders);
+    }
+
+    [Fact]
+    public async Task HotReloadRefreshesCascadingParameterSubscriptions()
+    {
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadCascadingParameterAttribute>("Initial value", isFixed: false);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
+
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadCascadingParameterConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal(1, supplier.SubscribeCount);
+        Assert.Equal(0, supplier.UnsubscribeCount);
+        Assert.Equal(1, supplier.SubscriberCount);
+
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal(2, supplier.SubscribeCount);
+        Assert.Equal(1, supplier.UnsubscribeCount);
+        Assert.Equal(1, supplier.SubscriberCount);
+
+        supplier.Value = "Updated value";
+        await supplier.NotifyChangedAsync();
+
+        Assert.Equal("Updated value", component.Value);
+
+        supplier.AcceptRefreshedAttributes = false;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal(2, supplier.SubscribeCount);
+        Assert.Equal(2, supplier.UnsubscribeCount);
+        Assert.Equal(0, supplier.SubscriberCount);
+    }
+
+    [Fact]
+    public async Task HotReloadDoesNotRedeliverSingleDeliveryParametersToRetainedComponents()
+    {
+        var supplier = new HotReloadCascadingValueSupplier<HotReloadSingleDeliveryCascadingParameterAttribute>("Restored value", isFixed: true);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(supplier);
+
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var retainedComponent = new HotReloadSingleDeliveryParameterConsumer();
+        var retainedComponentId = renderer.AssignRootComponentId(retainedComponent);
+        renderer.RenderRootComponent(retainedComponentId);
+
+        supplier.AcceptRefreshedAttributes = true;
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal("Initial value", retainedComponent.Value);
+        Assert.Equal(0, supplier.GetCurrentValueCount);
+
+        var newComponent = new HotReloadSingleDeliveryParameterConsumer();
+        var newComponentId = renderer.AssignRootComponentId(newComponent);
+        renderer.RenderRootComponent(newComponentId);
+
+        Assert.Equal("Restored value", newComponent.Value);
+        Assert.Equal(1, supplier.GetCurrentValueCount);
+    }
+
+    [Fact]
+    public async Task HotReloadPreservesCurrentPersistentStateValue()
+    {
+        var persistentComponentState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        persistentComponentState.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var services = new ServiceCollection();
+        services.AddSingleton<ICascadingValueSupplier>(serviceProvider =>
+            new PersistentStateValueProvider(
+                persistentComponentState,
+                NullLogger<PersistentStateValueProvider>.Instance,
+                serviceProvider));
+
+        await using var renderer = new TestRenderer(services.BuildServiceProvider());
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+        var component = new HotReloadPersistentStateConsumer();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        component.Value = "Current value";
+
+        hotReloadManager.TriggerOnDeltaApplied();
+        await renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
+
+        Assert.Equal("Current value", component.Value);
+    }
+
+    [Fact]
     public void CanUseTryAddPatternForCascadingValuesInServiceCollection_ValueFactory()
     {
         // Arrange
@@ -864,6 +990,103 @@ public class CascadingParameterTest
     private class SingleDeliveryValue(string text)
     {
         public string Text => text;
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    private class HotReloadCascadingParameterAttribute : CascadingParameterAttributeBase
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    private class HotReloadSingleDeliveryCascadingParameterAttribute : CascadingParameterAttributeBase
+    {
+        internal override bool SingleDelivery => true;
+    }
+
+    private sealed class HotReloadCascadingValueSupplier<TAttribute>(object value, bool isFixed) : ICascadingValueSupplier
+        where TAttribute : CascadingParameterAttributeBase
+    {
+        private readonly HashSet<ComponentState> _subscribers = [];
+        private TAttribute _initialAttribute;
+
+        public bool AcceptRefreshedAttributes { get; set; }
+        public int GetCurrentValueCount { get; private set; }
+        public bool IsFixed => isFixed;
+        public object Value { get; set; } = value;
+        public int SubscribeCount { get; private set; }
+        public int SubscriberCount => _subscribers.Count;
+        public int UnsubscribeCount { get; private set; }
+
+        public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
+        {
+            if (parameterInfo.Attribute is not TAttribute attribute)
+            {
+                return false;
+            }
+
+            _initialAttribute ??= attribute;
+            return AcceptRefreshedAttributes && !ReferenceEquals(_initialAttribute, attribute);
+        }
+
+        public object GetCurrentValue(object key, in CascadingParameterInfo parameterInfo)
+        {
+            GetCurrentValueCount++;
+            return Value;
+        }
+
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        {
+            SubscribeCount++;
+            _subscribers.Add(subscriber);
+        }
+
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        {
+            UnsubscribeCount++;
+            _subscribers.Remove(subscriber);
+        }
+
+        public Task NotifyChangedAsync()
+        {
+            var tasks = _subscribers
+                .Select(subscriber => subscriber.Renderer.Dispatcher.InvokeAsync(
+                    () => subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound)))
+                .ToArray();
+
+            return Task.WhenAll(tasks);
+        }
+    }
+
+    private sealed class HotReloadCascadingParameterConsumer : AutoRenderComponent
+    {
+        [HotReloadCascadingParameter]
+        public string Value { get; set; }
+
+        public int NumRenders { get; private set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            NumRenders++;
+            builder.AddContent(0, Value);
+        }
+    }
+
+    private sealed class HotReloadSingleDeliveryParameterConsumer : AutoRenderComponent
+    {
+        [HotReloadSingleDeliveryCascadingParameter]
+        public string Value { get; set; } = "Initial value";
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Value);
+    }
+
+    private sealed class HotReloadPersistentStateConsumer : AutoRenderComponent
+    {
+        [PersistentState]
+        public string Value { get; set; } = "Initial value";
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Value);
     }
 
     private class SingleDeliveryCascadingParameterAttribute : CascadingParameterAttributeBase
