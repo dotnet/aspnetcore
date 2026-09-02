@@ -35,6 +35,7 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <Reference Include="Microsoft.Extensions.WebEncoders" />
     <Reference Include="Newtonsoft.Json.Bson" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
 </Project>

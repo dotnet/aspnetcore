@@ -59,13 +59,5 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
             Assert.Equal("HubConnectionBuilder allows creation only of a single instance of HubConnection.", ex.Message);
         }
-
-        [Fact]
-        public void AddMessagePackProtocolSetsHubProtocolToMsgPack()
-        {
-            var serviceProvider = new HubConnectionBuilder().AddMessagePackProtocol().Services.BuildServiceProvider();
-
-            Assert.IsType<MessagePackHubProtocol>(serviceProvider.GetService<IHubProtocol>());
-        }
     }
 }

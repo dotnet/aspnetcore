@@ -20,6 +20,64 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.2' ">
     <PackagesInPatch>
+      Microsoft.Extensions.Identity.Stores;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.3' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.3' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.HttpOverrides;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.4' ">
+    <PackagesInPatch>
+      Microsoft.Net.Http.Headers;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.5' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.HttpOverrides;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.6' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Server.Kestrel.Core;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.7' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.HttpOverrides;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <!-- We shipped all packages in 2.3.8. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.8' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <!-- We shipped all packages in 2.3.9. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.9' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <!-- We shipped all packages in 2.3.10. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.10' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <!-- We shipped all packages in 2.3.11. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.11' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.12' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.13' ">
+    <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

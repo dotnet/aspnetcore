@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Reference Include="rzc" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
     <Reference Include="Microsoft.AspNetCore.Razor.Test.Common" />
   </ItemGroup>
 

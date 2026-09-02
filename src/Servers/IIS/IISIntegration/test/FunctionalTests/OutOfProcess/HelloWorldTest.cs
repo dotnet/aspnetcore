@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net462" : "netcoreapp2.1",
                     ApplicationType = applicationType,
                     Configuration =
 #if DEBUG

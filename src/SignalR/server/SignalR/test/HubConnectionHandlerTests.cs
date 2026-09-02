@@ -8,8 +8,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using MessagePack;
-using MessagePack.Formatters;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
@@ -168,29 +166,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.NotNull(client.HandshakeResponseMessage);
                 Assert.Equal("The protocol 'CustomProtocol' is not supported.", client.HandshakeResponseMessage.Error);
-
-                client.Dispose();
-
-                await connectionHandlerTask.OrTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task HandshakeFailureFromUnsupportedFormatSendsResponseWithError()
-        {
-            var hubProtocolMock = new Mock<IHubProtocol>();
-            hubProtocolMock.Setup(m => m.Name).Returns("CustomProtocol");
-
-            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
-
-            using (var client = new TestClient(protocol: new MessagePackHubProtocol()))
-            {
-                client.SupportedFormats = TransferFormat.Text;
-
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                Assert.NotNull(client.HandshakeResponseMessage);
-                Assert.Equal("Cannot use the 'messagepack' protocol on the current transport. The transport does not support 'Binary' transfer format.", client.HandshakeResponseMessage.Error);
 
                 client.Dispose();
 
@@ -1507,43 +1482,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task CanSendToConnectionsWithDifferentProtocols()
-        {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            using (var client1 = new TestClient(protocol: new JsonHubProtocol()))
-            using (var client2 = new TestClient(protocol: new MessagePackHubProtocol()))
-            {
-                var firstConnectionHandlerTask = await client1.ConnectAsync(connectionHandler);
-                var secondConnectionHandlerTask = await client2.ConnectAsync(connectionHandler);
-
-                await client1.Connected.OrTimeout();
-                await client2.Connected.OrTimeout();
-
-                var sentMessage = "From Json";
-
-                await client1.SendInvocationAsync(nameof(MethodHub.BroadcastMethod), sentMessage);
-                var message1 = await client1.ReadAsync().OrTimeout();
-                var message2 = await client2.ReadAsync().OrTimeout();
-
-                var completion1 = message1 as InvocationMessage;
-                Assert.NotNull(completion1);
-                Assert.Equal(sentMessage, completion1.Arguments[0]);
-                var completion2 = message2 as InvocationMessage;
-                Assert.NotNull(completion2);
-                // Argument[0] is a 'MsgPackObject' with a string internally, ToString to compare it
-                Assert.Equal(sentMessage, completion2.Arguments[0].ToString());
-
-                client1.Dispose();
-                client2.Dispose();
-
-                await firstConnectionHandlerTask.OrTimeout();
-                await secondConnectionHandlerTask.OrTimeout();
-            }
-        }
-
         public static IEnumerable<object[]> StreamingMethodAndHubProtocols
         {
             get
@@ -1695,42 +1633,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task HubOptionsCanUseCustomMessagePackSettings()
-        {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-            {
-                services.AddSignalR()
-                    .AddMessagePackProtocol(options =>
-                    {
-                        options.FormatterResolvers.Insert(0, new CustomFormatter());
-                    });
-            });
-
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
-            using (var client = new TestClient(protocol: new MessagePackHubProtocol(msgPackOptions)))
-            {
-                client.SupportedFormats = TransferFormat.Binary;
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                await client.Connected.OrTimeout();
-
-                await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
-
-                var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
-
-                var result = message.Arguments[0] as Dictionary<object, object>;
-                Assert.Equal("formattedString", result["Message"]);
-                Assert.Equal("formattedString", result["paramName"]);
-
-                client.Dispose();
-
-                await connectionHandlerTask.OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task ConnectionUserIdIsAssignedByUserIdProvider()
         {
             var firstRequest = true;
@@ -1778,50 +1680,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.IsType<CompletionMessage>(client2.TryRead());
                 Assert.IsType<CloseMessage>(client2.TryRead());
                 Assert.Null(client2.TryRead());
-            }
-        }
-
-        private class CustomFormatter : IFormatterResolver
-        {
-            public IMessagePackFormatter<T> GetFormatter<T>()
-            {
-                if (typeof(T) == typeof(string))
-                {
-                    return new StringFormatter<T>();
-                }
-                return null;
-            }
-
-            private class StringFormatter<T> : IMessagePackFormatter<T>
-            {
-                public T Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
-                {
-                    // this method isn't used in our tests
-                    readSize = 0;
-                    return default;
-                }
-
-                public int Serialize(ref byte[] bytes, int offset, T value, IFormatterResolver formatterResolver)
-                {
-                    // string of size 15
-                    bytes[offset] = 0xAF;
-                    bytes[offset + 1] = (byte)'f';
-                    bytes[offset + 2] = (byte)'o';
-                    bytes[offset + 3] = (byte)'r';
-                    bytes[offset + 4] = (byte)'m';
-                    bytes[offset + 5] = (byte)'a';
-                    bytes[offset + 6] = (byte)'t';
-                    bytes[offset + 7] = (byte)'t';
-                    bytes[offset + 8] = (byte)'e';
-                    bytes[offset + 9] = (byte)'d';
-                    bytes[offset + 10] = (byte)'S';
-                    bytes[offset + 11] = (byte)'t';
-                    bytes[offset + 12] = (byte)'r';
-                    bytes[offset + 13] = (byte)'i';
-                    bytes[offset + 14] = (byte)'n';
-                    bytes[offset + 15] = (byte)'g';
-                    return 16;
-                }
             }
         }
 

@@ -94,7 +94,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                     ApplicationBaseUriHint = "http://localhost:0",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.1",
+                    TargetFramework = "net462",
                     Configuration = GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = environment,

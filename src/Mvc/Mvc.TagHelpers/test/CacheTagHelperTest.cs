@@ -492,7 +492,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedContent = new DefaultTagHelperContent();
             expectedContent.SetContent("some-content");
             var tokenSource = new CancellationTokenSource();
-            var cache = new MemoryCache(new MemoryCacheOptions());
+            var cache = new MemoryCache(new MemoryCacheOptions
+            {
+                TrackLinkedCacheEntries = true
+            });
             var cacheEntryOptions = new MemoryCacheEntryOptions()
                 .AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
             var tagHelperContext = new TagHelperContext(

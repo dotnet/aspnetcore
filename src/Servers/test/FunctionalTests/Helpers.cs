@@ -50,7 +50,7 @@ namespace ServerComparison.FunctionalTests
         {
             if (runtimeFlavor == RuntimeFlavor.Clr)
             {
-                return "net461";
+                return "net462";
             }
             else if (runtimeFlavor == RuntimeFlavor.CoreClr)
             {

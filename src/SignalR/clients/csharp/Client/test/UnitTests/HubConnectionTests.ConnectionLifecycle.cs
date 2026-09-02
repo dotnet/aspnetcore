@@ -443,8 +443,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     var startTask = hubConnection.StartAsync(cts.Token);
-                    var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
-                    Assert.Equal("The operation was canceled.", exception.Message);
+                    // We aren't worried about the exact message and it's localized so asserting it is non-trivial.
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
                 }
                 finally
                 {

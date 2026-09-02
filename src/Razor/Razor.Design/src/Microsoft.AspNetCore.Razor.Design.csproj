@@ -42,13 +42,15 @@
 
   <ItemGroup>
     <!-- These files should be signed by aspnet/razor -->
-    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll"  />
-    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll"  />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\Microsoft.CodeAnalysis.dll" PackagePath="tools/Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\Microsoft.CodeAnalysis.CSharp.dll" PackagePath="tools/Microsoft.CodeAnalysis.CSharp.dll" />
     <!-- These files should be signed by dotnet/corefx -->
-    <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
-    <SignedPackageFile Include="rzc.dll" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Newtonsoft.Json.dll" Certificate="3PartySHA2" Visible="false" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" PackagePath="tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" PackagePath="tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\rzc.dll" Certificate="MicrosoftSHA2" PackagePath="tools/rzc.dll" Visible="false" />
+    <SignedPackageFile Include="$(TaskDirNetStandard)Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" PackagePath="tasks/net46/Microsoft.AspNetCore.Razor.Tasks.dll" Visible="false" />
+    <SignedPackageFile Include="$(TaskDirNetStandard)Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" PackagePath="tasks/netstandard2.0/Microsoft.AspNetCore.Razor.Tasks.dll" Visible="false" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)tools\Newtonsoft.Json.dll" Certificate="3PartySHA2" PackagePath="tools/Newtonsoft.Json.dll" Visible="false" />
   </ItemGroup>
 
   <Target Name="_BuildDependencyProjects">

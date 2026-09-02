@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(new[] { null, null, "value" }, result.Values);
-            Assert.Equal(",,value", (string)result);
+            Assert.Equal("value", (string)result);
         }
 
         [Fact]

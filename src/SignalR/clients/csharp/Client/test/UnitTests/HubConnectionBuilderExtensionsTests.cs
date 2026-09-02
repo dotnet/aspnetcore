@@ -109,18 +109,5 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             Assert.IsType<JsonHubProtocol>(resolvedHubProtocol);
         }
-
-        [Fact]
-        public void AddMessagePackProtocolAddsProtocol()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.AddMessagePackProtocol();
-
-            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
-
-            var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
-
-            Assert.IsType<MessagePackHubProtocol>(resolvedHubProtocol);
-        }
     }
 }

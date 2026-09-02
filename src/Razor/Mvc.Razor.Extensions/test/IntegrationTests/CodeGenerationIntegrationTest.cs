@@ -642,7 +642,14 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             var cSharp = document.GetCSharpDocument().GeneratedCode;
 
             var syntaxTree = CSharpSyntaxTree.ParseText(cSharp);
-            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                // Match the runtime Razor compiler's binding-redirect warning suppression.
+                .WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
+                {
+                    { "CS1701", ReportDiagnostic.Suppress },
+                    { "CS1702", ReportDiagnostic.Suppress },
+                    { "CS1705", ReportDiagnostic.Suppress }
+                });
 
             var references = baseCompilation.References.Concat(new[] { baseCompilation.ToMetadataReference() });
             var compilation = CSharpCompilation.Create("CodeGenerationTestAssembly", new[] { syntaxTree }, references, options);

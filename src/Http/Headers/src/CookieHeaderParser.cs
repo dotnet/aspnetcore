@@ -47,6 +47,17 @@ namespace Microsoft.Net.Http.Headers
             CookieHeaderValue result = null;
             if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out result))
             {
+                var separatorIndex = value.IndexOf(';', current);
+                if (separatorIndex > 0)
+                {
+                    // Skip the invalid values and keep trying.
+                    index = separatorIndex;
+                }
+                else
+                {
+                    // No more separators, so we're done.
+                    index = value.Length;
+                }
                 return false;
             }
 
@@ -55,6 +66,17 @@ namespace Microsoft.Net.Http.Headers
             // If we support multiple values and we've not reached the end of the string, then we must have a separator.
             if ((separatorFound && !SupportsMultipleValues) || (!separatorFound && (current < value.Length)))
             {
+                var separatorIndex = value.IndexOf(';', current);
+                if (separatorIndex > 0)
+                {
+                    // Skip the invalid values and keep trying.
+                    index = separatorIndex;
+                }
+                else
+                {
+                    // No more separators, so we're done.
+                    index = value.Length;
+                }
                 return false;
             }
 
@@ -71,7 +93,7 @@ namespace Microsoft.Net.Http.Headers
             separatorFound = false;
             var current = startIndex + HttpRuleParser.GetWhitespaceLength(input, startIndex);
 
-            if ((current == input.Length) || (input[current] != ',' && input[current] != ';'))
+            if ((current == input.Length) || (input[current] != ';'))
             {
                 return current;
             }
@@ -84,8 +106,8 @@ namespace Microsoft.Net.Http.Headers
 
             if (skipEmptyValues)
             {
-                // Most headers only split on ',', but cookies primarily split on ';'
-                while ((current < input.Length) && ((input[current] == ',') || (input[current] == ';')))
+                // Cookies are split on ';'
+                while ((current < input.Length) && (input[current] == ';'))
                 {
                     current++; // skip delimiter.
                     current = current + HttpRuleParser.GetWhitespaceLength(input, current);

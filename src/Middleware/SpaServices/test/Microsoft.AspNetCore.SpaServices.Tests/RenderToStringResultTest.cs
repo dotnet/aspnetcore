@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SpaServices.Tests
             var actualScript = renderToStringResult.CreateGlobalsAssignmentScript();
 
             // Assert
-            var expectedScript = @"window[""Va\u003Cl\u0027u\u0022e""] = JSON.parse(""\u0022\u003C\/tag\u003E\\\u0022\u0027}\u260E\u0022"");";
+            var expectedScript = @"window[""Va\u003Cl\u0027u\u0022e""] = JSON.parse(""\u0022\u003C/tag\u003E\\\u0022\u0027}\u260E\u0022"");";
             Assert.Equal(expectedScript, actualScript);
         }
 

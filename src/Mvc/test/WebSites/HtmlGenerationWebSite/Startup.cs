@@ -14,6 +14,10 @@ namespace HtmlGenerationWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            // CacheTagHelper's nested-scope expiration bubbling relies on linked cache entries, which is
+            // no longer the default in newer Microsoft.Extensions.Caching.Memory versions.
+            services.AddMemoryCache(options => options.TrackLinkedCacheEntries = true);
+
             // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
             // null which is interpreted as true unless element includes an action attribute.
             services.AddMvc().InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);

@@ -30,15 +30,15 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x64.exe" Certificate="MicrosoftSHA2" Visible="false" />
+  <ItemGroup Condition="'$(TargetFramework)'==''">
+    <SignedPackageFile Include="$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Certificate="MicrosoftSHA2" PackagePath="build/netstandard2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll" Visible="false" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net462\win7-x86\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Certificate="MicrosoftSHA2" PackagePath="build/netstandard2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe" Visible="false" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net462\win7-x64\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x64.exe" Certificate="MicrosoftSHA2" PackagePath="build/netstandard2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x64.exe" Visible="false" />
   </ItemGroup>
 
   <Target Name="BuildX64" AfterTargets="AfterBuild" Condition="'$(TargetFramework)'=='net462' AND '$(PlatformTarget)'!='x64'">

@@ -112,6 +112,18 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
+        /*
+         * https://www.rfc-editor.org/rfc/rfc6265#section-4.1.1
+         * cookie-pair       = cookie-name "=" cookie-value
+         * cookie-name       = token
+         * token          = 1*<any CHAR except CTLs or separators>
+           separators     = "(" | ")" | "<" | ">" | "@"
+                          | "," | ";" | ":" | "\" | <">
+                          | "/" | "[" | "]" | "?" | "="
+                          | "{" | "}" | SP | HT
+           CTL            = <any US-ASCII control character
+                            (octets 0 - 31) and DEL (127)>
+         */
         // name=value; name="value"
         internal static bool TryGetCookieLength(StringSegment input, ref int offset, out CookieHeaderValue parsedValue)
         {

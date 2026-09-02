@@ -131,10 +131,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepositoryRoot)src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections" ProjectPath="$(RepositoryRoot)src\SignalR\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Protocols.Json" ProjectPath="$(RepositoryRoot)src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" ProjectPath="$(RepositoryRoot)src\SignalR\common\Protocols.MessagePack\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Common" ProjectPath="$(RepositoryRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Core" ProjectPath="$(RepositoryRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Redis" ProjectPath="$(RepositoryRoot)src\SignalR\server\Redis\src\Microsoft.AspNetCore.SignalR.Redis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepositoryRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
   </ItemGroup>
 </Project>

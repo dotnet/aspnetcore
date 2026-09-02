@@ -9,15 +9,23 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public abstract class Http1MessageBody : MessageBody
     {
+        private static bool AllowKeepAliveAfterCLTE;
+
         private readonly Http1Connection _context;
 
         private volatile bool _canceled;
         private Task _pumpTask;
+
+        static Http1MessageBody()
+        {
+            AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.AllowKeepAliveAfterCLTE", out var value) && value;
+        }
 
         protected Http1MessageBody(Http1Connection context)
             : base(context)
@@ -297,6 +305,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, in transferEncoding);
                 }
 
+                // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
+                // A sender MUST NOT send a Content-Length header field in any message
+                // that contains a Transfer-Encoding header field.
+                // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
+                // If a message is received with both a Transfer-Encoding and a
+                // Content-Length header field, the Transfer-Encoding overrides the
+                // Content-Length. Such a message might indicate an attempt to
+                // perform request smuggling (Section 11.2) or response splitting
+                // (Section 11.1) and ought to be handled as an error. An intermediary
+                // that chooses to forward the message MUST first remove the received
+                // Content-Length field and process the Transfer-Encoding
+                // (as described below) prior to forwarding the message downstream.
+                // We should remove the Content-Length request header in this case, for compatibility
+                // reasons, include x-Content-Length so that the original Content-Length is still available.
+                if (headers.ContentLength.HasValue)
+                {
+                    IHeaderDictionary headerDictionary = headers;
+                    headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+                    headers.ContentLength = null;
+
+                    if (!AllowKeepAliveAfterCLTE)
+                    {
+                        // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                        // A server MAY reject a request that contains both Content-Length
+                        // and Transfer-Encoding or process such a request in accordance
+                        // with the Transfer-Encoding alone. Regardless, the server MUST
+                        // close the connection after responding to such a request to
+                        // avoid the potential attacks.
+                        keepAlive = false;
+                    }
+                }
+
                 return new ForChunkedEncoding(keepAlive, context);
             }
 
@@ -393,6 +433,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // byte consts don't have a data type annotation so we pre-cast it
             private const byte ByteCR = (byte)'\r';
+            private const byte ByteLF = (byte)'\n';
             // "7FFFFFFF\r\n" is the largest chunk size that could be returned as an int.
             private const int MaxChunkPrefixBytes = 10;
 
@@ -400,6 +441,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private long _consumedBytes;
 
             private Mode _mode = Mode.Prefix;
+
+            private static readonly bool InsecureChunkedParsing;
+
+            static ForChunkedEncoding()
+            {
+                InsecureChunkedParsing = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.EnableInsecureChunkedRequestParsing", out var value) && value;
+            }
 
             public ForChunkedEncoding(bool keepAlive, Http1Connection context)
                 : base(context)
@@ -554,16 +602,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
             }
 
+            // https://www.rfc-editor.org/rfc/rfc9112#section-7.1
+            // chunk          = chunk-size [ chunk-ext ] CRLF
+            // chunk-data CRLF
+            // https://www.rfc-editor.org/rfc/rfc9112#section-7.1.1
+            // chunk-ext      = *( BWS ";" BWS chunk-ext-name
+            //                     [BWS "=" BWS chunk-ext-val] )
+            // chunk-ext-name = token
+            // chunk-ext-val  = token / quoted-string
             private void ParseExtension(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
             {
-                // Chunk-extensions not currently parsed
-                // Just drain the data
-                consumed = buffer.Start;
-                examined = buffer.Start;
+                // Chunk-extensions parsed for \r\n and throws for unpaired \r or \n.
 
                 do
                 {
-                    SequencePosition? extensionCursorPosition = buffer.PositionOf(ByteCR);
+                    SequencePosition? extensionCursorPosition;
+                    if (InsecureChunkedParsing)
+                    {
+                        extensionCursorPosition = buffer.PositionOf(ByteCR);
+                    }
+                    else
+                    {
+                        extensionCursorPosition = buffer.PositionOfAny(ByteCR, ByteLF);
+                    }
+
                     if (extensionCursorPosition == null)
                     {
                         // End marker not found yet
@@ -571,13 +633,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         examined = buffer.End;
                         AddAndCheckConsumedBytes(buffer.Length);
                         return;
-                    };
+                    }
 
                     var extensionCursor = extensionCursorPosition.Value;
                     var charsToByteCRExclusive = buffer.Slice(0, extensionCursor).Length;
 
-                    var sufixBuffer = buffer.Slice(extensionCursor);
-                    if (sufixBuffer.Length < 2)
+                    var suffixBuffer = buffer.Slice(extensionCursor);
+                    if (suffixBuffer.Length < 2)
                     {
                         consumed = extensionCursor;
                         examined = buffer.End;
@@ -585,24 +647,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }
 
-                    sufixBuffer = sufixBuffer.Slice(0, 2);
-                    var sufixSpan = sufixBuffer.ToSpan();
+                    suffixBuffer = suffixBuffer.Slice(0, 2);
+                    var suffixSpan = suffixBuffer.ToSpan();
 
-                    if (sufixSpan[1] == '\n')
+                    if (InsecureChunkedParsing
+                        ? (suffixSpan[1] == ByteLF)
+                        : (suffixSpan[0] == ByteCR && suffixSpan[1] == ByteLF))
                     {
                         // We consumed the \r\n at the end of the extension, so switch modes.
                         _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
-                        consumed = sufixBuffer.End;
-                        examined = sufixBuffer.End;
+                        consumed = suffixBuffer.End;
+                        examined = suffixBuffer.End;
                         AddAndCheckConsumedBytes(charsToByteCRExclusive + 2);
                     }
-                    else
+                    else if (InsecureChunkedParsing)
                     {
+                        examined = buffer.Start;
                         // Don't consume suffixSpan[1] in case it is also a \r.
                         buffer = buffer.Slice(charsToByteCRExclusive + 1);
                         consumed = extensionCursor;
                         AddAndCheckConsumedBytes(charsToByteCRExclusive + 1);
+                    }
+                    else
+                    {
+                        consumed = suffixBuffer.End;
+                        examined = suffixBuffer.End;
+                        // We have \rX or \nX, that's an invalid extension.
+                        BadHttpRequestException.Throw(RequestRejectionReason.BadChunkExtension);
                     }
                 } while (_mode == Mode.Extension);
             }

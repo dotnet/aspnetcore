@@ -24,6 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 
   </ItemGroup>
 

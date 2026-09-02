@@ -113,7 +113,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
-    <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />

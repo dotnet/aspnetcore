@@ -17,6 +17,6 @@ namespace FunctionalTests
         {
         }
 
-        protected override DeploymentParameters GetDeploymentParameters() => base.GetDeploymentParameters(RuntimeFlavor.Clr, "net461");
+        protected override DeploymentParameters GetDeploymentParameters() => base.GetDeploymentParameters(RuntimeFlavor.Clr, "net462");
     }
 }

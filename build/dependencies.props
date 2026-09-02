@@ -106,7 +106,6 @@
     <FSharpCorePackageVersion>4.2.3</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.15.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.7</MicrosoftAspNetWebApiClientPackageVersion>
@@ -131,8 +130,8 @@
     <MicrosoftExtensionsDependencyModelPackageVersion>8.0.2</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.7.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
-    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.7.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.7.1</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.7.1</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
     <MicrosoftNETCoreApp10PackageVersion>1.0.16</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.13</MicrosoftNETCoreApp11PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
@@ -200,7 +199,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>8.0.2</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>8.0.4</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>8.0.0</SystemSecurityPermissionsPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>5.0.0</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>8.0.1</SystemServiceProcessServiceControllerPackageVersion>

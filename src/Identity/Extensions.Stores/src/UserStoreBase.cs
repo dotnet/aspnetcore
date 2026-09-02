@@ -1060,6 +1060,10 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(code));
             }
+            if (code.Length == 0)
+            {
+                throw new ArgumentException("Must not be null or empty", nameof(code));
+            }
 
             var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? "";
             var splitCodes = mergedCodes.Split(';');

@@ -36,6 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="EntityFrameworkCore" />
+    <ShippedRepository Include="EntityFrameworkCore" />
   </ItemGroup>
 </Project>

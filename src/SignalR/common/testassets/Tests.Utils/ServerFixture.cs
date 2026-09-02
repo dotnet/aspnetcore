@@ -168,6 +168,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     internal class LogSinkProvider : ILoggerProvider
     {
         private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+        private static readonly IDisposable _emptyScope = new EmptyScope();
 
         public event Action<LogRecord> RecordLogged;
 
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public IDisposable BeginScope<TState>(TState state)
             {
-                return null;
+                return _emptyScope;
             }
 
             public bool IsEnabled(LogLevel logLevel)
@@ -224,6 +225,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 _logSinkProvider.Log(_categoryName, logLevel, eventId, state, exception, formatter);
+            }
+        }
+
+        private class EmptyScope : IDisposable
+        {
+            public void Dispose()
+            {
             }
         }
     }

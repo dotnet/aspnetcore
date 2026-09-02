@@ -5,7 +5,31 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
+  <!--
+    Newer Microsoft.Extensions.* packages (e.g. Microsoft.Extensions.Configuration.Binder 8.x) ship a
+    buildTransitive target that checks TFM compatibility using [MSBuild]::IsTargetFrameworkCompatible, a static
+    method not supported by the legacy MSBuild used to build/run net46x test apps in this branch (MSB4186).
+    That target (and its own compatible analyzer-removal logic below) is gated by this property, so setting it
+    skips the incompatible static-method calls entirely instead of relying on fragile NuGet asset exclusion.
+  -->
+  <PropertyGroup>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
   <Import Project="eng\Baseline.Designer.props" />
+
+  <!--
+    Microsoft.Extensions.Configuration.Binder's source-generator analyzer targets a newer Microsoft.CodeAnalysis
+    than what's available in this branch's legacy toolchain, so CSC fails with CS8032 trying to load it
+    (both in the main build and when net46x test apps are built/run with the SDK's bundled MSBuild). NuGet's
+    analyzer resolution ignores IncludeAssets/ExcludeAssets/PrivateAssets, so the only reliable way to suppress
+    it is to strip it directly from the resolved @(Analyzer) items before compilation.
+  -->
+  <Target Name="RemoveIncompatibleConfigurationBinderAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Extensions.Configuration.Binder.SourceGeneration'" />
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
     <!-- Always include framework metapackages in patch updates. -->
@@ -14,6 +38,13 @@
     
     <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
+
+    <!-- We shipped every package in 2.3.13 -->
+    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '13'">true</IsPackageInThisPatch>
+    
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureKeyVault'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureStorage'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.Redis'))">false</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">

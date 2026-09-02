@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         UnexpectedEndOfRequestContent,
         BadChunkSuffix,
         BadChunkSizeData,
+        BadChunkExtension,
         ChunkedRequestIncomplete,
         InvalidRequestTarget,
         InvalidCharactersInHeaderName,
@@ -32,6 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         MissingHostHeader,
         MultipleHostHeaders,
         InvalidHostHeader,
-        RequestBodyExceedsContentLength
+        RequestBodyExceedsContentLength,
     }
 }

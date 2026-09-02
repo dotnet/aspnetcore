@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             Cache = new MemoryCache(new MemoryCacheOptions
             {
-                SizeLimit = options.Value.SizeLimit
+                SizeLimit = options.Value.SizeLimit,
+                // CacheTagHelper relies on linked entries so child content can invalidate the outer <cache> entry.
+                TrackLinkedCacheEntries = true
             });
         }
 

@@ -12,6 +12,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <Reference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
 </Project>

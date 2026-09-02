@@ -19,6 +19,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
 
     <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

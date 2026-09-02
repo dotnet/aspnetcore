@@ -389,20 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("BadRequest_UnrecognizedHTTPVersion", "detail"), detail);
 
         /// <summary>
-        /// Requests with 'Connection: Upgrade' cannot have content in the request body.
-        /// </summary>
-        internal static string BadRequest_UpgradeRequestCannotHavePayload
-        {
-            get => GetString("BadRequest_UpgradeRequestCannotHavePayload");
-        }
-
-        /// <summary>
-        /// Requests with 'Connection: Upgrade' cannot have content in the request body.
-        /// </summary>
-        internal static string FormatBadRequest_UpgradeRequestCannotHavePayload()
-            => GetString("BadRequest_UpgradeRequestCannotHavePayload");
-
-        /// <summary>
         /// Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.
         /// </summary>
         internal static string FallbackToIPv4Any
@@ -1889,6 +1875,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatBadDeveloperCertificateState()
             => GetString("BadDeveloperCertificateState");
+
+        /// <summary>
+        /// Bad chunk extension.
+        /// </summary>
+        internal static string BadRequest_BadChunkExtension
+        {
+            get => GetString("BadRequest_BadChunkExtension");
+        }
+
+        /// <summary>
+        /// Bad chunk extension.
+        /// </summary>
+        internal static string FormatBadRequest_BadChunkExtension()
+            => GetString("BadRequest_BadChunkExtension");
 
         private static string GetString(string name, params string[] formatterNames)
         {
