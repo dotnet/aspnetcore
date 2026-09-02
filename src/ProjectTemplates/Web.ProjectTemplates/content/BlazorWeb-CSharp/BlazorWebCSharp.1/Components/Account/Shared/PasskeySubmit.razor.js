@@ -41,7 +41,8 @@ async function reauthenticateCredential(signal) {
 }
 
 async function requestCredential(email, mediation, signal) {
-    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?username=${email}`, {
+    const query = new URLSearchParams({ username: email });
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?${query}`, {
         method: 'POST',
         signal,
     });
@@ -51,7 +52,8 @@ async function requestCredential(email, mediation, signal) {
 }
 
 async function registerCredential(email, signal) {
-    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRegistrationOptions?username=${encodeURIComponent(email)}`, {
+    const query = new URLSearchParams({ username: email });
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRegistrationOptions?${query}`, {
         method: 'POST',
         signal,
     });
@@ -112,6 +114,15 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.abortController?.abort();
     }
 
+    getEmail() {
+        const email = new FormData(this.internals.form).get(this.attrs.emailName);
+        if (typeof email !== 'string') {
+            throw new Error('The email address is missing.');
+        }
+
+        return email;
+    }
+
     async obtainCredential(useConditionalMediation, signal) {
         if (!browserSupportsPasskeys) {
             throw new Error('Some passkey features are missing. Please update your browser.');
@@ -122,12 +133,10 @@ customElements.define('passkey-submit', class extends HTMLElement {
         } else if (this.attrs.operation === 'Reauthenticate') {
             return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
-            const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;
-            return await requestCredential(email, mediation, signal);
+            return await requestCredential(this.getEmail(), mediation, signal);
         } else if (this.attrs.operation === 'Register') {
-            const email = new FormData(this.internals.form).get(this.attrs.emailName);
-            return await registerCredential(email, signal);
+            return await registerCredential(this.getEmail(), signal);
         } else {
             throw new Error(`Unknown passkey operation '${this.attrs.operation}'.`);
         }

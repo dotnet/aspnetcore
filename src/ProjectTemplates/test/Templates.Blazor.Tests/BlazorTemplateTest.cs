@@ -458,7 +458,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ClickAsync("text=Sign up with a passkey");
                 await page.WaitForSelectorAsync("text=Error: Username");
 
-                var passkeyUserName = $"{Guid.NewGuid()}@example.com";
+                var passkeyUserName = $"{Guid.NewGuid()}+passkey@example.com";
 
                 // Check that a cancelled ceremony is reported
                 await page.EvaluateAsync("""
@@ -472,7 +472,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     """);
 
                 await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var registrationOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRegistrationOptions?", StringComparison.Ordinal));
                 await page.ClickAsync("text=Sign up with a passkey");
+                var registrationOptionsRequest = await registrationOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", registrationOptionsRequest.Url);
                 await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
 
                 // Now register for real, leaving both password boxes empty
@@ -496,7 +500,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 // The passkey created during registration signs the account in
                 await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var requestOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRequestOptions?", StringComparison.Ordinal));
                 await page.ClickAsync("text=Log in with a passkey");
+                var requestOptionsRequest = await requestOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", requestOptionsRequest.Url);
                 await page.WaitForSelectorAsync("text=Hello, world!");
 
                 // The password page offers to set a password rather than change one, which only
