@@ -37,6 +37,33 @@ __warn() {
 # A 24-byte Server/OK response with a zero HRESULT.
 serverOkResponse="444f544e45545f4950435f5631001800ff00000000000000"
 
+# Use a watchdog when timeout is unavailable, as on a default macOS installation.
+run_with_timeout() {
+  local seconds="$1"
+  local inputFile="$2"
+  shift 2
+
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$seconds" "$@" < "$inputFile"
+    return
+  fi
+
+  "$@" < "$inputFile" &
+  local commandPid=$!
+  (
+    sleep "$seconds"
+    kill "$commandPid" 2>/dev/null
+  ) &
+  local watchdogPid=$!
+  local status=0
+
+  wait "$commandPid" || status=$?
+  kill "$watchdogPid" 2>/dev/null || true
+  wait "$watchdogPid" 2>/dev/null || true
+
+  return "$status"
+}
+
 byte() {
   printf "\\$(printf '%03o' "$1")"
 }
@@ -61,6 +88,7 @@ capture_dump() {
   local path_bytes
   local path_chars
   local packet_size
+  local packet_file
   local response
 
   for candidate in "${TMPDIR:-/tmp}"/dotnet-diagnostic-"${pid}"-*-socket; do
@@ -88,7 +116,13 @@ capture_dump() {
     return 1
   fi
 
-  if ! response="$({
+  # A file preserves the packet as stdin when the fallback runs nc in the background.
+  if ! packet_file="$(mktemp "${TMPDIR:-/tmp}/capture-hang-dump.XXXXXX")"; then
+    echo "Could not create the diagnostics IPC packet for PID $pid." >&2
+    return 1
+  fi
+
+  if ! {
     printf 'DOTNET_IPC_V1\0'
     u16le "$packet_size"
     byte 1 # Dump command set
@@ -101,10 +135,18 @@ capture_dump() {
 
     u32le 1 # Normal/minidump
     u32le 1 # Enable generation diagnostics
-  } | nc -U "$socket" | od -An -v -tx1 | tr -d '[:space:]')"; then
+  } > "$packet_file"; then
+    rm -f "$packet_file"
+    echo "Could not create the diagnostics IPC packet for PID $pid." >&2
+    return 1
+  fi
+
+  if ! response="$(run_with_timeout "$dumpTimeoutSeconds" "$packet_file" nc -U "$socket" | od -An -v -tx1 | tr -d '[:space:]')"; then
+    rm -f "$packet_file"
     echo "The diagnostics IPC request for PID $pid failed." >&2
     return 1
   fi
+  rm -f "$packet_file"
 
   if [ "$response" != "$serverOkResponse" ]; then
     echo "The diagnostics IPC request for PID $pid returned an unexpected response: ${response:-<empty>}." >&2
@@ -115,6 +157,7 @@ capture_dump() {
 # Limit how many processes we dump so that a build hang with many MSBuild nodes
 # cannot blow past the cancel-timeout grace window or the artifact size budget.
 maxDumps="${HANG_DUMP_MAX:-8}"
+dumpTimeoutSeconds="${HANG_DUMP_TIMEOUT_SECONDS:-60}"
 
 wd="${SYSTEM_DEFAULTWORKINGDIRECTORY:-$(pwd -P)}"
 
