@@ -2,5 +2,8 @@
   "author": "Microsoft",
   "name": "Razor コンポーネント",
   "description": "Razor で実装された再利用可能な UI コンポーネント",
+  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/use-code-behind/description": "create component with a code-behind file",
+  "symbols/use-code-behind/displayName": "Use Code Behind",
   "postActions/openInEditor/description": "エディターで Component1.razor を開きます"
 }

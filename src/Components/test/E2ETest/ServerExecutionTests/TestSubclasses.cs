@@ -48,7 +48,6 @@ public class ServerRoutingTest : RoutingTest
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66195")]
     public override void CanNavigateToQueryStringPageWithNoQuery()
         => base.CanNavigateToQueryStringPageWithNoQuery();
 }
@@ -100,21 +99,26 @@ public class ServerVirtualizationTest : VirtualizationTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
     public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
         => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
+    public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+        => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68017")]
+    public override void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+        => base.QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(anchorMode, useItemsProvider);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

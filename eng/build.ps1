@@ -99,6 +99,14 @@ Build the repository in product mode (short: -pb).
 .PARAMETER fromVMR
 Set when building from within the VMR.
 
+.PARAMETER MSBuildMultiThreaded
+Sets MSBuild's multi-threaded mode, i.e. the -mt switch (short: -mt). Opt-in for now, so off unless it is
+explicitly requested.
+
+.PARAMETER NodeReuse
+Sets the nodereuse msbuild parameter. Node reuse is disabled by default in this repository as a workaround for
+issues with custom task assemblies; passing this parameter explicitly overrides that.
+
 .EXAMPLE
 Building both native and managed projects.
 
@@ -201,7 +209,17 @@ param(
     [switch]$fromVMR,
 
     # Passed through to tools.ps1 MSBuild function
+    [bool]$warnAsError = $true,
+
+    # Passed through to tools.ps1 MSBuild function
     [string]$warnNotAsError = '',
+
+    # Passed through to tools.ps1 MSBuild function
+    [Alias('mt')]
+    [bool]$msbuildMultiThreaded = $false,
+
+    # Passed through to tools.ps1 MSBuild function
+    [bool]$nodeReuse = $false,
 
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -341,12 +359,6 @@ $performDotnetBuild = $msBuildEngine -ne 'vs' -and ($BuildJava -or $BuildManaged
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Though VS Code may indicate $nodeReuse is unused, tools.ps1 uses them.
-
-# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
-$nodeReuse = $false
-$env:MSBUILDDISABLENODEREUSE=1
-
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if ($CI -and -not $excludeCIBinarylog) {
@@ -415,6 +427,23 @@ function LocateJava {
     if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
     }
+}
+
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
+  foreach ($argument in $arguments) {
+    if ($argument -ne $null) {
+      $arg = $argument.Trim()
+      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
+        return $arg.Substring('/bl:'.Length)
+      }
+
+      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
+        return $arg.Substring('/binaryLogger:'.Length)
+      }
+    }
+  }
+
+  return $null
 }
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks

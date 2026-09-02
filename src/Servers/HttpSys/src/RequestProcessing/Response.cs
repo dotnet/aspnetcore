@@ -419,7 +419,7 @@ internal sealed class Response
         var statusCanHaveBody = CanSendResponseBody(RequestContext.Response.StatusCode);
 
         // Determine if the connection will be kept alive or closed.
-        var keepConnectionAlive = true;
+        var keepConnectionAlive = Request.KeepAlive;
 
         // An HTTP/1.1 server may also establish persistent connections with
         // HTTP/1.0 clients upon receipt of a Keep-Alive connection token.

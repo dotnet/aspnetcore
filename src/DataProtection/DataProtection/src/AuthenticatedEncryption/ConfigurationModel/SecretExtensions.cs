@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Cryptography;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -30,7 +31,7 @@ internal static unsafe class SecretExtensions
             }
             finally
             {
-                Array.Clear(unprotectedSecretRawBytes, 0, unprotectedSecretRawBytes.Length);
+                CryptoUtil.ZeroMemory(unprotectedSecretRawBytes);
             }
         }
 
@@ -56,7 +57,7 @@ internal static unsafe class SecretExtensions
             }
             finally
             {
-                Array.Clear(unprotectedSecret, 0, unprotectedSecret.Length);
+                CryptoUtil.ZeroMemory(unprotectedSecret);
             }
         }
     }

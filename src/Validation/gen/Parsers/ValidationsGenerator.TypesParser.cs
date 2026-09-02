@@ -17,7 +17,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
-        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
+
+        // Validations generator doesn't need an accurate signature.
+        // We don't care about parameter names of the delegate, we don't care about parameter attributes, and we don't care
+        // about the exact delegate type. All we care about is the types of the parameters.
+        // The type of the parameters will always be correct.
+        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, needsAccurateSignature: false, out var method)
             ? method.Parameters
             : [];
 
@@ -59,7 +64,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
-        var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
+        var typeSymbol = incomingTypeSymbol.UnwrapType();
         if (typeSymbol.SpecialType != SpecialType.None)
         {
             return false;
@@ -75,13 +80,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip file-local types, which are only accessible within their declaring file
+        // and cannot be referenced from generated code in a different file
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        if (typeSymbol.IsInaccessibleFromGeneratedCode())
         {
             return false;
         }
 
         visitedTypes.Add(typeSymbol);
+
+        var displayAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute);
+        var displayNameAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DisplayNameAttribute);
 
         var hasTypeLevelValidation = HasValidationAttributes(typeSymbol, wellKnownTypes) || HasIValidatableObjectInterface(typeSymbol, wellKnownTypes);
 
@@ -94,12 +104,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             current = current.BaseType;
         }
 
-        // Extract validatable types discovered in members of this type and add them to the top-level list.
-        ImmutableArray<ValidatableProperty> members = [];
-        if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
+        // Extract validatable types discovered in union cases and add them to the top-level list.
+        var hasValidatableUnionCases = false;
+        if (typeSymbol.IsUnion)
         {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
+            foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
+            {
+                hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
+            }
         }
+
+        // Extract validatable types discovered in members of this type and add them to the top-level list.
+        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes, hasValidatableUnionCases);
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonDerivedTypeAttribute));
@@ -110,20 +126,77 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes && !hasValidatableUnionCases)
         {
             return false;
         }
 
+        // Read the type-level display info for class-scoped [Display]/[DisplayName] (used by type-level
+        // validation attribute messages).
+        var (typeLiteralDisplayName, typeHasResourceDisplay) = typeSymbol.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
+
         // Add the type itself as a validatable type itself.
         validatableTypes.Add(new ValidatableType(
             TypeFQN: typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-            Members: members));
+            Members: members,
+            DisplayName: typeLiteralDisplayName,
+            HasResourceDisplayAttribute: typeHasResourceDisplay));
 
         return true;
     }
 
-    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
+    internal static bool ShouldSkipProperty(
+        IPropertySymbol property,
+        WellKnownTypes wellKnownTypes,
+        INamedTypeSymbol skipValidationAttributeSymbol,
+        INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    {
+        // Preserve the synthesized union Value property so validation can traverse to the active case.
+        if (property.IsImplicitlyDeclared && !IsUnionValueProperty(property))
+        {
+            return true;
+        }
+
+        // Skip indexers, static properties, write-only properties (those without a getter),
+        // and the synthesized record EqualityContract property.
+        if (property.IsIndexer
+            || property.IsStatic
+            || property.IsWriteOnly
+            || property.IsEqualityContract(wellKnownTypes))
+        {
+            return true;
+        }
+
+        // Skip property if it or its type are annotated with SkipValidationAttribute
+        if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+        {
+            return true;
+        }
+
+        // Skip properties that have JsonIgnore attribute
+        if (property.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsUnionValueProperty(IPropertySymbol property)
+        => property is
+        {
+            Name: "Value",
+            IsImplicitlyDeclared: true,
+            DeclaredAccessibility: Accessibility.Public,
+            ContainingType: { } containingType,
+        } && containingType.IsUnion;
+
+    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(
+        ITypeSymbol typeSymbol,
+        WellKnownTypes wellKnownTypes,
+        HashSet<ValidatableType> validatableTypes,
+        List<ITypeSymbol> visitedTypes,
+        bool hasValidatableUnionCases)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -136,6 +209,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
         var skipValidationAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
+        var displayAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute);
+        var displayNameAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_ComponentModel_DisplayNameAttribute);
 
         // Special handling for record types to extract properties from
         // the primary constructor.
@@ -176,7 +253,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip properties that are not accessible from generated code
+                        // We only validate public properties for now.
+                        // We could consider in the future if we want to support internal properties.
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
                         {
                             continue;
@@ -196,12 +274,19 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             validatableTypes,
                             visitedTypes);
 
+                        // Record primary-constructor parameters can carry [Display]/[DisplayName] too.
+                        // Prefer the parameter's attribute over the property's.
+                        var (paramLiteral, paramHasResource) = parameter.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
+                        var (propLiteral, propHasResource) = correspondingProperty.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
+                        var literalDisplayName = paramLiteral ?? propLiteral;
+                        var hasResourceDisplayAttribute = paramHasResource || (paramLiteral is null && propHasResource);
+
                         members.Add(new ValidatableProperty(
                             ContainingTypeFQN: correspondingProperty.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                             TypeFQN: correspondingProperty.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                             Name: correspondingProperty.Name,
-                            DisplayName: parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                                        correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute))));
+                            DisplayName: literalDisplayName,
+                            HasResourceDisplayAttribute: hasResourceDisplayAttribute));
                     }
                 }
             }
@@ -210,16 +295,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties, indexers, static properties, properties without
-            // a public getter, and properties already processed via the record processing logic above.
-            if (member.IsImplicitlyDeclared
-                || member.IsIndexer
-                || member.IsStatic
-                || member.IsWriteOnly
-                || member.GetMethod is null
-                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
-                || member.IsEqualityContract(wellKnownTypes)
-                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
+            {
+                continue;
+            }
+
+            if (member.GetMethod is null || member.GetMethod.DeclaredAccessibility is not Accessibility.Public)
+            {
+                continue;
+            }
+
+            // Skip properties already processed via the record processing logic above
+            if (resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
             }
@@ -230,20 +317,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that are not accessible from generated code
+            // We only validate public properties for now.
+            // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
-            {
-                continue;
-            }
-
-            // Skip properties that have JsonIgnore attribute
-            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
-            {
-                continue;
-            }
-
-            // Skip property if it or its type are annotated with SkipValidationAttribute
-            if (member.IsSkippedValidationProperty(skipValidationAttributeSymbol))
             {
                 continue;
             }
@@ -251,16 +327,19 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, validatableTypes, visitedTypes);
 
             // If the member has no validation attributes or validatable types, skip it.
-            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType)
+            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType && !(hasValidatableUnionCases && IsUnionValueProperty(member)))
             {
                 continue;
             }
+
+            var (memberLiteral, memberHasResource) = member.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
 
             members.Add(new ValidatableProperty(
                 ContainingTypeFQN: member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 TypeFQN: member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 Name: member.Name,
-                DisplayName: member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute))));
+                DisplayName: memberLiteral,
+                HasResourceDisplayAttribute: memberHasResource));
         }
 
         return [.. members];

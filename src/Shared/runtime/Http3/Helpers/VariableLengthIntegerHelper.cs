@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -96,7 +96,7 @@ namespace System.Net.Http
             // Cold path: copy to a temporary buffer before calling span-based read.
             return TryReadSlow(ref reader, out value);
 
-            static bool TryReadSlow(ref SequenceReader<byte> reader, out long value)
+            static unsafe bool TryReadSlow(ref SequenceReader<byte> reader, out long value)
             {
                 ReadOnlySpan<byte> span = reader.CurrentSpan;
 

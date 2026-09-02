@@ -225,6 +225,60 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
+    public async Task QueryWithInvalidCharacter_Reset(string path)
+    {
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
+    }
+
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
+    public async Task QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, headers, endStream: true);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal(3, responseHeaders.Count);
+        Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
+    [Theory]
     [InlineData("/", "/")]
     [InlineData("/a%5E", "/a^")]
     [InlineData("/a%E2%82%AC", "/a€")]
@@ -253,6 +307,36 @@ public class Http3StreamTests : Http3TestBase
         Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
+    [Theory]
+    [InlineData("/\u0161dmin?x=1")]  // U+0161 (353), truncates to 0x61 = 'a' → "/admin?x=1"
+    [InlineData("/\u0170ser")]        // U+0170 (368), truncates to 0x70 = 'p' → "/pser"
+    [InlineData("/caf\u0165?q=1")]   // U+0165 (357), truncates to 0x65 = 'e' → "/cafe?q=1
+    public async Task NonAsciiPath_Reset(string path)
+    {
+        var pathBytes = Encoding.UTF8.GetBytes(path);
+        var qpackBlock = new byte[6 + pathBytes.Length];
+        qpackBlock[0] = 0x00; // Required Insert Count = 0
+        qpackBlock[1] = 0x00; // Delta Base = 0
+        qpackBlock[2] = 0xD1; // Indexed: :method GET (QPACK static index 17)
+        qpackBlock[3] = 0xD6; // Indexed: :scheme http (QPACK static index 22)
+        qpackBlock[4] = 0x51; // Literal with static name ref, index 1 (:path)
+        qpackBlock[5] = (byte)pathBytes.Length; // Value length, no Huffman
+        pathBytes.CopyTo(qpackBlock.AsSpan(6));
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+        Http3Api.OutboundControlStream = await Http3Api.CreateControlStream();
+
+        var requestStream = await Http3Api.CreateRequestStream(
+            headers: (IEnumerable<KeyValuePair<string, string>>)null, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, qpackBlock, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
     }
 
     [Theory]
@@ -2462,29 +2546,21 @@ public class Http3StreamTests : Http3TestBase
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
     }
 
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    [InlineData("connection", "keep-alive")]
+    [InlineData("te", "trailers, deflate")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_StreamError(string headerName, string headerValue)
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("connection", "keep-alive")
-        };
-
-        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
-    }
-
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
-    {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("te", "trailers, deflate")
+            new KeyValuePair<string, string>(headerName, headerValue)
         };
 
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);

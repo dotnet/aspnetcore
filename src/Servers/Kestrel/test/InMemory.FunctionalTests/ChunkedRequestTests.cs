@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
@@ -22,6 +23,13 @@ public class ChunkedRequestTests : LoggedTest
     [Theory]
     [InlineData("2;\rxx\r\nxy\r\n0")] // \r in chunk extensions
     [InlineData("2;\nxx\r\nxy\r\n0")] // \n in chunk extensions
+    [InlineData("2; \r\nxy\r\n0")] // Space in chunk extensions (BWS)
+    [InlineData("2;;;\r\nxy\r\n0")] // Multiple ';' in chunk extensions
+    [InlineData("2 ;\r\nxy\r\n0")]
+    [InlineData("2;a,\r\nxy\r\n0")]
+    [InlineData("2;a\n\r\nxy\r\n0")]
+    [InlineData("2;a\r\r\nxy\r\n0")]
+    [InlineData("2;hello world\r\nxy\r\n0")]
     public async Task RejectsInvalidChunkExtensions(string invalidChunkLine)
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -52,10 +60,15 @@ public class ChunkedRequestTests : LoggedTest
 
     [Theory]
     [InlineData("2;a=b;b=c\r\nxy\r\n0")] // Multiple chunk extensions
-    [InlineData("2; \r\nxy\r\n0")] // Space in chunk extensions (BWS)
-    [InlineData("2;;;\r\nxy\r\n0")] // Multiple ';' in chunk extensions
+    [InlineData("2; a=b\r\nxy\r\n0")] // Space in chunk extensions (BWS)
     [InlineData("2;novalue\r\nxy\r\n0")] // Name only chunk extension
-    //[InlineData("2 ;\r\nxy\r\n0")] // Technically allowed per spec, but we never supported it, and no one should be sending it
+    [InlineData("2;a;b\r\nxy\r\n0")] // Multiple name-only chunk extensions
+    [InlineData("2;novalue;a=b\r\nxy\r\n0")] // Name-only chunk extension followed by another extension
+    [InlineData("2;a=b;novalue\r\nxy\r\n0")] // Chunk extension followed by a name-only extension
+    [InlineData("2;a=\"\"\r\nxy\r\n0")] // Empty quoted-string chunk extension value
+    [InlineData("2;a=\"hello world\"\r\nxy\r\n0")] // Quoted-string chunk extension value
+    [InlineData("2;a=\"a\\\"b\"\r\nxy\r\n0")] // Quoted-string chunk extension value with an escaped DQUOTE
+    [InlineData("2 ;a=b\r\nxy\r\n0")]
     public async Task AllowsValidChunkExtensions(string chunkLine)
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -119,7 +132,7 @@ public class ChunkedRequestTests : LoggedTest
         }
     }
 
-    private async Task AppChunked(HttpContext httpContext)
+    private static async Task AppChunked(HttpContext httpContext)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -682,9 +695,9 @@ public class ChunkedRequestTests : LoggedTest
                     "Host:",
                     "Transfer-Encoding: chunked",
                     "",
-                    "C;hello there",
+                    "C;hello-there",
                     "HelloChunked",
-                    "0;hello there",
+                    "0;hello-there",
                     ""};
 
             for (var i = 1; i < requestCount; i++)
@@ -694,9 +707,9 @@ public class ChunkedRequestTests : LoggedTest
                         "Host:",
                         "Transfer-Encoding: chunked",
                         "",
-                        "C;hello there",
+                        "C;hello-there",
                         $"HelloChunk{i:00}",
-                        "0;hello there",
+                        "0;hello-there",
                         string.Concat("X-Trailer-Header: ", new string('a', i)),
                         "" });
             }
@@ -1266,5 +1279,90 @@ public class ChunkedRequestTests : LoggedTest
                     "");
             }
         }
+    }
+
+    [Fact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(AppChunked, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                for (var i = 0; i < 2; i++)
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Connection: keep-alive",
+                        "Content-Length: 7",
+                        "",
+                        "5", "Hello",
+                        "6", " World",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 11",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "Hello World");
+            }
+        }
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void CanKeepProcessingRequestsAfterContentLengthPlusChunkedRequest_WithAppContext()
+    {
+        var options = new RemoteInvokeOptions();
+
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.AllowKeepAliveAfterCLTE", "true");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
+        {
+            var testContext = new TestServiceContext();
+
+            await using (var server = new TestServer(AppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        await connection.Send(
+                            "POST / HTTP/1.1",
+                            "Host:",
+                            "Transfer-Encoding: chunked",
+                            "Connection: keep-alive",
+                            "Content-Length: 7",
+                            "",
+                            "5", "Hello",
+                            "6", " World",
+                            "0",
+                            "",
+                            "");
+                    }
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
+                }
+            }
+        }, options);
     }
 }

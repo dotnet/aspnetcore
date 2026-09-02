@@ -34,7 +34,7 @@ public sealed class Circuit
     /// <see langword="true"/> if the request was accepted and the client was asked to begin pausing;
     /// otherwise <see langword="false"/>.
     /// </returns>
-    public ValueTask<bool> RequestCircuitPauseAsync(CancellationToken cancellationToken = default)
+    public Task<bool> RequestCircuitPauseAsync(CancellationToken cancellationToken = default)
     {
         return _circuitHost.RequestPauseAsync(cancellationToken);
     }

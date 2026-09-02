@@ -120,7 +120,9 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.UI" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Certificate" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Google" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
@@ -129,7 +131,6 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.WsFederation" />
-    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Client" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Server" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Logging.AzureAppServices" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
@@ -152,8 +153,10 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Server.AutoPause" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Testing" />
     <AspNetCoreShippingAssembly Include="Microsoft.Authentication.WebAssembly.Msal" />
     <AspNetCoreShippingAssembly Include="Microsoft.JSInterop.WebAssembly" />
@@ -162,7 +165,6 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebView" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
-    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.Swagger" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>

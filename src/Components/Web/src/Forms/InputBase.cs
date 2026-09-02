@@ -60,6 +60,18 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
 
+    internal string GetDisplayName()
+    {
+        if (DisplayName is not null)
+        {
+            return DisplayName;
+        }
+
+        return ExpressionMemberAccessor.TryGetDisplayName(ValueExpression!, out var displayName)
+            ? displayName
+            : FieldIdentifier.FieldName;
+    }
+
     /// <summary>
     /// Gets the associated <see cref="Forms.EditContext"/>.
     /// This property is uninitialized if the input does not have a parent <see cref="EditForm"/>.
@@ -267,6 +279,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+                if (AssignedRenderMode is null)
+                {
+                    // Register the input for client-side validation if rendered in static SSR mode.
+                    RenderedFieldRegistry.GetOrCreate(EditContext).Register(FieldIdentifier, NameAttributeValue);
+                }
             }
             else
             {

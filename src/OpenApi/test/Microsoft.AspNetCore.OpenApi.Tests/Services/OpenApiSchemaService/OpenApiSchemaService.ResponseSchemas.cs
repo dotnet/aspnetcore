@@ -244,7 +244,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var wrapper = mediaType.Schema;
+            Assert.NotNull(wrapper.OneOf);
+            Assert.Equal(2, wrapper.OneOf.Count);
+            Assert.Equal(JsonSchemaType.Null, wrapper.OneOf[0].Type);
+            var schema = wrapper.OneOf[1];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
@@ -291,7 +295,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var wrapper = mediaType.Schema;
+            Assert.NotNull(wrapper.OneOf);
+            Assert.Equal(2, wrapper.OneOf.Count);
+            Assert.Equal(JsonSchemaType.Null, wrapper.OneOf[0].Type);
+            var schema = wrapper.OneOf[1];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
@@ -1125,6 +1133,39 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiResponse_MvcController_SupportsMultipleResponseTypesForSameStatusCode()
+    {
+        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetMultiContentType), typeof(MultiProducesController));
+
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/multi"].Operations[HttpMethod.Get];
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+            Assert.True(response.Value.Content.ContainsKey("application/json"));
+            Assert.True(response.Value.Content.ContainsKey("text/plain"));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MvcController_SupportsAnyOfForSameContentType()
+    {
+        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetAnyOf), typeof(MultiProducesController));
+
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/anyOf"].Operations[HttpMethod.Get];
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
     [ApiController]
     [Produces("application/json")]
     public class TestController
@@ -1132,6 +1173,22 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Route("/")]
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         internal Todo Get() => new(1, "Write test", false, DateTime.Now);
+    }
+
+    [ApiController]
+    public class MultiProducesController
+    {
+        [HttpGet]
+        [Route("/multi")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK, "application/json")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
+        internal IActionResult GetMultiContentType() => throw new NotImplementedException();
+
+        [HttpGet]
+        [Route("/anyOf")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK, "application/json")]
+        [ProducesResponseType(typeof(Error), StatusCodes.Status200OK, "application/json")]
+        internal IActionResult GetAnyOf() => throw new NotImplementedException();
     }
 
     private class ClassWithObjectProperty

@@ -48,7 +48,16 @@
       we intentionally do not do that in this project.
     -->
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
+    <!--
+      Maximum number of small test assemblies grouped into a single Helix work item.
+      20 balances reducing per-work-item overhead (payload upload, machine acquisition,
+      result reporting) against keeping each batch's total runtime well within the
+      work item timeout. Override by setting HelixWorkItemMaxBatchSize.
+    -->
+    <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
+
+  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
@@ -87,12 +96,19 @@
   <Target Name="RestoreDotnetTools" BeforeTargets="IncludeAspNetRuntime">
     <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" />
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" AsArchive="false" />
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" AsArchive="false" />
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" AsArchive="false" />
+      <_HelixTestRunnerTool Include="dotnet-dump;dotnet-ef;dotnet-serve" />
     </ItemGroup>
-    <Warning Text="dotnet-ef nupkg not found at '$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg'. Helix template tests may install an incompatible version."
-        Condition="!Exists('$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg')" />
+    <ResolveDotnetToolPackagePaths
+        ToolManifestPath="$([MSBuild]::NormalizePath('$(RepoRoot)', '.config', 'dotnet-tools.json'))"
+        NuGetPackageRoot="$(NUGET_PACKAGES)"
+        PackageIds="@(_HelixTestRunnerTool)">
+      <Output TaskParameter="ToolPackages" ItemName="_HelixTestRunnerToolPackage" />
+    </ResolveDotnetToolPackagePaths>
+    <ItemGroup>
+      <HelixCorrelationPayload Include="@(_HelixTestRunnerToolPackage)" AsArchive="false" />
+    </ItemGroup>
+    <Warning Text="%(_HelixTestRunnerToolPackage.PackageId) nupkg not found at '%(_HelixTestRunnerToolPackage.Identity)'. HelixTestRunner cannot install the tool."
+        Condition="!Exists('%(_HelixTestRunnerToolPackage.Identity)')" />
   </Target>
 
   <Choose>
@@ -186,6 +202,29 @@
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
+  </Target>
+
+  <Target Name="BatchSmallWorkItems" AfterTargets="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' AND '@(HelixWorkItem)' != '' ">
+    <ItemGroup>
+      <_OriginalHelixWorkItem Remove="@(_OriginalHelixWorkItem)" />
+      <_OriginalHelixWorkItem Include="@(HelixWorkItem)" />
+    </ItemGroup>
+
+    <RepoTasks.BatchHelixWorkItems WorkItems="@(_OriginalHelixWorkItem)"
+        MaxBatchSize="$(HelixWorkItemMaxBatchSize)"
+        OutputDirectory="$(OutputPath)"
+        IsWindowsQueue="$(IsWindowsHelixQueue)">
+      <Output TaskParameter="BatchedWorkItems" ItemName="_BatchedHelixWorkItem" />
+      <Output TaskParameter="UnbatchedWorkItems" ItemName="_UnbatchedHelixWorkItem" />
+    </RepoTasks.BatchHelixWorkItems>
+
+    <ItemGroup>
+      <HelixWorkItem Remove="@(HelixWorkItem)" />
+      <HelixWorkItem Include="@(_UnbatchedHelixWorkItem)" />
+      <HelixWorkItem Include="@(_BatchedHelixWorkItem)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Helix work item batching updated @(HelixWorkItem->Count()) work items before submission." />
   </Target>
 
   <!--

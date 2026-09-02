@@ -32,6 +32,11 @@
     </div>
 </div>
 
+@if (user is not null)
+{
+    <CurrentUserDetailsSignal User="user" />
+}
+
 @code {
     private string? message;
     private ApplicationUser? user;
