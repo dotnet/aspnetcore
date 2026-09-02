@@ -1,5 +1,7 @@
 # Working on Issues in the Components Area
 
+Read the repository-level [AGENTS.md](../../AGENTS.md) first. This file adds Components-specific guidance.
+
 This guide provides step-by-step instructions for investigating, reviewing, and implementing work in the ASP.NET Core Components area.
 
 ## Working on issues
@@ -224,10 +226,11 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 ### E2E Testing Structure
 
-Tests live in `src/Components/test`. The structure includes:
+The Components area has distinct E2E test stacks. Keep their frameworks and infrastructure separate:
 
-- **testassets folder** - Contains test assets and scenarios
-- **Components.TestServer project** - A web application that launches multiple web servers with different scenarios (different project startups). Avoid adding new startup files unless strictly necessary.
+- `src/Components/test/E2ETest` uses xUnit and Selenium. Its applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
+- Projects that consume `Microsoft.AspNetCore.Components.Testing` use MSTest on Microsoft.Testing.Platform and Playwright. Follow [Testing/AGENTS.md](Testing/AGENTS.md) when working in that stack; do not copy xUnit or Selenium patterns into it.
+- `src/Components/WebView/test/E2ETest` is a platform-hosted executable with its own entry point and application lifecycle. Follow that project's existing structure instead of either browser-test stack.
 
 ### Running E2E Tests Manually
 
@@ -292,7 +295,7 @@ Use `browser_console_messages` to see JavaScript console output including .NET l
 
 ### Creating E2E Tests
 
-E2E tests are located in `src/Components/test/E2ETest`.
+The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
@@ -304,7 +307,7 @@ For telemetry or distributed-state behavior, assert the real consumer-visible ou
 
 ### Running E2E Tests
 
-The E2E tests use Selenium. To build and run tests:
+This E2E suite uses Selenium. To build and run tests:
 
 ```bash
 # Build the E2E test project and its dependencies

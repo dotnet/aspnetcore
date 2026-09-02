@@ -42,6 +42,7 @@
 
 ### Testing
 
+* Follow the repository-wide test naming and organization conventions in [../AGENTS.md](../AGENTS.md).
 * We use xUnit SDK v3 for tests.
 * Do not emit "Act", "Arrange" or "Assert" comments.
 * Use Moq for mocking in tests.
