@@ -241,9 +241,6 @@ public class ClientValidationTest : ClientValidationTestBase
     {
         NavigateToClientValidationPage("custom-validator");
 
-        // The module is loaded by the page; invoking it here registers the validator after the form
-        // is already tracked, which the engine supports because it resolves rule names at
-        // validation time.
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
             "return typeof window.registerCustomValidator === 'function';"));
         ((IJavaScriptExecutor)Browser).ExecuteScript("registerCustomValidator();");
