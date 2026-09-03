@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -49,13 +49,13 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\**\*.cs" Link="Shared\ThrowHelpers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\**\*.cs" Link="Shared\CallerArgument\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
-    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)SegmentWriteStream.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

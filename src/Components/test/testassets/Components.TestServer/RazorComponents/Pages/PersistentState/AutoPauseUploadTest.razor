@@ -1,0 +1,138 @@
+@page "/persistent-state/auto-pause-upload"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using TestServer
+@inject IJSRuntime JS
+@inject AutoPauseTestStreamGate Gate
+
+<h1>Auto-pause upload deferral test</h1>
+
+@* Captures Blazor console output so the E2E tests can wait for specific log messages. *@
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>The <code>InputFile</code> and <code>IJSStreamReference</code> uploads are
+<strong>circuit-routed</strong>. The <code>fetch</code> POST is plain HTTP and
+pause should proceed normally.</p>
+
+<hr />
+
+<h3>Upload via <code>InputFile</code> (circuit-routed)</h3>
+<InputFile id="inputfile-upload" OnChange="HandleInputFileChanged" data-token="@_inputFileToken" />
+<p>Status: <span id="inputfile-status">@_inputFileStatus</span></p>
+
+<hr />
+
+<h3>Upload via <code>IJSStreamReference</code> (circuit-routed)</h3>
+<button id="streamref-upload-button" @onclick="StartStreamRefUpload" disabled="@_streamRefUploadRunning" data-token="@_streamRefUploadToken">
+    Upload via IJSStreamReference
+</button>
+<p>Status: <span id="streamref-upload-status">@_streamRefUploadStatus</span></p>
+
+<hr />
+
+<h3>Upload via <code>fetch</code> POST (pure HTTP)</h3>
+<button id="fetch-upload-button" @onclick="@(() => JS.InvokeVoidAsync("AutoPauseUploadTest.startFetchUpload", _fetchUploadToken, 256 * 1024))" data-token="@_fetchUploadToken">
+    Upload via fetch POST
+</button>
+<p>Status: <span id="fetch-upload-status">click triggers browser HTTP POST; main page preserved</span></p>
+
+<script>
+    window.AutoPauseUploadTest ??= {
+        createBlob(size) {
+            return new Blob([new Uint8Array(size)]);
+        },
+        startFetchUpload(token, size) {
+            const body = new Uint8Array(size);
+            // don't await fetch to avoid long JS interop calls, it's not what we want to test here.
+            fetch(`/subdir/autopause-test/upload/${token}`, { method: 'POST', body });
+        }
+    };
+</script>
+
+@code {
+    private readonly string _inputFileToken = Guid.NewGuid().ToString("N");
+    private readonly string _streamRefUploadToken = Guid.NewGuid().ToString("N");
+    private readonly string _fetchUploadToken = Guid.NewGuid().ToString("N");
+
+    private string _inputFileStatus = "idle";
+    private bool _streamRefUploadRunning;
+    private string _streamRefUploadStatus = "idle";
+
+    private async Task HandleInputFileChanged(InputFileChangeEventArgs e)
+    {
+        _inputFileStatus = "reading";
+        try
+        {
+            await ConsumeStreamGatedAsync(e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024), _inputFileToken);
+            _inputFileStatus = "complete";
+        }
+        catch (Exception ex)
+        {
+            _inputFileStatus = $"failed:{ex.GetType().Name}";
+        }
+    }
+
+    private async Task StartStreamRefUpload()
+    {
+        _streamRefUploadRunning = true;
+        _streamRefUploadStatus = "reading";
+        try
+        {
+            var streamRef = await JS.InvokeAsync<IJSStreamReference>(
+                "AutoPauseUploadTest.createBlob", 256 * 1024);
+            await ConsumeStreamGatedAsync(
+                await streamRef.OpenReadStreamAsync(maxAllowedSize: 5 * 1024 * 1024),
+                _streamRefUploadToken);
+            _streamRefUploadStatus = "complete";
+        }
+        catch (Exception ex)
+        {
+            _streamRefUploadStatus = $"failed:{ex.GetType().Name}";
+        }
+        finally
+        {
+            _streamRefUploadRunning = false;
+        }
+    }
+
+    // Reads one buffer to mark started, blocks on the gate, then drains the
+    // rest. Keeps the upload stream in flight until the test releases the gate.
+    private async Task ConsumeStreamGatedAsync(Stream stream, string token)
+    {
+        await using (stream)
+        {
+            var buffer = new byte[4096];
+            var firstRead = await stream.ReadAsync(buffer);
+            if (firstRead == 0)
+            {
+                Gate.MarkStarted(token);
+                Gate.MarkCompleted(token);
+                return;
+            }
+            Gate.MarkStarted(token);
+
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await Gate.WaitAsync(token, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Gate.MarkCompleted(token);
+                return;
+            }
+
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
+            {
+            }
+            Gate.MarkCompleted(token);
+        }
+    }
+}

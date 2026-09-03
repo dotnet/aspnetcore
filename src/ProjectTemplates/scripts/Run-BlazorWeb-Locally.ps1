@@ -5,8 +5,8 @@
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory = $false, Position = 0)]
-        [ValidateSet("net9.0", "net10.0")]
-        [string] $Framework = "net10.0",
+        [ValidateSet("net9.0", "net10.0", "net11.0")]
+        [string] $Framework = "net11.0",
         [Parameter(Mandatory = $false)]
         [switch] $NoRestore,
         [Parameter(Mandatory = $false)]
@@ -78,6 +78,10 @@
         $templateArguments += "--use-program-main"
     }
 
+    if ($Args) {
+        $templateArguments += $Args
+    }
+
     Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
 
     Test-Template `
@@ -86,4 +90,5 @@
         -MainProjectRelativePath $mainProjectRelativePath `
         -TargetFramework $Framework `
         -Configuration $Configuration `
+        -NoRestore:$NoRestore `
         -Verbose:$VerbosePreference;

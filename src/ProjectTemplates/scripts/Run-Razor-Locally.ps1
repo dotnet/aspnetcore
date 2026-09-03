@@ -5,8 +5,8 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
     [Parameter(Mandatory = $false, Position = 0)]
-    [ValidateSet("net9.0", "net10.0")]
-    [string] $Framework = "net10.0",
+    [ValidateSet("net9.0", "net10.0", "net11.0")]
+    [string] $Framework = "net11.0",
     [Parameter(Mandatory = $false)]
     [switch] $ExcludeLaunchSettings,
     [Parameter(Mandatory = $false)]
@@ -46,6 +46,10 @@ if ($NoHttps) {
 
 if ($UseProgramMain) {
     $templateArguments += "--use-program-main"
+}
+
+if ($Args) {
+    $templateArguments += $Args
 }
 
 Import-Module -Name "$PSScriptRoot/Test-Template.psm1";

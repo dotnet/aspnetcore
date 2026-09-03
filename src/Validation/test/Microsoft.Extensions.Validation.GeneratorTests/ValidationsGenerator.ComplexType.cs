@@ -625,6 +625,122 @@ public class AccessibilityTestType
     }
 
     [Fact]
+    public async Task ValidatesInternalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/internal-type", (InternalValidationType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+internal class InternalValidationType
+{
+    [Required]
+    public string PublicProperty { get; set; } = "";
+
+    public InternalNestedType Nested { get; set; } = new();
+}
+
+internal class InternalNestedType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/internal-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+                "PublicProperty": "",
+                "Nested": {
+                    "RequiredProperty": ""
+                }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Nested.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("PublicProperty", kvp.Key);
+                    Assert.Equal("The PublicProperty field is required.", kvp.Value.Single());
+                });
+        });
+    }
+
+    [Fact]
+    public async Task SkipsFileLocalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/file-local-type", (FileLocalType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+file class FileLocalType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        // Verify that file-local types are not validated (they can't be referenced from generated code)
+        await VerifyEndpoint(compilation, "/file-local-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"RequiredProperty": ""}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            // File-local types should be skipped, so validation should pass (200 OK)
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
     public async Task ValidatesPropertiesWithJsonIgnoreWhenWritingConditions()
     {
         // Arrange
@@ -789,6 +905,220 @@ public class JsonIgnoreConditionsModel
                 // Should succeed because this property is ignored during reading/deserialization
                 Assert.Equal(200, context.Response.StatusCode);
             }
+        });
+    }
+
+    [Fact]
+    public async Task SkipsIndexerPropertiesOnTypes()
+    {
+        var source = """
+using System;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/json-element", ([FromBody] JsonElement request) => Results.Ok("Passed"));
+app.MapPost("/type-with-json-element", ([FromBody] TypeWithJsonElement request) => Results.Ok("Passed"));
+
+app.Run();
+
+public class TypeWithJsonElement
+{
+    [Required]
+    public string Name { get; set; } = "";
+    public JsonElement Extra { get; set; }
+}
+""";
+        await Verify(source, out var compilation);
+
+        // Verify that JsonElement parameter doesn't crash validation
+        await VerifyEndpoint(compilation, "/json-element", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"foo": "bar"}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+
+        // Verify that a type containing a JsonElement property still validates its other properties
+        await VerifyEndpoint(compilation, "/type-with-json-element", async (endpoint, serviceProvider) =>
+        {
+            // Empty Name should fail validation since it has [Required]
+            var payload = """{"Name": "", "Extra": {"a": 1}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors, kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+            });
+        });
+
+        // Verify valid input passes
+        await VerifyEndpoint(compilation, "/type-with-json-element", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"Name": "test", "Extra": {"a": 1}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
+    public async Task SkipsNonReadableAndStaticProperties()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/order", ([FromBody] Order request) => Results.Ok("Passed"));
+
+app.Run();
+
+public class Address
+{
+    [Required]
+    public string Street { get; set; } = "";
+}
+
+public class Order
+{
+    [Required]
+    public string CustomerName { get; set; } = "";
+
+    [Required]
+    public Address ShippingAddress { get; set; }
+
+    // Static property with a validatable type — should not be emitted
+    public static Address DefaultAddress { get; set; } = new();
+
+    // Write-only property with a validatable type — should not be emitted
+    public Address InternalAddress { set { } }
+
+    // Property with non-public getter — should not be emitted
+    public Address CachedAddress { internal get; set; }
+}
+""";
+        await Verify(source, out var compilation);
+
+        // Only CustomerName and ShippingAddress should be validated
+        await VerifyEndpoint(compilation, "/order", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"CustomerName": "", "ShippingAddress": {"Street": ""}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Equal(2, problemDetails.Errors.Count);
+            Assert.Contains(problemDetails.Errors, kvp => kvp.Key == "CustomerName");
+            Assert.Contains(problemDetails.Errors, kvp => kvp.Key == "ShippingAddress.Street");
+        });
+
+        await VerifyEndpoint(compilation, "/order", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"CustomerName": "Alice", "ShippingAddress": {"Street": "123 Main St"}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
+    public async Task CanValidateMembersOfParsableType()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/parsable-with-validatable-members", (ParentWithParsableProperty parent) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ParentWithParsableProperty
+{
+    public ParsableWithValidation Child { get; set; } = new();
+}
+
+public class ParsableWithValidation : IParsable<ParsableWithValidation>
+{
+    [Range(10, 100, ErrorMessage = "The field Value must be between 10 and 100.")]
+    public int Value { get; set; }
+
+    public static ParsableWithValidation Parse(string s, IFormatProvider? provider)
+        => new();
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out ParsableWithValidation result)
+    {
+        result = new ParsableWithValidation();
+        return true;
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/parsable-with-validatable-members", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+              "Child": {
+                "Value": 5
+              }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Child.Value", error.Key);
+                    Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                });
         });
     }
 }

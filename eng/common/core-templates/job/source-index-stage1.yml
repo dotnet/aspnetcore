@@ -12,9 +12,12 @@ jobs:
 - job: SourceIndexStage1
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
+  continueOnError: true
   variables:
   - name: BinlogPath
     value: ${{ parameters.binlogPath }}
+  - name: skipComponentGovernanceDetection
+    value: true
   - template: /eng/common/core-templates/variables/pool-providers.yml
     parameters:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
@@ -25,10 +28,10 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        image: windows.vs2026preview.scout.amd64.open
+        image: windows.vs2026.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        image: windows.vs2026preview.scout.amd64
+        image: windows.vs2026.amd64
 
   steps:
   - ${{ if eq(parameters.is1ESPipeline, '') }}:
@@ -36,9 +39,11 @@ jobs:
 
   - ${{ each preStep in parameters.preSteps }}:
     - ${{ preStep }}
-  - script: ${{ parameters.sourceIndexBuildCommand }}
-    displayName: Build Repository
+  - ${{ if ne(parameters.sourceIndexBuildCommand, '') }}:
+    - script: ${{ parameters.sourceIndexBuildCommand }}
+      displayName: Build Repository
 
   - template: /eng/common/core-templates/steps/source-index-stage1-publish.yml
     parameters:
       binLogPath: ${{ parameters.binLogPath }}
+      runAsPublic: ${{ parameters.runAsPublic }}

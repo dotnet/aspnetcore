@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 
@@ -170,4 +171,94 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             );
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/~health", () => "Healthy");
+        builder.MapGet("/~api/todos", () => { });
+        builder.MapGet("/~api/todos/{id}", () => { });
+        builder.MapGet("~/health2", () => "Healthy2");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~api/todos", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~api/todos/{id}", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/health2", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTildeBeforeSlash_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeBeforeSlashRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Route("/~health")]
+    private void ActionWithTildeRoute() { }
+
+    [Route("~/health")]
+    private void ActionWithTildeBeforeSlashRoute() { }
 }

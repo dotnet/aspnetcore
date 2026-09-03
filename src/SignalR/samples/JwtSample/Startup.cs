@@ -30,9 +30,11 @@ public class Startup
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters =
+                // codeql[SM04554] - By design: this SignalR sample validates tokens signed with its own demo key, so no external issuer is configured. codeql[SM04555] - By design: issuer validation is intentionally disabled in the sample.
                 new TokenValidationParameters
                 {
                     LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                    // codeql[SM04387] - By design: the sample signs tokens with a hardcoded demo key, so disabling audience/issuer validation is safe. codeql[SM04284] - By design: the sample intentionally disables audience/issuer validation for its demo-key tokens.
                     ValidateAudience = false,
                     ValidateIssuer = false,
                     ValidateActor = false,

@@ -168,4 +168,7 @@
   <data name="UpgradeWithWrongProtocolVersion" xml:space="preserve">
     <value>Upgrade requires HTTP/1.1.</value>
   </data>
+  <data name="InvalidReasonPhraseCharacter" xml:space="preserve">
+    <value>Invalid non-ASCII or control character in ReasonPhrase: {0}</value>
+  </data>
 </root>

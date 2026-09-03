@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory;
 public class FunctionalTest : LoggedTest
 {
     const string TestPassword = "[PLACEHOLDER]-1a";
+    const string NewPassword = "[PLACEHOLDER]-2a";
 
     [Fact]
     public async Task CanChangePasswordOptions()
@@ -278,6 +280,119 @@ public class FunctionalTest : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, transaction6.Response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChangingPasswordSignsOutOtherSessionsAfterValidationInterval(bool testCore)
+    {
+        var timeProvider = new FakeTimeProvider();
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
+
+        var transaction1 = await SendAsync(server, "http://example.com/createMe");
+        Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+
+        var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
+        Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+        Assert.NotNull(transaction2.CookieNameValue);
+        var currentSessionCookie = transaction2.CookieNameValue;
+
+        var transaction3 = await SendAsync(server, "http://example.com/pwdLogin/false");
+        Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+        Assert.NotNull(transaction3.CookieNameValue);
+        var otherSessionCookie = transaction3.CookieNameValue;
+
+        var transaction4 = await SendAsync(server, "http://example.com/changePassword", currentSessionCookie);
+        Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
+        Assert.NotNull(transaction4.CookieNameValue);
+
+        var transaction5 = await SendAsync(server, "http://example.com/me", otherSessionCookie);
+        Assert.Equal("hao", FindClaimValue(transaction5, ClaimTypes.Name));
+
+        timeProvider.Advance(TimeSpan.FromMinutes(30));
+
+        var transaction6 = await SendAsync(server, "http://example.com/me", otherSessionCookie);
+        Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
+        Assert.Null(transaction6.SetCookie);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+
+        var transaction7 = await SendAsync(server, "http://example.com/me", otherSessionCookie);
+        Assert.Null(FindClaimValue(transaction7, ClaimTypes.Name));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChangingPasswordDoesNotRemoveExistingPasskeys(bool testCore)
+    {
+        var timeProvider = new FakeTimeProvider();
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
+
+        var transaction1 = await SendAsync(server, "http://example.com/createMe");
+        Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+
+        var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
+        Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+        Assert.NotNull(transaction2.CookieNameValue);
+
+        var transaction3 = await SendAsync(server, "http://example.com/addPasskey", transaction2.CookieNameValue);
+        Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+
+        var transaction4 = await SendAsync(server, "http://example.com/passkeyCount", transaction2.CookieNameValue);
+        Assert.Equal("1", transaction4.ResponseText);
+
+        var transaction5 = await SendAsync(server, "http://example.com/changePassword", transaction2.CookieNameValue);
+        Assert.Equal(HttpStatusCode.OK, transaction5.Response.StatusCode);
+        Assert.NotNull(transaction5.CookieNameValue);
+
+        var transaction6 = await SendAsync(server, "http://example.com/me", transaction5.CookieNameValue);
+        Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
+
+        var transaction7 = await SendAsync(server, "http://example.com/passkeyCount", transaction5.CookieNameValue);
+        Assert.Equal("1", transaction7.ResponseText);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SessionsAreInvalidatedOnNextRequestWhenValidationIntervalIsZero(bool testCore)
+    {
+        var timeProvider = new FakeTimeProvider();
+        var server = await CreateServer(services =>
+        {
+            services.AddSingleton<TimeProvider>(timeProvider);
+            services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.Zero;
+            });
+        }, testCore: testCore);
+
+        var transaction1 = await SendAsync(server, "http://example.com/createMe");
+        Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+
+        var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
+        Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+        Assert.NotNull(transaction2.CookieNameValue);
+        var currentSessionCookie = transaction2.CookieNameValue;
+
+        var transaction3 = await SendAsync(server, "http://example.com/pwdLogin/false");
+        Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+        Assert.NotNull(transaction3.CookieNameValue);
+        var otherSessionCookie = transaction3.CookieNameValue;
+
+        var transaction4 = await SendAsync(server, "http://example.com/changePassword", currentSessionCookie);
+        Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
+        Assert.NotNull(transaction4.CookieNameValue);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+
+        var transaction5 = await SendAsync(server, "http://example.com/me", transaction4.CookieNameValue);
+        Assert.Equal("hao", FindClaimValue(transaction5, ClaimTypes.Name));
+
+        var transaction6 = await SendAsync(server, "http://example.com/me", otherSessionCookie);
+        Assert.Null(FindClaimValue(transaction6, ClaimTypes.Name));
+    }
+
     private static string FindClaimValue(Transaction transaction, string claimType)
     {
         var claim = transaction.ResponseElement.Elements("claim").SingleOrDefault(elt => elt.Attribute("type").Value == claimType);
@@ -331,6 +446,45 @@ public class FunctionalTest : LoggedTest
                             var user = await userManager.FindByNameAsync("hao");
                             var result = await userManager.UpdateSecurityStampAsync(user);
                             res.StatusCode = result.Succeeded ? 200 : 500;
+                        }
+                        else if (req.Path == new PathString("/changePassword"))
+                        {
+                            var user = await userManager.FindByNameAsync("hao");
+                            var result = await userManager.ChangePasswordAsync(user, TestPassword, NewPassword);
+                            if (result.Succeeded)
+                            {
+                                await signInManager.RefreshSignInAsync(user);
+                            }
+                            res.StatusCode = result.Succeeded ? 200 : 500;
+                        }
+                        else if (req.Path == new PathString("/addPasskey"))
+                        {
+                            var user = await userManager.GetUserAsync(context.User);
+                            if (user is null)
+                            {
+                                res.StatusCode = 401;
+                                return;
+                            }
+
+                            var passkey = new UserPasskeyInfo(
+                                Guid.NewGuid().ToByteArray(),
+                                [],
+                                DateTimeOffset.UnixEpoch,
+                                0,
+                                [],
+                                false,
+                                false,
+                                false,
+                                [],
+                                []);
+                            var result = await userManager.AddOrUpdatePasskeyAsync(user, passkey);
+                            res.StatusCode = result.Succeeded ? 200 : 500;
+                        }
+                        else if (req.Path == new PathString("/passkeyCount"))
+                        {
+                            var user = await userManager.FindByNameAsync("hao");
+                            var passkeys = await userManager.GetPasskeysAsync(user);
+                            await res.WriteAsync(passkeys.Count.ToString(CultureInfo.InvariantCulture));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/pwdLogin"), out remainder))
                         {

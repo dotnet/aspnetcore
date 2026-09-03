@@ -8,7 +8,7 @@
 
 <PageTitle>Personal Data</PageTitle>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 <h3>Personal Data</h3>
 
 <div class="row">
@@ -18,7 +18,6 @@
             <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
         </p>
         <form action="Account/Manage/DownloadPersonalData" method="post">
-            <AntiforgeryToken />
             <button class="btn btn-primary" type="submit">Download</button>
         </form>
         <p>
@@ -28,15 +27,23 @@
 </div>
 
 @code {
+    private string? message;
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var user  = await UserManager.GetUserAsync(HttpContext.User);
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
+
+        var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
         }
     }
 }

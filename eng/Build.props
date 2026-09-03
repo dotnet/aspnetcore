@@ -33,6 +33,9 @@
                "
       Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
                $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
+               $(RepoRoot)src\Components\Testing\testassets\NativeAotTestApp.E2E.Tests\NativeAotTestApp.E2E.Tests.csproj;
+               $(RepoRoot)src\Components\Testing\testassets\TestApp.E2E.Tests\TestApp.E2E.Tests.csproj;
+               $(RepoRoot)src\Components\AI\testassets\DojoClient.E2E.Tests\DojoClient.E2E.Tests.csproj;
                $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
@@ -45,14 +48,14 @@
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\McpServer.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
-                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
-                      $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
+                      $(RepoRoot)src\Mvc\perf\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
@@ -70,12 +73,20 @@
                       Condition=" '$(TargetOsName)' == 'win' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
   </ItemGroup>
 
+  <!-- Build the RepoTasks before anything else -->
+  <ItemGroup>
+    <ProjectToBuild Include="$(RepoRoot)eng\tools\RepoTasks\RepoTasks.csproj" BuildStep="repotasks" SkipProjectList="true">
+      <DotNetBuildPass Condition="'$(DotNetBuildPass)' != ''">$(DotNetBuildPass)</DotNetBuildPass>
+    </ProjectToBuild>
+  </ItemGroup>
+
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != '' and '$(DotNetBuildPass)' != '2'">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
-            Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
+            Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*"
+            BuildStep="manual">
           <BuildInParallel Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
           <RestoreInParallel Condition=" '%(Extension)' == '.nodeproj' ">false</RestoreInParallel>
           <!-- Also do not build in parallel w/in npm projects. -->
@@ -86,18 +97,20 @@
     <!-- Projects to build in .NET product build pass 2 -->
     <When Condition="'$(DotNetBuildPass)' == '2'">
       <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
-        <!-- Build Hosting Bundle -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
-          <AdditionalProperties>Platform=x86</AdditionalProperties>
-          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
-        </ProjectToBuild>
-        <ProjectToBuild Include="$(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" >
-          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
-        </ProjectToBuild>
-        <!-- Build SiteExtensions -->
-        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
-          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
-        </ProjectToBuild>
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj"
+                        BuildStep="bp2"
+                        DotNetBuildPass="$(DotNetBuildPass)"
+                        AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj"
+                        BuildStep="bp2"
+                        DotNetBuildPass="$(DotNetBuildPass)" />
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj"
+                        BuildStep="bp2"
+                        DotNetBuildPass="$(DotNetBuildPass)" />
+      </ItemGroup>
+      <!-- Disable parallel restore for all pass-2 projects to mitigate https://github.com/dotnet/dotnet/issues/4558 -->
+      <ItemGroup>
+        <ProjectToBuild Update="@(ProjectToBuild)" RestoreInParallel="false" />
       </ItemGroup>
     </When>
     <Otherwise>
@@ -151,8 +164,8 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
 
-        <!-- 
-          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or 
+        <!--
+          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or
           ProjectsWithTestsSubset2 - whichever has fewer entries.
         -->
 
@@ -174,6 +187,9 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <DotNetProjects Include="$(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj"
+                        Exclude="@(ProjectToBuild);@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' " />
         <!-- Only build the composite R2R runtime pack when we will actually ship it -->
         <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />
@@ -193,6 +209,7 @@
                           $(RepoRoot)src\Security\**\src\*.csproj;
                           $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
                           $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj;
                           $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\src\*.csproj;
                           $(RepoRoot)src\Razor\**\src\*.csproj;
@@ -223,6 +240,22 @@
                         Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
 
 
+        <!--
+          These standalone (non-batchable, Windows-only) test projects live in Subset 1's
+          directory globs but are assigned to Subset 2 to balance the Helix work item count
+          between the two subsets. They are excluded from Subset 1 and included in Subset 2
+          below. Defined before the subsets so Subset 1's Exclude can reference them.
+          See https://github.com/dotnet/aspnetcore/pull/66808.
+        -->
+        <ProjectsMovedToSubset2 Include="
+                          $(RepoRoot)src\Servers\HttpSys\test\FunctionalTests\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj;
+                          $(RepoRoot)src\Servers\IIS\IIS\test\IIS.LongTests\IIS.LongTests.csproj;
+                          $(RepoRoot)src\Servers\IIS\IIS\test\IIS.ShadowCopy.Tests\IIS.ShadowCopy.Tests.csproj;
+                          $(RepoRoot)src\Middleware\Diagnostics\test\FunctionalTests\Diagnostics.FunctionalTests.csproj;
+                          $(RepoRoot)src\Middleware\Spa\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj;
+                          "
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+
         <ProjectsWithTestsSubset1 Include="
                           $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
@@ -248,9 +281,11 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
-                          $(RepoRoot)**\obj\**\*;"
+                          $(RepoRoot)**\obj\**\*;
+                          @(ProjectsMovedToSubset2);"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
 
         <ProjectsWithTestsSubset2 Include="
@@ -274,6 +309,7 @@
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\OpenApi\**\*.csproj;
                           $(RepoRoot)src\Validation\**\*.csproj;
+                          @(ProjectsMovedToSubset2);
                           "
                         Exclude="
                           @(ProjectToBuild);

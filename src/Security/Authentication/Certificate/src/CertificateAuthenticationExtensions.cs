@@ -77,7 +77,7 @@ public static class CertificateAuthenticationAppBuilderExtensions
     /// <para>
     /// Certificate authentication uses a authentication handler that validates client certificate and
     /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
-    /// See <see href="https://tools.ietf.org/html/rfc5246#section-7.4.4"/> to read more about certicate authentication.
+    /// See <see href="https://tools.ietf.org/html/rfc5246#section-7.4.4"/> to read more about certificate authentication.
     /// </para>
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -87,6 +87,8 @@ public static class CertificateAuthenticationAppBuilderExtensions
         this AuthenticationBuilder builder,
         Action<CertificateValidationCacheOptions>? configureOptions = null)
     {
+        // Registered as an app-wide singleton shared across certificate authentication schemes: safe because
+        // CertificateValidationCache.ComputeKey namespaces every cache entry by scheme name.
         builder.Services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
         if (configureOptions != null)
         {

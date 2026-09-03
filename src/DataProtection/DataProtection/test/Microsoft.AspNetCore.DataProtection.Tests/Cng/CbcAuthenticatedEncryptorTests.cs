@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,8 +11,11 @@ using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
+#if NET
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+#endif
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -35,7 +40,7 @@ public class CbcAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        Assert.Equal(plaintext.AsSpan().ToArray(), decipheredtext.AsSpan().ToArray());
     }
 
     [ConditionalFact]
@@ -91,11 +96,13 @@ public class CbcAuthenticatedEncryptorTests
     {
         // Arrange
         Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
+        var genRandom = new SequentialGenRandom();
         CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
             symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
             symmetricAlgorithmKeySizeInBytes: 256 / 8,
             hmacAlgorithmHandle: CachedAlgorithmHandles.HMAC_SHA256,
-            genRandom: new SequentialGenRandom());
+            genRandom: genRandom);
+        genRandom.Reset();
         ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
         ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
 
@@ -122,10 +129,11 @@ public class CbcAuthenticatedEncryptorTests
         Assert.Equal(80 + preBufferSize + postBufferSize, retVal.Length);
 
         var buffer = retVal.AsSpan(preBufferSize, retVal.Length - preBufferSize - postBufferSize);
-        var retValAsString = Convert.ToBase64String(buffer);
+        var retValAsString = Convert.ToBase64String(buffer.ToArray());
         Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", retValAsString);
     }
 
+#if NET
     [ConditionalTheory]
     [ConditionalRunTestOnlyOnWindows]
     [InlineData(128, "SHA256", "")]
@@ -157,5 +165,24 @@ public class CbcAuthenticatedEncryptorTests
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
+    }
+#endif
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyOnWindows]
+    public void Constructor_PerformsSelfTest_ConsumesRandomBytes()
+    {
+        var genRandom = new SequentialGenRandom();
+        byte initialValue = genRandom.CurrentValue;
+
+        Secret kdk = new Secret(new byte[512 / 8]);
+        _ = new CbcAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            hmacAlgorithmHandle: CachedAlgorithmHandles.HMAC_SHA256,
+            genRandom: genRandom);
+
+        // Indirectly testing that SelfTest ran by checking that random bytes were consumed
+        Assert.NotEqual(initialValue, genRandom.CurrentValue);
     }
 }

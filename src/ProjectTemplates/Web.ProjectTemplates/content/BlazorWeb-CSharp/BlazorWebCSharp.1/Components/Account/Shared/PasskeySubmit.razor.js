@@ -17,10 +17,9 @@ async function fetchWithErrorHandling(url, options = {}) {
     return response;
 }
 
-async function createCredential(headers, signal) {
-    const optionsResponse = await fetchWithErrorHandling('/Account/PasskeyCreationOptions', {
+async function createCredential(signal) {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyCreationOptions', {
         method: 'POST',
-        headers,
         signal,
     });
     const optionsJson = await optionsResponse.json();
@@ -28,10 +27,19 @@ async function createCredential(headers, signal) {
     return await navigator.credentials.create({ publicKey: options, signal });
 }
 
-async function requestCredential(email, mediation, headers, signal) {
+async function reauthenticateCredential(signal) {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyReauthenticationOptions', {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
+    return await navigator.credentials.get({ publicKey: options, signal });
+}
+
+async function requestCredential(email, mediation, signal) {
     const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?username=${email}`, {
         method: 'POST',
-        headers,
         signal,
     });
     const optionsJson = await optionsResponse.json();
@@ -41,15 +49,14 @@ async function requestCredential(email, mediation, headers, signal) {
 
 customElements.define('passkey-submit', class extends HTMLElement {
     static formAssociated = true;
+    static observedAttributes = ['unknown-credential-signal-options'];
 
-    connectedCallback() {
+    async connectedCallback() {
         this.internals = this.attachInternals();
         this.attrs = {
             operation: this.getAttribute('operation'),
             name: this.getAttribute('name'),
             emailName: this.getAttribute('email-name'),
-            requestTokenName: this.getAttribute('request-token-name'),
-            requestTokenValue: this.getAttribute('request-token-value'),
         };
 
         this.internals.form.addEventListener('submit', (event) => {
@@ -59,7 +66,33 @@ customElements.define('passkey-submit', class extends HTMLElement {
             }
         });
 
-        this.tryAutofillPasskey();
+        try {
+            await this.signalUnknownCredential();
+        } finally {
+            this.tryAutofillPasskey();
+        }
+    }
+
+    attributeChangedCallback() {
+        // Enhanced navigation updates the attribute in place without reconnecting the element,
+        // so connectedCallback does not run again. It also runs before connectedCallback when the
+        // element is upgraded, which is why the initial signal is left to connectedCallback.
+        if (this.isConnected && this.internals) {
+            this.signalUnknownCredential();
+        }
+    }
+
+    async signalUnknownCredential() {
+        const options = this.getAttribute('unknown-credential-signal-options');
+        if (!options) {
+            return;
+        }
+        try {
+            // Not all browsers support this, and it is best-effort, so failures are not surfaced.
+            await window.PublicKeyCredential?.signalUnknownCredential?.(JSON.parse(options));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     disconnectedCallback() {
@@ -71,16 +104,14 @@ customElements.define('passkey-submit', class extends HTMLElement {
             throw new Error('Some passkey features are missing. Please update your browser.');
         }
 
-        const headers = {
-            [this.attrs.requestTokenName]: this.attrs.requestTokenValue,
-        };
-
         if (this.attrs.operation === 'Create') {
-            return await createCredential(headers, signal);
+            return await createCredential(signal);
+        } else if (this.attrs.operation === 'Reauthenticate') {
+            return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
             const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;
-            return await requestCredential(email, mediation, headers, signal);
+            return await requestCredential(email, mediation, signal);
         } else {
             throw new Error(`Unknown passkey operation '${this.attrs.operation}'.`);
         }

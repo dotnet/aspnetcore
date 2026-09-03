@@ -40,8 +40,14 @@ internal sealed class KeyCommand
 
             cmd.OnExecute(() =>
             {
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
                 return Execute(cmd.Reporter,
-                    cmd.ProjectOption.Value(),
+                    projectPath,
+                    isFileBasedApp,
                     schemeOption.Value() ?? DevJwtsDefaults.Scheme,
                     issuerOption.Value() ?? DevJwtsDefaults.Issuer,
                     resetOption.HasValue(), forceOption.HasValue());
@@ -49,9 +55,9 @@ internal sealed class KeyCommand
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string scheme, string issuer, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, bool isFileBasedApp, string scheme, string issuer, bool reset, bool force)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, reporter, out var _, out var userSecretsId))
         {
             return 1;
         }

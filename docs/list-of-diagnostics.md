@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP  (`ASP0000-ASP0024`)
+### ASP (`ASP0000-ASP0039`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -35,6 +35,16 @@
 |  __`ASP0027`__ | Unnecessary public Program class declaration |
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
+|  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
+|  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
+|  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
+|  __`ASP0033`__ | \[ValidatableType\] is applied to an inaccessible type |
+|  __`ASP0034`__ | Endpoint parameter type is inaccessible from generated code |
+|  __`ASP0035`__ | Validatable property or its type on a \[ValidatableType\] is not accessible |
+|  __`ASP0036`__ | Validatable property or its type on an endpoint parameter type is not accessible |
+|  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
+|  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
+|  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
 
 ### API (`API1000-API1003`)
 
@@ -57,7 +67,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0007`)
+### BL  (`BL0001-BL0016`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -68,8 +78,17 @@
 |  __`BL0005`__ | Component parameter should not be set outside of its component |
 |  __`BL0006`__ | Do not use RenderTree types |
 |  __`BL0007`__ | Component parameters should be auto properties |
+|  __`BL0008`__ | Property with [SupplyParameterFromForm] should not have initializer |
+|  __`BL0009`__ | Property with [PersistentState] should not have initializer |
+|  __`BL0010`__ | Use InvokeVoidAsync instead of InvokeAsync&lt;object&gt; |
+|  __`BL0011`__ | Virtualize with ItemsProvider requires ItemComparer |
+|  __`BL0012`__ | Unnecessary StateHasChanged call |
+|  __`BL0013`__ | AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged |
+|  __`BL0014`__ | For loop iterator used inside a closure. |
+|  __`BL0015`__ | [JSInvokable] methods should be public |
+|  __`BL0016`__ | Unguarded JS interop call |
 
-### Request Delegate Generator  (`RDG001-RDG004`)
+### Request Delegate Generator  (`RDG001-RDG014`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -83,6 +102,10 @@
 |  __`RDG008`__ | Multiple public constructors found |
 |  __`RDG009`__ | Invalid nested AsParameters |
 |  __`RDG010`__ | Unexpected nullable type |
+|  __`RDG011`__ | Type parameters not supported |
+|  __`RDG012`__ | Unable to resolve inaccessible type |
+|  __`RDG013`__ | Invalid source attributes |
+|  __`RDG014`__ | Invalid enumerable type |
 
 ### SignalR Source Generator (`SSG0000-SSG0110`)
 
@@ -108,3 +131,11 @@
 |  __`SSG0108`__ | HubClientProxy attributed method has bad number of arguments |
 |  __`SSG0109`__ | HubClientProxy attributed method has first argument of wrong type |
 |  __`SSG0110`__ | HubClientProxy attributed method has wrong return type |
+
+### Components Testing Source Generator (`E2E001-E2E003`)
+
+| Diagnostic ID     | Description |
+| :---------------- | :---------- |
+|  __`E2E001`__ | Service override method not found |
+|  __`E2E002`__ | Non-constant method name in ConfigureServices |
+|  __`E2E003`__ | Service override method must be static |

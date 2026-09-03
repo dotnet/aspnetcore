@@ -140,7 +140,7 @@ internal sealed class OutputCacheMiddleware
 
                     var executed = false;
 
-                    if (context.AllowLocking)
+                    if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
                         var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
 
@@ -167,6 +167,8 @@ internal sealed class OutputCacheMiddleware
                         // Hook up to listen to the response stream
                         ShimResponseStream(context);
 
+                        var isResponseCached = false;
+
                         try
                         {
                             await _next(httpContext);
@@ -181,7 +183,7 @@ internal sealed class OutputCacheMiddleware
                             StartResponse(context);
 
                             // Finalize the cache entry
-                            await FinalizeCacheBodyAsync(context);
+                            isResponseCached = await FinalizeCacheBodyAsync(context);
 
                             executed = true;
                         }
@@ -190,9 +192,8 @@ internal sealed class OutputCacheMiddleware
                             UnshimResponseStream(context);
                         }
 
-                        // If the policies prevented this response from being cached we can't reuse it for other
-                        // pending requests
-                        if (!context.AllowCacheStorage)
+                        // If the response wasn't cached, we can't reuse it for other pending requests
+                        if (!isResponseCached)
                         {
                             context.ReleaseCachedResponse();
                         }
@@ -276,13 +277,6 @@ internal sealed class OutputCacheMiddleware
         }
 
         context.IsCacheEntryFresh = true;
-
-        // Validate expiration
-        if (context.CachedEntryAge <= TimeSpan.Zero)
-        {
-            _logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
-            context.IsCacheEntryFresh = false;
-        }
 
         var cachedResponse = context.CachedResponse;
         if (context.IsCacheEntryFresh)
@@ -419,12 +413,15 @@ internal sealed class OutputCacheMiddleware
     }
 
     /// <summary>
-    /// Stores the response body
+    /// Attempts to store the response body.
     /// </summary>
-    internal async ValueTask FinalizeCacheBodyAsync(OutputCacheContext context)
+    /// <param name="context">The <see cref="OutputCacheContext"/>.</param>
+    /// <returns><c>true</c> if the response was cached; otherwise <c>false</c>.</returns>
+    internal async ValueTask<bool> FinalizeCacheBodyAsync(OutputCacheContext context)
     {
         if (context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled
-            && context.CachedResponse is not null)
+            && context.CachedResponse is not null
+            && !context.HttpContext.RequestAborted.IsCancellationRequested)
         {
             // If AllowCacheLookup is false, the cache key was not created
             CreateCacheKey(context);
@@ -449,6 +446,8 @@ internal sealed class OutputCacheMiddleware
 
                     await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.Tags, context.CachedResponseValidFor,
                         _store, _logger, context.HttpContext.RequestAborted);
+
+                    return true;
                 }
             }
             else
@@ -460,6 +459,8 @@ internal sealed class OutputCacheMiddleware
         {
             _logger.ResponseNotCached();
         }
+
+        return false;
     }
 
     /// <summary>

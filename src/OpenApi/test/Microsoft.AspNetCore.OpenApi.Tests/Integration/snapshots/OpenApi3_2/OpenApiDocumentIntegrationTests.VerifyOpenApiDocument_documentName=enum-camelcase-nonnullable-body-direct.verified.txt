@@ -1,0 +1,54 @@
+﻿{
+  "openapi": "3.2.0",
+  "info": {
+    "title": "Sample | enum-camelcase-nonnullable-body-direct",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/camelcase/nonnullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseStatus"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

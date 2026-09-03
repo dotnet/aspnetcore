@@ -20,7 +20,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     static FieldIdentifier()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
@@ -70,7 +70,10 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// </summary>
     public string FieldName { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the hash code for this field identifier.
+    /// </summary>
+    /// <returns>A hash code based on the model instance and field name.</returns>
     public override int GetHashCode()
     {
         // We want to compare Model instances by reference. RuntimeHelpers.GetHashCode returns identical hashes for equal object references (ignoring any `Equals`/`GetHashCode` overrides) which is what we want.
@@ -83,12 +86,20 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         .GetHashCode();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified object is equal to the current field identifier.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current field identifier.</param>
+    /// <returns><see langword="true"/> if the specified object is equal to the current field identifier; otherwise, <see langword="false"/>.</returns>
     public override bool Equals(object? obj)
         => obj is FieldIdentifier otherIdentifier
         && Equals(otherIdentifier);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified <see cref="FieldIdentifier"/> is equal to the current field identifier.
+    /// </summary>
+    /// <param name="otherIdentifier">The field identifier to compare with the current instance.</param>
+    /// <returns><see langword="true"/> if the two instances are equal; otherwise, <see langword="false"/>.</returns>
     public bool Equals(FieldIdentifier otherIdentifier)
     {
         return ReferenceEquals(otherIdentifier.Model, Model) &&
@@ -123,6 +134,9 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                         break;
                     case MemberExpression member when member.Expression is ConstantExpression:
                         model = GetModelFromMemberAccess(member);
+                        break;
+                    case not null when !RuntimeFeature.IsDynamicCodeSupported:
+                        model = GetModelFromExpression(memberExpression.Expression);
                         break;
                     case not null:
                         // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
@@ -164,6 +178,11 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         {
             case ConstantExpression model:
                 value = model.Value ?? throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                if (!RuntimeFeature.IsDynamicCodeSupported)
+                {
+                    return GetMemberValue(value, member.Member) ??
+                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                }
                 accessor = cache.GetOrAdd((value.GetType(), member.Member), CreateAccessor);
                 break;
             default:
@@ -203,6 +222,11 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     private static object GetModelFromIndexer(Expression methodCallExpression)
     {
+        if (!RuntimeFeature.IsDynamicCodeSupported)
+        {
+            return GetModelFromExpression(methodCallExpression);
+        }
+
         object model;
         var methodCallObjectLambda = Expression.Lambda(typeof(Func<object?>), methodCallExpression!);
         var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
@@ -214,6 +238,67 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         model = result;
         return model;
     }
+
+    private static object GetModelFromExpression(Expression expression)
+    {
+        object? value = expression switch
+        {
+            ConstantExpression constant => constant.Value,
+            MemberExpression member => GetMemberValue(
+                member.Expression is null ? null : GetModelFromExpression(member.Expression),
+                member.Member),
+            MethodCallExpression methodCall when ExpressionFormatter.IsSingleArgumentIndexer(methodCall) =>
+                methodCall.Method.Invoke(
+                    GetModelFromExpression(methodCall.Object!),
+                    [GetModelFromExpression(methodCall.Arguments[0])]),
+            BinaryExpression { NodeType: ExpressionType.ArrayIndex } arrayIndex =>
+                ((Array)GetModelFromExpression(arrayIndex.Left)).GetValue(
+                    (int)GetModelFromExpression(arrayIndex.Right)),
+            UnaryExpression
+            {
+                NodeType: ExpressionType.Convert or
+                    ExpressionType.ConvertChecked or
+                    ExpressionType.TypeAs,
+            } unary => EvaluateConversion(unary),
+            _ => throw new ArgumentException(
+                $"The provided expression contains a {expression.GetType().Name} which is not supported. " +
+                $"{nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object."),
+        };
+
+        return value ?? throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+    }
+
+    private static object? EvaluateConversion(UnaryExpression expression)
+    {
+        var value = GetModelFromExpression(expression.Operand);
+        if (expression.Method is not null)
+        {
+            return expression.Method.Invoke(null, [value]);
+        }
+
+        if (expression.NodeType == ExpressionType.TypeAs)
+        {
+            return expression.Type.IsInstanceOfType(value) ? value : null;
+        }
+
+        if (expression.Type.IsInstanceOfType(value) ||
+            Nullable.GetUnderlyingType(expression.Type)?.IsInstanceOfType(value) == true)
+        {
+            return value;
+        }
+
+        throw new InvalidCastException($"Unable to cast object of type '{value.GetType()}' to type '{expression.Type}'.");
+    }
+
+    private static object? GetMemberValue(object? target, MemberInfo member)
+        => member switch
+        {
+            PropertyInfo property => property.GetValue(target),
+            FieldInfo field => field.GetValue(target),
+            _ => throw new ArgumentException(
+                $"The provided expression contains a {member.GetType().Name} which is not supported. " +
+                $"{nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object."),
+        };
 
     private static void ClearCache()
     {
