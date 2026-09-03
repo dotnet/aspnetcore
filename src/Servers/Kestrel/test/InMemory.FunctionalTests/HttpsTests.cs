@@ -11,16 +11,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -31,14 +32,16 @@ public class HttpsTests : LoggedTest
     private static KestrelServerOptions CreateServerOptions()
     {
         // It's not actually going to be used - we just need to satisfy the check in ApplyDefaultCertificate
-        var mockHttpsConfig = new Mock<IHttpsConfigurationService>();
-        mockHttpsConfig.Setup(m => m.IsInitialized).Returns(true);
+        var httpsConfig = new TestHttpsConfigurationService
+        {
+            IsInitialized = true
+        };
 
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
-            .AddSingleton(mockHttpsConfig.Object)
-            .AddSingleton(Mock.Of<IHostEnvironment>())
+            .AddSingleton<IHttpsConfigurationService>(httpsConfig)
+            .AddSingleton<IHostEnvironment>(new TestHostEnvironment())
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;
@@ -780,6 +783,50 @@ public class HttpsTests : LoggedTest
         }
 
         Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
+    }
+
+    private sealed class TestHttpsConfigurationService : IHttpsConfigurationService
+    {
+        public bool IsInitialized { get; set; }
+
+        public void Initialize(
+            IHostEnvironment hostEnvironment,
+            ILogger<KestrelServer> serverLogger,
+            ILogger<HttpsConnectionMiddleware> httpsLogger)
+        {
+            IsInitialized = true;
+        }
+
+        public void ApplyHttpsConfiguration(
+            HttpsConnectionAdapterOptions httpsOptions,
+            EndpointConfig endpoint,
+            KestrelServerOptions serverOptions,
+            CertificateConfig defaultCertificateConfig,
+            ConfigurationReader configurationReader)
+        {
+        }
+
+        public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
+            => null!;
+
+        public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader) => null;
+
+        public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
+        {
+        }
+
+        public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions) => null!;
+    }
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Production;
+
+        public string ApplicationName { get; set; } = "TestApplication";
+
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 
     private class HandshakeErrorLoggerProvider : ILoggerProvider

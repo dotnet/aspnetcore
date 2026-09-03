@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -83,9 +83,9 @@ internal class WebTransportTestUtilities
         var features = new FeatureCollection();
         features.Set<IStreamIdFeature>(new StreamId(streamCounter++));
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input));
-        features.Set(Mock.Of<IConnectionItemsFeature>());
-        features.Set(Mock.Of<IProtocolErrorCodeFeature>());
-        features.Set(Mock.Of<IConnectionMetricsContextFeature>());
+        features.Set<IConnectionItemsFeature>(new ConnectionItemsFeature());
+        features.Set<IProtocolErrorCodeFeature>(new ProtocolErrorCodeFeature());
+        features.Set<IConnectionMetricsContextFeature>(new ConnectionMetricsContextFeature());
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
@@ -102,6 +102,24 @@ internal class WebTransportTestUtilities
         {
             _id = id;
         }
+    }
+
+    private sealed class ConnectionItemsFeature : IConnectionItemsFeature
+    {
+        public IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
+    }
+
+    private sealed class ProtocolErrorCodeFeature : IProtocolErrorCodeFeature
+    {
+        public long Error { get; set; } = -1;
+    }
+
+    private sealed class ConnectionMetricsContextFeature : IConnectionMetricsContextFeature
+    {
+        public ConnectionMetricsContext MetricsContext { get; } = new()
+        {
+            ConnectionContext = new DefaultConnectionContext()
+        };
     }
 
     class StreamWriterControl : IHttpResponseControl

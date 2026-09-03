@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -72,6 +71,6 @@ public class HttpResponsePipeWriterTests
 
     private static HttpResponsePipeWriter CreateHttpResponsePipeWriter()
     {
-        return new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
+        return new HttpResponsePipeWriter(new TestHttpResponseControl());
     }
 }

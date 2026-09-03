@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -26,7 +25,7 @@ public class Http1HttpProtocolFeatureCollectionTests
 
     public Http1HttpProtocolFeatureCollectionTests()
     {
-        var connectionContext = Mock.Of<ConnectionContext>();
+        var connectionContext = new TestConnectionContext();
         var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
         var connectionFeatures = new FeatureCollection();
@@ -35,9 +34,9 @@ public class Http1HttpProtocolFeatureCollectionTests
         var context = TestContextFactory.CreateHttpConnectionContext(
             connectionContext: connectionContext,
             serviceContext: new TestServiceContext(),
-            transport: Mock.Of<IDuplexPipe>(),
+            transport: TestDuplexPipe.Create(),
             connectionFeatures: connectionFeatures,
-            timeoutControl: Mock.Of<ITimeoutControl>(),
+            timeoutControl: new TestTimeoutControl(),
             metricsContext: metricsContext);
 
         _httpConnectionContext = context;

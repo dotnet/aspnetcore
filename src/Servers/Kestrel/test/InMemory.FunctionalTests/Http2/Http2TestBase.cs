@@ -25,7 +25,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -121,9 +120,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     private readonly FakeTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
-    protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
-    internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
-    internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
+    internal readonly TestConnectionContext _mockConnectionContext = new();
+    internal readonly TestTimeoutHandler _mockTimeoutHandler = new();
+    internal readonly MockTimeoutControlBase _mockTimeoutControl;
 
     protected readonly ConcurrentDictionary<int, TaskCompletionSource> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource>();
     protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -169,19 +168,19 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
         _hpackEncoder = new DynamicHPackEncoder();
 
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
-        _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
-        _timeoutControl.Debugger = Mock.Of<IDebugger>();
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler, _timeProvider);
+        _mockTimeoutControl = new MockTimeoutControlBase(_timeoutControl);
+        _timeoutControl.Debugger = new TestDebugger();
 
-        _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
+        _mockConnectionContext.OnAbort = ex =>
         {
             // Emulate transport abort so the _connectionTask completes.
             Task.Run(() =>
-        {
-            Logger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
-            _pair.Application.Output.Complete(ex);
-        });
-        });
+            {
+                Logger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
+                _pair.Application.Output.Complete(ex);
+            });
+        };
 
         _noopApplication = context => Task.CompletedTask;
         _notImplementedApp = _ => throw new NotImplementedException();
@@ -475,20 +474,20 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _metricsTagsFeature = new TestConnectionMetricsTagsFeature();
 
-        var metricsContext = TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object);
+        var metricsContext = TestContextFactory.CreateMetricsContext(_mockConnectionContext);
         _metricsContextFeature = new TestConnectionMetricsContextFeature() { MetricsContext = metricsContext };
 
         var features = new FeatureCollection();
         features.Set<IConnectionMetricsContextFeature>(_metricsContextFeature);
         features.Set<IConnectionMetricsTagsFeature>(_metricsTagsFeature);
-        _mockConnectionContext.Setup(x => x.Features).Returns(features);
+        _mockConnectionContext.FeaturesCollection = features;
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
-            connectionContext: _mockConnectionContext.Object,
+            connectionContext: _mockConnectionContext,
             transport: _pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: features,
-            timeoutControl: _mockTimeoutControl.Object,
+            timeoutControl: _mockTimeoutControl,
             metricsContext: metricsContext);
 
         _connection = new Http2Connection(httpConnectionContext);
@@ -496,8 +495,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         var httpConnection = new HttpConnection(httpConnectionContext);
         httpConnection.Initialize(_connection);
-        _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
-                           .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
+        _mockTimeoutHandler.OnTimeoutCallback = r => httpConnection.OnTimeout(r);
 
         _timeoutControl.Initialize();
     }
@@ -606,9 +604,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _serviceContext,
             new TransportConnectionManager(_serviceContext.ConnectionManager),
             _ => throw new NotImplementedException($"{nameof(_connection.ProcessRequestsAsync)} should invoked instead - hence transport connection manager does not have the connection registered."),
-            _mockConnectionContext.Object,
+            _mockConnectionContext,
             new KestrelTrace(_serviceContext.LoggerFactory),
-            TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object));
+            TestContextFactory.CreateMetricsContext(_mockConnectionContext));
     }
 
     protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
@@ -1453,26 +1451,70 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal class MockTimeoutControlBase : ITimeoutControl
     {
         private readonly ITimeoutControl _realTimeoutControl;
+        private TimeoutReason? _setTimeoutCallbackReason;
 
         public MockTimeoutControlBase(ITimeoutControl realTimeoutControl)
         {
             _realTimeoutControl = realTimeoutControl;
         }
 
+        public List<(TimeSpan Timeout, TimeoutReason Reason)> SetTimeoutCalls { get; } = new();
+
+        public List<(TimeSpan Timeout, TimeoutReason Reason)> ResetTimeoutCalls { get; } = new();
+
+        public int CancelTimeoutCallCount { get; private set; }
+
+        public Action<TimeSpan, TimeoutReason> SetTimeoutCallback { get; private set; }
+
         public virtual TimeoutReason TimerReason => _realTimeoutControl.TimerReason;
+
+        public void ConfigureSetTimeoutCallback(TimeoutReason timeoutReason, Action<TimeSpan, TimeoutReason> callback)
+        {
+            _setTimeoutCallbackReason = timeoutReason;
+            SetTimeoutCallback = callback;
+        }
+
+        public void AssertSetTimeoutCount(TimeoutReason reason, int expectedCount)
+        {
+            Assert.Equal(expectedCount, SetTimeoutCalls.Count(call => call.Reason == reason));
+        }
+
+        public void AssertResetTimeoutCount(TimeoutReason reason, int expectedCount)
+        {
+            Assert.Equal(expectedCount, ResetTimeoutCalls.Count(call => call.Reason == reason));
+        }
+
+        public void AssertCancelTimeoutCount(int expectedCount)
+        {
+            Assert.Equal(expectedCount, CancelTimeoutCallCount);
+        }
+
+        public void AssertCancelTimeoutAtLeastOnce()
+        {
+            Assert.True(CancelTimeoutCallCount >= 1);
+        }
 
         public virtual void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
+            SetTimeoutCalls.Add((timeout, timeoutReason));
+            if (_setTimeoutCallbackReason == timeoutReason && SetTimeoutCallback is not null)
+            {
+                SetTimeoutCallback(timeout, timeoutReason);
+                return;
+            }
+
             _realTimeoutControl.SetTimeout(timeout, timeoutReason);
         }
 
         public virtual void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
+            ResetTimeoutCalls.Add((timeout, timeoutReason));
             _realTimeoutControl.ResetTimeout(timeout, timeoutReason);
         }
 
         public virtual void CancelTimeout()
         {
+            CancelTimeoutCallCount++;
             _realTimeoutControl.CancelTimeout();
         }
 
@@ -1526,7 +1568,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.Tick(timestamp);
         }
 
-        public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
+        public virtual long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
         {
             return _realTimeoutControl.GetResponseDrainDeadline(ticks, minRate);
         }
@@ -1539,5 +1581,147 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         public string Path { get; set; }
         public string RawTarget { get; set; }
         public string Authority { get; set; }
+    }
+}
+
+internal sealed class TestConnectionContext : ConnectionContext
+{
+    private readonly List<AbortInvocation> _abortInvocations = new();
+
+    public Action<ConnectionAbortedException> OnAbort { get; set; }
+
+    public int AbortCallCount => _abortInvocations.Count;
+
+    public IFeatureCollection FeaturesCollection { get; set; } = new FeatureCollection();
+
+    public override string ConnectionId { get; set; } = "TestConnectionId";
+
+    public override IFeatureCollection Features => FeaturesCollection;
+
+    public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
+
+    public override IDuplexPipe Transport { get; set; } = new DuplexPipe(PipeReader.Create(Stream.Null), PipeWriter.Create(Stream.Null));
+
+    public override void Abort(ConnectionAbortedException abortReason)
+    {
+        _abortInvocations.Add(new AbortInvocation(abortReason));
+        OnAbort?.Invoke(abortReason);
+    }
+
+    public void Reset()
+    {
+        OnAbort = null;
+        _abortInvocations.Clear();
+        FeaturesCollection = new FeatureCollection();
+    }
+
+    public void AssertAbortCount(int expectedCount)
+    {
+        Assert.Equal(expectedCount, _abortInvocations.Count);
+        foreach (var invocation in _abortInvocations)
+        {
+            invocation.Verified = true;
+        }
+    }
+
+    public void AssertAbortCount(int expectedCount, Func<ConnectionAbortedException, bool> predicate)
+    {
+        var matchingInvocations = _abortInvocations.Where(invocation => predicate(invocation.Exception)).ToList();
+        Assert.Equal(expectedCount, matchingInvocations.Count);
+        foreach (var invocation in matchingInvocations)
+        {
+            invocation.Verified = true;
+        }
+    }
+
+    public void AssertNoOtherCalls()
+    {
+        Assert.DoesNotContain(_abortInvocations, invocation => !invocation.Verified);
+    }
+
+    private sealed class AbortInvocation
+    {
+        public AbortInvocation(ConnectionAbortedException exception)
+        {
+            Exception = exception;
+        }
+
+        public ConnectionAbortedException Exception { get; }
+
+        public bool Verified { get; set; }
+    }
+}
+
+internal sealed class TestTimeoutHandler : ITimeoutHandler
+{
+    private readonly List<TimeoutInvocation> _invocations = new();
+
+    public Action<TimeoutReason> OnTimeoutCallback { get; set; }
+
+    public void OnTimeout(TimeoutReason reason)
+    {
+        _invocations.Add(new TimeoutInvocation(reason));
+        OnTimeoutCallback?.Invoke(reason);
+    }
+
+    public void AssertOnTimeoutCount(int expectedCount)
+    {
+        Assert.Equal(expectedCount, _invocations.Count);
+        foreach (var invocation in _invocations)
+        {
+            invocation.Verified = true;
+        }
+    }
+
+    public void AssertOnTimeoutCount(TimeoutReason reason, int expectedCount)
+    {
+        var matchingInvocations = _invocations.Where(invocation => invocation.Reason == reason).ToList();
+        Assert.Equal(expectedCount, matchingInvocations.Count);
+        foreach (var invocation in matchingInvocations)
+        {
+            invocation.Verified = true;
+        }
+    }
+
+    public void AssertNoOtherCalls()
+    {
+        Assert.DoesNotContain(_invocations, invocation => !invocation.Verified);
+    }
+
+    private sealed class TimeoutInvocation
+    {
+        public TimeoutInvocation(TimeoutReason reason)
+        {
+            Reason = reason;
+        }
+
+        public TimeoutReason Reason { get; }
+
+        public bool Verified { get; set; }
+    }
+}
+
+internal sealed class TestDebugger : IDebugger
+{
+    public bool IsAttached { get; set; }
+}
+
+internal sealed class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler
+{
+    public List<Http2Stream> CompletedStreams { get; } = new();
+
+    public int DecrementActiveClientStreamCountCallCount { get; private set; }
+
+    public Action<Http2Stream> OnStreamCompletedCallback { get; set; }
+
+    public void DecrementActiveClientStreamCount()
+    {
+        DecrementActiveClientStreamCountCallCount++;
+    }
+
+    public void OnStreamCompleted(Http2Stream stream)
+    {
+        CompletedStreams.Add(stream);
+        OnStreamCompletedCallback?.Invoke(stream);
     }
 }

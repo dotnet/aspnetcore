@@ -20,10 +20,10 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -34,15 +34,17 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     private static KestrelServerOptions CreateServerOptions()
     {
-        var env = new Mock<IHostEnvironment>();
-        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+        var env = new TestHostEnvironment
+        {
+            ContentRootPath = Directory.GetCurrentDirectory()
+        };
 
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
             .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
-            .AddSingleton(env.Object)
+            .AddSingleton<IHostEnvironment>(env)
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;
@@ -1792,5 +1794,16 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             catch (IOException) { }
             Assert.Null(line);
         }
+    }
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Production;
+
+        public string ApplicationName { get; set; } = "TestApplication";
+
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

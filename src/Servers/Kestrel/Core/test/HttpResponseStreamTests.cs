@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -96,8 +95,8 @@ public class HttpResponseStreamTests
     [Fact]
     public async Task StopAcceptingWritesCausesWriteToThrowObjectDisposedException()
     {
-        var pipeWriter = new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
-        var stream = new HttpResponseStream(Mock.Of<IHttpBodyControlFeature>(), pipeWriter);
+        var pipeWriter = new HttpResponsePipeWriter(new TestHttpResponseControl());
+        var stream = new HttpResponseStream(new TestBodyControlFeature(), pipeWriter);
         pipeWriter.StartAcceptingWrites();
         await pipeWriter.StopAcceptingWritesAsync();
         var ex = await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.WriteAsync(new byte[1], 0, 1); });
@@ -108,13 +107,11 @@ public class HttpResponseStreamTests
     public async Task SynchronousWritesThrowIfDisallowedByIHttpBodyControlFeature()
     {
         var allowSynchronousIO = false;
-        var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-        mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(() => allowSynchronousIO);
-        var mockHttpResponseControl = new Mock<IHttpResponseControl>();
-        mockHttpResponseControl.Setup(m => m.WritePipeAsync(It.IsAny<ReadOnlyMemory<byte>>(), CancellationToken.None)).Returns(new ValueTask<FlushResult>(new FlushResult()));
+        var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = allowSynchronousIO };
+        var httpResponseControl = new TestHttpResponseControl();
 
-        var pipeWriter = new HttpResponsePipeWriter(mockHttpResponseControl.Object);
-        var stream = new HttpResponseStream(mockBodyControl.Object, pipeWriter);
+        var pipeWriter = new HttpResponsePipeWriter(httpResponseControl);
+        var stream = new HttpResponseStream(bodyControl, pipeWriter);
         pipeWriter.StartAcceptingWrites();
 
         // WriteAsync doesn't throw.
@@ -124,13 +121,14 @@ public class HttpResponseStreamTests
         Assert.Equal("Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.", ioEx.Message);
 
         allowSynchronousIO = true;
+        bodyControl.AllowSynchronousIO = allowSynchronousIO;
         // If IHttpBodyControlFeature.AllowSynchronousIO is true, Write no longer throws.
         stream.Write(new byte[1], 0, 1);
     }
 
     private static HttpResponseStream CreateHttpResponseStream()
     {
-        var pipeWriter = new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
-        return new HttpResponseStream(Mock.Of<IHttpBodyControlFeature>(), pipeWriter);
+        var pipeWriter = new HttpResponsePipeWriter(new TestHttpResponseControl());
+        return new HttpResponseStream(new TestBodyControlFeature(), pipeWriter);
     }
 }

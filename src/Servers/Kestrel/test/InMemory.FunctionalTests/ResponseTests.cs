@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
@@ -4986,20 +4985,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         HttpStatusCode expectedServerStatusCode,
         bool sendMalformedRequest = false)
     {
-        var mockHttpContextFactory = new Mock<IHttpContextFactory>();
-        mockHttpContextFactory.Setup(f => f.Create(It.IsAny<IFeatureCollection>()))
-            .Returns<IFeatureCollection>(fc => new DefaultHttpContext(fc));
-
         var disposedTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        mockHttpContextFactory.Setup(f => f.Dispose(It.IsAny<HttpContext>()))
-            .Callback<HttpContext>(c =>
+        var httpContextFactory = new TestHttpContextFactory
+        {
+            CreateCallback = fc => new DefaultHttpContext(fc),
+            DisposeCallback = c =>
             {
                 disposedTcs.TrySetResult(c.Response.StatusCode);
-            });
+            }
+        };
 
         await using (var server = new TestServer(handler, new TestServiceContext(loggerFactory),
             options => options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))),
-            services => services.AddSingleton(mockHttpContextFactory.Object)))
+            services => services.AddSingleton<IHttpContextFactory>(httpContextFactory)))
         {
             using (var connection = server.CreateConnection())
             {
@@ -5088,5 +5086,20 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
 
         return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
+    }
+
+    private sealed class TestHttpContextFactory : IHttpContextFactory
+    {
+        public Func<IFeatureCollection, HttpContext> CreateCallback { get; set; }
+
+        public Action<HttpContext> DisposeCallback { get; set; }
+
+        public HttpContext Create(IFeatureCollection featureCollection)
+            => CreateCallback?.Invoke(featureCollection) ?? new DefaultHttpContext(featureCollection);
+
+        public void Dispose(HttpContext httpContext)
+        {
+            DisposeCallback?.Invoke(httpContext);
+        }
     }
 }

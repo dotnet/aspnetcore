@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -18,7 +17,7 @@ public class BodyControlTests
     [Fact]
     public async Task BodyControlThrowAfterAbort()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
         var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
         var ex = new Exception("My error");
@@ -34,7 +33,7 @@ public class BodyControlTests
     [Fact]
     public async Task BodyControlThrowOnAbortAfterUpgrade()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
         var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
 
         var upgrade = bodyControl.Upgrade();
@@ -59,7 +58,7 @@ public class BodyControlTests
     [Fact]
     public async Task BodyControlThrowOnUpgradeAfterAbort()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
 
         var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
         var ex = new Exception("My error");
@@ -84,7 +83,7 @@ public class BodyControlTests
     [Fact]
     public async Task RequestPipeMethodsThrowAfterAbort()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
 
         var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
         var ex = new Exception("My error");
@@ -106,7 +105,7 @@ public class BodyControlTests
     [Fact]
     public async Task RequestPipeThrowsObjectDisposedExceptionAfterStop()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
 
         var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
@@ -123,7 +122,7 @@ public class BodyControlTests
     [Fact]
     public async Task ResponsePipeThrowsObjectDisposedExceptionAfterStop()
     {
-        var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+        var bodyControl = new BodyControl(new TestBodyControlFeature(), new TestHttpResponseControl());
 
         var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
