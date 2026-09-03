@@ -566,7 +566,7 @@ on:
         # optional enrichment (never the per-test counts) and fails loud rather than letting
         # GitHub silently truncate into corrupt JSON. Validated ~170KB on 30 days of data.
         python3 << 'SCRIPT'
-        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error, re
+        import json, os, sys, time, datetime, hashlib, urllib.parse, urllib.request, urllib.error, re
 
         ADO = "https://dev.azure.com/dnceng-public/public/_apis"
         VSTMR = "https://vstmr.dev.azure.com/dnceng-public/public/_apis"
@@ -799,9 +799,273 @@ on:
                             e["error"] = scrub_secrets(em)[:ERROR_CAP]
                         if st:
                             e["stack"] = scrub_secrets(st)[:STACK_CAP]
+                        # Real AzDO TestRun name (e.g. "Quarantine-Mono-Linux-Release-xunit").
+                        # Free: it rides along on the result detail we already fetched. Used as
+                        # the Arcade "Leg Name" and as the durable environment identity, both of
+                        # which are unrecoverable once the build ages out of public retention.
+                        leg = (det.get("testRun") or {}).get("name")
+                        if leg:
+                            e["leg"] = str(leg)[:120]
+                        # The build this error/leg was actually read from. dnceng validates a
+                        # Known Issue signature against the build the issue cites, so the cited
+                        # build must be the one whose logs contain this exact text — not merely
+                        # the most recent build in which the test failed.
+                        e["evidence_build"] = occ.get("build")
                 if is_wi:
                     e["probes"] = probes
             return agg
+
+
+        # --- BEGIN kbe-signature (extracted verbatim by
+        # .github/workflows/scripts/test-quarantine/test_kbe_signature.py — keep the
+        # sentinels and do not reformat this block without running that test) ---
+        #
+        # Derive an Arcade "Known Build Error" signature for each individual failing test so the
+        # quarantine issue carries a durable, matchable failure fingerprint captured while the
+        # evidence still exists. Public AzDO/Helix retention is ~30 days, after which the
+        # errorMessage is gone for good and cannot be reconstructed from the issue prose.
+        #
+        # Contract: dotnet/arcade -> Documentation/Build Analysis/KnownIssues.md
+        #   ErrorMessage      per-line String.Contains against errorMessage + stackTrace,
+        #                     plus the Helix console ONLY when ExcludeConsoleLog is false.
+        #   ExcludeConsoleLog true here. With false, one shared xunit console attributes every
+        #                     failure in the work item to this issue — the observed
+        #                     misattribution on dotnet/aspnetcore#62308, whose signature targets
+        #                     a QuicConnectionContextTests method but whose auto-maintained
+        #                     report table lists QuicConnectionListenerTests hits.
+        #   BuildRetry        always false. A quarantine is never "fixed" by retrying.
+        #
+        # Because the console is excluded, the signature MUST come from errorMessage/stackTrace
+        # and must NOT use the "<FQN> [FAIL]" form — that line only ever appears in the console.
+        # Test identity therefore lives in the supplemental block, not in the matcher.
+        #
+        # This step deliberately does NOT apply the `Known Build Error` label. Labelling enrolls
+        # the issue into dnceng validation and https://github.com/orgs/dotnet/projects/111, and
+        # is a separate human-gated decision: dotnet/runtime carries both labels on only ~9% of
+        # its disabled tests, and files the KBE while the test is still blocking, not after.
+
+        SIG_MIN_LEN = 24     # below this a Contains match is too generic to be trustworthy
+        SIG_MAX_LEN = 160    # keep the matcher line-scoped and the issue body small
+
+        # Fragments that differ between runs. A signature spanning one of these would match only
+        # the single build it was captured from.
+        _VOLATILE = [
+            re.compile(r'\b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b'),  # GUID
+            re.compile(r'0x[0-9a-fA-F]+'),                                            # hex address
+            re.compile(r'\b\d{1,3}(?:\.\d{1,3}){3}\b'),                               # IPv4
+            re.compile(r'\b\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)?'), # timestamp
+            re.compile(r'\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|seconds?|minutes?|s)\b'),  # duration
+            re.compile(r'[A-Za-z]:\\[^\s"\']+'),                                      # Windows path
+            re.compile(r'/(?:home|tmp|mnt|Users|private)/[^\s"\']+'),                  # POSIX path
+            re.compile(r':\d{2,5}\b'),                                                # port
+            re.compile(r'\b\d{3,}\b'),                                                # ids, counts
+            re.compile(r'#\d+'),                                                      # issue/pr refs
+        ]
+
+
+        def _volatile_spans(line):
+            spans = []
+            for rx in _VOLATILE:
+                for m in rx.finditer(line):
+                    if m.end() > m.start():
+                        spans.append((m.start(), m.end()))
+            if not spans:
+                return []
+            spans.sort()
+            merged = [spans[0]]
+            for s, e in spans[1:]:
+                if s <= merged[-1][1]:
+                    merged[-1] = (merged[-1][0], max(merged[-1][1], e))
+                else:
+                    merged.append((s, e))
+            return merged
+
+
+        def stable_segments(line):
+            """Split `line` on volatile spans. Returns the contiguous runs BETWEEN them.
+
+            Contiguity is the whole point: ErrorMessage is a Contains match, so the emitted
+            signature has to be a genuine literal substring of the failure text. Stripping the
+            volatile pieces out and rejoining the remainder would produce a string that never
+            matches anything."""
+            out, prev = [], 0
+            for s, e in _volatile_spans(line):
+                if s > prev:
+                    out.append(line[prev:s])
+                prev = e
+            if prev < len(line):
+                out.append(line[prev:])
+            return out or [line]
+
+
+        def derive_signature(text):
+            """Longest volatile-free contiguous segment of `text`, or (None, reason)."""
+            if not text or not text.strip():
+                return None, "no-error-message"
+            best = ""
+            for raw in text.splitlines():
+                line = raw.strip()
+                if not line:
+                    continue
+                for seg in stable_segments(line):
+                    seg = seg.strip()
+                    if len(seg) > len(best):
+                        best = seg
+            if len(best) < SIG_MIN_LEN:
+                return None, "no-stable-signature-segment"
+            sig = best[:SIG_MAX_LEN].strip()
+            # Fail closed rather than emit a blob that provably cannot match its own evidence.
+            if sig not in text:
+                return None, "signature-not-substring"
+            return sig, None
+
+        def parse_environment(leg):
+            """Split an AzDO TestRun name into (platform, configuration).
+
+            Records the literal string "unknown" / "not-encoded" rather than guessing a
+            default: a fabricated "Linux/Debug" would look like evidence while being an
+            assumption, and this block is read as captured fact after the build ages out.
+            Real observed shapes include "Quarantine-Mono-Linux-Release-xunit",
+            "Windows.Amd64.VS2026.Open", "OSX.26.Arm64.Open" and "Ubuntu.2404.Amd64.Open"."""
+            low = (leg or "").lower()
+            if "windows" in low or low.startswith("win"):
+                platform = "Windows"
+            elif "osx" in low or "macos" in low or "darwin" in low:
+                platform = "macOS"
+            elif "linux" in low or "ubuntu" in low or "alpine" in low or "debian" in low:
+                platform = "Linux"
+            else:
+                platform = "unknown"
+            if "release" in low:
+                configuration = "Release"
+            elif "debug" in low:
+                configuration = "Debug"
+            else:
+                # Several real run names (the ".Open" Helix queue families) genuinely do not
+                # encode a configuration. That is different from failing to recognise one.
+                configuration = "not-encoded" if platform != "unknown" else "unknown"
+            return platform, configuration
+
+
+        def attach_kbe(agg, bmeta, window):
+            """Attach a ready-to-paste Arcade Known Issue section to each individual failing test.
+
+            The rendered `section` is the deliverable: the agent copies it verbatim rather than
+            re-authoring it, so the signature that reaches the issue is byte-identical to the one
+            derived here from the real AzDO `errorMessage`.
+
+            Heading choice: `### Known Issue Error Message` is the current Arcade template
+            heading and is what the Build Insights "report new issue" link prefills. It is used
+            here instead of `## Error Message` because the quarantine issue template already
+            uses that heading for human-readable prose, and two identically-named sections would
+            be ambiguous to both readers and any future parser. dotnet/aspnetcore#57416 is a
+            live, dnceng-validated Known Build Error whose blob sits under this exact heading
+            with no `## Error Message` section at all, which confirms the heading is not
+            load-bearing for validation.
+
+            Work items are skipped: their text comes from the shared Helix console, which is
+            exactly the source ExcludeConsoleLog is set to ignore."""
+            for name, e in agg.items():
+                if name.endswith(WI_SUFFIX):
+                    e["kbe_reason"] = "work-item-not-an-individual-test"
+                    continue
+                sig, reason = derive_signature(e.get("error") or "")
+                if not sig:
+                    e["kbe_reason"] = reason
+                    continue
+                # Cite the build the signature was actually read from. dnceng validates a Known
+                # Issue against the build the issue cites, so citing the most recent failing
+                # build instead would fail validation whenever the two differ.
+                bid = e.get("evidence_build")
+                if not bid:
+                    e["kbe_reason"] = "no-evidence-build"
+                    continue
+                leg = e.get("leg")
+                if not leg:
+                    e["kbe_reason"] = "no-leg-name"
+                    continue
+                blob = {
+                    "ErrorMessage": sig,
+                    "BuildRetry": False,
+                    # Skip Helix console analysis. One xunit console log is shared by every test
+                    # in a work item, so including it attributes unrelated failures in the same
+                    # work item to this issue (observed live on dotnet/aspnetcore#62308).
+                    "ExcludeConsoleLog": True,
+                }
+                url = (f"https://dev.azure.com/dnceng-public/public/_build/"
+                       f"results?buildId={bid}&view=results")
+                captured = (datetime.datetime.now(datetime.timezone.utc)
+                                    .strftime("%Y-%m-%dT%H:%M:%SZ"))
+                # Short digest of the signature itself, carried in the marker. It makes the
+                # section self-verifying: anything downstream can re-hash the ErrorMessage it
+                # finds in the issue body and compare, without needing this run's data. That
+                # catches the realistic failure mode — the agent paraphrasing, re-wrapping or
+                # truncating the text instead of copying it. It is an integrity check, not an
+                # anti-forgery measure: it cannot stop a deliberate rewrite of both values.
+                sig_hash = hashlib.sha256(sig.encode("utf-8")).hexdigest()[:12]
+                platform, configuration = parse_environment(leg)
+                # Observed window, from the builds this run actually inspected. Explicitly a
+                # snapshot of what was queried (30 days, defs 83 + 87), not a claim about the
+                # test's whole history.
+                starts = sorted(
+                    s for s in ((bmeta.get(str(b)) or {}).get("startedUtc")
+                                for b in e.get("builds") or []) if s
+                )
+                first_seen = starts[0] if starts else "unknown"
+                last_seen = starts[-1] if starts else "unknown"
+                distinct_builds = len(set(e.get("builds") or []))
+                section = "\n".join([
+                    "### Known Issue Error Message",
+                    "",
+                    "<!-- Derived deterministically by the test-quarantine workflow from the",
+                    "     Azure DevOps test result errorMessage. Do not hand-edit: the value is",
+                    "     a literal substring of the real failure text and a String.Contains",
+                    "     match depends on it staying byte-identical. -->",
+                    f"<!-- kbe-signature: v1 build={bid} captured={captured} sha256_12={sig_hash} -->",
+                    "",
+                    f"Build: {url}",
+                    f"Leg Name: {leg}",
+                    "",
+                    "```json",
+                    json.dumps(blob, indent=2),
+                    "```",
+                    "",
+                    "<details><summary>Capture details</summary>",
+                    "",
+                    "| Field | Value |",
+                    "| --- | --- |",
+                    f"| Test | `{name}` |",
+                    f"| Assembly | `{e.get('assembly') or 'unknown'}` |",
+                    f"| Test run | `{leg}` |",
+                    f"| Platform | {platform} |",
+                    f"| Configuration | {configuration} |",
+                    f"| Signature source | Azure DevOps test result `errorMessage` |",
+                    f"| Evidence build | {bid} |",
+                    f"| Captured (UTC) | {captured} |",
+                    "",
+                    f"Observed in the window this run queried ({window}): "
+                    f"{e.get('count', 0)} failure(s) across {distinct_builds} build(s); "
+                    f"first {first_seen}, last {last_seen}. This is a snapshot of what was "
+                    "queried, not the test's complete history.",
+                    "",
+                    "</details>",
+                ])
+                e["kbe"] = {
+                    "blob": blob,
+                    "build": bid,
+                    "build_url": url,
+                    "leg": leg,
+                    "platform": platform,
+                    "configuration": configuration,
+                    "first_seen_utc": first_seen,
+                    "last_seen_utc": last_seen,
+                    "distinct_builds": distinct_builds,
+                    "captured_utc": captured,
+                    "section": section,
+                }
+            return agg
+
+        # --- END kbe-signature ---
 
 
         _MARKER = re.compile(r'\[(?:PASS|FAIL|SKIP)\]\s*$')
@@ -849,7 +1113,12 @@ on:
             """Serialize, but guarantee the result stays under SAFE_OUTPUT by progressively
             shedding the largest optional payloads (never the core per-test counts). Fail loud
             if even the trimmed core is too big, rather than letting GITHUB_OUTPUT silently
-            truncate into corrupt JSON."""
+            truncate into corrupt JSON.
+
+            The derived `kbe` blob is deliberately never shed. It is two orders of magnitude
+            smaller than the raw `error`/`stack` text it was derived from, and it is the one
+            artifact that must survive: the raw text is recoverable from AzDO until retention
+            expires, whereas a signature that never reaches the issue is lost permanently."""
             if sizeof(out) <= SAFE_OUTPUT:
                 return json.dumps(out, separators=(",", ":"))
             out["trim"] = []
@@ -963,6 +1232,7 @@ on:
             for b in a_builds:
                 bmeta[str(b["id"])] = build_meta(b)
             source_a = enrich(aggregate([b["id"] for b in a_builds]))
+            attach_kbe(source_a, bmeta, "last 30 days, pipelines 83 and 87, `refs/heads/main`")
             # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
             # the failed/partial builds above, to spot a passing run between two failures.
             all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
@@ -983,6 +1253,7 @@ on:
                 for b in builds_by_ids(b_ids):
                     bmeta[str(b["id"])] = build_meta(b)
             source_b = enrich(aggregate(b_ids))
+            attach_kbe(source_b, bmeta, "recently merged pull request builds, pipelines 83 and 87")
 
             # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
             # tracked occurrence until one yields [FAIL] blocks (the first build is often a
@@ -1296,6 +1567,7 @@ The injected object has this shape:
 - `generated_utc` — when the data was collected.
 - `builds` — a compact metadata map keyed by build ID (as a string), covering every build referenced below. Each value has `def` (83 or 87), `startedUtc`/`finishedUtc`, `sourceVersion` (the commit the build ran), and `pr` (the PR number for a merged-PR build, or `null` for a `main` build). Use it for the time- and PR-based checks in Step 1.2 (below) so you never need an AzDO call.
 - `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `error` and `stack` (the real failure message and stack trace, capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
+- **`kbe` — the deterministic Known Issue payload** (individual test cases only). When present it has `section` (a fully rendered, ready-to-paste markdown section), plus `blob`, `build`, `build_url`, `leg`, and `captured_utc` for reference. The `ErrorMessage` inside it was derived mechanically from the real Azure DevOps `errorMessage` and is a **literal substring** of it, with volatile fragments (ports, GUIDs, timings, addresses, paths, counters) excluded so it stays stable across runs. `build` is the build the text was actually read from — not necessarily the most recent failing build. When the payload could not be derived safely the entry instead carries `kbe_reason` explaining why (`no-error-message`, `no-stable-signature-segment`, `no-evidence-build`, `no-leg-name`, or `work-item-not-an-individual-test`). **You must never author, edit, reformat, translate, shorten, or "improve" this content** — it is a `String.Contains` matcher and a single changed character silently stops it matching. Copy `section` verbatim or omit it entirely.
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
@@ -1366,6 +1638,7 @@ Before creating issues and PRs, group related failures together:
 
 - If **multiple test methods within the same test class** are failing with the **same error message or similar stack traces** (e.g., the same exception type and call chain), they should be treated as a single group caused by the same underlying problem.
 - Plan to file **one issue** for the entire group, listing all affected test names under `## Failing Test(s)`.
+- **Known Issue payload for a grouped issue.** Include the `### Known Issue Error Message` section only when **every** test in the group has a `kbe` object **and** all of their `kbe.blob.ErrorMessage` values are byte-identical. That is the only case in which the derived signature demonstrably covers the whole group. If the group's tests derived different signatures — or any of them derived none — **omit the section** and say so in one line, rather than picking one test's signature and implying it represents the others.
 - In the quarantine PR, all tests in the group should reference the **same issue URL** in their `[QuarantinedTest]` attribute.
 - If the entire class qualifies for class-level quarantine (>3 failures, multiple methods, similar errors), apply the `[QuarantinedTest]` attribute to the class instead of individual methods.
 
@@ -1648,6 +1921,9 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
      - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
      - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
      - `## Build` — link to the most recent failing build (computed above): `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
+     - **`### Known Issue Error Message`** — if, and only if, this test's `source_a` entry has a `kbe` object, append its `kbe.section` value **verbatim as the final section of the body**. Copy the string exactly: every character, the HTML comments, the `Build:`/`Leg Name:` lines, and the fenced ` ```json ` block. Do **not** re-wrap it, re-indent it, re-derive the signature from the logs yourself, merge it into `## Error Message`, or add a second `## Error Message` heading. If the entry has `kbe_reason` instead of `kbe`, **omit this section entirely** and add one short line under `## Failure Frequency` stating that no stable error signature could be derived and quoting the `kbe_reason` value — do not invent a substitute signature.
+     - **Do not apply the `Known Build Error` label to the issue.** The section above is a prepared payload, not an active Known Issue registration; deciding to register it is a separate human decision. The only label you may add is the one already allowed by the workflow configuration.
+     - **Self-check before you submit the issue.** For each body containing a `### Known Issue Error Message` section, confirm all four: (a) the `sha256_12=` value in the `<!-- kbe-signature ... -->` comment is character-for-character the one from `kbe.section`; (b) the `ErrorMessage` string inside the JSON fence is character-for-character the one from `kbe.blob.ErrorMessage`; (c) the body contains exactly one ` ```json ` fence and exactly one `### Known Issue Error Message` heading; (d) you have not added a second `## Error Message` heading. If any check fails, rebuild the section by copying `kbe.section` again rather than repairing it by hand. If you cannot satisfy all four, omit the section and state that in the body — an honest omission is correct, a mangled signature is not.
 
 2. **Post an investigation comment** on the issue using `add_comment` with `item_number` set to the same `temporary_id` (e.g., `item_number: "aw_http2ign"`). **Important:** pass the temporary ID as a plain string — do not wrap it in extra quotes or other formatting. Examine all available failure logs for the test. Be concise but thorough:
    - If you can identify a root cause, explain it and suggest a fix if one is obvious.
