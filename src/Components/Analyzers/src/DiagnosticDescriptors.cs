@@ -148,8 +148,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Description)));
 
-    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+    public static readonly DiagnosticDescriptor UnguardedJSInteropCall = new(
         "BL0016",
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+        "BL0017",
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Title)),
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Format)),
         Usage,

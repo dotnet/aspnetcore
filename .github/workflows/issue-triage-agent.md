@@ -115,12 +115,36 @@ is to analyze a newly opened issue and perform three tasks:
 
 Triage the issue that triggered this workflow.
 
-- For `issues.opened` events, use the triggering issue context.
-- For `workflow_dispatch`, fetch the issue using the GitHub MCP Server's `get_issue` tool with issue number `${{ github.event.inputs.issue_number }}`.
+You **must** obtain the real issue title and body before doing anything else. Two
+sources are available — use whichever is populated:
 
-Read the full issue title and body using the GitHub MCP Server tools:
+- **Number:** #${{ github.event.issue.number || github.event.inputs.issue_number }}
+- **Title (from payload):** ${{ steps.sanitized.outputs.title }}
+- **Body (from payload):**
 
-- Use the `get_issue` tool from the **github** MCP server, providing the repository owner, repository name, and issue number.
+${{ steps.sanitized.outputs.body }}
+
+**If both the title and body above are populated**, use them directly as the source
+of truth and **skip the MCP fetch entirely.**
+
+**If the title or body above is empty, that is normal — not an error.** The payload
+is intentionally blank in two common cases: (a) `workflow_dispatch` runs, which do
+not carry an issue payload, and (b) issues opened by non-collaborators, whose
+content is deliberately withheld from the payload by a security sanitizer. Most
+issues that need triage fall into case (b), so an empty payload is expected and is
+your signal to fetch the issue yourself. In that case you **MUST** read the issue
+with the **github** MCP server's `issue_read` tool before proceeding:
+
+- Call `issue_read` with owner `dotnet`, repo `aspnetcore`, and issue number
+  `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
+- This `issue_read` call is **required, not optional.** An empty payload is never a
+  reason to stop: do **not** report missing data, do **not** call `noop`, and do
+  **not** give up before you have successfully called `issue_read`.
+- You may only report that the issue could not be read if the `issue_read` MCP call
+  **itself** fails (returns an error or genuinely cannot retrieve the issue). A blank
+  payload alone is never sufficient justification.
+- Do not fall back to `gh`, `curl`, `node`, or other shell commands to fetch the
+  issue — use the `issue_read` MCP tool.
 
 ## Security Concerns Are Out of Scope
 
@@ -457,8 +481,8 @@ not speculative. Acceptable kinds of bullets, in priority order:
 
 4. **Verified cross-references** — issue is already closed by a
    maintainer, is a sub-issue of #NNN, is a verified duplicate of an
-   open #NNN. You must verify the cited issue's state via `get_issue`
-   before including it.
+   open #NNN. You must verify the cited issue's state via the `issue_read`
+   MCP tool before including it.
 
 ### What does NOT belong in `#### Notes`
 

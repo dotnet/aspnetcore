@@ -391,6 +391,11 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         if (Options.SessionStore != null && _sessionKey != null)
         {
             await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
+
+            // Clear the cached session key so a subsequent SignInAsync call in the same request
+            // generates a new key via StoreAsync rather than reusing the just-removed key via RenewAsync.
+            // See https://github.com/dotnet/aspnetcore/issues/47503.
+            _sessionKey = null;
         }
 
         var context = new CookieSigningOutContext(
