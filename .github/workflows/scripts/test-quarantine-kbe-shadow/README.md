@@ -186,6 +186,11 @@ parameter. When set, the collector reads one consolidated `fixture.json` documen
 directory instead of making any live GitHub/Azure DevOps call. `fixture.json` mirrors the shape of
 the real endpoints captured live during development:
 
+Fixture tests always pass an explicit `EventRef = refs/heads/main` and `EventSha` equal to the
+checked-out repository SHA. The collector does not default these parameters from ambient
+`GITHUB_REF`/`GITHUB_SHA`, so a pull-request test job cannot change fixture output. Live workflow
+callers pass trusted `github.ref`/`github.sha` through step environment bindings.
+
 | Key | Mirrors |
 |---|---|
 | `issue` | `GET /repos/{repo}/issues/{number}` (number, state, labels, body) |

@@ -31,6 +31,10 @@ $fixturesRoot = "$PSScriptRoot/fixtures"
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "aspnetcore-kbe-shadow-collector-$([System.Guid]::NewGuid().ToString('N'))"
 $repositoryRoot = (Resolve-Path "$PSScriptRoot/../../../..").Path
 $repositoryHead = (& git -C $repositoryRoot rev-parse HEAD).Trim()
+$fixtureEventRef = "refs/heads/main"
+$fixtureEventSha = $repositoryHead
+$originalGitHubRef = $env:GITHUB_REF
+$originalGitHubSha = $env:GITHUB_SHA
 
 function Assert-Equal
 {
@@ -175,6 +179,8 @@ function Invoke-Collector
         EvidenceRoot = $evidenceRoot
         FixtureRoot = $FixtureRoot
         RepositoryRoot = $repositoryRoot
+        EventRef = if ([string]::IsNullOrEmpty($EventRef)) { $fixtureEventRef } else { $EventRef }
+        EventSha = if ([string]::IsNullOrEmpty($EventSha)) { $fixtureEventSha } else { $EventSha }
         DossierSchemaFile = $dossierSchema
         CandidateSchemaFile = $candidateSchema
     }
@@ -182,15 +188,6 @@ function Invoke-Collector
     {
         $params["Signature"] = $Signature
     }
-    if (-not [string]::IsNullOrEmpty($EventRef))
-    {
-        $params["EventRef"] = $EventRef
-    }
-    if (-not [string]::IsNullOrEmpty($EventSha))
-    {
-        $params["EventSha"] = $EventSha
-    }
-
     & $collector @params | Out-Null
 
     return [ordered]@{
@@ -304,6 +301,8 @@ $defaultDuplicateSearch = [ordered]@{
 try
 {
     [System.IO.Directory]::CreateDirectory($tempRoot) | Out-Null
+    $env:GITHUB_REF = "refs/pull/69021/merge"
+    $env:GITHUB_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
     # ------------------------------------------------------------------
     # Pilot 1 -- aspnetcore#68724: '## Failing Test(s)' names two distinct concrete test
@@ -314,6 +313,9 @@ try
     $result68724 = Invoke-Collector -IssueNumber 68724 -FixtureRoot "$fixturesRoot/68724" -WorkDirectory "$tempRoot/68724"
     Assert-Equal -Actual $result68724.Dossier.outcome -Expected "incomplete" -Message "#68724 outcome mismatch."
     Assert-Contains -Collection @($result68724.Dossier.incomplete.reason_codes) -Value "multiple-test-identities-unresolved" -Message "#68724 reason codes mismatch."
+    Assert-NotContains -Collection @($result68724.Dossier.incomplete.reason_codes) -Value "workflow-dispatch-ref-not-main" -Message "Ambient GITHUB_REF must not affect fixture collection."
+    Assert-Equal -Actual $result68724.Dossier.provenance.repository_ref_verification.event_ref -Expected $fixtureEventRef -Message "Fixture event ref must be explicit and deterministic."
+    Assert-Equal -Actual $result68724.Dossier.provenance.repository_ref_verification.event_sha -Expected $fixtureEventSha -Message "Fixture event SHA must be explicit and deterministic."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68724" -ActualDossier $result68724.Dossier
 
     # ------------------------------------------------------------------
@@ -765,6 +767,9 @@ try
 }
 finally
 {
+    $env:GITHUB_REF = $originalGitHubRef
+    $env:GITHUB_SHA = $originalGitHubSha
+
     if (Test-Path -LiteralPath $tempRoot)
     {
         Remove-Item -LiteralPath $tempRoot -Recurse -Force

@@ -50,6 +50,14 @@
     GITHUB_TOKEN environment variable. Authenticated calls are strongly preferred: the search API's
     unauthenticated rate limit (10 requests/minute) is exhausted by a single run's four duplicate
     searches plus one retry.
+
+.PARAMETER EventRef
+    Trusted workflow event ref. Live callers must pass github.ref explicitly. Fixture mode defaults
+    to refs/heads/main only when this parameter is omitted.
+
+.PARAMETER EventSha
+    Trusted workflow event SHA. Live callers must pass github.sha explicitly. Fixture mode defaults
+    to the checked-out repository SHA only when this parameter is omitted.
 #>
 
 [CmdletBinding()]
@@ -76,9 +84,9 @@ param(
 
     [string]$RepositoryRoot = "$PSScriptRoot/../../../..",
 
-    [string]$EventRef = $env:GITHUB_REF,
+    [string]$EventRef,
 
-    [string]$EventSha = $env:GITHUB_SHA,
+    [string]$EventSha,
 
     [string]$DossierSchemaFile = "$PSScriptRoot/test-quarantine-kbe-shadow-dossier.schema.json",
 
