@@ -8,7 +8,7 @@
 // This module provides helpers for doing that, and is shared by the interactive renderer (BrowserRenderer)
 // and the SSR DOM merging logic.
 
-const deferredValuePropname = '_blazorDeferredValue';
+export const deferredValuePropname = '_blazorDeferredValue';
 
 export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
   switch (name) {
@@ -19,12 +19,6 @@ export function tryApplySpecialProperty(element: Element, name: string, value: s
     default:
       return false;
   }
-}
-
-export function hasDeferredValue(element: Element): boolean {
-  // Indicates a 'value' frame was applied to this element (e.g. <textarea value="...">),
-  // in which case the value must not be overwritten by the element's child text content.
-  return deferredValuePropname in element;
 }
 
 export function applyAnyDeferredValue(element: Element) {
