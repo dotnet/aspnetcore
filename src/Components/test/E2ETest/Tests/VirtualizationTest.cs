@@ -5796,6 +5796,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68644")]
     public void ScrollToItem_AfterEndJump_LandsAtTarget()
     {
         const int targetIndex = 200;
@@ -6302,6 +6303,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68777")]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
         // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
