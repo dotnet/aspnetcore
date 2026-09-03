@@ -29,6 +29,17 @@ if ($expectedRefCount -ne 2) {
     throw "Expected two closed default-branch comparisons; found $expectedRefCount."
 }
 
+$copilotCredentialExpression = @'
+COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 || secrets.COPILOT_PAT_1 || secrets.COPILOT_PAT_2 || secrets.COPILOT_PAT_3 || secrets.COPILOT_PAT_4 || secrets.COPILOT_PAT_5 || secrets.COPILOT_PAT_6 || secrets.COPILOT_PAT_7 || secrets.COPILOT_PAT_8 || secrets.COPILOT_PAT_9 || secrets.COPILOT_GITHUB_TOKEN }}
+'@.Trim()
+$copilotCredentialExpressionCount = ([regex]::Matches(
+    $workflow,
+    [regex]::Escape($copilotCredentialExpression)
+)).Count
+if ($copilotCredentialExpressionCount -ne 1) {
+    throw "Expected one ordered Copilot PAT-pool expression with the repository fallback; found $copilotCredentialExpressionCount."
+}
+
 $reportJob = [regex]::Match(
     $workflow,
     '(?ms)^  report:\r?\n(?<job>.*?)(?=^  \S|\z)'
