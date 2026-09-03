@@ -146,11 +146,12 @@ stimuli:
       - type: prompt
     rubric:
       - "Uses preliminary assessment Likely product bug and classification Implementation-ready handoff"
-      - "Includes concise observable acceptance criteria, the owning file and HeaderCollection.CopyTo symbol, and the existing unit-test boundary"
+      - "Includes concise observable acceptance criteria and the exact regression assertion: HeaderCollection.CopyTo(array, array.Length) on an empty collection must complete without throwing and copy zero elements"
+      - "Identifies src/Http/Headers/src/HeaderCollection.cs, HeaderCollection.CopyTo, and src/Http/Headers/test/HeaderCollectionTests.cs as the faithful unit-test boundary, while stating that adjacent argument-validation tests do not currently assert this effect"
       - "States relevant compatibility/API/security/release constraints, including that no public API shape change is intended and servicing applicability remains uncertain"
-      - "Includes remaining uncertainties and a short ordered implementation plan"
+      - "Includes remaining uncertainties and an ordered plan that first adds or enables the exact regression assertion at the selected source ref, confirms it fails for the expected throw before changing shipping code, makes the bounded implementation change, and reruns the assertion afterward"
       - "Does not edit code, prescribe an unverified exact fix, or claim the fix passes"
-      - "Provides exactly one next action that hands off the bounded implementation and regression test"
+      - "Provides exactly one next action that begins by establishing the exact regression assertion fails for the expected reason before the implementation change, rather than merely running neighboring tests"
 
   - name: authoritative-docs-support-by-design
     prompt: |

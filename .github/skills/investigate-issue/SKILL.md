@@ -229,11 +229,29 @@ establishes the relevant contract or maintainer intent, the likely owning
 surface, and a faithful validation boundary. It must include:
 
 - concise, observable acceptance criteria;
+- the exact observable assertion or direct observation that will witness the
+  disputed material effect at the faithful boundary;
 - likely owning files and symbols;
 - the faithful unit, functional, integration, or browser test boundary;
 - relevant compatibility, public API, security, and release constraints;
 - remaining uncertainties, including unverified runtime or version boundaries;
 - a short ordered implementation plan.
+
+Neighboring tests identify a possible test location, not evidence for the
+defect. If they do not assert the disputed material effect, name the missing
+assertion explicitly. Merely running tests whose assertions can remain green
+while the defect persists does not establish the behavior or verify a fix.
+
+The handoff does not require a failing test to exist already. When the faithful
+assertion is missing, the ordered plan must begin by adding or enabling the
+smallest assertion that observes the disputed effect at the selected source ref,
+confirming that it fails for the expected reason before changing shipping code,
+and rerunning it after the implementation change. When runtime behavior has not
+already been faithfully observed, the one bounded next action must be that same
+red-test or direct-observation step. This requirement does not weaken a
+**Likely product bug** assessment supported by static source/contract evidence,
+force reproduction when authoritative evidence already answers the issue, or
+prevent a ready handoff whose exact red step is specified.
 
 It must not implement code, invent a design decision, or assert that a proposed
 fix is correct.
@@ -254,7 +272,9 @@ fix is correct.
 - Recommend **exactly one** bounded next action. It may be an evidence-producing
   check, a preserved pending action, a private referral, or bounded
   implementation from a ready handoff. Confirm it is not already completed or
-  duplicated.
+  duplicated. For a ready handoff with no faithful assertion yet, make the
+  action add or enable that assertion and confirm the expected failure before
+  changing shipping code.
 
 ## Output contract
 
@@ -295,8 +315,8 @@ fields. Prefer omission over exhaustive metadata.
 
 ## Implementation handoff
 <Only for Implementation-ready handoff: acceptance criteria, likely owning
-files/symbols, faithful test boundary, constraints, remaining uncertainties,
-and a short ordered plan.>
+files/symbols, exact assertion or direct observation, faithful test boundary,
+constraints, remaining uncertainties, and a short ordered plan.>
 
 ## Recommended next action
 **One action:** <always populate; do not provide alternatives.>
