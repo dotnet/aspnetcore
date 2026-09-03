@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Xunit;
@@ -22,10 +21,5 @@ public class HttpUpgradeStreamTests
         var exception = Assert.Throws<InvalidOperationException>(stream.Flush);
 
         Assert.Equal(CoreStrings.SynchronousWritesDisallowed, exception.Message);
-    }
-
-    private sealed class TestHttpBodyControlFeature : IHttpBodyControlFeature
-    {
-        public bool AllowSynchronousIO { get; set; }
     }
 }

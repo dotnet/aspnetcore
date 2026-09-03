@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
@@ -783,50 +784,6 @@ public class HttpsTests : LoggedTest
         }
 
         Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
-    }
-
-    private sealed class TestHttpsConfigurationService : IHttpsConfigurationService
-    {
-        public bool IsInitialized { get; set; }
-
-        public void Initialize(
-            IHostEnvironment hostEnvironment,
-            ILogger<KestrelServer> serverLogger,
-            ILogger<HttpsConnectionMiddleware> httpsLogger)
-        {
-            IsInitialized = true;
-        }
-
-        public void ApplyHttpsConfiguration(
-            HttpsConnectionAdapterOptions httpsOptions,
-            EndpointConfig endpoint,
-            KestrelServerOptions serverOptions,
-            CertificateConfig defaultCertificateConfig,
-            ConfigurationReader configurationReader)
-        {
-        }
-
-        public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
-            => null!;
-
-        public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader) => null;
-
-        public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
-        {
-        }
-
-        public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions) => null!;
-    }
-
-    private sealed class TestHostEnvironment : IHostEnvironment
-    {
-        public string EnvironmentName { get; set; } = Environments.Production;
-
-        public string ApplicationName { get; set; } = "TestApplication";
-
-        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
-
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 
     private class HandshakeErrorLoggerProvider : ILoggerProvider

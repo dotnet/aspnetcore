@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Xunit;
@@ -20,10 +19,5 @@ public class HttpResponseStreamTests
         var exception = Assert.Throws<InvalidOperationException>(stream.Flush);
 
         Assert.Equal(CoreStrings.SynchronousWritesDisallowed, exception.Message);
-    }
-
-    private sealed class TestHttpBodyControlFeature : IHttpBodyControlFeature
-    {
-        public bool AllowSynchronousIO { get; set; }
     }
 }

@@ -244,11 +244,6 @@ public class Http1OutputProducerTests : IDisposable
         return socketOutput;
     }
 
-    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
-    {
-        public ConnectionMetricsContext MetricsContext { get; }
-    }
-
     private class TestHttpOutputProducer : Http1OutputProducer
     {
         public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, KestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, ConnectionMetricsContext metricsContext, IHttpOutputAborter outputAborter)

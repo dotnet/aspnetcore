@@ -150,20 +150,6 @@ internal sealed class TestHttpResponseControl : IHttpResponseControl
     public Task CompleteAsync(Exception exception = null) => Task.CompletedTask;
 }
 
-internal sealed class TestTimeoutHandler : ITimeoutHandler
-{
-    public List<TimeoutReason> TimeoutReasons { get; } = new List<TimeoutReason>();
-
-    public int OnTimeoutCount => TimeoutReasons.Count;
-
-    public void OnTimeout(TimeoutReason reason)
-    {
-        TimeoutReasons.Add(reason);
-    }
-
-    public int Count(TimeoutReason reason) => TimeoutReasons.Count(r => r == reason);
-}
-
 internal sealed class TestTimeoutControl : ITimeoutControl
 {
     public List<(TimeSpan Timeout, TimeoutReason Reason)> SetTimeoutCalls { get; } = new List<(TimeSpan Timeout, TimeoutReason Reason)>();
@@ -251,11 +237,6 @@ internal sealed class TestTimeoutControl : ITimeoutControl
     public long GetResponseDrainDeadline(long timestamp, MinDataRate minRate) => GetResponseDrainDeadlineFunc(timestamp, minRate);
 }
 
-internal sealed class TestDebugger : IDebugger
-{
-    public bool IsAttached { get; set; }
-}
-
 internal sealed class TestHeartbeatHandler : IHeartbeatHandler
 {
     public Action OnHeartbeatCallback { get; set; } = () => { };
@@ -308,24 +289,6 @@ internal class TestMessageBody : MessageBody
     }
 }
 
-internal class TestConnectionContext : ConnectionContext
-{
-    public List<ConnectionAbortedException> AbortReasons { get; } = new List<ConnectionAbortedException>();
-
-    public override IDuplexPipe Transport { get; set; } = new DuplexPipe(PipeReader.Create(Stream.Null), PipeWriter.Create(Stream.Null));
-
-    public override string ConnectionId { get; set; } = "TestConnectionId";
-
-    public override IFeatureCollection Features { get; } = new FeatureCollection();
-
-    public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
-
-    public override void Abort(ConnectionAbortedException abortReason)
-    {
-        AbortReasons.Add(abortReason);
-    }
-}
-
 internal sealed class TestConnectionLifetimeFeature : IConnectionLifetimeFeature
 {
     public CancellationToken ConnectionClosed { get; set; }
@@ -348,50 +311,6 @@ internal sealed class TestPipeScheduler : PipeScheduler
 internal sealed class TestStreamIdFeature : IStreamIdFeature
 {
     public long StreamId { get; set; }
-}
-
-internal sealed class TestHostEnvironment : IHostEnvironment
-{
-    public string EnvironmentName { get; set; } = Environments.Production;
-
-    public string ApplicationName { get; set; } = "TestApplication";
-
-    public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
-
-    public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
-}
-
-internal sealed class TestHttpsConfigurationService : IHttpsConfigurationService
-{
-    public bool IsInitialized { get; set; }
-
-    public void Initialize(
-        IHostEnvironment hostEnvironment,
-        ILogger<KestrelServer> serverLogger,
-        ILogger<HttpsConnectionMiddleware> httpsLogger)
-    {
-        IsInitialized = true;
-    }
-
-    public void ApplyHttpsConfiguration(
-        HttpsConnectionAdapterOptions httpsOptions,
-        EndpointConfig endpoint,
-        KestrelServerOptions serverOptions,
-        CertificateConfig defaultCertificateConfig,
-        ConfigurationReader configurationReader)
-    {
-    }
-
-    public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
-        => listenOptions;
-
-    public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader) => null;
-
-    public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
-    {
-    }
-
-    public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions) => listenOptions;
 }
 
 internal sealed class TestLoggerFactory : ILoggerFactory

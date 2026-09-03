@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -1794,16 +1795,5 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             catch (IOException) { }
             Assert.Null(line);
         }
-    }
-
-    private sealed class TestHostEnvironment : IHostEnvironment
-    {
-        public string EnvironmentName { get; set; } = Environments.Production;
-
-        public string ApplicationName { get; set; } = "TestApplication";
-
-        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
-
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }
