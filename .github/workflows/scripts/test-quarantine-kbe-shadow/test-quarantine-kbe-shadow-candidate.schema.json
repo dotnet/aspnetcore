@@ -1,0 +1,466 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dotnet/aspnetcore/.github/workflows/scripts/test-quarantine-kbe-shadow/test-quarantine-kbe-shadow-candidate.schema.json",
+  "title": "ASP.NET Core test quarantine KBE shadow candidate",
+  "description": "Untrusted candidate input proposed for deterministic Known Build Error signature evaluation. Source metadata remains unverified until a trusted collector is added.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "repository_ref",
+    "issue",
+    "test",
+    "signature",
+    "policy",
+    "evidence",
+    "duplicate_check",
+    "proposed_classification"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "repository": {
+      "const": "dotnet/aspnetcore"
+    },
+    "repository_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch",
+        "commit_sha"
+      ],
+      "properties": {
+        "branch": {
+          "const": "main"
+        },
+        "commit_sha": {
+          "$ref": "#/$defs/gitSha"
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/dotnet/aspnetcore/issues/[1-9][0-9]*$"
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fully_qualified_name"
+      ],
+      "properties": {
+        "fully_qualified_name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1024,
+          "pattern": "^[^\\r\\n]+$"
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "values",
+        "build_retry",
+        "exclude_console_log"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "ErrorMessage",
+            "ErrorPattern"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 2048,
+            "pattern": "^[^\\r\\n]+$"
+          }
+        },
+        "build_retry": {
+          "type": "boolean"
+        },
+        "exclude_console_log": {
+          "type": "boolean"
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_failure_logs",
+        "minimum_negative_logs"
+      ],
+      "properties": {
+        "minimum_failure_logs": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10
+        },
+        "minimum_negative_logs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_logs",
+        "corroborating_context"
+      ],
+      "properties": {
+        "raw_logs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "role",
+              "outcome",
+              "path",
+              "source_url",
+              "sha256",
+              "build"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+              },
+              "role": {
+                "enum": [
+                  "failure",
+                  "negative"
+                ]
+              },
+              "outcome": {
+                "enum": [
+                  "failed",
+                  "passed",
+                  "skipped",
+                  "unrelated"
+                ]
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[A-Za-z0-9][A-Za-z0-9_.\\/-]{0,255}$"
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "build": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "pipeline_definition_id",
+                  "source_version",
+                  "started_utc",
+                  "platform",
+                  "configuration"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "pipeline_definition_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "source_version": {
+                    "$ref": "#/$defs/gitSha"
+                  },
+                  "started_utc": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "platform": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\r\\n]+$"
+                  },
+                  "configuration": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\r\\n]+$"
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "role": {
+                      "const": "failure"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "outcome": {
+                      "const": "failed"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "role": {
+                      "const": "negative"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "outcome": {
+                      "enum": [
+                        "passed",
+                        "skipped",
+                        "unrelated"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "corroborating_context": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "url"
+            ],
+            "properties": {
+              "source": {
+                "enum": [
+                  "build-analysis",
+                  "build-insights",
+                  "github-check",
+                  "quarantine-issue"
+                ]
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "maxLength": 2048,
+                "pattern": "^https://"
+              }
+            }
+          }
+        }
+      }
+    },
+    "duplicate_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "checked_utc",
+        "coverage",
+        "references",
+        "queries"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "none",
+            "existing-kbe",
+            "existing-fix-pr",
+            "ambiguous",
+            "integrity-filtered",
+            "not-evaluated"
+          ]
+        },
+        "checked_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "open_kbes",
+            "recently_closed_kbes",
+            "open_fix_prs",
+            "recently_merged_fix_prs"
+          ],
+          "properties": {
+            "open_kbes": {
+              "type": "boolean"
+            },
+            "recently_closed_kbes": {
+              "type": "boolean"
+            },
+            "open_fix_prs": {
+              "type": "boolean"
+            },
+            "recently_merged_fix_prs": {
+              "type": "boolean"
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(issue|pull-request):[1-9][0-9]*$"
+          }
+        },
+        "queries": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "query",
+              "complete",
+              "result_numbers"
+            ],
+            "properties": {
+              "category": {
+                "enum": [
+                  "open-kbe",
+                  "recently-closed-kbe",
+                  "open-fix-pr",
+                  "recently-merged-fix-pr"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^[^\\r\\n]+$"
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "result_numbers": {
+                "type": "array",
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "existing-kbe"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "references": {
+                "contains": {
+                  "type": "string",
+                  "pattern": "^issue:[1-9][0-9]*$"
+                },
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "existing-fix-pr"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "references": {
+                "contains": {
+                  "type": "string",
+                  "pattern": "^pull-request:[1-9][0-9]*$"
+                },
+                "minContains": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "proposed_classification": {
+      "enum": [
+        "reuse-existing-kbe",
+        "new-kbe-candidate",
+        "quarantine-only",
+        "infrastructure",
+        "timeout-needs-classification",
+        "insufficient-evidence",
+        "human-review"
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  }
+}
