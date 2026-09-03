@@ -25,6 +25,10 @@ builder.Services.Configure<JsonOptions>(options =>
 
 builder.Services.AddSingleton<IChatClient>(sp =>
     ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddKeyedSingleton<IChatClient>(
+    ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+    (sp, _) => ChatClientAgentFactory.CreatePredictiveStateUpdates(
+        sp.GetRequiredService<IConfiguration>()));
 
 var app = builder.Build();
 var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
@@ -48,6 +52,20 @@ app.MapDojoEndpoint(
     systemPrompt: ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
     configureStreamOptions: _ =>
         ChatClientAgentFactory.CreateAgenticGenerativeUIStreamOptions());
+app.MapDojoEndpoint(
+    "/shared_state",
+    serverTools: ChatClientAgentFactory.CreateSharedStateTools(
+        jsonOptions.Value.SerializerOptions),
+    systemPrompt: ChatClientAgentFactory.SharedStateSystemPrompt,
+    configureStreamOptions: _ => ChatClientAgentFactory.CreateSharedStateStreamOptions());
+app.MapDojoEndpoint(
+    "/predictive_state_updates",
+    serverTools: ChatClientAgentFactory.CreatePredictiveStateUpdatesTools(
+        jsonOptions.Value.SerializerOptions),
+    systemPrompt: ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
+    configureStreamOptions: ChatClientAgentFactory.CreatePredictiveStateUpdatesStreamOptions,
+    chatClientKey: ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+    treatClientToolsAsDeclarations: true);
 
 await app.RunAsync();
 

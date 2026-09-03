@@ -22,7 +22,9 @@
                 <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
-                <ValidationSummary class="text-danger" role="alert" />
+                <div role="alert" aria-atomic="true">
+                    <ValidationSummary class="text-danger" />
+                </div>
                 <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" aria-required="true" placeholder="name@example.com" />
                     <label for="Input.Email" class="form-label">
