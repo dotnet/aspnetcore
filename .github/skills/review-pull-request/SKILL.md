@@ -349,7 +349,3 @@ Label every finding:
 
 Do not report an `unverified` finding. A plausible mechanism that could not be settled belongs in
 `LIMITATIONS`, not in the finding list.
-
-After a verified finding, `try-fix` or `fix-challenge` may be used when available to compare
-materially different corrections. They are optional escalation, not a prerequisite for reporting a
-defect already established by source, primary contract, or a faithful red/green test.
