@@ -6,15 +6,12 @@ description: >-
   explicit request to review an identified aspnetcore pull request — "review PR #12345", "review
   this pull request", or a maintainer's `/review`. Requires a real pull request: the contract is
   anchored to its GitHub head SHA, authoritative changed-file list, diff, and existing review
-  feedback. Routes the changed paths to the matching domain references (servers/networking,
+  feedback. Routes changed paths to the matching domain references (servers/networking,
   MVC/Razor/routing, Blazor/Components, SignalR, auth/security, hosting/DI, minimal APIs/OpenAPI,
-  gRPC, native IIS interop) plus always-on cross-cutting review. Each applicable review dimension
-  receives an independent pass before candidates are traced or tested. DO NOT USE FOR implementing
-  the pull request's fix, investigating CI/build failures or logs, triaging
-  issues, reviewing an API proposal that has no diff (use the API review process instead),
-  reviewing a pull request in another repository, reviewing a local or arbitrary diff that is not
-  an open GitHub pull request, or general coding assistance that is not an explicit ASP.NET Core
-  pull request review.
+  gRPC, native IIS interop) plus always-on cross-cutting review, giving each dimension an
+  independent pass before candidates are traced or tested. DO NOT USE FOR implementing the fix,
+  investigating CI failures, triaging issues, reviewing an API proposal with no diff, reviewing a
+  pull request in another repository, reviewing a local diff, or general coding help.
 ---
 
 # Expert review of an ASP.NET Core pull request
