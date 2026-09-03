@@ -67,7 +67,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0016`)
+### BL  (`BL0001-BL0017`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -87,6 +87,7 @@
 |  __`BL0014`__ | For loop iterator used inside a closure. |
 |  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
+|  __`BL0017`__ | Virtualize uses an invalid spacer element |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
