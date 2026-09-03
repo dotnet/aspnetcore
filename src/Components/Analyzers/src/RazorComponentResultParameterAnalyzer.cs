@@ -137,7 +137,8 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
                     return false;
                 }
 
-                if (ComponentFacts.IsParameter(symbols, property))
+                if (ComponentFacts.IsParameter(symbols, property) &&
+                    !ComponentFacts.IsCascadingParameter(symbols, property))
                 {
                     parameterNames.Add(property.Name);
                 }
