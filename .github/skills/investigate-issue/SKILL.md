@@ -110,7 +110,8 @@ Use this compact stop-path template:
 ```markdown
 # Issue investigation: dotnet/aspnetcore#<number> — <title>
 
-**Classification:** Do not publish — <high-level security or confidentiality reason>
+**Classification:** Do not publish
+**Reason:** <high-level security or confidentiality reason>
 **Preliminary assessment:** Security process required | Insufficient evidence
 **Disposition:** Non-binding; maintainers own final disposition.
 **Source:** <public ref if inspected, otherwise "Not inspected">
@@ -340,10 +341,15 @@ do not repeat the analysis in the copy block. Use 601-750 analysis words only
 for materially distinct scenarios, evidence conflict, or the required handoff
 fields. Prefer omission over exhaustive metadata.
 
+On the emitted **Classification** line, replace the option list with exactly one
+value and no qualifiers. Put its concise explanation on the separate
+**Classification reason** line.
+
 ```markdown
 # Issue investigation: dotnet/aspnetcore#<number> — <title>
 
-**Classification:** Research | Investigation plan | Implementation-ready handoff | Do not publish — <reason>
+**Classification:** Research | Investigation plan | Implementation-ready handoff | Do not publish
+**Classification reason:** <concise reason>
 **Preliminary assessment:** Likely product bug | Likely documented/by-design behavior | Product or API decision required | Insufficient evidence | Security process required
 **Disposition:** Non-binding; maintainers own final disposition.
 **Source:** <ref and commit SHA>
