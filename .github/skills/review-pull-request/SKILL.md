@@ -194,6 +194,12 @@ If independent subagents are unavailable, work every applicable dimension yourse
 That is **not** independence — successive passes in one context share the same blind spots. Say
 which path you used and never imply a second opinion you did not get.
 
+The same disclosure applies when subagents are available and you choose not to dispatch them — for
+example because the diff looks small or obvious. A narrow diff is a weak reason to collapse the
+panel, since a single context is exactly where a shared blind spot hides. If you collapse it
+anyway, report `single-orchestrator` and say why. Reporting the path you actually took is a hard
+requirement; silently presenting collapsed review as panel coverage is a failure of this contract.
+
 ## Step 5 — Validate every candidate
 
 Discard any candidate failing **any** gate:
