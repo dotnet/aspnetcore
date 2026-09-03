@@ -15,10 +15,16 @@
     "labels": [
       "test-failure",
       "area-blazor"
-    ]
+    ],
+    "has_workflow_marker": true
   },
-  "outcome": "candidate",
+  "outcome": "incomplete",
   "provenance": {
+    "repository_ref_verification": {
+      "checkout_sha": "<GENERATED>",
+      "trusted_main_sha": "<GENERATED>",
+      "matches_main": true
+    },
     "azdo_builds": [
       {
         "id": 1563420,
@@ -30,28 +36,6 @@
         "started_utc": "2026-08-22T03:28:01.2925985Z",
         "finished_utc": "2026-08-22T05:06:06.2192270Z",
         "result": "failed"
-      },
-      {
-        "id": 1560111,
-        "found": true,
-        "retrieved_utc": "<GENERATED>",
-        "source": "recurrence-scan",
-        "definition_id": 87,
-        "source_version": "074f8655455783f5afc3e7a865c30d5f3dad52be",
-        "started_utc": "2026-08-21T03:00:00.0000000Z",
-        "finished_utc": "2026-08-21T05:00:00.0000000Z",
-        "result": "failed"
-      },
-      {
-        "id": 1558000,
-        "found": true,
-        "retrieved_utc": "<GENERATED>",
-        "source": "negative-scan",
-        "definition_id": 87,
-        "source_version": "8afa8ced59345cb708a7115f7519b068dd56b994",
-        "started_utc": "2026-08-19T03:00:00.0000000Z",
-        "finished_utc": "2026-08-19T05:00:00.0000000Z",
-        "result": "succeeded"
       }
     ],
     "check_run_snapshots": [
@@ -66,62 +50,14 @@
         "text_excerpt": "1 test failed. See Azure DevOps for full details.",
         "html_url": "https://github.com/dotnet/aspnetcore/runs/900001",
         "exact_test_referenced": false,
-        "known_issue_referenced": false
-      },
-      {
-        "source_version": "074f8655455783f5afc3e7a865c30d5f3dad52be",
-        "found": true,
-        "retrieved_utc": "<GENERATED>",
-        "check_id": 900002,
-        "conclusion": "failure",
-        "title": "1 failing test",
-        "text_sha256": "2ee3f3bf80d3ddbb9d06ee253fb4f861aadb63782c79b0ea1d09479ecf13e2d8",
-        "text_excerpt": "1 test failed. See Azure DevOps for full details.",
-        "html_url": "https://github.com/dotnet/aspnetcore/runs/900002",
-        "exact_test_referenced": false,
-        "known_issue_referenced": false
+        "short_name_referenced": false,
+        "known_issue_referenced": false,
+        "known_issue_numbers": []
       }
     ],
-    "raw_evidence_sources": [
-      {
-        "build_id": 1563420,
-        "role": "failure",
-        "kind": "helix-console-log",
-        "helix_job": "helix-job-1563420",
-        "helix_workitem": "VirtualizationTest.WorkItemExecution",
-        "found": true,
-        "expired": false,
-        "captured_utc": "<GENERATED>",
-        "sha256": "298a4db75b3750339d8a0f576f96b5c688a526ee99acea46290ffc735e975d15",
-        "evidence_path": "issue-68724-build-1563420-failure.log"
-      },
-      {
-        "build_id": 1560111,
-        "role": "failure",
-        "kind": "helix-console-log",
-        "helix_job": "helix-job-1560111",
-        "helix_workitem": "VirtualizationTest.WorkItemExecution",
-        "found": true,
-        "expired": false,
-        "captured_utc": "<GENERATED>",
-        "sha256": "c12348ca3e1cbaf32c01e9a74dc0d0373fd9c5266f0710d975b6a6acc8db74f4",
-        "evidence_path": "issue-68724-build-1560111-failure.log"
-      },
-      {
-        "build_id": 1558000,
-        "role": "negative",
-        "kind": "helix-console-log",
-        "helix_job": "helix-job-1558000",
-        "helix_workitem": "VirtualizationTest.WorkItemExecution",
-        "found": true,
-        "expired": false,
-        "captured_utc": "<GENERATED>",
-        "sha256": "33b8e42484dfa2c90ce1717f55251e48f7c037ea90af4b409ec2897137adf61e",
-        "evidence_path": "issue-68724-build-1558000-negative.log"
-      }
-    ],
+    "raw_evidence_sources": [],
     "duplicate_search": {
-      "status": "existing-kbe",
+      "status": "none",
       "checked_utc": "<GENERATED>",
       "coverage": {
         "open_kbes": true,
@@ -129,173 +65,51 @@
         "open_fix_prs": true,
         "recently_merged_fix_prs": true
       },
-      "references": [
-        "issue:68708"
-      ],
+      "references": [],
       "queries": [
         {
           "category": "open-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
+          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" 68724",
           "complete": true,
-          "result_numbers": [
-            68708
-          ]
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "recently-closed-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:closed label:\"Known Build Error\" QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
+          "query": "repo:dotnet/aspnetcore is:issue is:closed closed:>=2026-06-05 label:\"Known Build Error\" 68724",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "open-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:open QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
+          "query": "repo:dotnet/aspnetcore is:pr is:open 68724",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "recently-merged-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:merged QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
+          "query": "repo:dotnet/aspnetcore is:pr is:merged merged:>=2026-06-05 68724",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         }
-      ]
+      ],
+      "unvalidated_candidates": []
     }
   },
-  "candidate": {
-    "schema_version": 1,
-    "repository": "dotnet/aspnetcore",
-    "repository_ref": {
-      "branch": "main",
-      "commit_sha": "<GENERATED>"
-    },
-    "issue": {
-      "number": 68724,
-      "url": "https://github.com/dotnet/aspnetcore/issues/68724"
-    },
-    "test": {
-      "fully_qualified_name": "Microsoft.AspNetCore.Components.E2ETest.Tests.VirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll"
-    },
-    "signature": {
-      "kind": "ErrorMessage",
-      "values": [
-        "OpenQA.Selenium.BrowserAssertFailedException : Xunit.Sdk.TrueException: Item 950 should remain aligned with the viewport top once the last item has loaded, but top rendered index was -1, scrollTop=0."
-      ],
-      "build_retry": false,
-      "exclude_console_log": false
-    },
-    "policy": {
-      "minimum_failure_logs": 2,
-      "minimum_negative_logs": 1
-    },
-    "evidence": {
-      "raw_logs": [
-        {
-          "id": "evidence-1",
-          "role": "failure",
-          "outcome": "failed",
-          "path": "issue-68724-build-1563420-failure.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1563420&view=results",
-          "sha256": "298a4db75b3750339d8a0f576f96b5c688a526ee99acea46290ffc735e975d15",
-          "build": {
-            "id": 1563420,
-            "pipeline_definition_id": 87,
-            "source_version": "4bb91afc6d034cfcd78cbf15cdb21e0f6f419d68",
-            "started_utc": "2026-08-22T03:28:01.2925985Z",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        },
-        {
-          "id": "evidence-2",
-          "role": "failure",
-          "outcome": "failed",
-          "path": "issue-68724-build-1560111-failure.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1560111&view=results",
-          "sha256": "c12348ca3e1cbaf32c01e9a74dc0d0373fd9c5266f0710d975b6a6acc8db74f4",
-          "build": {
-            "id": 1560111,
-            "pipeline_definition_id": 87,
-            "source_version": "074f8655455783f5afc3e7a865c30d5f3dad52be",
-            "started_utc": "2026-08-21T03:00:00.0000000Z",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        },
-        {
-          "id": "evidence-3",
-          "role": "negative",
-          "outcome": "passed",
-          "path": "issue-68724-build-1558000-negative.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1558000&view=results",
-          "sha256": "33b8e42484dfa2c90ce1717f55251e48f7c037ea90af4b409ec2897137adf61e",
-          "build": {
-            "id": 1558000,
-            "pipeline_definition_id": 87,
-            "source_version": "8afa8ced59345cb708a7115f7519b068dd56b994",
-            "started_utc": "2026-08-19T03:00:00.0000000Z",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        }
-      ],
-      "corroborating_context": [
-        {
-          "source": "build-analysis",
-          "url": "https://github.com/dotnet/aspnetcore/runs/900001"
-        },
-        {
-          "source": "build-analysis",
-          "url": "https://github.com/dotnet/aspnetcore/runs/900002"
-        },
-        {
-          "source": "quarantine-issue",
-          "url": "https://github.com/dotnet/aspnetcore/issues/68724"
-        }
-      ]
-    },
-    "duplicate_check": {
-      "status": "existing-kbe",
-      "checked_utc": "<GENERATED>",
-      "coverage": {
-        "open_kbes": true,
-        "recently_closed_kbes": true,
-        "open_fix_prs": true,
-        "recently_merged_fix_prs": true
-      },
-      "references": [
-        "issue:68708"
-      ],
-      "queries": [
-        {
-          "category": "open-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
-          "complete": true,
-          "result_numbers": [
-            68708
-          ]
-        },
-        {
-          "category": "recently-closed-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:closed label:\"Known Build Error\" QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
-          "complete": true,
-          "result_numbers": []
-        },
-        {
-          "category": "open-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:open QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
-          "complete": true,
-          "result_numbers": []
-        },
-        {
-          "category": "recently-merged-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:merged QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll",
-          "complete": true,
-          "result_numbers": []
-        }
-      ]
-    },
-    "proposed_classification": "reuse-existing-kbe"
-  },
-  "incomplete": null
+  "candidate": null,
+  "incomplete": {
+    "reason_codes": [
+      "multiple-test-identities-unresolved"
+    ],
+    "message": "Collector could not produce a validated candidate for issue #68724 : multiple-test-identities-unresolved.",
+    "missing_evidence": [
+      {
+        "kind": "test-name",
+        "detail": "'## Failing Test(s)' names 2 distinct test identities (Microsoft.AspNetCore.Components.E2ETest.Tests.VirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll; Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests.ServerVirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll); this collector requires exactly one unambiguous identity per run rather than guessing which one actually failed."
+      }
+    ]
+  }
 }

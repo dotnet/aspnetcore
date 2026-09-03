@@ -5,11 +5,11 @@
 
 .DESCRIPTION
     Exercises the collector entirely in -FixtureRoot mode (zero network access) against the
-    three real pilot quarantine issues recorded in fixtures/, and against a handful of small
-    synthetic fixtures for edge cases that are not represented by those three issues. Golden
-    dossier comparisons exclude collector-generated timestamps and the running repository's
-    HEAD commit SHA, both of which are expected to differ between runs/commits; every other
-    field must match exactly.
+    three real pilot quarantine issues recorded in fixtures/, against a battery of synthetic
+    edge-case fixtures for gates not represented by those three issues, and against
+    Merge-AzdoBuildLists directly as a pure unit. Golden dossier comparisons exclude
+    collector-generated timestamps and the running repository's HEAD commit SHA, both of which
+    are expected to differ between runs/commits; every other field must match exactly.
 
     Where the collector's outcome is 'candidate', the resulting candidate.json is also fed
     through the unmodified, already-tested Evaluate-TestQuarantineKbeCandidate.ps1 to prove the
@@ -30,6 +30,7 @@ $dossierSchema = "$PSScriptRoot/test-quarantine-kbe-shadow-dossier.schema.json"
 $candidateSchema = "$PSScriptRoot/test-quarantine-kbe-shadow-candidate.schema.json"
 $fixturesRoot = "$PSScriptRoot/fixtures"
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "aspnetcore-kbe-shadow-collector-$([System.Guid]::NewGuid().ToString('N'))"
+$repositoryRoot = (Resolve-Path "$PSScriptRoot/../../../..").Path
 
 function Assert-Equal
 {
@@ -59,10 +60,24 @@ function Assert-Contains
     }
 }
 
-# The three collector-generated timestamps and the running checkout's HEAD commit SHA are
-# expected to differ run-to-run and commit-to-commit; every golden fixture below was captured
-# with these fields already replaced by this same sentinel.
-$volatileKeys = @("generated_utc", "retrieved_utc", "captured_utc", "checked_utc", "commit_sha")
+function Assert-NotContains
+{
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Collection,
+        [Parameter(Mandatory = $true)]$Value,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    if (@($Collection | Where-Object { "$_" -eq "$Value" }).Count -gt 0)
+    {
+        throw "$Message Expected collection NOT to contain '$Value'; actual: $($Collection -join ', ')."
+    }
+}
+
+# The collector-generated timestamps and the running checkout's HEAD commit SHA are expected to
+# differ run-to-run and commit-to-commit; every golden fixture below was captured with these
+# fields already replaced by this same sentinel.
+$volatileKeys = @("generated_utc", "retrieved_utc", "captured_utc", "checked_utc", "commit_sha", "checkout_sha", "trusted_main_sha")
 $volatileSentinel = "<GENERATED>"
 
 function ConvertTo-NormalizedObject
@@ -157,6 +172,7 @@ function Invoke-Collector
         CandidateFile = $candidatePath
         EvidenceRoot = $evidenceRoot
         FixtureRoot = $FixtureRoot
+        RepositoryRoot = $repositoryRoot
         DossierSchemaFile = $dossierSchema
         CandidateSchemaFile = $candidateSchema
     }
@@ -188,193 +204,418 @@ function Assert-GoldenDossier
     Test-DeepEqual -Expected $golden -Actual $normalizedActual
 }
 
+function New-SyntheticFixture
+{
+    # Writes a minimal-but-complete fixture.json (every top-level key the collector expects to
+    # be able to read present, even if empty) to a fresh directory under $tempRoot and returns
+    # its path.
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][hashtable]$Overrides
+    )
+
+    $base = [ordered]@{
+        issue = $null
+        main_branch = $null
+        azdo_builds = [ordered]@{}
+        recurrence_scan = [ordered]@{}
+        negative_scan = [ordered]@{}
+        vstmr_summary = [ordered]@{}
+        vstmr_detail = [ordered]@{}
+        vstmr_runs = [ordered]@{}
+        check_runs = [ordered]@{}
+        duplicate_search = [ordered]@{}
+        duplicate_candidate_text = [ordered]@{}
+    }
+    foreach ($key in $Overrides.Keys)
+    {
+        $base[$key] = $Overrides[$key]
+    }
+    if ($null -eq $base["main_branch"])
+    {
+        $base.Remove("main_branch")
+    }
+
+    $directory = Join-Path $tempRoot "fixture-$Name"
+    [System.IO.Directory]::CreateDirectory($directory) | Out-Null
+    $base | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $directory "fixture.json")
+    return $directory
+}
+
+$workflowMarker = "<!-- gh-aw-workflow-id: test-quarantine -->"
+# Built from a single-quoted literal (no backtick-escape processing) rather than embedding
+# repeated backtick-escape sequences directly in double-quoted synthetic issue bodies below,
+# which is easy to miscount (a stray extra backtick silently becomes an unrelated `t`/`n`/etc.
+# escape sequence instead of a literal backtick).
+$codeFence = '```'
+$defaultDuplicateSearch = [ordered]@{
+    "open-kbe" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+    "recently-closed-kbe" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+    "open-fix-pr" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+    "recently-merged-fix-pr" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+}
+
 try
 {
     [System.IO.Directory]::CreateDirectory($tempRoot) | Out-Null
 
     # ------------------------------------------------------------------
-    # Pilot 1 -- aspnetcore#68724: deterministic '## Error Message' extraction,
-    # a supplementary recurrence-scan build, and reuse of an existing KBE.
+    # Pilot 1 -- aspnetcore#68724: '## Failing Test(s)' names two distinct concrete test
+    # identities (a base test and its server-execution subclass override). Live data shows only
+    # the override actually failed while the base identity passed -- the collector must fail
+    # closed rather than silently bind evidence to the first name it sees.
     # ------------------------------------------------------------------
     $result68724 = Invoke-Collector -IssueNumber 68724 -FixtureRoot "$fixturesRoot/68724" -WorkDirectory "$tempRoot/68724"
-    Assert-Equal -Actual $result68724.Dossier.outcome -Expected "candidate" -Message "#68724 outcome mismatch."
-    Assert-Equal -Actual $result68724.Dossier.candidate.proposed_classification -Expected "reuse-existing-kbe" -Message "#68724 proposed_classification mismatch."
+    Assert-Equal -Actual $result68724.Dossier.outcome -Expected "incomplete" -Message "#68724 outcome mismatch."
+    Assert-Contains -Collection @($result68724.Dossier.incomplete.reason_codes) -Value "multiple-test-identities-unresolved" -Message "#68724 reason codes mismatch."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68724" -ActualDossier $result68724.Dossier
 
-    $receiptPath68724 = Join-Path "$tempRoot/68724" "receipt.json"
-    & $evaluator -CandidateFile $result68724.CandidatePath -EvidenceRoot $result68724.EvidenceRoot -OutputFile $receiptPath68724 -CandidateSchemaFile $candidateSchema
-    $receipt68724 = Get-Content -LiteralPath $receiptPath68724 -Raw | ConvertFrom-Json -Depth 32
-    Assert-Equal -Actual $receipt68724.deterministic_status -Expected "validated" -Message "#68724 deterministic_status mismatch."
-    Assert-Equal -Actual $receipt68724.shadow_recommendation -Expected "reuse-existing-kbe" -Message "#68724 shadow_recommendation mismatch."
-    Assert-Equal -Actual $receipt68724.eligible_for_kbe_enrichment -Expected $false -Message "#68724 must never authorize enrichment."
-    Assert-Equal -Actual $receipt68724.evidence_provenance_verified -Expected $false -Message "#68724 provenance must remain unverified."
-
-    $summaryPath68724 = Join-Path "$tempRoot/68724" "summary.md"
-    & $summaryGenerator -DossierFile $result68724.DossierPath -ReceiptFile $receiptPath68724 -OutputFile $summaryPath68724
-    $summaryText68724 = Get-Content -LiteralPath $summaryPath68724 -Raw
-    if (-not $summaryText68724.Contains("reuse-existing-kbe"))
-    {
-        throw "#68724 summary must mention the shadow_recommendation."
-    }
-
     # ------------------------------------------------------------------
-    # Pilot 2 -- aspnetcore#68947: the issue body has no fenced '## Error
-    # Message' block, so deterministic extraction is ambiguous without a
-    # manual signature.
+    # Pilot 2 -- aspnetcore#68947: the issue body has no fenced '## Error Message' block, so
+    # deterministic extraction is ambiguous without a manual signature. Its own cited second
+    # build (1537561) has aged out of Azure DevOps retention; recurrence is instead established
+    # by the collector's supplementary recurrence scan, which must also query
+    # resultFilter=partiallySucceeded (the cited build 1551326's own real result value) in
+    # addition to resultFilter=failed.
     # ------------------------------------------------------------------
     $result68947NoSig = Invoke-Collector -IssueNumber 68947 -FixtureRoot "$fixturesRoot/68947" -WorkDirectory "$tempRoot/68947-no-signature"
     Assert-Equal -Actual $result68947NoSig.Dossier.outcome -Expected "incomplete" -Message "#68947 (no signature) outcome mismatch."
     Assert-Contains -Collection @($result68947NoSig.Dossier.incomplete.reason_codes) -Value "signature-extraction-ambiguous" -Message "#68947 (no signature) reason codes mismatch."
 
-    # With the manual override supplied, recurrence is established via the collector's
-    # supplementary scan (the issue's second cited build has itself aged out of Azure DevOps
-    # retention) and the outcome is a validated, generic-timeout candidate.
-    $result68947 = Invoke-Collector -IssueNumber 68947 -FixtureRoot "$fixturesRoot/68947" -WorkDirectory "$tempRoot/68947" -Signature "OpenQA.Selenium.WebDriverException: TaskCanceledException"
+    $signature68947 = "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"
+    $result68947 = Invoke-Collector -IssueNumber 68947 -FixtureRoot "$fixturesRoot/68947" -WorkDirectory "$tempRoot/68947" -Signature $signature68947
     Assert-Equal -Actual $result68947.Dossier.outcome -Expected "candidate" -Message "#68947 outcome mismatch."
     Assert-Equal -Actual $result68947.Dossier.candidate.proposed_classification -Expected "timeout-needs-classification" -Message "#68947 proposed_classification mismatch."
+    Assert-Equal -Actual (@($result68947.Dossier.candidate.evidence.raw_logs | Where-Object { $_.role -eq "failure" })).Count -Expected 2 -Message "#68947 must gather two distinct failure builds (the cited partiallySucceeded build plus one recurrence-scan match)."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68947" -ActualDossier $result68947.Dossier
 
     $receiptPath68947 = Join-Path "$tempRoot/68947" "receipt.json"
-    & $evaluator -CandidateFile $result68947.CandidatePath -EvidenceRoot $result68947.EvidenceRoot -OutputFile $receiptPath68947 -CandidateSchemaFile $candidateSchema
+    & $evaluator -CandidateFile $result68947.CandidatePath -EvidenceRoot $result68947.EvidenceRoot -OutputFile $receiptPath68947 -RepositoryRoot $repositoryRoot -CandidateSchemaFile $candidateSchema
     $receipt68947 = Get-Content -LiteralPath $receiptPath68947 -Raw | ConvertFrom-Json -Depth 32
     Assert-Equal -Actual $receipt68947.deterministic_status -Expected "validated" -Message "#68947 deterministic_status mismatch."
     Assert-Equal -Actual $receipt68947.shadow_recommendation -Expected "timeout-needs-classification" -Message "#68947 shadow_recommendation mismatch."
+    Assert-Equal -Actual $receipt68947.eligible_for_kbe_enrichment -Expected $false -Message "#68947 must never authorize enrichment."
+    Assert-Equal -Actual $receipt68947.evidence_provenance_verified -Expected $false -Message "#68947 provenance must remain unverified."
+
+    $summaryPath68947 = Join-Path "$tempRoot/68947" "summary.md"
+    & $summaryGenerator -DossierFile $result68947.DossierPath -ReceiptFile $receiptPath68947 -OutputFile $summaryPath68947
+    $summaryText68947 = Get-Content -LiteralPath $summaryPath68947 -Raw
+    if (-not $summaryText68947.Contains("timeout-needs-classification"))
+    {
+        throw "#68947 summary must mention the shadow_recommendation."
+    }
 
     # ------------------------------------------------------------------
-    # Pilot 3 -- aspnetcore#68945: both cited builds' Azure DevOps metadata still
-    # resolves, but the second build's Helix console-log artifact has expired.
-    # Recurrence therefore falls back to a single usable failure log and the
-    # collector must fail closed rather than infer a pass.
+    # Pilot 3 -- aspnetcore#68945: both cited builds' Azure DevOps build-level metadata still
+    # resolves, but the second build's historical VSTMR test-result data is no longer queryable,
+    # leaving only one usable failure log below the two-build recurrence floor. The collector
+    # must fail closed rather than infer a pass or fabricate evidence.
     # ------------------------------------------------------------------
     $result68945 = Invoke-Collector -IssueNumber 68945 -FixtureRoot "$fixturesRoot/68945" -WorkDirectory "$tempRoot/68945" -Signature "System.Threading.Tasks.TaskCanceledException: The operation was canceled."
     Assert-Equal -Actual $result68945.Dossier.outcome -Expected "incomplete" -Message "#68945 outcome mismatch."
-    Assert-Contains -Collection @($result68945.Dossier.incomplete.reason_codes) -Value "raw-evidence-expired" -Message "#68945 reason codes must record the expired artifact."
+    Assert-Contains -Collection @($result68945.Dossier.incomplete.reason_codes) -Value "raw-evidence-insufficient" -Message "#68945 reason codes must record the insufficient evidence."
     Assert-Equal -Actual $result68945.Dossier.candidate -Expected $null -Message "#68945 must not emit a candidate."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68945" -ActualDossier $result68945.Dossier
 
     $summaryPath68945 = Join-Path "$tempRoot/68945" "summary.md"
     & $summaryGenerator -DossierFile $result68945.DossierPath -OutputFile $summaryPath68945
     $summaryText68945 = Get-Content -LiteralPath $summaryPath68945 -Raw
-    if (-not $summaryText68945.Contains("raw-evidence-expired"))
+    if (-not $summaryText68945.Contains("raw-evidence-insufficient"))
     {
-        throw "#68945 summary must mention the raw-evidence-expired reason code."
+        throw "#68945 summary must mention the raw-evidence-insufficient reason code."
     }
 
     # ------------------------------------------------------------------
-    # Edge cases not represented by the three pilots: a closed issue, an issue
-    # missing the canonical quarantine label, and conservative check-run
-    # substring extraction actually flipping to true when warranted.
+    # Edge case: a closed issue must fail closed regardless of label/marker.
     # ------------------------------------------------------------------
-    $closedFixtureDir = Join-Path $tempRoot "closed-issue-fixture"
-    [System.IO.Directory]::CreateDirectory($closedFixtureDir) | Out-Null
-    @{
-        issue = @{
+    $closedDir = New-SyntheticFixture -Name "closed-issue" -Overrides @{
+        issue = [ordered]@{
             number = 1
             state = "closed"
             labels = @("test-failure")
-            body = "## Failing Test(s)`n`` Sample.Tests.Closed ``"
+            body = "## Failing Test(s)`n`` Sample.Tests.Closed ``$([System.Environment]::NewLine)$workflowMarker"
         }
-        azdo_builds = @{}
-        recurrence_scan = @{}
-        negative_scan = @{}
-        vstmr_results = @{}
-        helix_evidence = @{}
-        check_runs = @{}
-        duplicate_search = @{
-            "open-kbe" = @{ complete = $true; result_numbers = @() }
-            "recently-closed-kbe" = @{ complete = $true; result_numbers = @() }
-            "open-fix-pr" = @{ complete = $true; result_numbers = @() }
-            "recently-merged-fix-pr" = @{ complete = $true; result_numbers = @() }
-        }
-    } | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $closedFixtureDir "fixture.json")
-    $resultClosed = Invoke-Collector -IssueNumber 1 -FixtureRoot $closedFixtureDir -WorkDirectory (Join-Path $tempRoot "closed-issue")
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultClosed = Invoke-Collector -IssueNumber 1 -FixtureRoot $closedDir -WorkDirectory (Join-Path $tempRoot "closed-issue")
     Assert-Equal -Actual $resultClosed.Dossier.outcome -Expected "incomplete" -Message "Closed-issue outcome mismatch."
     Assert-Contains -Collection @($resultClosed.Dossier.incomplete.reason_codes) -Value "issue-not-open" -Message "Closed-issue reason codes mismatch."
 
-    $unlabeledFixtureDir = Join-Path $tempRoot "unlabeled-issue-fixture"
-    [System.IO.Directory]::CreateDirectory($unlabeledFixtureDir) | Out-Null
-    @{
-        issue = @{
+    # ------------------------------------------------------------------
+    # Edge case: an issue missing the canonical 'test-failure' label must fail closed.
+    # ------------------------------------------------------------------
+    $unlabeledDir = New-SyntheticFixture -Name "unlabeled-issue" -Overrides @{
+        issue = [ordered]@{
             number = 2
             state = "open"
             labels = @("area-blazor")
-            body = "## Failing Test(s)`n`` Sample.Tests.Unlabeled ``"
+            body = "## Failing Test(s)`n`` Sample.Tests.Unlabeled ``$([System.Environment]::NewLine)$workflowMarker"
         }
-        azdo_builds = @{}
-        recurrence_scan = @{}
-        negative_scan = @{}
-        vstmr_results = @{}
-        helix_evidence = @{}
-        check_runs = @{}
-        duplicate_search = @{
-            "open-kbe" = @{ complete = $true; result_numbers = @() }
-            "recently-closed-kbe" = @{ complete = $true; result_numbers = @() }
-            "open-fix-pr" = @{ complete = $true; result_numbers = @() }
-            "recently-merged-fix-pr" = @{ complete = $true; result_numbers = @() }
-        }
-    } | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $unlabeledFixtureDir "fixture.json")
-    $resultUnlabeled = Invoke-Collector -IssueNumber 2 -FixtureRoot $unlabeledFixtureDir -WorkDirectory (Join-Path $tempRoot "unlabeled-issue")
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultUnlabeled = Invoke-Collector -IssueNumber 2 -FixtureRoot $unlabeledDir -WorkDirectory (Join-Path $tempRoot "unlabeled-issue")
     Assert-Equal -Actual $resultUnlabeled.Dossier.outcome -Expected "incomplete" -Message "Unlabeled-issue outcome mismatch."
     Assert-Contains -Collection @($resultUnlabeled.Dossier.incomplete.reason_codes) -Value "issue-not-canonical-quarantine" -Message "Unlabeled-issue reason codes mismatch."
 
-    # The three pilots' real Build Analysis snapshots were all generic (matching the
-    # documented architecture-consensus finding that this signal is corroborating only), so
-    # none of them exercise a positive substring match. Prove that path separately: a snapshot
-    # whose text literally names the test and a known issue must flip both conservative flags.
-    $exactMatchFixtureDir = Join-Path $tempRoot "exact-match-fixture"
-    [System.IO.Directory]::CreateDirectory($exactMatchFixtureDir) | Out-Null
-    $exactMatchSha = "bf6e1566a2433f298c3adc8b6ecc3358b99d5d3f"
-    $exactMatchSignature = "System.InvalidOperationException: Sample failure for exact-match testing."
-    @{
-        issue = @{
-            number = 3
+    # ------------------------------------------------------------------
+    # Edge case (item 5): the 'test-failure' label alone is not proof of quarantine automation --
+    # an issue carrying the label and open state, but with no trusted gh-aw workflow marker in
+    # its body, must also fail closed.
+    # ------------------------------------------------------------------
+    $missingMarkerDir = New-SyntheticFixture -Name "missing-marker" -Overrides @{
+        issue = [ordered]@{
+            number = 10
             state = "open"
             labels = @("test-failure")
-            body = "## Failing Test(s)`n`` Sample.Tests.ExactMatchCase ``" + "`n`n## Error Message`n``````text`n$exactMatchSignature`n``````" + "`n`n## Build`nhttps://dev.azure.com/dnceng-public/public/_build/results?buildId=5000001"
+            body = "## Failing Test(s)`n`` Sample.Tests.NoMarker ``"
         }
-        azdo_builds = @{
-            "5000001" = @{ definition = @{ id = 83 }; sourceVersion = $exactMatchSha; startTime = "2026-08-01T00:00:00Z"; finishTime = "2026-08-01T01:00:00Z"; result = "failed" }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultMissingMarker = Invoke-Collector -IssueNumber 10 -FixtureRoot $missingMarkerDir -WorkDirectory (Join-Path $tempRoot "missing-marker")
+    Assert-Equal -Actual $resultMissingMarker.Dossier.issue.has_workflow_marker -Expected $false -Message "Missing-marker issue.has_workflow_marker mismatch."
+    Assert-Equal -Actual $resultMissingMarker.Dossier.outcome -Expected "incomplete" -Message "Missing-marker outcome mismatch."
+    Assert-Contains -Collection @($resultMissingMarker.Dossier.incomplete.reason_codes) -Value "issue-not-canonical-quarantine" -Message "Missing-marker reason codes mismatch: the 'test-failure' label alone must not be treated as proof of quarantine automation."
+
+    # ------------------------------------------------------------------
+    # Edge case (item 8): the repository checkout must be confirmed, via a trusted GitHub API
+    # response for dotnet/aspnetcore's main branch, to actually be main's tip before a candidate
+    # is ever labeled repository_ref.branch = "main". A deliberately wrong trusted SHA must fail
+    # closed rather than mislabel the checkout.
+    # ------------------------------------------------------------------
+    $repoRefMismatchDir = New-SyntheticFixture -Name "repo-ref-mismatch" -Overrides @{
+        issue = [ordered]@{
+            number = 13
+            state = "open"
+            labels = @("test-failure")
+            body = "## Failing Test(s)`n`` Sample.Tests.RepoRefMismatch ``$([System.Environment]::NewLine)$workflowMarker"
         }
-        recurrence_scan = @{
-            "83" = @(@{ id = 5000002; sourceVersion = "c1b304785ea05e7c92030583e1cb658c50630102"; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
+        main_branch = [ordered]@{ sha = "0000000000000000000000000000000000000000" }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultRepoRefMismatch = Invoke-Collector -IssueNumber 13 -FixtureRoot $repoRefMismatchDir -WorkDirectory (Join-Path $tempRoot "repo-ref-mismatch")
+    Assert-Equal -Actual $resultRepoRefMismatch.Dossier.outcome -Expected "incomplete" -Message "Repository-ref-mismatch outcome mismatch."
+    Assert-Contains -Collection @($resultRepoRefMismatch.Dossier.incomplete.reason_codes) -Value "repository-ref-not-main" -Message "Repository-ref-mismatch reason codes mismatch."
+    Assert-Equal -Actual $resultRepoRefMismatch.Dossier.provenance.repository_ref_verification.matches_main -Expected $false -Message "Repository-ref-mismatch matches_main mismatch."
+
+    # ------------------------------------------------------------------
+    # Edge case (item 6): a Build Analysis snapshot naming only the bare method name (which
+    # commonly collides with unrelated tests) must never set exact_test_referenced; a generic
+    # "Known Issues" heading with no associated concrete issue number/URL must never set
+    # known_issue_referenced. Only the full fully-qualified name, and only a concrete issue
+    # reference, may set these flags.
+    # ------------------------------------------------------------------
+    $flagsTestName = "Sample.Tests.ExactMatchCase"
+    $flagsSignature = "System.InvalidOperationException: Sample failure for exact-match testing."
+    $flagsShaA = "f4d9777d7b9a3d45c88e1ca1b10609e412cc4ade"
+    $flagsShaB = "e06ef94591aaa5a8dc3f84926f8664b2964bf0ea"
+    $flagsShaC = "51e066210e1643430dccb9986c42500d3e706638"
+    $flagsDir = New-SyntheticFixture -Name "check-run-flags" -Overrides @{
+        issue = [ordered]@{
+            number = 11
+            state = "open"
+            labels = @("test-failure")
+            body = "## Failing Test(s)`n`` $flagsTestName ``$([System.Environment]::NewLine)## Error Message$([System.Environment]::NewLine)${codeFence}text$([System.Environment]::NewLine)$flagsSignature$([System.Environment]::NewLine)$codeFence$([System.Environment]::NewLine)## Build$([System.Environment]::NewLine)https://dev.azure.com/dnceng-public/public/_build/results?buildId=6100001$([System.Environment]::NewLine)$workflowMarker"
         }
-        negative_scan = @{
-            "83" = @(@{ id = 5000003; sourceVersion = "52bcd78ab0d7a1df3834306cc1c56a21f86a9fd2"; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+        azdo_builds = [ordered]@{
+            "6100001" = [ordered]@{ definition = [ordered]@{ id = 83 }; sourceVersion = $flagsShaA; startTime = "2026-08-01T00:00:00Z"; finishTime = "2026-08-01T01:00:00Z"; result = "failed" }
         }
-        vstmr_results = @{
-            "5000001" = @{ outcome = "Failed"; comment = '{"HelixJobId":"job-a","HelixWorkItemName":"wi-a"}'; errorMessage = $exactMatchSignature; stackTrace = "at Sample.Tests.ExactMatchCase..." }
-            "5000002" = @{ outcome = "Failed"; comment = '{"HelixJobId":"job-b","HelixWorkItemName":"wi-b"}'; errorMessage = $exactMatchSignature; stackTrace = "at Sample.Tests.ExactMatchCase..." }
-            "5000003" = @{ outcome = "Passed"; comment = '{"HelixJobId":"job-c","HelixWorkItemName":"wi-c"}'; errorMessage = $null; stackTrace = $null }
+        recurrence_scan = [ordered]@{
+            "83" = @([ordered]@{ id = 6100002; sourceVersion = $flagsShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
         }
-        helix_evidence = @{
-            "5000001" = @{ found = $true; expired = $false; console_excerpt = "Failed Sample.Tests.ExactMatchCase [1 s]`n$exactMatchSignature (build 5000001)" }
-            "5000002" = @{ found = $true; expired = $false; console_excerpt = "Failed Sample.Tests.ExactMatchCase [1 s]`n$exactMatchSignature (build 5000002)" }
-            "5000003" = @{ found = $true; expired = $false; console_excerpt = "[PASS] Sample.Tests.ExactMatchCase" }
+        negative_scan = [ordered]@{
+            "83" = @([ordered]@{ id = 6100003; sourceVersion = $flagsShaC; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
         }
-        check_runs = @{
-            $exactMatchSha = @(@{
-                name = "Build Analysis"
-                id = 700001
-                conclusion = "failure"
-                output = @{
-                    title = "1 failing test"
-                    text = "Sample.Tests.ExactMatchCase failed. This matches a Known Issue: https://github.com/dotnet/aspnetcore/issues/70000."
-                }
-                html_url = "https://github.com/dotnet/aspnetcore/runs/700001"
+        vstmr_summary = [ordered]@{
+            "6100001" = @([ordered]@{ id = 1; runId = 7100001; outcome = "Failed"; automatedTestName = $flagsTestName })
+            "6100002" = @([ordered]@{ id = 2; runId = 7100002; outcome = "Failed"; automatedTestName = $flagsTestName })
+            "6100003" = @([ordered]@{ id = 3; runId = 7100003; outcome = "Passed"; automatedTestName = $flagsTestName })
+        }
+        vstmr_detail = [ordered]@{
+            "7100001:1" = [ordered]@{ outcome = "Failed"; errorMessage = $flagsSignature; stackTrace = "at $flagsTestName.Run() (build a)" }
+            "7100002:2" = [ordered]@{ outcome = "Failed"; errorMessage = $flagsSignature; stackTrace = "at $flagsTestName.Run() (build b)" }
+            "7100003:3" = [ordered]@{ outcome = "Passed"; errorMessage = $null; stackTrace = $null }
+        }
+        vstmr_runs = [ordered]@{
+            "7100001" = [ordered]@{ name = "Quarantine-Mono-Windows-Debug-xunit" }
+            "7100002" = [ordered]@{ name = "Quarantine-Mono-Windows-Debug-xunit" }
+            "7100003" = [ordered]@{ name = "Quarantine-Mono-Windows-Debug-xunit" }
+        }
+        check_runs = [ordered]@{
+            $flagsShaA = @([ordered]@{
+                name = "Build Analysis"; id = 1; conclusion = "failure"
+                output = [ordered]@{ title = "1 failing test"; text = "$flagsTestName failed. This matches a Known Issue: dotnet/aspnetcore#70000." }
+                html_url = "https://github.com/dotnet/aspnetcore/runs/1"
+            })
+            $flagsShaB = @([ordered]@{
+                name = "Build Analysis"; id = 2; conclusion = "failure"
+                # Only the bare method name appears (embedded in an unrelated identifier, not the
+                # full FQN), and "Known Issues" is a generic heading with no associated number.
+                output = [ordered]@{ title = "1 failing test"; text = "## Known Issues`nSomeOtherExactMatchCaseVariant failed for unrelated reasons. See the table above." }
+                html_url = "https://github.com/dotnet/aspnetcore/runs/2"
             })
         }
-        duplicate_search = @{
-            "open-kbe" = @{ complete = $true; result_numbers = @() }
-            "recently-closed-kbe" = @{ complete = $true; result_numbers = @() }
-            "open-fix-pr" = @{ complete = $true; result_numbers = @() }
-            "recently-merged-fix-pr" = @{ complete = $true; result_numbers = @() }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultFlags = Invoke-Collector -IssueNumber 11 -FixtureRoot $flagsDir -WorkDirectory (Join-Path $tempRoot "check-run-flags")
+    Assert-Equal -Actual $resultFlags.Dossier.outcome -Expected "candidate" -Message "check-run-flags outcome mismatch."
+    $snapshotA = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
+    $snapshotB = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaB })[0]
+    Assert-Equal -Actual $snapshotA.exact_test_referenced -Expected $true -Message "exact_test_referenced must be true when the full FQN appears verbatim."
+    Assert-Equal -Actual $snapshotA.known_issue_referenced -Expected $true -Message "known_issue_referenced must be true when a concrete issue number follows 'Known Issue'."
+    Assert-Contains -Collection @($snapshotA.known_issue_numbers) -Value 70000 -Message "known_issue_numbers must record the referenced issue."
+    Assert-Equal -Actual $snapshotB.exact_test_referenced -Expected $false -Message "exact_test_referenced must stay false for a bare-method-name collision."
+    Assert-Equal -Actual $snapshotB.short_name_referenced -Expected $true -Message "short_name_referenced must record the bare-method-name match."
+    Assert-Equal -Actual $snapshotB.known_issue_referenced -Expected $false -Message "known_issue_referenced must stay false for a generic 'Known Issues' heading with no associated number."
+
+    # ------------------------------------------------------------------
+    # Edge case (item 12): a duplicate-search hit is a discovery candidate only. A hit whose
+    # body/title does not contain the exact fully-qualified test name must never be treated as a
+    # validated existing-kbe duplicate, even though it shares the bare method name.
+    # ------------------------------------------------------------------
+    $dupTestName = "Sample.Tests.DuplicateValidationCase"
+    $dupSignature = "System.InvalidOperationException: Sample failure for duplicate validation testing."
+    $dupShaA = "c78cc5badc905159a96a0d4bb0686acadaddc5c3"
+    $dupShaB = "439036f2881b7046fe9b9c3953bff60ed45dda6a"
+    $dupShaC = "48bf6fbc5f5aa8484a773f612851e95a4f52973a"
+    $dupDir = New-SyntheticFixture -Name "duplicate-unvalidated" -Overrides @{
+        issue = [ordered]@{
+            number = 12
+            state = "open"
+            labels = @("test-failure")
+            body = "## Failing Test(s)`n`` $dupTestName ``$([System.Environment]::NewLine)## Error Message$([System.Environment]::NewLine)${codeFence}text$([System.Environment]::NewLine)$dupSignature$([System.Environment]::NewLine)$codeFence$([System.Environment]::NewLine)## Build$([System.Environment]::NewLine)https://dev.azure.com/dnceng-public/public/_build/results?buildId=6200001$([System.Environment]::NewLine)$workflowMarker"
         }
-    } | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $exactMatchFixtureDir "fixture.json")
-    $resultExactMatch = Invoke-Collector -IssueNumber 3 -FixtureRoot $exactMatchFixtureDir -WorkDirectory (Join-Path $tempRoot "exact-match")
-    Assert-Equal -Actual $resultExactMatch.Dossier.outcome -Expected "candidate" -Message "Exact-match fixture outcome mismatch."
-    $matchingSnapshot = @($resultExactMatch.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $exactMatchSha })[0]
-    Assert-Equal -Actual $matchingSnapshot.exact_test_referenced -Expected $true -Message "exact_test_referenced must flip true when the check-run text names the test."
-    Assert-Equal -Actual $matchingSnapshot.known_issue_referenced -Expected $true -Message "known_issue_referenced must flip true when the check-run text names a Known Issue."
+        azdo_builds = [ordered]@{
+            "6200001" = [ordered]@{ definition = [ordered]@{ id = 83 }; sourceVersion = $dupShaA; startTime = "2026-08-01T00:00:00Z"; finishTime = "2026-08-01T01:00:00Z"; result = "failed" }
+        }
+        recurrence_scan = [ordered]@{
+            "83" = @([ordered]@{ id = 6200002; sourceVersion = $dupShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
+        }
+        negative_scan = [ordered]@{
+            "83" = @([ordered]@{ id = 6200003; sourceVersion = $dupShaC; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+        }
+        vstmr_summary = [ordered]@{
+            "6200001" = @([ordered]@{ id = 1; runId = 7200001; outcome = "Failed"; automatedTestName = $dupTestName })
+            "6200002" = @([ordered]@{ id = 2; runId = 7200002; outcome = "Failed"; automatedTestName = $dupTestName })
+            "6200003" = @([ordered]@{ id = 3; runId = 7200003; outcome = "Passed"; automatedTestName = $dupTestName })
+        }
+        vstmr_detail = [ordered]@{
+            "7200001:1" = [ordered]@{ outcome = "Failed"; errorMessage = $dupSignature; stackTrace = "at $dupTestName.Run() (build 1)" }
+            "7200002:2" = [ordered]@{ outcome = "Failed"; errorMessage = $dupSignature; stackTrace = "at $dupTestName.Run() (build 2)" }
+            "7200003:3" = [ordered]@{ outcome = "Passed"; errorMessage = $null; stackTrace = $null }
+        }
+        vstmr_runs = [ordered]@{
+            "7200001" = [ordered]@{ name = "Quarantine-Mono-Linux-Release-xunit" }
+            "7200002" = [ordered]@{ name = "Quarantine-Mono-Linux-Release-xunit" }
+            "7200003" = [ordered]@{ name = "Quarantine-Mono-Linux-Release-xunit" }
+        }
+        duplicate_search = [ordered]@{
+            "open-kbe" = [ordered]@{ complete = $true; result_numbers = @(99999); total_count = 1 }
+            "recently-closed-kbe" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+            "open-fix-pr" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+            "recently-merged-fix-pr" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
+        }
+        duplicate_candidate_text = [ordered]@{
+            "99999" = "Quarantine Sample.Tests.OtherUnrelatedCase`nThis issue tracks a completely different test that happens to share no identity with our test."
+        }
+    }
+    $resultDup = Invoke-Collector -IssueNumber 12 -FixtureRoot $dupDir -WorkDirectory (Join-Path $tempRoot "duplicate-unvalidated")
+    Assert-Equal -Actual $resultDup.Dossier.outcome -Expected "candidate" -Message "duplicate-unvalidated outcome mismatch."
+    Assert-Equal -Actual $resultDup.Dossier.candidate.duplicate_check.status -Expected "none" -Message "An unvalidated search hit must never set duplicate_check.status to existing-kbe."
+    Assert-Equal -Actual (@($resultDup.Dossier.candidate.duplicate_check.references)).Count -Expected 0 -Message "An unvalidated search hit must never appear in duplicate_check.references."
+    $unvalidated = @($resultDup.Dossier.provenance.duplicate_search.unvalidated_candidates)
+    if ($unvalidated.Count -eq 0 -or -not (@($unvalidated | Where-Object { $_.number -eq 99999 }).Count -gt 0))
+    {
+        throw "Expected an unvalidated_candidates entry for issue #99999."
+    }
+
+    # ------------------------------------------------------------------
+    # Edge case (item 11): a literal ErrorMessage containing '*', '?', and '[' must be matched via
+    # ordinal substring containment, never PowerShell -like/-notlike wildcard semantics. A decoy
+    # build sharing only the literal '[' character (but not the full signature text) must NOT be
+    # picked up as a second recurrence match.
+    # ------------------------------------------------------------------
+    $wildTestName = "Sample.Tests.WildcardSignatureCase"
+    $wildSignature = "Assert.Equal() Failure: Array index [0] was *unexpected*, value? did not match."
+    $wildShaA = "11c785d7c74de87dc8dabb59c500da8af9254f81"
+    $wildShaB = "1d386dc40f508a46c0b76768cdbb1226cb6fe626"
+    $wildShaDecoy = "7ab2248eea6ca9ec8fa5c10cabd3f5c520edd126"
+    $wildShaNeg = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    $wildDir = New-SyntheticFixture -Name "wildcard-signature" -Overrides @{
+        issue = [ordered]@{
+            number = 14
+            state = "open"
+            labels = @("test-failure")
+            body = "## Failing Test(s)`n`` $wildTestName ``$([System.Environment]::NewLine)## Error Message$([System.Environment]::NewLine)${codeFence}text$([System.Environment]::NewLine)$wildSignature$([System.Environment]::NewLine)$codeFence$([System.Environment]::NewLine)## Build$([System.Environment]::NewLine)https://dev.azure.com/dnceng-public/public/_build/results?buildId=6400001$([System.Environment]::NewLine)$workflowMarker"
+        }
+        azdo_builds = [ordered]@{
+            "6400001" = [ordered]@{ definition = [ordered]@{ id = 83 }; sourceVersion = $wildShaA; startTime = "2026-08-01T00:00:00Z"; finishTime = "2026-08-01T01:00:00Z"; result = "failed" }
+        }
+        recurrence_scan = [ordered]@{
+            "83" = @(
+                [ordered]@{ id = 6400099; sourceVersion = $wildShaDecoy; startTime = "2026-07-31T00:00:00Z"; finishTime = "2026-07-31T01:00:00Z"; result = "failed" },
+                [ordered]@{ id = 6400002; sourceVersion = $wildShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" }
+            )
+        }
+        negative_scan = [ordered]@{
+            "83" = @([ordered]@{ id = 6400003; sourceVersion = $wildShaNeg; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+        }
+        vstmr_summary = [ordered]@{
+            "6400001" = @([ordered]@{ id = 1; runId = 7400001; outcome = "Failed"; automatedTestName = $wildTestName })
+            "6400099" = @([ordered]@{ id = 99; runId = 7400099; outcome = "Failed"; automatedTestName = $wildTestName })
+            "6400002" = @([ordered]@{ id = 2; runId = 7400002; outcome = "Failed"; automatedTestName = $wildTestName })
+            "6400003" = @([ordered]@{ id = 3; runId = 7400003; outcome = "Passed"; automatedTestName = $wildTestName })
+        }
+        vstmr_detail = [ordered]@{
+            "7400001:1" = [ordered]@{ outcome = "Failed"; errorMessage = $wildSignature; stackTrace = "at $wildTestName.Run() (build 1)" }
+            "7400099:99" = [ordered]@{ outcome = "Failed"; errorMessage = "Some unrelated failure referencing array index [5] elsewhere."; stackTrace = "at Sample.Tests.Unrelated.Run()" }
+            "7400002:2" = [ordered]@{ outcome = "Failed"; errorMessage = $wildSignature; stackTrace = "at $wildTestName.Run() (build 2)" }
+            "7400003:3" = [ordered]@{ outcome = "Passed"; errorMessage = $null; stackTrace = $null }
+        }
+        vstmr_runs = [ordered]@{
+            "7400001" = [ordered]@{ name = "Quarantine-Mono-Linux-Debug-xunit" }
+            "7400099" = [ordered]@{ name = "Quarantine-Mono-Linux-Debug-xunit" }
+            "7400002" = [ordered]@{ name = "Quarantine-Mono-Linux-Debug-xunit" }
+            "7400003" = [ordered]@{ name = "Quarantine-Mono-Linux-Debug-xunit" }
+        }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultWildcard = Invoke-Collector -IssueNumber 14 -FixtureRoot $wildDir -WorkDirectory (Join-Path $tempRoot "wildcard-signature")
+    Assert-Equal -Actual $resultWildcard.Dossier.outcome -Expected "candidate" -Message "wildcard-signature outcome mismatch."
+    $wildFailureBuildIds = @($resultWildcard.Dossier.candidate.evidence.raw_logs | Where-Object { $_.role -eq "failure" } | ForEach-Object { $_.build.id })
+    Assert-Equal -Actual $wildFailureBuildIds.Count -Expected 2 -Message "wildcard-signature must gather exactly two failure builds."
+    Assert-Contains -Collection $wildFailureBuildIds -Value 6400002 -Message "wildcard-signature must include the real matching recurrence build."
+    Assert-NotContains -Collection $wildFailureBuildIds -Value 6400099 -Message "wildcard-signature must NOT include the decoy build that only shares the literal '[' character, proving ordinal (not -like) matching."
+
+    # ------------------------------------------------------------------
+    # Merge-AzdoBuildLists: pure unit coverage for the failed+partiallySucceeded merge/dedupe
+    # (item 2) independent of any network access. Dot-source the collector (satisfying its
+    # mandatory parameters with the already-validated missing-marker fixture, which exits after
+    # Step 1) purely to bring the function into scope.
+    # ------------------------------------------------------------------
+    . $collector -IssueNumber 10 -OutputFile (Join-Path $tempRoot "merge-unit-dossier.json") -CandidateFile (Join-Path $tempRoot "merge-unit-candidate.json") -EvidenceRoot (Join-Path $tempRoot "merge-unit-evidence") -FixtureRoot $missingMarkerDir -RepositoryRoot $repositoryRoot -DossierSchemaFile $dossierSchema -CandidateSchemaFile $candidateSchema | Out-Null
+
+    # Real Azure DevOps build objects deserialize as PSCustomObject (via Invoke-RestMethod /
+    # ConvertFrom-Json); Sort-Object -Property only resolves a plain hashtable's "properties" via
+    # PSCustomObject-style member resolution, not dictionary key lookup, so PSCustomObject here
+    # matches production shape and is required for the -Property startTime sort below to work.
+    $failedList = @(
+        [PSCustomObject]@{ id = 1; startTime = "2026-01-01T00:00:00Z" },
+        [PSCustomObject]@{ id = 2; startTime = "2026-01-02T00:00:00Z" }
+    )
+    $partiallySucceededList = @(
+        [PSCustomObject]@{ id = 2; startTime = "2026-01-02T00:00:00Z" },
+        [PSCustomObject]@{ id = 3; startTime = "2026-01-03T00:00:00Z" }
+    )
+    $merged = @(Merge-AzdoBuildLists -Lists @($failedList, $partiallySucceededList) -Cap 10)
+    Assert-Equal -Actual $merged.Count -Expected 3 -Message "Merge-AzdoBuildLists must dedupe the build shared by both resultFilter queries."
+    Assert-Equal -Actual $merged[0].id -Expected 3 -Message "Merge-AzdoBuildLists must sort by startTime descending (most recent first)."
+    Assert-Equal -Actual $merged[2].id -Expected 1 -Message "Merge-AzdoBuildLists must preserve the oldest build last."
+
+    $cappedMerged = @(Merge-AzdoBuildLists -Lists @($failedList, $partiallySucceededList) -Cap 2)
+    Assert-Equal -Actual $cappedMerged.Count -Expected 2 -Message "Merge-AzdoBuildLists must honor the cap."
+
+    $emptyMerged = @(Merge-AzdoBuildLists -Lists @(@(), @()) -Cap 5)
+    Assert-Equal -Actual $emptyMerged.Count -Expected 0 -Message "Merge-AzdoBuildLists must return a real empty array (not collapse to null) when both inputs are empty."
 
     Write-Host "All test-quarantine-kbe-shadow collector tests passed."
 }

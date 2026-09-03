@@ -15,10 +15,16 @@
     "labels": [
       "test-failure",
       "area-networking"
-    ]
+    ],
+    "has_workflow_marker": true
   },
   "outcome": "incomplete",
   "provenance": {
+    "repository_ref_verification": {
+      "checkout_sha": "<GENERATED>",
+      "trusted_main_sha": "<GENERATED>",
+      "matches_main": true
+    },
     "azdo_builds": [
       {
         "id": 1569737,
@@ -48,7 +54,7 @@
         "retrieved_utc": "<GENERATED>",
         "source": "negative-scan",
         "definition_id": 83,
-        "source_version": "5f76b4102d0c06c5af2f08e045a9d32e9cccef5b",
+        "source_version": "d0bb51a3cabe3bd24dac952bcf8a183c91b54baa",
         "started_utc": "2026-08-15T08:00:00.0000000Z",
         "finished_utc": "2026-08-15T09:45:00.0000000Z",
         "result": "succeeded"
@@ -66,47 +72,54 @@
         "text_excerpt": "1 test failed. See Azure DevOps for full details.",
         "html_url": "https://github.com/dotnet/aspnetcore/runs/900201",
         "exact_test_referenced": false,
-        "known_issue_referenced": false
+        "short_name_referenced": false,
+        "known_issue_referenced": false,
+        "known_issue_numbers": []
       },
       {
         "source_version": "7773bea1d63c05d7b7043d2ecd2a3fcdd0ff18dc",
         "found": false,
         "retrieved_utc": "<GENERATED>",
         "exact_test_referenced": false,
-        "known_issue_referenced": false
+        "short_name_referenced": false,
+        "known_issue_referenced": false,
+        "known_issue_numbers": []
       }
     ],
     "raw_evidence_sources": [
       {
         "build_id": 1569737,
         "role": "failure",
-        "kind": "helix-console-log",
-        "helix_job": "helix-job-1569737",
-        "helix_workitem": "Http3RequestTests.WorkItemExecution",
+        "kind": "vstmr-detail",
+        "run_id": 72708311,
+        "result_id": 400010,
+        "helix_unavailable": true,
+        "platform": "Linux",
+        "configuration": "Release",
         "found": true,
-        "expired": false,
         "captured_utc": "<GENERATED>",
-        "sha256": "c9753c024d81675a60dba72af5e18d663af7801cff73d69c9645879130b1c0ae",
+        "sha256": "9ce4ad96859470b4e8756421f9aa4f89079cbb60af728e516ac5b2eb095157f1",
         "evidence_path": "issue-68945-build-1569737-failure.log"
       },
       {
         "build_id": 1538879,
         "role": "failure",
         "found": false,
-        "expired": true,
         "captured_utc": "<GENERATED>",
-        "note": "Helix console evidence for build 1538879 was not retrievable."
+        "note": "No VSTMR result for build 1538879 matched the expected outcome/signature for this test."
       },
       {
         "build_id": 1540500,
         "role": "negative",
-        "kind": "helix-console-log",
-        "helix_job": "helix-job-1540500",
-        "helix_workitem": "Http3RequestTests.WorkItemExecution",
+        "kind": "vstmr-detail",
+        "run_id": 72708313,
+        "result_id": 400030,
+        "helix_unavailable": true,
+        "platform": "Linux",
+        "configuration": "Release",
         "found": true,
-        "expired": false,
         "captured_utc": "<GENERATED>",
-        "sha256": "b4f3e16c9853a9ec29eb5f5407a12b171e0c9d260f610d9bff0fe37be8cb3d8c",
+        "sha256": "856486ff4bd7fa7052a9fd195f0ae82f267d0c184cda825072625f6545a1ae89",
         "evidence_path": "issue-68945-build-1540500-negative.log"
       }
     ],
@@ -125,40 +138,44 @@
           "category": "open-kbe",
           "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" POST_ClientCancellationUpload_RequestAbortRaised",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "recently-closed-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:closed label:\"Known Build Error\" POST_ClientCancellationUpload_RequestAbortRaised",
+          "query": "repo:dotnet/aspnetcore is:issue is:closed closed:>=2026-06-05 label:\"Known Build Error\" POST_ClientCancellationUpload_RequestAbortRaised",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "open-fix-pr",
           "query": "repo:dotnet/aspnetcore is:pr is:open POST_ClientCancellationUpload_RequestAbortRaised",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         },
         {
           "category": "recently-merged-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:merged POST_ClientCancellationUpload_RequestAbortRaised",
+          "query": "repo:dotnet/aspnetcore is:pr is:merged merged:>=2026-06-05 POST_ClientCancellationUpload_RequestAbortRaised",
           "complete": true,
-          "result_numbers": []
+          "result_numbers": [],
+          "total_count": 0
         }
-      ]
+      ],
+      "unvalidated_candidates": []
     }
   },
   "candidate": null,
   "incomplete": {
     "reason_codes": [
-      "raw-evidence-expired",
       "raw-evidence-insufficient"
     ],
-    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-expired, raw-evidence-insufficient.",
+    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-insufficient.",
     "missing_evidence": [
       {
-        "kind": "helix-evidence",
-        "detail": "Build 1538879: no retrievable Helix console evidence."
+        "kind": "vstmr-evidence",
+        "detail": "Build 1538879: no matching, retrievable VSTMR result detail."
       },
       {
         "kind": "raw-evidence",
