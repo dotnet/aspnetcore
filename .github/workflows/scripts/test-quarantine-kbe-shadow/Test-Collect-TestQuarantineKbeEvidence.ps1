@@ -596,23 +596,25 @@ try
     $resultUnknownEnvironment = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownEnvironmentDir -WorkDirectory (Join-Path $tempRoot "unknown-environment")
     Assert-Equal -Actual $resultUnknownEnvironment.Dossier.outcome -Expected "incomplete" -Message "Unknown required environment dimensions must fail closed."
     Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-platform-unknown" -Message "Unknown platform reason code mismatch."
-    Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-configuration-unknown" -Message "Unknown configuration reason code mismatch."
+    $unknownEnvironmentSource = @($resultUnknownEnvironment.Dossier.provenance.raw_evidence_sources | Where-Object { $_.build_id -eq 6100001 })[0]
+    Assert-Equal -Actual $unknownEnvironmentSource.configuration -Expected "not-encoded" -Message "Recognized TestRun families without Debug/Release must use the stable not-encoded configuration policy."
 
     $unknownExecutionLegDir = New-DerivedFixture -Name "unknown-execution-leg" -Source $flagsDir -Mutate {
         param($fixtureObject)
-        $fixtureObject.vstmr_runs.'7100001'.name = "Quarantine-Windows-Debug-xunit"
+        $fixtureObject.vstmr_runs.'7100001'.name = "Windows"
     }
     $resultUnknownExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownExecutionLegDir -WorkDirectory (Join-Path $tempRoot "unknown-execution-leg")
-    Assert-Equal -Actual $resultUnknownExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown required execution leg must fail closed."
-    Assert-Contains -Collection @($resultUnknownExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-execution-leg-unknown" -Message "Unknown execution leg reason code mismatch."
+    Assert-Equal -Actual $resultUnknownExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown required TestRun identity must fail closed."
+    Assert-Contains -Collection @($resultUnknownExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-test-run-identity-unknown" -Message "Unknown TestRun identity reason code mismatch."
+    Assert-Contains -Collection @($resultUnknownExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-configuration-unknown" -Message "Unknown configuration reason code mismatch."
 
     $unknownPassExecutionLegDir = New-DerivedFixture -Name "unknown-pass-execution-leg" -Source $flagsDir -Mutate {
         param($fixtureObject)
-        $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-Windows-Debug-xunit"
+        $fixtureObject.vstmr_runs.'7100003'.name = "Windows-Debug"
     }
     $resultUnknownPassExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownPassExecutionLegDir -WorkDirectory (Join-Path $tempRoot "unknown-pass-execution-leg")
-    Assert-Equal -Actual $resultUnknownPassExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown pass execution leg must fail closed."
-    Assert-Contains -Collection @($resultUnknownPassExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-execution-leg-unknown" -Message "Unknown pass execution leg reason code mismatch."
+    Assert-Equal -Actual $resultUnknownPassExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown pass TestRun identity must fail closed."
+    Assert-Contains -Collection @($resultUnknownPassExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-test-run-identity-unknown" -Message "Unknown pass TestRun identity reason code mismatch."
 
     $differentPassEnvironmentDir = New-DerivedFixture -Name "different-pass-environment" -Source $flagsDir -Mutate {
         param($fixtureObject)
@@ -627,8 +629,8 @@ try
         $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-CoreCLR-Windows-Debug-xunit"
     }
     $resultDifferentExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $differentExecutionLegDir -WorkDirectory (Join-Path $tempRoot "different-execution-leg")
-    Assert-Equal -Actual $resultDifferentExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A CoreCLR pass must not prove Mono failures intermittent."
-    Assert-Contains -Collection @($resultDifferentExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Different execution leg reason code mismatch."
+    Assert-Equal -Actual $resultDifferentExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A CoreCLR TestRun must not prove Mono failures intermittent."
+    Assert-Contains -Collection @($resultDifferentExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Different TestRun identity reason code mismatch."
 
     $compositeExecutionLegDir = New-DerivedFixture -Name "composite-execution-leg" -Source $flagsDir -Mutate {
         param($fixtureObject)
@@ -636,8 +638,8 @@ try
         $fixtureObject.vstmr_runs.'7100002'.name = "Quarantine-Mono-WebAssembly-Windows-Debug-xunit"
     }
     $resultCompositeExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $compositeExecutionLegDir -WorkDirectory (Join-Path $tempRoot "composite-execution-leg")
-    Assert-Equal -Actual $resultCompositeExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A Mono pass must not match a distinct Mono+WebAssembly failure leg."
-    Assert-Contains -Collection @($resultCompositeExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Composite execution leg reason code mismatch."
+    Assert-Equal -Actual $resultCompositeExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A Mono pass must not match a distinct Mono+WebAssembly TestRun identity."
+    Assert-Contains -Collection @($resultCompositeExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Composite TestRun identity reason code mismatch."
 
     $passAfterLastDir = New-DerivedFixture -Name "pass-after-last-failure" -Source $flagsDir -Mutate {
         param($fixtureObject)
@@ -871,6 +873,27 @@ try
 
     $emptyMerged = @(Merge-AzdoBuildLists -Lists @(@(), @()) -Cap 5)
     Assert-Equal -Actual $emptyMerged.Count -Expected 0 -Message "Merge-AzdoBuildLists must return a real empty array (not collapse to null) when both inputs are empty."
+
+    $runNameCases = @(
+        [ordered]@{ Name = "Linux-Release-xunit"; Identity = "linux-release-xunit"; Platform = "Linux"; Configuration = "Release" },
+        [ordered]@{ Name = "Linux-xunit_7"; Identity = "linux-xunit"; Platform = "Linux"; Configuration = "not-encoded" },
+        [ordered]@{ Name = "Ubuntu.2404.Amd64.Open"; Identity = "ubuntu.2404.amd64.open"; Platform = "Linux"; Configuration = "not-encoded" },
+        [ordered]@{ Name = "Ubuntu.2404.Amd64.Open_2"; Identity = "ubuntu.2404.amd64.open"; Platform = "Linux"; Configuration = "not-encoded" },
+        [ordered]@{ Name = "OSX.26.Arm64.Open"; Identity = "osx.26.arm64.open"; Platform = "macOS"; Configuration = "not-encoded" },
+        [ordered]@{ Name = "Windows.Amd64.VS2026.Open"; Identity = "windows.amd64.vs2026.open"; Platform = "Windows"; Configuration = "not-encoded" },
+        [ordered]@{ Name = "Windows-Release-xunit"; Identity = "windows-release-xunit"; Platform = "Windows"; Configuration = "Release" },
+        [ordered]@{ Name = "Quarantine-Mono-Linux-Release-xunit"; Identity = "quarantine-mono-linux-release-xunit"; Platform = "Linux"; Configuration = "Release" },
+        [ordered]@{ Name = "ComponentsE2E-CoreCLR-Linux-Release-xunit"; Identity = "componentse2e-coreclr-linux-release-xunit"; Platform = "Linux"; Configuration = "Release" },
+        [ordered]@{ Name = "ComponentsE2E-WebAssembly-Linux-Release-xunit"; Identity = "componentse2e-webassembly-linux-release-xunit"; Platform = "Linux"; Configuration = "Release" },
+        [ordered]@{ Name = "Linux-Release-js"; Identity = "linux-release-js"; Platform = "Linux"; Configuration = "Release" }
+    )
+    foreach ($runNameCase in $runNameCases)
+    {
+        $environment = Get-TestRunEnvironmentFromName -RunName $runNameCase.Name
+        Assert-Equal -Actual $environment.TestRunIdentity -Expected $runNameCase.Identity -Message "TestRun identity mismatch for '$($runNameCase.Name)'."
+        Assert-Equal -Actual $environment.Platform -Expected $runNameCase.Platform -Message "Platform mismatch for '$($runNameCase.Name)'."
+        Assert-Equal -Actual $environment.Configuration -Expected $runNameCase.Configuration -Message "Configuration mismatch for '$($runNameCase.Name)'."
+    }
 
     $windowedQueryUri = [System.Uri]::UnescapeDataString((Get-AzdoNegativeBuildQueryUri `
         -DefinitionId 83 `

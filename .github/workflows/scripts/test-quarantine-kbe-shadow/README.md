@@ -52,8 +52,8 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   VSTMR detail text remains authoritative on its own -- never silently degraded. Recurrence
   requires evidence from **at least two distinct builds** (a single build producing two separate
   artifacts is not recurrence), and at least one authoritative **Passed** occurrence strictly
-  between an earlier and a later failure in the same pipeline definition, normalized execution leg,
-  platform, and configuration. A pass before all failures or after the last failure could represent
+  between an earlier and a later failure in the same pipeline definition, canonical TestRun
+  identity, platform, and configuration. A pass before all failures or after the last failure could represent
   a not-yet-failing or already-fixed regression, so neither proves active intermittency. Ordering
   currently uses strict Azure DevOps build `started_utc` timestamps; commit ancestry would be
   stronger but is not available in the bounded offline evidence contract. The live Passed scan is
@@ -107,16 +107,25 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   `sourceBranch` must be exactly `refs/heads/main`, status must be `completed`, and failure builds
   must be `failed` or `partiallySucceeded` (`succeeded` is required for the Passed scan). These
   dimensions are recorded in build provenance and candidate evidence.
-* **Execution leg/platform/configuration are derived from authoritative metadata, never
-  fabricated.** Azure
+* **Canonical TestRun identity/platform/configuration are derived from authoritative metadata,
+  never fabricated.** Azure
   DevOps' `buildConfiguration.platform`/`.flavor` fields are empty strings on every real run
   observed live; the only authoritative, cheaply-available signal is the VSTMR TestRun's own
-  `name` (e.g. `Quarantine-Mono-Linux-Release-xunit`). The collector parses recognized
-  execution-leg (`Mono`, `CoreCLR`, WebAssembly/browser variants), platform, and configuration
-  tokens out of that name. A counted failure or pass with any dimension `"unknown"` emits explicit
-  missing-evidence codes and prevents a candidate/validated receipt.
-* **Never infer a pass, a recurrence, a signature, a platform/configuration, or a validated
-  duplicate from missing or unverifiable evidence.** Every gap -- a build whose Azure DevOps
+  `name`. Real families include `Quarantine-Mono-Linux-Release-xunit`,
+  `Linux-Release-xunit`, sharded `Linux-xunit_1` (observed in build 1538879, run 42642946),
+  `Ubuntu.2404.Amd64.Open`, and `Windows.Amd64.VS2026.Open`. The collector lowercases the full name
+  and removes only a known volatile terminal shard suffix (`_N` after `xunit`, `js`, or `Open`);
+  meaningful family/runtime/browser, OS, architecture, toolchain, and `Open` tokens remain part of
+  `test_run_identity`.
+  Platform recognizes Linux/Ubuntu, Windows, and macOS/OSX forms. Configuration is `Debug` or
+  `Release` only when encoded by the family; otherwise recognized `xunit`/`js`/`Open` families use
+  the deliberate stable value `not-encoded`. An unrecognized TestRun identity or platform/
+  configuration emits explicit missing-evidence and prevents a candidate/validated receipt.
+  This identity represents a TestRun **name family**, not a unique run: definition 83 can publish
+  multiple distinct runs with the same name in one build, and those are deliberately treated as
+  the same environment family.
+* **Never infer a pass, a recurrence, a signature, a TestRun identity/platform/configuration, or
+  a validated duplicate from missing or unverifiable evidence.** Every gap -- a build whose Azure DevOps
   metadata has aged out of retention, historical VSTMR test-result data no longer queryable for a
   build, an ambiguous or absent signature, an incomplete duplicate search, an unconfirmed
   repository ref -- is recorded as an explicit reason code and fails the run closed
@@ -232,7 +241,7 @@ sides before comparing.
 The test suite additionally covers, via small synthetic (non-pilot) fixtures: a closed issue, an
 issue missing the `test-failure` label, missing or forged workflow provenance, immutable dispatch
 ancestry and non-main rejection, strict build definition/ref/status/result gates, skip-only,
-pre-first, post-last, and environment/execution-leg-mismatched pass evidence, valid interleaving,
+pre-first, post-last, and TestRun-identity/environment-mismatched pass evidence, valid interleaving,
 unknown environment dimensions, Build Analysis flag precision, compatible and incompatible same-FQN KBE signatures, failed
 duplicate-detail fetches, deliberately unvalidated fix-PR mentions, wildcard-shaped literal
 signatures, and build-list merge/dedupe.

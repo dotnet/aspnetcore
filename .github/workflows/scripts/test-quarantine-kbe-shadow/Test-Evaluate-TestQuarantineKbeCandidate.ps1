@@ -156,7 +156,7 @@ function New-LogEntry
             }
             status = "completed"
             result = if ($Role -eq "failure") { "failed" } else { "succeeded" }
-            execution_leg = "Mono"
+            test_run_identity = "quarantine-mono-linux-release-xunit"
             platform = "Linux"
             configuration = "Release"
         }
@@ -239,7 +239,7 @@ try
     }
 
     $logs[2].build.started_utc = "2026-08-20T18:00:00Z"
-    $logs[2].build.execution_leg = "CoreCLR"
+    $logs[2].build.test_run_identity = "quarantine-coreclr-linux-release-xunit"
     Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
     & $evaluator `
         -CandidateFile $candidatePath `
@@ -249,12 +249,12 @@ try
         -CandidateSchemaFile $candidateSchema `
         -ReceiptSchemaFile $receiptSchema
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
-    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Different execution-leg pass evidence status mismatch."
-    if (-not (($receipt.reasons -join "`n").Contains("pipeline definition, execution leg, platform, and configuration")))
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Different TestRun identity pass evidence status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("pipeline definition, canonical TestRun identity, platform, and configuration")))
     {
         throw "Mono-failure/CoreCLR-pass evidence must report the environment gate."
     }
-    $logs[2].build.execution_leg = "Mono"
+    $logs[2].build.test_run_identity = "quarantine-mono-linux-release-xunit"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "negative.log") -Value @(
         "[SKIP] Microsoft.AspNetCore.Example.Tests.SampleTests.Completes"
@@ -284,7 +284,7 @@ try
     $logs[2].sha256 = (Get-FileHash -LiteralPath (Join-Path $tempRoot "negative.log") -Algorithm SHA256).Hash.ToLowerInvariant()
     $logs[0].build.platform = "unknown"
     $logs[0].build.configuration = "unknown"
-    $logs[0].build.execution_leg = "unknown"
+    $logs[0].build.test_run_identity = "unknown"
     Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
 
     & $evaluator `
@@ -299,13 +299,13 @@ try
     Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Unknown environment evidence status mismatch."
     if (-not (($receipt.reasons -join "`n").Contains("unknown platform")) -or
         -not (($receipt.reasons -join "`n").Contains("unknown configuration")) -or
-        -not (($receipt.reasons -join "`n").Contains("unknown execution leg")))
+        -not (($receipt.reasons -join "`n").Contains("unknown canonical TestRun identity")))
     {
         throw "Unknown environment evidence must report every missing dimension."
     }
     $logs[0].build.platform = "Linux"
     $logs[0].build.configuration = "Release"
-    $logs[0].build.execution_leg = "Mono"
+    $logs[0].build.test_run_identity = "quarantine-mono-linux-release-xunit"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "failure-2.log") -Value @(
         "Starting an unrelated test"

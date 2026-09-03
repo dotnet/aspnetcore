@@ -707,34 +707,36 @@ function Get-VstmrRunName
     return $name
 }
 
-function Get-PlatformConfigurationFromRunName
+function Get-TestRunEnvironmentFromName
 {
     param([AllowNull()][string]$RunName)
 
-    $executionLegTokens = [System.Collections.Generic.List[string]]::new()
+    $testRunIdentity = "unknown"
     $platform = "unknown"
     $configuration = "unknown"
     if ([string]::IsNullOrEmpty($RunName))
     {
-        return [ordered]@{ ExecutionLeg = "unknown"; Platform = $platform; Configuration = $configuration }
+        return [ordered]@{ TestRunIdentity = $testRunIdentity; Platform = $platform; Configuration = $configuration }
     }
 
-    if ($RunName -match "(?i)\bmono\b") { $null = $executionLegTokens.Add("Mono") }
-    if ($RunName -match "(?i)\bcoreclr\b") { $null = $executionLegTokens.Add("CoreCLR") }
-    if ($RunName -match "(?i)\b(?:wasm|webassembly)\b") { $null = $executionLegTokens.Add("WebAssembly") }
-    if ($RunName -match "(?i)\b(?:chromium|chrome)\b") { $null = $executionLegTokens.Add("Chromium") }
-    if ($RunName -match "(?i)\bfirefox\b") { $null = $executionLegTokens.Add("Firefox") }
-    if ($RunName -match "(?i)\bwebkit\b") { $null = $executionLegTokens.Add("WebKit") }
-    $executionLeg = if ($executionLegTokens.Count -gt 0) { $executionLegTokens -join "+" } else { "unknown" }
+    $normalizedRunName = $RunName.Trim()
+    $normalizedRunName = [regex]::Replace($normalizedRunName, '(?i)((?:xunit|js|open))_[1-9][0-9]*$', '$1')
+    $hasKnownRunFamily =
+        $normalizedRunName -match '(?i)(?:^|[-.])(?:xunit|js|open)(?:$|[-.])'
+    if ($hasKnownRunFamily)
+    {
+        $testRunIdentity = $normalizedRunName.ToLowerInvariant()
+    }
 
-    if ($RunName -match "(?i)\bwindows\b") { $platform = "Windows" }
-    elseif ($RunName -match "(?i)\blinux\b") { $platform = "Linux" }
-    elseif ($RunName -match "(?i)\b(?:macos|osx)\b") { $platform = "macOS" }
+    if ($normalizedRunName -match "(?i)\bwindows\b") { $platform = "Windows" }
+    elseif ($normalizedRunName -match "(?i)\b(?:linux|ubuntu)\b") { $platform = "Linux" }
+    elseif ($normalizedRunName -match "(?i)\b(?:macos|osx)\b") { $platform = "macOS" }
 
-    if ($RunName -match "(?i)\bdebug\b") { $configuration = "Debug" }
-    elseif ($RunName -match "(?i)\brelease\b") { $configuration = "Release" }
+    if ($normalizedRunName -match "(?i)\bdebug\b") { $configuration = "Debug" }
+    elseif ($normalizedRunName -match "(?i)\brelease\b") { $configuration = "Release" }
+    elseif ($hasKnownRunFamily) { $configuration = "not-encoded" }
 
-    return [ordered]@{ ExecutionLeg = $executionLeg; Platform = $platform; Configuration = $configuration }
+    return [ordered]@{ TestRunIdentity = $testRunIdentity; Platform = $platform; Configuration = $configuration }
 }
 
 function Get-CheckRunsForSha
@@ -1576,8 +1578,8 @@ foreach ($build in $evidenceBuilds)
             }
 
             $candidateRunName = Get-VstmrRunName -RunId ([int]$row.runId)
-            $candidatePlatformConfiguration = Get-PlatformConfigurationFromRunName -RunName $candidateRunName
-            $candidateEnvironmentKey = "$($build.definition_id)|$($candidatePlatformConfiguration.ExecutionLeg)|$($candidatePlatformConfiguration.Platform)|$($candidatePlatformConfiguration.Configuration)"
+            $candidatePlatformConfiguration = Get-TestRunEnvironmentFromName -RunName $candidateRunName
+            $candidateEnvironmentKey = "$($build.definition_id)|$($candidatePlatformConfiguration.TestRunIdentity)|$($candidatePlatformConfiguration.Platform)|$($candidatePlatformConfiguration.Configuration)"
             $candidateStartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
             $matchingFailureOccurrences = @($materializedFailureOccurrences | Where-Object { $_.EnvironmentKey -eq $candidateEnvironmentKey })
             $hasFailureBefore = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -lt $candidateStartedUtc }).Count -gt 0
@@ -1646,7 +1648,7 @@ foreach ($build in $evidenceBuilds)
     }
     else
     {
-        Get-PlatformConfigurationFromRunName -RunName $runName
+        Get-TestRunEnvironmentFromName -RunName $runName
     }
     if ($platformConfiguration.Platform -eq "unknown")
     {
@@ -1658,10 +1660,10 @@ foreach ($build in $evidenceBuilds)
         $reasonCodes.Add("evidence-configuration-unknown")
         Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown configuration from TestRun '$runName'."
     }
-    if ($platformConfiguration.ExecutionLeg -eq "unknown")
+    if ($platformConfiguration.TestRunIdentity -eq "unknown")
     {
-        $reasonCodes.Add("evidence-execution-leg-unknown")
-        Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown execution leg from TestRun '$runName'."
+        $reasonCodes.Add("evidence-test-run-identity-unknown")
+        Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has no canonical TestRun identity from '$runName'."
     }
 
     $evidenceIndex += 1
@@ -1695,7 +1697,7 @@ foreach ($build in $evidenceBuilds)
         run_id = $runId
         result_id = $resultId
         helix_unavailable = $helixUnavailable
-        execution_leg = $platformConfiguration.ExecutionLeg
+        test_run_identity = $platformConfiguration.TestRunIdentity
         platform = $platformConfiguration.Platform
         configuration = $platformConfiguration.Configuration
         found = $true
@@ -1713,12 +1715,12 @@ foreach ($build in $evidenceBuilds)
     if ($role -eq "failure")
     {
         $null = $failureBuildIdSet.Add([int]$build.id)
-        if ($platformConfiguration.ExecutionLeg -ne "unknown" -and
+        if ($platformConfiguration.TestRunIdentity -ne "unknown" -and
             $platformConfiguration.Platform -ne "unknown" -and
             $platformConfiguration.Configuration -ne "unknown")
         {
             $null = $materializedFailureOccurrences.Add([ordered]@{
-                EnvironmentKey = "$($build.definition_id)|$($platformConfiguration.ExecutionLeg)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
+                EnvironmentKey = "$($build.definition_id)|$($platformConfiguration.TestRunIdentity)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
                 StartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
             })
         }
@@ -1745,7 +1747,7 @@ foreach ($build in $evidenceBuilds)
             started_utc = [string]$build.started_utc
             status = [string]$build.status
             result = [string]$build.result
-            execution_leg = $platformConfiguration.ExecutionLeg
+            test_run_identity = $platformConfiguration.TestRunIdentity
             platform = $platformConfiguration.Platform
             configuration = $platformConfiguration.Configuration
         }
@@ -1754,7 +1756,7 @@ foreach ($build in $evidenceBuilds)
     if ($role -eq "negative")
     {
         $passStartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-        $passEnvironmentKey = "$($build.definition_id)|$($platformConfiguration.ExecutionLeg)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
+        $passEnvironmentKey = "$($build.definition_id)|$($platformConfiguration.TestRunIdentity)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
         $matchingFailureOccurrences = @($materializedFailureOccurrences | Where-Object { $_.EnvironmentKey -eq $passEnvironmentKey })
         $hasFailureBefore = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -lt $passStartedUtc }).Count -gt 0
         $hasFailureAfter = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -gt $passStartedUtc }).Count -gt 0
@@ -1785,7 +1787,7 @@ foreach ($passLog in $passedLogsForEligibility)
         $failureLogsForPassEligibility |
             Where-Object {
                 [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
-                [string]$_.build.execution_leg -eq [string]$passLog.build.execution_leg -and
+                [string]$_.build.test_run_identity -eq [string]$passLog.build.test_run_identity -and
                 [string]$_.build.platform -eq [string]$passLog.build.platform -and
                 [string]$_.build.configuration -eq [string]$passLog.build.configuration
             }
@@ -1816,7 +1818,7 @@ if ($null -ne $testName -and $eligiblePassedBuildIds.Count -lt $minimumNegativeL
         $passesWithMatchingEnvironment -eq 0)
     {
         $reasonCodes.Add("passed-evidence-environment-mismatch")
-        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "No authoritative Passed occurrence shared pipeline definition, execution leg, platform, and configuration with any collected failure."
+        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "No authoritative Passed occurrence shared pipeline definition, canonical TestRun identity, platform, and configuration with any collected failure."
     }
     elseif ($passesWithMatchingEnvironment -gt 0)
     {

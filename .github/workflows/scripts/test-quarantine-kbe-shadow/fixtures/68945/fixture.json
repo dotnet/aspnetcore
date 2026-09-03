@@ -89,10 +89,10 @@
   },
   "vstmr_runs": {
     "72708311": {
-      "name": "Quarantine-CoreCLR-Linux-Release-xunit"
+      "name": "Windows.Amd64.VS2026.Open"
     },
     "72708313": {
-      "name": "Quarantine-CoreCLR-Linux-Release-xunit"
+      "name": "Windows.Amd64.VS2026.Open"
     }
   },
   "check_runs": {

@@ -407,7 +407,7 @@
                 "type": "string",
                 "maxLength": 256
               },
-              "execution_leg": {
+              "test_run_identity": {
                 "type": "string",
                 "maxLength": 128
               },
@@ -453,7 +453,7 @@
                     "run_id",
                     "result_id",
                     "helix_unavailable",
-                    "execution_leg",
+                    "test_run_identity",
                     "platform",
                     "configuration",
                     "sha256",
@@ -512,7 +512,7 @@
               "raw-evidence-insufficient",
               "passed-evidence-not-interleaved",
               "passed-evidence-environment-mismatch",
-              "evidence-execution-leg-unknown",
+              "evidence-test-run-identity-unknown",
               "evidence-platform-unknown",
               "evidence-configuration-unknown",
               "recurrence-single-build-only",

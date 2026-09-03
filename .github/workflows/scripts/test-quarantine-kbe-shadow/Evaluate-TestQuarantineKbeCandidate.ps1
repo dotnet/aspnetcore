@@ -556,9 +556,9 @@ foreach ($log in $candidate.evidence.raw_logs)
     {
         $incompleteReasons.Add("Evidence log '$($log.id)' has unknown configuration; exact environment dimensions are required.")
     }
-    if ([string]$log.build.execution_leg -eq "unknown")
+    if ([string]$log.build.test_run_identity -eq "unknown")
     {
-        $incompleteReasons.Add("Evidence log '$($log.id)' has unknown execution leg; exact environment dimensions are required.")
+        $incompleteReasons.Add("Evidence log '$($log.id)' has unknown canonical TestRun identity; exact environment dimensions are required.")
     }
 
     $passOrSkipCollisionCount += [int]$match.pass_or_skip_match_count
@@ -593,7 +593,7 @@ foreach ($passLog in $passedLogsForEligibility)
         $failureLogsForPassEligibility |
             Where-Object {
                 [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
-                [string]$_.build.execution_leg -eq [string]$passLog.build.execution_leg -and
+                [string]$_.build.test_run_identity -eq [string]$passLog.build.test_run_identity -and
                 [string]$_.build.platform -eq [string]$passLog.build.platform -and
                 [string]$_.build.configuration -eq [string]$passLog.build.configuration
             }
@@ -641,7 +641,7 @@ if ($negativeHashes.Count -lt $requiredNegativeLogs)
         $passedLogsForEligibility.Count -gt 0 -and
         $passesWithMatchingEnvironment -eq 0)
     {
-        $incompleteReasons.Add("No authoritative Passed occurrence matched a failure's pipeline definition, execution leg, platform, and configuration.")
+        $incompleteReasons.Add("No authoritative Passed occurrence matched a failure's pipeline definition, canonical TestRun identity, platform, and configuration.")
     }
     elseif ($passesWithMatchingEnvironment -gt 0)
     {

@@ -195,7 +195,7 @@
                   "started_utc",
                   "status",
                   "result",
-                  "execution_leg",
+                  "test_run_identity",
                   "platform",
                   "configuration"
                 ],
@@ -231,7 +231,7 @@
                       "succeeded"
                     ]
                   },
-                  "execution_leg": {
+                  "test_run_identity": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 128,
