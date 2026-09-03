@@ -59,13 +59,16 @@ model-bearing `Run` action requires selecting one standard skill and defaults to
 the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
 trial count. Both modes use the repository-scoped `copilot-pat-pool`
 environment with one worker, serialize model-bearing runs, and retain the raw
-Vally output as a workflow artifact for seven days. The workflow uses the first
-configured `COPILOT_PAT_0` through `COPILOT_PAT_9` pool entry, then falls back to
-the repository `COPILOT_GITHUB_TOKEN`; same-repository `write`, `maintain`, or
-`admin` access is the authorization boundary for selecting and running a host
-workflow revision. The in-file default-ref checks prevent accidental non-default
-dispatches of the unmodified workflow, but a trusted writer could deliberately
-change those checks in a branch-selected workflow revision.
+Vally output as a workflow artifact for seven days. A dedicated trusted job
+finds the configured `COPILOT_PAT_0` through `COPILOT_PAT_9` pool entries,
+randomly selects one, and exposes only its numeric slot to the worker. The Vally
+step resolves that slot to the selected secret, or uses the repository
+`COPILOT_GITHUB_TOKEN` when the pool is empty. Same-repository `write`,
+`maintain`, or `admin` access is the authorization boundary for selecting and
+running a host workflow revision. The in-file default-ref checks prevent
+accidental non-default dispatches of the unmodified workflow, but a trusted
+writer could deliberately change those checks in a branch-selected workflow
+revision.
 Pool entries are fine-grained PATs that grant only `Copilot Requests (Read)` for
 public repositories and expire after eight days. The selected credential
 materializes only in the Vally execution step as `COPILOT_GITHUB_TOKEN`;

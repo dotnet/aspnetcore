@@ -304,11 +304,93 @@ jobs:
             echo 'should_eval=true'
           } >> "$GITHUB_OUTPUT"
 
-  run:
-    name: Run skill evaluations
+  pat_pool:
+    name: Select Copilot token
     needs: gate
     if: >-
       always() &&
+      ((github.event_name == 'workflow_dispatch' &&
+        inputs.action == 'Run' &&
+        inputs.pr_number == '') ||
+       (needs.gate.result == 'success' &&
+        needs.gate.outputs.should_eval == 'true'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: copilot-pat-pool
+    permissions: {}
+    outputs:
+      pat_number: ${{ steps.select-pat-number.outputs.copilot_pat_number }}
+    steps:
+      - name: Require default branch control plane
+        id: control-plane
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"
+          if [[ "$SELECTED_REF" != "$EXPECTED_REF" ]]; then
+            echo "::error::PAT-backed evaluations require the trusted default branch '$EXPECTED_REF', not '$SELECTED_REF'."
+            exit 1
+          fi
+          echo 'trusted=true' >> "$GITHUB_OUTPUT"
+
+      - name: Select Copilot token from pool
+        id: select-pat-number
+        if: steps.control-plane.outputs.trusted == 'true'
+        shell: bash
+        env:
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+        run: |
+          set -euo pipefail
+
+          PAT_NUMBERS=()
+          POOL_INDICATORS=(➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖)
+
+          for i in $(seq 0 9); do
+            var="COPILOT_PAT_${i}"
+            val="${!var}"
+            if [[ -n "$val" ]]; then
+              PAT_NUMBERS+=("$i")
+              POOL_INDICATORS[i]="🟪"
+            fi
+          done
+
+          if [[ "${#PAT_NUMBERS[@]}" -eq 0 ]]; then
+            echo "::warning::None of the PAT pool entries had values (checked COPILOT_PAT_0 through COPILOT_PAT_9)."
+            exit 0
+          fi
+
+          PAT_INDEX=$((RANDOM % ${#PAT_NUMBERS[@]}))
+          PAT_NUMBER="${PAT_NUMBERS[$PAT_INDEX]}"
+          POOL_INDICATORS[PAT_NUMBER]="✅"
+
+          echo "Pool size: ${#PAT_NUMBERS[@]}"
+          echo "Selected PAT number $PAT_NUMBER (index: $PAT_INDEX)"
+          echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
+          (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+          echo "copilot_pat_number=$PAT_NUMBER" >> "$GITHUB_OUTPUT"
+
+  run:
+    name: Run skill evaluations
+    needs:
+      - gate
+      - pat_pool
+    if: >-
+      always() &&
+      needs.pat_pool.result == 'success' &&
       ((github.event_name == 'workflow_dispatch' &&
         inputs.action == 'Run' &&
         inputs.pr_number == '') ||
@@ -448,7 +530,7 @@ jobs:
         if: steps.claim.outputs.claimed == 'true'
         shell: pwsh
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 || secrets.COPILOT_PAT_1 || secrets.COPILOT_PAT_2 || secrets.COPILOT_PAT_3 || secrets.COPILOT_PAT_4 || secrets.COPILOT_PAT_5 || secrets.COPILOT_PAT_6 || secrets.COPILOT_PAT_7 || secrets.COPILOT_PAT_8 || secrets.COPILOT_PAT_9 || secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets[format('COPILOT_PAT_{0}', needs.pat_pool.outputs.pat_number)] || secrets.COPILOT_GITHUB_TOKEN }}
           EVALS_JSON: ${{ needs.gate.outputs.evals || format('["{0}"]', inputs.eval) }}
           RUN_TYPE: ${{ needs.gate.outputs.run_type || inputs.run_type }}
           STAGING_ROOT: ${{ runner.temp }}/skill-eval-execution

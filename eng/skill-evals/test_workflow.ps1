@@ -17,27 +17,49 @@ $selectedRefCount = ([regex]::Matches(
     $workflow,
     [regex]::Escape('SELECTED_REF: ${{ github.ref }}')
 )).Count
-if ($selectedRefCount -ne 2) {
-    throw "Expected two full-ref default-branch guards; found $selectedRefCount."
+if ($selectedRefCount -ne 3) {
+    throw "Expected three full-ref default-branch guards; found $selectedRefCount."
 }
 
 $expectedRefCount = ([regex]::Matches(
     $workflow,
     [regex]::Escape('EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"')
 )).Count
-if ($expectedRefCount -ne 2) {
-    throw "Expected two closed default-branch comparisons; found $expectedRefCount."
+if ($expectedRefCount -ne 3) {
+    throw "Expected three closed default-branch comparisons; found $expectedRefCount."
 }
 
 $copilotCredentialExpression = @'
-COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 || secrets.COPILOT_PAT_1 || secrets.COPILOT_PAT_2 || secrets.COPILOT_PAT_3 || secrets.COPILOT_PAT_4 || secrets.COPILOT_PAT_5 || secrets.COPILOT_PAT_6 || secrets.COPILOT_PAT_7 || secrets.COPILOT_PAT_8 || secrets.COPILOT_PAT_9 || secrets.COPILOT_GITHUB_TOKEN }}
+COPILOT_GITHUB_TOKEN: ${{ secrets[format('COPILOT_PAT_{0}', needs.pat_pool.outputs.pat_number)] || secrets.COPILOT_GITHUB_TOKEN }}
 '@.Trim()
 $copilotCredentialExpressionCount = ([regex]::Matches(
     $workflow,
     [regex]::Escape($copilotCredentialExpression)
 )).Count
 if ($copilotCredentialExpressionCount -ne 1) {
-    throw "Expected one ordered Copilot PAT-pool expression with the repository fallback; found $copilotCredentialExpressionCount."
+    throw "Expected one selected Copilot PAT expression with the repository fallback; found $copilotCredentialExpressionCount."
+}
+
+$patPoolJob = [regex]::Match(
+    $workflow,
+    '(?ms)^  pat_pool:\r?\n(?<job>.*?)(?=^  \S|\z)'
+)
+if (-not $patPoolJob.Success) {
+    throw 'The workflow does not contain the trusted PAT-pool selector job.'
+}
+
+$patPoolJobText = $patPoolJob.Groups['job'].Value
+foreach ($patNumber in 0..9) {
+    $secretReference = "COPILOT_PAT_${patNumber}: `${{ secrets.COPILOT_PAT_${patNumber} }}"
+    if ($patPoolJobText -notmatch [regex]::Escape($secretReference)) {
+        throw "The PAT-pool selector does not inspect COPILOT_PAT_$patNumber."
+    }
+}
+if ($patPoolJobText -notmatch [regex]::Escape('PAT_INDEX=$((RANDOM % ${#PAT_NUMBERS[@]}))')) {
+    throw 'The PAT-pool selector does not randomly balance across configured entries.'
+}
+if ($patPoolJobText -notmatch [regex]::Escape('echo "copilot_pat_number=$PAT_NUMBER" >> "$GITHUB_OUTPUT"')) {
+    throw 'The PAT-pool selector does not expose the selected numeric slot.'
 }
 
 $reportJob = [regex]::Match(
