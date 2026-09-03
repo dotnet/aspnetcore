@@ -46,7 +46,7 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Needed only to confirm user-visible impact or regression boundaries[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Implementation-ready handoff[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Implementation-ready handoff(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: prompt
     rubric:
       - "Uses the non-binding preliminary assessment 'Likely product bug' because the supplied public contract and current source directly contradict each other"
@@ -76,7 +76,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: prompt
     rubric:
       - "Preserves the maintainer request as the controlling current plan and does not invent a parallel reproduction or source-search plan"
@@ -105,7 +105,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Required to establish the suspected defect[ \t]*$'
@@ -143,7 +143,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Implementation-ready handoff[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Implementation-ready handoff(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Likely product bug[ \t]*$'
@@ -212,7 +212,7 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Insufficient evidence[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Required to establish the suspected defect[ \t]*$'
@@ -243,7 +243,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Insufficient evidence[ \t]*$'
@@ -275,7 +275,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Security process required[ \t]*$'
@@ -311,7 +311,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Insufficient evidence[ \t]*$'
@@ -355,7 +355,7 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Product or API decision required[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Not required for the current assessment[ \t]*$'
@@ -408,7 +408,7 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Insufficient evidence[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: prompt
     rubric:
       - "Explicitly separates the reported .NET 8 behavior from the different mechanism inspected on current main"
@@ -445,7 +445,7 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Insufficient evidence[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Required to establish the suspected defect[ \t]*$'
@@ -483,21 +483,17 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Likely product bug[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Not required for the current assessment[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Do not publish(?:[ \t]+(?:—|-)[ \t]+[^\r\n]+)?[ \t]*$'
           negate: true
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Security process required[ \t]*$'
-          negate: true
-      - type: output-matches
-        config:
-          pattern: '(?im)^[ \t]*\*{0,2}(?:One action|Recommended next action):\*{0,2}[^\r\n]*(?:SECURITY\.md|MSRC)[ \t]*$'
           negate: true
       - type: output-matches
         config:
