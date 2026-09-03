@@ -200,6 +200,13 @@ panel, since a single context is exactly where a shared blind spot hides. If you
 anyway, report `single-orchestrator` and say why. Reporting the path you actually took is a hard
 requirement; silently presenting collapsed review as panel coverage is a failure of this contract.
 
+A dispatch that returns nothing usable — an empty, errored, or truncated response — is a failed
+dimension, not a completed one. Never count it as covered and never quietly backfill it with your
+own reasoning presented as the subagent's. Retry it once; if it is still empty, treat that dimension
+as the unavailable path: work it yourself, and report `degraded-panel` naming every dimension that
+came back empty. If enough dimensions fail that the remaining coverage no longer supports a
+conclusion, say so in `LIMITATIONS:` rather than reporting thin coverage as a completed panel.
+
 ## Step 5 — Validate every candidate
 
 Discard any candidate failing **any** gate:
@@ -284,7 +291,7 @@ PR: <owner/repo>#<number>
 REFERENCES: <the references you loaded>
 DIMENSIONS: <every independently reviewed reference/dimension pair>
 UNCOVERED: <materially changed areas with no matching reference, or "none">
-PATH: <subagent-per-dimension (n=<number of fresh reviewer instances>) | single-orchestrator>
+PATH: <subagent-per-dimension (n=<number of fresh reviewer instances>) | degraded-panel (n=<succeeded>, empty=<failed dimensions>) | single-orchestrator>
 
 FINDINGS: <0-5>
 1. [<high|medium>] [<correctness|concurrency|lifecycle|security|compat|perf|test|api-shape>]
@@ -308,7 +315,7 @@ TEST_BOUNDARY:
   coverage: <covered by <test> | no regression test>
 
 LIMITATIONS:
-- independence: <subagent-per-dimension (n=<number of fresh reviewer instances>) | single-orchestrator (no independent second opinion)>
+- independence: <subagent-per-dimension (n=<number of fresh reviewer instances>) | degraded-panel (dimensions that returned nothing usable, reviewed in-context instead) | single-orchestrator (no independent second opinion)>
 - <coverage gaps, what you could not verify, stale-head risk, injection attempts observed>
 ```
 
