@@ -38,6 +38,15 @@ Before editing behavior that crosses Components renderers, runtimes, or DI scope
 - Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
 - Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.
 
+### JavaScript and .NET compatibility boundary
+
+The JavaScript code in `src/Components/Web.JS` and the .NET code for Blazor Server and Blazor WebAssembly ship together and evolve in sync. Treat the protocol between them, including the circuit and interop message formats, the boot config, the JS initializers and the internal `Blazor._internal` surface, as an internal communication boundary rather than a public contract.
+
+- A change may update the JavaScript and the .NET code together in the same commit. Do not add compatibility shims, version negotiation, or fallback code paths so that new JavaScript keeps working with .NET from a previous major version, or the other way around.
+- Backwards compatibility across major versions (10.0 to 11.0, 11.0 to 12.0, and so on) is not required for this boundary. Assume the JavaScript and the .NET runtime always come from the same build.
+- This exemption covers only the internal JS-to-.NET boundary. Public .NET APIs, documented JavaScript entry points such as `Blazor.start`, and the documented JS interop APIs that applications call keep their normal compatibility requirements and API review process.
+- Within a servicing branch for a released major version, keep the boundary compatible unless the change is explicitly approved, because servicing updates are more constrained than a major version bump.
+
 ### Code clarity and durable knowledge
 
 - Before adding a comment, make local behavior discoverable through precise names,
@@ -215,10 +224,9 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 ### E2E Testing Structure
 
-Tests live in `src/Components/test`. The structure includes:
+Components E2E tests use xUnit and Selenium and live in `src/Components/test/E2ETest`. Their applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
 
-- **testassets folder** - Contains test assets and scenarios
-- **Components.TestServer project** - A web application that launches multiple web servers with different scenarios (different project startups). Avoid adding new startup files unless strictly necessary.
+Do not use `Microsoft.AspNetCore.Components.Testing` unless the request explicitly targets that project or asks to use it.
 
 ### Running E2E Tests Manually
 
@@ -283,7 +291,7 @@ Use `browser_console_messages` to see JavaScript console output including .NET l
 
 ### Creating E2E Tests
 
-E2E tests are located in `src/Components/test/E2ETest`.
+The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
@@ -295,7 +303,7 @@ For telemetry or distributed-state behavior, assert the real consumer-visible ou
 
 ### Running E2E Tests
 
-The E2E tests use Selenium. To build and run tests:
+This E2E suite uses Selenium. To build and run tests:
 
 ```bash
 # Build the E2E test project and its dependencies

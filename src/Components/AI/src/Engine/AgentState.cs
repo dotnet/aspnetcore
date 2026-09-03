@@ -11,6 +11,7 @@ public class AgentState<T> where T : class, new()
 {
     private readonly List<Action> _callbacks = new();
     private T _value;
+    private T? _valueBeforePrediction;
 
     internal AgentState(T? initialValue = null)
     {
@@ -26,9 +27,44 @@ public class AgentState<T> where T : class, new()
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            _valueBeforePrediction = null;
             _value = value;
             NotifyChanged();
         }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Value"/> contains provisional predictive state.
+    /// </summary>
+    public bool HasPendingPredictiveState => _valueBeforePrediction is not null;
+
+    /// <summary>
+    /// Accepts the current predictive state as the committed value.
+    /// </summary>
+    public void AcceptPredictiveState()
+    {
+        if (_valueBeforePrediction is null)
+        {
+            return;
+        }
+
+        _valueBeforePrediction = null;
+        NotifyChanged();
+    }
+
+    /// <summary>
+    /// Rejects the current predictive state and restores the value from before the prediction.
+    /// </summary>
+    public void RejectPredictiveState()
+    {
+        if (_valueBeforePrediction is not { } previousValue)
+        {
+            return;
+        }
+
+        _valueBeforePrediction = null;
+        _value = previousValue;
+        NotifyChanged();
     }
 
     /// <summary>
@@ -41,6 +77,14 @@ public class AgentState<T> where T : class, new()
         ArgumentNullException.ThrowIfNull(callback);
         _callbacks.Add(callback);
         return new CallbackRegistration(_callbacks, callback);
+    }
+
+    internal void SetPredictiveValue(T value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        _valueBeforePrediction ??= _value;
+        _value = value;
+        NotifyChanged();
     }
 
     private void NotifyChanged()
