@@ -476,7 +476,17 @@ internal static class JsonNodeSchemaExtensions
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }
-        if (context.TypeInfo.Kind == JsonTypeInfoKind.Union)
+
+        // C# union types are value types, so in case of Nullable<Union> JsonTypeInfoKind is None.
+        // We need to unpack it to properly detect the union: see https://github.com/dotnet/aspnetcore/issues/68653.
+        var unionTypeInfo = context.TypeInfo;
+        if (Nullable.GetUnderlyingType(unionTypeInfo.Type) is { } underlyingType
+            && unionTypeInfo.Options.TryGetTypeInfo(underlyingType, out var underlyingTypeInfo))
+        {
+            unionTypeInfo = underlyingTypeInfo;
+        }
+
+        if (unionTypeInfo.Kind == JsonTypeInfoKind.Union)
         {
             schema[OpenApiConstants.SchemaIsUnion] = true;
         }

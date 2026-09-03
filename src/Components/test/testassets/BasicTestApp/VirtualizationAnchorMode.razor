@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" @attributes="ComparerSplat" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="@itemSize" OverscanCount="@overscanCount" MaxItemCount="@maxItemCount" AnchorMode="@anchorMode" @attributes="ComparerSplat" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="@itemSize" OverscanCount="@overscanCount" MaxItemCount="@maxItemCount" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -85,6 +85,9 @@
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
     <button id="set-console-scenario" @onclick="SetConsoleScenario">Console scenario (40 items, overscan 100)</button>
+    <button id="set-low-max-item-count" @onclick="SetLowMaxItemCount">MaxItemCount 20, overscan 3</button>
+    <button id="set-double-size" @onclick="SetDoubleSize">Item size 100</button>
+    <button id="set-average-height-trap" @onclick="SetAverageHeightTrap">Tall rows before index 100</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -113,9 +116,12 @@
     private string statusMessage = "Ready";
     private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
+    private bool useAverageHeightTrap;
     private bool useItemsProvider = false;
     private bool omitItemComparer = false;
+    private int itemSize = 50;
     private int overscanCount = 15;
+    private int maxItemCount = 100;
     private bool useProviderDelay = false;
     private bool useProviderGate = false;
     private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -158,11 +164,17 @@
 
     private int GetHeight(int index)
     {
-        return useVariableHeight ? 10 + (Math.Abs(index * 7 + 13) % 191) : 50;
+        if (useAverageHeightTrap)
+        {
+            return index < 100 ? 200 : 10;
+        }
+
+        return useVariableHeight ? 10 + (Math.Abs(index * 7 + 13) % 191) : itemSize;
     }
 
     private void ToggleVariableHeight()
     {
+        useAverageHeightTrap = false;
         useVariableHeight = !useVariableHeight;
         foreach (var item in items)
         {
@@ -301,6 +313,40 @@
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 
+    private void SetLowMaxItemCount()
+    {
+        itemSize = 50;
+        maxItemCount = 20;
+        overscanCount = 3;
+        statusMessage = "MaxItemCount 20, overscan 3";
+    }
+
+    private void SetDoubleSize()
+    {
+        useAverageHeightTrap = false;
+        useVariableHeight = false;
+        itemSize = 100;
+        foreach (var item in items)
+        {
+            item.Height = itemSize;
+        }
+        statusMessage = "Item size 100";
+    }
+
+    private void SetAverageHeightTrap()
+    {
+        itemSize = 50;
+        maxItemCount = 300;
+        overscanCount = 3;
+        useVariableHeight = false;
+        useAverageHeightTrap = true;
+        foreach (var item in items)
+        {
+            item.Height = GetHeight(item.Index);
+        }
+        statusMessage = "Tall rows before index 100";
+    }
+
     private void ExpandVisibleItem()
     {
         var target = items.FirstOrDefault(i => i.Index == 3);
@@ -363,7 +409,7 @@
         await Task.Yield();
         if (useProviderDelay)
         {
-            await Task.Delay(500);
+            await Task.Delay(500, request.CancellationToken);
         }
         if (useProviderGate)
         {

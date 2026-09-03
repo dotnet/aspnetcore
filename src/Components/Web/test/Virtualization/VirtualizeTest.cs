@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
@@ -1049,6 +1050,47 @@ public class VirtualizeTest
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(10, cts.Token); });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+    }
+
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68852")]
+    public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
+    {
+        var blockProvider = false;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (!blockProvider)
+            {
+                return new ItemsProviderResult<int>(
+                    Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                    100);
+            }
+
+            requestStarted.TrySetResult();
+            using var registration = request.CancellationToken.Register(requestCanceled.SetResult);
+            await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
+            return default;
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        blockProvider = true;
+        using var cts = new CancellationTokenSource();
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(90, cts.Token); });
+        await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(TimeSpan.FromSeconds(5)));
+        await requestCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [Fact]

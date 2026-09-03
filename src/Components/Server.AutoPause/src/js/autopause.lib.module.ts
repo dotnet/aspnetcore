@@ -11,18 +11,28 @@ interface WebStartOptionsLike {
   circuit?: Record<string, unknown>;
 }
 
+type ServerStartOptionsLike = Record<string, unknown>;
+
 let config: AutoPauseConfig | undefined;
 let manager: AutoPauseManager | undefined;
 
-function beforeWebStart(options: WebStartOptionsLike): void {
-  const enabled = options.circuit?.['autoPauseEnabled'] as boolean | undefined;
+function configure(options: Record<string, unknown> | undefined): void {
+  const enabled = options?.['autoPauseEnabled'] as boolean | undefined;
   if (enabled === undefined) {
     return;
   }
   config = {
     enabled,
-    hiddenDelayMilliseconds: options.circuit?.['autoPauseHiddenDelayMilliseconds'] as number | undefined ?? 120000,
+    hiddenDelayMilliseconds: options?.['autoPauseHiddenDelayMilliseconds'] as number | undefined ?? 120000,
   };
+}
+
+function beforeWebStart(options: WebStartOptionsLike): void {
+  configure(options.circuit);
+}
+
+function beforeServerStart(options: ServerStartOptionsLike): void {
+  configure(options);
 }
 
 // Called by the framework once Blazor has started; activates auto-pause when AddAutoPause
@@ -41,4 +51,4 @@ function afterWebStarted(blazor: BlazorLike): void {
   mgr.start();
 }
 
-export { beforeWebStart, beforeWebStart as beforeServerStart, afterWebStarted, afterWebStarted as afterServerStarted };
+export { beforeWebStart, beforeServerStart, afterWebStarted, afterWebStarted as afterServerStarted };

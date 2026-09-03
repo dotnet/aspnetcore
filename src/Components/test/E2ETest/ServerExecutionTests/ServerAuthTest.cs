@@ -52,33 +52,74 @@ public class ServerAuthTest : AuthTest
     [Fact]
     public void UpdatesAuthenticationStateWhenAuthenticationRefreshed()
     {
-        SignInAs("Someone", "IrrelevantRole");
+        SignInAs("user-a", "TestRole", includeNameIdentifier: true);
         var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases, "?captureAuthenticationRefresh");
-        Browser.Equal("You're not authorized, Someone", () =>
-            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+        Browser.Equal("Welcome, user-a!", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
 
         var javascript = (IJavaScriptExecutor)Browser;
         var connectionId = Assert.IsType<string>(
             javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
 
-        SignInAs("Someone", "TestRole", useSeparateTab: true);
-        var refreshError = javascript.ExecuteAsyncScript("""
-            const callback = arguments[arguments.length - 1];
-            authenticationRefreshConnection.refreshAuthentication().then(
-                () => callback(),
-                error => callback(String(error)));
-            """);
-
-        Assert.Null(refreshError);
-        Browser.Equal("Welcome, Someone!", () =>
+        SignInAs("user-b", "TestRole", useSeparateTab: true, includeNameIdentifier: true);
+        Assert.Null(RefreshAuthentication());
+        Browser.Equal("Welcome, user-b!", () =>
             appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+        Assert.Equal(
+            connectionId,
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+
+        SignInAs(null, null, useSeparateTab: true);
+        Assert.Null(RefreshAuthentication());
+        Browser.Equal("You're not authorized, anonymous", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+        Assert.Equal(
+            connectionId,
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+
+        object RefreshAuthentication() =>
+            javascript.ExecuteAsyncScript("""
+                const callback = arguments[arguments.length - 1];
+                authenticationRefreshConnection.refreshAuthentication().then(
+                    () => callback(),
+                    error => callback(String(error)));
+                """);
+    }
+
+    [Fact]
+    public void UpdatesAuthenticationStateWhenAuthenticationRefreshesAutomatically()
+    {
+        SignInAs("user-a", "TestRole", includeNameIdentifier: true);
+        var appElement = MountAndNavigateToAuthTest(
+            AuthorizeViewCases,
+            "?captureAuthenticationRefresh&accelerateAuthenticationRefresh");
+        Browser.Equal("Welcome, user-a!", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        var connectionId = Assert.IsType<string>(
+            javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
+
+        SignInAs(null, null, useSeparateTab: true);
+
+        Browser.Equal("You're not authorized, anonymous", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
         Assert.Equal(
             connectionId,
             Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
     }
 
-    private void SignInAs(string usernName, string roles, bool useSeparateTab = false) =>
-        Browser.SignInAs(new Uri(_serverFixture.RootUri, "/subdir"), usernName, roles, useSeparateTab);
+    private void SignInAs(
+        string userName,
+        string roles,
+        bool useSeparateTab = false,
+        bool includeNameIdentifier = false) =>
+        Browser.SignInAs(
+            new Uri(_serverFixture.RootUri, "/subdir"),
+            userName,
+            roles,
+            useSeparateTab,
+            includeNameIdentifier);
 
     private void PerformReconnection()
     {

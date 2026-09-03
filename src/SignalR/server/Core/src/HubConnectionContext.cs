@@ -53,7 +53,6 @@ public partial class HubConnectionContext
     private bool _useStatefulReconnect;
     private DefaultHubCallerContext? _hubCallerContext;
     private string? _userIdentifier;
-
     // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
     // lets that synchronous call see the pending principal before publishing the refreshed hub state, so we
     // can reject identifier changes without briefly exposing the new user to concurrent hub code.
@@ -220,6 +219,11 @@ public partial class HubConnectionContext
     internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
     {
         Volatile.Write(ref _userIdentifier, userIdentifier);
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
+    }
+
+    internal void ApplyUser(ClaimsPrincipal user)
+    {
         PublishHubCallerContext(new DefaultHubCallerContext(this, user));
     }
 

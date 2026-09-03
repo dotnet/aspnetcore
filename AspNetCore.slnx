@@ -47,9 +47,13 @@
     <Project Path="src/Components/Analyzers/test/Microsoft.AspNetCore.Components.Analyzers.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/AI/">
+    <Project Path="src/Components/AI/gen/Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj" />
+    <Project Path="src/Components/AI/gen/test/Microsoft.AspNetCore.Components.AI.SourceGenerators.Tests.csproj" />
     <Project Path="src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
     <Project Path="src/Components/AI/test/Microsoft.AspNetCore.Components.AI.Tests.csproj" />
     <Project Path="src/Components/AI/testassets/AGUIDojoApi/AGUIDojoApi.csproj" />
+    <Project Path="src/Components/AI/testassets/AIApp/AIApp.csproj" />
+    <Project Path="src/Components/AI/testassets/AIApp.E2E.Tests/AIApp.E2E.Tests.csproj" />
     <Project Path="src/Components/AI/testassets/DojoClient/DojoClient.csproj" />
     <Project Path="src/Components/AI/testassets/DojoClient.E2E.Tests/DojoClient.E2E.Tests.csproj" />
   </Folder>
@@ -1060,6 +1064,7 @@
     <Project Path="src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/samples/">
+    <Project Path="src/Servers/Kestrel/samples/DirectTlsTransportApp/DirectTlsTransportApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/http2cat/http2cat.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http2SampleApp/Http2SampleApp.csproj" />
     <Project Path="src/Servers/Kestrel/samples/Http3SampleApp/Http3SampleApp.csproj" />
@@ -1077,6 +1082,10 @@
   </Folder>
   <Folder Name="/src/Servers/Kestrel/tools/">
     <Project Path="src/Servers/Kestrel/tools/CodeGenerator/CodeGenerator.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/Transport.DirectTls/">
+    <Project Path="src/Servers/Kestrel/Transport.DirectTls/src/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.csproj" />
+    <Project Path="src/Servers/Kestrel/Transport.DirectTls/test/Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Servers/Kestrel/Transport.Quic/">
     <Project Path="src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
