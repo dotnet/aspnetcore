@@ -123,13 +123,16 @@ addresses, hosting startups, Windows Services, and Azure App Service hosting int
 ## `area-commandlinetools`
 
 ASP.NET Core CLI tools and their packaging: dev certificates, user secrets, user JWTs,
-SQL cache, `dotnet-openapi`, build-time API-description tooling, template infrastructure,
-and installers.
+SQL cache, `dotnet-openapi`, build-time API-description tooling, and template
+infrastructure.
 
 - Code: `src/Tools/`, `src/Tools/Microsoft.dotnet-openapi/`,
-  `src/ProjectTemplates/` template infrastructure, `src/Installers/`
+  `src/ProjectTemplates/` template infrastructure
 - Signals: `dotnet dev-certs`, `dotnet user-secrets`, `dotnet user-jwts`,
-  `dotnet-openapi`, template engine, packaging, installation, scaffolding infrastructure
+  `dotnet-openapi`, template engine, CLI packaging, scaffolding infrastructure
+
+Repository installers, hosting bundles, and shared-framework packaging belong to
+`area-infrastructure`, including all work under `src/Installers/`.
 
 For content or assets emitted by a web template, choose the area owning the generated
 output. Shared layouts, CSS, JavaScript, and UI libraries used across Razor Pages, MVC,
@@ -192,7 +195,8 @@ build plumbing, test infrastructure, packaging, and installers.
 
 - Code: `eng/`, `src/Framework/`, `src/BuildAfterTargetingPack/`, `src/Testing/`,
   `src/Installers/`, `*.props`, `*.targets`
-- Signals: MSBuild, Arcade, CI pipelines, source build, shared framework, targeting packs
+- Signals: MSBuild, Arcade, CI pipelines, source build, shared framework, targeting packs,
+  runtime installers, hosting bundles
 
 ## `area-unified-build`
 
@@ -220,5 +224,7 @@ build.
 - Route templates, constraints, or `LinkGenerator`: `area-routing`.
 - `IDataProtector` or key management: `area-dataprotection`.
 - Build failures, `eng/`, packages, or CI: `area-infrastructure`.
+- `src/Installers/`, runtime installers, hosting bundles, or shared-framework packaging:
+  `area-infrastructure`, not `area-commandlinetools`.
 - Runtime OpenAPI services: `area-minimal`; `dotnet-openapi` and build-time generation:
   `area-commandlinetools`.

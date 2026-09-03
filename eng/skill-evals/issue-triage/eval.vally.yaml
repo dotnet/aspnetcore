@@ -35,7 +35,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?is)area-blazor.*Task.*docs'
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+`area-blazor`\s*$.*^-\s+\*\*Type action:\*\*\s+Recommend `Task`\s*$.*^-\s+\*\*Subtype:\*\*\s+`docs`\s*$'
       - type: prompt
     rubric:
       - "Recommends exactly area-blazor, issue type Task, and supported subtype docs"
@@ -77,7 +77,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?is)area-identity.*Bug'
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+`area-identity`\s*$.*^-\s+\*\*Type action:\*\*\s+Recommend `Bug`\s*$.*^-\s+\*\*Subtype:\*\*\s+None\s*$'
       - type: prompt
     rubric:
       - "Recommends exactly area-identity because the defect is Identity scaffolding/template markup, not area-blazor or area-ui-rendering"
@@ -111,7 +111,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?is)Bug.*external|external.*Bug'
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+Abstain\s*$.*^-\s+\*\*Type action:\*\*\s+Recommend `Bug`\s*$.*^-\s+\*\*Subtype:\*\*\s+`external`\s*$'
       - type: prompt
     rubric:
       - "Recommends issue type Bug and supported subtype external because the frozen evidence assigns the root cause and required fix to Visual Studio Browser Link"
@@ -146,7 +146,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?is)area-infrastructure.*Bug'
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+`area-infrastructure`\s*$.*^-\s+\*\*Type action:\*\*\s+Recommend `Bug`\s*$.*^-\s+\*\*Subtype:\*\*\s+None\s*$'
       - type: prompt
     rubric:
       - "Recommends exactly area-infrastructure because the reported defect is in repository automation/policy, not in the Blazor product components mentioned by that policy"
@@ -191,7 +191,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?is)area-auth.*Bug.*52075|52075.*area-auth.*Bug'
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+`area-auth`\s*$.*^-\s+\*\*Type action:\*\*\s+Recommend `Bug`\s*$.*^-\s+\*\*Subtype:\*\*\s+None\s*$.*^-\s+\*\*Duplicate:\*\*\s+#52075 \(duplicate\)\s*$'
       - type: prompt
     rubric:
       - "Recommends exactly area-auth and Bug; it does not use area-security or emit a second area"
@@ -228,15 +228,15 @@ stimuli:
       - name: require-area-blazor
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Area\s*:\s*(?:\*\*)?\s*`?area-blazor`?\b'
+          pattern: '(?im)^-\s+\*\*Area:\*\*\s+`area-blazor`\s*$'
       - name: require-feature-type
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?Feature`?\b'
+          pattern: '(?im)^-\s+\*\*Type action:\*\*\s+Recommend `Feature`\s*$'
       - name: require-api-proposal-subtype
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?(?:Supported\s+)?Subtype\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?api-proposal`?\b'
+          pattern: '(?im)^-\s+\*\*Subtype:\*\*\s+`api-proposal`\s*$'
       - name: reject-epic-type-choice
         type: output-matches
         config:
@@ -245,7 +245,7 @@ stimuli:
       - name: reject-bug-or-task-type-choice
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?(?:Bug|Task)`?\b'
+          pattern: '(?im)^-\s+\*\*Type action:\*\*\s+Recommend `(?:Bug|Task)`\s*$'
           negate: true
       - type: prompt
     rubric:
@@ -282,11 +282,11 @@ stimuli:
       - name: require-area-blazor
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Area\s*:\s*(?:\*\*)?\s*`?area-blazor`?\b'
+          pattern: '(?im)^-\s+\*\*Area:\*\*\s+`area-blazor`\s*$'
       - name: require-epic-preservation
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?(?:Type(?:\s+action)?|Current\s+type)\s*:\s*(?:\*\*)?\s*(?:(?:preserve(?:d)?|keep)\s+`?Epic`?|`?Epic`?\s*(?:\([^)\n]*preserv(?:e|ed|ation)[^)\n]*\)|[-:]\s*preserv(?:e|ed)))'
+          pattern: '(?im)^-\s+\*\*Type action:\*\*\s+Preserve `Epic`\s*$'
       - name: reject-replacement-type
         type: output-matches
         config:
