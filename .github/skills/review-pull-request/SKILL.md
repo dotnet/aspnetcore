@@ -89,9 +89,10 @@ reference: it has no evidence about this change and only dilutes the review.
 | `src/Mvc`, `src/Razor`, `src/Html.Abstractions` | `mvc-razor-routing-reviewer.md` |
 | `src/Components`, `src/JSInterop` | `blazor-components-reviewer.md` |
 | `src/SignalR` | `signalr-reviewer.md` |
-| `src/Security`, `src/Identity`, `src/DataProtection`, `src/Antiforgery`, `src/WebEncoders` | `auth-security-reviewer.md` |
+| `src/Security`, `src/Identity`, `src/DataProtection`, `src/Antiforgery`, `src/WebEncoders`, `src/Http/Authentication.Core`, `src/Http/Authentication.Abstractions` | `auth-security-reviewer.md` |
 | `src/Hosting`, `src/DefaultBuilder` | `hosting-di-reviewer.md` |
 | `src/Http` (minimal APIs), `src/OpenApi` | `minimal-api-openapi-reviewer.md` |
+| `src/Http/Routing` | `mvc-razor-routing-reviewer.md` |
 | `src/Grpc` | `grpc-reviewer.md` |
 | `src/Servers/IIS`, `src/Installers` | `native-interop-reviewer.md` |
 | **every change** | `cross-cutting-reviewer.md` — always |
@@ -99,10 +100,11 @@ reference: it has no evidence about this change and only dilutes the review.
 `cross-cutting-reviewer.md` always applies, and is the primary reference for any area without a
 dedicated one.
 
-Some paths appear in two rows. `src/Http` covers both the HTTP stack and minimal APIs; `src/Servers`
-covers managed servers and, under `src/Servers/IIS`, native interop. **Route a shared path to both
-matching domains.** A pull request can affect the contracts owned by each area, and each owner must
-evaluate its own dimensions.
+Some paths appear in multiple rows. `src/Http` covers the HTTP stack and minimal APIs;
+`src/Http/Authentication.*` also routes to auth/security; `src/Http/Routing` also routes to
+MVC/Razor/routing; and `src/Servers/IIS` routes to native interop as well as servers/networking.
+**Route a shared path to every matching domain.** A pull request can affect the contracts owned by
+each area, and each owner must evaluate its own dimensions.
 
 **Route every materially changed domain.** A pull request spanning multiple areas needs each
 owning domain's independent review dimensions. State an area as uncovered only when no listed
@@ -208,14 +210,17 @@ task(
           Your only review dimension is: <single named dimension>.
           Apply every CHECK item under that dimension to changed lines only. Return either LGTM or
           findings with severity, file, changed line, failing scenario, consequence, and proof
-          basis. Do not inspect sibling dimensions, mutate anything, or dispatch another agent."
+          basis. Read pull request source only through immutable GitHub data at the frozen SHA. Do
+          not execute, build, test, check out, or modify pull request code; do not call mutating
+          APIs; do not inspect sibling dimensions or dispatch another agent."
 )
 ```
 
 Give every task a unique name and dispatch all selected workers in one response turn when the
 runtime permits. Wait for every worker and retrieve its actual result before synthesis; a spawn
 acknowledgement is not a review result. Then apply Step 5 to adversarially validate and deduplicate
-the collected candidates.
+the collected candidates. If the task runtime supports per-worker tool restrictions, expose only
+immutable GitHub and trusted local-reference reads.
 
 If independent subagents are unavailable, work the selected dimensions yourself, one at a time.
 That is **not** independence — successive passes in one context share the same blind spots. Report
@@ -247,6 +252,11 @@ Discard any candidate failing **any** gate:
 7. **Not noise** — drop style, formatting, naming preferences, typos, speculative refactors,
    duplicates, and anything unsupported.
 
+**Make compound findings atomic.** Split candidates by target and causal mechanism. Every named
+target and every material clause must independently satisfy all seven gates above, including its
+own changed-line anchor, trigger, consequence, and evidence. Remove an unsupported clause rather
+than letting one proven target carry a second target or consequence.
+
 Ambiguity is not a finding. If two readings are defensible, trace farther or drop the claim if it
 remains unresolved.
 
@@ -254,6 +264,11 @@ For every non-LGTM candidate, prove or disprove it by tracing the producer-to-ef
 the frozen SHA and checking any external behavior dependency against its primary contract. A test
 added by the pull request is not proof by itself. If source and primary contracts cannot establish
 causality, record the claim as discarded or as a limitation rather than executing the code.
+
+The orchestrator must independently re-read the source and primary contract behind each worker
+candidate. A worker's evidence summary or contract paraphrase is not proof. Re-derive the semantics
+from the original immutable source; if that evidence is unavailable or does not support every
+clause, discard or narrow the candidate.
 
 ### Discarding is also a claim
 
