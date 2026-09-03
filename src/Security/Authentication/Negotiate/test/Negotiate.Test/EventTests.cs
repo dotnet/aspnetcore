@@ -482,7 +482,7 @@ public class EventTests
 
     private class TestNegotiateStateFactory : INegotiateStateFactory
     {
-        public INegotiateState CreateInstance() => new TestNegotiateState();
+        public INegotiateState CreateInstance(ReadOnlyMemory<byte> channelBindingToken) => new TestNegotiateState();
     }
 
     private class TestNegotiateState : INegotiateState

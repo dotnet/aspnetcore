@@ -157,8 +157,26 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
 
-    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+    public static readonly DiagnosticDescriptor ComponentHasDisposeWithoutIDisposable = new(
         "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeAsyncWithoutIAsyncDisposable = new(
+        "BL0018",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+        "BL0019",
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Title)),
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Format)),
         Usage,
