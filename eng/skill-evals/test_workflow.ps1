@@ -40,6 +40,75 @@ if ($copilotCredentialExpressionCount -ne 1) {
     throw "Expected one static Copilot PAT mapping with the repository fallback; found $copilotCredentialExpressionCount."
 }
 
+$installStepCount = ([regex]::Matches(
+    $workflow,
+    [regex]::Escape('- name: Install evaluation tools')
+)).Count
+if ($installStepCount -ne 2) {
+    throw "Expected tokenless pinned-tool installation in validation and execution jobs; found $installStepCount."
+}
+
+foreach ($expectedInstallFragment in @(
+    'npm ci \',
+    '--userconfig "$RUNNER_TEMP/evaluation.npmrc"',
+    '--registry https://packagefeedproxy.microsoft.io/npm/',
+    'node_modules/.bin/vally" --version',
+    'node_modules/.bin/copilot" --version',
+    'cd "$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-sdk/dist"',
+    "import.meta.resolve('@github/copilot-linux-x64/sdk')",
+    'SKILL_EVAL_VALLY: ${{ runner.temp }}/evaluation-tools/node_modules/.bin/vally'
+)) {
+    $fragmentCount = ([regex]::Matches(
+        $workflow,
+        [regex]::Escape($expectedInstallFragment)
+    )).Count
+    if ($fragmentCount -ne 2) {
+        throw "Expected two pinned-tool workflow references to '$expectedInstallFragment'; found $fragmentCount."
+    }
+}
+
+if ($workflow -notmatch [regex]::Escape(
+    'cp _trusted-control-plane/eng/skill-evals/evaluation-tools/package.json \'
+)) {
+    throw 'The credentialed job does not install the trusted evaluation tool manifest.'
+}
+
+$evaluationToolsRoot = Join-Path $PSScriptRoot 'evaluation-tools'
+$evaluationToolsManifest = Get-Content (
+    Join-Path $evaluationToolsRoot 'package.json'
+) -Raw | ConvertFrom-Json
+if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.80') {
+    throw 'The evaluation tool manifest does not pin @github/copilot 1.0.80.'
+}
+if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.80') {
+    throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.80.'
+}
+if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.14.0') {
+    throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.14.0.'
+}
+
+$evaluationToolsLock = Get-Content (
+    Join-Path $evaluationToolsRoot 'package-lock.json'
+) -Raw | ConvertFrom-Json -AsHashtable
+$lockedRoot = $evaluationToolsLock.packages['']
+if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.80' -or
+    $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.14.0') {
+    throw 'The evaluation tool lockfile root does not match the pinned manifest.'
+}
+foreach ($lockedPackage in @(
+    'node_modules/@github/copilot-linux-x64',
+    'node_modules/@microsoft/vally-cli'
+)) {
+    if (-not $evaluationToolsLock.packages.ContainsKey($lockedPackage)) {
+        throw "The evaluation tool lockfile does not contain '$lockedPackage'."
+    }
+}
+foreach ($lockedPackage in $evaluationToolsLock.packages.Keys) {
+    if ($lockedPackage -like 'node_modules/@github/copilot-sdk/node_modules/@github/copilot*') {
+        throw "The evaluation tool lockfile contains a conflicting nested Copilot package: '$lockedPackage'."
+    }
+}
+
 $patPoolJob = [regex]::Match(
     $workflow,
     '(?ms)^  pat_pool:\r?\n(?<job>.*?)(?=^  \S|\z)'

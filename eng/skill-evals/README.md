@@ -137,19 +137,28 @@ authorize PAT use. Because `copilot-pat-pool` is shared, apply that decision
 consistently across all workflows that consume the environment rather than
 uniquely to this workflow.
 
-`Validate`, `Lint`, and `Run` use the exact
-`@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package
-feed proxy. Pass `-Vally <command> -VallyPrefix <arguments>` only to
-intentionally override that invocation. The runner prints the resolved command
-and reported version for provenance. Additional Vally arguments can be appended
-to the command. If the package is not already cached, `npx` downloads that
-exact version from the proxy; validation is model-free, not offline. It does not
-install a package into the repository or modify dependency manifests. Run
+Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
+`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.14.0`
+and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
+packages to that compatible version so the SDK and native platform package
+retain the same `./sdk` entry point. The workflow installs that lockfile with
+`npm ci` before any Copilot credential enters scope and verifies the Vally,
+Copilot, and Linux x64 platform entry points.
+
+The local runner defaults to the installed pinned toolchain when present.
+Local model-bearing `Run` operations require
+`npm ci --prefix eng/skill-evals/evaluation-tools` first. Model-free validation
+can still download the exact Vally version through `npx` and the Microsoft
+package feed proxy without modifying the checked-in manifests. Set
+`SKILL_EVAL_VALLY` to another installed Vally executable, or pass
+`-Vally <command> -VallyPrefix <arguments>`, to intentionally override that
+invocation. The runner prints the resolved command and reported version for
+provenance. Additional Vally arguments can be appended to the command. Run
 output defaults to `artifacts/skill-evals`.
 
-Standard runs use Vally's experiment `--compare` mode. Vally 0.13 removed the
-old per-stimulus `pairwise` grader, so comparison is owned by the experiment
-rather than repeated in each eval spec.
+Standard runs use Vally's experiment `--compare` mode. Vally 0.13 and later do
+not use the old per-stimulus `pairwise` grader, so comparison is owned by the
+experiment rather than repeated in each eval spec.
 
 ## Result interpretation and provenance
 
