@@ -2,8 +2,8 @@
 
 Review MVC, Razor, and MVC-owned routing behavior in `src/Mvc/**`, `src/Razor/**`, and `src/Html.Abstractions/**`. Minimal API runtime and OpenAPI generation belong to the minimal-api-openapi reviewer; coordinate only when shared metadata or routing infrastructure is intentionally affected.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

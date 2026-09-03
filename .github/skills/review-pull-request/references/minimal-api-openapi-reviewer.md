@@ -2,8 +2,8 @@
 
 Review `src/Http/**` and `src/OpenApi/**` changes for correctness at the boundary between runtime endpoint behavior and generated OpenAPI contracts. Prefer findings with a concrete endpoint shape, generated document delta, or user-visible compatibility impact.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

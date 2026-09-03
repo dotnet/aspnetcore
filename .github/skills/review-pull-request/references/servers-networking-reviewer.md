@@ -2,8 +2,8 @@
 
 Review only the ASP.NET Core managed servers and networking stack in `src/Servers/**`, `src/Http/**`, `src/Middleware/**`, `src/HttpClientFactory/**`, `src/HealthChecks/**`, and `src/Extensions/**` (HTTP feature infrastructure, notably `src/Extensions/Features`): Kestrel, HttpSys, managed IIS integration, Connections.Abstractions, HTTP abstractions/features/results, middleware, request/response body I/O, Polly HttpClientFactory integration, response/output caching middleware, and health checks. Native IIS C/C++, ANCM, installer, and unmanaged interop concerns belong to native-interop-reviewer. Minimal APIs, results, endpoint filters, and OpenAPI generation belong to minimal-api-openapi-reviewer; this agent owns the underlying HTTP abstractions, features, middleware, body I/O, wire behavior, and server behavior. Generic host, builder, and service-provider lifecycle belong to hosting-di-reviewer; this agent owns server and middleware feature registrations plus required services. Generic `src/Caching/**` Memory/Distributed abstractions belong to cross-cutting-reviewer; keep this agent to response/output caching middleware behavior.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

@@ -2,8 +2,8 @@
 
 Review only ASP.NET Core Blazor and Razor Components runtime work under `src/Components/**` and `src/JSInterop/**` — rendering, lifecycle, render modes, JS interop, navigation, forms, and interactive Server circuits. The Scope wave lists the full change taxonomy.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

@@ -2,8 +2,8 @@
 
 These dimensions apply to **every** ASP.NET Core change. The routing policy is explicit: this reviewer runs on **every** review, in addition to every routed domain reviewer, and it is **also** the primary reviewer for any `src` area that has no dedicated reference. It is never a fallback used only when no domain reviewer matched.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

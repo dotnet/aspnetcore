@@ -2,8 +2,8 @@
 
 Review only the ASP.NET Core gRPC integration area in `src/Grpc/**`: server wire-up, service registration, JSON transcoding, OpenAPI-compatible metadata, interop/perf tests, and templates. The core gRPC implementation belongs in `grpc/grpc-dotnet`.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 

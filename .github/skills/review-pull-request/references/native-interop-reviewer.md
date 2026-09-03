@@ -2,8 +2,8 @@
 
 Review only the ASP.NET Core native interop area in `src/Servers/IIS/**` and related Windows installer work in `src/Installers/**`: ANCMV2 (`aspnetcorev2.dll`; legacy `aspnetcore.dll` compatibility only), request handlers, forwarders, in-process and out-of-process IIS hosting, shim/hostfxr loading, managed P/Invoke layers, unmanaged resource lifetime, and IIS-native request-semantics tests.
 
-This file is reference material. The `review-pull-request` skill and `pull-request-review` workflow
-give each dimension below an independent, single-dimension pass.
+This file is reference material. The `review-pull-request` skill gives each dimension below an
+independent, single-dimension pass.
 
 #### Overarching principles
 
