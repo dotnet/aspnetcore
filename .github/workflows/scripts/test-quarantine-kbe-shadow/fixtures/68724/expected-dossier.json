@@ -16,7 +16,10 @@
       "test-failure",
       "area-blazor"
     ],
-    "has_workflow_marker": true
+    "actor": "github-actions[bot]",
+    "has_workflow_marker": true,
+    "has_workflow_metadata": true,
+    "workflow_run_id": 32632851798
   },
   "outcome": "incomplete",
   "provenance": {

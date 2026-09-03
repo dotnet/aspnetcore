@@ -6,7 +6,10 @@
       "test-failure",
       "area-networking"
     ],
-    "body": "## Failing Test(s)\n- `Interop.FunctionalTests.Http3.Http3RequestTests.POST_ClientCancellationUpload_RequestAbortRaised`\n\n## Details\n\nThis test has failed intermittently on `main` in the past 30 days:\n- Build [1569737](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569737&view=results) (2026-08-27)\n- Build [1538879](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1538879&view=results) (2026-08-04)\n\nThe failures are separated by many passing runs in between (not back-to-back), so this is flakiness rather than a consistent regression. The test has never previously carried a `[QuarantinedTest]` attribute.\n\n<!-- gh-aw-workflow-id: test-quarantine -->\n"
+    "body": "## Failing Test(s)\n- `Interop.FunctionalTests.Http3.Http3RequestTests.POST_ClientCancellationUpload_RequestAbortRaised`\n\n## Details\n\nThis test has failed intermittently on `main` in the past 30 days:\n- Build [1569737](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569737&view=results) (2026-08-27)\n- Build [1538879](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1538879&view=results) (2026-08-04)\n\nThe failures are separated by many passing runs in between (not back-to-back), so this is flakiness rather than a consistent regression. The test has never previously carried a `[QuarantinedTest]` attribute.\n\n<!-- gh-aw-agentic-workflow: Daily Test Quarantine Management, engine: copilot, model: auto, id: 33496438442, workflow_id: test-quarantine, run: https://github.com/dotnet/aspnetcore/actions/runs/33496438442 -->\n<!-- gh-aw-workflow-id: test-quarantine -->\n<!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->\n",
+    "user": {
+      "login": "app/github-actions"
+    }
   },
   "azdo_builds": {
     "1569737": {

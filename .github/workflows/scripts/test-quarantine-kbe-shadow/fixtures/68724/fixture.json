@@ -6,7 +6,10 @@
       "test-failure",
       "area-blazor"
     ],
-    "body": "## Failing Test(s)\n`Microsoft.AspNetCore.Components.E2ETest.Tests.VirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll` (and its server-execution subclass override, `Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests.ServerVirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll`)\n\n## Failure Frequency\nFailed 4 times over the past 30 days.\n\n## Error Message\n```text\nOpenQA.Selenium.BrowserAssertFailedException : Xunit.Sdk.TrueException: Item 950 should remain aligned with the viewport top once the last item has loaded, but top rendered index was -1, scrollTop=0.\n```\n\n## Build\nhttps://dev.azure.com/dnceng-public/public/_build/results?buildId=1563420\n\n<!-- gh-aw-workflow-id: test-quarantine -->\n"
+    "body": "## Failing Test(s)\n`Microsoft.AspNetCore.Components.E2ETest.Tests.VirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll` (and its server-execution subclass override, `Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests.ServerVirtualizationTest.QuickGrid_InitialIndex_TallContainer_NearEnd_FillsViewportWithoutUserScroll`)\n\n## Failure Frequency\nFailed 4 times over the past 30 days.\n\n## Error Message\n```text\nOpenQA.Selenium.BrowserAssertFailedException : Xunit.Sdk.TrueException: Item 950 should remain aligned with the viewport top once the last item has loaded, but top rendered index was -1, scrollTop=0.\n```\n\n## Build\nhttps://dev.azure.com/dnceng-public/public/_build/results?buildId=1563420\n\n<!-- gh-aw-agentic-workflow: Daily Test Quarantine Management, engine: copilot, model: auto, id: 32632851798, workflow_id: test-quarantine, run: https://github.com/dotnet/aspnetcore/actions/runs/32632851798 -->\n<!-- gh-aw-workflow-id: test-quarantine -->\n<!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->\n",
+    "user": {
+      "login": "github-actions[bot]"
+    }
   },
   "azdo_builds": {
     "1563420": {

@@ -148,7 +148,12 @@ function New-LogEntry
                 "failure-2" { "3333333333333333333333333333333333333333"; break }
                 default { "4444444444444444444444444444444444444444" }
             }
-            started_utc = "2026-08-20T12:00:00Z"
+            started_utc = switch ($Id)
+            {
+                "failure-1" { "2026-08-20T12:00:00Z"; break }
+                "failure-2" { "2026-08-21T12:00:00Z"; break }
+                default { "2026-08-22T12:00:00Z" }
+            }
             status = "completed"
             result = if ($Role -eq "failure") { "failed" } else { "succeeded" }
             platform = "Linux"
@@ -199,6 +204,40 @@ try
     Assert-Equal -Actual $receipt.shadow_recommendation -Expected "new-kbe-candidate" -Message "Valid candidate recommendation mismatch."
     Assert-Equal -Actual $receipt.eligible_for_kbe_enrichment -Expected $false -Message "Shadow evaluator must not authorize enrichment from unverified provenance."
     Assert-Equal -Actual $receipt.evidence_provenance_verified -Expected $false -Message "Shadow evidence provenance must remain unverified."
+
+    $logs[2].build.started_utc = "2026-08-19T12:00:00Z"
+    Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Predating pass evidence status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("predate or coincide")))
+    {
+        throw "Predating pass evidence must report the chronology gate."
+    }
+
+    $logs[2].build.started_utc = "2026-08-22T12:00:00Z"
+    $logs[2].build.platform = "Windows"
+    Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Different-environment pass evidence status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("pipeline definition, platform, and configuration")))
+    {
+        throw "Different-environment pass evidence must report the environment gate."
+    }
+    $logs[2].build.platform = "Linux"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "negative.log") -Value @(
         "[SKIP] Microsoft.AspNetCore.Example.Tests.SampleTests.Completes"
@@ -553,6 +592,32 @@ try
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
     Assert-Equal -Actual $receipt.deterministic_status -Expected "validated" -Message "Existing KBE status mismatch."
     Assert-Equal -Actual $receipt.shadow_recommendation -Expected "reuse-existing-kbe" -Message "Existing KBE recommendation mismatch."
+
+    Write-Candidate `
+        -Path $candidatePath `
+        -Signature @($signature) `
+        -Logs $logs `
+        -DuplicateStatus "existing-fix-pr" `
+        -ProposedClassification "quarantine-only"
+    $existingFixCandidate = Get-Content -LiteralPath $candidatePath -Raw | ConvertFrom-Json -Depth 32
+    $existingFixCandidate.duplicate_check.references = @("pull-request:54322")
+    $existingFixCandidate.duplicate_check.queries[2].result_numbers = @(54322)
+    $existingFixCandidate | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath $candidatePath
+
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Unsupported existing fix PR status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("closing-link and changed-file relevance")))
+    {
+        throw "Unsupported existing fix PR must report the missing proof."
+    }
 
     $existingCandidate.duplicate_check.queries[0].result_numbers = @()
     $existingCandidate | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath $candidatePath

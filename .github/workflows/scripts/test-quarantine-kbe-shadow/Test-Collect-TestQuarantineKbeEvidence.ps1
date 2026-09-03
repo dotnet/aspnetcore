@@ -238,6 +238,10 @@ function New-SyntheticFixture
     {
         $base[$key] = $Overrides[$key]
     }
+    if ($null -ne $base.issue -and -not $base.issue.Contains("user"))
+    {
+        $base.issue["user"] = [ordered]@{ login = "app/github-actions" }
+    }
     if ($null -eq $base["main_branch"])
     {
         $base.Remove("main_branch")
@@ -285,7 +289,11 @@ function New-DerivedFixture
     return $directory
 }
 
-$workflowMarker = "<!-- gh-aw-workflow-id: test-quarantine -->"
+$workflowMarker = @"
+<!-- gh-aw-agentic-workflow: Daily Test Quarantine Management, engine: copilot, model: auto, id: 123456789, workflow_id: test-quarantine, run: https://github.com/dotnet/aspnetcore/actions/runs/123456789 -->
+<!-- gh-aw-workflow-id: test-quarantine -->
+<!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->
+"@
 # Built from a single-quoted literal (no backtick-escape processing) rather than embedding
 # repeated backtick-escape sequences directly in double-quoted synthetic issue bodies below,
 # which is easy to miscount (a stray extra backtick silently becomes an unrelated `t`/`n`/etc.
@@ -332,25 +340,17 @@ try
 
     $signature68947 = "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"
     $result68947 = Invoke-Collector -IssueNumber 68947 -FixtureRoot "$fixturesRoot/68947" -WorkDirectory "$tempRoot/68947" -Signature $signature68947
-    Assert-Equal -Actual $result68947.Dossier.outcome -Expected "candidate" -Message "#68947 outcome mismatch."
-    Assert-Equal -Actual $result68947.Dossier.candidate.proposed_classification -Expected "timeout-needs-classification" -Message "#68947 proposed_classification mismatch."
-    Assert-Equal -Actual (@($result68947.Dossier.candidate.evidence.raw_logs | Where-Object { $_.role -eq "failure" })).Count -Expected 2 -Message "#68947 must gather two distinct failure builds (the cited partiallySucceeded build plus one recurrence-scan match)."
+    Assert-Equal -Actual $result68947.Dossier.outcome -Expected "incomplete" -Message "#68947 outcome mismatch."
+    Assert-Contains -Collection @($result68947.Dossier.incomplete.reason_codes) -Value "passed-evidence-not-contemporaneous" -Message "#68947 must not count its pass that predates both collected failures."
+    Assert-Equal -Actual $result68947.Dossier.candidate -Expected $null -Message "#68947 must not emit a candidate without a contemporaneous environment-matched pass."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68947" -ActualDossier $result68947.Dossier
 
-    $receiptPath68947 = Join-Path "$tempRoot/68947" "receipt.json"
-    & $evaluator -CandidateFile $result68947.CandidatePath -EvidenceRoot $result68947.EvidenceRoot -OutputFile $receiptPath68947 -RepositoryRoot $repositoryRoot -CandidateSchemaFile $candidateSchema
-    $receipt68947 = Get-Content -LiteralPath $receiptPath68947 -Raw | ConvertFrom-Json -Depth 32
-    Assert-Equal -Actual $receipt68947.deterministic_status -Expected "validated" -Message "#68947 deterministic_status mismatch."
-    Assert-Equal -Actual $receipt68947.shadow_recommendation -Expected "timeout-needs-classification" -Message "#68947 shadow_recommendation mismatch."
-    Assert-Equal -Actual $receipt68947.eligible_for_kbe_enrichment -Expected $false -Message "#68947 must never authorize enrichment."
-    Assert-Equal -Actual $receipt68947.evidence_provenance_verified -Expected $false -Message "#68947 provenance must remain unverified."
-
     $summaryPath68947 = Join-Path "$tempRoot/68947" "summary.md"
-    & $summaryGenerator -DossierFile $result68947.DossierPath -ReceiptFile $receiptPath68947 -OutputFile $summaryPath68947
+    & $summaryGenerator -DossierFile $result68947.DossierPath -OutputFile $summaryPath68947
     $summaryText68947 = Get-Content -LiteralPath $summaryPath68947 -Raw
-    if (-not $summaryText68947.Contains("timeout-needs-classification"))
+    if (-not $summaryText68947.Contains("passed-evidence-not-contemporaneous"))
     {
-        throw "#68947 summary must mention the shadow_recommendation."
+        throw "#68947 summary must mention the chronology failure."
     }
 
     # ------------------------------------------------------------------
@@ -424,6 +424,41 @@ try
     Assert-Equal -Actual $resultMissingMarker.Dossier.outcome -Expected "incomplete" -Message "Missing-marker outcome mismatch."
     Assert-Contains -Collection @($resultMissingMarker.Dossier.incomplete.reason_codes) -Value "issue-not-canonical-quarantine" -Message "Missing-marker reason codes mismatch: the 'test-failure' label alone must not be treated as proof of quarantine automation."
 
+    $forgedMarkerDir = New-SyntheticFixture -Name "forged-marker" -Overrides @{
+        issue = [ordered]@{
+            number = 15
+            state = "open"
+            labels = @("test-failure")
+            user = [ordered]@{ login = "octocat" }
+            body = "## Failing Test(s)`n`` Sample.Tests.ForgedMarker ``$([System.Environment]::NewLine)$workflowMarker"
+        }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultForgedMarker = Invoke-Collector -IssueNumber 15 -FixtureRoot $forgedMarkerDir -WorkDirectory (Join-Path $tempRoot "forged-marker")
+    Assert-Equal -Actual $resultForgedMarker.Dossier.outcome -Expected "incomplete" -Message "A user-authored issue with copied workflow markers must fail closed."
+    Assert-Contains -Collection @($resultForgedMarker.Dossier.incomplete.reason_codes) -Value "issue-not-canonical-quarantine" -Message "Forged-marker reason code mismatch."
+    Assert-Equal -Actual $resultForgedMarker.Dossier.issue.has_workflow_marker -Expected $true -Message "Forged-marker fixture must prove copied static markers were present."
+    Assert-Equal -Actual $resultForgedMarker.Dossier.issue.has_workflow_metadata -Expected $true -Message "Forged-marker fixture must prove copied structured metadata was present."
+    Assert-Equal -Actual $resultForgedMarker.Dossier.issue.actor -Expected "octocat" -Message "Forged-marker actor provenance mismatch."
+
+    $mismatchedMetadata = @"
+<!-- gh-aw-agentic-workflow: Daily Test Quarantine Management, engine: copilot, model: auto, id: 123456789, workflow_id: test-quarantine, run: https://github.com/dotnet/aspnetcore/actions/runs/123456790 -->
+<!-- gh-aw-workflow-id: test-quarantine -->
+<!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->
+"@
+    $mismatchedMetadataDir = New-SyntheticFixture -Name "mismatched-workflow-metadata" -Overrides @{
+        issue = [ordered]@{
+            number = 16
+            state = "open"
+            labels = @("test-failure")
+            body = "## Failing Test(s)`n`` Sample.Tests.MismatchedMetadata ``$([System.Environment]::NewLine)$mismatchedMetadata"
+        }
+        duplicate_search = $defaultDuplicateSearch
+    }
+    $resultMismatchedMetadata = Invoke-Collector -IssueNumber 16 -FixtureRoot $mismatchedMetadataDir -WorkDirectory (Join-Path $tempRoot "mismatched-workflow-metadata")
+    Assert-Equal -Actual $resultMismatchedMetadata.Dossier.outcome -Expected "incomplete" -Message "Mismatched workflow metadata must fail closed."
+    Assert-Equal -Actual $resultMismatchedMetadata.Dossier.issue.has_workflow_metadata -Expected $false -Message "Mismatched workflow run IDs must not validate."
+
     # ------------------------------------------------------------------
     # The immutable dispatch SHA must be confirmed as a member of main. A deliberately unrelated
     # current-main SHA must fail closed rather than mislabel the checkout.
@@ -470,7 +505,7 @@ try
             "83" = @([ordered]@{ id = 6100002; sourceVersion = $flagsShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6100003; sourceVersion = $flagsShaC; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6100003; sourceVersion = $flagsShaC; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6100001" = @([ordered]@{ id = 1; runId = 7100001; outcome = "Failed"; automatedTestName = $flagsTestName })
@@ -517,6 +552,25 @@ try
     Assert-Equal -Actual $snapshotB.short_name_referenced -Expected $true -Message "short_name_referenced must record the bare-method-name match."
     Assert-Equal -Actual $snapshotB.known_issue_referenced -Expected $false -Message "known_issue_referenced must stay false for a generic 'Known Issues' heading with no associated number."
 
+    $flagsReceiptPath = Join-Path "$tempRoot/check-run-flags" "receipt.json"
+    & $evaluator -CandidateFile $resultFlags.CandidatePath -EvidenceRoot $resultFlags.EvidenceRoot -OutputFile $flagsReceiptPath -RepositoryRoot $repositoryRoot -CandidateSchemaFile $candidateSchema
+    $flagsReceipt = Get-Content -LiteralPath $flagsReceiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $flagsReceipt.deterministic_status -Expected "validated" -Message "Collector/evaluator pass-eligibility rules must reconcile."
+
+    $multiplePassRowsDir = New-DerivedFixture -Name "multiple-pass-environments" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_summary.'6100003' = @(
+            [PSCustomObject]@{ id = 4; runId = 7100004; outcome = "Passed"; automatedTestName = $flagsTestName },
+            $fixtureObject.vstmr_summary.'6100003'[0]
+        )
+        $fixtureObject.vstmr_detail | Add-Member -NotePropertyName '7100004:4' -NotePropertyValue ([PSCustomObject]@{ outcome = "Passed"; errorMessage = $null; stackTrace = $null })
+        $fixtureObject.vstmr_runs | Add-Member -NotePropertyName '7100004' -NotePropertyValue ([PSCustomObject]@{ name = "Quarantine-Mono-Linux-Release-xunit" })
+    }
+    $resultMultiplePassRows = Invoke-Collector -IssueNumber 11 -FixtureRoot $multiplePassRowsDir -WorkDirectory (Join-Path $tempRoot "multiple-pass-environments")
+    Assert-Equal -Actual $resultMultiplePassRows.Dossier.outcome -Expected "candidate" -Message "Collector must prefer an environment-matched pass row from a multi-run build."
+    $selectedPassSource = @($resultMultiplePassRows.Dossier.provenance.raw_evidence_sources | Where-Object { $_.role -eq "negative" })[0]
+    Assert-Equal -Actual $selectedPassSource.run_id -Expected 7100003 -Message "Collector selected the wrong pass TestRun environment."
+
     $nonMainResult = Invoke-Collector `
         -IssueNumber 11 `
         -FixtureRoot $flagsDir `
@@ -543,6 +597,14 @@ try
     Assert-Equal -Actual $resultUnknownEnvironment.Dossier.outcome -Expected "incomplete" -Message "Unknown required environment dimensions must fail closed."
     Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-platform-unknown" -Message "Unknown platform reason code mismatch."
     Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-configuration-unknown" -Message "Unknown configuration reason code mismatch."
+
+    $differentPassEnvironmentDir = New-DerivedFixture -Name "different-pass-environment" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-Mono-Linux-Release-xunit"
+    }
+    $resultDifferentPassEnvironment = Invoke-Collector -IssueNumber 11 -FixtureRoot $differentPassEnvironmentDir -WorkDirectory (Join-Path $tempRoot "different-pass-environment")
+    Assert-Equal -Actual $resultDifferentPassEnvironment.Dossier.outcome -Expected "incomplete" -Message "A pass from a different environment must not prove intermittency."
+    Assert-Contains -Collection @($resultDifferentPassEnvironment.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Different pass environment reason code mismatch."
 
     $invalidBuildCases = @(
         [ordered]@{
@@ -597,7 +659,7 @@ try
             "83" = @([ordered]@{ id = 6200002; sourceVersion = $dupShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6200003; sourceVersion = $dupShaC; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6200003; sourceVersion = $dupShaC; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6200001" = @([ordered]@{ id = 1; runId = 7200001; outcome = "Failed"; automatedTestName = $dupTestName })
@@ -663,7 +725,7 @@ try
     $resultFixPrUnvalidated = Invoke-Collector -IssueNumber 12 -FixtureRoot $fixPrUnvalidatedDir -WorkDirectory (Join-Path $tempRoot "fix-pr-unvalidated")
     Assert-Equal -Actual $resultFixPrUnvalidated.Dossier.candidate.duplicate_check.status -Expected "none" -Message "An exact-FQN fix PR without compatible association must remain unvalidated."
 
-    $fixPrValidatedDir = New-DerivedFixture -Name "fix-pr-validated" -Source $dupDir -Mutate {
+    $fixPrMentionOnlyDir = New-DerivedFixture -Name "fix-pr-mention-only" -Source $dupDir -Mutate {
         param($fixtureObject)
         $fixtureObject.duplicate_search.'open-kbe'.result_numbers = @()
         $fixtureObject.duplicate_search.'open-kbe'.total_count = 0
@@ -671,8 +733,13 @@ try
         $fixtureObject.duplicate_search.'open-fix-pr'.total_count = 1
         $fixtureObject.duplicate_candidate_text.'99999' = "Fix $dupTestName`nRoot cause: $dupSignature"
     }
-    $resultFixPrValidated = Invoke-Collector -IssueNumber 12 -FixtureRoot $fixPrValidatedDir -WorkDirectory (Join-Path $tempRoot "fix-pr-validated")
-    Assert-Equal -Actual $resultFixPrValidated.Dossier.candidate.duplicate_check.status -Expected "existing-fix-pr" -Message "An exact-FQN fix PR with compatible signature association should validate."
+    $resultFixPrMentionOnly = Invoke-Collector -IssueNumber 12 -FixtureRoot $fixPrMentionOnlyDir -WorkDirectory (Join-Path $tempRoot "fix-pr-mention-only")
+    Assert-Equal -Actual $resultFixPrMentionOnly.Dossier.candidate.duplicate_check.status -Expected "none" -Message "FQN/signature co-occurrence alone must not classify a search hit as a fix PR."
+    $fixPrReason = [string](@($resultFixPrMentionOnly.Dossier.provenance.duplicate_search.unvalidated_candidates | Where-Object { $_.number -eq 99999 })[0].reason)
+    if (-not $fixPrReason.Contains("closing-link and changed-file relevance"))
+    {
+        throw "Unvalidated fix PR must record the unsupported proof limitation."
+    }
 
     # ------------------------------------------------------------------
     # Edge case (item 11): a literal ErrorMessage containing '*', '?', and '[' must be matched via
@@ -703,7 +770,7 @@ try
             )
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6400003; sourceVersion = $wildShaNeg; startTime = "2026-07-29T00:00:00Z"; finishTime = "2026-07-29T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6400003; sourceVersion = $wildShaNeg; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6400001" = @([ordered]@{ id = 1; runId = 7400001; outcome = "Failed"; automatedTestName = $wildTestName })

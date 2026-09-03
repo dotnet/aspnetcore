@@ -16,9 +16,12 @@
       "test-failure",
       "area-blazor"
     ],
-    "has_workflow_marker": true
+    "actor": "app/github-actions",
+    "has_workflow_marker": true,
+    "has_workflow_metadata": true,
+    "workflow_run_id": 33496438442
   },
-  "outcome": "candidate",
+  "outcome": "incomplete",
   "provenance": {
     "repository_ref_verification": {
       "event_ref": "refs/heads/main",
@@ -191,141 +194,22 @@
       "unvalidated_candidates": []
     }
   },
-  "candidate": {
-    "schema_version": 1,
-    "repository": "dotnet/aspnetcore",
-    "repository_ref": {
-      "branch": "main",
-      "commit_sha": "<GENERATED>"
-    },
-    "issue": {
-      "number": 68947,
-      "url": "https://github.com/dotnet/aspnetcore/issues/68947"
-    },
-    "test": {
-      "fully_qualified_name": "Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.RedirectionTest.RedirectEnhancedNonBlazorGetToExternal"
-    },
-    "signature": {
-      "kind": "ErrorMessage",
-      "values": [
-        "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"
-      ],
-      "build_retry": false,
-      "exclude_console_log": false
-    },
-    "policy": {
-      "minimum_failure_logs": 2,
-      "minimum_negative_logs": 1
-    },
-    "evidence": {
-      "raw_logs": [
-        {
-          "id": "evidence-1",
-          "role": "failure",
-          "outcome": "failed",
-          "path": "issue-68947-build-1551326-failure.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1551326&view=results",
-          "sha256": "34cb3881593f491fba3598a0ee26c2e172c0b8e46c40b8e9ac3abde64af85529",
-          "build": {
-            "id": 1551326,
-            "pipeline_definition_id": 87,
-            "source_branch": "refs/heads/main",
-            "source_version": "2a0388b463b2b80c4de4b6de4409857432ae9c1d",
-            "started_utc": "2026-08-13T04:18:53.903Z",
-            "status": "completed",
-            "result": "partiallySucceeded",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        },
-        {
-          "id": "evidence-2",
-          "role": "failure",
-          "outcome": "failed",
-          "path": "issue-68947-build-1549000-failure.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1549000&view=results",
-          "sha256": "3772fbff9518a95cfe45f97d7a2f6250cc4af5b43c8d3c370f6d3a8fab8435d0",
-          "build": {
-            "id": 1549000,
-            "pipeline_definition_id": 87,
-            "source_branch": "refs/heads/main",
-            "source_version": "ef86306faaa4b31e962f06b93c2ce21e4a18bf17",
-            "started_utc": "2026-08-10T09:00:00Z",
-            "status": "completed",
-            "result": "partiallySucceeded",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        },
-        {
-          "id": "evidence-3",
-          "role": "negative",
-          "outcome": "passed",
-          "path": "issue-68947-build-1545000-negative.log",
-          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1545000&view=results",
-          "sha256": "17e453e2b6e8c8b2e2b16e3dcc2ea16e91bfd37a4c54b2077c52f71e21c54920",
-          "build": {
-            "id": 1545000,
-            "pipeline_definition_id": 87,
-            "source_branch": "refs/heads/main",
-            "source_version": "113a606f96ebd832970a1f377748746ff6526abc",
-            "started_utc": "2026-08-08T09:00:00Z",
-            "status": "completed",
-            "result": "succeeded",
-            "platform": "Linux",
-            "configuration": "Release"
-          }
-        }
-      ],
-      "corroborating_context": [
-        {
-          "source": "build-analysis",
-          "url": "https://github.com/dotnet/aspnetcore/runs/900101"
-        },
-        {
-          "source": "quarantine-issue",
-          "url": "https://github.com/dotnet/aspnetcore/issues/68947"
-        }
-      ]
-    },
-    "duplicate_check": {
-      "status": "none",
-      "checked_utc": "<GENERATED>",
-      "coverage": {
-        "open_kbes": true,
-        "recently_closed_kbes": true,
-        "open_fix_prs": true,
-        "recently_merged_fix_prs": true
+  "candidate": null,
+  "incomplete": {
+    "reason_codes": [
+      "raw-evidence-insufficient",
+      "passed-evidence-not-contemporaneous"
+    ],
+    "message": "Collector could not produce a validated candidate for issue #68947 : raw-evidence-insufficient, passed-evidence-not-contemporaneous.",
+    "missing_evidence": [
+      {
+        "kind": "azdo-build",
+        "detail": "Build 1537561 metadata could not be retrieved."
       },
-      "references": [],
-      "queries": [
-        {
-          "category": "open-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
-          "complete": true,
-          "result_numbers": []
-        },
-        {
-          "category": "recently-closed-kbe",
-          "query": "repo:dotnet/aspnetcore is:issue is:closed closed:>=2026-06-05 label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
-          "complete": true,
-          "result_numbers": []
-        },
-        {
-          "category": "open-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:open RedirectEnhancedNonBlazorGetToExternal",
-          "complete": true,
-          "result_numbers": []
-        },
-        {
-          "category": "recently-merged-fix-pr",
-          "query": "repo:dotnet/aspnetcore is:pr is:merged merged:>=2026-06-05 RedirectEnhancedNonBlazorGetToExternal",
-          "complete": true,
-          "result_numbers": []
-        }
-      ]
-    },
-    "proposed_classification": "timeout-needs-classification"
-  },
-  "incomplete": null
+      {
+        "kind": "pass-evidence",
+        "detail": "All authoritative Passed occurrences predate or coincide with the earliest collected failure; a counted pass must start after the earliest failure."
+      }
+    ]
+  }
 }

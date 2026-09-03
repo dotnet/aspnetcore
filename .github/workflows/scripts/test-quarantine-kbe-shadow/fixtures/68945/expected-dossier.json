@@ -16,7 +16,10 @@
       "test-failure",
       "area-networking"
     ],
-    "has_workflow_marker": true
+    "actor": "app/github-actions",
+    "has_workflow_marker": true,
+    "has_workflow_metadata": true,
+    "workflow_run_id": 33496438442
   },
   "outcome": "incomplete",
   "provenance": {
@@ -180,9 +183,10 @@
   "candidate": null,
   "incomplete": {
     "reason_codes": [
-      "raw-evidence-insufficient"
+      "raw-evidence-insufficient",
+      "passed-evidence-not-contemporaneous"
     ],
-    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-insufficient.",
+    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-insufficient, passed-evidence-not-contemporaneous.",
     "missing_evidence": [
       {
         "kind": "vstmr-evidence",
@@ -191,6 +195,10 @@
       {
         "kind": "raw-evidence",
         "detail": "Only 1 distinct build(s) produced retrievable failure evidence; at least 2 are required."
+      },
+      {
+        "kind": "pass-evidence",
+        "detail": "All authoritative Passed occurrences predate or coincide with the earliest collected failure; a counted pass must start after the earliest failure."
       }
     ]
   }
