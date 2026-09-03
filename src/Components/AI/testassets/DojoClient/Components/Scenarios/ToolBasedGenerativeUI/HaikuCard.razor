@@ -1,0 +1,32 @@
+<article class="haiku-card" style="background: @Haiku.Gradient;">
+    <div class="haiku-card__overlay">
+        <div class="haiku-card__lines">
+            @for (var index = 0; index < Haiku.Japanese.Count; index++)
+            {
+                <div class="haiku-card__line">
+                    <p class="haiku-card__japanese" lang="ja">
+                        @Haiku.Japanese[index]
+                    </p>
+                    @if (index < Haiku.English.Count)
+                    {
+                        <p class="haiku-card__english">
+                            @Haiku.English[index]
+                        </p>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (Haiku.ImageName is not null)
+        {
+            <img class="haiku-card__image"
+                 src="/images/@Haiku.ImageName"
+                 alt="Illustration selected for the generated haiku" />
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public HaikuData Haiku { get; set; } = default!;
+}

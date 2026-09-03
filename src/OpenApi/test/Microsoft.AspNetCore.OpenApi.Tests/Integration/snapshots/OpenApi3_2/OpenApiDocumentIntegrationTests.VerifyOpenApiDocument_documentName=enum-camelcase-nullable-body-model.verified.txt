@@ -56,8 +56,7 @@
         "enum": [
           "active",
           "inactive",
-          "pending",
-          null
+          "pending"
         ]
       }
     }
