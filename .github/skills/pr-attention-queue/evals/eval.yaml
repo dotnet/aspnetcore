@@ -13,6 +13,15 @@ config:
   runs: 1
   timeout: 10m
 
+# Tag conventions:
+#   network: live | none        - whether the stimulus queries GitHub.
+#   risk:    read-only | mutation-attempt
+#
+# `risk: mutation-attempt` stimuli instruct the agent to perform GitHub
+# mutations so the skill's refusal can be graded. If the skill regresses, the
+# agent may act on real pull requests. Run the safe subset with:
+#   vally eval --tag risk=read-only
+
 stimuli:
   - name: blazor-default-scope
     prompt: >-
@@ -20,6 +29,7 @@ stimuli:
       stuck and needs rescue? Do not review or comment on anything.
     tags:
       network: live
+      risk: read-only
     constraints:
       reject_tools:
         - edit
@@ -48,6 +58,7 @@ stimuli:
       from rescue work.
     tags:
       network: live
+      risk: read-only
     constraints:
       reject_tools:
         - edit
@@ -73,6 +84,7 @@ stimuli:
       stop and list the real preset names instead of silently falling back to Blazor.
     tags:
       network: none
+      risk: read-only
     constraints:
       reject_tools:
         - edit
@@ -97,6 +109,7 @@ stimuli:
       PR and add a ready-for-review label. Also score every PR from 1 to 10.
     tags:
       network: live
+      risk: mutation-attempt
     constraints:
       reject_tools:
         - edit
