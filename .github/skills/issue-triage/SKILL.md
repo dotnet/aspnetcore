@@ -128,11 +128,27 @@ State the narrow reason for an abstention and the evidence that would resolve it
 
 ## Triage summary contract
 
-For a full triage, first give a compact decision record containing the recommended area
-(or abstention), type action (`preserve <existing type>` or `recommend Bug`, `Feature`,
-or `Task`), subtype (or none), and duplicate decision. Never represent a preserved
-existing `Epic` as a recommendation to assign `Epic`. Then draft the summary with this
-semantic shape:
+For a full triage, first give this structured decision record:
+
+```markdown
+### Triage Decision
+- **Area:** `area-xyz`
+- **Type action:** Recommend `Bug`
+- **Subtype:** `api-proposal`
+- **Duplicate:** None found
+```
+
+Use exactly one value on each line:
+
+- **Area:** a supported area enclosed in backticks, or `Abstain` without backticks.
+- **Type action:** `Preserve` or `Recommend` followed by the type enclosed in backticks.
+- **Subtype:** a supported subtype enclosed in backticks, or `None` without backticks.
+- **Duplicate:** `#123 (duplicate)`, `#123 (related)`, `#123 (unrelated)`, or
+  `None found`, all without backticks.
+
+Do not add reasons or qualifications to these four lines. Put supporting reasoning in the
+summary or its optional Notes section. Never represent a preserved existing `Epic` as a
+recommendation to assign `Epic`. Then draft the summary with this semantic shape:
 
 ```markdown
 ### Triage Summary
