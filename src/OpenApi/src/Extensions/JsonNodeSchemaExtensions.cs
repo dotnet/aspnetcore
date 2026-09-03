@@ -544,7 +544,7 @@ internal static class JsonNodeSchemaExtensions
         var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
 
         // Work around a System.Text.Json schema export issue where get-only properties can report
-        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602 
+        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602
         var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
             propertyInfo.Set is null &&
             !propertyInfo.IsGetNullable &&
@@ -588,19 +588,25 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
-        if (schema.WillBeComponentized() &&
-                schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+        if (schema.WillBeComponentized())
         {
-            for (var i = typeArray.Count - 1; i >= 0; i--)
+            if (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
             {
-                if (typeArray[i]?.GetValue<string>() == "null")
+                for (var i = typeArray.Count - 1; i >= 0; i--)
                 {
-                    typeArray.RemoveAt(i);
+                    if (typeArray[i]?.GetValue<string>() == "null")
+                    {
+                        typeArray.RemoveAt(i);
+                    }
+                }
+                if (typeArray.Count == 1)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
                 }
             }
-            if (typeArray.Count == 1)
+            if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
+                enumArray.Remove(null);
             }
         }
     }
