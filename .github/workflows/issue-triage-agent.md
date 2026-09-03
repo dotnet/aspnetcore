@@ -34,6 +34,11 @@ permissions:
   issues: read
   pull-requests: read
 
+concurrency:
+  group: gh-aw-${{ github.workflow }}-${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+  job-discriminator: ${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+  queue: max
+
 tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
   github:
@@ -262,7 +267,7 @@ Kestrel, HttpSys, HTTP/2, HTTP/3, QUIC, YARP, WebSockets, HTTP abstractions, con
 
 #### `area-blazor`
 Blazor, Razor Components, WebAssembly, interactive rendering modes, circuits.
-**Code:** `src/Components/` (Components, Web, WebAssembly, Server, WebView, Endpoints), `src/JSInterop/`
+**Code:** `src/Components/` (Components, Web, WebAssembly, Server, WebView, Endpoints, Forms, QuickGrid, CustomElements), `src/JSInterop/`
 **Namespaces:** `Microsoft.AspNetCore.Components.*`, `Microsoft.AspNetCore.Components.Web.*`, `Microsoft.AspNetCore.Components.Forms.*`, `Microsoft.AspNetCore.Components.WebAssembly.*`, `Microsoft.AspNetCore.Components.Endpoints.*`, `Microsoft.JSInterop.*`
 **Packages:** `Microsoft.AspNetCore.Components`, `Microsoft.AspNetCore.Components.Web`, `Microsoft.AspNetCore.Components.Forms`, `Microsoft.AspNetCore.Components.Authorization`, `Microsoft.AspNetCore.Components.WebAssembly`, `Microsoft.AspNetCore.Components.WebAssembly.Authentication`, `Microsoft.AspNetCore.Components.WebAssembly.DevServer`, `Microsoft.AspNetCore.Components.CustomElements`, `Microsoft.AspNetCore.Components.QuickGrid`, `Microsoft.JSInterop`
 **Key types:** `ComponentBase`, `LayoutComponentBase`, `DynamicComponent`, `ErrorBoundary`, `NavigationManager`, `PersistentComponentState`, `CascadingValue<T>`, `RenderMode` (`InteractiveServer`, `InteractiveWebAssembly`, `InteractiveAuto`), `EditContext`, `DataAnnotationsValidator`, `CircuitHandler`, `NavLink`, `RouteView`, `HeadOutlet`, `StreamRendering`, `IComponentRenderMode`, `RenderFragment`, `EventCallback`, `IJSRuntime`, `IJSObjectReference`, `ProtectedBrowserStorage`
@@ -387,7 +392,7 @@ Security hardening, antiforgery, cookie policy, CSRF/XSRF protection.
 
 #### `area-ui-rendering`
 MVC Views, Razor Pages (rendering/templates), TagHelpers, view compilation.
-**Code:** `src/Razor/`, `src/Components/Forms/`, `src/Components/QuickGrid/`, `src/Components/CustomElements/`
+**Code:** `src/Razor/`
 **Namespaces:** `Microsoft.AspNetCore.Razor.*`, `Microsoft.AspNetCore.Html.*`
 **Packages:** `Microsoft.AspNetCore.Razor`, `Microsoft.AspNetCore.Razor.Runtime`, `Microsoft.AspNetCore.Html.Abstractions`
 **Key types:** `ViewResult`, `PartialViewResult`, `IHtmlHelper`, `ViewDataDictionary`, `TempDataDictionary`, `ViewComponent`, `ViewComponentResult`, `RazorPagesOptions`, `AnchorTagHelper`, `FormTagHelper`, `InputTagHelper`, `CacheTagHelper`, `EnvironmentTagHelper`, `ImageTagHelper`, `GlobbingUrlBuilder`
@@ -653,14 +658,18 @@ Order of operations matters. Do these in this exact order:
    (`by-design`, `question`, `external`, `docs`, `api-proposal`,
    `test-failure`, `performance`). It does **not** include `Bug` or
    `Feature` — those are issue types, applied via `set-issue-type` in
-   step 3 below.
+   step 3 below. Pass `item_number` explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
    `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
-   `set-issue-type` exactly once.
+   `set-issue-type` exactly once and pass `issue_number` explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
-   **remove `needs-area-label`** using `remove-labels`.
+   **remove `needs-area-label`** using `remove-labels`. Pass `item_number`
+   explicitly, using
+   `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
 
 5. **Apply the vulnerability gate.** If the issue is a vulnerability report
    per "Vulnerability Reports: Apply Labels, But Post No Comment" above,
@@ -710,8 +719,10 @@ these two cases:
    {"noop": {"message": "Triage comment suppressed: issue is a vulnerability report"}}
    ```
 
-2. **There is nothing to say** — e.g. the issue already has an area label
-   and an issue type, and there are no duplicates worth flagging.
+2. **There is nothing to say** — the issue already has a label whose name
+   starts with `area-`, already has an issue type, and there are no duplicates
+   worth flagging. Sub-type labels such as `docs`, `question`, or `external`
+   are not area labels and do not satisfy this condition.
 
    ```json
    {"noop": {"message": "No action needed: issue already has area and type labels"}}

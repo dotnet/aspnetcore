@@ -24,6 +24,12 @@ const SpacerVisibilityReason = {
   RenderedContentMeasurement: 3,
 } as const;
 
+const ViewportFillDirection = {
+  Covered: 0,
+  Before: 1,
+  After: 2,
+} as const;
+
 const ScrollSource = {
   None: 0,
   UserScroll: 1,
@@ -644,7 +650,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   // Measures the target's viewport-relative top and aligns it to containerTop.
-  function alignToItemAt(localIndex: number): void {
+  function alignToItemAt(localIndex: number): number | null {
     function beginAlign(): void {
       scrollActivity.ignoreNextScroll();
       scrollActivity.source = ScrollSource.AlignToItem;
@@ -656,10 +662,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     flushPendingStyleMutations();
     const delta = measureLocalChildOffset(localIndex);
     if (Number.isNaN(delta)) {
-      // Target item isn't in DOM yet. Retry after the next render.
+      // Target item isn't in the committed window.
       pendingAlignLocalIndex = localIndex;
       beginAlign();
-      return;
+      return null;
     }
     pendingAlignLocalIndex = null;
 
@@ -671,6 +677,36 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       pendingJumpToEnd = false;
       scrollElement.scrollTo({ top: scrollElement.scrollTop + delta, behavior: 'instant' });
     }
+
+    return getViewportFillDirection();
+  }
+
+  function getViewportBounds(scaleFactor: number): { top: number; bottom: number } {
+    let viewportTop = 0;
+    let viewportBottom = document.documentElement.clientHeight;
+    if (scrollContainer) {
+      const scrollContainerRect = scrollContainer.getBoundingClientRect();
+      viewportTop = scrollContainerRect.top + scrollContainer.clientTop * scaleFactor;
+      viewportBottom = viewportTop + scrollContainer.clientHeight * scaleFactor;
+    }
+    return { top: viewportTop, bottom: viewportBottom };
+  }
+
+  function occupiesViewport(spacer: HTMLElement, viewport: { top: number; bottom: number }): boolean {
+    const spacerRect = spacer.getBoundingClientRect();
+    return Math.min(spacerRect.bottom, viewport.bottom) > Math.max(spacerRect.top, viewport.top);
+  }
+
+  function getViewportFillDirection(): number {
+    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+    const viewport = getViewportBounds(scaleFactor);
+    if (occupiesViewport(spacerBefore, viewport)) {
+      return ViewportFillDirection.Before;
+    }
+    if (occupiesViewport(spacerAfter, viewport)) {
+      return ViewportFillDirection.After;
+    }
+    return ViewportFillDirection.Covered;
   }
 
   observersByDotNetObjectId[id] = {
@@ -787,7 +823,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const rect = el.getBoundingClientRect();
       if (rect.bottom > containerTop) {
         const existing = observersByDotNetObjectId[id].anchorSnapshot;
-        const nativeAnchoringUnavailable = !useNativeAnchoring || (scrollContainer !== null && isAtScrollTop());
+        const nativeAnchoringUnavailable = !useNativeAnchoring || isAtScrollTop();
         // Keep the pre-shift snapshot for None/End modes, and for Start modes that are not actively
         // converging to the top (during top convergence the viewport is repositioned instead).
         const modePinsTopItem = !anchorModeIs.beginning || !convergence.top;
@@ -855,6 +891,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     });
 
     if (intersectingEntries.length === 0) {
+      if (source === ScrollSource.AlignToItem) {
+        scrollActivity.clear();
+      }
       return;
     }
 
@@ -875,7 +914,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const isBefore = entry.target === spacerBefore;
       const spacer = isBefore ? spacerBefore : spacerAfter;
 
-      // Skip an empty after spacer because it provides no useful measurement.
       if (!isBefore && spacer.offsetHeight === 0) {
         return;
       }
@@ -895,6 +933,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const methodName = isBefore ? 'OnSpacerBeforeVisible' : 'OnSpacerAfterVisible';
       dotNetHelper.invokeMethodAsync(methodName, spacerSize, spacerSeparation, containerSize, reason);
     });
+
+    if (source === ScrollSource.AlignToItem) {
+      scrollActivity.clear();
+    }
   }
 
   function isValidTableElement(element: HTMLElement | null): boolean {
@@ -934,9 +976,9 @@ function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
   entry?.restoreAnchor?.();
 }
 
-function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): void {
+function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): number | null {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  observersByDotNetObjectId[id]?.alignToItem?.(localIndex);
+  return observersByDotNetObjectId[id]?.alignToItem?.(localIndex) ?? null;
 }
 
 function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {

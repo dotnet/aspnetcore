@@ -2614,9 +2614,9 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             connection.User = MakeUser("user1");
-            var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var userRefreshFeature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(userRefreshFeature);
-            userRefreshFeature.OnUserRefreshing = static _ => true;
+            userRefreshFeature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
@@ -2652,9 +2652,9 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             connection.User = MakeUser("user1");
-            var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var userRefreshFeature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(userRefreshFeature);
-            userRefreshFeature.OnUserRefreshing = static _ => true;
+            userRefreshFeature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
