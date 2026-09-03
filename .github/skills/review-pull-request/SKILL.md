@@ -2,14 +2,14 @@
 name: review-pull-request
 description: >-
   Review a specific dotnet/aspnetcore pull request on GitHub with a bounded independent expert
-  panel, targeted validation, and a small set of verified findings. USE FOR an
-  explicit request to review an identified aspnetcore pull request — "review PR #12345", "review
+  panel, read-only source and contract validation, and a small set of verified findings. USE FOR an
+  explicit request to review an aspnetcore pull request — "review PR #12345", "review
   this pull request", or a maintainer's `/review`. Requires a real pull request: the contract is
   anchored to its GitHub head SHA, authoritative changed-file list, diff, and existing review
   feedback. Routes changed paths to the matching domain references (servers/networking,
   MVC/Razor/routing, Blazor/Components, SignalR, auth/security, hosting/DI, minimal APIs/OpenAPI,
-  gRPC, native IIS interop) plus always-on cross-cutting review, selecting the dimensions most
-  likely to expose a material regression before candidates are traced or tested. DO NOT USE FOR implementing the fix,
+  gRPC, native IIS interop) plus cross-cutting review, selecting dimensions most likely to expose a
+  material regression before candidates are traced. DO NOT USE FOR implementing the fix,
   investigating CI failures, triaging issues, reviewing an API proposal with no diff, reviewing a
   pull request in another repository, reviewing a local diff, or general coding help.
 ---
@@ -34,11 +34,12 @@ Never, in any mode:
 - create, edit, hide, or delete any issue, label, or pull request field;
 - commit, push, force-push, rebase, or create a persistent branch;
 - modify the proposed production change or turn review into implementation work;
+- execute pull request code, run its build or tests, or create empirical validation edits;
 - call any GitHub API that mutates state.
 
-You may inspect the frozen pull request checkout, trace its code, create temporary validation files,
-and run the smallest targeted build or test needed to prove or disprove a candidate. Keep validation
-changes disposable and out of the result. Never publish or commit them.
+Trace source through read-only GitHub data at the frozen SHA. Existing tests, CI results, and author
+claims are supporting evidence only; never execute pull request code or present source review as
+runtime proof.
 
 Producing the verified analysis is the whole job; the caller decides what, if anything, reaches
 GitHub.
@@ -72,10 +73,6 @@ The GitHub file list and diff are authoritative. Do not derive the changed set f
 If the head SHA moves while you work, your analysis is stale: keep the frozen SHA, say so in
 limitations, and never silently re-target a newer commit. Re-check the head immediately before any
 caller publishes line-anchored output; if it moved, treat that output as unsafe to publish.
-
-When a working tree is available, verify it is detached at the frozen head SHA before using it.
-The GitHub file list and PR diff still define review scope; the checkout exists for source tracing
-and targeted validation, not for deriving a different changed set.
 
 If the change is too large to select and meaningfully execute a two-to-five-worker panel, stop and
 report the limitation instead of returning a token review.
@@ -115,8 +112,8 @@ Routing for changes that are not mapped source areas:
 
 - **Public API or baseline changes** — cross-cutting applies the repository's public API review
   criteria. Report that formal API approval remains human-owned and is not granted by this review.
-- **Workflow, build, or CI changes** — cross-cutting reviews source and may run targeted local
-  validation. Never dispatch pipelines or treat live CI investigation as part of this review.
+- **Workflow, build, or CI changes** — cross-cutting reviews source only. Never execute changed
+  workflow or build code, dispatch pipelines, or treat live CI investigation as part of this review.
 - **Test-only changes** — apply the test-quality checks in Step 5 (false-pass, duplicate coverage,
   wrong invariant) as the primary review.
 
@@ -151,10 +148,9 @@ For `eng/common/**`, read `eng/common/AGENTS.md` and `eng/common/README.md`. A d
 not durable because Arcade owns and synchronizes those files; report that only when the pull
 request's provenance establishes it is a direct ASP.NET Core edit.
 
-For build infrastructure, trace properties through wrapper scripts and direct CLI/design-time
-evaluation, inspect `UsingTask` conditions, and distinguish state paths and cache keys across
-configuration, OS, architecture, RID, and target framework. Validation should cover the changed
-entry points and an unchanged control rather than treating one target invocation as broad evidence.
+For build infrastructure, trace properties through wrapper scripts, project imports, targets, and
+`UsingTask` conditions. Distinguish state paths and cache keys across configuration, OS,
+architecture, RID, and target framework without executing changed build code.
 
 ## Step 3 — Scope and trust
 
@@ -241,30 +237,23 @@ Discard any candidate failing **any** gate:
    "Could theoretically" fails.
 3. **Material consequence** — wrong result, crash, hang, deadlock, leak, data loss, security or auth
    weakness, silent behavior change, public API or binary break, or measurable perf regression.
-4. **Source, primary-contract, or empirical evidence** — you read the code that makes it true,
-   checked the
+4. **Source or primary-contract evidence** — you read the code that makes it true or checked the
    authoritative contract (documented framework/BCL/protocol semantics, the implemented interface,
-   an explicit repository instruction), or reproduced it with a focused test. Recalled folklore is
-   not evidence.
-5. **External behavior claims verified** against a primary source or a faithful targeted experiment.
+   or an explicit repository instruction). Recalled folklore and unexecuted test intent are not
+   evidence.
+5. **External behavior claims verified** against an authoritative primary source.
 6. **Not already covered** — drop anything an existing review comment, review body, or prior
    automated run already raised, including reworded restatements.
 7. **Not noise** — drop style, formatting, naming preferences, typos, speculative refactors,
    duplicates, and anything unsupported.
 
-Ambiguity is not a finding. If two readings are defensible, trace farther or run a discriminating
-test; drop the claim if it remains unresolved.
+Ambiguity is not a finding. If two readings are defensible, trace farther or drop the claim if it
+remains unresolved.
 
-For every non-LGTM candidate, prove or disprove it by tracing the code flow at the frozen PR head or
-by writing the smallest faithful test that distinguishes the proposed behavior from the base
-behavior. Prefer an existing targeted test project and repository build script. Before running
-`dotnet`, activate the repository SDK environment. Do not run a broad suite when a focused
-producer-to-effect boundary can settle the claim.
-
-Validation must establish causality. A test added only to the PR head is not proof by itself:
-confirm the assertion fails for the expected reason with the suspected defect present and passes
-with the minimal correction or an equivalent control. If that red/green comparison is impractical,
-keep only claims fully established by source or a primary contract and record the limitation.
+For every non-LGTM candidate, prove or disprove it by tracing the producer-to-effect code flow at
+the frozen SHA and checking any external behavior dependency against its primary contract. A test
+added by the pull request is not proof by itself. If source and primary contracts cannot establish
+causality, record the claim as discarded or as a limitation rather than executing the code.
 
 ### Discarding is also a claim
 
@@ -290,8 +279,8 @@ The dangerous shape is rejecting a candidate because the code "already handles t
   names the line it rests on.
 
 **If you cannot produce the call edge, do not accept the discard without further validation.** Trace
-the actual value path or run a focused test. If neither settles the claim, record it as a limitation,
-not a finding.
+the actual value path. If source and primary contracts do not settle the claim, record it as a
+limitation, not a finding.
 
 **Test-boundary assessment (always report, even with no findings):**
 
@@ -326,8 +315,8 @@ FINDINGS: <0-5>
    trigger: <the concrete input/ordering/config that reaches it>
    consequence: <the material outcome>
    evidence: <the source you read or contract you checked, named specifically>
-   proof: <source | primary-contract | empirical>
-   validation: <the traced call path, primary contract, or red/green test and result>
+   proof: <source | primary-contract>
+   validation: <the traced call path or primary contract that establishes the claim>
    confidence: <high|medium>
 ...
 
@@ -370,9 +359,5 @@ Label every finding:
 - **`primary-contract`** — it follows from an authoritative external contract: a specification, the
   documented semantics of a framework or BCL type, a wire format, or an interface being implemented.
   Name the contract in `evidence`.
-- **`empirical`** — a faithful targeted experiment at the frozen PR head demonstrated the defect
-  and a red/green control established causality. Name the exact test or command and observed result
-  in `validation`.
-
 Do not report an `unverified` finding. A plausible mechanism that could not be settled belongs in
 `LIMITATIONS`, not in the finding list.
