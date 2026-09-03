@@ -62,6 +62,131 @@ if ($patPoolJobText -notmatch [regex]::Escape('echo "copilot_pat_number=$PAT_NUM
     throw 'The PAT-pool selector does not expose the selected numeric slot.'
 }
 
+$selectorScriptMatch = [regex]::Match(
+    $patPoolJobText,
+    '(?ms)^      - name: Select Copilot token from pool\r?\n.*?^        run: \|\r?\n(?<script>.*)\z'
+)
+if (-not $selectorScriptMatch.Success) {
+    throw 'The PAT-pool selector script could not be extracted for behavioral testing.'
+}
+
+$selectorScript = (
+    $selectorScriptMatch.Groups['script'].Value -split '\r?\n' |
+        ForEach-Object {
+            if ($_.StartsWith('          ')) {
+                $_.Substring(10)
+            } elseif ($_.Length -eq 0) {
+                ''
+            } else {
+                throw "Unexpected indentation in the PAT-pool selector script: '$_'"
+            }
+        }
+) -join "`n"
+
+$bash = Get-Command bash -ErrorAction Stop
+$selectorTestRoot = Join-Path ([IO.Path]::GetTempPath()) (
+    'aspnetcore-skill-eval-pat-pool-test-' + [guid]::NewGuid().ToString('N')
+)
+New-Item -ItemType Directory -Path $selectorTestRoot | Out-Null
+
+function Invoke-PatPoolSelector {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable] $Pool
+    )
+
+    $caseRoot = Join-Path $selectorTestRoot ([guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $caseRoot | Out-Null
+    $scriptPath = Join-Path $caseRoot 'select-pat.sh'
+    $outputPath = Join-Path $caseRoot 'github-output.txt'
+    $summaryPath = Join-Path $caseRoot 'github-summary.md'
+    Set-Content $scriptPath $selectorScript -Encoding utf8NoBOM
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $bash.Source
+    $startInfo.ArgumentList.Add($scriptPath)
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.Environment['GITHUB_OUTPUT'] = $outputPath
+    $startInfo.Environment['GITHUB_STEP_SUMMARY'] = $summaryPath
+    foreach ($patNumber in 0..9) {
+        $key = "COPILOT_PAT_$patNumber"
+        $startInfo.Environment[$key] = if ($Pool.ContainsKey($patNumber)) {
+            [string] $Pool[$patNumber]
+        } else {
+            ''
+        }
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    if (-not $process.Start()) {
+        throw 'The PAT-pool selector process did not start.'
+    }
+
+    $standardOutput = $process.StandardOutput.ReadToEnd()
+    $standardError = $process.StandardError.ReadToEnd()
+    $process.WaitForExit()
+    if ($process.ExitCode -ne 0) {
+        throw "The PAT-pool selector exited with code $($process.ExitCode): $standardError"
+    }
+
+    $githubOutput = if (Test-Path $outputPath) {
+        Get-Content $outputPath -Raw
+    } else {
+        ''
+    }
+    $summary = if (Test-Path $summaryPath) {
+        Get-Content $summaryPath -Raw
+    } else {
+        ''
+    }
+    $selectedPatMatch = [regex]::Match(
+        $githubOutput,
+        '(?m)^copilot_pat_number=(?<number>[0-9])\r?$'
+    )
+    $combinedOutput = "$standardOutput`n$standardError`n$githubOutput`n$summary"
+    foreach ($patValue in $Pool.Values) {
+        if ($combinedOutput.Contains([string] $patValue, [StringComparison]::Ordinal)) {
+            throw 'The PAT-pool selector exposed a credential value in its output.'
+        }
+    }
+
+    return [pscustomobject]@{
+        Number = if ($selectedPatMatch.Success) {
+            $selectedPatMatch.Groups['number'].Value
+        } else {
+            $null
+        }
+        StandardOutput = $standardOutput
+    }
+}
+
+try {
+    $emptyPool = Invoke-PatPoolSelector -Pool @{}
+    if ($null -ne $emptyPool.Number -or
+        $emptyPool.StandardOutput -notmatch 'None of the PAT pool entries had values') {
+        throw 'The PAT-pool selector did not preserve the empty-pool fallback path.'
+    }
+
+    $singlePat = Invoke-PatPoolSelector -Pool @{ 2 = 'single-slot-secret' }
+    if ($singlePat.Number -ne '2') {
+        throw "The PAT-pool selector did not select the only populated slot: '$($singlePat.Number)'."
+    }
+
+    $multiplePats = Invoke-PatPoolSelector -Pool @{
+        1 = 'first-multi-slot-secret'
+        4 = 'second-multi-slot-secret'
+        9 = 'third-multi-slot-secret'
+    }
+    if ($multiplePats.Number -notin @('1', '4', '9')) {
+        throw "The PAT-pool selector selected an empty slot: '$($multiplePats.Number)'."
+    }
+} finally {
+    Remove-Item -Recurse -Force $selectorTestRoot
+}
+
 $reportJob = [regex]::Match(
     $workflow,
     '(?ms)^  report:\r?\n(?<job>.*?)(?=^  \S|\z)'
