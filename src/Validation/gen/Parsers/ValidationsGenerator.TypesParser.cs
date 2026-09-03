@@ -104,12 +104,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             current = current.BaseType;
         }
 
-        // Extract validatable types discovered in members of this type and add them to the top-level list.
-        ImmutableArray<ValidatableProperty> members = [];
-        if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
+        // Extract validatable types discovered in union cases and add them to the top-level list.
+        var hasValidatableUnionCases = false;
+        if (typeSymbol.IsUnion)
         {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
+            foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
+            {
+                hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
+            }
         }
+
+        // Extract validatable types discovered in members of this type and add them to the top-level list.
+        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes, hasValidatableUnionCases);
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonDerivedTypeAttribute));
@@ -120,7 +126,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes && !hasValidatableUnionCases)
         {
             return false;
         }
@@ -145,10 +151,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         INamedTypeSymbol skipValidationAttributeSymbol,
         INamedTypeSymbol jsonIgnoreAttributeSymbol)
     {
-        // Skip compiler generated properties, indexers, static properties, write-only
-        // properties (those without a getter), and the synthesized record EqualityContract property.
-        if (property.IsImplicitlyDeclared
-            || property.IsIndexer
+        // Preserve the synthesized union Value property so validation can traverse to the active case.
+        if (property.IsImplicitlyDeclared && !IsUnionValueProperty(property))
+        {
+            return true;
+        }
+
+        // Skip indexers, static properties, write-only properties (those without a getter),
+        // and the synthesized record EqualityContract property.
+        if (property.IsIndexer
             || property.IsStatic
             || property.IsWriteOnly
             || property.IsEqualityContract(wellKnownTypes))
@@ -171,7 +182,21 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return false;
     }
 
-    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
+    private static bool IsUnionValueProperty(IPropertySymbol property)
+        => property is
+        {
+            Name: "Value",
+            IsImplicitlyDeclared: true,
+            DeclaredAccessibility: Accessibility.Public,
+            ContainingType: { } containingType,
+        } && containingType.IsUnion;
+
+    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(
+        ITypeSymbol typeSymbol,
+        WellKnownTypes wellKnownTypes,
+        HashSet<ValidatableType> validatableTypes,
+        List<ITypeSymbol> visitedTypes,
+        bool hasValidatableUnionCases)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -302,7 +327,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, validatableTypes, visitedTypes);
 
             // If the member has no validation attributes or validatable types, skip it.
-            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType)
+            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType && !(hasValidatableUnionCases && IsUnionValueProperty(member)))
             {
                 continue;
             }

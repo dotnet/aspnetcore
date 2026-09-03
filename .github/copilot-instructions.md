@@ -6,11 +6,18 @@
 * Never change package.json or package-lock.json files unless explicitly asked to.
 * Never change NuGet.config files unless explicitly asked to.
 
+## Task Scope and Completion
+
+* Before implementing a reported issue, verify the behavior on the current default branch, inspect relevant history and documentation, and establish the smallest faithful reproduction. If the user asks only to investigate or characterize, do not change shipping code or create or update a pull request until implementation is explicitly requested.
+* Define the acceptance criteria before implementation. Do not claim completion or create or update a pull request until the requested acceptance criteria are green; identify any intentionally excluded cases or unverified boundaries.
+
 ## Public API Changes
 
-* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change. Before implementing it, verify that the linked issue is `api-approved`.
-* If approval is missing, stop and explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature. Implementation starts only after `api-approved`.
-* When reporting this gate, explicitly say that `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval, and that any implementation change to the approved API shape must return to API review.
+* Treat any new or changed `public` or `protected` type, member, signature, default, or convention as a potential public API change.
+* When opening an implementation pull request that adds or changes public API, use the [`api-review` skill](./skills/api-review/SKILL.md) to create a separate API proposal issue. Link the proposal to the originating issue and implementation pull request.
+* Implementation, pull request readiness, and merge may proceed before the linked issue is `api-approved`. Before the API can be included in an RTM release, verify that the API proposal issue has the `api-approved` label and that the approval covers the final implemented API shape.
+* If the `api-approved` label is missing when preparing an RTM release, explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature.
+* `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval. Any implementation change to the proposed or previously approved API shape must return to API review before the API is included in an RTM release.
 
 ## Framework assembly boundaries
 
@@ -35,6 +42,14 @@
 
 ### Testing
 
+* Check for an `AGENTS.md` file in the relevant product area and follow its more specific guidance in addition to these repository-wide conventions.
+* Place unit tests under the product's `test/` directory. Name unit-test projects `<ProductAssembly>.Tests`; preserve an area's established `.Test` suffix.
+* Keep established test categories separate. In areas with a `.FunctionalTests` project, use it for hosted application or server boundaries. For complete browser or external workflows, preserve the area's established `.E2ETests` or `.E2E.Tests` suffix.
+* Treat test project names as build-significant. They control test-project detection and often match exact `InternalsVisibleTo` entries; do not invent alternative names or override test-project detection.
+* Put supporting applications and libraries under the area's `testassets/` directory unless the area has an established alternative. Do not give a support project a test-project suffix unless it contains discovered tests.
+* Name each test file after its primary test class. For type-focused tests, map `Foo` to `FooTest` or `FooTests`, following nearby convention. Name scenario tests after the behavior exercised, and extend an existing matching test class when one exists.
+* Use public test classes and descriptive PascalCase test methods. Follow the containing project's test framework, method-name style, namespace, fixtures, and parallelization configuration.
+* Keep helpers used by one test class private or nested. Put reused helpers in the project's established `Helpers`, `Infrastructure`, or `TestObjects` structure.
 * We use xUnit SDK v3 for tests.
 * Do not emit "Act", "Arrange" or "Assert" comments.
 * Use Moq for mocking in tests.
@@ -49,6 +64,7 @@
 * For behavioral findings and bug-fix verification, E2E validation is unnecessary when the disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
 * If faithful validation is impractical, state the observed boundary and limitation, and do not describe the behavioral claim as verified.
 * If that red/green verification isn't practical, explain why, state what you did verify, and don't describe the fix as verified.
+* When a requested automated test cannot reach its assertion, name that test in the final response, state the prerequisite that blocked it, and identify the faithful validation boundary used instead.
 
 ## .NET Environment
 

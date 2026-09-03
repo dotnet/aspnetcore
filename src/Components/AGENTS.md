@@ -30,17 +30,47 @@ For implementation work:
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
 
+### Cross-runtime design checkpoint
+
+Before editing behavior that crosses Components renderers, runtimes, or DI scopes:
+
+- Define the relevant behavior matrix: Server/WebAssembly/Auto, global/per-page interactivity, initial activation/enhanced navigation, prerendered/non-prerendered, and interactive `Router` present/absent. Mark intentionally excluded cells before implementation.
+- Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
+- Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.
+
+### JavaScript and .NET compatibility boundary
+
+The JavaScript code in `src/Components/Web.JS` and the .NET code for Blazor Server and Blazor WebAssembly ship together and evolve in sync. Treat the protocol between them, including the circuit and interop message formats, the boot config, the JS initializers and the internal `Blazor._internal` surface, as an internal communication boundary rather than a public contract.
+
+- A change may update the JavaScript and the .NET code together in the same commit. Do not add compatibility shims, version negotiation, or fallback code paths so that new JavaScript keeps working with .NET from a previous major version, or the other way around.
+- Backwards compatibility across major versions (10.0 to 11.0, 11.0 to 12.0, and so on) is not required for this boundary. Assume the JavaScript and the .NET runtime always come from the same build.
+- This exemption covers only the internal JS-to-.NET boundary. Public .NET APIs, documented JavaScript entry points such as `Blazor.start`, and the documented JS interop APIs that applications call keep their normal compatibility requirements and API review process.
+- Within a servicing branch for a released major version, keep the boundary compatible unless the change is explicitly approved, because servicing updates are more constrained than a major version bump.
+
 ### Code clarity and durable knowledge
 
 - Before adding a comment, make local behavior discoverable through precise names,
   named methods or variables, and smaller single-purpose responsibilities. A named
   method can improve clarity even when it does not reduce duplication.
+- Rely on existing abstractions and extend them with the semantic operation or
+  context needed by the caller rather than downcasting to a concrete implementation.
+  Keep implementation-specific lifecycle and state handling behind the abstraction.
 - Add a concise implementation comment only when a durable nonlocal reason cannot
   be expressed by structure alone, such as ordering across JavaScript and .NET
   callbacks, lifecycle ownership transfer, compatibility constraints, or a
   required negative guarantee. Do not narrate the call graph or restate the code.
 - Do not use public XML documentation to explain internal implementation details,
   including control flow or lifecycle state. Limit it to consumer-observable behavior.
+
+### JavaScript DOM lifecycle
+
+- When behavior targets DOM that can be replaced during the prerender-to-interactive
+  transition or enhanced navigation, bind it to the narrowest lifecycle owner that can
+  survive the replacement or re-register afterward, and clean up when that owner is
+  removed. This can be a component lifecycle, a custom element's
+  `connectedCallback`/`disconnectedCallback`, or a stable scoped ancestor. Do not move
+  element-specific listeners to `document` or `window` merely to survive replacement;
+  reserve global listeners for behavior genuinely owned by the document or window.
 
 ### Overview
 
@@ -81,6 +111,10 @@ Before expanding validation across this full matrix, state the render modes and 
 6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
 
 ## Build Tips
+
+### Build and retry discipline
+
+On Windows, serialize builds that share the `artifacts` directory and stop sample or test-server processes before rebuilding. After two consecutive failures at the same E2E boundary, stop rerunning the full command. Isolate the boundary with a focused unit or project check or a manually driven test server, then resume the E2E loop.
 
 ### Efficient Build Strategy
 
@@ -190,10 +224,9 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 ### E2E Testing Structure
 
-Tests live in `src/Components/test`. The structure includes:
+Components E2E tests use xUnit and Selenium and live in `src/Components/test/E2ETest`. Their applications come from established `testassets` and `benchmarkapps` locations across Components, and `Components.TestServer` launches the scenario-specific servers. Reuse those applications and avoid adding new startup files unless strictly necessary.
 
-- **testassets folder** - Contains test assets and scenarios
-- **Components.TestServer project** - A web application that launches multiple web servers with different scenarios (different project startups). Avoid adding new startup files unless strictly necessary.
+Do not use `Microsoft.AspNetCore.Components.Testing` unless the request explicitly targets that project or asks to use it.
 
 ### Running E2E Tests Manually
 
@@ -258,15 +291,19 @@ Use `browser_console_messages` to see JavaScript console output including .NET l
 
 ### Creating E2E Tests
 
-E2E tests are located in `src/Components/test/E2ETest`.
+The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 
 1. First, check if there are already E2E tests for the component/feature area you're working on
 2. Try to add an additional test to existing test files when possible
 3. When adding test coverage, prefer extending existing test components and assets over creating a set of new ones if it doesn't complicate the existing ones excessively. This reduces test infrastructure complexity and keeps related scenarios together.
+4. Regression tests for lifecycle-sensitive behavior must exercise the render boundary that owns the relevant DOM. A page-level render mode can leave the surrounding layout static, so verify that the DOM under test is actually hydrated or replaced.
+5. When the behavior under test is owned by generated template content, prefer extending the existing browser tests in `src/ProjectTemplates/test/Templates.Blazor.Tests` over duplicating the scenario in Components E2E.
+
+For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
 ### Running E2E Tests
 
-The E2E tests use Selenium. To build and run tests:
+This E2E suite uses Selenium. To build and run tests:
 
 ```bash
 # Build the E2E test project and its dependencies
