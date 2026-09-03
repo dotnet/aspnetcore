@@ -585,30 +585,6 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         }
     }
 
-    private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
-    {
-        var originalViewportSize = page.ViewportSize;
-
-        // The nav menu only collapses behind the toggler on viewports narrower than 641px.
-        await page.SetViewportSizeAsync(400, 800);
-
-        try
-        {
-            var navMenu = page.Locator(".nav-scrollable");
-
-            await page.ClickAsync(".navbar-toggler");
-            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
-
-            await page.ClickAsync("nav a[href='']");
-            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
-            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
-        }
-        finally
-        {
-            await page.SetViewportSizeAsync(originalViewportSize.Width, originalViewportSize.Height);
-        }
-    }
-
     protected void EnsureBrowserAvailable(BrowserKind browserKind)
     {
         Assert.False(
