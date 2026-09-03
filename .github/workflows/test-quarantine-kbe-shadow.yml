@@ -22,7 +22,7 @@ on:
 # workflow_dispatch, but a fork's copy of this file would otherwise execute in the fork's own
 # `github.repository` context. Gating on the canonical repository keeps a forked copy inert.
 concurrency:
-  group: test-quarantine-kbe-shadow-${{ github.event.inputs.issue_number }}
+  group: test-quarantine-kbe-shadow-${{ inputs.issue_number }}
   cancel-in-progress: true
 
 permissions:
@@ -38,14 +38,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Validate issue_number input
+      # Every workflow_dispatch input is passed through a step `env:` binding and read back via
+      # $env:<NAME> inside the script -- never interpolated directly into `run:` script text via
+      # `${{ inputs.* }}`. A signature value containing a quote, backtick, or newline embedded
+      # directly into the script body could otherwise execute arbitrary runner commands; an
+      # environment-variable value is opaque data to the shell/PowerShell parser regardless of
+      # its content.
+      - name: Validate and normalize inputs
+        id: normalize
         shell: pwsh
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
         run: |
-          if ('${{ github.event.inputs.issue_number }}' -notmatch '^[1-9][0-9]*$')
+          if ($env:ISSUE_NUMBER_INPUT -notmatch '^[1-9][0-9]*$')
           {
-            Write-Error "issue_number must be a positive integer; received '${{ github.event.inputs.issue_number }}'."
+            Write-Error "issue_number must be a positive integer."
             exit 1
           }
+          "ISSUE_NUMBER=$($env:ISSUE_NUMBER_INPUT)" >> $env:GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -59,19 +69,20 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
+          SIGNATURE_INPUT: ${{ inputs.signature }}
         run: |
           $params = @{
-            IssueNumber = [int]"${{ github.event.inputs.issue_number }}"
+            IssueNumber = [int]$env:ISSUE_NUMBER
             OutputFile = "$env:RUNNER_TEMP/dossier.json"
             CandidateFile = "$env:RUNNER_TEMP/candidate.json"
             EvidenceRoot = "$env:RUNNER_TEMP/evidence"
           }
-          $signature = '${{ github.event.inputs.signature }}'
-          if (-not [string]::IsNullOrWhiteSpace($signature))
+          if (-not [string]::IsNullOrWhiteSpace($env:SIGNATURE_INPUT))
           {
-            $params["Signature"] = $signature
+            $params["Signature"] = $env:SIGNATURE_INPUT
           }
-          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Collect-TestQuarantineKbeEvidence.ps1' @params
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/Collect-TestQuarantineKbeEvidence.ps1" @params
 
           $dossier = Get-Content -LiteralPath "$env:RUNNER_TEMP/dossier.json" -Raw | ConvertFrom-Json -Depth 32
           "outcome=$($dossier.outcome)" >> $env:GITHUB_OUTPUT
@@ -81,7 +92,7 @@ jobs:
         if: ${{ steps.collect.outputs.outcome == 'candidate' }}
         shell: pwsh
         run: |
-          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Evaluate-TestQuarantineKbeCandidate.ps1' `
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/Evaluate-TestQuarantineKbeCandidate.ps1" `
             -CandidateFile "$env:RUNNER_TEMP/candidate.json" `
             -EvidenceRoot "$env:RUNNER_TEMP/evidence" `
             -OutputFile "$env:RUNNER_TEMP/receipt.json"
@@ -98,14 +109,14 @@ jobs:
           {
             $params["ReceiptFile"] = "$env:RUNNER_TEMP/receipt.json"
           }
-          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/New-TestQuarantineKbeSummary.ps1' @params
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/New-TestQuarantineKbeSummary.ps1" @params
           Get-Content -LiteralPath "$env:RUNNER_TEMP/summary.md" -Raw >> $env:GITHUB_STEP_SUMMARY
 
       - name: Upload dossier and receipt
         if: ${{ always() && steps.collect.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-quarantine-kbe-shadow-issue-${{ github.event.inputs.issue_number }}
+          name: test-quarantine-kbe-shadow-issue-${{ env.ISSUE_NUMBER }}
           path: |
             ${{ runner.temp }}/dossier.json
             ${{ runner.temp }}/candidate.json

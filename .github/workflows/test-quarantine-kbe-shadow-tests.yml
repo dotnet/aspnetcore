@@ -31,9 +31,14 @@ jobs:
       - name: Run Evaluate-TestQuarantineKbeCandidate.ps1 tests
         shell: pwsh
         run: |
-          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Evaluate-TestQuarantineKbeCandidate.ps1'
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Evaluate-TestQuarantineKbeCandidate.ps1"
 
       - name: Run Collect-TestQuarantineKbeEvidence.ps1 tests
         shell: pwsh
         run: |
-          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Collect-TestQuarantineKbeEvidence.ps1'
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Collect-TestQuarantineKbeEvidence.ps1"
+
+      - name: Run workflow script-injection safety guard
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-WorkflowScriptInjectionSafety.ps1"

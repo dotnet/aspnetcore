@@ -18,6 +18,7 @@ production without an explicit, separate decision by a maintainer.
 | `test-quarantine-kbe-shadow-dossier.schema.json` | Schema for the collector's output envelope (provenance + either `candidate` or `incomplete`). Independently versioned; it wraps and reuses the candidate schema rather than replacing or competing with it. |
 | `fixtures/<issue>/` | Compact, sanitized, offline fixtures for three real pilot issues, each with a golden `expected-dossier.json`. |
 | `Test-Evaluate-TestQuarantineKbeCandidate.ps1`, `Test-Collect-TestQuarantineKbeEvidence.ps1` | Deterministic, offline test suites (no network access). |
+| `Test-WorkflowScriptInjectionSafety.ps1` | Static regression test asserting that no `run:` script body in the two workflows below interpolates a `${{ ... }}` GitHub Actions expression (see "Script-injection safety" below). |
 
 The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dispatch) and
 `.github/workflows/test-quarantine-kbe-shadow-tests.yml` (CI) workflows are described below.
@@ -78,10 +79,32 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
 ## CI: `test-quarantine-kbe-shadow-tests.yml`
 
 Runs both deterministic, offline PowerShell test suites (`Test-Evaluate-TestQuarantineKbeCandidate.ps1`
-and `Test-Collect-TestQuarantineKbeEvidence.ps1`) on every pull request that touches this directory
-or either workflow file, plus on manual dispatch. Every fixture is local and offline; no network
-access or secrets are required, so this is a low-risk, standard `pull_request`-triggered check —
-no self-test mode inside the shadow workflow itself was needed to close this CI gap.
+and `Test-Collect-TestQuarantineKbeEvidence.ps1`), plus the script-injection safety guard described
+below, on every pull request that touches this directory or either workflow file, plus on manual
+dispatch. Every fixture is local and offline; no network access or secrets are required, so this is
+a low-risk, standard `pull_request`-triggered check — no self-test mode inside the shadow workflow
+itself was needed to close this CI gap.
+
+## Script-injection safety
+
+`test-quarantine-kbe-shadow.yml` accepts two `workflow_dispatch` inputs, `issue_number` and
+`signature`, both of which are attacker-influenceable text (anyone who can dispatch the workflow
+controls their exact content). Neither is ever interpolated directly into a `run:` script body via
+`${{ inputs.issue_number }}` / `${{ inputs.signature }}`: a signature value containing a quote,
+backtick, or newline embedded directly into script text could otherwise execute arbitrary commands
+on the runner. Instead, every input flows through a step (or job) `env:` binding — for example
+`env: { SIGNATURE_INPUT: ${{ inputs.signature }} }` — and is read back inside the script as an
+opaque environment variable (`$env:SIGNATURE_INPUT`), which the PowerShell parser never re-parses
+as script text regardless of its content. `issue_number` is additionally validated against
+`^[1-9][0-9]*$` before being persisted to `$GITHUB_ENV`, and only that already-validated
+`env.ISSUE_NUMBER` value (not the raw input) is used in the uploaded artifact's name — a
+non-`run:` context where Actions itself handles the substitution, not a shell.
+
+`Test-WorkflowScriptInjectionSafety.ps1` is a static, offline regression test for exactly this
+invariant: it parses every `run:` block (block-scalar and single-line forms) in both workflow files
+using a minimal, indentation-based reader and fails if any of them contains a `${{` token. It
+deliberately does not inspect `if:`, `env:`, `with:`, or `concurrency:` values, since a `${{ }}`
+expression there is evaluated by the Actions engine itself and is not a script-injection vector.
 
 ## Fixture mode (`-FixtureRoot`)
 
