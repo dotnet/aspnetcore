@@ -1,0 +1,552 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dotnet/aspnetcore/.github/workflows/scripts/test-quarantine-kbe-shadow/test-quarantine-kbe-shadow-dossier.schema.json",
+  "title": "ASP.NET Core test quarantine KBE shadow collector dossier",
+  "description": "Deterministic, read-only collector output for exactly one open dotnet/aspnetcore test-quarantine issue. Records provenance for public Azure DevOps build metadata, Helix/TRX raw evidence, and GitHub 'Build Analysis' check-run snapshots (advisory/corroborating only, never authoritative), then either emits a candidate object satisfying test-quarantine-kbe-shadow-candidate.schema.json for Evaluate-TestQuarantineKbeCandidate.ps1, or a structured 'incomplete' outcome. Never infers a pass, a recurrence, or a signature from missing or expired evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "collector",
+    "issue",
+    "outcome",
+    "provenance",
+    "candidate",
+    "incomplete"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "repository": {
+      "const": "dotnet/aspnetcore"
+    },
+    "collector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "generated_utc",
+        "fixture_mode",
+        "manual_signature_provided"
+      ],
+      "properties": {
+        "name": {
+          "const": "Collect-TestQuarantineKbeEvidence.ps1"
+        },
+        "version": {
+          "const": 1
+        },
+        "generated_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fixture_mode": {
+          "type": "boolean",
+          "description": "true when the collector read pre-fetched offline fixture data instead of making live network calls (tests and workflow self-test mode)."
+        },
+        "manual_signature_provided": {
+          "type": "boolean",
+          "description": "true when the operator supplied -Signature because deterministic extraction from the issue body could not be proven unambiguous."
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "url",
+        "state",
+        "labels"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/dotnet/aspnetcore/issues/[1-9][0-9]*$"
+        },
+        "state": {
+          "enum": [
+            "open",
+            "closed"
+          ]
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      }
+    },
+    "outcome": {
+      "enum": [
+        "candidate",
+        "incomplete"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "azdo_builds",
+        "check_run_snapshots",
+        "raw_evidence_sources",
+        "duplicate_search"
+      ],
+      "properties": {
+        "azdo_builds": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "found",
+              "retrieved_utc",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "retrieved_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "source": {
+                "enum": [
+                  "issue-body-reference",
+                  "recurrence-scan",
+                  "negative-scan"
+                ]
+              },
+              "definition_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_version": {
+                "$ref": "#/$defs/gitSha"
+              },
+              "started_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finished_utc": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "result": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 512
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "found": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "definition_id",
+                    "source_version",
+                    "started_utc",
+                    "result"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "found": {
+                      "const": false
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "note"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "check_run_snapshots": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_version",
+              "found",
+              "retrieved_utc",
+              "exact_test_referenced",
+              "known_issue_referenced"
+            ],
+            "properties": {
+              "source_version": {
+                "$ref": "#/$defs/gitSha"
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "retrieved_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "check_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "conclusion": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "text_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "text_excerpt": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "html_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              },
+              "exact_test_referenced": {
+                "type": "boolean",
+                "description": "Conservative substring match of the quarantined test's fully qualified (or short method) name inside the check-run text. False when no snapshot was found."
+              },
+              "known_issue_referenced": {
+                "type": "boolean",
+                "description": "Conservative match of a 'Known Issue' / known-build-error reference inside the check-run text. False when no snapshot was found."
+              }
+            }
+          }
+        },
+        "raw_evidence_sources": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "build_id",
+              "role",
+              "found",
+              "expired",
+              "captured_utc"
+            ],
+            "properties": {
+              "build_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "role": {
+                "enum": [
+                  "failure",
+                  "negative"
+                ]
+              },
+              "kind": {
+                "enum": [
+                  "helix-console-log",
+                  "helix-test-log",
+                  "vstmr-result"
+                ]
+              },
+              "helix_job": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "helix_workitem": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "expired": {
+                "type": "boolean",
+                "description": "true when the evidence source once existed (per the issue or a build/test-result reference) but its underlying artifact is no longer retrievable."
+              },
+              "captured_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "evidence_path": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 512
+              }
+            }
+          }
+        },
+        "duplicate_search": {
+          "$ref": "#/$defs/duplicateCheck"
+        }
+      }
+    },
+    "candidate": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Present only when outcome is 'candidate'. Must independently satisfy test-quarantine-kbe-shadow-candidate.schema.json; validated separately by the collector and by Evaluate-TestQuarantineKbeCandidate.ps1."
+    },
+    "incomplete": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "reason_codes",
+        "message",
+        "missing_evidence"
+      ],
+      "properties": {
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "issue-not-canonical-quarantine",
+              "issue-not-open",
+              "test-name-unresolvable",
+              "build-reference-unresolvable",
+              "build-metadata-expired",
+              "raw-evidence-expired",
+              "raw-evidence-insufficient",
+              "recurrence-single-build-only",
+              "signature-extraction-ambiguous",
+              "duplicate-search-incomplete",
+              "github-api-error"
+            ]
+          }
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "detail"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 512
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "candidate"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate": {
+            "type": "object"
+          },
+          "incomplete": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "incomplete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate": {
+            "type": "null"
+          },
+          "incomplete": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "duplicateCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "checked_utc",
+        "coverage",
+        "references",
+        "queries"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "none",
+            "existing-kbe",
+            "existing-fix-pr",
+            "ambiguous",
+            "integrity-filtered",
+            "not-evaluated"
+          ]
+        },
+        "checked_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "open_kbes",
+            "recently_closed_kbes",
+            "open_fix_prs",
+            "recently_merged_fix_prs"
+          ],
+          "properties": {
+            "open_kbes": {
+              "type": "boolean"
+            },
+            "recently_closed_kbes": {
+              "type": "boolean"
+            },
+            "open_fix_prs": {
+              "type": "boolean"
+            },
+            "recently_merged_fix_prs": {
+              "type": "boolean"
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(issue|pull-request):[1-9][0-9]*$"
+          }
+        },
+        "queries": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "query",
+              "complete",
+              "result_numbers"
+            ],
+            "properties": {
+              "category": {
+                "enum": [
+                  "open-kbe",
+                  "recently-closed-kbe",
+                  "open-fix-pr",
+                  "recently-merged-fix-pr"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "result_numbers": {
+                "type": "array",
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

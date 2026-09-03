@@ -1,0 +1,116 @@
+name: Test quarantine KBE shadow (single issue)
+
+# Maintainer-triggered, read-only shadow evaluation for exactly one existing dotnet/aspnetcore
+# test-quarantine issue. See .github/workflows/scripts/test-quarantine-kbe-shadow/README.md for
+# the full trust boundary, evidence model, and promotion gates.
+#
+# This workflow NEVER labels, comments on, or otherwise mutates any issue, pull request, branch,
+# or repository file. It only reads public GitHub/Azure DevOps/Helix data and uploads short-
+# retention artifacts (candidate/dossier, receipt, and a human-readable summary).
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "The dotnet/aspnetcore issue number to evaluate. Must be the canonical, currently open test-failure quarantine issue for the test(s) it names."
+        required: true
+      signature:
+        description: "Optional manual failure-signature override. Only needed when the issue body has no fenced '## Error Message' code block that the collector can deterministically extract."
+        required: false
+
+# Fail closed on forks: this workflow only ever runs via an explicit, permissioned
+# workflow_dispatch, but a fork's copy of this file would otherwise execute in the fork's own
+# `github.repository` context. Gating on the canonical repository keeps a forked copy inert.
+concurrency:
+  group: test-quarantine-kbe-shadow-${{ github.event.inputs.issue_number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  checks: read
+
+jobs:
+  collect-and-evaluate:
+    name: Collect evidence and evaluate
+    if: ${{ github.repository == 'dotnet/aspnetcore' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Validate issue_number input
+        shell: pwsh
+        run: |
+          if ('${{ github.event.inputs.issue_number }}' -notmatch '^[1-9][0-9]*$')
+          {
+            Write-Error "issue_number must be a positive integer; received '${{ github.event.inputs.issue_number }}'."
+            exit 1
+          }
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
+          submodules: false
+          persist-credentials: false
+
+      - name: Collect quarantine evidence
+        id: collect
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $params = @{
+            IssueNumber = [int]"${{ github.event.inputs.issue_number }}"
+            OutputFile = "$env:RUNNER_TEMP/dossier.json"
+            CandidateFile = "$env:RUNNER_TEMP/candidate.json"
+            EvidenceRoot = "$env:RUNNER_TEMP/evidence"
+          }
+          $signature = '${{ github.event.inputs.signature }}'
+          if (-not [string]::IsNullOrWhiteSpace($signature))
+          {
+            $params["Signature"] = $signature
+          }
+          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Collect-TestQuarantineKbeEvidence.ps1' @params
+
+          $dossier = Get-Content -LiteralPath "$env:RUNNER_TEMP/dossier.json" -Raw | ConvertFrom-Json -Depth 32
+          "outcome=$($dossier.outcome)" >> $env:GITHUB_OUTPUT
+
+      - name: Evaluate candidate
+        id: evaluate
+        if: ${{ steps.collect.outputs.outcome == 'candidate' }}
+        shell: pwsh
+        run: |
+          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Evaluate-TestQuarantineKbeCandidate.ps1' `
+            -CandidateFile "$env:RUNNER_TEMP/candidate.json" `
+            -EvidenceRoot "$env:RUNNER_TEMP/evidence" `
+            -OutputFile "$env:RUNNER_TEMP/receipt.json"
+
+      - name: Render human-readable summary
+        if: ${{ always() && steps.collect.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $params = @{
+            DossierFile = "$env:RUNNER_TEMP/dossier.json"
+            OutputFile = "$env:RUNNER_TEMP/summary.md"
+          }
+          if (Test-Path -LiteralPath "$env:RUNNER_TEMP/receipt.json")
+          {
+            $params["ReceiptFile"] = "$env:RUNNER_TEMP/receipt.json"
+          }
+          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/New-TestQuarantineKbeSummary.ps1' @params
+          Get-Content -LiteralPath "$env:RUNNER_TEMP/summary.md" -Raw >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload dossier and receipt
+        if: ${{ always() && steps.collect.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-quarantine-kbe-shadow-issue-${{ github.event.inputs.issue_number }}
+          path: |
+            ${{ runner.temp }}/dossier.json
+            ${{ runner.temp }}/candidate.json
+            ${{ runner.temp }}/receipt.json
+            ${{ runner.temp }}/summary.md
+            ${{ runner.temp }}/evidence/**
+          if-no-files-found: ignore
+          retention-days: 7

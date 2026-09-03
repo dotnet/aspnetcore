@@ -1,0 +1,39 @@
+name: Test quarantine KBE shadow (unit tests)
+
+# Repository-convention CI coverage for the read-only test-quarantine-kbe-shadow evaluator and
+# collector: runs their deterministic, offline PowerShell test suites whenever this workflow file,
+# the scripts directory, or its schemas/fixtures change. Every fixture used here is a small,
+# sanitized, offline JSON document; no network access or repository secrets are required.
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/test-quarantine-kbe-shadow.yml"
+      - ".github/workflows/test-quarantine-kbe-shadow-tests.yml"
+      - ".github/workflows/scripts/test-quarantine-kbe-shadow/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-tests:
+    name: Run evaluator and collector tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
+          submodules: false
+
+      - name: Run Evaluate-TestQuarantineKbeCandidate.ps1 tests
+        shell: pwsh
+        run: |
+          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Evaluate-TestQuarantineKbeCandidate.ps1'
+
+      - name: Run Collect-TestQuarantineKbeEvidence.ps1 tests
+        shell: pwsh
+        run: |
+          & '${{ github.workspace }}/.github/workflows/scripts/test-quarantine-kbe-shadow/Test-Collect-TestQuarantineKbeEvidence.ps1'

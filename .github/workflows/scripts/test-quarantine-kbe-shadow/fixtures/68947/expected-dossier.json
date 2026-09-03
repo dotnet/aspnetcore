@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "repository": "dotnet/aspnetcore",
+  "collector": {
+    "name": "Collect-TestQuarantineKbeEvidence.ps1",
+    "version": 1,
+    "generated_utc": "<GENERATED>",
+    "fixture_mode": true,
+    "manual_signature_provided": true
+  },
+  "issue": {
+    "number": 68947,
+    "url": "https://github.com/dotnet/aspnetcore/issues/68947",
+    "state": "open",
+    "labels": [
+      "test-failure",
+      "area-blazor"
+    ]
+  },
+  "outcome": "candidate",
+  "provenance": {
+    "azdo_builds": [
+      {
+        "id": 1551326,
+        "found": true,
+        "retrieved_utc": "<GENERATED>",
+        "source": "issue-body-reference",
+        "definition_id": 87,
+        "source_version": "dbea3e5f6a990adff93e782648dd9b6d13d6a943",
+        "started_utc": "2026-08-13T10:00:00.0000000Z",
+        "finished_utc": "2026-08-13T11:30:00.0000000Z",
+        "result": "failed"
+      },
+      {
+        "id": 1537561,
+        "found": false,
+        "retrieved_utc": "<GENERATED>",
+        "source": "issue-body-reference",
+        "note": "Build metadata was not retrievable; it may have aged out of Azure DevOps retention."
+      },
+      {
+        "id": 1549000,
+        "found": true,
+        "retrieved_utc": "<GENERATED>",
+        "source": "recurrence-scan",
+        "definition_id": 87,
+        "source_version": "0374b4797537d95f1b519446344fd88a7b5a861a",
+        "started_utc": "2026-08-10T09:00:00.0000000Z",
+        "finished_utc": "2026-08-10T10:30:00.0000000Z",
+        "result": "failed"
+      },
+      {
+        "id": 1545000,
+        "found": true,
+        "retrieved_utc": "<GENERATED>",
+        "source": "negative-scan",
+        "definition_id": 87,
+        "source_version": "f33596dac091a6fd858b1515378d951f7f6adda5",
+        "started_utc": "2026-08-08T09:00:00.0000000Z",
+        "finished_utc": "2026-08-08T10:30:00.0000000Z",
+        "result": "succeeded"
+      }
+    ],
+    "check_run_snapshots": [
+      {
+        "source_version": "dbea3e5f6a990adff93e782648dd9b6d13d6a943",
+        "found": false,
+        "retrieved_utc": "<GENERATED>",
+        "exact_test_referenced": false,
+        "known_issue_referenced": false
+      },
+      {
+        "source_version": "0374b4797537d95f1b519446344fd88a7b5a861a",
+        "found": true,
+        "retrieved_utc": "<GENERATED>",
+        "check_id": 900101,
+        "conclusion": "failure",
+        "title": "1 failing test",
+        "text_sha256": "2ee3f3bf80d3ddbb9d06ee253fb4f861aadb63782c79b0ea1d09479ecf13e2d8",
+        "text_excerpt": "1 test failed. See Azure DevOps for full details.",
+        "html_url": "https://github.com/dotnet/aspnetcore/runs/900101",
+        "exact_test_referenced": false,
+        "known_issue_referenced": false
+      }
+    ],
+    "raw_evidence_sources": [
+      {
+        "build_id": 1551326,
+        "role": "failure",
+        "kind": "helix-console-log",
+        "helix_job": "helix-job-1551326",
+        "helix_workitem": "RedirectionTest.WorkItemExecution",
+        "found": true,
+        "expired": false,
+        "captured_utc": "<GENERATED>",
+        "sha256": "510308372262a7f187c524708516a44dbce8b74b28f6a4530f115b80356268ec",
+        "evidence_path": "issue-68947-build-1551326-failure.log"
+      },
+      {
+        "build_id": 1549000,
+        "role": "failure",
+        "kind": "helix-console-log",
+        "helix_job": "helix-job-1549000",
+        "helix_workitem": "RedirectionTest.WorkItemExecution",
+        "found": true,
+        "expired": false,
+        "captured_utc": "<GENERATED>",
+        "sha256": "7e39070f2138ee0933dbf7b6ba1c2c38220f7ab6ffe3bb27f0874eb74b071fc2",
+        "evidence_path": "issue-68947-build-1549000-failure.log"
+      },
+      {
+        "build_id": 1545000,
+        "role": "negative",
+        "kind": "helix-console-log",
+        "helix_job": "helix-job-1545000",
+        "helix_workitem": "RedirectionTest.WorkItemExecution",
+        "found": true,
+        "expired": false,
+        "captured_utc": "<GENERATED>",
+        "sha256": "84e902974eafb9b414f662d7d708306b60b4884ee0882eb739a7636bcc2c747e",
+        "evidence_path": "issue-68947-build-1545000-negative.log"
+      }
+    ],
+    "duplicate_search": {
+      "status": "none",
+      "checked_utc": "<GENERATED>",
+      "coverage": {
+        "open_kbes": true,
+        "recently_closed_kbes": true,
+        "open_fix_prs": true,
+        "recently_merged_fix_prs": true
+      },
+      "references": [],
+      "queries": [
+        {
+          "category": "open-kbe",
+          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "recently-closed-kbe",
+          "query": "repo:dotnet/aspnetcore is:issue is:closed label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "open-fix-pr",
+          "query": "repo:dotnet/aspnetcore is:pr is:open RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "recently-merged-fix-pr",
+          "query": "repo:dotnet/aspnetcore is:pr is:merged RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        }
+      ]
+    }
+  },
+  "candidate": {
+    "schema_version": 1,
+    "repository": "dotnet/aspnetcore",
+    "repository_ref": {
+      "branch": "main",
+      "commit_sha": "<GENERATED>"
+    },
+    "issue": {
+      "number": 68947,
+      "url": "https://github.com/dotnet/aspnetcore/issues/68947"
+    },
+    "test": {
+      "fully_qualified_name": "Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.RedirectionTest.RedirectEnhancedNonBlazorGetToExternal"
+    },
+    "signature": {
+      "kind": "ErrorMessage",
+      "values": [
+        "OpenQA.Selenium.WebDriverException: TaskCanceledException"
+      ],
+      "build_retry": false,
+      "exclude_console_log": false
+    },
+    "policy": {
+      "minimum_failure_logs": 2,
+      "minimum_negative_logs": 1
+    },
+    "evidence": {
+      "raw_logs": [
+        {
+          "id": "evidence-1",
+          "role": "failure",
+          "outcome": "failed",
+          "path": "issue-68947-build-1551326-failure.log",
+          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1551326&view=results",
+          "sha256": "510308372262a7f187c524708516a44dbce8b74b28f6a4530f115b80356268ec",
+          "build": {
+            "id": 1551326,
+            "pipeline_definition_id": 87,
+            "source_version": "dbea3e5f6a990adff93e782648dd9b6d13d6a943",
+            "started_utc": "2026-08-13T10:00:00.0000000Z",
+            "platform": "Linux",
+            "configuration": "Release"
+          }
+        },
+        {
+          "id": "evidence-2",
+          "role": "failure",
+          "outcome": "failed",
+          "path": "issue-68947-build-1549000-failure.log",
+          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1549000&view=results",
+          "sha256": "7e39070f2138ee0933dbf7b6ba1c2c38220f7ab6ffe3bb27f0874eb74b071fc2",
+          "build": {
+            "id": 1549000,
+            "pipeline_definition_id": 87,
+            "source_version": "0374b4797537d95f1b519446344fd88a7b5a861a",
+            "started_utc": "2026-08-10T09:00:00.0000000Z",
+            "platform": "Linux",
+            "configuration": "Release"
+          }
+        },
+        {
+          "id": "evidence-3",
+          "role": "negative",
+          "outcome": "passed",
+          "path": "issue-68947-build-1545000-negative.log",
+          "source_url": "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1545000&view=results",
+          "sha256": "84e902974eafb9b414f662d7d708306b60b4884ee0882eb739a7636bcc2c747e",
+          "build": {
+            "id": 1545000,
+            "pipeline_definition_id": 87,
+            "source_version": "f33596dac091a6fd858b1515378d951f7f6adda5",
+            "started_utc": "2026-08-08T09:00:00.0000000Z",
+            "platform": "Linux",
+            "configuration": "Release"
+          }
+        }
+      ],
+      "corroborating_context": [
+        {
+          "source": "build-analysis",
+          "url": "https://github.com/dotnet/aspnetcore/runs/900101"
+        },
+        {
+          "source": "quarantine-issue",
+          "url": "https://github.com/dotnet/aspnetcore/issues/68947"
+        }
+      ]
+    },
+    "duplicate_check": {
+      "status": "none",
+      "checked_utc": "<GENERATED>",
+      "coverage": {
+        "open_kbes": true,
+        "recently_closed_kbes": true,
+        "open_fix_prs": true,
+        "recently_merged_fix_prs": true
+      },
+      "references": [],
+      "queries": [
+        {
+          "category": "open-kbe",
+          "query": "repo:dotnet/aspnetcore is:issue is:open label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "recently-closed-kbe",
+          "query": "repo:dotnet/aspnetcore is:issue is:closed label:\"Known Build Error\" RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "open-fix-pr",
+          "query": "repo:dotnet/aspnetcore is:pr is:open RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        },
+        {
+          "category": "recently-merged-fix-pr",
+          "query": "repo:dotnet/aspnetcore is:pr is:merged RedirectEnhancedNonBlazorGetToExternal",
+          "complete": true,
+          "result_numbers": []
+        }
+      ]
+    },
+    "proposed_classification": "timeout-needs-classification"
+  },
+  "incomplete": null
+}
