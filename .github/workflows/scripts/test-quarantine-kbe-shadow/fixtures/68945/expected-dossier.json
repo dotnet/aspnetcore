@@ -108,6 +108,7 @@
         "run_id": 72708311,
         "result_id": 400010,
         "helix_unavailable": true,
+        "execution_leg": "CoreCLR",
         "platform": "Linux",
         "configuration": "Release",
         "found": true,
@@ -129,6 +130,7 @@
         "run_id": 72708313,
         "result_id": 400030,
         "helix_unavailable": true,
+        "execution_leg": "CoreCLR",
         "platform": "Linux",
         "configuration": "Release",
         "found": true,
@@ -184,9 +186,9 @@
   "incomplete": {
     "reason_codes": [
       "raw-evidence-insufficient",
-      "passed-evidence-not-contemporaneous"
+      "passed-evidence-not-interleaved"
     ],
-    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-insufficient, passed-evidence-not-contemporaneous.",
+    "message": "Collector could not produce a validated candidate for issue #68945 : raw-evidence-insufficient, passed-evidence-not-interleaved.",
     "missing_evidence": [
       {
         "kind": "vstmr-evidence",
@@ -198,7 +200,7 @@
       },
       {
         "kind": "pass-evidence",
-        "detail": "All authoritative Passed occurrences predate or coincide with the earliest collected failure; a counted pass must start after the earliest failure."
+        "detail": "No environment-matched Passed occurrence was strictly between an earlier and a later authoritative failure."
       }
     ]
   }

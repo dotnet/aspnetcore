@@ -341,14 +341,14 @@ try
     $signature68947 = "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"
     $result68947 = Invoke-Collector -IssueNumber 68947 -FixtureRoot "$fixturesRoot/68947" -WorkDirectory "$tempRoot/68947" -Signature $signature68947
     Assert-Equal -Actual $result68947.Dossier.outcome -Expected "incomplete" -Message "#68947 outcome mismatch."
-    Assert-Contains -Collection @($result68947.Dossier.incomplete.reason_codes) -Value "passed-evidence-not-contemporaneous" -Message "#68947 must not count its pass that predates both collected failures."
+    Assert-Contains -Collection @($result68947.Dossier.incomplete.reason_codes) -Value "passed-evidence-not-interleaved" -Message "#68947 must not count its pass that predates both collected failures."
     Assert-Equal -Actual $result68947.Dossier.candidate -Expected $null -Message "#68947 must not emit a candidate without a contemporaneous environment-matched pass."
     Assert-GoldenDossier -IssueDirectory "$fixturesRoot/68947" -ActualDossier $result68947.Dossier
 
     $summaryPath68947 = Join-Path "$tempRoot/68947" "summary.md"
     & $summaryGenerator -DossierFile $result68947.DossierPath -OutputFile $summaryPath68947
     $summaryText68947 = Get-Content -LiteralPath $summaryPath68947 -Raw
-    if (-not $summaryText68947.Contains("passed-evidence-not-contemporaneous"))
+    if (-not $summaryText68947.Contains("passed-evidence-not-interleaved"))
     {
         throw "#68947 summary must mention the chronology failure."
     }
@@ -505,7 +505,7 @@ try
             "83" = @([ordered]@{ id = 6100002; sourceVersion = $flagsShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6100003; sourceVersion = $flagsShaC; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6100003; sourceVersion = $flagsShaC; startTime = "2026-07-31T00:00:00Z"; finishTime = "2026-07-31T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6100001" = @([ordered]@{ id = 1; runId = 7100001; outcome = "Failed"; automatedTestName = $flagsTestName })
@@ -598,6 +598,22 @@ try
     Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-platform-unknown" -Message "Unknown platform reason code mismatch."
     Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-configuration-unknown" -Message "Unknown configuration reason code mismatch."
 
+    $unknownExecutionLegDir = New-DerivedFixture -Name "unknown-execution-leg" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100001'.name = "Quarantine-Windows-Debug-xunit"
+    }
+    $resultUnknownExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownExecutionLegDir -WorkDirectory (Join-Path $tempRoot "unknown-execution-leg")
+    Assert-Equal -Actual $resultUnknownExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown required execution leg must fail closed."
+    Assert-Contains -Collection @($resultUnknownExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-execution-leg-unknown" -Message "Unknown execution leg reason code mismatch."
+
+    $unknownPassExecutionLegDir = New-DerivedFixture -Name "unknown-pass-execution-leg" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-Windows-Debug-xunit"
+    }
+    $resultUnknownPassExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownPassExecutionLegDir -WorkDirectory (Join-Path $tempRoot "unknown-pass-execution-leg")
+    Assert-Equal -Actual $resultUnknownPassExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "Unknown pass execution leg must fail closed."
+    Assert-Contains -Collection @($resultUnknownPassExecutionLeg.Dossier.incomplete.reason_codes) -Value "evidence-execution-leg-unknown" -Message "Unknown pass execution leg reason code mismatch."
+
     $differentPassEnvironmentDir = New-DerivedFixture -Name "different-pass-environment" -Source $flagsDir -Mutate {
         param($fixtureObject)
         $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-Mono-Linux-Release-xunit"
@@ -605,6 +621,32 @@ try
     $resultDifferentPassEnvironment = Invoke-Collector -IssueNumber 11 -FixtureRoot $differentPassEnvironmentDir -WorkDirectory (Join-Path $tempRoot "different-pass-environment")
     Assert-Equal -Actual $resultDifferentPassEnvironment.Dossier.outcome -Expected "incomplete" -Message "A pass from a different environment must not prove intermittency."
     Assert-Contains -Collection @($resultDifferentPassEnvironment.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Different pass environment reason code mismatch."
+
+    $differentExecutionLegDir = New-DerivedFixture -Name "different-execution-leg" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100003'.name = "Quarantine-CoreCLR-Windows-Debug-xunit"
+    }
+    $resultDifferentExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $differentExecutionLegDir -WorkDirectory (Join-Path $tempRoot "different-execution-leg")
+    Assert-Equal -Actual $resultDifferentExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A CoreCLR pass must not prove Mono failures intermittent."
+    Assert-Contains -Collection @($resultDifferentExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Different execution leg reason code mismatch."
+
+    $compositeExecutionLegDir = New-DerivedFixture -Name "composite-execution-leg" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100001'.name = "Quarantine-Mono-WebAssembly-Windows-Debug-xunit"
+        $fixtureObject.vstmr_runs.'7100002'.name = "Quarantine-Mono-WebAssembly-Windows-Debug-xunit"
+    }
+    $resultCompositeExecutionLeg = Invoke-Collector -IssueNumber 11 -FixtureRoot $compositeExecutionLegDir -WorkDirectory (Join-Path $tempRoot "composite-execution-leg")
+    Assert-Equal -Actual $resultCompositeExecutionLeg.Dossier.outcome -Expected "incomplete" -Message "A Mono pass must not match a distinct Mono+WebAssembly failure leg."
+    Assert-Contains -Collection @($resultCompositeExecutionLeg.Dossier.incomplete.reason_codes) -Value "passed-evidence-environment-mismatch" -Message "Composite execution leg reason code mismatch."
+
+    $passAfterLastDir = New-DerivedFixture -Name "pass-after-last-failure" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.negative_scan.'83'[0].startTime = "2026-08-02T00:00:00Z"
+        $fixtureObject.negative_scan.'83'[0].finishTime = "2026-08-02T01:00:00Z"
+    }
+    $resultPassAfterLast = Invoke-Collector -IssueNumber 11 -FixtureRoot $passAfterLastDir -WorkDirectory (Join-Path $tempRoot "pass-after-last-failure")
+    Assert-Equal -Actual $resultPassAfterLast.Dossier.outcome -Expected "incomplete" -Message "A pass after the last failure must not prove active intermittency."
+    Assert-Contains -Collection @($resultPassAfterLast.Dossier.incomplete.reason_codes) -Value "passed-evidence-not-interleaved" -Message "Pass-after-last reason code mismatch."
 
     $invalidBuildCases = @(
         [ordered]@{
@@ -659,7 +701,7 @@ try
             "83" = @([ordered]@{ id = 6200002; sourceVersion = $dupShaB; startTime = "2026-07-30T00:00:00Z"; finishTime = "2026-07-30T01:00:00Z"; result = "failed" })
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6200003; sourceVersion = $dupShaC; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6200003; sourceVersion = $dupShaC; startTime = "2026-07-31T00:00:00Z"; finishTime = "2026-07-31T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6200001" = @([ordered]@{ id = 1; runId = 7200001; outcome = "Failed"; automatedTestName = $dupTestName })
@@ -770,7 +812,7 @@ try
             )
         }
         negative_scan = [ordered]@{
-            "83" = @([ordered]@{ id = 6400003; sourceVersion = $wildShaNeg; startTime = "2026-08-02T00:00:00Z"; finishTime = "2026-08-02T01:00:00Z"; result = "succeeded" })
+            "83" = @([ordered]@{ id = 6400003; sourceVersion = $wildShaNeg; startTime = "2026-07-31T00:00:00Z"; finishTime = "2026-07-31T01:00:00Z"; result = "succeeded" })
         }
         vstmr_summary = [ordered]@{
             "6400001" = @([ordered]@{ id = 1; runId = 7400001; outcome = "Failed"; automatedTestName = $wildTestName })
@@ -829,6 +871,23 @@ try
 
     $emptyMerged = @(Merge-AzdoBuildLists -Lists @(@(), @()) -Cap 5)
     Assert-Equal -Actual $emptyMerged.Count -Expected 0 -Message "Merge-AzdoBuildLists must return a real empty array (not collapse to null) when both inputs are empty."
+
+    $windowedQueryUri = [System.Uri]::UnescapeDataString((Get-AzdoNegativeBuildQueryUri `
+        -DefinitionId 83 `
+        -MinimumStartTime ([System.DateTimeOffset]"2026-07-30T00:00:00Z") `
+        -MaximumStartTime ([System.DateTimeOffset]"2026-08-01T00:00:00Z") `
+        -Cap 20))
+    foreach ($expectedQueryPart in @(
+        "queryOrder=startTimeDescending",
+        "minTime=2026-07-30T00:00:00.0000000+00:00",
+        "maxTime=2026-08-01T00:00:00.0000000+00:00",
+        "`$top=20"))
+    {
+        if (-not $windowedQueryUri.Contains($expectedQueryPart, [System.StringComparison]::Ordinal))
+        {
+            throw "Windowed Passed-build query is missing '$expectedQueryPart': $windowedQueryUri"
+        }
+    }
 
     Write-Host "All test-quarantine-kbe-shadow collector tests passed."
 }

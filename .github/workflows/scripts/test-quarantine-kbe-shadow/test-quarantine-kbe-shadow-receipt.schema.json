@@ -572,6 +572,7 @@
         "started_utc",
         "status",
         "result",
+        "execution_leg",
         "platform",
         "configuration"
       ],
@@ -606,6 +607,12 @@
             "partiallySucceeded",
             "succeeded"
           ]
+        },
+        "execution_leg": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\r\\n]+$"
         },
         "platform": {
           "type": "string",

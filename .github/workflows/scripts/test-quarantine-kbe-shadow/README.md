@@ -51,10 +51,15 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   pseudo-test row carries one); otherwise `helix_unavailable: true` is recorded explicitly and the
   VSTMR detail text remains authoritative on its own -- never silently degraded. Recurrence
   requires evidence from **at least two distinct builds** (a single build producing two separate
-  artifacts is not recurrence), and at least one authoritative **Passed** occurrence that started
-  after the earliest collected failure and shares pipeline definition, platform, and configuration
-  with a collected failure. An older pass or a pass from another environment does not prove the
-  current failure is intermittent. Signature matching against raw text uses ordinal,
+  artifacts is not recurrence), and at least one authoritative **Passed** occurrence strictly
+  between an earlier and a later failure in the same pipeline definition, normalized execution leg,
+  platform, and configuration. A pass before all failures or after the last failure could represent
+  a not-yet-failing or already-fixed regression, so neither proves active intermittency. Ordering
+  currently uses strict Azure DevOps build `started_utc` timestamps; commit ancestry would be
+  stronger but is not available in the bounded offline evidence contract. The live Passed scan is
+  bounded to the earliest/latest authoritative failure start times with
+  `queryOrder=startTimeDescending`, rather than sampling newer builds that cannot be interleaved.
+  Signature matching against raw text uses ordinal,
   case-sensitive substring containment (`[string]::Contains(..., Ordinal)`) throughout -- never
   PowerShell's `-like`/`-notlike` operators, whose `*`, `?`, and `[...]` wildcard semantics would otherwise
   silently misinterpret a literal ErrorMessage containing any of those characters.
@@ -102,12 +107,14 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   `sourceBranch` must be exactly `refs/heads/main`, status must be `completed`, and failure builds
   must be `failed` or `partiallySucceeded` (`succeeded` is required for the Passed scan). These
   dimensions are recorded in build provenance and candidate evidence.
-* **Platform/configuration are derived from authoritative metadata, never fabricated.** Azure
+* **Execution leg/platform/configuration are derived from authoritative metadata, never
+  fabricated.** Azure
   DevOps' `buildConfiguration.platform`/`.flavor` fields are empty strings on every real run
   observed live; the only authoritative, cheaply-available signal is the VSTMR TestRun's own
   `name` (e.g. `Quarantine-Mono-Linux-Release-xunit`). The collector parses recognized
-  platform/configuration tokens out of that name. A counted failure or pass with either dimension
-  `"unknown"` emits explicit missing-evidence codes and prevents a candidate/validated receipt.
+  execution-leg (`Mono`, `CoreCLR`, WebAssembly/browser variants), platform, and configuration
+  tokens out of that name. A counted failure or pass with any dimension `"unknown"` emits explicit
+  missing-evidence codes and prevents a candidate/validated receipt.
 * **Never infer a pass, a recurrence, a signature, a platform/configuration, or a validated
   duplicate from missing or unverifiable evidence.** Every gap -- a build whose Azure DevOps
   metadata has aged out of retention, historical VSTMR test-result data no longer queryable for a
@@ -212,8 +219,8 @@ callers pass trusted `github.ref`/`github.sha` through step environment bindings
 | Issue | Fixture invocation | Outcome |
 |---|---|---|
 | [#68724](https://github.com/dotnet/aspnetcore/issues/68724) | no `-Signature` | `incomplete`: `## Failing Test(s)` names two distinct concrete identities (a base test and its server-execution subclass override); live data shows only the override actually failed, so the collector fails closed (`multiple-test-identities-unresolved`) rather than guess |
-| [#68947](https://github.com/dotnet/aspnetcore/issues/68947) | `-Signature "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"` (the real issue body has no fenced `## Error Message`, so extraction is deterministically ambiguous without the override -- verified by a second, signature-less invocation of the same fixture in the test suite) | `incomplete`: two failures recur, but the only authoritative pass is older than both failures, so it cannot establish current intermittency (`passed-evidence-not-contemporaneous`) |
-| [#68945](https://github.com/dotnet/aspnetcore/issues/68945) | `-Signature "System.Threading.Tasks.TaskCanceledException: The operation was canceled."` | `incomplete`: the second cited build's Azure DevOps build record still resolves, but its historical VSTMR test-result data is no longer queryable, leaving only one usable failure log below the two-build recurrence floor (`raw-evidence-insufficient`) |
+| [#68947](https://github.com/dotnet/aspnetcore/issues/68947) | `-Signature "OpenQA.Selenium.WebDriverException : The HTTP request to the remote WebDriver server"` (the real issue body has no fenced `## Error Message`, so extraction is deterministically ambiguous without the override -- verified by a second, signature-less invocation of the same fixture in the test suite) | `incomplete`: two failures recur, but the only authoritative pass is older than both failures, so no pass is strictly interleaved between failures (`passed-evidence-not-interleaved`) |
+| [#68945](https://github.com/dotnet/aspnetcore/issues/68945) | `-Signature "System.Threading.Tasks.TaskCanceledException: The operation was canceled."` | `incomplete`: the second cited build's historical VSTMR result is unavailable, leaving one usable failure; the remaining pass is not strictly interleaved around two failures (`raw-evidence-insufficient`, `passed-evidence-not-interleaved`) |
 
 Each fixture directory also has an `expected-dossier.json` golden file used for deep-equality
 comparison in the test suite. Golden comparisons exclude the collector's `generated_utc` /
@@ -225,8 +232,8 @@ sides before comparing.
 The test suite additionally covers, via small synthetic (non-pilot) fixtures: a closed issue, an
 issue missing the `test-failure` label, missing or forged workflow provenance, immutable dispatch
 ancestry and non-main rejection, strict build definition/ref/status/result gates, skip-only,
-predating, and environment-mismatched pass evidence, unknown environment dimensions, Build
-Analysis flag precision, compatible and incompatible same-FQN KBE signatures, failed
+pre-first, post-last, and environment/execution-leg-mismatched pass evidence, valid interleaving,
+unknown environment dimensions, Build Analysis flag precision, compatible and incompatible same-FQN KBE signatures, failed
 duplicate-detail fetches, deliberately unvalidated fix-PR mentions, wildcard-shaped literal
 signatures, and build-list merge/dedupe.
 

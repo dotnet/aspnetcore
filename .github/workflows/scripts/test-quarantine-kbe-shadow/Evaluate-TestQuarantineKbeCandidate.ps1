@@ -556,6 +556,10 @@ foreach ($log in $candidate.evidence.raw_logs)
     {
         $incompleteReasons.Add("Evidence log '$($log.id)' has unknown configuration; exact environment dimensions are required.")
     }
+    if ([string]$log.build.execution_leg -eq "unknown")
+    {
+        $incompleteReasons.Add("Evidence log '$($log.id)' has unknown execution leg; exact environment dimensions are required.")
+    }
 
     $passOrSkipCollisionCount += [int]$match.pass_or_skip_match_count
 
@@ -581,37 +585,35 @@ foreach ($log in $candidate.evidence.raw_logs)
 
 $failureLogsForPassEligibility = @($logResults | Where-Object { $_.role -eq "failure" })
 $passedLogsForEligibility = @($logResults | Where-Object { $_.role -eq "negative" -and $_.outcome -eq "passed" })
-$passesAfterEarliestFailure = 0
-if ($failureLogsForPassEligibility.Count -gt 0)
+$passesWithMatchingEnvironment = 0
+foreach ($passLog in $passedLogsForEligibility)
 {
-    $earliestFailureUtc = @(
+    $passStartedUtc = [System.DateTimeOffset]::Parse([string]$passLog.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
+    $matchingFailureLogs = @(
         $failureLogsForPassEligibility |
-            ForEach-Object { [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) } |
-            Sort-Object
-    )[0]
-
-    foreach ($passLog in $passedLogsForEligibility)
+            Where-Object {
+                [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
+                [string]$_.build.execution_leg -eq [string]$passLog.build.execution_leg -and
+                [string]$_.build.platform -eq [string]$passLog.build.platform -and
+                [string]$_.build.configuration -eq [string]$passLog.build.configuration
+            }
+    )
+    if ($matchingFailureLogs.Count -eq 0)
     {
-        $passStartedUtc = [System.DateTimeOffset]::Parse([string]$passLog.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-        if ($passStartedUtc -le $earliestFailureUtc)
-        {
-            continue
-        }
+        continue
+    }
 
-        $passesAfterEarliestFailure++
-        $environmentMatched = @(
-            $failureLogsForPassEligibility |
-                Where-Object {
-                    [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
-                    [string]$_.build.platform -eq [string]$passLog.build.platform -and
-                    [string]$_.build.configuration -eq [string]$passLog.build.configuration
-                }
-        ).Count -gt 0
-        if ($environmentMatched)
-        {
-            $null = $negativeHashes.Add([string]$passLog.sha256)
-            $null = $negativeBuildIds.Add([int]$passLog.build.id)
-        }
+    $passesWithMatchingEnvironment++
+    $hasFailureBefore = @($matchingFailureLogs | Where-Object {
+        [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) -lt $passStartedUtc
+    }).Count -gt 0
+    $hasFailureAfter = @($matchingFailureLogs | Where-Object {
+        [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) -gt $passStartedUtc
+    }).Count -gt 0
+    if ($hasFailureBefore -and $hasFailureAfter)
+    {
+        $null = $negativeHashes.Add([string]$passLog.sha256)
+        $null = $negativeBuildIds.Add([int]$passLog.build.id)
     }
 }
 
@@ -637,13 +639,13 @@ if ($negativeHashes.Count -lt $requiredNegativeLogs)
     $incompleteReasons.Add("Only $($negativeHashes.Count) distinct authoritative Passed log(s) were supplied; $requiredNegativeLogs are required.")
     if ($failureLogsForPassEligibility.Count -gt 0 -and
         $passedLogsForEligibility.Count -gt 0 -and
-        $passesAfterEarliestFailure -eq 0)
+        $passesWithMatchingEnvironment -eq 0)
     {
-        $incompleteReasons.Add("All authoritative Passed occurrences predate or coincide with the earliest failure.")
+        $incompleteReasons.Add("No authoritative Passed occurrence matched a failure's pipeline definition, execution leg, platform, and configuration.")
     }
-    elseif ($passesAfterEarliestFailure -gt 0)
+    elseif ($passesWithMatchingEnvironment -gt 0)
     {
-        $incompleteReasons.Add("No authoritative Passed occurrence after the earliest failure matched a failure's pipeline definition, platform, and configuration.")
+        $incompleteReasons.Add("No environment-matched Passed occurrence was strictly between an earlier and a later authoritative failure.")
     }
 }
 

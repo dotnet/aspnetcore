@@ -152,10 +152,11 @@ function New-LogEntry
             {
                 "failure-1" { "2026-08-20T12:00:00Z"; break }
                 "failure-2" { "2026-08-21T12:00:00Z"; break }
-                default { "2026-08-22T12:00:00Z" }
+                default { "2026-08-20T18:00:00Z" }
             }
             status = "completed"
             result = if ($Role -eq "failure") { "failed" } else { "succeeded" }
+            execution_leg = "Mono"
             platform = "Linux"
             configuration = "Release"
         }
@@ -216,13 +217,12 @@ try
         -ReceiptSchemaFile $receiptSchema
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
     Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Predating pass evidence status mismatch."
-    if (-not (($receipt.reasons -join "`n").Contains("predate or coincide")))
+    if (-not (($receipt.reasons -join "`n").Contains("strictly between")))
     {
-        throw "Predating pass evidence must report the chronology gate."
+        throw "Predating pass evidence must report the interleaving gate."
     }
 
     $logs[2].build.started_utc = "2026-08-22T12:00:00Z"
-    $logs[2].build.platform = "Windows"
     Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
     & $evaluator `
         -CandidateFile $candidatePath `
@@ -232,12 +232,29 @@ try
         -CandidateSchemaFile $candidateSchema `
         -ReceiptSchemaFile $receiptSchema
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
-    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Different-environment pass evidence status mismatch."
-    if (-not (($receipt.reasons -join "`n").Contains("pipeline definition, platform, and configuration")))
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Pass-after-last-failure status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("strictly between")))
     {
-        throw "Different-environment pass evidence must report the environment gate."
+        throw "Pass-after-last evidence must report the interleaving gate."
     }
-    $logs[2].build.platform = "Linux"
+
+    $logs[2].build.started_utc = "2026-08-20T18:00:00Z"
+    $logs[2].build.execution_leg = "CoreCLR"
+    Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Different execution-leg pass evidence status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("pipeline definition, execution leg, platform, and configuration")))
+    {
+        throw "Mono-failure/CoreCLR-pass evidence must report the environment gate."
+    }
+    $logs[2].build.execution_leg = "Mono"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "negative.log") -Value @(
         "[SKIP] Microsoft.AspNetCore.Example.Tests.SampleTests.Completes"
@@ -267,6 +284,7 @@ try
     $logs[2].sha256 = (Get-FileHash -LiteralPath (Join-Path $tempRoot "negative.log") -Algorithm SHA256).Hash.ToLowerInvariant()
     $logs[0].build.platform = "unknown"
     $logs[0].build.configuration = "unknown"
+    $logs[0].build.execution_leg = "unknown"
     Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
 
     & $evaluator `
@@ -280,12 +298,14 @@ try
     $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
     Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Unknown environment evidence status mismatch."
     if (-not (($receipt.reasons -join "`n").Contains("unknown platform")) -or
-        -not (($receipt.reasons -join "`n").Contains("unknown configuration")))
+        -not (($receipt.reasons -join "`n").Contains("unknown configuration")) -or
+        -not (($receipt.reasons -join "`n").Contains("unknown execution leg")))
     {
-        throw "Unknown environment evidence must report both missing dimensions."
+        throw "Unknown environment evidence must report every missing dimension."
     }
     $logs[0].build.platform = "Linux"
     $logs[0].build.configuration = "Release"
+    $logs[0].build.execution_leg = "Mono"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "failure-2.log") -Value @(
         "Starting an unrelated test"

@@ -538,9 +538,27 @@ function Get-AzdoRecurrenceCandidateBuilds
     return Merge-AzdoBuildLists -Lists @($resultLists) -Cap $RecurrenceScanBuildCap
 }
 
+function Get-AzdoNegativeBuildQueryUri
+{
+    param(
+        [Parameter(Mandatory = $true)][int]$DefinitionId,
+        [Parameter(Mandatory = $true)][System.DateTimeOffset]$MinimumStartTime,
+        [Parameter(Mandatory = $true)][System.DateTimeOffset]$MaximumStartTime,
+        [Parameter(Mandatory = $true)][int]$Cap
+    )
+
+    $minimumTime = [System.Uri]::EscapeDataString($MinimumStartTime.ToUniversalTime().ToString("O"))
+    $maximumTime = [System.Uri]::EscapeDataString($MaximumStartTime.ToUniversalTime().ToString("O"))
+    return "$ado/build/builds?definitions=$DefinitionId&branchName=refs/heads/main&resultFilter=succeeded&queryOrder=startTimeDescending&minTime=$minimumTime&maxTime=$maximumTime&`$top=$Cap&api-version=7.1"
+}
+
 function Get-AzdoNegativeCandidateBuilds
 {
-    param([Parameter(Mandatory = $true)][int]$DefinitionId)
+    param(
+        [Parameter(Mandatory = $true)][int]$DefinitionId,
+        [Parameter(Mandatory = $true)][System.DateTimeOffset]$MinimumStartTime,
+        [Parameter(Mandatory = $true)][System.DateTimeOffset]$MaximumStartTime
+    )
 
     if ($isFixtureMode)
     {
@@ -554,7 +572,12 @@ function Get-AzdoNegativeCandidateBuilds
 
     try
     {
-        $result = Invoke-RestMethod -Uri "$ado/build/builds?definitions=$DefinitionId&branchName=refs/heads/main&resultFilter=succeeded&`$top=$RecurrenceScanBuildCap&api-version=7.1" -Method Get -TimeoutSec 30
+        $uri = Get-AzdoNegativeBuildQueryUri `
+            -DefinitionId $DefinitionId `
+            -MinimumStartTime $MinimumStartTime `
+            -MaximumStartTime $MaximumStartTime `
+            -Cap $RecurrenceScanBuildCap
+        $result = Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 30
         return @($result.value)
     }
     catch
@@ -688,12 +711,21 @@ function Get-PlatformConfigurationFromRunName
 {
     param([AllowNull()][string]$RunName)
 
+    $executionLegTokens = [System.Collections.Generic.List[string]]::new()
     $platform = "unknown"
     $configuration = "unknown"
     if ([string]::IsNullOrEmpty($RunName))
     {
-        return [ordered]@{ Platform = $platform; Configuration = $configuration }
+        return [ordered]@{ ExecutionLeg = "unknown"; Platform = $platform; Configuration = $configuration }
     }
+
+    if ($RunName -match "(?i)\bmono\b") { $null = $executionLegTokens.Add("Mono") }
+    if ($RunName -match "(?i)\bcoreclr\b") { $null = $executionLegTokens.Add("CoreCLR") }
+    if ($RunName -match "(?i)\b(?:wasm|webassembly)\b") { $null = $executionLegTokens.Add("WebAssembly") }
+    if ($RunName -match "(?i)\b(?:chromium|chrome)\b") { $null = $executionLegTokens.Add("Chromium") }
+    if ($RunName -match "(?i)\bfirefox\b") { $null = $executionLegTokens.Add("Firefox") }
+    if ($RunName -match "(?i)\bwebkit\b") { $null = $executionLegTokens.Add("WebKit") }
+    $executionLeg = if ($executionLegTokens.Count -gt 0) { $executionLegTokens -join "+" } else { "unknown" }
 
     if ($RunName -match "(?i)\bwindows\b") { $platform = "Windows" }
     elseif ($RunName -match "(?i)\blinux\b") { $platform = "Linux" }
@@ -702,7 +734,7 @@ function Get-PlatformConfigurationFromRunName
     if ($RunName -match "(?i)\bdebug\b") { $configuration = "Debug" }
     elseif ($RunName -match "(?i)\brelease\b") { $configuration = "Release" }
 
-    return [ordered]@{ Platform = $platform; Configuration = $configuration }
+    return [ordered]@{ ExecutionLeg = $executionLeg; Platform = $platform; Configuration = $configuration }
 }
 
 function Get-CheckRunsForSha
@@ -1391,8 +1423,40 @@ if ($null -ne $testName -and $null -ne $effectiveSignature -and $resolvedBuilds.
 
 $negativeBuilds = [System.Collections.Generic.List[object]]::new()
 $negativeBuildCap = [System.Math]::Max(0, [System.Math]::Min($RecurrenceScanBuildCap, 30 - $resolvedBuilds.Count))
+$failureWindowBuilds = @(
+    if ($null -ne $testName -and $null -ne $effectiveSignature)
+    {
+        $resolvedBuilds |
+            Where-Object {
+                $null -ne (Get-MatchingFailureDetail -BuildId $_.id -TestName $testName -Signature $effectiveSignature)
+            }
+    }
+)
+$minimumFailureStartTime = if ($failureWindowBuilds.Count -gt 0)
+{
+    @($failureWindowBuilds | ForEach-Object {
+        [System.DateTimeOffset]::Parse([string]$_.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
+    } | Sort-Object)[0]
+}
+else
+{
+    $null
+}
+$maximumFailureStartTime = if ($failureWindowBuilds.Count -gt 0)
+{
+    @($failureWindowBuilds | ForEach-Object {
+        [System.DateTimeOffset]::Parse([string]$_.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
+    } | Sort-Object -Descending)[0]
+}
+else
+{
+    $null
+}
 
-if ($null -ne $testName -and $null -ne $effectiveSignature)
+if ($null -ne $testName -and
+    $null -ne $effectiveSignature -and
+    $null -ne $minimumFailureStartTime -and
+    $null -ne $maximumFailureStartTime)
 {
     $negativeScanDefinitionIds = @($resolvedBuilds | ForEach-Object { $_.definition_id } | Select-Object -Unique)
     if ($negativeScanDefinitionIds.Count -eq 0)
@@ -1407,7 +1471,10 @@ if ($null -ne $testName -and $null -ne $effectiveSignature)
             break
         }
 
-        $candidates = Get-AzdoNegativeCandidateBuilds -DefinitionId $definitionId
+        $candidates = Get-AzdoNegativeCandidateBuilds `
+            -DefinitionId $definitionId `
+            -MinimumStartTime $minimumFailureStartTime `
+            -MaximumStartTime $maximumFailureStartTime
         foreach ($candidate in $candidates)
         {
             if ($negativeBuilds.Count -ge $negativeBuildCap)
@@ -1463,8 +1530,7 @@ if ($null -ne $testName -and $null -ne $effectiveSignature)
 $rawEvidenceRecords = [System.Collections.Generic.List[object]]::new()
 $rawLogs = [System.Collections.Generic.List[object]]::new()
 $failureBuildIdSet = [System.Collections.Generic.HashSet[int]]::new()
-$failureEnvironmentKeys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-$earliestMaterializedFailureUtc = $null
+$materializedFailureOccurrences = [System.Collections.Generic.List[object]]::new()
 $eligiblePassedBuildIdsDuringCollection = [System.Collections.Generic.HashSet[int]]::new()
 $evidenceIndex = 0
 
@@ -1511,11 +1577,12 @@ foreach ($build in $evidenceBuilds)
 
             $candidateRunName = Get-VstmrRunName -RunId ([int]$row.runId)
             $candidatePlatformConfiguration = Get-PlatformConfigurationFromRunName -RunName $candidateRunName
-            $candidateEnvironmentKey = "$($build.definition_id)|$($candidatePlatformConfiguration.Platform)|$($candidatePlatformConfiguration.Configuration)"
+            $candidateEnvironmentKey = "$($build.definition_id)|$($candidatePlatformConfiguration.ExecutionLeg)|$($candidatePlatformConfiguration.Platform)|$($candidatePlatformConfiguration.Configuration)"
             $candidateStartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-            if ($null -ne $earliestMaterializedFailureUtc -and
-                $candidateStartedUtc -gt $earliestMaterializedFailureUtc -and
-                $failureEnvironmentKeys.Contains($candidateEnvironmentKey))
+            $matchingFailureOccurrences = @($materializedFailureOccurrences | Where-Object { $_.EnvironmentKey -eq $candidateEnvironmentKey })
+            $hasFailureBefore = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -lt $candidateStartedUtc }).Count -gt 0
+            $hasFailureAfter = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -gt $candidateStartedUtc }).Count -gt 0
+            if ($hasFailureBefore -and $hasFailureAfter)
             {
                 $matchedRow = $row
                 $matchedDetail = $detail
@@ -1591,6 +1658,11 @@ foreach ($build in $evidenceBuilds)
         $reasonCodes.Add("evidence-configuration-unknown")
         Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown configuration from TestRun '$runName'."
     }
+    if ($platformConfiguration.ExecutionLeg -eq "unknown")
+    {
+        $reasonCodes.Add("evidence-execution-leg-unknown")
+        Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown execution leg from TestRun '$runName'."
+    }
 
     $evidenceIndex += 1
     $fileName = "issue-$IssueNumber-build-$($build.id)-$role.log"
@@ -1623,6 +1695,7 @@ foreach ($build in $evidenceBuilds)
         run_id = $runId
         result_id = $resultId
         helix_unavailable = $helixUnavailable
+        execution_leg = $platformConfiguration.ExecutionLeg
         platform = $platformConfiguration.Platform
         configuration = $platformConfiguration.Configuration
         found = $true
@@ -1640,14 +1713,14 @@ foreach ($build in $evidenceBuilds)
     if ($role -eq "failure")
     {
         $null = $failureBuildIdSet.Add([int]$build.id)
-        if ($platformConfiguration.Platform -ne "unknown" -and $platformConfiguration.Configuration -ne "unknown")
+        if ($platformConfiguration.ExecutionLeg -ne "unknown" -and
+            $platformConfiguration.Platform -ne "unknown" -and
+            $platformConfiguration.Configuration -ne "unknown")
         {
-            $null = $failureEnvironmentKeys.Add("$($build.definition_id)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)")
-        }
-        $failureStartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-        if ($null -eq $earliestMaterializedFailureUtc -or $failureStartedUtc -lt $earliestMaterializedFailureUtc)
-        {
-            $earliestMaterializedFailureUtc = $failureStartedUtc
+            $null = $materializedFailureOccurrences.Add([ordered]@{
+                EnvironmentKey = "$($build.definition_id)|$($platformConfiguration.ExecutionLeg)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
+                StartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
+            })
         }
     }
     $outcomeValue = switch ([string]$matchedRow.outcome)
@@ -1672,6 +1745,7 @@ foreach ($build in $evidenceBuilds)
             started_utc = [string]$build.started_utc
             status = [string]$build.status
             result = [string]$build.result
+            execution_leg = $platformConfiguration.ExecutionLeg
             platform = $platformConfiguration.Platform
             configuration = $platformConfiguration.Configuration
         }
@@ -1680,10 +1754,11 @@ foreach ($build in $evidenceBuilds)
     if ($role -eq "negative")
     {
         $passStartedUtc = [System.DateTimeOffset]::Parse([string]$build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-        $passEnvironmentKey = "$($build.definition_id)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
-        if ($null -ne $earliestMaterializedFailureUtc -and
-            $passStartedUtc -gt $earliestMaterializedFailureUtc -and
-            $failureEnvironmentKeys.Contains($passEnvironmentKey))
+        $passEnvironmentKey = "$($build.definition_id)|$($platformConfiguration.ExecutionLeg)|$($platformConfiguration.Platform)|$($platformConfiguration.Configuration)"
+        $matchingFailureOccurrences = @($materializedFailureOccurrences | Where-Object { $_.EnvironmentKey -eq $passEnvironmentKey })
+        $hasFailureBefore = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -lt $passStartedUtc }).Count -gt 0
+        $hasFailureAfter = @($matchingFailureOccurrences | Where-Object { $_.StartedUtc -gt $passStartedUtc }).Count -gt 0
+        if ($hasFailureBefore -and $hasFailureAfter)
         {
             $null = $eligiblePassedBuildIdsDuringCollection.Add([int]$build.id)
         }
@@ -1702,36 +1777,34 @@ if ($null -ne $testName -and $failureBuildIdSet.Count -lt $minimumFailureBuilds)
 $failureLogsForPassEligibility = @($rawLogs | Where-Object { $_.role -eq "failure" })
 $passedLogsForEligibility = @($rawLogs | Where-Object { $_.role -eq "negative" -and $_.outcome -eq "passed" })
 $eligiblePassedBuildIds = [System.Collections.Generic.HashSet[int]]::new()
-$passesAfterEarliestFailure = 0
-if ($failureLogsForPassEligibility.Count -gt 0)
+$passesWithMatchingEnvironment = 0
+foreach ($passLog in $passedLogsForEligibility)
 {
-    $earliestFailureUtc = @(
+    $passStartedUtc = [System.DateTimeOffset]::Parse([string]$passLog.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
+    $matchingFailureLogs = @(
         $failureLogsForPassEligibility |
-            ForEach-Object { [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) } |
-            Sort-Object
-    )[0]
-
-    foreach ($passLog in $passedLogsForEligibility)
+            Where-Object {
+                [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
+                [string]$_.build.execution_leg -eq [string]$passLog.build.execution_leg -and
+                [string]$_.build.platform -eq [string]$passLog.build.platform -and
+                [string]$_.build.configuration -eq [string]$passLog.build.configuration
+            }
+    )
+    if ($matchingFailureLogs.Count -eq 0)
     {
-        $passStartedUtc = [System.DateTimeOffset]::Parse([string]$passLog.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture)
-        if ($passStartedUtc -le $earliestFailureUtc)
-        {
-            continue
-        }
+        continue
+    }
 
-        $passesAfterEarliestFailure++
-        $environmentMatched = @(
-            $failureLogsForPassEligibility |
-                Where-Object {
-                    [int]$_.build.pipeline_definition_id -eq [int]$passLog.build.pipeline_definition_id -and
-                    [string]$_.build.platform -eq [string]$passLog.build.platform -and
-                    [string]$_.build.configuration -eq [string]$passLog.build.configuration
-                }
-        ).Count -gt 0
-        if ($environmentMatched)
-        {
-            $null = $eligiblePassedBuildIds.Add([int]$passLog.build.id)
-        }
+    $passesWithMatchingEnvironment++
+    $hasFailureBefore = @($matchingFailureLogs | Where-Object {
+        [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) -lt $passStartedUtc
+    }).Count -gt 0
+    $hasFailureAfter = @($matchingFailureLogs | Where-Object {
+        [System.DateTimeOffset]::Parse([string]$_.build.started_utc, [System.Globalization.CultureInfo]::InvariantCulture) -gt $passStartedUtc
+    }).Count -gt 0
+    if ($hasFailureBefore -and $hasFailureAfter)
+    {
+        $null = $eligiblePassedBuildIds.Add([int]$passLog.build.id)
     }
 }
 
@@ -1740,15 +1813,15 @@ if ($null -ne $testName -and $eligiblePassedBuildIds.Count -lt $minimumNegativeL
     $reasonCodes.Add("raw-evidence-insufficient")
     if ($failureLogsForPassEligibility.Count -gt 0 -and
         $passedLogsForEligibility.Count -gt 0 -and
-        $passesAfterEarliestFailure -eq 0)
-    {
-        $reasonCodes.Add("passed-evidence-not-contemporaneous")
-        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "All authoritative Passed occurrences predate or coincide with the earliest collected failure; a counted pass must start after the earliest failure."
-    }
-    elseif ($passesAfterEarliestFailure -gt 0)
+        $passesWithMatchingEnvironment -eq 0)
     {
         $reasonCodes.Add("passed-evidence-environment-mismatch")
-        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "No authoritative Passed occurrence after the earliest failure shared pipeline definition, platform, and configuration with any collected failure."
+        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "No authoritative Passed occurrence shared pipeline definition, execution leg, platform, and configuration with any collected failure."
+    }
+    elseif ($passesWithMatchingEnvironment -gt 0)
+    {
+        $reasonCodes.Add("passed-evidence-not-interleaved")
+        Add-MissingEvidence -List $missingEvidence -Kind "pass-evidence" -Detail "No environment-matched Passed occurrence was strictly between an earlier and a later authoritative failure."
     }
     else
     {

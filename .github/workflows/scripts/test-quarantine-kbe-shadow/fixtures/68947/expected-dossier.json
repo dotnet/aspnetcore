@@ -115,6 +115,7 @@
         "run_id": 42708308,
         "result_id": 100014,
         "helix_unavailable": true,
+        "execution_leg": "Mono",
         "platform": "Linux",
         "configuration": "Release",
         "found": true,
@@ -129,6 +130,7 @@
         "run_id": 52708309,
         "result_id": 200055,
         "helix_unavailable": true,
+        "execution_leg": "Mono",
         "platform": "Linux",
         "configuration": "Release",
         "found": true,
@@ -143,6 +145,7 @@
         "run_id": 62708310,
         "result_id": 300099,
         "helix_unavailable": true,
+        "execution_leg": "Mono",
         "platform": "Linux",
         "configuration": "Release",
         "found": true,
@@ -198,9 +201,9 @@
   "incomplete": {
     "reason_codes": [
       "raw-evidence-insufficient",
-      "passed-evidence-not-contemporaneous"
+      "passed-evidence-not-interleaved"
     ],
-    "message": "Collector could not produce a validated candidate for issue #68947 : raw-evidence-insufficient, passed-evidence-not-contemporaneous.",
+    "message": "Collector could not produce a validated candidate for issue #68947 : raw-evidence-insufficient, passed-evidence-not-interleaved.",
     "missing_evidence": [
       {
         "kind": "azdo-build",
@@ -208,7 +211,7 @@
       },
       {
         "kind": "pass-evidence",
-        "detail": "All authoritative Passed occurrences predate or coincide with the earliest collected failure; a counted pass must start after the earliest failure."
+        "detail": "No environment-matched Passed occurrence was strictly between an earlier and a later authoritative failure."
       }
     ]
   }

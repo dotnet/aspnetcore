@@ -407,6 +407,10 @@
                 "type": "string",
                 "maxLength": 256
               },
+              "execution_leg": {
+                "type": "string",
+                "maxLength": 128
+              },
               "platform": {
                 "type": "string",
                 "maxLength": 128
@@ -433,7 +437,31 @@
                 "type": "string",
                 "maxLength": 512
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "found": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "kind",
+                    "run_id",
+                    "result_id",
+                    "helix_unavailable",
+                    "execution_leg",
+                    "platform",
+                    "configuration",
+                    "sha256",
+                    "evidence_path"
+                  ]
+                }
+              }
+            ]
           }
         },
         "duplicate_search": {
@@ -482,8 +510,9 @@
               "azdo-build-result-incompatible",
               "raw-evidence-expired",
               "raw-evidence-insufficient",
-              "passed-evidence-not-contemporaneous",
+              "passed-evidence-not-interleaved",
               "passed-evidence-environment-mismatch",
+              "evidence-execution-leg-unknown",
               "evidence-platform-unknown",
               "evidence-configuration-unknown",
               "recurrence-single-build-only",
