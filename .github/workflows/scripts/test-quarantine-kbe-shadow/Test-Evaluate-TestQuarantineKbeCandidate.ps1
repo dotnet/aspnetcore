@@ -141,6 +141,7 @@ function New-LogEntry
                 default { 1003 }
             }
             pipeline_definition_id = 83
+            source_branch = "refs/heads/main"
             source_version = switch ($Id)
             {
                 "failure-1" { "2222222222222222222222222222222222222222"; break }
@@ -148,6 +149,8 @@ function New-LogEntry
                 default { "4444444444444444444444444444444444444444" }
             }
             started_utc = "2026-08-20T12:00:00Z"
+            status = "completed"
+            result = if ($Role -eq "failure") { "failed" } else { "succeeded" }
             platform = "Linux"
             configuration = "Release"
         }
@@ -196,6 +199,54 @@ try
     Assert-Equal -Actual $receipt.shadow_recommendation -Expected "new-kbe-candidate" -Message "Valid candidate recommendation mismatch."
     Assert-Equal -Actual $receipt.eligible_for_kbe_enrichment -Expected $false -Message "Shadow evaluator must not authorize enrichment from unverified provenance."
     Assert-Equal -Actual $receipt.evidence_provenance_verified -Expected $false -Message "Shadow evidence provenance must remain unverified."
+
+    Set-Content -LiteralPath (Join-Path $tempRoot "negative.log") -Value @(
+        "[SKIP] Microsoft.AspNetCore.Example.Tests.SampleTests.Completes"
+        "Skipped by test infrastructure"
+    )
+    $logs[2].outcome = "skipped"
+    $logs[2].sha256 = (Get-FileHash -LiteralPath (Join-Path $tempRoot "negative.log") -Algorithm SHA256).Hash.ToLowerInvariant()
+    Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
+
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Skip-only negative evidence status mismatch."
+    Assert-Equal -Actual $receipt.evidence.distinct_negative_build_count -Expected 0 -Message "Skipped evidence must not satisfy the authoritative Passed build gate."
+
+    Set-Content -LiteralPath (Join-Path $tempRoot "negative.log") -Value @(
+        "[PASS] Microsoft.AspNetCore.Example.Tests.SampleTests.Completes"
+        "Finished normally"
+    )
+    $logs[2].outcome = "passed"
+    $logs[2].sha256 = (Get-FileHash -LiteralPath (Join-Path $tempRoot "negative.log") -Algorithm SHA256).Hash.ToLowerInvariant()
+    $logs[0].build.platform = "unknown"
+    $logs[0].build.configuration = "unknown"
+    Write-Candidate -Path $candidatePath -Signature @($signature) -Logs $logs
+
+    & $evaluator `
+        -CandidateFile $candidatePath `
+        -EvidenceRoot $tempRoot `
+        -OutputFile $receiptPath `
+        -RepositoryRoot $repositoryRoot `
+        -CandidateSchemaFile $candidateSchema `
+        -ReceiptSchemaFile $receiptSchema
+
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json -Depth 32
+    Assert-Equal -Actual $receipt.deterministic_status -Expected "incomplete" -Message "Unknown environment evidence status mismatch."
+    if (-not (($receipt.reasons -join "`n").Contains("unknown platform")) -or
+        -not (($receipt.reasons -join "`n").Contains("unknown configuration")))
+    {
+        throw "Unknown environment evidence must report both missing dimensions."
+    }
+    $logs[0].build.platform = "Linux"
+    $logs[0].build.configuration = "Release"
 
     Set-Content -LiteralPath (Join-Path $tempRoot "failure-2.log") -Value @(
         "Starting an unrelated test"

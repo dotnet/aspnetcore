@@ -21,8 +21,13 @@
   "outcome": "incomplete",
   "provenance": {
     "repository_ref_verification": {
+      "event_ref": "refs/heads/main",
+      "event_sha": "<GENERATED>",
       "checkout_sha": "<GENERATED>",
-      "trusted_main_sha": "<GENERATED>",
+      "current_main_sha": "<GENERATED>",
+      "checkout_matches_event_sha": true,
+      "event_ref_is_main": true,
+      "dispatch_sha_on_main": true,
       "matches_main": true
     },
     "azdo_builds": [
@@ -32,9 +37,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "issue-body-reference",
         "definition_id": 87,
+        "source_branch": "refs/heads/main",
         "source_version": "4bb91afc6d034cfcd78cbf15cdb21e0f6f419d68",
         "started_utc": "2026-08-22T03:28:01.2925985Z",
-        "finished_utc": "2026-08-22T05:06:06.2192270Z",
+        "finished_utc": "2026-08-22T05:06:06.219227Z",
+        "status": "completed",
         "result": "failed"
       }
     ],

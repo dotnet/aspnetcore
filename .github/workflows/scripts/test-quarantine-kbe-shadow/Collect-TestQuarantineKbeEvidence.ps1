@@ -76,6 +76,10 @@ param(
 
     [string]$RepositoryRoot = "$PSScriptRoot/../../../..",
 
+    [string]$EventRef = $env:GITHUB_REF,
+
+    [string]$EventSha = $env:GITHUB_SHA,
+
     [string]$DossierSchemaFile = "$PSScriptRoot/test-quarantine-kbe-shadow-dossier.schema.json",
 
     [string]$CandidateSchemaFile = "$PSScriptRoot/test-quarantine-kbe-shadow-candidate.schema.json",
@@ -322,30 +326,124 @@ function Get-GitHubIssue
     return $result
 }
 
-function Get-TrustedMainShaResult
+function Test-DispatchShaOnMainComparison
 {
-    # Returns @{ Checked; TrustedSha }. `Checked = $false` only in fixture mode when the fixture
-    # does not model this dimension at all (the three real pilot fixtures do not); live mode
-    # always performs the check. A failed live lookup still counts as Checked = $true with a
-    # null TrustedSha, which fails the comparison closed rather than silently skipping it.
+    param(
+        [Parameter(Mandatory = $true)]$Comparison,
+        [Parameter(Mandatory = $true)][string]$DispatchSha
+    )
+
+    return [string]$Comparison.merge_base_commit.sha -eq $DispatchSha -and
+        [string]$Comparison.status -in @("ahead", "identical")
+}
+
+function Get-TrustedMainRefResult
+{
+    param([Parameter(Mandatory = $true)][string]$DispatchSha)
+
     if ($isFixtureMode)
     {
         if (Test-HasProperty -Object $fixture -Name "main_branch")
         {
-            return [ordered]@{ Checked = $true; TrustedSha = [string]$fixture.main_branch.sha }
+            $currentMainSha = [string]$fixture.main_branch.sha
+            $isMember = if (Test-HasProperty -Object $fixture.main_branch -Name "contains_event_sha")
+            {
+                $fixtureComparison = if ([bool]$fixture.main_branch.contains_event_sha)
+                {
+                    [ordered]@{
+                        status = "ahead"
+                        merge_base_commit = [ordered]@{ sha = $DispatchSha }
+                    }
+                }
+                else
+                {
+                    [ordered]@{
+                        status = "diverged"
+                        merge_base_commit = [ordered]@{ sha = $currentMainSha }
+                    }
+                }
+                Test-DispatchShaOnMainComparison -Comparison $fixtureComparison -DispatchSha $DispatchSha
+            }
+            else
+            {
+                $DispatchSha.Equals($currentMainSha, [System.StringComparison]::OrdinalIgnoreCase)
+            }
+            return [ordered]@{ Checked = $true; CurrentMainSha = $currentMainSha; DispatchShaOnMain = $isMember }
         }
-        return [ordered]@{ Checked = $false; TrustedSha = $null }
+        return [ordered]@{ Checked = $false; CurrentMainSha = $null; DispatchShaOnMain = $true }
     }
 
     try
     {
         $headers = Get-GitHubHeaders
         $result = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/commits/main" -Headers $headers -Method Get -TimeoutSec 30
-        return [ordered]@{ Checked = $true; TrustedSha = [string]$result.sha }
+        $currentMainSha = [string]$result.sha
+        if ($DispatchSha.Equals($currentMainSha, [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            return [ordered]@{ Checked = $true; CurrentMainSha = $currentMainSha; DispatchShaOnMain = $true }
+        }
+
+        $comparison = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/compare/$DispatchSha...$currentMainSha" -Headers $headers -Method Get -TimeoutSec 30
+        $isMember = Test-DispatchShaOnMainComparison -Comparison $comparison -DispatchSha $DispatchSha
+        return [ordered]@{ Checked = $true; CurrentMainSha = $currentMainSha; DispatchShaOnMain = $isMember }
     }
     catch
     {
-        return [ordered]@{ Checked = $true; TrustedSha = $null }
+        return [ordered]@{ Checked = $true; CurrentMainSha = $null; DispatchShaOnMain = $false }
+    }
+}
+
+function Get-BuildProperty
+{
+    param(
+        [Parameter(Mandatory = $true)]$Build,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    if (Test-HasProperty -Object $Build -Name $Name)
+    {
+        return $Build.$Name
+    }
+    return $null
+}
+
+function Get-AzdoBuildValidation
+{
+    param(
+        [Parameter(Mandatory = $true)]$Build,
+        [Parameter(Mandatory = $true)][int]$DefinitionId,
+        [Parameter(Mandatory = $true)][ValidateSet("failure", "negative")][string]$Role
+    )
+
+    $sourceBranch = [string](Get-BuildProperty -Build $Build -Name "sourceBranch")
+    $status = [string](Get-BuildProperty -Build $Build -Name "status")
+    $result = [string](Get-BuildProperty -Build $Build -Name "result")
+    $allowedResults = if ($Role -eq "failure") { @("failed", "partiallySucceeded") } else { @("succeeded") }
+    $reasons = [System.Collections.Generic.List[string]]::new()
+
+    if ($DefinitionId -notin $pipelineDefinitionIds)
+    {
+        $reasons.Add("definition")
+    }
+    if ($sourceBranch -ne "refs/heads/main")
+    {
+        $reasons.Add("source-branch")
+    }
+    if ($status -ne "completed")
+    {
+        $reasons.Add("status")
+    }
+    if ($result -notin $allowedResults)
+    {
+        $reasons.Add("result")
+    }
+
+    return [ordered]@{
+        Valid = $reasons.Count -eq 0
+        SourceBranch = $sourceBranch
+        Status = $status
+        Result = $result
+        Reasons = @($reasons)
     }
 }
 
@@ -710,6 +808,243 @@ function Get-DuplicateCandidateText
     }
 }
 
+function Test-ContainsExactTestName
+{
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$TestName
+    )
+
+    $escapedTestName = [System.Text.RegularExpressions.Regex]::Escape($TestName)
+    return [regex]::IsMatch(
+        $Text,
+        "(^|[^A-Za-z0-9_.+])$escapedTestName($|[^A-Za-z0-9_.+])",
+        [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+}
+
+function Get-DocumentedSignature
+{
+    param([Parameter(Mandatory = $true)][string]$Text)
+
+    $match = [regex]::Match(
+        $Text,
+        '##\s*Error Message.*?```json\s*(.*?)\s*```',
+        [System.Text.RegularExpressions.RegexOptions]::Singleline -bor
+            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if (-not $match.Success)
+    {
+        return $null
+    }
+
+    try
+    {
+        $document = $match.Groups[1].Value | ConvertFrom-Json -Depth 16
+    }
+    catch
+    {
+        return $null
+    }
+
+    $messageValues = @()
+    if (Test-HasProperty -Object $document -Name "ErrorMessage")
+    {
+        $messageValues = @(
+            $document.ErrorMessage |
+                ForEach-Object { [string]$_ } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+    }
+    if ($messageValues.Count -gt 0)
+    {
+        return [ordered]@{ Kind = "ErrorMessage"; Values = $messageValues }
+    }
+
+    if ((Test-HasProperty -Object $document -Name "ErrorPattern") -and
+        -not [string]::IsNullOrWhiteSpace([string]$document.ErrorPattern))
+    {
+        return [ordered]@{ Kind = "ErrorPattern"; Values = @([string]$document.ErrorPattern) }
+    }
+
+    return $null
+}
+
+function Test-DocumentedSignatureCompatibility
+{
+    param(
+        [Parameter(Mandatory = $true)]$Signature,
+        [Parameter(Mandatory = $true)][object[]]$FailureLogs,
+        [Parameter(Mandatory = $true)][string]$TestName,
+        [Parameter(Mandatory = $true)][string]$Root
+    )
+
+    if ($FailureLogs.Count -eq 0)
+    {
+        return $false
+    }
+
+    $values = @($Signature.Values | ForEach-Object { [string]$_ })
+    $regexes = @()
+    if ([string]$Signature.Kind -eq "ErrorPattern")
+    {
+        try
+        {
+            $regexOptions = [System.Text.RegularExpressions.RegexOptions]::Singleline -bor
+                [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+                [System.Text.RegularExpressions.RegexOptions]::NonBacktracking
+            $regexes = @($values | ForEach-Object {
+                [System.Text.RegularExpressions.Regex]::new($_, $regexOptions, [System.TimeSpan]::FromMilliseconds(50))
+            })
+        }
+        catch
+        {
+            return $false
+        }
+    }
+
+    $escapedTestName = [System.Text.RegularExpressions.Regex]::Escape($TestName)
+    $testNameMatcher = [System.Text.RegularExpressions.Regex]::new(
+        "(^|[^A-Za-z0-9_.+])$escapedTestName($|[^A-Za-z0-9_.+])",
+        [System.Text.RegularExpressions.RegexOptions]::CultureInvariant -bor
+            [System.Text.RegularExpressions.RegexOptions]::NonBacktracking,
+        [System.TimeSpan]::FromMilliseconds(50))
+
+    foreach ($log in $FailureLogs)
+    {
+        $path = Join-Path $Root ([string]$log.path)
+        $failedTestLines = [System.Collections.Generic.List[int]]::new()
+        $matchedLines = [System.Collections.Generic.List[int]]::new()
+        $patternIndex = 0
+        $lineNumber = 0
+        $matched = $false
+
+        foreach ($line in [System.IO.File]::ReadLines($path))
+        {
+            $lineNumber++
+            $normalizedLine = $line -replace "^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s+", ""
+            $lineContainsTest = $testNameMatcher.IsMatch($normalizedLine)
+            $lineIndicatesFailure =
+                $normalizedLine -match "(?i)^\s*\[FAIL(?:ED)?\]\s+" -or
+                $normalizedLine -match "(?i)^\s*Failed\s+" -or
+                $normalizedLine -match "(?i)^\s*\[[^\]\r\n]+\]\s+.+\s+\[FAIL(?:ED)?\]\s*$"
+            if ($lineContainsTest -and $lineIndicatesFailure)
+            {
+                $failedTestLines.Add($lineNumber)
+                continue
+            }
+
+            $matchedThisLine = $false
+            try
+            {
+                $matchedThisLine = if ([string]$Signature.Kind -eq "ErrorPattern")
+                {
+                    $regexes[$patternIndex].IsMatch($line)
+                }
+                else
+                {
+                    $line.IndexOf($values[$patternIndex], [System.StringComparison]::Ordinal) -ge 0
+                }
+            }
+            catch [System.Text.RegularExpressions.RegexMatchTimeoutException]
+            {
+                return $false
+            }
+
+            if ($matchedThisLine)
+            {
+                $matchedLines.Add($lineNumber)
+                if ($values.Count -eq 1)
+                {
+                    $matched = $true
+                }
+                else
+                {
+                    $patternIndex++
+                    $matched = $patternIndex -eq $values.Count
+                }
+            }
+            if ($matched)
+            {
+                break
+            }
+        }
+
+        $associated = $matched -and @(
+            $matchedLines |
+                Where-Object {
+                    $matchedLine = $_
+                    @($failedTestLines | Where-Object { [System.Math]::Abs($_ - $matchedLine) -le 50 }).Count -gt 0
+                }
+        ).Count -gt 0
+        if (-not $associated)
+        {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Test-FixPrCompatibility
+{
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$TestName,
+        [Parameter(Mandatory = $true)][AllowNull()][string]$CandidateSignature,
+        [Parameter(Mandatory = $true)][object[]]$FailureLogs,
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][ref]$DetailFetchIncomplete
+    )
+
+    if (-not (Test-ContainsExactTestName -Text $Text -TestName $TestName))
+    {
+        return $false
+    }
+
+    $documentedSignature = Get-DocumentedSignature -Text $Text
+    if ($null -ne $documentedSignature -and
+        (Test-DocumentedSignatureCompatibility -Signature $documentedSignature -FailureLogs $FailureLogs -TestName $TestName -Root $Root))
+    {
+        return $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($CandidateSignature) -and
+        $Text.Contains($CandidateSignature, [System.StringComparison]::Ordinal))
+    {
+        return $true
+    }
+
+    $linkedNumbers = @(
+        [regex]::Matches($Text, '(?i)https://github\.com/dotnet/aspnetcore/(?:issues|pull)/([1-9][0-9]*)|(?<![A-Za-z0-9_/])#([1-9][0-9]*)') |
+            ForEach-Object {
+                if ($_.Groups[1].Success) { [int]$_.Groups[1].Value } else { [int]$_.Groups[2].Value }
+            } |
+            Select-Object -Unique
+    )
+    foreach ($linkedNumber in $linkedNumbers)
+    {
+        $linkedText = Get-DuplicateCandidateText -Number $linkedNumber
+        if ($null -eq $linkedText)
+        {
+            $DetailFetchIncomplete.Value = $true
+            continue
+        }
+        if (-not (Test-ContainsExactTestName -Text $linkedText -TestName $TestName))
+        {
+            continue
+        }
+
+        $linkedSignature = Get-DocumentedSignature -Text $linkedText
+        if (($null -ne $linkedSignature -and
+                (Test-DocumentedSignatureCompatibility -Signature $linkedSignature -FailureLogs $FailureLogs -TestName $TestName -Root $Root)) -or
+            (-not [string]::IsNullOrWhiteSpace($CandidateSignature) -and
+                $linkedText.Contains($CandidateSignature, [System.StringComparison]::Ordinal)))
+        {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 # ---------------------------------------------------------------------------
 # Step 1: validate the canonical, open quarantine issue. The 'test-failure' label alone is not
 # proof an issue was generated by quarantine automation (any contributor can apply it to an
@@ -825,29 +1160,54 @@ if ([string]::IsNullOrWhiteSpace($effectiveSignature) -or
 }
 
 # ---------------------------------------------------------------------------
-# Step 2.5: confirm the repository checkout this collector and the evaluator are running against
-# is genuinely dotnet/aspnetcore's 'main' branch tip, via a trusted GitHub API response -- never
-# label a non-main checkout (e.g. this very prototype PR's branch) as 'main'.
+# Step 2.5: confirm the immutable workflow-dispatch ref/SHA is a member of main and is exactly the
+# commit checked out for collection. Main may legitimately advance after dispatch, so equality
+# with the current tip is sufficient but not required.
 # ---------------------------------------------------------------------------
 
 $repoHeadSha = (& git -C $RepositoryRoot rev-parse HEAD).Trim()
-$mainShaResult = Get-TrustedMainShaResult
-if (-not [bool]$mainShaResult.Checked)
+$effectiveEventRef = if ([string]::IsNullOrWhiteSpace($EventRef) -and $isFixtureMode) { "refs/heads/main" } else { $EventRef }
+$effectiveEventSha = if ([string]::IsNullOrWhiteSpace($EventSha) -and $isFixtureMode) { $repoHeadSha } else { $EventSha }
+$eventRefIsMain = $effectiveEventRef -eq "refs/heads/main"
+$eventShaIsValid = $effectiveEventSha -match "^[0-9a-f]{40}$"
+$checkoutMatchesEventSha =
+    $eventShaIsValid -and
+    $repoHeadSha.Equals($effectiveEventSha, [System.StringComparison]::OrdinalIgnoreCase)
+
+if (-not $eventRefIsMain)
 {
-    # Fixture does not model this dimension: trust the checkout (used by fixtures that are not
-    # specifically exercising this guard).
-    $trustedMainSha = $repoHeadSha
-    $matchesMain = $true
+    $reasonCodes.Add("workflow-dispatch-ref-not-main")
+    Add-MissingEvidence -List $missingEvidence -Kind "repository-ref" -Detail "Workflow dispatch ref '$effectiveEventRef' is not exactly 'refs/heads/main'."
+}
+if (-not $checkoutMatchesEventSha)
+{
+    $reasonCodes.Add("checkout-sha-not-dispatch-sha")
+    Add-MissingEvidence -List $missingEvidence -Kind "repository-ref" -Detail "Checked-out commit $repoHeadSha does not match workflow dispatch SHA '$effectiveEventSha'."
+}
+
+if (-not $eventShaIsValid)
+{
+    $currentMainSha = $null
+    $dispatchShaOnMain = $false
 }
 else
 {
-    $trustedMainSha = $mainShaResult.TrustedSha
-    $matchesMain = ($null -ne $trustedMainSha) -and $repoHeadSha.Equals($trustedMainSha, [System.StringComparison]::OrdinalIgnoreCase)
-    if (-not $matchesMain)
+    $mainRefResult = Get-TrustedMainRefResult -DispatchSha $effectiveEventSha
+    if (-not [bool]$mainRefResult.Checked)
     {
-        $reasonCodes.Add("repository-ref-not-main")
-        $trustedDisplay = if ($trustedMainSha) { $trustedMainSha } else { "(lookup failed)" }
-        Add-MissingEvidence -List $missingEvidence -Kind "repository-ref" -Detail "Checked-out commit $repoHeadSha does not match the trusted dotnet/aspnetcore main SHA $trustedDisplay; refusing to label repository_ref.branch as 'main'."
+        $currentMainSha = $effectiveEventSha
+        $dispatchShaOnMain = $true
+    }
+    else
+    {
+        $currentMainSha = $mainRefResult.CurrentMainSha
+        $dispatchShaOnMain = [bool]$mainRefResult.DispatchShaOnMain
+        if (-not $dispatchShaOnMain)
+        {
+            $reasonCodes.Add("repository-ref-not-main")
+            $mainDisplay = if ($currentMainSha) { $currentMainSha } else { "(lookup failed)" }
+            Add-MissingEvidence -List $missingEvidence -Kind "repository-ref" -Detail "Workflow dispatch SHA '$effectiveEventSha' could not be confirmed as identical to or an ancestor/member of current dotnet/aspnetcore main SHA $mainDisplay."
+        }
     }
 }
 
@@ -879,18 +1239,37 @@ foreach ($buildId in $citedBuildIds)
 
     $definitionId = [int]$build.definition.id
     $sourceVersion = [string]$build.sourceVersion
+    $validation = Get-AzdoBuildValidation -Build $build -DefinitionId $definitionId -Role "failure"
     $record = [ordered]@{
         id = $buildId
         found = $true
         retrieved_utc = $retrievedUtc
         source = "issue-body-reference"
         definition_id = $definitionId
+        source_branch = $validation.SourceBranch
         source_version = $sourceVersion
         started_utc = ConvertTo-Iso8601String -Value $build.startTime
         finished_utc = ConvertTo-Iso8601String -Value $build.finishTime
-        result = [string]$build.result
+        status = $validation.Status
+        result = $validation.Result
     }
     $null = $azdoBuildRecords.Add($record)
+    if (-not [bool]$validation.Valid)
+    {
+        foreach ($invalidDimension in $validation.Reasons)
+        {
+            $reasonCode = switch ($invalidDimension)
+            {
+                "definition" { "azdo-build-definition-not-allowed"; break }
+                "source-branch" { "azdo-build-source-branch-not-main"; break }
+                "status" { "azdo-build-not-completed"; break }
+                default { "azdo-build-result-incompatible" }
+            }
+            $reasonCodes.Add($reasonCode)
+        }
+        Add-MissingEvidence -List $missingEvidence -Kind "azdo-build" -Detail "Cited build $buildId is ineligible: definition=$definitionId, sourceBranch='$($validation.SourceBranch)', status='$($validation.Status)', result='$($validation.Result)'."
+        continue
+    }
     $null = $resolvedBuilds.Add(($record + @{ intended_role = "failure" }))
 }
 
@@ -976,24 +1355,33 @@ if ($resolvedBuilds.Count -lt $minimumFailureBuilds -and $null -ne $testName -an
                 continue
             }
 
+            $candidateDefinitionId = if (Test-HasProperty -Object $candidate -Name "definition") { [int]$candidate.definition.id } else { $definitionId }
+            $validation = Get-AzdoBuildValidation -Build $candidate -DefinitionId $candidateDefinitionId -Role "failure"
+            $record = [ordered]@{
+                id = $candidateId
+                found = $true
+                retrieved_utc = $retrievedUtc
+                source = "recurrence-scan"
+                definition_id = $candidateDefinitionId
+                source_branch = $validation.SourceBranch
+                source_version = [string]$candidate.sourceVersion
+                started_utc = ConvertTo-Iso8601String -Value $candidate.startTime
+                finished_utc = ConvertTo-Iso8601String -Value $candidate.finishTime
+                status = $validation.Status
+                result = $validation.Result
+            }
+            $null = $azdoBuildRecords.Add($record)
+            if (-not [bool]$validation.Valid)
+            {
+                continue
+            }
+
             $matchingRow = Get-MatchingFailureDetail -BuildId $candidateId -TestName $testName -Signature $effectiveSignature
             if ($null -eq $matchingRow)
             {
                 continue
             }
 
-            $record = [ordered]@{
-                id = $candidateId
-                found = $true
-                retrieved_utc = $retrievedUtc
-                source = "recurrence-scan"
-                definition_id = $definitionId
-                source_version = [string]$candidate.sourceVersion
-                started_utc = ConvertTo-Iso8601String -Value $candidate.startTime
-                finished_utc = ConvertTo-Iso8601String -Value $candidate.finishTime
-                result = [string]$candidate.result
-            }
-            $null = $azdoBuildRecords.Add($record)
             $null = $resolvedBuilds.Add(($record + @{ intended_role = "failure" }))
         }
     }
@@ -1006,9 +1394,10 @@ if ($null -ne $testName -and $null -ne $effectiveSignature -and $resolvedBuilds.
 }
 
 # ---------------------------------------------------------------------------
-# Step 4.5: gather at least one authoritative negative (passed/skipped) occurrence of the same
+# Step 4.5: gather at least one authoritative Passed occurrence of the same
 # test on the same pipeline(s). This is what lets the evaluator confirm the failure is not a
-# consistent regression -- a missing negative is recorded as insufficient evidence, never
+# consistent regression -- Skipped results may be useful context but never satisfy this gate.
+# A missing pass is recorded as insufficient evidence, never
 # inferred as a pass.
 # ---------------------------------------------------------------------------
 
@@ -1038,24 +1427,33 @@ if ($null -ne $testName -and $null -ne $effectiveSignature)
             }
 
             $candidateId = [int]$candidate.id
-            $rows = @(Get-VstmrSummaryRows -BuildId $candidateId -TestName $testName | Where-Object { [string]$_.outcome -in @("Passed", "Skipped") })
-            if ($rows.Count -eq 0)
-            {
-                continue
-            }
-
+            $candidateDefinitionId = if (Test-HasProperty -Object $candidate -Name "definition") { [int]$candidate.definition.id } else { $definitionId }
+            $validation = Get-AzdoBuildValidation -Build $candidate -DefinitionId $candidateDefinitionId -Role "negative"
             $record = [ordered]@{
                 id = $candidateId
                 found = $true
                 retrieved_utc = $retrievedUtc
                 source = "negative-scan"
-                definition_id = $definitionId
+                definition_id = $candidateDefinitionId
+                source_branch = $validation.SourceBranch
                 source_version = [string]$candidate.sourceVersion
                 started_utc = ConvertTo-Iso8601String -Value $candidate.startTime
                 finished_utc = ConvertTo-Iso8601String -Value $candidate.finishTime
-                result = [string]$candidate.result
+                status = $validation.Status
+                result = $validation.Result
             }
             $null = $azdoBuildRecords.Add($record)
+            if (-not [bool]$validation.Valid)
+            {
+                continue
+            }
+
+            $rows = @(Get-VstmrSummaryRows -BuildId $candidateId -TestName $testName | Where-Object { [string]$_.outcome -eq "Passed" })
+            if ($rows.Count -eq 0)
+            {
+                continue
+            }
+
             $null = $negativeBuilds.Add(($record + @{ intended_role = "negative" }))
         }
     }
@@ -1076,7 +1474,7 @@ if ($null -ne $testName -and $null -ne $effectiveSignature)
 $rawEvidenceRecords = [System.Collections.Generic.List[object]]::new()
 $rawLogs = [System.Collections.Generic.List[object]]::new()
 $failureBuildIdSet = [System.Collections.Generic.HashSet[int]]::new()
-$negativeCount = 0
+$passedBuildIdSet = [System.Collections.Generic.HashSet[int]]::new()
 $evidenceIndex = 0
 
 $evidenceBuilds = @($resolvedBuilds) + @($negativeBuilds)
@@ -1088,7 +1486,7 @@ foreach ($build in $evidenceBuilds)
     }
 
     $role = [string]$build.intended_role
-    $expectedOutcome = if ($role -eq "failure") { @("Failed") } else { @("Passed", "Skipped") }
+    $expectedOutcome = if ($role -eq "failure") { @("Failed") } else { @("Passed") }
     $matchedRow = $null
     $matchedDetail = $null
 
@@ -1147,6 +1545,16 @@ foreach ($build in $evidenceBuilds)
 
     $runName = Get-VstmrRunName -RunId $runId
     $platformConfiguration = Get-PlatformConfigurationFromRunName -RunName $runName
+    if ($platformConfiguration.Platform -eq "unknown")
+    {
+        $reasonCodes.Add("evidence-platform-unknown")
+        Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown platform from TestRun '$runName'."
+    }
+    if ($platformConfiguration.Configuration -eq "unknown")
+    {
+        $reasonCodes.Add("evidence-configuration-unknown")
+        Add-MissingEvidence -List $missingEvidence -Kind "environment" -Detail "Build $($build.id) $role evidence has unknown configuration from TestRun '$runName'."
+    }
 
     $evidenceIndex += 1
     $fileName = "issue-$IssueNumber-build-$($build.id)-$role.log"
@@ -1199,7 +1607,7 @@ foreach ($build in $evidenceBuilds)
     }
     else
     {
-        $negativeCount += 1
+        $null = $passedBuildIdSet.Add([int]$build.id)
     }
 
     $outcomeValue = switch ([string]$matchedRow.outcome)
@@ -1219,8 +1627,11 @@ foreach ($build in $evidenceBuilds)
         build = [ordered]@{
             id = [int]$build.id
             pipeline_definition_id = [int]$build.definition_id
+            source_branch = [string]$build.source_branch
             source_version = [string]$build.source_version
             started_utc = [string]$build.started_utc
+            status = [string]$build.status
+            result = [string]$build.result
             platform = $platformConfiguration.Platform
             configuration = $platformConfiguration.Configuration
         }
@@ -1236,10 +1647,10 @@ if ($null -ne $testName -and $failureBuildIdSet.Count -lt $minimumFailureBuilds)
     }
 }
 
-if ($null -ne $testName -and $negativeCount -lt $minimumNegativeLogs)
+if ($null -ne $testName -and $passedBuildIdSet.Count -lt $minimumNegativeLogs)
 {
     $reasonCodes.Add("raw-evidence-insufficient")
-    Add-MissingEvidence -List $missingEvidence -Kind "raw-evidence" -Detail "No retrievable negative (passed/skipped) evidence was found; at least $minimumNegativeLogs is required."
+    Add-MissingEvidence -List $missingEvidence -Kind "raw-evidence" -Detail "No retrievable Passed evidence was found; at least $minimumNegativeLogs authoritative pass occurrence is required."
 }
 
 # ---------------------------------------------------------------------------
@@ -1314,11 +1725,10 @@ foreach ($sha in $distinctShas)
 }
 
 # ---------------------------------------------------------------------------
-# Step 7: categorized duplicate KBE / fix-PR search. A search hit is a discovery candidate only --
-# it is fetched and required to contain the exact fully-qualified test name before it is ever
-# treated as a validated duplicate; otherwise it is recorded as an unvalidated candidate and never
-# contributes to an existing-kbe/existing-fix-pr status. "Recently" closed/merged categories carry
-# an explicit time-window qualifier so the label matches what the query actually searches.
+# Step 7: categorized duplicate KBE / fix-PR search. Search hits are discovery only. Existing KBEs
+# require the exact FQN and a documented ErrorMessage/ErrorPattern that matches every authoritative
+# failure log with the evaluator's semantics. Fix PRs additionally require compatible signature or
+# linked-issue/root-cause evidence. A failed candidate-detail fetch makes that query incomplete.
 # ---------------------------------------------------------------------------
 
 $shortName = if ($testName) { ($testName -split '\.')[-1] } else { $IssueNumber.ToString() }
@@ -1357,7 +1767,8 @@ foreach ($q in $duplicateQueries)
         Search-GitHubIssues -Query $q.query
     }
 
-    if (-not [bool]$searchResult.Complete)
+    $queryComplete = [bool]$searchResult.Complete
+    if (-not $queryComplete)
     {
         $allQueriesComplete = $false
     }
@@ -1366,7 +1777,68 @@ foreach ($q in $duplicateQueries)
     foreach ($n in @($searchResult.Numbers))
     {
         $candidateText = Get-DuplicateCandidateText -Number $n
-        $validated = ($null -ne $testName) -and ($null -ne $candidateText) -and $candidateText.Contains($testName, [System.StringComparison]::Ordinal)
+        if ($null -eq $candidateText)
+        {
+            $queryComplete = $false
+            $allQueriesComplete = $false
+            $reasonCodes.Add("duplicate-detail-fetch-incomplete")
+            Add-MissingEvidence -List $missingEvidence -Kind "duplicate-search" -Detail "Search returned $($q.category) #$n, but its issue/PR detail could not be fetched."
+            $null = $unvalidatedCandidates.Add([ordered]@{
+                category = $q.category
+                number = $n
+                reason = "could not fetch issue/PR detail; duplicate coverage is incomplete"
+            })
+            continue
+        }
+
+        $validated = $false
+        $reason = "issue/PR #$n does not contain the exact fully-qualified test name"
+        if ($null -ne $testName -and (Test-ContainsExactTestName -Text $candidateText -TestName $testName))
+        {
+            if ($isKbeCategory)
+            {
+                $documentedSignature = Get-DocumentedSignature -Text $candidateText
+                $validated =
+                    $null -ne $documentedSignature -and
+                    (Test-DocumentedSignatureCompatibility `
+                        -Signature $documentedSignature `
+                        -FailureLogs @($rawLogs | Where-Object { $_.role -eq "failure" }) `
+                        -TestName $testName `
+                        -Root $EvidenceRoot)
+                $reason = if ($null -eq $documentedSignature)
+                {
+                    "exact FQN found, but no deterministic documented ErrorMessage/ErrorPattern was parseable"
+                }
+                else
+                {
+                    "exact FQN found, but the documented signature is incompatible with authoritative failure evidence"
+                }
+            }
+            else
+            {
+                $linkedDetailFetchIncomplete = $false
+                $validated = Test-FixPrCompatibility `
+                    -Text $candidateText `
+                    -TestName $testName `
+                    -CandidateSignature $effectiveSignature `
+                    -FailureLogs @($rawLogs | Where-Object { $_.role -eq "failure" }) `
+                    -Root $EvidenceRoot `
+                    -DetailFetchIncomplete ([ref]$linkedDetailFetchIncomplete)
+                if ($linkedDetailFetchIncomplete)
+                {
+                    $queryComplete = $false
+                    $allQueriesComplete = $false
+                    $reasonCodes.Add("duplicate-detail-fetch-incomplete")
+                    Add-MissingEvidence -List $missingEvidence -Kind "duplicate-search" -Detail "Fix PR #$n linked an issue/PR whose detail could not be fetched; duplicate coverage is incomplete."
+                }
+                $reason = "exact FQN found, but no compatible linked issue, signature, or root-cause association was established"
+            }
+        }
+        elseif ($null -eq $testName)
+        {
+            $reason = "no resolved test identity to validate against"
+        }
+
         if ($validated)
         {
             if ($isKbeCategory)
@@ -1382,9 +1854,6 @@ foreach ($q in $duplicateQueries)
         }
         else
         {
-            $reason = if ($null -eq $testName) { "no resolved test identity to validate against" }
-                elseif ($null -eq $candidateText) { "could not fetch issue/PR #$n to validate test identity" }
-                else { "issue/PR #$n does not contain the exact fully-qualified test name" }
             $null = $unvalidatedCandidates.Add([ordered]@{ category = $q.category; number = $n; reason = $reason })
         }
     }
@@ -1392,7 +1861,7 @@ foreach ($q in $duplicateQueries)
     $null = $duplicateQueryResults.Add([ordered]@{
         category = $q.category
         query = $q.query
-        complete = [bool]$searchResult.Complete
+        complete = $queryComplete
         result_numbers = @($searchResult.Numbers)
         total_count = [int]$searchResult.TotalCount
     })
@@ -1418,7 +1887,7 @@ else
 if (-not $allQueriesComplete)
 {
     $reasonCodes.Add("duplicate-search-incomplete")
-    Add-MissingEvidence -List $missingEvidence -Kind "duplicate-search" -Detail "At least one duplicate KBE/fix-PR search category returned incomplete or truncated results."
+    Add-MissingEvidence -List $missingEvidence -Kind "duplicate-search" -Detail "At least one duplicate KBE/fix-PR category had incomplete search pagination or candidate-detail coverage."
 }
 
 $duplicateQueriesForCandidate = @($duplicateQueryResults | ForEach-Object {
@@ -1434,19 +1903,18 @@ $duplicateCheck = [ordered]@{
     status = $duplicateStatus
     checked_utc = $retrievedUtc
     coverage = [ordered]@{
-        open_kbes = $true
-        recently_closed_kbes = $true
-        open_fix_prs = $true
-        recently_merged_fix_prs = $true
+        open_kbes = [bool](@($duplicateQueryResults | Where-Object { $_.category -eq "open-kbe" -and $_.complete }).Count -eq 1)
+        recently_closed_kbes = [bool](@($duplicateQueryResults | Where-Object { $_.category -eq "recently-closed-kbe" -and $_.complete }).Count -eq 1)
+        open_fix_prs = [bool](@($duplicateQueryResults | Where-Object { $_.category -eq "open-fix-pr" -and $_.complete }).Count -eq 1)
+        recently_merged_fix_prs = [bool](@($duplicateQueryResults | Where-Object { $_.category -eq "recently-merged-fix-pr" -and $_.complete }).Count -eq 1)
     }
     references = @($duplicateReferences | Select-Object -Unique)
     queries = $duplicateQueriesForCandidate
 }
 
-# The dossier's own duplicate_search $def additionally carries total_count and
-# unvalidated_candidates -- both new, dossier-only provenance fields. candidate.duplicate_check
-# above deliberately keeps the exact, unmodified shape test-quarantine-kbe-shadow-candidate.schema.json
-# requires (additionalProperties: false; no total_count/unvalidated_candidates there).
+# The dossier's duplicate_search additionally carries total_count and unvalidated_candidates.
+# candidate.duplicate_check keeps the exact candidate-schema shape (additionalProperties: false;
+# no total_count/unvalidated_candidates there).
 $duplicateCheckWithUnvalidated = [ordered]@{
     status = $duplicateStatus
     checked_utc = $retrievedUtc
@@ -1561,9 +2029,14 @@ $dossier = [ordered]@{
     outcome = $outcome
     provenance = [ordered]@{
         repository_ref_verification = [ordered]@{
+            event_ref = $effectiveEventRef
+            event_sha = if ($eventShaIsValid) { $effectiveEventSha } else { $null }
             checkout_sha = $repoHeadSha
-            trusted_main_sha = $trustedMainSha
-            matches_main = $matchesMain
+            current_main_sha = $currentMainSha
+            checkout_matches_event_sha = $checkoutMatchesEventSha
+            event_ref_is_main = $eventRefIsMain
+            dispatch_sha_on_main = $dispatchShaOnMain
+            matches_main = $eventRefIsMain -and $checkoutMatchesEventSha -and $dispatchShaOnMain
         }
         azdo_builds = @($azdoBuildRecords)
         check_run_snapshots = @($checkRunRecords)

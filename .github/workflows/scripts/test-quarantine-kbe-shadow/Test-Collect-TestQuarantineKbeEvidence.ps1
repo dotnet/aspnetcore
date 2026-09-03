@@ -12,9 +12,8 @@
     are expected to differ between runs/commits; every other field must match exactly.
 
     Where the collector's outcome is 'candidate', the resulting candidate.json is also fed
-    through the unmodified, already-tested Evaluate-TestQuarantineKbeCandidate.ps1 to prove the
-    two scripts reconcile: the collector's output is accepted as-is by the existing evaluator
-    contract with no changes to that script or its schemas.
+    through Evaluate-TestQuarantineKbeCandidate.ps1 to prove the two scripts reconcile: the
+    collector's output is accepted as-is by the versioned evaluator contract.
 #>
 
 [CmdletBinding()]
@@ -31,6 +30,7 @@ $candidateSchema = "$PSScriptRoot/test-quarantine-kbe-shadow-candidate.schema.js
 $fixturesRoot = "$PSScriptRoot/fixtures"
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "aspnetcore-kbe-shadow-collector-$([System.Guid]::NewGuid().ToString('N'))"
 $repositoryRoot = (Resolve-Path "$PSScriptRoot/../../../..").Path
+$repositoryHead = (& git -C $repositoryRoot rev-parse HEAD).Trim()
 
 function Assert-Equal
 {
@@ -77,7 +77,7 @@ function Assert-NotContains
 # The collector-generated timestamps and the running checkout's HEAD commit SHA are expected to
 # differ run-to-run and commit-to-commit; every golden fixture below was captured with these
 # fields already replaced by this same sentinel.
-$volatileKeys = @("generated_utc", "retrieved_utc", "captured_utc", "checked_utc", "commit_sha", "checkout_sha", "trusted_main_sha")
+$volatileKeys = @("generated_utc", "retrieved_utc", "captured_utc", "checked_utc", "commit_sha", "event_sha", "checkout_sha", "current_main_sha")
 $volatileSentinel = "<GENERATED>"
 
 function ConvertTo-NormalizedObject
@@ -158,7 +158,9 @@ function Invoke-Collector
         [Parameter(Mandatory = $true)][int]$IssueNumber,
         [Parameter(Mandatory = $true)][string]$FixtureRoot,
         [Parameter(Mandatory = $true)][string]$WorkDirectory,
-        [string]$Signature
+        [string]$Signature,
+        [string]$EventRef,
+        [string]$EventSha
     )
 
     [System.IO.Directory]::CreateDirectory($WorkDirectory) | Out-Null
@@ -179,6 +181,14 @@ function Invoke-Collector
     if (-not [string]::IsNullOrEmpty($Signature))
     {
         $params["Signature"] = $Signature
+    }
+    if (-not [string]::IsNullOrEmpty($EventRef))
+    {
+        $params["EventRef"] = $EventRef
+    }
+    if (-not [string]::IsNullOrEmpty($EventSha))
+    {
+        $params["EventSha"] = $EventSha
     }
 
     & $collector @params | Out-Null
@@ -236,9 +246,45 @@ function New-SyntheticFixture
         $base.Remove("main_branch")
     }
 
+    $fixtureBuilds = @($base.azdo_builds.Values)
+    foreach ($scan in @($base.recurrence_scan, $base.negative_scan))
+    {
+        foreach ($entry in $scan.Values)
+        {
+            $fixtureBuilds += @($entry)
+        }
+    }
+    foreach ($build in $fixtureBuilds)
+    {
+        if (-not $build.Contains("sourceBranch"))
+        {
+            $build["sourceBranch"] = "refs/heads/main"
+        }
+        if (-not $build.Contains("status"))
+        {
+            $build["status"] = "completed"
+        }
+    }
+
     $directory = Join-Path $tempRoot "fixture-$Name"
     [System.IO.Directory]::CreateDirectory($directory) | Out-Null
     $base | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $directory "fixture.json")
+    return $directory
+}
+
+function New-DerivedFixture
+{
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][scriptblock]$Mutate
+    )
+
+    $fixtureObject = Get-Content -LiteralPath (Join-Path $Source "fixture.json") -Raw | ConvertFrom-Json -Depth 32
+    & $Mutate $fixtureObject
+    $directory = Join-Path $tempRoot "fixture-$Name"
+    [System.IO.Directory]::CreateDirectory($directory) | Out-Null
+    $fixtureObject | ConvertTo-Json -Depth 32 | Set-Content -LiteralPath (Join-Path $directory "fixture.json")
     return $directory
 }
 
@@ -377,10 +423,8 @@ try
     Assert-Contains -Collection @($resultMissingMarker.Dossier.incomplete.reason_codes) -Value "issue-not-canonical-quarantine" -Message "Missing-marker reason codes mismatch: the 'test-failure' label alone must not be treated as proof of quarantine automation."
 
     # ------------------------------------------------------------------
-    # Edge case (item 8): the repository checkout must be confirmed, via a trusted GitHub API
-    # response for dotnet/aspnetcore's main branch, to actually be main's tip before a candidate
-    # is ever labeled repository_ref.branch = "main". A deliberately wrong trusted SHA must fail
-    # closed rather than mislabel the checkout.
+    # The immutable dispatch SHA must be confirmed as a member of main. A deliberately unrelated
+    # current-main SHA must fail closed rather than mislabel the checkout.
     # ------------------------------------------------------------------
     $repoRefMismatchDir = New-SyntheticFixture -Name "repo-ref-mismatch" -Overrides @{
         issue = [ordered]@{
@@ -410,6 +454,7 @@ try
     $flagsShaB = "e06ef94591aaa5a8dc3f84926f8664b2964bf0ea"
     $flagsShaC = "51e066210e1643430dccb9986c42500d3e706638"
     $flagsDir = New-SyntheticFixture -Name "check-run-flags" -Overrides @{
+        main_branch = [ordered]@{ sha = ("b" * 40); contains_event_sha = $true }
         issue = [ordered]@{
             number = 11
             state = "open"
@@ -458,6 +503,9 @@ try
     }
     $resultFlags = Invoke-Collector -IssueNumber 11 -FixtureRoot $flagsDir -WorkDirectory (Join-Path $tempRoot "check-run-flags")
     Assert-Equal -Actual $resultFlags.Dossier.outcome -Expected "candidate" -Message "check-run-flags outcome mismatch."
+    Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.dispatch_sha_on_main -Expected $true -Message "A dispatch SHA that is an ancestor/member of advanced main must validate."
+    Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.current_main_sha -Expected ("b" * 40) -Message "Current main SHA provenance mismatch."
+    Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.checkout_sha -Expected $repositoryHead -Message "Dispatch checkout SHA provenance mismatch."
     $snapshotA = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
     $snapshotB = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaB })[0]
     Assert-Equal -Actual $snapshotA.exact_test_referenced -Expected $true -Message "exact_test_referenced must be true when the full FQN appears verbatim."
@@ -467,10 +515,66 @@ try
     Assert-Equal -Actual $snapshotB.short_name_referenced -Expected $true -Message "short_name_referenced must record the bare-method-name match."
     Assert-Equal -Actual $snapshotB.known_issue_referenced -Expected $false -Message "known_issue_referenced must stay false for a generic 'Known Issues' heading with no associated number."
 
+    $nonMainResult = Invoke-Collector `
+        -IssueNumber 11 `
+        -FixtureRoot $flagsDir `
+        -WorkDirectory (Join-Path $tempRoot "non-main-dispatch") `
+        -EventRef "refs/heads/feature/quarantine" `
+        -EventSha $repositoryHead
+    Assert-Equal -Actual $nonMainResult.Dossier.outcome -Expected "incomplete" -Message "A non-main workflow dispatch must fail closed."
+    Assert-Contains -Collection @($nonMainResult.Dossier.incomplete.reason_codes) -Value "workflow-dispatch-ref-not-main" -Message "Non-main dispatch reason code mismatch."
+
+    $skipOnlyDir = New-DerivedFixture -Name "skip-only-negative" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_summary.'6100003'[0].outcome = "Skipped"
+        $fixtureObject.vstmr_detail.'7100003:3'.outcome = "Skipped"
+    }
+    $resultSkipOnly = Invoke-Collector -IssueNumber 11 -FixtureRoot $skipOnlyDir -WorkDirectory (Join-Path $tempRoot "skip-only-negative")
+    Assert-Equal -Actual $resultSkipOnly.Dossier.outcome -Expected "incomplete" -Message "Skip-only evidence must not satisfy intermittency eligibility."
+    Assert-Contains -Collection @($resultSkipOnly.Dossier.incomplete.reason_codes) -Value "raw-evidence-insufficient" -Message "Skip-only evidence reason code mismatch."
+
+    $unknownEnvironmentDir = New-DerivedFixture -Name "unknown-environment" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.vstmr_runs.'7100001'.name = "Quarantine-Mono-xunit"
+    }
+    $resultUnknownEnvironment = Invoke-Collector -IssueNumber 11 -FixtureRoot $unknownEnvironmentDir -WorkDirectory (Join-Path $tempRoot "unknown-environment")
+    Assert-Equal -Actual $resultUnknownEnvironment.Dossier.outcome -Expected "incomplete" -Message "Unknown required environment dimensions must fail closed."
+    Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-platform-unknown" -Message "Unknown platform reason code mismatch."
+    Assert-Contains -Collection @($resultUnknownEnvironment.Dossier.incomplete.reason_codes) -Value "evidence-configuration-unknown" -Message "Unknown configuration reason code mismatch."
+
+    $invalidBuildCases = @(
+        [ordered]@{
+            Name = "wrong-definition"
+            ReasonCode = "azdo-build-definition-not-allowed"
+            Mutate = { param($fixtureObject) $fixtureObject.azdo_builds.'6100001'.definition.id = 999 }
+        },
+        [ordered]@{
+            Name = "wrong-branch"
+            ReasonCode = "azdo-build-source-branch-not-main"
+            Mutate = { param($fixtureObject) $fixtureObject.azdo_builds.'6100001'.sourceBranch = "refs/pull/123/merge" }
+        },
+        [ordered]@{
+            Name = "incomplete-build"
+            ReasonCode = "azdo-build-not-completed"
+            Mutate = { param($fixtureObject) $fixtureObject.azdo_builds.'6100001'.status = "inProgress" }
+        },
+        [ordered]@{
+            Name = "wrong-result"
+            ReasonCode = "azdo-build-result-incompatible"
+            Mutate = { param($fixtureObject) $fixtureObject.azdo_builds.'6100001'.result = "succeeded" }
+        }
+    )
+    foreach ($invalidBuildCase in $invalidBuildCases)
+    {
+        $invalidBuildDir = New-DerivedFixture -Name $invalidBuildCase.Name -Source $flagsDir -Mutate $invalidBuildCase.Mutate
+        $invalidBuildResult = Invoke-Collector -IssueNumber 11 -FixtureRoot $invalidBuildDir -WorkDirectory (Join-Path $tempRoot $invalidBuildCase.Name)
+        Assert-Equal -Actual $invalidBuildResult.Dossier.outcome -Expected "incomplete" -Message "$($invalidBuildCase.Name) build must fail closed."
+        Assert-Contains -Collection @($invalidBuildResult.Dossier.incomplete.reason_codes) -Value $invalidBuildCase.ReasonCode -Message "$($invalidBuildCase.Name) reason code mismatch."
+    }
+
     # ------------------------------------------------------------------
-    # Edge case (item 12): a duplicate-search hit is a discovery candidate only. A hit whose
-    # body/title does not contain the exact fully-qualified test name must never be treated as a
-    # validated existing-kbe duplicate, even though it shares the bare method name.
+    # A duplicate-search hit is discovery only. Even the same FQN must remain unvalidated when the
+    # documented KBE signature is incompatible with the authoritative failure evidence.
     # ------------------------------------------------------------------
     $dupTestName = "Sample.Tests.DuplicateValidationCase"
     $dupSignature = "System.InvalidOperationException: Sample failure for duplicate validation testing."
@@ -515,18 +619,58 @@ try
             "recently-merged-fix-pr" = [ordered]@{ complete = $true; result_numbers = @(); total_count = 0 }
         }
         duplicate_candidate_text = [ordered]@{
-            "99999" = "Quarantine Sample.Tests.OtherUnrelatedCase`nThis issue tracks a completely different test that happens to share no identity with our test."
+            "99999" = "Known Build Error for $dupTestName`n## Error Message$([System.Environment]::NewLine)${codeFence}json$([System.Environment]::NewLine){ `"ErrorMessage`": `"System.InvalidOperationException: A different root cause.`", `"BuildRetry`": false, `"ExcludeConsoleLog`": false }$([System.Environment]::NewLine)$codeFence"
         }
     }
     $resultDup = Invoke-Collector -IssueNumber 12 -FixtureRoot $dupDir -WorkDirectory (Join-Path $tempRoot "duplicate-unvalidated")
     Assert-Equal -Actual $resultDup.Dossier.outcome -Expected "candidate" -Message "duplicate-unvalidated outcome mismatch."
-    Assert-Equal -Actual $resultDup.Dossier.candidate.duplicate_check.status -Expected "none" -Message "An unvalidated search hit must never set duplicate_check.status to existing-kbe."
+    Assert-Equal -Actual $resultDup.Dossier.candidate.duplicate_check.status -Expected "none" -Message "A same-FQN KBE with an incompatible signature must never set duplicate_check.status to existing-kbe."
     Assert-Equal -Actual (@($resultDup.Dossier.candidate.duplicate_check.references)).Count -Expected 0 -Message "An unvalidated search hit must never appear in duplicate_check.references."
     $unvalidated = @($resultDup.Dossier.provenance.duplicate_search.unvalidated_candidates)
     if ($unvalidated.Count -eq 0 -or -not (@($unvalidated | Where-Object { $_.number -eq 99999 }).Count -gt 0))
     {
         throw "Expected an unvalidated_candidates entry for issue #99999."
     }
+
+    $compatibleKbeDir = New-DerivedFixture -Name "duplicate-compatible-kbe" -Source $dupDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.duplicate_candidate_text.'99999' = "Known Build Error for $dupTestName`n## Error Message$([System.Environment]::NewLine)${codeFence}json$([System.Environment]::NewLine){ `"ErrorMessage`": `"$dupSignature`", `"BuildRetry`": false, `"ExcludeConsoleLog`": false }$([System.Environment]::NewLine)$codeFence"
+    }
+    $resultCompatibleKbe = Invoke-Collector -IssueNumber 12 -FixtureRoot $compatibleKbeDir -WorkDirectory (Join-Path $tempRoot "duplicate-compatible-kbe")
+    Assert-Equal -Actual $resultCompatibleKbe.Dossier.candidate.duplicate_check.status -Expected "existing-kbe" -Message "An exact-FQN KBE with a compatible documented signature should validate."
+
+    $detailFetchFailureDir = New-DerivedFixture -Name "duplicate-detail-fetch-failure" -Source $dupDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.duplicate_candidate_text.PSObject.Properties.Remove("99999")
+    }
+    $resultDetailFetchFailure = Invoke-Collector -IssueNumber 12 -FixtureRoot $detailFetchFailureDir -WorkDirectory (Join-Path $tempRoot "duplicate-detail-fetch-failure")
+    Assert-Equal -Actual $resultDetailFetchFailure.Dossier.outcome -Expected "incomplete" -Message "A failed duplicate candidate-detail fetch must make the collector incomplete."
+    Assert-Contains -Collection @($resultDetailFetchFailure.Dossier.incomplete.reason_codes) -Value "duplicate-detail-fetch-incomplete" -Message "Candidate-detail fetch failure reason code mismatch."
+    Assert-Equal -Actual $resultDetailFetchFailure.Dossier.provenance.duplicate_search.coverage.open_kbes -Expected $false -Message "The affected duplicate query coverage must be incomplete."
+    $failedDetailQuery = @($resultDetailFetchFailure.Dossier.provenance.duplicate_search.queries | Where-Object { $_.category -eq "open-kbe" })[0]
+    Assert-Equal -Actual $failedDetailQuery.complete -Expected $false -Message "The affected duplicate query must be marked incomplete."
+
+    $fixPrUnvalidatedDir = New-DerivedFixture -Name "fix-pr-unvalidated" -Source $dupDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.duplicate_search.'open-kbe'.result_numbers = @()
+        $fixtureObject.duplicate_search.'open-kbe'.total_count = 0
+        $fixtureObject.duplicate_search.'open-fix-pr'.result_numbers = @(99999)
+        $fixtureObject.duplicate_search.'open-fix-pr'.total_count = 1
+        $fixtureObject.duplicate_candidate_text.'99999' = "Fix $dupTestName without a compatible signature or linked issue."
+    }
+    $resultFixPrUnvalidated = Invoke-Collector -IssueNumber 12 -FixtureRoot $fixPrUnvalidatedDir -WorkDirectory (Join-Path $tempRoot "fix-pr-unvalidated")
+    Assert-Equal -Actual $resultFixPrUnvalidated.Dossier.candidate.duplicate_check.status -Expected "none" -Message "An exact-FQN fix PR without compatible association must remain unvalidated."
+
+    $fixPrValidatedDir = New-DerivedFixture -Name "fix-pr-validated" -Source $dupDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.duplicate_search.'open-kbe'.result_numbers = @()
+        $fixtureObject.duplicate_search.'open-kbe'.total_count = 0
+        $fixtureObject.duplicate_search.'open-fix-pr'.result_numbers = @(99999)
+        $fixtureObject.duplicate_search.'open-fix-pr'.total_count = 1
+        $fixtureObject.duplicate_candidate_text.'99999' = "Fix $dupTestName`nRoot cause: $dupSignature"
+    }
+    $resultFixPrValidated = Invoke-Collector -IssueNumber 12 -FixtureRoot $fixPrValidatedDir -WorkDirectory (Join-Path $tempRoot "fix-pr-validated")
+    Assert-Equal -Actual $resultFixPrValidated.Dossier.candidate.duplicate_check.status -Expected "existing-fix-pr" -Message "An exact-FQN fix PR with compatible signature association should validate."
 
     # ------------------------------------------------------------------
     # Edge case (item 11): a literal ErrorMessage containing '*', '?', and '[' must be matched via

@@ -21,8 +21,13 @@
   "outcome": "incomplete",
   "provenance": {
     "repository_ref_verification": {
+      "event_ref": "refs/heads/main",
+      "event_sha": "<GENERATED>",
       "checkout_sha": "<GENERATED>",
-      "trusted_main_sha": "<GENERATED>",
+      "current_main_sha": "<GENERATED>",
+      "checkout_matches_event_sha": true,
+      "event_ref_is_main": true,
+      "dispatch_sha_on_main": true,
       "matches_main": true
     },
     "azdo_builds": [
@@ -32,9 +37,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "issue-body-reference",
         "definition_id": 83,
+        "source_branch": "refs/heads/main",
         "source_version": "b5666daed660cf1862a197784eee65b42a74a64a",
-        "started_utc": "2026-08-27T08:00:00.0000000Z",
-        "finished_utc": "2026-08-27T09:45:00.0000000Z",
+        "started_utc": "2026-08-27T08:00:00Z",
+        "finished_utc": "2026-08-27T09:45:00Z",
+        "status": "completed",
         "result": "failed"
       },
       {
@@ -43,9 +50,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "issue-body-reference",
         "definition_id": 83,
+        "source_branch": "refs/heads/main",
         "source_version": "7773bea1d63c05d7b7043d2ecd2a3fcdd0ff18dc",
-        "started_utc": "2026-08-04T08:00:00.0000000Z",
-        "finished_utc": "2026-08-04T09:45:00.0000000Z",
+        "started_utc": "2026-08-04T08:00:00Z",
+        "finished_utc": "2026-08-04T09:45:00Z",
+        "status": "completed",
         "result": "failed"
       },
       {
@@ -54,9 +63,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "negative-scan",
         "definition_id": 83,
+        "source_branch": "refs/heads/main",
         "source_version": "d0bb51a3cabe3bd24dac952bcf8a183c91b54baa",
-        "started_utc": "2026-08-15T08:00:00.0000000Z",
-        "finished_utc": "2026-08-15T09:45:00.0000000Z",
+        "started_utc": "2026-08-15T08:00:00Z",
+        "finished_utc": "2026-08-15T09:45:00Z",
+        "status": "completed",
         "result": "succeeded"
       }
     ],

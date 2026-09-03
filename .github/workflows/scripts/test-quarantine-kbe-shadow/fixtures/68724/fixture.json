@@ -16,7 +16,9 @@
       "sourceVersion": "4bb91afc6d034cfcd78cbf15cdb21e0f6f419d68",
       "startTime": "2026-08-22T03:28:01.2925985Z",
       "finishTime": "2026-08-22T05:06:06.219227Z",
-      "result": "failed"
+      "result": "failed",
+      "sourceBranch": "refs/heads/main",
+      "status": "completed"
     }
   },
   "recurrence_scan": {},

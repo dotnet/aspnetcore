@@ -71,12 +71,16 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
           SIGNATURE_INPUT: ${{ inputs.signature }}
+          EVENT_REF: ${{ github.ref }}
+          EVENT_SHA: ${{ github.sha }}
         run: |
           $params = @{
             IssueNumber = [int]$env:ISSUE_NUMBER
             OutputFile = "$env:RUNNER_TEMP/dossier.json"
             CandidateFile = "$env:RUNNER_TEMP/candidate.json"
             EvidenceRoot = "$env:RUNNER_TEMP/evidence"
+            EventRef = $env:EVENT_REF
+            EventSha = $env:EVENT_SHA
           }
           if (-not [string]::IsNullOrWhiteSpace($env:SIGNATURE_INPUT))
           {

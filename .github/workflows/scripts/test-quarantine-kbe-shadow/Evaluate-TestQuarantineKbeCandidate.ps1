@@ -538,12 +538,24 @@ foreach ($log in $candidate.evidence.raw_logs)
     else
     {
         $negativeLogCount++
-        $null = $negativeHashes.Add($actualHash)
-        $null = $negativeBuildIds.Add([int]$log.build.id)
+        if ([string]$log.outcome -eq "passed")
+        {
+            $null = $negativeHashes.Add($actualHash)
+            $null = $negativeBuildIds.Add([int]$log.build.id)
+        }
         if ($match.matched)
         {
             $negativeCollisionCount++
         }
+    }
+
+    if ([string]$log.build.platform -eq "unknown")
+    {
+        $incompleteReasons.Add("Evidence log '$($log.id)' has unknown platform; exact environment dimensions are required.")
+    }
+    if ([string]$log.build.configuration -eq "unknown")
+    {
+        $incompleteReasons.Add("Evidence log '$($log.id)' has unknown configuration; exact environment dimensions are required.")
     }
 
     $passOrSkipCollisionCount += [int]$match.pass_or_skip_match_count
@@ -587,12 +599,12 @@ if ($failureBuildIds.Count -lt $requiredFailureLogs)
 
 if ($negativeHashes.Count -lt $requiredNegativeLogs)
 {
-    $incompleteReasons.Add("Only $($negativeHashes.Count) distinct negative log(s) were supplied; $requiredNegativeLogs are required.")
+    $incompleteReasons.Add("Only $($negativeHashes.Count) distinct authoritative Passed log(s) were supplied; $requiredNegativeLogs are required.")
 }
 
 if ($negativeBuildIds.Count -lt $requiredNegativeLogs)
 {
-    $incompleteReasons.Add("Only $($negativeBuildIds.Count) distinct negative build(s) were supplied; $requiredNegativeLogs are required.")
+    $incompleteReasons.Add("Only $($negativeBuildIds.Count) distinct authoritative Passed build(s) were supplied; $requiredNegativeLogs are required.")
 }
 
 if (@($failureHashes | Where-Object { $negativeHashes.Contains($_) }).Count -gt 0)

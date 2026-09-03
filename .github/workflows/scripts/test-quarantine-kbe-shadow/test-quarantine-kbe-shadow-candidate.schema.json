@@ -190,8 +190,11 @@
                 "required": [
                   "id",
                   "pipeline_definition_id",
+                  "source_branch",
                   "source_version",
                   "started_utc",
+                  "status",
+                  "result",
                   "platform",
                   "configuration"
                 ],
@@ -202,7 +205,13 @@
                   },
                   "pipeline_definition_id": {
                     "type": "integer",
-                    "minimum": 1
+                    "enum": [
+                      83,
+                      87
+                    ]
+                  },
+                  "source_branch": {
+                    "const": "refs/heads/main"
                   },
                   "source_version": {
                     "$ref": "#/$defs/gitSha"
@@ -210,6 +219,16 @@
                   "started_utc": {
                     "type": "string",
                     "format": "date-time"
+                  },
+                  "status": {
+                    "const": "completed"
+                  },
+                  "result": {
+                    "enum": [
+                      "failed",
+                      "partiallySucceeded",
+                      "succeeded"
+                    ]
                   },
                   "platform": {
                     "type": "string",
@@ -239,6 +258,16 @@
                   "properties": {
                     "outcome": {
                       "const": "failed"
+                    },
+                    "build": {
+                      "properties": {
+                        "result": {
+                          "enum": [
+                            "failed",
+                            "partiallySucceeded"
+                          ]
+                        }
+                      }
                     }
                   }
                 }
@@ -259,6 +288,13 @@
                         "skipped",
                         "unrelated"
                       ]
+                    },
+                    "build": {
+                      "properties": {
+                        "result": {
+                          "const": "succeeded"
+                        }
+                      }
                     }
                   }
                 }

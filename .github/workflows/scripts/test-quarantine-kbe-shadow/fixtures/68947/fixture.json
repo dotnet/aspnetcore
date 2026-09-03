@@ -16,7 +16,9 @@
       "sourceVersion": "2a0388b463b2b80c4de4b6de4409857432ae9c1d",
       "startTime": "2026-08-13T04:18:53.903Z",
       "finishTime": "2026-08-13T04:31:51.187Z",
-      "result": "partiallySucceeded"
+      "result": "partiallySucceeded",
+      "sourceBranch": "refs/heads/main",
+      "status": "completed"
     }
   },
   "recurrence_scan": {
@@ -26,7 +28,9 @@
         "sourceVersion": "ef86306faaa4b31e962f06b93c2ce21e4a18bf17",
         "startTime": "2026-08-10T09:00:00Z",
         "finishTime": "2026-08-10T10:30:00Z",
-        "result": "partiallySucceeded"
+        "result": "partiallySucceeded",
+        "sourceBranch": "refs/heads/main",
+        "status": "completed"
       }
     ]
   },
@@ -37,7 +41,9 @@
         "sourceVersion": "113a606f96ebd832970a1f377748746ff6526abc",
         "startTime": "2026-08-08T09:00:00Z",
         "finishTime": "2026-08-08T10:30:00Z",
-        "result": "succeeded"
+        "result": "succeeded",
+        "sourceBranch": "refs/heads/main",
+        "status": "completed"
       }
     ]
   },

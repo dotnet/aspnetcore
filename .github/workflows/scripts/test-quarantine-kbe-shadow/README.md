@@ -11,10 +11,10 @@ production without an explicit, separate decision by a maintainer.
 | File | Role |
 |---|---|
 | `Collect-TestQuarantineKbeEvidence.ps1` | Deterministic collector. Given one issue number (and, optionally, a manual signature override), gathers public evidence and emits a **dossier**: either a `candidate` ready for the evaluator, or a structured `incomplete` outcome. |
-| `Evaluate-TestQuarantineKbeCandidate.ps1` | Pre-existing, unmodified deterministic evaluator. Validates a candidate's signature against its evidence and emits a **receipt**. |
+| `Evaluate-TestQuarantineKbeCandidate.ps1` | Deterministic evaluator. Validates a candidate's signature, build/environment provenance, and authoritative Passed evidence, then emits a **receipt**. |
 | `New-TestQuarantineKbeSummary.ps1` | Renders a short Markdown summary of a dossier (+ receipt, when present) for the workflow step summary and as an artifact. |
-| `test-quarantine-kbe-shadow-candidate.schema.json` | Pre-existing, unmodified schema for the evaluator's input. |
-| `test-quarantine-kbe-shadow-receipt.schema.json` | Pre-existing, unmodified schema for the evaluator's output. |
+| `test-quarantine-kbe-shadow-candidate.schema.json` | Versioned schema for the evaluator's input. |
+| `test-quarantine-kbe-shadow-receipt.schema.json` | Versioned schema for the evaluator's output. |
 | `test-quarantine-kbe-shadow-dossier.schema.json` | Schema for the collector's output envelope (provenance + either `candidate` or `incomplete`). Independently versioned; it wraps and reuses the candidate schema rather than replacing or competing with it. |
 | `fixtures/<issue>/` | Compact, sanitized, offline fixtures for three real pilot issues, each with a golden `expected-dossier.json`. |
 | `Test-Evaluate-TestQuarantineKbeCandidate.ps1`, `Test-Collect-TestQuarantineKbeEvidence.ps1` | Deterministic, offline test suites (no network access). |
@@ -51,7 +51,7 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   pseudo-test row carries one); otherwise `helix_unavailable: true` is recorded explicitly and the
   VSTMR detail text remains authoritative on its own -- never silently degraded. Recurrence
   requires evidence from **at least two distinct builds** (a single build producing two separate
-  artifacts is not recurrence), and at least one authoritative negative (passed/skipped)
+  artifacts is not recurrence), and at least one authoritative **Passed**
   occurrence. Signature matching against that raw text uses ordinal, case-sensitive substring
   containment (`[string]::Contains(..., Ordinal)`) throughout -- never PowerShell's
   `-like`/`-notlike` operators, whose `*`, `?`, and `[...]` wildcard semantics would otherwise
@@ -77,32 +77,34 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   issue body to contain the trusted `<!-- gh-aw-workflow-id: test-quarantine -->` or
   `<!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->` HTML-comment marker the
   production quarantine workflow stamps into every issue it creates.
-* **A duplicate-search hit is a discovery candidate, not a validated duplicate.** Every numeric
-  result returned by the four categorized GitHub searches (open/recently-closed KBE,
-  open/recently-merged fix PR) is fetched and required to contain the candidate's **exact**
-  fully-qualified test name before it is ever treated as an existing KBE or fix PR; a hit that only
-  shares a bare method name with an unrelated test is recorded as an `unvalidated_candidate` (with
-  a reason) and never sets `duplicate_check.status` to `existing-kbe`/`existing-fix-pr`. The
+* **A duplicate-search hit is discovery only, not a validated duplicate.** Every numeric result
+  returned by the four categorized GitHub searches is fetched. An existing KBE requires the exact
+  FQN plus a documented `ErrorMessage`/`ErrorPattern` that matches every authoritative failure log
+  with evaluator-compatible semantics. A fix PR requires the exact FQN plus a compatible signature,
+  linked KBE/quarantine issue, or root-cause association. Incompatible fetched items remain
+  `unvalidated_candidate` entries; a failed candidate-detail fetch makes that query and the overall
+  duplicate coverage incomplete. The
   "recently" closed/merged categories carry an explicit 90-day `closed:>=`/`merged:>=` time-window
   qualifier so the label matches what the query actually searches, and a query is only marked
   `complete` when GitHub reports `incomplete_results: false` **and** every matching item (per
   `total_count`, across up to 3 paginated pages of 100) was actually retrieved -- a `total_count`
   larger than a single page previously went unnoticed.
-* **The repository checkout is only ever labeled `branch: "main"` after independent
-  confirmation.** The collector resolves `dotnet/aspnetcore`'s actual current `main` SHA through a
-  trusted `GET /repos/dotnet/aspnetcore/commits/main` GitHub API response and requires it to equal
-  the checked-out commit (`repository_ref_verification` in the dossier records both SHAs and the
-  comparison result) before ever emitting a candidate. In production this is a same-checkout
-  cross-check (workflow_dispatch normally runs on `main`'s tip, so both values coincide); in this
-  PR's own development branch (or any dispatch from a non-default ref), the checkout is genuinely
-  not `main`, and the collector fails closed (`repository-ref-not-main`) rather than mislabeling
-  it.
+* **The immutable workflow-dispatch ref is verified, not assumed.** Trusted `github.ref` and
+  `github.sha` values are passed through `env:` bindings. The ref must be exactly `refs/heads/main`,
+  the checkout must equal the dispatch SHA, and the dispatch SHA must be identical to or an
+  ancestor/member of current main. The dossier records event ref/SHA, checkout SHA, and current
+  main SHA separately, so main advancing after dispatch is valid while non-main dispatches fail
+  closed.
+* **Every countable build is validated before use.** Pipeline definition must be 83 or 87,
+  `sourceBranch` must be exactly `refs/heads/main`, status must be `completed`, and failure builds
+  must be `failed` or `partiallySucceeded` (`succeeded` is required for the Passed scan). These
+  dimensions are recorded in build provenance and candidate evidence.
 * **Platform/configuration are derived from authoritative metadata, never fabricated.** Azure
   DevOps' `buildConfiguration.platform`/`.flavor` fields are empty strings on every real run
   observed live; the only authoritative, cheaply-available signal is the VSTMR TestRun's own
   `name` (e.g. `Quarantine-Mono-Linux-Release-xunit`). The collector parses recognized
-  platform/configuration tokens out of that name and records the literal string `"unknown"` --
-  never a guessed default -- when no recognized token is present.
+  platform/configuration tokens out of that name. A counted failure or pass with either dimension
+  `"unknown"` emits explicit missing-evidence codes and prevents a candidate/validated receipt.
 * **Never infer a pass, a recurrence, a signature, a platform/configuration, or a validated
   duplicate from missing or unverifiable evidence.** Every gap -- a build whose Azure DevOps
   metadata has aged out of retention, historical VSTMR test-result data no longer queryable for a
@@ -121,7 +123,7 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   only) after each GitHub call. The workflow uploads artifacts; it never calls any write API (no
   labels, comments, commits, branches, or files).
 * **Evidence provenance remains unverified in this PR.** Even when the collector's candidate is
-  independently valid, the unmodified evaluator still emits `evidence_provenance_verified: false`,
+  independently valid, the evaluator still emits `evidence_provenance_verified: false`,
   `eligible_for_kbe_enrichment: false`, and `human_review_required: true`. Flipping
   `evidence_provenance_verified` to `true` is a deliberate, separate promotion decision (see
   "Promotion gates" below) -- not something this collector claims for itself.
@@ -187,7 +189,7 @@ the real endpoints captured live during development:
 | Key | Mirrors |
 |---|---|
 | `issue` | `GET /repos/{repo}/issues/{number}` (number, state, labels, body) |
-| `main_branch` *(optional)* | `GET /repos/{repo}/commits/main` (`.sha`) -- omit entirely to skip the repository-ref guard (used by fixtures that don't specifically exercise it); include to test either a match or a deliberate mismatch |
+| `main_branch` *(optional)* | Current main `.sha`, plus optional `contains_event_sha` to model ancestry/membership after main advances; omit for legacy pilot fixtures that do not exercise this guard |
 | `azdo_builds` | `GET .../build/builds/{id}` keyed by build id |
 | `recurrence_scan`, `negative_scan` | `GET .../build/builds?resultFilter=...` keyed by pipeline definition id |
 | `vstmr_summary` | `GET .../testresults/resultsbyBuild?buildId=...` keyed by build id (array of summary rows) |
@@ -208,31 +210,29 @@ the real endpoints captured live during development:
 Each fixture directory also has an `expected-dossier.json` golden file used for deep-equality
 comparison in the test suite. Golden comparisons exclude the collector's `generated_utc` /
 `retrieved_utc` / `captured_utc` / `checked_utc` timestamps and the running checkout's
-`commit_sha` / `checkout_sha` / `trusted_main_sha` -- all of which are expected to differ
+`commit_sha` / `event_sha` / `checkout_sha` / `current_main_sha` -- all of which are expected to differ
 run-to-run and commit-to-commit -- replacing them with the literal sentinel `<GENERATED>` on both
 sides before comparing.
 
 The test suite additionally covers, via small synthetic (non-pilot) fixtures: a closed issue, an
 issue missing the `test-failure` label, an issue carrying the label but missing the trusted
-workflow marker, a repository-ref mismatch, Build Analysis exact-vs-short-name and
-concrete-vs-generic-known-issue flag precision, an unvalidated duplicate-search hit that shares
-only a bare method name with an unrelated test, a literal signature containing `*`/`?`/`[`
-wildcard-shaped characters (with a decoy build proving ordinal, not `-like`, matching), and a
-direct, network-free unit test of the failed/partiallySucceeded build-list merge/dedupe.
+workflow marker, immutable dispatch ancestry and non-main rejection, strict build definition/ref/
+status/result gates, skip-only negative evidence, unknown environment dimensions, Build Analysis
+flag precision, compatible and incompatible same-FQN duplicate signatures, failed duplicate-detail
+fetches, fix-PR associations, wildcard-shaped literal signatures, and build-list merge/dedupe.
 
 ## Reconciling with the existing evaluator contract
 
-The collector does **not** introduce a third, competing dossier schema. Its `candidate` output,
-when present, is validated against the same unmodified
-`test-quarantine-kbe-shadow-candidate.schema.json` used by the evaluator and is fed to the
-unmodified `Evaluate-TestQuarantineKbeCandidate.ps1` exactly as-is -- this PR does not change that
-script, its tests, or either of its schemas. `test-quarantine-kbe-shadow-dossier.schema.json` is a
+The collector does **not** introduce a third, competing candidate contract. Its `candidate` output,
+when present, is validated against the same versioned
+`test-quarantine-kbe-shadow-candidate.schema.json` used by the evaluator and is fed to
+`Evaluate-TestQuarantineKbeCandidate.ps1` exactly as-is. `test-quarantine-kbe-shadow-dossier.schema.json` is a
 new, independently versioned (`schema_version: 1`) envelope that carries collector-specific
 provenance (repository-ref verification, Azure DevOps build resolution, Build Analysis check-run
 snapshots, raw-evidence retrieval, unvalidated duplicate-search candidates) alongside that same
 `candidate` object, or a structured `incomplete` outcome when any evidence gate fails. Because the
 candidate schema's `duplicate_check.queries[]` items are `additionalProperties: false` (and
-correctly so -- it must stay byte-for-byte compatible with the unmodified evaluator), the
+correctly so -- it must stay byte-for-byte compatible with the evaluator), the
 dossier-only `total_count` field is carried on `provenance.duplicate_search.queries[]` only, never
 on `candidate.duplicate_check.queries[]`.
 

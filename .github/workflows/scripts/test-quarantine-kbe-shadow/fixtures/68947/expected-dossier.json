@@ -21,8 +21,13 @@
   "outcome": "candidate",
   "provenance": {
     "repository_ref_verification": {
+      "event_ref": "refs/heads/main",
+      "event_sha": "<GENERATED>",
       "checkout_sha": "<GENERATED>",
-      "trusted_main_sha": "<GENERATED>",
+      "current_main_sha": "<GENERATED>",
+      "checkout_matches_event_sha": true,
+      "event_ref_is_main": true,
+      "dispatch_sha_on_main": true,
       "matches_main": true
     },
     "azdo_builds": [
@@ -32,9 +37,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "issue-body-reference",
         "definition_id": 87,
+        "source_branch": "refs/heads/main",
         "source_version": "2a0388b463b2b80c4de4b6de4409857432ae9c1d",
-        "started_utc": "2026-08-13T04:18:53.9030000Z",
-        "finished_utc": "2026-08-13T04:31:51.1870000Z",
+        "started_utc": "2026-08-13T04:18:53.903Z",
+        "finished_utc": "2026-08-13T04:31:51.187Z",
+        "status": "completed",
         "result": "partiallySucceeded"
       },
       {
@@ -50,9 +57,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "recurrence-scan",
         "definition_id": 87,
+        "source_branch": "refs/heads/main",
         "source_version": "ef86306faaa4b31e962f06b93c2ce21e4a18bf17",
-        "started_utc": "2026-08-10T09:00:00.0000000Z",
-        "finished_utc": "2026-08-10T10:30:00.0000000Z",
+        "started_utc": "2026-08-10T09:00:00Z",
+        "finished_utc": "2026-08-10T10:30:00Z",
+        "status": "completed",
         "result": "partiallySucceeded"
       },
       {
@@ -61,9 +70,11 @@
         "retrieved_utc": "<GENERATED>",
         "source": "negative-scan",
         "definition_id": 87,
+        "source_branch": "refs/heads/main",
         "source_version": "113a606f96ebd832970a1f377748746ff6526abc",
-        "started_utc": "2026-08-08T09:00:00.0000000Z",
-        "finished_utc": "2026-08-08T10:30:00.0000000Z",
+        "started_utc": "2026-08-08T09:00:00Z",
+        "finished_utc": "2026-08-08T10:30:00Z",
+        "status": "completed",
         "result": "succeeded"
       }
     ],
@@ -218,8 +229,11 @@
           "build": {
             "id": 1551326,
             "pipeline_definition_id": 87,
+            "source_branch": "refs/heads/main",
             "source_version": "2a0388b463b2b80c4de4b6de4409857432ae9c1d",
-            "started_utc": "2026-08-13T04:18:53.9030000Z",
+            "started_utc": "2026-08-13T04:18:53.903Z",
+            "status": "completed",
+            "result": "partiallySucceeded",
             "platform": "Linux",
             "configuration": "Release"
           }
@@ -234,8 +248,11 @@
           "build": {
             "id": 1549000,
             "pipeline_definition_id": 87,
+            "source_branch": "refs/heads/main",
             "source_version": "ef86306faaa4b31e962f06b93c2ce21e4a18bf17",
-            "started_utc": "2026-08-10T09:00:00.0000000Z",
+            "started_utc": "2026-08-10T09:00:00Z",
+            "status": "completed",
+            "result": "partiallySucceeded",
             "platform": "Linux",
             "configuration": "Release"
           }
@@ -250,8 +267,11 @@
           "build": {
             "id": 1545000,
             "pipeline_definition_id": 87,
+            "source_branch": "refs/heads/main",
             "source_version": "113a606f96ebd832970a1f377748746ff6526abc",
-            "started_utc": "2026-08-08T09:00:00.0000000Z",
+            "started_utc": "2026-08-08T09:00:00Z",
+            "status": "completed",
+            "result": "succeeded",
             "platform": "Linux",
             "configuration": "Release"
           }

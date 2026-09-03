@@ -16,7 +16,9 @@
       "sourceVersion": "b5666daed660cf1862a197784eee65b42a74a64a",
       "startTime": "2026-08-27T08:00:00Z",
       "finishTime": "2026-08-27T09:45:00Z",
-      "result": "failed"
+      "result": "failed",
+      "sourceBranch": "refs/heads/main",
+      "status": "completed"
     },
     "1538879": {
       "definition": {
@@ -25,7 +27,9 @@
       "sourceVersion": "7773bea1d63c05d7b7043d2ecd2a3fcdd0ff18dc",
       "startTime": "2026-08-04T08:00:00Z",
       "finishTime": "2026-08-04T09:45:00Z",
-      "result": "failed"
+      "result": "failed",
+      "sourceBranch": "refs/heads/main",
+      "status": "completed"
     }
   },
   "recurrence_scan": {},
@@ -36,7 +40,9 @@
         "sourceVersion": "d0bb51a3cabe3bd24dac952bcf8a183c91b54baa",
         "startTime": "2026-08-15T08:00:00Z",
         "finishTime": "2026-08-15T09:45:00Z",
-        "result": "succeeded"
+        "result": "succeeded",
+        "sourceBranch": "refs/heads/main",
+        "status": "completed"
       }
     ]
   },

@@ -113,23 +113,48 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "event_ref",
+            "event_sha",
             "checkout_sha",
-            "trusted_main_sha",
+            "current_main_sha",
+            "checkout_matches_event_sha",
+            "event_ref_is_main",
+            "dispatch_sha_on_main",
             "matches_main"
           ],
           "properties": {
+            "event_ref": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "event_sha": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9a-f]{40}$"
+            },
             "checkout_sha": {
               "$ref": "#/$defs/gitSha"
             },
-            "trusted_main_sha": {
+            "current_main_sha": {
               "type": [
                 "string",
                 "null"
               ]
             },
+            "checkout_matches_event_sha": {
+              "type": "boolean"
+            },
+            "event_ref_is_main": {
+              "type": "boolean"
+            },
+            "dispatch_sha_on_main": {
+              "type": "boolean"
+            },
             "matches_main": {
               "type": "boolean",
-              "description": "true only when checkout_sha was confirmed, via a trusted GitHub API response for dotnet/aspnetcore's 'main' branch, to equal the repository checkout the collector and evaluator ran against. A candidate is only ever emitted when this is true."
+              "description": "true only when the workflow dispatch ref is exactly refs/heads/main, checkout_sha equals event_sha, and event_sha is identical to or an ancestor/member of current main. A candidate is only ever emitted when this is true."
             }
           }
         },
@@ -168,6 +193,10 @@
                 "type": "integer",
                 "minimum": 1
               },
+              "source_branch": {
+                "type": "string",
+                "maxLength": 256
+              },
               "source_version": {
                 "$ref": "#/$defs/gitSha"
               },
@@ -183,6 +212,10 @@
                 "format": "date-time"
               },
               "result": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "status": {
                 "type": "string",
                 "maxLength": 64
               },
@@ -203,8 +236,10 @@
                 "then": {
                   "required": [
                     "definition_id",
+                    "source_branch",
                     "source_version",
                     "started_utc",
+                    "status",
                     "result"
                   ]
                 }
@@ -416,13 +451,22 @@
               "test-name-unresolvable",
               "multiple-test-identities-unresolved",
               "repository-ref-not-main",
+              "workflow-dispatch-ref-not-main",
+              "checkout-sha-not-dispatch-sha",
               "build-reference-unresolvable",
               "build-metadata-expired",
+              "azdo-build-definition-not-allowed",
+              "azdo-build-source-branch-not-main",
+              "azdo-build-not-completed",
+              "azdo-build-result-incompatible",
               "raw-evidence-expired",
               "raw-evidence-insufficient",
+              "evidence-platform-unknown",
+              "evidence-configuration-unknown",
               "recurrence-single-build-only",
               "signature-extraction-ambiguous",
               "duplicate-search-incomplete",
+              "duplicate-detail-fetch-incomplete",
               "github-api-error"
             ]
           }
@@ -616,7 +660,7 @@
         "unvalidated_candidates": {
           "type": "array",
           "maxItems": 200,
-          "description": "Search hits that were discovered but could not be confirmed, by fetching the issue/PR body and requiring the exact fully-qualified test name to appear in it, to actually concern this test. Never contributes to 'references' or an existing-kbe/existing-fix-pr status.",
+          "description": "Search hits that were fetched but could not establish the exact FQN plus compatible KBE signature or fix-PR association. A detail-fetch failure is also recorded here and separately makes the affected query incomplete. Never contributes to 'references' or an existing-kbe/existing-fix-pr status.",
           "items": {
             "type": "object",
             "additionalProperties": false,
