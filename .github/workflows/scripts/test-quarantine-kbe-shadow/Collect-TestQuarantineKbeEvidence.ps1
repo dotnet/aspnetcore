@@ -6,7 +6,7 @@
 .DESCRIPTION
     Gathers public evidence for a single quarantine issue -- the issue body itself, Azure DevOps
     build metadata, authoritative VSTMR test-result detail (errorMessage/stackTrace), and GitHub
-    "Build Analysis" check-run snapshots (corroborating only, never authoritative) -- then emits
+    "Build Insights" check-run snapshots (corroborating only, never authoritative) -- then emits
     either:
       * a "candidate" object that independently satisfies test-quarantine-kbe-shadow-candidate.schema.json
         and is ready for Evaluate-TestQuarantineKbeCandidate.ps1, or
@@ -755,7 +755,7 @@ function Get-CheckRunsForSha
     try
     {
         $headers = Get-GitHubHeaders
-        $result = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/commits/$Sha/check-runs" -Headers $headers -Method Get -TimeoutSec 30
+        $result = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/commits/$Sha/check-runs?check_name=Build%20Insights&per_page=100" -Headers $headers -Method Get -TimeoutSec 30
         return @($result.check_runs)
     }
     catch
@@ -1298,8 +1298,8 @@ foreach ($buildId in $citedBuildIds)
 # ---------------------------------------------------------------------------
 # Step 4: if fewer than two distinct resolved builds are available, perform a capped
 # supplementary recurrence scan across the same pipeline definition(s) on 'main' -- direct raw
-# AzDO/VSTMR evidence, never the Build Analysis abstraction, per the architecture consensus that
-# Build Analysis is corroborating only and cannot establish exact recurrence. Signature matching
+# AzDO/VSTMR evidence. Build Insights is corroborating only and cannot establish exact recurrence.
+# Signature matching
 # uses ordinal substring containment, never `-like`/`-notlike`: a literal ErrorMessage containing
 # `*`, `?`, or `[` would otherwise be misinterpreted as a wildcard pattern instead of literal text.
 # ---------------------------------------------------------------------------
@@ -1832,7 +1832,7 @@ if ($null -ne $testName -and $eligiblePassedBuildIds.Count -lt $minimumNegativeL
 }
 
 # ---------------------------------------------------------------------------
-# Step 6: fetch Build Analysis check-run snapshots. Advisory/corroborating only: recorded
+# Step 6: fetch Build Insights check-run snapshots. Advisory/corroborating only: recorded
 # regardless of outcome, and a missing or generic snapshot never overrides raw evidence gathered
 # above. `exact_test_referenced` requires the FULL fully-qualified test name, never a bare method
 # name (which commonly collides with unrelated tests); `known_issue_referenced` requires a
@@ -1841,18 +1841,38 @@ if ($null -ne $testName -and $eligiblePassedBuildIds.Count -lt $minimumNegativeL
 # this true).
 # ---------------------------------------------------------------------------
 
-$checkRunRecords = [System.Collections.Generic.List[object]]::new()
+$buildInsightsSnapshots = [System.Collections.Generic.List[object]]::new()
 $distinctShas = @($resolvedBuilds | ForEach-Object { $_.source_version } | Where-Object { $_ } | Select-Object -Unique)
 $corroboratingContext = [System.Collections.Generic.List[object]]::new()
 
 foreach ($sha in $distinctShas)
 {
     $checkRuns = Get-CheckRunsForSha -Sha $sha
-    $buildAnalysis = @($checkRuns) | Where-Object { [string]$_.name -eq "Build Analysis" } | Select-Object -First 1
+    $buildInsights = @(
+        $checkRuns |
+            Where-Object {
+                if ([string]$_.name -ne "Build Insights")
+                {
+                    return $false
+                }
+                $appSlug = if ((Test-HasProperty -Object $_ -Name "app") -and
+                    $null -ne $_.app -and
+                    (Test-HasProperty -Object $_.app -Name "slug"))
+                {
+                    [string]$_.app.slug
+                }
+                else
+                {
+                    $null
+                }
+                return [string]::IsNullOrEmpty($appSlug) -or $appSlug -eq "build-insights"
+            } |
+            Select-Object -First 1
+    )
 
-    if ($null -eq $buildAnalysis)
+    if ($buildInsights.Count -eq 0)
     {
-        $null = $checkRunRecords.Add([ordered]@{
+        $null = $buildInsightsSnapshots.Add([ordered]@{
             source_version = $sha
             found = $false
             retrieved_utc = $retrievedUtc
@@ -1863,8 +1883,9 @@ foreach ($sha in $distinctShas)
         })
         continue
     }
+    $buildInsights = $buildInsights[0]
 
-    $text = [string]$buildAnalysis.output.text
+    $text = [string]$buildInsights.output.text
     $textSha256 = Get-Sha256String -Value $text
     $shortMethodName = if ($testName) { ($testName -split '\.')[-1] } else { $null }
     $exactTestReferenced = ($null -ne $testName) -and $text.Contains($testName, [System.StringComparison]::Ordinal)
@@ -1883,23 +1904,54 @@ foreach ($sha in $distinctShas)
         }
     }
     $knownIssueNumbers = @($knownIssueNumbers | Select-Object -Unique)
+    $snapshotIdMatch = [regex]::Match($text, '<!--\s*SnapshotId:\s*([^-][^>]*?)\s*-->')
+    $snapshotId = if ($snapshotIdMatch.Success) { $snapshotIdMatch.Groups[1].Value.Trim() } else { $null }
+    $appSlug = if ((Test-HasProperty -Object $buildInsights -Name "app") -and
+        $null -ne $buildInsights.app -and
+        (Test-HasProperty -Object $buildInsights.app -Name "slug"))
+    {
+        [string]$buildInsights.app.slug
+    }
+    else
+    {
+        $null
+    }
+    $detailsUrl = if (Test-HasProperty -Object $buildInsights -Name "details_url")
+    {
+        [string]$buildInsights.details_url
+    }
+    else
+    {
+        $null
+    }
 
-    $null = $checkRunRecords.Add([ordered]@{
+    $null = $buildInsightsSnapshots.Add([ordered]@{
         source_version = $sha
         found = $true
         retrieved_utc = $retrievedUtc
-        check_id = [int]$buildAnalysis.id
-        conclusion = [string]$buildAnalysis.conclusion
-        title = Get-CappedExcerpt -Value ([string]$buildAnalysis.output.title) -Cap 512
+        check_id = [long]$buildInsights.id
+        app_slug = $appSlug
+        conclusion = [string]$buildInsights.conclusion
+        title = Get-CappedExcerpt -Value ([string]$buildInsights.output.title) -Cap 512
         text_sha256 = $textSha256
         text_excerpt = Get-CappedExcerpt -Value $text -Cap $excerptCap
-        html_url = [string]$buildAnalysis.html_url
+        details_url = $detailsUrl
+        html_url = [string]$buildInsights.html_url
+        snapshot_id = $snapshotId
         exact_test_referenced = $exactTestReferenced
         short_name_referenced = $shortNameReferenced
         known_issue_referenced = $knownIssueNumbers.Count -gt 0
         known_issue_numbers = $knownIssueNumbers
     })
-    $null = $corroboratingContext.Add([ordered]@{ source = "build-analysis"; url = [string]$buildAnalysis.html_url })
+    $corroboratingUrl = if (-not [string]::IsNullOrWhiteSpace($detailsUrl))
+    {
+        $detailsUrl
+    }
+    else
+    {
+        [string]$buildInsights.html_url
+    }
+    $null = $corroboratingContext.Add([ordered]@{ source = "build-insights"; url = $corroboratingUrl })
 }
 
 # ---------------------------------------------------------------------------
@@ -2193,7 +2245,7 @@ $dossier = [ordered]@{
             matches_main = $eventRefIsMain -and $checkoutMatchesEventSha -and $dispatchShaOnMain
         }
         azdo_builds = @($azdoBuildRecords)
-        check_run_snapshots = @($checkRunRecords)
+        build_insights_snapshots = @($buildInsightsSnapshots)
         raw_evidence_sources = @($rawEvidenceRecords)
         duplicate_search = $duplicateCheckWithUnvalidated
     }

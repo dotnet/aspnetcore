@@ -29,20 +29,7 @@
   "vstmr_summary": {},
   "vstmr_detail": {},
   "vstmr_runs": {},
-  "check_runs": {
-    "4bb91afc6d034cfcd78cbf15cdb21e0f6f419d68": [
-      {
-        "name": "Build Analysis",
-        "id": 900001,
-        "conclusion": "failure",
-        "output": {
-          "title": "1 failing test",
-          "text": "1 test failed. See Azure DevOps for full details."
-        },
-        "html_url": "https://github.com/dotnet/aspnetcore/runs/900001"
-      }
-    ]
-  },
+  "check_runs": {},
   "duplicate_search": {
     "open-kbe": {
       "complete": true,

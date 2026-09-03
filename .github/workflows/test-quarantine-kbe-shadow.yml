@@ -1,8 +1,9 @@
 name: Test quarantine KBE shadow (single issue)
 
 # Maintainer-triggered, read-only shadow evaluation for exactly one existing dotnet/aspnetcore
-# test-quarantine issue. See .github/workflows/scripts/test-quarantine-kbe-shadow/README.md for
-# the full trust boundary, evidence model, and promotion gates.
+# test-quarantine issue. Build Insights is the only GitHub check consumed, as corroborating
+# evidence only. See .github/workflows/scripts/test-quarantine-kbe-shadow/README.md for the full
+# trust boundary, evidence model, and promotion gates.
 #
 # This workflow NEVER labels, comments on, or otherwise mutates any issue, pull request, branch,
 # or repository file. It only reads public GitHub/Azure DevOps/Helix data and uploads short-
@@ -29,6 +30,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  # Used only for the Build Insights check; raw Azure DevOps/VSTMR evidence remains authoritative.
   checks: read
 
 jobs:

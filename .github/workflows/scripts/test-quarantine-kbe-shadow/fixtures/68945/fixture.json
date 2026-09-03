@@ -95,20 +95,7 @@
       "name": "Windows.Amd64.VS2026.Open"
     }
   },
-  "check_runs": {
-    "b5666daed660cf1862a197784eee65b42a74a64a": [
-      {
-        "name": "Build Analysis",
-        "id": 900201,
-        "conclusion": "failure",
-        "output": {
-          "title": "1 failing test",
-          "text": "1 test failed. See Azure DevOps for full details."
-        },
-        "html_url": "https://github.com/dotnet/aspnetcore/runs/900201"
-      }
-    ]
-  },
+  "check_runs": {},
   "duplicate_search": {
     "open-kbe": {
       "complete": true,

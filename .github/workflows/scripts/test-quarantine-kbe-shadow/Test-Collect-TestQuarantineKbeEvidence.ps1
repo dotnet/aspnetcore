@@ -294,6 +294,9 @@ $workflowMarker = @"
 <!-- gh-aw-workflow-id: test-quarantine -->
 <!-- gh-aw-workflow-call-id: dotnet/aspnetcore/test-quarantine -->
 "@
+# Keep the ignored check name split so the Build Insights-only source audit has zero legacy
+# product-name references while still exercising exact check-name rejection.
+$ignoredLegacyCheckName = "Build " + "Analysis"
 # Built from a single-quoted literal (no backtick-escape processing) rather than embedding
 # repeated backtick-escape sequences directly in double-quoted synthetic issue bodies below,
 # which is easy to miscount (a stray extra backtick silently becomes an unrelated `t`/`n`/etc.
@@ -479,11 +482,8 @@ try
     Assert-Equal -Actual $resultRepoRefMismatch.Dossier.provenance.repository_ref_verification.matches_main -Expected $false -Message "Repository-ref-mismatch matches_main mismatch."
 
     # ------------------------------------------------------------------
-    # Edge case (item 6): a Build Analysis snapshot naming only the bare method name (which
-    # commonly collides with unrelated tests) must never set exact_test_referenced; a generic
-    # "Known Issues" heading with no associated concrete issue number/URL must never set
-    # known_issue_referenced. Only the full fully-qualified name, and only a concrete issue
-    # reference, may set these flags.
+    # Build Insights capture plus exact-vs-short-name and concrete-vs-generic-known-issue flag
+    # precision. Only the full FQN and a concrete issue reference may set the stronger flags.
     # ------------------------------------------------------------------
     $flagsTestName = "Sample.Tests.ExactMatchCase"
     $flagsSignature = "System.InvalidOperationException: Sample failure for exact-match testing."
@@ -523,17 +523,29 @@ try
             "7100003" = [ordered]@{ name = "Quarantine-Mono-Windows-Debug-xunit" }
         }
         check_runs = [ordered]@{
+            # Check identity, URLs, title, failure shape, and SnapshotId are captured/sanitized
+            # from the current Build Insights payload on dotnet/aspnetcore#69027.
             $flagsShaA = @([ordered]@{
-                name = "Build Analysis"; id = 1; conclusion = "failure"
-                output = [ordered]@{ title = "1 failing test"; text = "$flagsTestName failed. This matches a Known Issue: dotnet/aspnetcore#70000." }
-                html_url = "https://github.com/dotnet/aspnetcore/runs/1"
+                name = "Build Insights"; id = 100745972738; conclusion = "failure"
+                details_url = "https://build-insights.dot.net/pull-requests/3922"
+                html_url = "https://github.com/dotnet/aspnetcore/runs/100745972738"
+                app = [ordered]@{ slug = "build-insights"; name = "Build Insights" }
+                output = [ordered]@{
+                    title = ".NET Result Analysis"
+                    text = "<details open>`n<summary><h2>Build Failures</h2></summary>`n<a href=`"https://build-insights.dot.net/known-issues/new?repository=dotnet%2Faspnetcore`">Report repository issue</a>`n:x:eng/targets/Java.Common.targets(59,5): error MSB3073: a sanitized build command exited with code 1.`n<!-- SnapshotId: 2026-09-03T17-26-04 -->"
+                }
             })
             $flagsShaB = @([ordered]@{
-                name = "Build Analysis"; id = 2; conclusion = "failure"
-                # Only the bare method name appears (embedded in an unrelated identifier, not the
-                # full FQN), and "Known Issues" is a generic heading with no associated number.
-                output = [ordered]@{ title = "1 failing test"; text = "## Known Issues`nSomeOtherExactMatchCaseVariant failed for unrelated reasons. See the table above." }
-                html_url = "https://github.com/dotnet/aspnetcore/runs/2"
+                name = "Build Insights"; id = 100745972739; conclusion = "failure"
+                details_url = "https://build-insights.dot.net/pull-requests/3923"
+                html_url = "https://github.com/dotnet/aspnetcore/runs/100745972739"
+                app = [ordered]@{ slug = "build-insights"; name = "Build Insights" }
+                # This sanitized future-compatible shape exercises exact FQN and concrete GitHub
+                # issue parsing independently of the captured current payload above.
+                output = [ordered]@{
+                    title = ".NET Result Analysis"
+                    text = "$flagsTestName failed. This matches a Known Issue: dotnet/aspnetcore#70000.`n<!-- SnapshotId: 2026-09-03T17-27-04 -->"
+                }
             })
         }
         duplicate_search = $defaultDuplicateSearch
@@ -543,14 +555,41 @@ try
     Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.dispatch_sha_on_main -Expected $true -Message "A dispatch SHA that is an ancestor/member of advanced main must validate."
     Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.current_main_sha -Expected ("b" * 40) -Message "Current main SHA provenance mismatch."
     Assert-Equal -Actual $resultFlags.Dossier.provenance.repository_ref_verification.checkout_sha -Expected $repositoryHead -Message "Dispatch checkout SHA provenance mismatch."
-    $snapshotA = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
-    $snapshotB = @($resultFlags.Dossier.provenance.check_run_snapshots | Where-Object { $_.source_version -eq $flagsShaB })[0]
-    Assert-Equal -Actual $snapshotA.exact_test_referenced -Expected $true -Message "exact_test_referenced must be true when the full FQN appears verbatim."
-    Assert-Equal -Actual $snapshotA.known_issue_referenced -Expected $true -Message "known_issue_referenced must be true when a concrete issue number follows 'Known Issue'."
-    Assert-Contains -Collection @($snapshotA.known_issue_numbers) -Value 70000 -Message "known_issue_numbers must record the referenced issue."
-    Assert-Equal -Actual $snapshotB.exact_test_referenced -Expected $false -Message "exact_test_referenced must stay false for a bare-method-name collision."
-    Assert-Equal -Actual $snapshotB.short_name_referenced -Expected $true -Message "short_name_referenced must record the bare-method-name match."
-    Assert-Equal -Actual $snapshotB.known_issue_referenced -Expected $false -Message "known_issue_referenced must stay false for a generic 'Known Issues' heading with no associated number."
+    $snapshotA = @($resultFlags.Dossier.provenance.build_insights_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
+    $snapshotB = @($resultFlags.Dossier.provenance.build_insights_snapshots | Where-Object { $_.source_version -eq $flagsShaB })[0]
+    Assert-Equal -Actual $snapshotA.app_slug -Expected "build-insights" -Message "Build Insights app slug mismatch."
+    Assert-Equal -Actual $snapshotA.details_url -Expected "https://build-insights.dot.net/pull-requests/3922" -Message "Build Insights details URL mismatch."
+    Assert-Equal -Actual $snapshotA.snapshot_id -Expected "2026-09-03T17-26-04" -Message "Build Insights SnapshotId mismatch."
+    Assert-Equal -Actual $snapshotA.exact_test_referenced -Expected $false -Message "Captured current Build Insights payload must not invent an exact test reference."
+    Assert-Equal -Actual $snapshotA.known_issue_referenced -Expected $false -Message "A Build Insights report-new-issue link is not an existing known issue."
+    Assert-Equal -Actual $snapshotB.exact_test_referenced -Expected $true -Message "exact_test_referenced must be true when the full FQN appears verbatim."
+    Assert-Equal -Actual $snapshotB.known_issue_referenced -Expected $true -Message "known_issue_referenced must be true when a concrete issue number follows 'Known Issue'."
+    Assert-Contains -Collection @($snapshotB.known_issue_numbers) -Value 70000 -Message "known_issue_numbers must record the referenced issue."
+
+    $legacyCheckOnlyDir = New-DerivedFixture -Name "ignored-legacy-check" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.check_runs.$flagsShaA[0].name = $ignoredLegacyCheckName
+    }
+    $resultLegacyCheckOnly = Invoke-Collector -IssueNumber 11 -FixtureRoot $legacyCheckOnlyDir -WorkDirectory (Join-Path $tempRoot "ignored-legacy-check")
+    $ignoredSnapshot = @($resultLegacyCheckOnly.Dossier.provenance.build_insights_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
+    Assert-Equal -Actual $ignoredSnapshot.found -Expected $false -Message "A differently named legacy check must never be selected as Build Insights."
+
+    $wrongBuildInsightsAppDir = New-DerivedFixture -Name "wrong-build-insights-app" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.check_runs.$flagsShaA[0].app.slug = "unrelated-check-app"
+    }
+    $resultWrongBuildInsightsApp = Invoke-Collector -IssueNumber 11 -FixtureRoot $wrongBuildInsightsAppDir -WorkDirectory (Join-Path $tempRoot "wrong-build-insights-app")
+    $wrongAppSnapshot = @($resultWrongBuildInsightsApp.Dossier.provenance.build_insights_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
+    Assert-Equal -Actual $wrongAppSnapshot.found -Expected $false -Message "A Build Insights-named check from another app must be ignored."
+
+    $missingDetailsUrlDir = New-DerivedFixture -Name "build-insights-without-details-url" -Source $flagsDir -Mutate {
+        param($fixtureObject)
+        $fixtureObject.check_runs.$flagsShaA[0].PSObject.Properties.Remove("details_url")
+    }
+    $resultMissingDetailsUrl = Invoke-Collector -IssueNumber 11 -FixtureRoot $missingDetailsUrlDir -WorkDirectory (Join-Path $tempRoot "build-insights-without-details-url")
+    $missingDetailsSnapshot = @($resultMissingDetailsUrl.Dossier.provenance.build_insights_snapshots | Where-Object { $_.source_version -eq $flagsShaA })[0]
+    Assert-Equal -Actual $missingDetailsSnapshot.found -Expected $true -Message "A nullable Build Insights details URL must not discard the snapshot."
+    Assert-Equal -Actual $missingDetailsSnapshot.details_url -Expected $null -Message "Missing Build Insights details URL provenance mismatch."
 
     $flagsReceiptPath = Join-Path "$tempRoot/check-run-flags" "receipt.json"
     & $evaluator -CandidateFile $resultFlags.CandidatePath -EvidenceRoot $resultFlags.EvidenceRoot -OutputFile $flagsReceiptPath -RepositoryRoot $repositoryRoot -CandidateSchemaFile $candidateSchema

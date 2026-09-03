@@ -60,7 +60,7 @@
           "const": 1
         },
         "matcher": {
-          "const": "Build Analysis compatible signature matcher with failed-test association"
+          "const": "Build Insights KBE ErrorMessage/ErrorPattern semantics with failed-test association"
         },
         "failure_association_window_lines": {
           "const": 50
@@ -638,7 +638,6 @@
       "properties": {
         "source": {
           "enum": [
-            "build-analysis",
             "build-insights",
             "github-check",
             "quarantine-issue"

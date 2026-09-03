@@ -150,13 +150,13 @@ else
     }
 }
 
-if (@($dossier.provenance.check_run_snapshots).Count -gt 0)
+if (@($dossier.provenance.build_insights_snapshots).Count -gt 0)
 {
-    $null = $lines.Add("## Build Analysis snapshots (corroborating only, never authoritative)")
+    $null = $lines.Add("## Build Insights snapshots (corroborating only, never authoritative)")
     $null = $lines.Add("")
     $null = $lines.Add("| Commit | Found | Conclusion | Exact test referenced | Known issue referenced |")
     $null = $lines.Add("|---|---|---|---|---|")
-    foreach ($snapshot in @($dossier.provenance.check_run_snapshots))
+    foreach ($snapshot in @($dossier.provenance.build_insights_snapshots))
     {
         $shortSha = $snapshot.source_version.Substring(0, 7)
         $conclusion = Get-PropertyOrDefault -Object $snapshot -Name "conclusion" -Default "(none)"

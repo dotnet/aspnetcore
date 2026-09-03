@@ -431,7 +431,7 @@ if ($kind -eq "ErrorPattern")
         }
         catch
         {
-            $qualityFailures.Add("The regex is not compatible with Build Analysis matching: $($_.Exception.Message)")
+            $qualityFailures.Add("The regex is not compatible with Build Insights KBE matching: $($_.Exception.Message)")
         }
     }
 
@@ -456,7 +456,7 @@ if ($kind -eq "ErrorPattern")
             }
             catch [System.Text.RegularExpressions.RegexMatchTimeoutException]
             {
-                $qualityFailures.Add("The regex exceeded the Build Analysis timeout while checking signature specificity.")
+                $qualityFailures.Add("The regex exceeded the Build Insights KBE timeout while checking signature specificity.")
                 break
             }
         }
@@ -682,7 +682,7 @@ foreach ($logResult in $logResults)
 
 if ($totalRegexTimeoutCount -gt 0)
 {
-    $qualityFailures.Add("The regex exceeded the Build Analysis timeout on at least one line.")
+    $qualityFailures.Add("The regex exceeded the Build Insights KBE timeout on at least one line.")
 }
 
 $coverage = $candidate.duplicate_check.coverage
@@ -797,7 +797,7 @@ $receipt = [ordered]@{
     evaluator = [ordered]@{
         name = "Evaluate-TestQuarantineKbeCandidate.ps1"
         version = 1
-        matcher = "Build Analysis compatible signature matcher with failed-test association"
+        matcher = "Build Insights KBE ErrorMessage/ErrorPattern semantics with failed-test association"
         failure_association_window_lines = $failureAssociationWindowLines
         candidate_sha256 = $candidateSha256
         candidate_schema_sha256 = $candidateSchemaSha256

@@ -116,20 +116,7 @@
       "name": "Quarantine-Mono-Linux-Release-xunit"
     }
   },
-  "check_runs": {
-    "ef86306faaa4b31e962f06b93c2ce21e4a18bf17": [
-      {
-        "name": "Build Analysis",
-        "id": 900101,
-        "conclusion": "failure",
-        "output": {
-          "title": "1 failing test",
-          "text": "1 test failed. See Azure DevOps for full details."
-        },
-        "html_url": "https://github.com/dotnet/aspnetcore/runs/900101"
-      }
-    ]
-  },
+  "check_runs": {},
   "duplicate_search": {
     "open-kbe": {
       "complete": true,

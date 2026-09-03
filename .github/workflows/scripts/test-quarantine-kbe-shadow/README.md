@@ -25,9 +25,12 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
 
 ## Trust boundary
 
-* **Build Analysis is corroborating, never authoritative.** The collector records a snapshot of
-  the GitHub "Build Analysis" check-run for every resolved build's commit: check id, conclusion, a
-  SHA-256 of its full text, a capped/redacted excerpt, and two *conservative* substring checks --
+* **Build Insights is the only GitHub check consumed, and remains corroborating rather than
+  authoritative.** The collector selects only check name `Build Insights`, requiring app slug
+  `build-insights` when the app metadata is present; the GitHub API request also uses the exact
+  `check_name=Build Insights` filter. It records check/app identity, dashboard and
+  GitHub URLs, snapshot ID, conclusion, a SHA-256 of its full text, a capped/redacted excerpt, and
+  two *conservative* substring checks --
   `exact_test_referenced` (the quarantined test's **full fully-qualified name** appears verbatim;
   never set from a bare method name, which commonly collides with unrelated tests -- a
   `short_name_referenced` field records that weaker match separately, for transparency only) and
@@ -35,12 +38,17 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   "Known Issue" style label; the bare phrase alone, e.g. a heading or table column reading "Known
   Issues" with no associated reference, does not set this true -- `known_issue_numbers` records
   exactly which issue(s) were found). A missing or generic snapshot is recorded and surfaced, but
-  it never overrides raw evidence and never by itself makes a candidate valid or invalid. Direct
-  queries against the Build Analysis abstraction for three real pilot builds (1563420, 1551326,
-  1569737) returned only generic, task-level, unmatched failures and no known issues -- this is
-  exactly the "generic" case the collector's pilot fixtures encode.
-* **Authoritative VSTMR test-result detail, not Build Analysis and not a raw Helix console-log
-  fetch, is what proves an exact test failure and its recurrence.** Azure DevOps' `resultsbyBuild`
+  it never overrides raw evidence and never by itself makes a candidate valid or invalid. The
+  historical pilot commits predate Build Insights and therefore honestly record it as absent.
+  Current captured/sanitized coverage uses the Build Insights check/app identity, a
+  `build-insights.dot.net/pull-requests/...` details URL, and its `SnapshotId` marker. Build Insights
+  is used because it is the supported product/control plane for dashboard history and KBE workflow,
+  not because its raw failure text is assumed to be more authoritative. The current captured
+  payload contains report-new-issue links but no matched known issue, so
+  `known_issue_referenced` remains false; concrete GitHub issue parsing is retained as
+  corroborating-only support for an observed future payload shape and never gates validity.
+* **Authoritative VSTMR test-result detail, not a GitHub check or raw Helix console-log fetch, is
+  what proves an exact test failure and its recurrence.** Azure DevOps' `resultsbyBuild`
   *summary* rows carry only identity and outcome (`id`, `runId`, `automatedTestName`, `outcome`) --
   confirmed live against aspnetcore#68947's own cited build: no `comment`/`errorMessage`/
   `stackTrace` field is present on an ordinary xUnit test's summary row. The collector instead
@@ -158,7 +166,7 @@ The companion `.github/workflows/test-quarantine-kbe-shadow.yml` (maintainer dis
   cancelling any still-running dispatch for the same issue.
 * **Permissions**: `contents: read`, `issues: read`, `pull-requests: read`, `checks: read` -- the
   last two are the "only demonstrated needs" beyond the baseline: `checks: read` for the Build
-  Analysis check-run snapshot, `pull-requests: read` for the duplicate fix-PR search.
+  Insights snapshot, `pull-requests: read` for the duplicate fix-PR search.
 * **Actions are pinned by commit SHA** (`actions/checkout`, `actions/upload-artifact`), matching
   repository convention.
 * **Steps**: validate the input, checkout, run the collector, run the evaluator only when the
@@ -242,7 +250,7 @@ The test suite additionally covers, via small synthetic (non-pilot) fixtures: a 
 issue missing the `test-failure` label, missing or forged workflow provenance, immutable dispatch
 ancestry and non-main rejection, strict build definition/ref/status/result gates, skip-only,
 pre-first, post-last, and TestRun-identity/environment-mismatched pass evidence, valid interleaving,
-unknown environment dimensions, Build Analysis flag precision, compatible and incompatible same-FQN KBE signatures, failed
+unknown environment dimensions, Build Insights snapshot precision, compatible and incompatible same-FQN KBE signatures, failed
 duplicate-detail fetches, deliberately unvalidated fix-PR mentions, wildcard-shaped literal
 signatures, and build-list merge/dedupe.
 
@@ -253,8 +261,8 @@ when present, is validated against the same versioned
 `test-quarantine-kbe-shadow-candidate.schema.json` used by the evaluator and is fed to
 `Evaluate-TestQuarantineKbeCandidate.ps1` exactly as-is. `test-quarantine-kbe-shadow-dossier.schema.json` is a
 new, independently versioned (`schema_version: 1`) envelope that carries collector-specific
-provenance (repository-ref verification, Azure DevOps build resolution, Build Analysis check-run
-snapshots, raw-evidence retrieval, unvalidated duplicate-search candidates) alongside that same
+provenance (repository-ref verification, Azure DevOps build resolution, Build Insights snapshots,
+raw-evidence retrieval, unvalidated duplicate-search candidates) alongside that same
 `candidate` object, or a structured `incomplete` outcome when any evidence gate fails. Because the
 candidate schema's `duplicate_check.queries[]` items are `additionalProperties: false` (and
 correctly so -- it must stay byte-for-byte compatible with the evaluator), the

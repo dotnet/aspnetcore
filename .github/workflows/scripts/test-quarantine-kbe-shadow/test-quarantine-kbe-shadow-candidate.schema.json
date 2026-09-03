@@ -322,7 +322,6 @@
             "properties": {
               "source": {
                 "enum": [
-                  "build-analysis",
                   "build-insights",
                   "github-check",
                   "quarantine-issue"

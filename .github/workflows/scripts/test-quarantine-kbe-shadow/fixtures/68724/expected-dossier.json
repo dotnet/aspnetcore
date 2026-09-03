@@ -48,17 +48,11 @@
         "result": "failed"
       }
     ],
-    "check_run_snapshots": [
+    "build_insights_snapshots": [
       {
         "source_version": "4bb91afc6d034cfcd78cbf15cdb21e0f6f419d68",
-        "found": true,
+        "found": false,
         "retrieved_utc": "<GENERATED>",
-        "check_id": 900001,
-        "conclusion": "failure",
-        "title": "1 failing test",
-        "text_sha256": "2ee3f3bf80d3ddbb9d06ee253fb4f861aadb63782c79b0ea1d09479ecf13e2d8",
-        "text_excerpt": "1 test failed. See Azure DevOps for full details.",
-        "html_url": "https://github.com/dotnet/aspnetcore/runs/900001",
         "exact_test_referenced": false,
         "short_name_referenced": false,
         "known_issue_referenced": false,
