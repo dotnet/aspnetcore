@@ -114,6 +114,15 @@ pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 `
 Do not replace the script with an improvised `gh pr list` query or re-rank its output with model
 judgment. The deterministic rules and reason codes are the contract.
 
+JSON consumers must validate `schemaVersion`. Additive fields may be introduced within a supported
+schema version, and consumers must ignore fields they do not recognize. Removing, renaming,
+retyping, or changing the meaning of a required field requires a new schema version. The `display`
+object supplies stable labels and descriptions for every bucket and reason code so renderers do not
+maintain a second semantic mapping.
+
+An incomplete repository query is an error, not a partial result. Consumers must reject output
+where `query.complete` is not `true`.
+
 ### 3. Preserve the classifications
 
 The script assigns one bucket and next actor:

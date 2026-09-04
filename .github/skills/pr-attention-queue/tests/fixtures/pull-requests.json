@@ -524,5 +524,97 @@
     "changedFiles": 1,
     "milestone": null,
     "assignees": []
+  },
+  {
+    "number": 15,
+    "title": "Human review went quiet",
+    "url": "https://github.com/dotnet/aspnetcore/pull/15",
+    "author": { "login": "reviewed-community-user", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-05-01T18:00:00Z",
+    "updatedAt": "2026-07-02T18:00:00Z",
+    "headRefOid": "ffffffffffffffffffffffffffffffffffffffff",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "COMMENTED",
+        "submittedAt": "2026-07-01T18:00:00Z",
+        "commit": { "oid": "ffffffffffffffffffffffffffffffffffffffff" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "reviewed-community-user", "is_bot": false },
+        "createdAt": "2026-07-02T18:00:00Z"
+      }
+    ],
+    "commits": [
+      { "committedDate": "2026-05-01T18:00:00Z" }
+    ],
+    "files": [
+      { "path": "src/Components/Components/src/ReviewedComponent.cs" }
+    ],
+    "additions": 10,
+    "deletions": 2,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 16,
+    "title": "Human review with failing CI",
+    "url": "https://github.com/dotnet/aspnetcore/pull/16",
+    "author": { "login": "ci-blocked-community-user", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-05-01T18:00:00Z",
+    "updatedAt": "2026-07-02T18:00:00Z",
+    "headRefOid": "1616161616161616161616161616161616161616",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "reviewDecision": "CHANGES_REQUESTED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "FAILURE" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "CHANGES_REQUESTED",
+        "submittedAt": "2026-07-01T18:00:00Z",
+        "commit": { "oid": "0606060606060606060606060606060606060606" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "ci-blocked-community-user", "is_bot": false },
+        "createdAt": "2026-07-02T18:00:00Z"
+      }
+    ],
+    "commits": [
+      { "committedDate": "2026-07-02T18:00:00Z" }
+    ],
+    "files": [
+      { "path": "src/Components/Components/src/CiBlockedComponent.cs" }
+    ],
+    "additions": 8,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
   }
 ]

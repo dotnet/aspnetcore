@@ -769,11 +769,17 @@ function Get-Classification {
                 $reasonCodes.Add("head-changed-after-review")
             }
             $waitingSince = if ($authorCommentedAfterReview) { $latestAuthorCommentAt } else { $updatedAt }
-            $responseIdleDays = Get-DaysSince -From $waitingSince -To $SnapshotTime
-            if ($responseIdleDays -ge $reviewerRescueAfterDays) {
+            if ($checkState -eq "Failed") {
+                $bucket = "WaitingOnCI"
+                $nextActor = "author/CI investigation"
+                $reasonCodes.Add("ci-failed")
+                $blockers.Add("The failure is not classified as unrelated or flaky.")
+            }
+            elseif ((Get-DaysSince -From $waitingSince -To $SnapshotTime) -ge $reviewerRescueAfterDays) {
                 $bucket = "NeedsRescue"
                 $nextActor = "maintainer/triager"
                 $reasonCodes.Add("reviewer-idle-30d")
+                $reasonCodes.Add("review-abandoned")
             }
             else {
                 $bucket = "ReviewNow"
@@ -820,6 +826,9 @@ function Get-Classification {
     elseif ($authorRespondedAfterReview) {
         $reasonCodes.Add("author-responded")
         $reasonCodes.Add("roundtrip-waiting")
+        if ($latestHumanReview.State -eq "COMMENTED") {
+            $reasonCodes.Add("reviewer-commented")
+        }
         if ($headChangedAfterReview) {
             $reasonCodes.Add("head-changed-after-review")
         }
@@ -829,6 +838,7 @@ function Get-Classification {
             $bucket = "NeedsRescue"
             $nextActor = "maintainer/triager"
             $reasonCodes.Add("reviewer-idle-30d")
+            $reasonCodes.Add("review-abandoned")
         }
         else {
             $bucket = "ReviewNow"
@@ -902,6 +912,147 @@ function Get-Classification {
         IsCommunity = $isCommunity
         HumanReviewCount = $humanReviews.Count
         HumanReviewRequestCount = $humanReviewRequestCount
+    }
+}
+
+function Get-DisplayMetadata {
+    return [pscustomobject]@{
+        buckets = [pscustomobject][ordered]@{
+            ReviewNow = [pscustomobject]@{
+                label = "Review now"
+                description = "A human reviewer can productively act on this pull request now."
+            }
+            NeedsRescue = [pscustomobject]@{
+                label = "Needs rescue"
+                description = "A maintainer must restore ownership or decide how this pull request should proceed."
+            }
+            ReadyToMerge = [pscustomobject]@{
+                label = "Ready to merge"
+                description = "The pull request is approved, mergeable, and no required check is blocking it."
+            }
+            WaitingOnAuthor = [pscustomobject]@{
+                label = "Waiting on author"
+                description = "The author must respond to feedback, resolve conflicts, or otherwise update the pull request."
+            }
+            WaitingOnCI = [pscustomobject]@{
+                label = "Waiting on CI"
+                description = "Checks, mergeability computation, or CI investigation must complete before review can progress."
+            }
+            DesignDecision = [pscustomobject]@{
+                label = "Design decision"
+                description = "An API or design owner must resolve a decision before normal review."
+            }
+            Draft = [pscustomobject]@{
+                label = "Draft"
+                description = "The author has not marked the pull request ready for review."
+            }
+            Excluded = [pscustomobject]@{
+                label = "Excluded"
+                description = "The pull request is automated or explicitly outside this attention queue."
+            }
+        }
+        reasonCodes = [pscustomobject][ordered]@{
+            "approved" = [pscustomobject]@{
+                label = "Approved"
+                description = "A human review approved the current pull request."
+            }
+            "author-responded" = [pscustomobject]@{
+                label = "Author responded"
+                description = "The author commented or pushed after the latest human review."
+            }
+            "blocked-label" = [pscustomobject]@{
+                label = "Blocking label"
+                description = "A blocking label requires an explicit maintainer decision."
+            }
+            "bot-authored" = [pscustomobject]@{
+                label = "Bot authored"
+                description = "The pull request was opened by a known automation account."
+            }
+            "changes-requested" = [pscustomobject]@{
+                label = "Changes requested"
+                description = "The latest actionable human review requires an author response."
+            }
+            "ci-failed" = [pscustomobject]@{
+                label = "CI failed"
+                description = "A required check is failing or otherwise unsuccessful."
+            }
+            "ci-green" = [pscustomobject]@{
+                label = "CI green"
+                description = "Required checks completed successfully."
+            }
+            "ci-pending" = [pscustomobject]@{
+                label = "CI pending"
+                description = "One or more required checks have not completed."
+            }
+            "community-contribution" = [pscustomobject]@{
+                label = "Community contribution"
+                description = "The repository labels this pull request as a community contribution."
+            }
+            "design-gate" = [pscustomobject]@{
+                label = "Design gate"
+                description = "A configured API or design label blocks normal review."
+            }
+            "draft" = [pscustomobject]@{
+                label = "Draft"
+                description = "The pull request is still marked as a draft."
+            }
+            "head-changed-after-review" = [pscustomobject]@{
+                label = "Head changed after review"
+                description = "The author pushed a new head commit after the latest human review."
+            }
+            "merge-conflict" = [pscustomobject]@{
+                label = "Merge conflict"
+                description = "The pull request conflicts with its base branch."
+            }
+            "mergeability-unknown" = [pscustomobject]@{
+                label = "Mergeability unknown"
+                description = "GitHub has not finished computing whether the pull request is mergeable."
+            }
+            "mergeable" = [pscustomobject]@{
+                label = "Mergeable"
+                description = "GitHub reports that the pull request can merge cleanly."
+            }
+            "needs-first-review" = [pscustomobject]@{
+                label = "Needs first review"
+                description = "No meaningful human review has been submitted yet."
+            }
+            "never-reviewed" = [pscustomobject]@{
+                label = "Never reviewed"
+                description = "The pull request passed the rescue age without receiving meaningful human review."
+            }
+            "orphan-unassigned" = [pscustomobject]@{
+                label = "Orphaned"
+                description = "The pull request has no active human review or review request."
+            }
+            "review-abandoned" = [pscustomobject]@{
+                label = "Review abandoned"
+                description = "Human review began, but overdue reviewer follow-up now requires maintainer rescue."
+            }
+            "review-request-age-unknown" = [pscustomobject]@{
+                label = "Review request age unknown"
+                description = "A human review is requested, but GitHub did not provide when the request began."
+            }
+            "review-requested" = [pscustomobject]@{
+                label = "Review requested"
+                description = "At least one human reviewer is currently requested."
+            }
+            "review-required" = [pscustomobject]@{
+                label = "Review required"
+                description = "The pull request still requires a human review."
+            }
+            "reviewer-commented" = [pscustomobject]@{
+                label = "Reviewer commented"
+                description = "The latest meaningful human review was submitted as comments rather than approval."
+            }
+            "reviewer-idle-30d" = [pscustomobject]@{
+                label = "Reviewer idle"
+                description = "Reviewer follow-up has exceeded the configured rescue threshold."
+            }
+            "roundtrip-waiting" = [pscustomobject]@{
+                label = "Roundtrip waiting"
+                description = "The author responded to review and the pull request is waiting for reviewer follow-up."
+            }
+        }
     }
 }
 
@@ -1426,6 +1577,7 @@ function Invoke-PRAttentionQueue {
 
     $result = [pscustomobject]@{
         schemaVersion = "1.0.0"
+        display = Get-DisplayMetadata
         generatedAt = $Now.ToUniversalTime().ToString("o")
         repository = $Repository
         filter = [pscustomobject]@{

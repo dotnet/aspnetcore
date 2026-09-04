@@ -34,7 +34,7 @@ $defaultResult = $defaultJson | ConvertFrom-Json -Depth 100
 
 Assert-True ($defaultResult.filter.name -eq "blazor") "The default scope must be the Blazor preset."
 Assert-True ($defaultResult.query.complete) "The fixture universe must be complete."
-Assert-True ($defaultResult.census.matched -eq 12) "The Blazor preset should match twelve fixture PRs."
+Assert-True ($defaultResult.census.matched -eq 14) "The Blazor preset should match fourteen fixture PRs."
 Assert-True ($defaultResult.census.pathOnly -eq 1) "One unlabeled PR should match only by Components path."
 Assert-True ($defaultResult.census.incidentalPathExcluded -eq 1) "A repository-wide sweep must not enter a narrow scope."
 Assert-True (-not ($defaultResult.items | Where-Object number -eq 13)) "PR 13 touches Components incidentally and must be excluded."
@@ -55,6 +55,24 @@ Assert-True (($defaultResult.items | Where-Object number -eq 11).bucket -eq "Wai
 Assert-True (($defaultResult.items | Where-Object number -eq 11).author -eq "pedro") "A human login ending in 'o' must not be classified as a bot."
 Assert-True (($defaultResult.items | Where-Object number -eq 12).bucket -eq "NeedsRescue") "PR 12 should treat a stale review request as rescue work."
 Assert-True (($defaultResult.items | Where-Object number -eq 12).reasonCodes -contains "reviewer-idle-30d") "PR 12 should explain reviewer silence."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).bucket -eq "NeedsRescue") "PR 15 should treat an abandoned human review as rescue work."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).nextActor -eq "maintainer/triager") "PR 15 should require maintainer triage."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "review-abandoned") "PR 15 should identify the abandoned review."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "reviewer-commented") "PR 15 should preserve the specific review state."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "reviewer-idle-30d") "PR 15 should explain reviewer inactivity."
+Assert-True (($defaultResult.items | Where-Object number -eq 16).bucket -eq "WaitingOnCI") "PR 16 should remain blocked on CI."
+Assert-True (-not (($defaultResult.items | Where-Object number -eq 16).reasonCodes -contains "review-abandoned")) "PR 16 must not be marked abandoned while CI is failing."
+Assert-True ($defaultResult.schemaVersion -eq "1.0.0") "The JSON contract must declare its schema version."
+Assert-True ($defaultResult.display.buckets.ReviewNow.label -eq "Review now") "Bucket display metadata must be emitted in-band."
+Assert-True ($defaultResult.display.buckets.NeedsRescue.description -ne "") "Bucket display metadata must include descriptions."
+Assert-True ($defaultResult.display.reasonCodes.'review-abandoned'.label -eq "Review abandoned") "Reason-code display metadata must include review-abandoned."
+Assert-True ($defaultResult.display.reasonCodes.'ci-failed'.description -ne "") "Reason-code display metadata must describe existing codes."
+foreach ($bucket in @($defaultResult.census.byBucket.PSObject.Properties.Name)) {
+    Assert-True ($null -ne $defaultResult.display.buckets.PSObject.Properties[$bucket]) "Bucket '$bucket' must have display metadata."
+}
+foreach ($reasonCode in @($defaultResult.items.reasonCodes | Select-Object -Unique)) {
+    Assert-True ($null -ne $defaultResult.display.reasonCodes.PSObject.Properties[$reasonCode]) "Reason code '$reasonCode' must have display metadata."
+}
 Assert-True (@($defaultResult.items | Where-Object { $_.bucket -eq "ReviewNow" -and $_.shownInDigest }).Count -le 5) "Review now must respect its cap."
 Assert-True (@($defaultResult.items | Where-Object { $_.bucket -eq "NeedsRescue" -and $_.shownInDigest }).Count -le 3) "Needs rescue must respect its cap."
 Assert-True ($defaultResult.overflow.reviewNow -ge 0) "Review now overflow must be reported."
