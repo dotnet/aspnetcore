@@ -3,14 +3,17 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,6 +31,8 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly KestrelMetrics? _kestrelMetrics;
+    private readonly DirectTlsMetrics _directTlsMetrics;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DirectTlsTransportFactory"/> class.
@@ -38,10 +43,12 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     /// The host application lifetime, used to stop the host if a pump fails unrecoverably. Supplied by the DI
     /// container.
     /// </param>
+    /// <param name="serviceProvider">The application service provider used to resolve Kestrel telemetry services.</param>
     public DirectTlsTransportFactory(
         IOptions<DirectTlsTransportOptions> options,
         ILoggerFactory loggerFactory,
-        IHostApplicationLifetime applicationLifetime)
+        IHostApplicationLifetime applicationLifetime,
+        IServiceProvider? serviceProvider = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -51,6 +58,11 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<DirectTlsTransportFactory>();
         _applicationLifetime = applicationLifetime;
+
+        _kestrelMetrics = serviceProvider?.GetService<KestrelMetrics>();
+        _directTlsMetrics = serviceProvider?.GetService<IMeterFactory>() is { } meterFactory
+            ? new DirectTlsMetrics(meterFactory)
+            : DirectTlsMetrics.Disabled;
     }
 
     /// <inheritdoc />
@@ -154,7 +166,13 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         // correctly, at the cost of WorkerCount threads per endpoint. The endpoint may override the
         // transport-wide worker count so multi-endpoint servers can bound their total thread count.
         var workerCount = endpointOptions.WorkerCount ?? _options.WorkerCount;
-        var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory, endpointOptions.HandshakeTimeout);
+        var pumpPool = new TlsEventPumpPool(
+            workerCount,
+            _loggerFactory,
+            endpointOptions.HandshakeTimeout,
+            _kestrelMetrics,
+            _directTlsMetrics,
+            endpointOptions.SslProtocols);
 
         var memoryPool = _options.MemoryPoolFactory.Create(DirectTlsTransportOptions.MemoryPoolOptions);
 
