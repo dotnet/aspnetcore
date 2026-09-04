@@ -283,14 +283,22 @@ For telemetry or distributed-state behavior, assert the real consumer-visible ou
 
 ### Running E2E Tests
 
-The E2E tests use Selenium. To build and run tests:
+The E2E tests use Selenium. Before the first `dotnet` command, complete the initial setup in the Efficient Build Strategy above and activate the repository SDK from the repository root:
 
 ```bash
-# Build the E2E test project and its dependencies
-dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q -p:UseIisNativeAssets=false
+# Linux or macOS
+source activate.sh
+```
 
-# After the build succeeds, run a specific test
-dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~TestName"
+```powershell
+# Windows
+. ./activate.ps1
+```
+
+Build the E2E test project and its dependencies:
+
+```shell
+dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q -p:UseIisNativeAssets=false
 ```
 
 `-p:UseIisNativeAssets=false` is required here: the E2E project transitively references IIS projects that otherwise fail because ANCM has not been built. If this build instead fails on MessagePack types, your submodules are not initialized - see step 1 of the Efficient Build Strategy.
@@ -300,3 +308,33 @@ For the first E2E run in a fresh worktree, or after relevant build, configuratio
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
 
 If a test is failing, it's best to run the server manually and navigate to the test to investigate. The test output won't be very useful for debugging.
+
+#### Bounded local E2E validation
+
+For a localized change, select the nearest existing test method. Include more methods only when they exercise another affected render mode, runtime, or lifecycle boundary.
+
+Use an exact fully qualified name for one method:
+
+```shell
+dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName=Namespace.TestClass.TestMethod" -l "console;verbosity=normal"
+```
+
+To run a class, include the separator after its fully qualified name so similarly named classes do not match:
+
+```shell
+dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~Namespace.TestClass." -l "console;verbosity=normal"
+```
+
+On the first execution of each filter, inspect the named test results and summary. Confirm that a nonzero number ran and that every executed test was intended. A successful command that ran no tests is not validation.
+
+For a major change, split the affected tests into small logical groups. Start with a canary group for the affected startup paths and render modes, follow with feature-area groups, then add groups for affected cross-cutting boundaries such as navigation, prerendering, reconnection, or state restoration. Each group should have one reason to fail and remain small enough that a failure identifies one feature or lifecycle boundary.
+
+Combine exact methods and class prefixes with `|`:
+
+```shell
+dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName=Namespace.FirstTestClass.TestMethod|FullyQualifiedName~Namespace.SecondTestClass." -l "console;verbosity=normal"
+```
+
+Run groups sequentially from the smallest canary to the broader feature groups. Stop at the first failure, narrow it to the failing method, and use the manual test-server workflow above before resuming. After the final source or test-asset edit, rerun every planned bounded group in order so all passing results come from the final revision.
+
+Validation is complete when the selected tests cover every affected behavior boundary, each filter selects only the intended nonzero set, and every planned group passes on the final revision.
