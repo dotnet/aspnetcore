@@ -24,7 +24,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
                 OutputKind = OutputKind.ConsoleApplication,
                 GeneratedSources =
                 {
-                    (typeof(TSourceGenerator), generatedFileName, SourceText.From(generatedSource, Encoding.UTF8))
+                    (typeof(TSourceGenerator), generatedFileName, SourceText.From(generatedSource, Encoding.UTF8, SourceHashAlgorithm.Sha256))
                 },
                 ReferenceAssemblies = CSharpAnalyzerVerifier<WebApplicationBuilderAnalyzer>.GetReferenceAssemblies()
             },

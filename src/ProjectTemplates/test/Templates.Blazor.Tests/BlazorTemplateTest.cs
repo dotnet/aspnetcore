@@ -160,6 +160,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             Assert.True(result.HasValue);
             var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
+            Assert.NotNull(authenticatorId);
 
             // Record the WebAuthn signal calls made by each page so that we can assert on them later.
             // We define the signal methods if they're missing so that the assertions don't depend on
@@ -268,6 +269,44 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     page,
                     "all-accepted-credentials-signal",
                     "signalAllAcceptedCredentials");
+
+                // Adding a passkey requires a confirmation first, so the add button is not shown yet
+                await page.WaitForSelectorAsync("text=Confirm it's you");
+                Assert.Equal(0, await page.Locator("text=Add a new passkey").CountAsync());
+
+                // The add form is rejected until the confirmation is done
+                await page.EvaluateAsync("""
+                    () => {
+                        const form = document.createElement('form');
+                        form.method = 'post';
+                        form.action = location.pathname;
+                        const fields = {
+                            '_handler': 'add-passkey',
+                            'Input.CredentialJson': '{}',
+                        };
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (token) {
+                            fields['__RequestVerificationToken'] = token.value;
+                        }
+                        for (const [name, value] of Object.entries(fields)) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            input.value = value;
+                            form.appendChild(input);
+                        }
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                    """);
+
+                await page.WaitForSelectorAsync("text=Error: You must confirm your identity before adding a passkey.");
+                await page.WaitForSelectorAsync("text=No passkeys are registered.");
+
+                // Confirm with the account password to unlock the add button
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("text=Confirm password");
+                await page.WaitForSelectorAsync("text=Add a new passkey");
 
                 await page.EvaluateAsync("""
                     () => {
@@ -408,6 +447,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
         }
 
+        if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
+        {
+            await VerifyNavMenuCollapsesAfterNavigationAsync(page);
+        }
+
         static async Task IncrementCounterAsync(IPage page)
         {
             // Allow multiple click attempts because some interactive render modes
@@ -454,7 +498,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)
         {
             var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
-            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => id.GetString())];
+            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id =>
+            {
+                var credentialId = id.GetString();
+                Assert.NotNull(credentialId);
+                return credentialId;
+            })];
         }
 
         static async Task AssertSignalRetriesAfterFailureAsync(IPage page, string selector, string method)
@@ -503,7 +552,36 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             });
             var credentials = result.Value.GetProperty("credentials").EnumerateArray();
             // The signal API uses base64url while CDP uses base64.
-            return [.. credentials.Select(c => Base64Url.EncodeToString(Convert.FromBase64String(c.GetProperty("credentialId").GetString())))];
+            return [.. credentials.Select(c =>
+            {
+                var credentialId = c.GetProperty("credentialId").GetString();
+                Assert.NotNull(credentialId);
+                return Base64Url.EncodeToString(Convert.FromBase64String(credentialId));
+            })];
+        }
+    }
+
+    private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
+    {
+        var originalViewportSize = page.ViewportSize;
+
+        // The nav menu only collapses behind the toggler on viewports narrower than 641px.
+        await page.SetViewportSizeAsync(400, 800);
+
+        try
+        {
+            var navMenu = page.Locator(".nav-scrollable");
+
+            await page.ClickAsync(".navbar-toggler");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+            await page.ClickAsync("nav a[href='']");
+            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        }
+        finally
+        {
+            await page.SetViewportSizeAsync(originalViewportSize.Width, originalViewportSize.Height);
         }
     }
 

@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
 {
     internal const string TempDataSessionStateKey = "__BlazorTempData";
-    private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly IStoredDataSerializer _tempDataSerializer;
     private readonly ILogger<SessionStorageTempDataProvider> _logger;
 
     public SessionStorageTempDataProvider(
-        ITempDataSerializer tempDataSerializer,
+        IStoredDataSerializer tempDataSerializer,
         ILogger<SessionStorageTempDataProvider> logger)
     {
         _tempDataSerializer = tempDataSerializer;
@@ -55,13 +55,6 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
     public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
     {
         ArgumentNullException.ThrowIfNull(context);
-        foreach (var kvp in values)
-        {
-            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
-            {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
-            }
-        }
 
         var session = SessionResolver.GetRequiredSession(context);
         if (values.Count == 0)

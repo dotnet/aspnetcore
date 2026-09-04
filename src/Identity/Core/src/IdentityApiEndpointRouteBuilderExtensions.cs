@@ -156,6 +156,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             SignInResult result;
             try
             {
+                _ = await signInManager.GetPasskeyAssertionInfoAsync();
                 result = await signInManager.PasskeySignInAsync(login.CredentialJson, isPersistent);
             }
             catch (PasskeyAuthenticationStateException)

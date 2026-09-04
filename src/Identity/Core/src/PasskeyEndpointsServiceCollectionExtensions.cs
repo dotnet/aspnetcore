@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for configuring the well-known passkey endpoints document.
 /// </summary>
-[Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0039", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static class PasskeyEndpointsServiceCollectionExtensions
 {
     /// <summary>
@@ -54,7 +54,7 @@ public static class PasskeyEndpointsServiceCollectionExtensions
     /// }
     /// </code>
     /// </example>
-    [Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    [Experimental("ASP0039", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public static IServiceCollection AddPasskeyEndpoints(this IServiceCollection services, Action<PasskeyEndpointsOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);

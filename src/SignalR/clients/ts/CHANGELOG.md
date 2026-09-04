@@ -1,5 +1,9 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
+## 11.0.0-rc1
+
+- Add SignalR TypeScript auth refresh [#67964](https://github.com/dotnet/aspnetcore/pull/67964)
+
 ## 11.0.0-preview.7
 
 - Include LICENSE.txt in bundled packages. [#67496](https://github.com/dotnet/aspnetcore/pull/67496)
