@@ -443,5 +443,86 @@
     "changedFiles": 1,
     "milestone": null,
     "assignees": []
+  },
+  {
+    "number": 13,
+    "title": "Replace comparison with -1 across the repository",
+    "url": "https://github.com/dotnet/aspnetcore/pull/13",
+    "author": { "login": "sweeper", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-networking" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2025-04-10T18:00:00Z",
+    "updatedAt": "2025-04-10T18:00:00Z",
+    "headRefOid": "dddddddddddddddddddddddddddddddddddddddd",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "is_bot": false }
+    ],
+    "comments": [],
+    "commits": [
+      { "committedDate": "2025-04-10T18:00:00Z" }
+    ],
+    "files": [
+      { "path": "src/Components/Endpoints/src/FormMapping/FormDataReader.cs" },
+      { "path": "src/Http/Routing/src/PathTokenizer.cs" },
+      { "path": "src/Http/Headers/src/HeaderUtilities.cs" },
+      { "path": "src/DataProtection/DataProtection/src/TypeForwardingActivator.cs" },
+      { "path": "src/FileProviders/Embedded/src/EmbeddedFileProvider.cs" },
+      { "path": "src/Servers/Kestrel/Core/src/KestrelServer.cs" },
+      { "path": "src/Mvc/Mvc.Core/src/ControllerBase.cs" },
+      { "path": "src/SignalR/server/Core/src/HubConnectionContext.cs" },
+      { "path": "src/Security/Authentication/Core/src/AuthenticationService.cs" },
+      { "path": "src/Middleware/CORS/src/CorsMiddleware.cs" }
+    ],
+    "additions": 60,
+    "deletions": 60,
+    "changedFiles": 10,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 14,
+    "title": "Blazor change that conflicts with main",
+    "url": "https://github.com/dotnet/aspnetcore/pull/14",
+    "author": { "login": "community-user", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2025-06-01T18:00:00Z",
+    "updatedAt": "2025-06-01T18:00:00Z",
+    "headRefOid": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "baseRefName": "main",
+    "mergeable": "CONFLICTING",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "is_bot": false }
+    ],
+    "comments": [],
+    "commits": [
+      { "committedDate": "2025-06-01T18:00:00Z" }
+    ],
+    "files": [
+      { "path": "src/Components/Web/src/Forms/InputBase.cs" }
+    ],
+    "additions": 5,
+    "deletions": 2,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
   }
 ]

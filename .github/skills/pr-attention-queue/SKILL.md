@@ -77,6 +77,11 @@ Scope semantics:
 - Repeated `-Label` values are **any-of**.
 - Repeated `-Path` values are **any-of**.
 - Labels and paths form a union: a PR may qualify by label or changed path.
+- A PR that qualifies **only** by changed path must also spend at least
+  `settings.pathMatchMinimumShare` (default 0.25) of its changed files inside those
+  paths. A repository-wide sweep that incidentally touches a couple of in-scope files
+  is excluded and counted in `census.incidentalPathExcluded`. A label match is never
+  subject to this floor.
 - Repeated `-RequireLabel` values are **all-of** constraints.
 - `-ExcludeLabel` removes matching PRs.
 - Explicit labels, paths, or `-AllRepo` replace the default preset.
@@ -168,6 +173,7 @@ warning emitted by the script.
 
 ## Completion checklist
 
-Resolved scope echoed · open PR count reconciled · labels and paths use union semantics · Blazor
-default not applied to an explicit scope · Review now and Needs rescue remain separate · next actor
-preserved · no opaque score · no GitHub mutation · warnings and truncation reported honestly
+Resolved scope echoed · open PR count reconciled · label matches unioned with path matches that clear
+the incidental-path floor · Blazor default not applied to an explicit scope · Review now and Needs
+rescue remain separate · next actor preserved · no opaque score · no GitHub mutation · warnings,
+incidental-path exclusions, unresolved mergeability, and truncation reported honestly

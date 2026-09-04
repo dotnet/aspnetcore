@@ -4,6 +4,8 @@
   "settings": {
     "rescueAfterDays": 14,
     "reviewerRescueAfterDays": 30,
+    "pathMatchMinimumShare": 0.25,
+    "mergeableResolveAttempts": 3,
     "communityLabels": [
       "community-contribution"
     ],

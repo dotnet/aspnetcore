@@ -497,6 +497,114 @@ pr$number`: pullRequest(number: $number) {
     }
 }
 
+function Resolve-UnknownMergeable {
+    <#
+    .SYNOPSIS
+    Resolves pull requests whose mergeable state GitHub has not computed yet.
+
+    .DESCRIPTION
+    GitHub computes mergeability lazily. The first query for a pull request
+    returns UNKNOWN and only schedules the background calculation, so a single
+    pass classifies conflicting pull requests as though they were mergeable and
+    a later run returns a different queue for unchanged data. This re-queries
+    the unresolved pull requests until GitHub reports a value or the attempts
+    run out, and reports how many remain unresolved.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [object[]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepositoryName,
+
+        [int]$MaxAttempts = 3,
+
+        [int]$DelayMilliseconds = 2000
+    )
+
+    if ($Candidates.Count -eq 0) {
+        return 0
+    }
+
+    $repositoryParts = $RepositoryName.Split("/")
+    if ($repositoryParts.Count -ne 2) {
+        throw "Repository must use the owner/name format."
+    }
+
+    $unresolved = {
+        @(
+            $Candidates | Where-Object {
+                [string](Get-PropertyValue -Object $_.PullRequest -Name "mergeable" -DefaultValue "UNKNOWN") -eq "UNKNOWN"
+            }
+        )
+    }
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $pending = & $unresolved
+        if ($pending.Count -eq 0) {
+            return 0
+        }
+
+        Start-Sleep -Milliseconds $DelayMilliseconds
+
+        # Add-PullRequestDetails chunks at 20 because its query is heavy. This query
+        # is small, but an UNKNOWN mergeable is the expensive case server-side, so
+        # this stays well below that to avoid provoking a GraphQL timeout.
+        for ($offset = 0; $offset -lt $pending.Count; $offset += 25) {
+            $chunk = @($pending | Select-Object -Skip $offset -First 25)
+            $aliases = @(
+                foreach ($candidate in $chunk) {
+                    $number = [int]$candidate.PullRequest.number
+                    "pr$number`: pullRequest(number: $number) { number mergeable }"
+                }
+            )
+            $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
+                ($aliases -join [Environment]::NewLine) +
+                '}}'
+
+            $result = $null
+            try {
+                $result = Invoke-GhJson -Arguments @(
+                    "api",
+                    "graphql",
+                    "-f",
+                    "query=$query",
+                    "-F",
+                    "owner=$($repositoryParts[0])",
+                    "-F",
+                    "name=$($repositoryParts[1])"
+                )
+            }
+            catch {
+                # This pass only refines an already-complete queue, so a failed chunk
+                # must not discard the chunks that already resolved.
+                $result = $null
+            }
+
+            if ($null -eq $result) {
+                continue
+            }
+
+            foreach ($candidate in $chunk) {
+                $number = [int]$candidate.PullRequest.number
+                $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$number"
+                if ($null -eq $detail) {
+                    continue
+                }
+
+                $candidate.PullRequest | Add-Member `
+                    -NotePropertyName "mergeable" `
+                    -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") `
+                    -Force
+            }
+        }
+    }
+
+    return (& $unresolved).Count
+}
+
 function Resolve-QueueScope {
     param(
         [object]$Configuration,
@@ -876,6 +984,11 @@ function Render-Markdown {
     $lines.Add("")
     $lines.Add("Matched $($Result.census.matched) of $($Result.census.openPullRequests) open pull requests. " +
         "$($Result.census.pathOnly) matched only by changed path.")
+    $incidental = [int](Get-PropertyValue -Object $Result.census -Name "incidentalPathExcluded" -DefaultValue 0)
+    if ($incidental -gt 0) {
+        $lines.Add("")
+        $lines.Add("Excluded $incidental pull request(s) that touched in-scope paths only incidentally.")
+    }
     $lines.Add("")
     $lines.Add("**Overflow:** Review now $($Result.overflow.reviewNow), Needs rescue $($Result.overflow.needsRescue), " +
         "Ready to merge $($Result.overflow.readyToMerge).")
@@ -1039,6 +1152,10 @@ function Invoke-PRAttentionQueue {
     $labelOnlyCount = 0
     $bothCount = 0
     $unresolvedPathCoverage = 0
+    $incidentalPathCount = 0
+    $unresolvedMergeable = 0
+    $pathMatchMinimumShare = [double](Get-PropertyValue `
+        -Object $configuration.settings -Name "pathMatchMinimumShare" -DefaultValue 0)
 
     foreach ($pullRequest in $pullRequests) {
         $labels = @(Get-LabelNames -PullRequest $pullRequest)
@@ -1054,8 +1171,25 @@ function Invoke-PRAttentionQueue {
 
         $labelMatch = $scope.LabelsAny.Count -gt 0 -and
             (Test-AnyWildcardMatch -Values $labels -Patterns $scope.LabelsAny)
-        $pathMatch = $scope.PathsAny.Count -gt 0 -and
-            (Test-AnyWildcardMatch -Values $files -Patterns $scope.PathsAny)
+        $matchedPaths = if ($scope.PathsAny.Count -gt 0) {
+            @($files | Where-Object { Test-AnyWildcardMatch -Values @($_) -Patterns $scope.PathsAny })
+        }
+        else {
+            @()
+        }
+        $pathMatch = $matchedPaths.Count -gt 0
+
+        # A repository-wide sweep incidentally touches a few in-scope files. Without
+        # a share test it lands in a narrow queue and wastes the reviewer's time, so
+        # a path-only match has to be a meaningful portion of the pull request.
+        if ($pathMatch -and -not $labelMatch -and $pathMatchMinimumShare -gt 0 -and $files.Count -gt 0) {
+            $matchedShare = $matchedPaths.Count / $files.Count
+            if ($matchedShare -lt $pathMatchMinimumShare) {
+                $pathMatch = $false
+                $incidentalPathCount++
+            }
+        }
+
         $scopeMatch = $scope.AllRepositoryPullRequests -or $labelMatch -or $pathMatch
 
         if (-not $scopeMatch) {
@@ -1099,6 +1233,25 @@ function Invoke-PRAttentionQueue {
 
     if (-not $InputPath) {
         Add-PullRequestDetails -RepositoryName $Repository -Candidates @($matchedCandidates)
+        $mergeableAttempts = [int](Get-PropertyValue `
+            -Object $configuration.settings -Name "mergeableResolveAttempts" -DefaultValue 0)
+        if ($mergeableAttempts -gt 0) {
+            try {
+                $unresolvedMergeable = Resolve-UnknownMergeable `
+                    -Candidates @($matchedCandidates) `
+                    -RepositoryName $Repository `
+                    -MaxAttempts $mergeableAttempts
+            }
+            catch {
+                # The queue is already complete at this point. Report the gap instead
+                # of failing the run and returning nothing.
+                $unresolvedMergeable = @(
+                    $matchedCandidates | Where-Object {
+                        [string](Get-PropertyValue -Object $_.PullRequest -Name "mergeable" -DefaultValue "UNKNOWN") -eq "UNKNOWN"
+                    }
+                ).Count
+            }
+        }
     }
 
     foreach ($candidate in $matchedCandidates) {
@@ -1161,6 +1314,11 @@ function Invoke-PRAttentionQueue {
 
     if ($unresolvedPathCoverage -gt 0) {
         $warnings.Add("$unresolvedPathCoverage fixture pull request(s) had incomplete changed-file data.")
+    }
+
+    if ($unresolvedMergeable -gt 0) {
+        $warnings.Add("GitHub had not finished computing mergeability for $unresolvedMergeable pull request(s). " +
+            "Conflicting pull requests among them can appear in a review bucket until the next run.")
     }
 
     $reviewNow = @(
@@ -1293,6 +1451,8 @@ function Invoke-PRAttentionQueue {
             labelOnly = $labelOnlyCount
             pathOnly = $pathOnlyCount
             labelAndPath = $bothCount
+            incidentalPathExcluded = $incidentalPathCount
+            unresolvedMergeable = $unresolvedMergeable
             byBucket = [pscustomobject]$bucketCounts
         }
         overflow = [pscustomobject]@{

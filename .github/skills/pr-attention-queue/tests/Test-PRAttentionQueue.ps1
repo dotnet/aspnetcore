@@ -34,8 +34,12 @@ $defaultResult = $defaultJson | ConvertFrom-Json -Depth 100
 
 Assert-True ($defaultResult.filter.name -eq "blazor") "The default scope must be the Blazor preset."
 Assert-True ($defaultResult.query.complete) "The fixture universe must be complete."
-Assert-True ($defaultResult.census.matched -eq 11) "The Blazor preset should match eleven fixture PRs."
+Assert-True ($defaultResult.census.matched -eq 12) "The Blazor preset should match twelve fixture PRs."
 Assert-True ($defaultResult.census.pathOnly -eq 1) "One unlabeled PR should match only by Components path."
+Assert-True ($defaultResult.census.incidentalPathExcluded -eq 1) "A repository-wide sweep must not enter a narrow scope."
+Assert-True (-not ($defaultResult.items | Where-Object number -eq 13)) "PR 13 touches Components incidentally and must be excluded."
+Assert-True (($defaultResult.items | Where-Object number -eq 14).bucket -eq "WaitingOnAuthor") "PR 14 conflicts and belongs to its author."
+Assert-True (($defaultResult.items | Where-Object number -eq 14).reasonCodes -contains "merge-conflict") "PR 14 should explain the merge conflict."
 Assert-True (($defaultResult.items | Where-Object number -eq 1).bucket -eq "ReviewNow") "PR 1 should be reviewable now."
 Assert-True (($defaultResult.items | Where-Object number -eq 2).bucket -eq "NeedsRescue") "PR 2 should need rescue."
 Assert-True (($defaultResult.items | Where-Object number -eq 3).bucket -eq "WaitingOnAuthor") "PR 3 should wait on its author."
@@ -87,6 +91,7 @@ $markdownText = $markdown -join [Environment]::NewLine
 Assert-True ($markdownText.Contains("## Review now")) "Markdown must contain Review now."
 Assert-True ($markdownText.Contains("## Needs rescue")) "Markdown must contain Needs rescue."
 Assert-True ($markdownText.Contains("matched only by changed path")) "Markdown must report path-only coverage."
+Assert-True ($markdownText.Contains("incidentally")) "Markdown must report incidental path exclusions."
 Assert-True ($markdownText.Contains("**Overflow:**")) "Markdown must report digest overflow."
 Assert-True (-not $markdownText.Contains("@community-user")) "Markdown must not mention contributors."
 
