@@ -82,6 +82,24 @@ public class CredentialPublicKeyTest
         Assert.Contains("key type", exception.InnerException!.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Decode_Throws_WhenCrvIsNotValidForKty()
+    {
+        // Arrange
+        // CrvP256K is a recognized COSEEllipticCurve value, but
+        // IsValidKtyCrvCombination doesn't accept it for kty=EC2 (it's only
+        // valid for kty=OKP curves, none of which are P256K). This exercises
+        // the kty+crv check directly, independent of alg. Key material is
+        // generated on P-256 since P256K isn't a curve .NET's ECDsa can create.
+        var bytes = EncodeEcPublicKeyCbor(AlgES256, CrvP256K, keyMaterialCrv: CrvP256);
+
+        // Act & Assert
+        var exception = Assert.Throws<PasskeyException>(() => CredentialPublicKey.Decode(bytes));
+
+        Assert.IsType<CborContentException>(exception.InnerException);
+        Assert.Contains("key type", exception.InnerException!.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>
     /// Encodes a CTAP2-canonical COSE EC2 public key with the given (possibly
     /// invalid) alg/crv combination. The same helper backs both the valid and

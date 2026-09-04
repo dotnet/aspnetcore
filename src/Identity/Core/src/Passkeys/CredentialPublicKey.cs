@@ -208,10 +208,12 @@ internal sealed class CredentialPublicKey
         }
 
         // See https://www.w3.org/TR/webauthn-3/#sctn-alg-identifier for the
-        // alg/crv pairings WebAuthn defines for EC2 keys. ES256K is
-        // intentionally omitted: it isn't in IsSupportedAlgorithm, and
-        // P256K isn't accepted by IsValidKtyCrvCombination above, so a key
-        // using it is already rejected before this runs.
+        // alg/crv pairings for the currently supported EC2 algorithms.
+        // Adding another EC2 algorithm to IsSupportedAlgorithm also requires
+        // updating this switch. ES256K is intentionally omitted: it isn't in
+        // IsSupportedAlgorithm, and P256K isn't accepted by
+        // IsValidKtyCrvCombination above, so a key using it is already
+        // rejected before this runs.
         static bool IsValidAlgCrvCombination(COSEAlgorithmIdentifier alg, COSEEllipticCurve crv)
         {
             return (alg, crv) switch
