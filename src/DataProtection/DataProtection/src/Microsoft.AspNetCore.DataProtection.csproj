@@ -48,6 +48,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.NuGetIntegrationTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
     <InternalsVisibleTo Include="KeyManagementSimulator" />
   </ItemGroup>
