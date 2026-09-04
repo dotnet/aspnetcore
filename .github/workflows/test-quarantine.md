@@ -566,7 +566,7 @@ on:
         # optional enrichment (never the per-test counts) and fails loud rather than letting
         # GitHub silently truncate into corrupt JSON. Validated ~170KB on 30 days of data.
         python3 << 'SCRIPT'
-        import json, os, sys, time, datetime, hashlib, urllib.parse, urllib.request, urllib.error, re
+        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error, re
 
         ADO = "https://dev.azure.com/dnceng-public/public/_apis"
         VSTMR = "https://vstmr.dev.azure.com/dnceng-public/public/_apis"
@@ -794,278 +794,18 @@ on:
                     if is_wi and job and wi_name:
                         probes.append({"job": job, "workitem": wi_name, "build": occ["build"]})
                     if idx == 0 and not is_wi:
+                        e["evidence_build"] = occ["build"]
+                        e["run_id"] = occ["runId"]
+                        e["result_id"] = occ["resultId"]
+                        e["leg"] = wi_name or job or ""
                         em, st = det.get("errorMessage"), det.get("stackTrace")
                         if em:
                             e["error"] = scrub_secrets(em)[:ERROR_CAP]
                         if st:
                             e["stack"] = scrub_secrets(st)[:STACK_CAP]
-                        # Real AzDO TestRun name (e.g. "Quarantine-Mono-Linux-Release-xunit").
-                        # Free: it rides along on the result detail we already fetched. Used as
-                        # the Arcade "Leg Name" and as the durable environment identity, both of
-                        # which are unrecoverable once the build ages out of public retention.
-                        leg = (det.get("testRun") or {}).get("name")
-                        if leg:
-                            e["leg"] = str(leg)[:120]
-                        # The build this error/leg was actually read from. dnceng validates a
-                        # Known Issue signature against the build the issue cites, so the cited
-                        # build must be the one whose logs contain this exact text — not merely
-                        # the most recent build in which the test failed.
-                        e["evidence_build"] = occ.get("build")
                 if is_wi:
                     e["probes"] = probes
             return agg
-
-
-        # --- BEGIN kbe-signature (extracted verbatim by
-        # .github/workflows/scripts/test-quarantine/test_kbe_signature.py — keep the
-        # sentinels and do not reformat this block without running that test) ---
-        #
-        # Derive an Arcade "Known Build Error" signature for each individual failing test so the
-        # quarantine issue carries a durable, matchable failure fingerprint captured while the
-        # evidence still exists. Public AzDO/Helix retention is ~30 days, after which the
-        # errorMessage is gone for good and cannot be reconstructed from the issue prose.
-        #
-        # Contract: dotnet/arcade -> Documentation/Build Analysis/KnownIssues.md
-        #   ErrorMessage      per-line String.Contains against errorMessage + stackTrace,
-        #                     plus the Helix console ONLY when ExcludeConsoleLog is false.
-        #   ExcludeConsoleLog true here. With false, one shared xunit console attributes every
-        #                     failure in the work item to this issue — the observed
-        #                     misattribution on dotnet/aspnetcore#62308, whose signature targets
-        #                     a QuicConnectionContextTests method but whose auto-maintained
-        #                     report table lists QuicConnectionListenerTests hits.
-        #   BuildRetry        always false. A quarantine is never "fixed" by retrying.
-        #
-        # Because the console is excluded, the signature MUST come from errorMessage/stackTrace
-        # and must NOT use the "<FQN> [FAIL]" form — that line only ever appears in the console.
-        # Test identity therefore lives in the supplemental block, not in the matcher.
-        #
-        # This step deliberately does NOT apply the `Known Build Error` label. Labelling enrolls
-        # the issue into dnceng validation and https://github.com/orgs/dotnet/projects/111, and
-        # is a separate human-gated decision: dotnet/runtime carries both labels on only ~9% of
-        # its disabled tests, and files the KBE while the test is still blocking, not after.
-
-        SIG_MIN_LEN = 24     # below this a Contains match is too generic to be trustworthy
-        SIG_MAX_LEN = 160    # keep the matcher line-scoped and the issue body small
-
-        # Fragments that differ between runs. A signature spanning one of these would match only
-        # the single build it was captured from.
-        _VOLATILE = [
-            re.compile(r'\b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b'),  # GUID
-            re.compile(r'0x[0-9a-fA-F]+'),                                            # hex address
-            re.compile(r'\b\d{1,3}(?:\.\d{1,3}){3}\b'),                               # IPv4
-            re.compile(r'\b\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)?'), # timestamp
-            re.compile(r'\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|seconds?|minutes?|s)\b'),  # duration
-            re.compile(r'[A-Za-z]:\\[^\s"\']+'),                                      # Windows path
-            re.compile(r'/(?:home|tmp|mnt|Users|private)/[^\s"\']+'),                  # POSIX path
-            re.compile(r':\d{2,5}\b'),                                                # port
-            re.compile(r'\b\d{3,}\b'),                                                # ids, counts
-            re.compile(r'#\d+'),                                                      # issue/pr refs
-        ]
-
-
-        def _volatile_spans(line):
-            spans = []
-            for rx in _VOLATILE:
-                for m in rx.finditer(line):
-                    if m.end() > m.start():
-                        spans.append((m.start(), m.end()))
-            if not spans:
-                return []
-            spans.sort()
-            merged = [spans[0]]
-            for s, e in spans[1:]:
-                if s <= merged[-1][1]:
-                    merged[-1] = (merged[-1][0], max(merged[-1][1], e))
-                else:
-                    merged.append((s, e))
-            return merged
-
-
-        def stable_segments(line):
-            """Split `line` on volatile spans. Returns the contiguous runs BETWEEN them.
-
-            Contiguity is the whole point: ErrorMessage is a Contains match, so the emitted
-            signature has to be a genuine literal substring of the failure text. Stripping the
-            volatile pieces out and rejoining the remainder would produce a string that never
-            matches anything."""
-            out, prev = [], 0
-            for s, e in _volatile_spans(line):
-                if s > prev:
-                    out.append(line[prev:s])
-                prev = e
-            if prev < len(line):
-                out.append(line[prev:])
-            return out or [line]
-
-
-        def derive_signature(text):
-            """Longest volatile-free contiguous segment of `text`, or (None, reason)."""
-            if not text or not text.strip():
-                return None, "no-error-message"
-            best = ""
-            for raw in text.splitlines():
-                line = raw.strip()
-                if not line:
-                    continue
-                for seg in stable_segments(line):
-                    seg = seg.strip()
-                    if len(seg) > len(best):
-                        best = seg
-            if len(best) < SIG_MIN_LEN:
-                return None, "no-stable-signature-segment"
-            sig = best[:SIG_MAX_LEN].strip()
-            # Fail closed rather than emit a blob that provably cannot match its own evidence.
-            if sig not in text:
-                return None, "signature-not-substring"
-            return sig, None
-
-        def parse_environment(leg):
-            """Split an AzDO TestRun name into (platform, configuration).
-
-            Records the literal string "unknown" / "not-encoded" rather than guessing a
-            default: a fabricated "Linux/Debug" would look like evidence while being an
-            assumption, and this block is read as captured fact after the build ages out.
-            Real observed shapes include "Quarantine-Mono-Linux-Release-xunit",
-            "Windows.Amd64.VS2026.Open", "OSX.26.Arm64.Open" and "Ubuntu.2404.Amd64.Open"."""
-            low = (leg or "").lower()
-            if "windows" in low or low.startswith("win"):
-                platform = "Windows"
-            elif "osx" in low or "macos" in low or "darwin" in low:
-                platform = "macOS"
-            elif "linux" in low or "ubuntu" in low or "alpine" in low or "debian" in low:
-                platform = "Linux"
-            else:
-                platform = "unknown"
-            if "release" in low:
-                configuration = "Release"
-            elif "debug" in low:
-                configuration = "Debug"
-            else:
-                # Several real run names (the ".Open" Helix queue families) genuinely do not
-                # encode a configuration. That is different from failing to recognise one.
-                configuration = "not-encoded" if platform != "unknown" else "unknown"
-            return platform, configuration
-
-
-        def attach_kbe(agg, bmeta, window):
-            """Attach a ready-to-paste Arcade Known Issue section to each individual failing test.
-
-            The rendered `section` is the deliverable: the agent copies it verbatim rather than
-            re-authoring it, so the signature that reaches the issue is byte-identical to the one
-            derived here from the real AzDO `errorMessage`.
-
-            Heading choice: `### Known Issue Error Message` is the current Arcade template
-            heading and is what the Build Insights "report new issue" link prefills. It is used
-            here instead of `## Error Message` because the quarantine issue template already
-            uses that heading for human-readable prose, and two identically-named sections would
-            be ambiguous to both readers and any future parser. dotnet/aspnetcore#57416 is a
-            live, dnceng-validated Known Build Error whose blob sits under this exact heading
-            with no `## Error Message` section at all, which confirms the heading is not
-            load-bearing for validation.
-
-            Work items are skipped: their text comes from the shared Helix console, which is
-            exactly the source ExcludeConsoleLog is set to ignore."""
-            for name, e in agg.items():
-                if name.endswith(WI_SUFFIX):
-                    e["kbe_reason"] = "work-item-not-an-individual-test"
-                    continue
-                sig, reason = derive_signature(e.get("error") or "")
-                if not sig:
-                    e["kbe_reason"] = reason
-                    continue
-                # Cite the build the signature was actually read from. dnceng validates a Known
-                # Issue against the build the issue cites, so citing the most recent failing
-                # build instead would fail validation whenever the two differ.
-                bid = e.get("evidence_build")
-                if not bid:
-                    e["kbe_reason"] = "no-evidence-build"
-                    continue
-                leg = e.get("leg")
-                if not leg:
-                    e["kbe_reason"] = "no-leg-name"
-                    continue
-                blob = {
-                    "ErrorMessage": sig,
-                    "BuildRetry": False,
-                    # Skip Helix console analysis. One xunit console log is shared by every test
-                    # in a work item, so including it attributes unrelated failures in the same
-                    # work item to this issue (observed live on dotnet/aspnetcore#62308).
-                    "ExcludeConsoleLog": True,
-                }
-                url = (f"https://dev.azure.com/dnceng-public/public/_build/"
-                       f"results?buildId={bid}&view=results")
-                captured = (datetime.datetime.now(datetime.timezone.utc)
-                                    .strftime("%Y-%m-%dT%H:%M:%SZ"))
-                # Short digest of the signature itself, carried in the marker. It makes the
-                # section self-verifying: anything downstream can re-hash the ErrorMessage it
-                # finds in the issue body and compare, without needing this run's data. That
-                # catches the realistic failure mode — the agent paraphrasing, re-wrapping or
-                # truncating the text instead of copying it. It is an integrity check, not an
-                # anti-forgery measure: it cannot stop a deliberate rewrite of both values.
-                sig_hash = hashlib.sha256(sig.encode("utf-8")).hexdigest()[:12]
-                platform, configuration = parse_environment(leg)
-                # Observed window, from the builds this run actually inspected. Explicitly a
-                # snapshot of what was queried (30 days, defs 83 + 87), not a claim about the
-                # test's whole history.
-                starts = sorted(
-                    s for s in ((bmeta.get(str(b)) or {}).get("startedUtc")
-                                for b in e.get("builds") or []) if s
-                )
-                first_seen = starts[0] if starts else "unknown"
-                last_seen = starts[-1] if starts else "unknown"
-                distinct_builds = len(set(e.get("builds") or []))
-                section = "\n".join([
-                    "### Known Issue Error Message",
-                    "",
-                    "<!-- Derived deterministically by the test-quarantine workflow from the",
-                    "     Azure DevOps test result errorMessage. Do not hand-edit: the value is",
-                    "     a literal substring of the real failure text and a String.Contains",
-                    "     match depends on it staying byte-identical. -->",
-                    f"<!-- kbe-signature: v1 build={bid} captured={captured} sha256_12={sig_hash} -->",
-                    "",
-                    f"Build: {url}",
-                    f"Leg Name: {leg}",
-                    "",
-                    "```json",
-                    json.dumps(blob, indent=2),
-                    "```",
-                    "",
-                    "<details><summary>Capture details</summary>",
-                    "",
-                    "| Field | Value |",
-                    "| --- | --- |",
-                    f"| Test | `{name}` |",
-                    f"| Assembly | `{e.get('assembly') or 'unknown'}` |",
-                    f"| Test run | `{leg}` |",
-                    f"| Platform | {platform} |",
-                    f"| Configuration | {configuration} |",
-                    f"| Signature source | Azure DevOps test result `errorMessage` |",
-                    f"| Evidence build | {bid} |",
-                    f"| Captured (UTC) | {captured} |",
-                    "",
-                    f"Observed in the window this run queried ({window}): "
-                    f"{e.get('count', 0)} failure(s) across {distinct_builds} build(s); "
-                    f"first {first_seen}, last {last_seen}. This is a snapshot of what was "
-                    "queried, not the test's complete history.",
-                    "",
-                    "</details>",
-                ])
-                e["kbe"] = {
-                    "blob": blob,
-                    "build": bid,
-                    "build_url": url,
-                    "leg": leg,
-                    "platform": platform,
-                    "configuration": configuration,
-                    "first_seen_utc": first_seen,
-                    "last_seen_utc": last_seen,
-                    "distinct_builds": distinct_builds,
-                    "captured_utc": captured,
-                    "section": section,
-                }
-            return agg
-
-        # --- END kbe-signature ---
 
 
         _MARKER = re.compile(r'\[(?:PASS|FAIL|SKIP)\]\s*$')
@@ -1113,12 +853,7 @@ on:
             """Serialize, but guarantee the result stays under SAFE_OUTPUT by progressively
             shedding the largest optional payloads (never the core per-test counts). Fail loud
             if even the trimmed core is too big, rather than letting GITHUB_OUTPUT silently
-            truncate into corrupt JSON.
-
-            The derived `kbe` blob is deliberately never shed. It is two orders of magnitude
-            smaller than the raw `error`/`stack` text it was derived from, and it is the one
-            artifact that must survive: the raw text is recoverable from AzDO until retention
-            expires, whereas a signature that never reaches the issue is lost permanently."""
+            truncate into corrupt JSON."""
             if sizeof(out) <= SAFE_OUTPUT:
                 return json.dumps(out, separators=(",", ":"))
             out["trim"] = []
@@ -1228,11 +963,16 @@ on:
         def main():
             # Source A: failed/partial builds on main, both pipelines, last 30 days.
             a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
+            # Make the representative occurrence deterministic and recent. Any eligible
+            # post-cutoff Case A candidate necessarily has its newest raw failure after
+            # that cutoff, so the attached error/stack cannot come from stale pre-fix data.
+            a_builds.sort(
+                key=lambda b: (b.get("startTime") or "", int(b.get("id") or 0)),
+                reverse=True)
             bmeta = {}
             for b in a_builds:
                 bmeta[str(b["id"])] = build_meta(b)
             source_a = enrich(aggregate([b["id"] for b in a_builds]))
-            attach_kbe(source_a, bmeta, "last 30 days, pipelines 83 and 87, `refs/heads/main`")
             # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
             # the failed/partial builds above, to spot a passing run between two failures.
             all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
@@ -1252,8 +992,12 @@ on:
             if b_ids:
                 for b in builds_by_ids(b_ids):
                     bmeta[str(b["id"])] = build_meta(b)
+                b_ids.sort(
+                    key=lambda bid: (
+                        bmeta.get(str(bid), {}).get("startedUtc") or "",
+                        int(bid)),
+                    reverse=True)
             source_b = enrich(aggregate(b_ids))
-            attach_kbe(source_b, bmeta, "recently merged pull request builds, pipelines 83 and 87")
 
             # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
             # tracked occurrence until one yields [FAIL] blocks (the first build is often a
@@ -1411,12 +1155,25 @@ on:
             # test-name keys and collapse unrelated failures into duplicate keys.
             js = main()
             validate_part1_json(js)
+            evidence_path = os.path.join(
+                os.environ.get("RUNNER_TEMP", "/tmp"),
+                "test-quarantine-part1.json")
+            with open(evidence_path, "w", encoding="utf-8") as evidence_file:
+                evidence_file.write(js)
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if not gh_out:
                 sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
             with open(gh_out, "a") as f:
                 write_part1_chunks(f, js)
         SCRIPT
+
+    - name: Upload Part 1 evidence for safe output validation
+      uses: actions/upload-artifact@v7
+      with:
+        name: test-quarantine-evidence-${{ github.run_id }}
+        path: ${{ runner.temp }}/test-quarantine-part1.json
+        retention-days: 1
+        if-no-files-found: error
 
 jobs:
   pre_activation:
@@ -1446,6 +1203,9 @@ jobs:
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
+skills:
+  - .github/skills/create-kbe
+
 permissions:
   contents: read
   issues: read
@@ -1454,8 +1214,521 @@ permissions:
 
 safe-outputs:
   report-failure-as-issue: false
+  env:
+    TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
+  steps:
+    - name: Download deterministic Part 1 evidence
+      uses: actions/download-artifact@v8
+      with:
+        name: test-quarantine-evidence-${{ github.run_id }}
+        path: ${{ runner.temp }}/test-quarantine-evidence
   noop:
     report-as-issue: false
+  scripts:
+    create-quarantine-issue:
+      description: >-
+        Create or reuse one quarantine issue for one exact test. Select a
+        runtime-style matcher with the create-kbe skill. Use incomplete when a
+        unique matcher or duplicate search cannot be verified.
+      inputs:
+        temporary_id:
+          description: Temporary ID matching ^aw_[A-Za-z0-9_]{3,12}$
+          type: string
+          required: true
+        test_name:
+          description: Exact fully qualified test name from Part 1 evidence
+          type: string
+          required: true
+        matcher_kind:
+          description: "Matcher representation: literal, literal-array, regex, or incomplete"
+          type: string
+          default: incomplete
+        matcher:
+          description: Literal/regex text, or a JSON string array for literal-array
+          type: string
+        duplicate_status:
+          description: >-
+            Result of the required existing-issue search: none, existing-open,
+            recently-closed, ambiguous, filtered, or search-failed
+          type: string
+          required: true
+        duplicate_summary:
+          description: Concise evidence supporting duplicate_status
+          type: string
+          required: true
+        log_excerpt:
+          description: Optional sanitized per-test log excerpt for human readers only
+          type: string
+        log_url:
+          description: Optional HTTPS link to the complete Helix log
+          type: string
+      script: |
+        // --- BEGIN quarantine-kbe-handler ---
+        const fs = require("fs");
+        const path = require("path");
+        const crypto = require("crypto");
+
+        const stateKey = Symbol.for("aspnetcore.test-quarantine.kbe-handler");
+        const state = globalThis[stateKey] ??= { calls: 0 };
+        state.calls++;
+
+        const fail = (error) => {
+          core.error(error);
+          return { success: false, error };
+        };
+        const escapeHtml = (value) => String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("`", "&#96;");
+        const cap = (value, length) => String(value ?? "").slice(0, length);
+        const scrubSecrets = (value) => {
+          let text = String(value ?? "");
+          const patterns = [
+            /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}/g,
+            /eyJ[A-Za-z0-9_-]{20,}/g,
+            /\bgh[pousr]_[A-Za-z0-9]{20,}\b/g,
+            /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g,
+            /\bbearer\s+[A-Za-z0-9._~+/=-]{20,}/gi,
+            /\bhttps?:\/\/[^/\s:@"]+:[^@\s/"]{6,}@/gi,
+            /[?&]sig=[A-Za-z0-9%/+_=-]{20,}/gi,
+            /\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"']{12,}/gi,
+            /[A-Za-z0-9][A-Za-z0-9+/=_-]{51,}/g,
+          ];
+          for (const pattern of patterns) {
+            text = text.replace(pattern, "[REDACTED]");
+          }
+          return text;
+        };
+        const temporaryId = String(item.temporary_id ?? "").trim();
+        const testName = String(item.test_name ?? "").trim();
+        const duplicateStatus = String(item.duplicate_status ?? "").trim();
+        const duplicateSummary = cap(sanitizeContent(item.duplicate_summary ?? ""), 1000);
+        const matcherKind = String(item.matcher_kind ?? "incomplete").trim();
+        const rawMatcher = cap(item.matcher ?? "", 4000);
+
+        if (state.calls > 10) {
+          return fail("create_quarantine_issue exceeded the per-run limit of 10 calls");
+        }
+        if (!/^aw_[A-Za-z0-9_]{3,12}$/.test(temporaryId)) {
+          return fail(`Invalid temporary_id: ${temporaryId}`);
+        }
+        if (!testName || testName.length > 1000) {
+          return fail("test_name must be a non-empty exact test identity under 1000 characters");
+        }
+        if (temporaryIdMap.has(temporaryId.toLowerCase())) {
+          return fail(`temporary_id was already resolved: ${temporaryId}`);
+        }
+        if (!["none", "existing-open", "recently-closed", "ambiguous", "filtered", "search-failed"].includes(duplicateStatus)) {
+          return fail(`Invalid duplicate_status: ${duplicateStatus}`);
+        }
+        if (process.env.GH_AW_DETECTION_CONCLUSION &&
+            process.env.GH_AW_DETECTION_CONCLUSION !== "success") {
+          return fail(`Threat detection did not succeed: ${process.env.GH_AW_DETECTION_CONCLUSION}`);
+        }
+
+        const evidencePath = path.join(
+          process.env.RUNNER_TEMP || "/tmp",
+          "test-quarantine-evidence",
+          "test-quarantine-part1.json");
+        let evidence;
+        try {
+          evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+        } catch (error) {
+          return fail(`Unable to read deterministic Part 1 evidence: ${error.message}`);
+        }
+
+        const sourceA = evidence.source_a ?? {};
+        const sourceB = evidence.source_b ?? {};
+        const builds = evidence.builds ?? {};
+        const selectedRecords = [sourceA[testName], sourceB[testName]].filter(Boolean);
+        if (selectedRecords.length === 0) {
+          const sourceCMatches = (evidence.source_c ?? []).filter(entry =>
+            String(entry.fail_blocks ?? "").split(/\r?\n/).some(line => {
+              const normalizedLine = line.trimEnd();
+              return normalizedLine.endsWith("[FAIL]") &&
+                normalizedLine.slice(0, -"[FAIL]".length).trim() === testName;
+            }));
+          if (sourceCMatches.length > 0) {
+            const sourceCBuilds = [...new Set(sourceCMatches.map(entry => entry.build))];
+            const newestSourceCBuild = sourceCBuilds
+              .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
+              .filter(build => Number.isFinite(build.started))
+              .sort((left, right) => right.started - left.started)[0];
+            selectedRecords.push({
+              assembly: sourceCMatches[0].workitem || "unknown",
+              builds: sourceCBuilds,
+              evidence_build: newestSourceCBuild?.id,
+              leg: sourceCMatches[0].job || sourceCMatches[0].workitem || "unknown",
+              error: sourceCMatches.map(entry => entry.fail_blocks).join("\n\n"),
+              stack: "",
+            });
+          }
+        }
+        if (selectedRecords.length === 0) {
+          return fail(`test_name is absent from deterministic Part 1 evidence: ${testName}`);
+        }
+
+        const buildIds = [...new Set(selectedRecords.flatMap(record => record.builds ?? []))];
+        const mostRecentBuild = buildIds
+          .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
+          .filter(build => Number.isFinite(build.started))
+          .sort((left, right) => right.started - left.started)[0];
+        if (!mostRecentBuild) {
+          return fail(`No timestamped failing build exists for ${testName}`);
+        }
+
+        let matcher = rawMatcher;
+        let matcherValues = null;
+        let regex = null;
+        let validationReason = "";
+
+        const genericLiteral = /^(?:Assert\.[A-Za-z0-9_]+\(\) Failure|(?:System\.)?[A-Za-z0-9_.]+Exception|Operation timed out|Connection reset|No space left on device|Segmentation fault|SIG[A-Z]+|exit(?:code)?\s*:?\s*\d+)$/i;
+        const genericInfrastructure = /\b(?:timed out|timeout|connection reset|no space left|segmentation fault|test host process crashed|process exited|exited with code|signal SIG[A-Z]+)\b/i;
+        const isBroadLiteral = (value) => {
+          const text = String(value ?? "").trim();
+          return text.length < 24 ||
+            text === testName ||
+            testName.startsWith(text) ||
+            genericLiteral.test(text) ||
+            genericInfrastructure.test(text) ||
+            /^at\s+[A-Za-z0-9_.+`<>]+\([^)]*\)$/i.test(text) ||
+            /^(?:0x[0-9a-f]+|[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/i.test(text);
+        };
+        const orderedLiteralMatch = (text, values) => {
+          const lines = String(text).split(/\r?\n/);
+          let nextLine = 0;
+          for (const value of values) {
+            const found = lines.findIndex((line, index) => index >= nextLine && line.includes(value));
+            if (found < 0) {
+              return false;
+            }
+            nextLine = found + 1;
+          }
+          return true;
+        };
+        const hasSharedRegexSyntax = (pattern) => {
+          let canQuantify = false;
+          for (let index = 1; index < pattern.length; index++) {
+            const character = pattern[index];
+            if (character === "\\") {
+              const escaped = pattern[++index];
+              if (!escaped || !/[\\.^$*+?()[\]{}|nrt]/.test(escaped)) {
+                return false;
+              }
+              canQuantify = true;
+              continue;
+            }
+            if (character === "[") {
+              let end = index + 1;
+              let escaped = false;
+              for (; end < pattern.length; end++) {
+                if (!escaped && pattern[end] === "]") {
+                  break;
+                }
+                escaped = !escaped && pattern[end] === "\\";
+                if (pattern[end] !== "\\") {
+                  escaped = false;
+                }
+              }
+              if (end >= pattern.length) {
+                return false;
+              }
+              const content = pattern.slice(index + 1, end);
+              if (!content || content === "^" || /&&|--|\[/.test(content)) {
+                return false;
+              }
+              let contentIndex = content.startsWith("^") ? 1 : 0;
+              for (; contentIndex < content.length; contentIndex++) {
+                const classCharacter = content[contentIndex];
+                if (classCharacter === "\\") {
+                  const classEscape = content[++contentIndex];
+                  if (!classEscape || !/[nrt\\\-\]]/.test(classEscape)) {
+                    return false;
+                  }
+                } else if (!/[A-Za-z0-9 _.,:/-]/.test(classCharacter)) {
+                  return false;
+                }
+              }
+              index = end;
+              canQuantify = true;
+              continue;
+            }
+            if (character === "{") {
+              if (!canQuantify) {
+                return false;
+              }
+              const end = pattern.indexOf("}", index + 1);
+              const quantifier = pattern.slice(index, end + 1);
+              const quantifierMatch = quantifier.match(/^\{(\d+)(?:,(\d*))?\}$/);
+              if (end < 0 || !quantifierMatch) {
+                return false;
+              }
+              const minimum = Number(quantifierMatch[1]);
+              const maximum = quantifierMatch[2] === undefined
+                ? minimum
+                : quantifierMatch[2] === "" ? 10000 : Number(quantifierMatch[2]);
+              if (minimum > 10000 || maximum > 10000 || maximum < minimum) {
+                return false;
+              }
+              index = end;
+              canQuantify = false;
+              continue;
+            }
+            if ("*+?".includes(character)) {
+              if (!canQuantify) {
+                return false;
+              }
+              canQuantify = false;
+              continue;
+            }
+            if (".()|]}^".includes(character) ||
+                (character === "$" && index !== pattern.length - 1) ||
+                character.charCodeAt(0) < 0x20 ||
+                character.charCodeAt(0) > 0x7e) {
+              return false;
+            }
+            canQuantify = character !== "$";
+          }
+          return true;
+        };
+
+        if (matcherKind === "literal") {
+          matcher = rawMatcher.trim();
+          if (isBroadLiteral(matcher) || /[\r\n]/.test(matcher)) {
+            validationReason = "literal matcher is missing, multiline, or too broad";
+          }
+        } else if (matcherKind === "literal-array") {
+          try {
+            matcherValues = JSON.parse(rawMatcher);
+          } catch {
+            validationReason = "literal-array matcher is not valid JSON";
+          }
+          if (!validationReason &&
+              (!Array.isArray(matcherValues) || matcherValues.length < 2 || matcherValues.length > 6 ||
+               matcherValues.some(value => typeof value !== "string" || !value.trim() || /[\r\n]/.test(value)))) {
+            validationReason = "literal-array must contain 2-6 non-empty single-line strings";
+          }
+          if (!validationReason &&
+              !matcherValues.some(value => !isBroadLiteral(value) && value.trim() !== testName)) {
+            validationReason = "literal-array does not contain a specific failure anchor";
+          }
+        } else if (matcherKind === "regex") {
+          matcher = rawMatcher.trim();
+          if (!matcher.startsWith("^") || matcher.length < 16 || matcher.length > 300 ||
+              !hasSharedRegexSyntax(matcher) || !/[A-Za-z0-9_]{8,}/.test(matcher)) {
+            validationReason = "regex is unanchored, broad, unsupported, or lacks a stable literal";
+          } else {
+            try {
+              regex = new RegExp(matcher, "is");
+            } catch {
+              validationReason = "regex does not compile";
+            }
+          }
+        } else if (matcherKind !== "incomplete") {
+          validationReason = `unsupported matcher_kind: ${matcherKind}`;
+        }
+
+        const matches = (text) => {
+          if (matcherKind === "literal") {
+            return text.includes(matcher);
+          }
+          if (matcherKind === "literal-array") {
+            return orderedLiteralMatch(text, matcherValues);
+          }
+          if (matcherKind === "regex") {
+            regex.lastIndex = 0;
+            return regex.test(text);
+          }
+          return false;
+        };
+        const recordFields = (record) => [record.error, record.stack].filter(Boolean);
+        const matchingRecord = !validationReason && matcherKind !== "incomplete"
+          ? selectedRecords.find(record => recordFields(record).some(field => matches(field)))
+          : null;
+        if (!validationReason && matcherKind !== "incomplete" && !matchingRecord) {
+          validationReason = "matcher does not match this test's deterministic error or stack evidence";
+        }
+
+        if (!validationReason && matcherKind !== "incomplete") {
+          for (const [otherName, record] of [
+            ...Object.entries(sourceA),
+            ...Object.entries(sourceB),
+          ]) {
+            if (otherName !== testName &&
+                recordFields(record).some(field => matches(field))) {
+              validationReason = `matcher also matches another failure record: ${otherName}`;
+              break;
+            }
+          }
+        }
+
+        const primaryRecord = matchingRecord ?? selectedRecords[0];
+        const evidenceBuild = primaryRecord.evidence_build ?? primaryRecord.builds?.[0];
+        if (!/^\d+$/.test(String(evidenceBuild ?? "")) || !builds[String(evidenceBuild)]) {
+          return fail(`Evidence build is absent from deterministic build metadata for ${testName}`);
+        }
+        const evidenceRunId = primaryRecord.run_id;
+        const evidenceResultId = primaryRecord.result_id;
+        if (!validationReason && matcherKind !== "incomplete" &&
+            (!/^\d+$/.test(String(evidenceRunId ?? "")) ||
+             !/^\d+$/.test(String(evidenceResultId ?? "")) ||
+             !(primaryRecord.builds ?? []).map(String).includes(String(evidenceBuild)))) {
+          validationReason = "matcher evidence is not bound to an exact build, test run, and result";
+        }
+        const kbeVerified = !validationReason &&
+          matcherKind !== "incomplete" &&
+          duplicateStatus === "none";
+        const kbeEnabled = kbeVerified &&
+          process.env.TEST_QUARANTINE_ENABLE_KBE === "true";
+        const legName = primaryRecord.leg ?? "unknown";
+        const assembly = primaryRecord.assembly || "unknown";
+        const repo = `${context.repo.owner}/${context.repo.repo}`;
+        const fullTitle = `Quarantine ${testName}`;
+        const title = fullTitle.length <= 256
+          ? fullTitle
+          : `${fullTitle.slice(0, 236)} [${crypto.createHash("sha256").update(testName).digest("hex").slice(0, 16)}]`;
+        const buildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${mostRecentBuild.id}&view=results`;
+        const evidenceBuildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${evidenceBuild}&view=results`;
+        const incompleteReason = validationReason ||
+          (duplicateStatus !== "none" ? `duplicate search result: ${duplicateStatus}` : "matcher was not supplied");
+
+        let logLink = "";
+        if (item.log_url) {
+          try {
+            const parsed = new URL(String(item.log_url));
+            if (parsed.protocol === "https:" &&
+                !parsed.username &&
+                !parsed.password &&
+                !parsed.search &&
+                !parsed.hash &&
+                (parsed.hostname === "helix.dot.net" ||
+                 parsed.hostname.endsWith(".blob.core.windows.net") ||
+                 parsed.hostname.endsWith(".vsblob.vsassets.io"))) {
+              logLink = `\n\n<a href="${escapeHtml(parsed.href)}">Complete log</a>`;
+            } else {
+              core.warning("Ignoring log_url with credentials, query data, or an unapproved host");
+            }
+          } catch {
+            core.warning("Ignoring invalid log_url");
+          }
+        }
+
+        const errorDetails = escapeHtml(cap(primaryRecord.error || "No error message was captured.", 12000));
+        const stack = escapeHtml(cap(primaryRecord.stack || "No stack trace was captured.", 12000));
+        const logExcerpt = escapeHtml(cap(
+          scrubSecrets(item.log_excerpt || "No per-test log excerpt was supplied."),
+          20000));
+        const escapedTestName = escapeHtml(testName);
+        const escapedLeg = escapeHtml(legName);
+        const escapedAssembly = escapeHtml(assembly);
+        const escapedDuplicate = escapeHtml(duplicateSummary || duplicateStatus);
+        const runUrl = `https://github.com/${repo}/actions/runs/${context.runId}`;
+        const labels = ["test-failure", ...(kbeEnabled ? ["Known Build Error"] : [])];
+
+        const sections = [
+          "<!-- gh-aw-agentic-workflow: test-quarantine -->",
+          "",
+          "## Failing Test(s)",
+          "",
+          `<code>${escapedTestName}</code>`,
+          "",
+          "## Failure Frequency",
+          "",
+          `Observed in ${buildIds.length} distinct failing builds in the deterministic 30-day evidence snapshot.`,
+          "",
+          "## Error Details",
+          "",
+          `<pre><code>${errorDetails}</code></pre>`,
+          "",
+          "## Stacktrace",
+          "",
+          `<details><summary>Stack trace</summary><pre><code>${stack}</code></pre></details>`,
+          "",
+          "## Logs",
+          "",
+          `<details><summary>Per-test log excerpt</summary><pre><code>${logExcerpt}</code></pre>${logLink}</details>`,
+          "",
+          "## Build Information",
+          "",
+          `Build: ${buildUrl}`,
+          `Build error leg or test failing: ${escapedLeg} - ${escapedAssembly} - ${escapedTestName}`,
+          "",
+          "## Build Insights Verification",
+          "",
+          `Evidence build: ${evidenceBuildUrl}`,
+          `Test result identity: run ${escapeHtml(evidenceRunId || "unavailable")}, result ${escapeHtml(evidenceResultId || "unavailable")}`,
+          `Duplicate search: ${escapeHtml(duplicateStatus)} - ${escapedDuplicate}`,
+          kbeVerified
+            ? `Matcher verified against deterministic VSTMR evidence.${kbeEnabled ? "" : " Known Build Error labeling is disabled by repository policy."}`
+            : `KBE activation incomplete: ${escapeHtml(incompleteReason)}.`,
+          "",
+          `> Created by the [test-quarantine workflow](${runUrl}).`,
+        ];
+
+        if (kbeVerified) {
+          const blob = {
+            ErrorMessage: matcherKind === "literal"
+              ? matcher
+              : matcherKind === "literal-array" ? matcherValues : "",
+            ErrorPattern: matcherKind === "regex" ? matcher : "",
+            BuildRetry: false,
+            ExcludeConsoleLog: true,
+          };
+          sections.push("", "## Error Message", "", "```json", JSON.stringify(blob, null, 2), "```");
+        }
+
+        const body = sections.join("\n");
+        if (body.length > 65000) {
+          return fail(`Rendered issue body exceeds GitHub's 65000 character limit: ${body.length}`);
+        }
+
+        let existingIssues;
+        try {
+          const searchTitle = title.replace(/["\\\r\n]/g, " ");
+          existingIssues = await github.paginate(github.rest.search.issuesAndPullRequests, {
+            q: `repo:${repo} is:issue is:open in:title "${searchTitle}"`,
+            per_page: 100,
+          });
+        } catch (error) {
+          return fail(`Unable to check for an existing quarantine issue: ${error.message}`);
+        }
+        const existing = existingIssues.find(issue => !issue.pull_request && issue.title === title);
+        if (existing) {
+          core.info(`Reusing existing quarantine issue #${existing.number}`);
+          return { success: true, temporaryId, repo, number: existing.number };
+        }
+
+        if (process.env.GH_AW_SAFE_OUTPUTS_STAGED === "true") {
+          await core.summary
+            .addHeading(title, 3)
+            .addRaw(`Labels: ${labels.join(", ")}`)
+            .addEOL()
+            .addRaw(body)
+            .write();
+          return { success: true, staged: true };
+        }
+
+        let response;
+        try {
+          response = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title,
+            body,
+            labels,
+          });
+        } catch (error) {
+          return fail(`Unable to create quarantine issue: ${error.message}`);
+        }
+        return {
+          success: true,
+          temporaryId,
+          repo,
+          number: response.data.number,
+        };
+        // --- END quarantine-kbe-handler ---
   create-pull-request:
     title-prefix: "[test-quarantine] "
     labels: [test-failure]
@@ -1474,13 +1747,10 @@ safe-outputs:
     # any patch that strays into production code.
     allowed-files:
       - "src/**/*.cs"
-  create-issue:
-    title-prefix: "Quarantine "
-    labels: [test-failure]
-    max: 10
   add-comment:
     target: "*"
     max: 10
+    discussions: false
   add-labels:
     allowed: [re-quarantine]
   # Fail closed on detected/undetermined threats: a blocked or failed detection job
@@ -1566,8 +1836,7 @@ The injected object has this shape:
 
 - `generated_utc` — when the data was collected.
 - `builds` — a compact metadata map keyed by build ID (as a string), covering every build referenced below. Each value has `def` (83 or 87), `startedUtc`/`finishedUtc`, `sourceVersion` (the commit the build ran), and `pr` (the PR number for a merged-PR build, or `null` for a `main` build). Use it for the time- and PR-based checks in Step 1.2 (below) so you never need an AzDO call.
-- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `error` and `stack` (the real failure message and stack trace, capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
-- **`kbe` — the deterministic Known Issue payload** (individual test cases only). When present it has `section` (a fully rendered, ready-to-paste markdown section), plus `blob`, `build`, `build_url`, `leg`, and `captured_utc` for reference. The `ErrorMessage` inside it was derived mechanically from the real Azure DevOps `errorMessage` and is a **literal substring** of it, with volatile fragments (ports, GUIDs, timings, addresses, paths, counters) excluded so it stays stable across runs. `build` is the build the text was actually read from — not necessarily the most recent failing build. When the payload could not be derived safely the entry instead carries `kbe_reason` explaining why (`no-error-message`, `no-stable-signature-segment`, `no-evidence-build`, `no-leg-name`, or `work-item-not-an-individual-test`). **You must never author, edit, reformat, translate, shorten, or "improve" this content** — it is a `String.Contains` matcher and a single changed character silently stops it matching. Copy `section` verbatim or omit it entirely.
+- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `evidence_build`, `run_id`, `result_id`, `leg`, `error`, and `stack` for the newest exact test result whose details were retrievable (failure text is capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
@@ -1623,26 +1892,16 @@ All of the following are true:
 - **Respect any prior-attempt cutoff (see the "Check for recently closed (not merged) PRs" rule).** If a trusted contributor already closed a recent re-quarantine attempt for this same test, only failures whose build `startedUtc` is strictly after that PR's `closed_at` count toward re-quarantining. If no failure post-dates that cutoff, do **not** re-quarantine this run — defer until there is fresh flakiness after the maintainer's decision.
 - **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the unquarantine commit's patch** (the inline `-p` patch already obtained above for that commit — do not run a separate `git show <sha> -- <current path>`, which fails for pre-rename commits), which shows the exact attribute that was removed. The removed line `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]` names issue **N** — that is the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on searching for a `"Quarantine {test}"`-titled issue: the original tracking issue may be a `[Known Build Error]` / `Known Build Error`-labeled issue (or otherwise not match that title), so a title search would miss it. Confirm issue **N** exists (it may be **open or closed**) before reusing it. If the removed attribute has **no valid numeric issue URL** (e.g. an empty or non-`issues/N` argument), fail closed and skip automated re-quarantine for this test. It remains Case B and must not fall back to Case A or receive a duplicate issue.
 
-**Class-level quarantine (applies to both Case A and Case B)**
+**Case A identity boundary**
 
-After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
+Every new Case A quarantine is exactly one fully qualified test identity, one
+issue-tool call, and one PR. Do not group methods, create a class-level Case A
+quarantine, or share a new issue between tests. This exact identity is required
+for deterministic evidence validation, duplicate detection, and temporary-ID
+resolution. Existing Case B and unquarantine grouping rules are unchanged.
 
-1. For each failure in the class, read the error message and stack trace **from the injected Part 1 data** — the per-test `error`/`stack` fields in `source_a`/`source_b` for individual methods, and the `fail_blocks` in `source_c` for any crashed work item. Do not download the Helix console log; the relevant `[FAIL]` content is already extracted for you.
-2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
-3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods — but **only when quarantining under Case A** (a new quarantine). Apply the same **flaky-not-a-consistent-regression** gate at the class level: do **not** quarantine the class if **any** contributing method has `is_consistent_regression == true`. Even one consistently-failing method means the class contains a real regression that whole-class quarantine would hide — in that situation, quarantine only the individually eligible methods (those without `is_consistent_regression == true`), not the class. (This gate does not apply to Case B re-quarantine, which keeps its existing rule.)
-4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold (and the same Case A flakiness gate).
-
-### Step 1.3 — Group related failures
-
-Before creating issues and PRs, group related failures together:
-
-- If **multiple test methods within the same test class** are failing with the **same error message or similar stack traces** (e.g., the same exception type and call chain), they should be treated as a single group caused by the same underlying problem.
-- Plan to file **one issue** for the entire group, listing all affected test names under `## Failing Test(s)`.
-- **Known Issue payload for a grouped issue.** Include the `### Known Issue Error Message` section only when **every** test in the group has a `kbe` object **and** all of their `kbe.blob.ErrorMessage` values are byte-identical. That is the only case in which the derived signature demonstrably covers the whole group. If the group's tests derived different signatures — or any of them derived none — **omit the section** and say so in one line, rather than picking one test's signature and implying it represents the others.
-- In the quarantine PR, all tests in the group should reference the **same issue URL** in their `[QuarantinedTest]` attribute.
-- If the entire class qualifies for class-level quarantine (>3 failures, multiple methods, similar errors), apply the `[QuarantinedTest]` attribute to the class instead of individual methods.
-
-**Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
+**Do not create any PRs or issues yet.** Record the individual Case A
+candidates for later — they will be actioned in Part 3 after budget planning.
 
 ---
 
@@ -1761,8 +2020,8 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 - **Never unquarantine a test that has ever been re-quarantined.** If a test was previously unquarantined and then re-quarantined (via a PR with "Re-quarantine" in the title or the `re-quarantine` label), it is permanently excluded from automated unquarantining. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
 - **`[QuarantinedTest]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing (see below); the framework resolves it to the numeric URL before the PR is opened, so the final committed code is numeric. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
-  - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
-  - **The `temporary_id` must be exactly the literal prefix `aw_` followed by a *slug* of 3 to 12 characters from `[A-Za-z0-9_]`** — i.e. it must match `^aw_[A-Za-z0-9_]{3,12}$` (the framework's exact rule is "'aw_' followed by 3 to 12 alphanumeric or underscore characters"). The **3–12 count applies only to the slug portion after `aw_`**, so the full token is 6–15 characters long (e.g. `aw_http2ign` = slug `http2ign`, 8 chars). This limit is enforced by the framework. If you pass a `temporary_id` whose slug is too long or otherwise malformed, the framework **silently discards it, auto-generates a *different* id, and registers your new issue under that auto-generated id** — so the `#{temporary_id}` token you wrote into the code no longer matches any registered id, is treated as a malformed reference, and is **committed verbatim as a broken placeholder** (this is exactly how `#aw_quickgrid_sort` leaked into a `[QuarantinedTest]` attribute). Keep the slug short and abbreviate: e.g. for `SortByTypeMismatchVirtualizedShowsClearError` use `aw_qgridsort` (slug `qgridsort` = 9 chars ✅), **not** `aw_quickgrid_sort` (slug `quickgrid_sort` = 14 chars — over the 12-char slug limit ❌). The identical `temporary_id` must be used for the `create_issue` call, the `add_comment` `item_number`, the `#{temporary_id}` in the attribute, and the `Associated issue: #{temporary_id}` in the PR body — pick one short, valid slug up front and reuse it everywhere.
+  - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_quarantine_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_quarantine_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
+  - **The `temporary_id` must be exactly the literal prefix `aw_` followed by a *slug* of 3 to 12 characters from `[A-Za-z0-9_]`** — i.e. it must match `^aw_[A-Za-z0-9_]{3,12}$` (the framework's exact rule is "'aw_' followed by 3 to 12 alphanumeric or underscore characters"). The **3–12 count applies only to the slug portion after `aw_`**, so the full token is 6–15 characters long (e.g. `aw_http2ign` = slug `http2ign`, 8 chars). This limit is enforced by the framework. If you pass a `temporary_id` whose slug is too long or otherwise malformed, the framework **silently discards it, auto-generates a *different* id, and registers your new issue under that auto-generated id** — so the `#{temporary_id}` token you wrote into the code no longer matches any registered id, is treated as a malformed reference, and is **committed verbatim as a broken placeholder**. Keep the slug short and abbreviate. The identical `temporary_id` must be used for the `create_quarantine_issue` call, the `add_comment` `item_number`, the `#{temporary_id}` in the attribute, and the `Associated issue: #{temporary_id}` in the PR body.
   - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after you have confirmed in this run that the issue exists and is the original tracking issue for this test.** The authoritative way to identify it is the issue number in the `[QuarantinedTest("…/issues/N")]` line removed by the unquarantine commit (see Case B in Step&nbsp;1.2); that issue is correct to reuse whether it is labeled `test-failure`, `Known Build Error`, or otherwise. The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
   - **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
 - **Never guess, predict, probe for, or reverse-engineer a GitHub issue number.** Do not try to discover "what number my new issue will get" by listing issues, incrementing the latest issue/PR number, or probing candidate issue numbers via the issue/PR APIs to find an "unused" one. New-issue numbers are assigned asynchronously by the framework and are unknowable while you are editing code — the only correct way to reference a newly created issue is the `#{temporary_id}` token (see above). (Looking up a **known, specific** issue number to confirm the original tracking issue for Case B reuse — identified from the unquarantine commit's removed `[QuarantinedTest]` attribute, whether labeled `test-failure` or `Known Build Error` — is fine — what is forbidden is probing for, or guessing, the number of an issue you are creating in this run.)
@@ -1786,7 +2045,7 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
   ${{ needs.pre_activation.outputs.closed_quarantine_prs }}
   ```
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
-- **One issue + one PR per test** (or per related group) for quarantining. A "related group" may only contain tests that share the **same single tracking issue** and the **same case** (all Case A, or all Case B for the same issue) — never tests belonging to different issues, and never a mix of Case A and Case B.
+- **One issue + one PR per exact test for Case A.** Never group new quarantines or apply a class-level Case A quarantine. Case B may reuse its one original issue only as described below.
 - **Never combine unrelated quarantine/unquarantine actions into a single PR.** Each quarantine action and each unquarantine action must be a separate PR. Do not bundle multiple independent test changes into one PR, even if it seems more efficient — separate PRs are easier to review, revert, and track.
 - **Re-quarantine (Case B) actions must ALWAYS get their own dedicated PR.** Never combine a re-quarantine (Case B) with a new quarantine (Case A), with an unquarantine, or with a re-quarantine for a *different* issue, in the same PR. The reason is critical: the `re-quarantine` label is applied to the entire PR, and the unquarantine-exclusion check treats **every** test whose `[QuarantinedTest]` attribute is added in a PR carrying that label (or with "Re-quarantine" in the title) as permanently barred from automated unquarantining. Bundling a brand-new Case A quarantine into a re-quarantine PR would therefore silently and permanently prevent that new test from ever being auto-unquarantined. One PR may carry the `re-quarantine` label **only if every `[QuarantinedTest]` attribute it adds is a Case B re-quarantine reusing the same single issue**.
 - When modifying IIS tests in `Common.LongTests` or `Common.FunctionalTests`, be aware these are compiled into multiple test assemblies (IIS.FunctionalTests, IISExpress.FunctionalTests, IIS.NewHandler.FunctionalTests, IIS.NewShim.FunctionalTests). A single source change affects all variants.
@@ -1845,7 +2104,7 @@ You have a limited turn and token budget. **Reserve at least 15 turns for creati
 - If you have used 60+ turns and have not yet started creating PRs/issues via the safe-output tools, **stop investigating immediately** and execute with the candidates you have identified so far.
 - It is always better to produce fewer but complete outputs (issue + PR + comment) than to investigate exhaustively and run out of budget before creating any outputs.
 - Deferred work will be handled by the next daily run — if you have identified candidates but fail to create any outputs for them, that is the worst outcome.
-- When creating outputs, you **must invoke the safe-output MCP tools** as actual tool calls. The callable MCP tool names are underscore-based (`create_pull_request`, `create_issue`, `add_comment`) and correspond to the hyphenated `safe-outputs` entries in the frontmatter. Writing JSON descriptions of intended calls in your text response does NOT create them.
+- When creating outputs, you **must invoke the safe-output MCP tools** as actual tool calls. The callable MCP tool names are underscore-based (`create_pull_request`, `create_quarantine_issue`, `add_comment`) and correspond to the safe-output entries in the frontmatter. Writing JSON descriptions of intended calls in your text response does NOT create them.
 - When passing string parameters to safe-output tools (e.g., `item_number`, `temporary_id`), pass them as **plain strings without extra quoting**. For example, use `item_number: "aw_myid"` — not `item_number: "\"aw_myid\""`. Extra quote characters will cause the handler to reject the value.
 
 ---
@@ -1868,7 +2127,7 @@ Follow these rules mechanically for each PR:
    git checkout -f main
    ```
    `git checkout -- .` and `git reset --hard HEAD` clean the *current* branch's tracked working tree and index; `git clean -fd` removes any **untracked** files/directories a prior candidate may have created (a `reset`/`checkout` leaves those in place, so a stray new file could otherwise be `git add`-ed into the next PR — note `git clean -fd` deliberately omits `-x`, so gitignored build artifacts are preserved); the `git checkout -f main` then switches to `main` (the `-f` is a safety net that discards any residual tracked changes). Do **not** run `git checkout main` before the cleanup, and do not rely on `git checkout -- .`/`git reset --hard HEAD` alone — they do **not** switch branches, so without the `git checkout -f main` you would stay on the previous candidate's branch and its commits would leak into the next PR. Then make only this candidate's edits. Never begin a new PR's edits while a prior candidate's `[QuarantinedTest]` add/removal is still present in the working tree, the index, or the branch you are about to submit.
-2. **One candidate per branch, one logical change per branch history.** The branch you submit for a PR must contain changes for **only** this one test (or one related group sharing a single issue). If you notice a commit for a *different* test on the branch, do **not** "fix" it by adding a revert commit — that leaves both the stray commit and the revert in history. Instead, return to clean `main` (rule 1) and rebuild the branch from scratch with only this candidate's change.
+2. **One candidate per branch, one logical change per branch history.** A Case A branch must contain changes for **only** its one exact test. If you notice a commit for a *different* test on the branch, do **not** "fix" it by adding a revert commit — that leaves both the stray commit and the revert in history. Instead, return to clean `main` (rule 1) and rebuild the branch from scratch with only this candidate's change.
 3. **Pre-submit diff verification (do this before EVERY `create_pull_request`).** Run `git status`, `git diff` (or `git diff --cached`), **and `git log main..HEAD` / `git diff main...HEAD`** and confirm that both the working tree **and the branch's commit history relative to `main`**:
    - touch **only** the source file(s) for this one candidate, and
    - contain **only** the intended `[QuarantinedTest]` addition or removal for this candidate (plus, for a quarantine, the `using Microsoft.AspNetCore.InternalTesting;` line if needed).
@@ -1882,7 +2141,7 @@ For each quarantine/re-quarantine candidate, in priority order (Case B re-quaran
 
 Before you call `create_pull_request` for any quarantine or re-quarantine, re-read the exact diff you are about to submit and verify **every** added `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>")]` line:
 
-1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
+1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_quarantine_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
 2. If `<ref>` is a literal number, it **must** be the original tracking issue for this test, confirmed in this run (Case B reuse only; identified from the issue URL removed by the unquarantine commit, and it may be labeled `test-failure` or `Known Build Error`; the issue may be closed). If you cannot confirm that, do not submit the PR.
 3. `<ref>` must never be a guessed, probed, or inferred number — for example a number guessed by incrementing the latest issue/PR, probed for to find an "unused" one, or inferred from a "not found"/"filtered"/access-denied lookup response — nor a `TODO`/`TBD`/placeholder. Factual lookups *are* allowed: confirming that a **known, specific** issue exists (Case B reuse — e.g. the issue named in the removed `[QuarantinedTest]` attribute), or discovering the original tracking issue from the unquarantine commit's diff, is fine. What is forbidden is treating any lookup result as license to invent, pick, or guess a number.
 
@@ -1912,18 +2171,27 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
 
 #### Case A — New quarantine
 
-1. **Create a test-failure issue** via `create_issue` with a `temporary_id` (e.g., `aw_http2ign`). The `temporary_id` **must** match `^aw_[A-Za-z0-9_]{3,12}$` — the literal prefix `aw_` followed by a slug of 3 to 12 `[A-Za-z0-9_]` characters (the 3–12 count is the slug only; the full token is 6–15 chars). Choose a **short** abbreviated slug — an id whose slug exceeds 12 characters (e.g. `aw_quickgrid_sort`, whose slug `quickgrid_sort` is 14 chars) is silently replaced by an auto-generated id, which orphans the `#{temporary_id}` you write into code and leaves a broken placeholder. Use this exact structure:
-   - **Title**: `Quarantine {FULLY_QUALIFIED_TEST_NAME}`
-   - **Body**: Use the `50_test_failure.md` template format:
-     - `## Failing Test(s)` — fully qualified test name(s)
-     - `## Failure Frequency` — the failure frequency sentence computed above, e.g. `Failed 2 times over the past 30 days.`
-     - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
-     - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
-     - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
-     - `## Build` — link to the most recent failing build (computed above): `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
-     - **`### Known Issue Error Message`** — if, and only if, this test's `source_a` entry has a `kbe` object, append its `kbe.section` value **verbatim as the final section of the body**. Copy the string exactly: every character, the HTML comments, the `Build:`/`Leg Name:` lines, and the fenced ` ```json ` block. Do **not** re-wrap it, re-indent it, re-derive the signature from the logs yourself, merge it into `## Error Message`, or add a second `## Error Message` heading. If the entry has `kbe_reason` instead of `kbe`, **omit this section entirely** and add one short line under `## Failure Frequency` stating that no stable error signature could be derived and quoting the `kbe_reason` value — do not invent a substitute signature.
-     - **Do not apply the `Known Build Error` label to the issue.** The section above is a prepared payload, not an active Known Issue registration; deciding to register it is a separate human decision. The only label you may add is the one already allowed by the workflow configuration.
-     - **Self-check before you submit the issue.** For each body containing a `### Known Issue Error Message` section, confirm all four: (a) the `sha256_12=` value in the `<!-- kbe-signature ... -->` comment is character-for-character the one from `kbe.section`; (b) the `ErrorMessage` string inside the JSON fence is character-for-character the one from `kbe.blob.ErrorMessage`; (c) the body contains exactly one ` ```json ` fence and exactly one `### Known Issue Error Message` heading; (d) you have not added a second `## Error Message` heading. If any check fails, rebuild the section by copying `kbe.section` again rather than repairing it by hand. If you cannot satisfy all four, omit the section and state that in the body — an honest omission is correct, a mangled signature is not.
+1. **Use the `create-kbe` skill for this exact test**, including its required
+   open and recently closed duplicate searches. Then immediately call
+   `create_quarantine_issue` once for this one exact fully qualified test.
+   Do not retain the matcher until the end of the run and do not construct the
+   issue title, body, labels, or Build Insights JSON yourself.
+
+   The `temporary_id` must match `^aw_[A-Za-z0-9_]{3,12}$`. Pass:
+   - `test_name`: the exact key from injected `source_a`/`source_b`, or the
+     exact individual name before `[FAIL]` in a Source C block;
+   - `matcher_kind`: `literal`, `literal-array`, `regex`, or `incomplete`;
+   - `matcher`: the exact literal/regex text, or a JSON-encoded string array
+     for `literal-array`;
+   - `duplicate_status` and `duplicate_summary`: the result of the skill's
+     required searches;
+   - optional `log_excerpt` and `log_url` for human display only.
+
+   Use `matcher_kind: incomplete` when the failure lacks a safe unique
+   matcher, the duplicate search is filtered/ambiguous/fails, or any evidence
+   is uncertain. The deterministic handler still creates the ordinary
+   `test-failure` issue but omits the KBE payload and label. Never fabricate or
+   broaden a matcher to avoid the incomplete outcome.
 
 2. **Post an investigation comment** on the issue using `add_comment` with `item_number` set to the same `temporary_id` (e.g., `item_number: "aw_http2ign"`). **Important:** pass the temporary ID as a plain string — do not wrap it in extra quotes or other formatting. Examine all available failure logs for the test. Be concise but thorough:
    - If you can identify a root cause, explain it and suggest a fix if one is obvious.
@@ -1932,9 +2200,9 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never write a literal numeric issue number here** — the issue you just created does not have a number yet, and guessing or probing for one is forbidden. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings. **Before finishing, verify the token you wrote is `#` + the *exact* `temporary_id` from step 1 and that the id matches `^aw_[A-Za-z0-9_]{3,12}$`** — if it does not match this pattern the reference will not resolve and a broken placeholder will be committed.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the individual test method, where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_quarantine_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_quarantine_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never write a literal numeric issue number here** — the issue you just created does not have a number yet, and guessing or probing for one is forbidden. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings. **Before finishing, verify the token you wrote is `#` + the *exact* `temporary_id` from step 1 and that the id matches `^aw_[A-Za-z0-9_]{3,12}$`** — if it does not match this pattern the reference will not resolve and a broken placeholder will be committed.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_quarantine_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
    - Includes a note in the PR body that a maintainer/contributor can add the `no-quarantine-for-30-days` label to this PR to tell the workflow not to touch this test again for 30 days.
 
