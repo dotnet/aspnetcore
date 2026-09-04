@@ -147,6 +147,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Endpoints" ProjectPath="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\src\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
@@ -165,7 +166,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization" ProjectPath="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepoRoot)src\ObjectPool\src\Microsoft.Extensions.ObjectPool.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
