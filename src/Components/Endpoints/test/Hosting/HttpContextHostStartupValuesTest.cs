@@ -81,7 +81,7 @@ public class HttpContextHostStartupValuesTest
         httpContext.Request.Scheme = "https";
         httpContext.Request.Host = new HostString("example.com");
         var holder = scope.ServiceProvider
-            .GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues));
+            .GetRequiredKeyedService<HttpContextHostStartupValues>(HostInitializerKey.Static);
 
         holder.Initialize(httpContext);
 

@@ -11,13 +11,13 @@ internal sealed class NavigationManagerInitializer : IHostInitializer
 {
     public int Order => -200;
 
-    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+    public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var startupValues = services.GetRequiredService<IHostStartupValues>();
         var httpContextStartupValues =
-            services.GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues));
+            services.GetRequiredKeyedService<HttpContextHostStartupValues>(HostInitializerKey.Static);
         if (!ReferenceEquals(startupValues, httpContextStartupValues))
         {
             return Task.CompletedTask;

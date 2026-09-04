@@ -40,10 +40,10 @@ public class CircuitHostTest
                     Sequence = 0,
                 },
             ],
-            deferredHostInitializers:
+            browserHostInitializers:
             [
-                new TestHostInitializer("first", calls),
-                new TestHostInitializer("second", calls),
+                new TestHostInitializer("first", calls, order: -10),
+                new TestHostInitializer("second", calls, order: 10),
             ]);
 
         var initializeTask = circuitHost.InitializeAsync(
@@ -67,10 +67,10 @@ public class CircuitHostTest
             .Returns(Task.CompletedTask);
         var circuitHost = TestCircuitHost.Create(
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
-            deferredHostInitializers:
+            browserHostInitializers:
             [
-                new TestHostInitializer("failure", calls, exception),
-                new TestHostInitializer("not-run", calls),
+                new TestHostInitializer("failure", calls, exception, order: -10),
+                new TestHostInitializer("not-run", calls, order: 10),
             ]);
         circuitHost.UnhandledException += (_, eventArgs) =>
             reportedException.TrySetResult((Exception)eventArgs.ExceptionObject);
@@ -93,14 +93,14 @@ public class CircuitHostTest
             .Returns(Task.CompletedTask);
         var circuitHost = TestCircuitHost.Create(
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
-            deferredHostInitializers:
+            browserHostInitializers:
             [
                 new TestHostInitializer("canceled", calls, callback: token =>
                 {
                     cancellationTokenSource.Cancel();
                     token.ThrowIfCancellationRequested();
-                }),
-                new TestHostInitializer("not-run", calls),
+                }, order: -10),
+                new TestHostInitializer("not-run", calls, order: 10),
             ]);
         circuitHost.UnhandledException += (_, eventArgs) =>
             reportedException.TrySetResult((Exception)eventArgs.ExceptionObject);
@@ -143,7 +143,7 @@ public class CircuitHostTest
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
             remoteRenderer: GetRemoteRenderer(),
             serviceScope: services.CreateAsyncScope(),
-            deferredHostInitializers:
+            browserHostInitializers:
             [
                 new TestHostInitializer(
                     "deferred",
@@ -1591,9 +1591,12 @@ public class CircuitHostTest
         List<string> calls,
         Exception exception = null,
         Action<CancellationToken> callback = null,
-        Func<CancellationToken, Task> asyncCallback = null) : IHostInitializer
+        Func<CancellationToken, Task> asyncCallback = null,
+        int order = 0) : IHostInitializer
     {
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public int Order => order;
+
+        public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);

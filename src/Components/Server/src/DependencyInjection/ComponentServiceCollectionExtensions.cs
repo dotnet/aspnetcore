@@ -85,16 +85,16 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         services.TryAddScoped<InteractiveServerContext>();
-        services.TryAddKeyedScoped<InteractiveHostStartupValues>(typeof(ComponentHub));
+        services.TryAddKeyedScoped<InteractiveHostStartupValues>(HostInitializerKey.Server);
         services.TryAddKeyedScoped<IHostStartupValues>(
-            typeof(ComponentHub),
+            HostInitializerKey.Server,
             static (services, key) => services.GetRequiredKeyedService<InteractiveHostStartupValues>(key));
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationManagerInitializer>(HostInitializerKey.Server));
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerJSRuntimeInitializer>());
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationManagerJSRuntimeInitializer>(HostInitializerKey.Server));
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostInitializer, NavigationServicesJSRuntimeInitializer>());
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationServicesJSRuntimeInitializer>(HostInitializerKey.Server));
         services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
@@ -107,11 +107,11 @@ public static class ComponentServiceCollectionExtensions
                 var context = services.GetRequiredService<InteractiveServerContext>();
                 if (context.IsInteractive)
                 {
-                    return services.GetRequiredKeyedService<IHostStartupValues>(typeof(ComponentHub));
+                    return services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Server);
                 }
 
-                return services.GetKeyedService<IHostStartupValues>(typeof(IHostStartupValues))
-                    ?? services.GetRequiredKeyedService<IHostStartupValues>(typeof(ComponentHub));
+                return services.GetKeyedService<IHostStartupValues>(HostInitializerKey.Static)
+                    ?? services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Server);
             });
         }
 

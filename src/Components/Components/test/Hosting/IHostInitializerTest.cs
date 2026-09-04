@@ -12,10 +12,10 @@ public class IHostInitializerTest
         var services = new TestServiceProvider();
         using var cancellationTokenSource = new CancellationTokenSource();
 
-        await initializer.InitializeAsync(services, cancellationTokenSource.Token);
+        await ((IHostInitializer)initializer).InitializeHostAsync(services, cancellationTokenSource.Token);
+        await initializer.InitializeBrowserAsync(services, cancellationTokenSource.Token);
 
         Assert.Equal(0, ((IHostInitializer)initializer).Order);
-        Assert.False(((IHostInitializer)initializer).RequiresJSInterop);
         Assert.Same(services, initializer.Services);
         Assert.Equal(cancellationTokenSource.Token, initializer.CancellationToken);
     }
@@ -26,7 +26,7 @@ public class IHostInitializerTest
 
         public CancellationToken CancellationToken { get; private set; }
 
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             Services = services;
             CancellationToken = cancellationToken;

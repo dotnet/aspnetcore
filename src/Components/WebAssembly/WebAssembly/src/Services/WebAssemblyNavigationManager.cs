@@ -21,20 +21,18 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     /// </summary>
     public static WebAssemblyNavigationManager Instance { get; set; } = default!;
 
-    public WebAssemblyNavigationManager(string baseUri, string uri)
-    {
-        Initialize(baseUri, uri);
-    }
-
     internal void InitializeNavigation(string baseUri, string uri)
+        => Initialize(baseUri, uri);
+
+    internal static string NormalizeBaseUriForHostEnvironment(string baseUri)
     {
         var lastSlashIndex = baseUri.LastIndexOf('/');
-        var normalizedBaseUri = lastSlashIndex >= 0 ? baseUri[..(lastSlashIndex + 1)] : baseUri;
-        if (!string.Equals(BaseUri, normalizedBaseUri, StringComparison.Ordinal) ||
-            !string.Equals(Uri, uri, StringComparison.Ordinal))
+        if (lastSlashIndex >= 0)
         {
-            throw new InvalidOperationException("The browser navigation values changed during host initialization.");
+            baseUri = baseUri[..(lastSlashIndex + 1)];
         }
+
+        return baseUri;
     }
 
     public void CreateLogger(ILoggerFactory loggerFactory)

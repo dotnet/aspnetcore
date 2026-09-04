@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,7 +24,7 @@ public class WebAssemblyHostTest
     }
 
     [Fact]
-    public async Task RunAsyncCollectsAndInitializesBrowserStartupValues()
+    public async Task BuildCollectsStartupValuesAndInitializesNavigationBeforeReturning()
     {
         var jsMethods = new TestInternalJSImportMethods
         {
@@ -35,38 +36,60 @@ public class WebAssemblyHostTest
         builder.Services.AddSingleton<IBrowserStartupValueProvider>(
             new TestBrowserStartupValueProvider("custom.value"));
         var host = builder.Build();
-        var cts = new CancellationTokenSource();
-
-        var task = host.RunAsyncCore(cts.Token, new TestSatelliteResourcesLoader());
-        cts.Cancel();
-        await task.TimeoutAfter(TimeSpan.FromSeconds(3));
-
         var keys = JsonSerializer.Deserialize<string[]>(jsMethods.HostStartupValueKeysJson);
         Assert.Equal(["document.baseURI", "location.href", "custom.value"], keys);
         Assert.Equal(
             "expected",
             host.Services.GetRequiredService<IHostStartupValues>().GetRequired("custom.value"));
+        var navigationManager = host.Services.GetRequiredService<NavigationManager>();
+        Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
+        Assert.Equal(
+            "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool",
+            navigationManager.Uri);
+        Assert.Same(WebAssemblyNavigationManager.Instance, navigationManager);
+
+        await host.DisposeAsync();
     }
 
     [Fact]
-    public async Task RunAsyncRejectsNavigationValuesThatChangedAfterBuild()
+    public async Task BuildStartsAsyncInitializerAndRunAwaitsIt()
     {
-        var jsMethods = new TestInternalJSImportMethods
-        {
-            HostStartupValuesJson =
-                """{"document.baseURI":"https://www.example.com/other/","location.href":"https://www.example.com/other/page"}""",
-        };
-        var builder = new WebAssemblyHostBuilder(jsMethods);
+        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var calls = new List<string>();
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "async",
+                0,
+                calls,
+                asyncCallback: _ =>
+                {
+                    initializerStarted.SetResult();
+                    return continueInitializer.Task;
+                }));
+
         var host = builder.Build();
+        await initializerStarted.Task;
+        var navigationManager = host.Services.GetRequiredService<NavigationManager>();
+        using var cancellationTokenSource = new CancellationTokenSource();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+        var runTask = host.RunAsyncCore(
+            cancellationTokenSource.Token,
+            new TestSatelliteResourcesLoader());
 
-        Assert.Equal("The browser navigation values changed during host initialization.", exception.Message);
+        Assert.False(runTask.IsCompleted);
+        Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
+        continueInitializer.SetResult();
+        await Task.Yield();
+        cancellationTokenSource.Cancel();
+        await runTask.TimeoutAfter(TimeSpan.FromSeconds(3));
+        Assert.Equal(["async"], calls);
     }
 
     [Fact]
-    public async Task RunAsyncRejectsDuplicateBrowserStartupValueKeysBeforeJSImport()
+    public void BuildRejectsDuplicateBrowserStartupValueKeysBeforeJSImport()
     {
         var jsMethods = new TestInternalJSImportMethods();
         var builder = new WebAssemblyHostBuilder(jsMethods);
@@ -74,10 +97,7 @@ public class WebAssemblyHostTest
             new TestBrowserStartupValueProvider("duplicate.value"));
         builder.Services.AddSingleton<IBrowserStartupValueProvider>(
             new TestBrowserStartupValueProvider("duplicate.value"));
-        var host = builder.Build();
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
 
         Assert.Equal(
             "The browser startup value key 'duplicate.value' was provided more than once.",
@@ -90,57 +110,38 @@ public class WebAssemblyHostTest
     [InlineData("""{"document.baseURI":"base"}""")]
     [InlineData("""{"document.baseURI":42,"location.href":"uri"}""")]
     [InlineData("""{"document.baseURI":"first","document.baseURI":"second","location.href":"uri"}""")]
-    public async Task RunAsyncRejectsInvalidBrowserStartupValues(string startupValuesJson)
+    public void BuildRejectsInvalidBrowserStartupValues(string startupValuesJson)
     {
         var jsMethods = new TestInternalJSImportMethods
         {
             HostStartupValuesJson = startupValuesJson,
         };
         var builder = new WebAssemblyHostBuilder(jsMethods);
-        var host = builder.Build();
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
 
         Assert.Equal("The browser returned invalid host startup values.", exception.Message);
     }
 
     [Fact]
-    public async Task RunAsyncRunsHostInitializersInStableOrderIncludingJSInterop()
+    public async Task BuildRunsHostThenBrowserPhasesInOrder()
     {
         var calls = new List<string>();
-        using var cancellationTokenSource = new CancellationTokenSource();
-        NavigationManager navigationManager = null;
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         builder.Services.AddSingleton<IHostInitializer>(
             new TestHostInitializer("lower", -100, calls));
         builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer("first-tie", 0, calls));
+            new TestHostInitializer("middle", 0, calls));
         builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer("second-tie", 0, calls, requiresJSInterop: true));
-        builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer("navigation", 100, calls, callback: token =>
-            {
-                Assert.Equal(cancellationTokenSource.Token, token);
-                Assert.Equal("https://www.example.com/", navigationManager!.BaseUri);
-                Assert.Equal(
-                    "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool",
-                    navigationManager.Uri);
-                cancellationTokenSource.Cancel();
-            }));
+            new TestHostInitializer("browser", 100, calls, browserPhase: true));
         var host = builder.Build();
-        navigationManager = host.Services.GetRequiredService<NavigationManager>();
-        var initializerCollection = host.Services.GetRequiredService<HostInitializerCollection>();
 
-        await host.RunAsyncCore(cancellationTokenSource.Token, new TestSatelliteResourcesLoader());
-
-        Assert.Equal(["lower", "first-tie", "second-tie", "navigation"], calls);
-        Assert.Same(initializerCollection, host.Services.GetRequiredService<HostInitializerCollection>());
+        Assert.Equal(["lower", "middle", "browser"], calls);
+        await host.DisposeAsync();
     }
 
     [Fact]
-    public async Task RunAsyncStopsAndSurfacesHostInitializerFailure()
+    public void BuildSurfacesSynchronousHostInitializerFailure()
     {
         var calls = new List<string>();
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
@@ -148,39 +149,195 @@ public class WebAssemblyHostTest
             new TestHostInitializer("failure", -300, calls, exception: new InvalidOperationException("Initializer failed.")));
         builder.Services.AddSingleton<IHostInitializer>(
             new TestHostInitializer("not-run", -200, calls));
-        var host = builder.Build();
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader()));
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
 
         Assert.Equal("Initializer failed.", exception.Message);
         Assert.Equal(["failure"], calls);
     }
 
     [Fact]
-    public async Task RunAsyncStopsAndSurfacesHostInitializerCancellation()
+    public async Task BuildFailureCancelsInitializationAndDisposesCreatedServicesAsynchronously()
+    {
+        var cleanupFailure = new InvalidOperationException("Cleanup failed.");
+        var scopedDisposable = new AsyncOnlyDisposableService(cleanupFailure);
+        var singletonDisposable = new AsyncOnlyDisposableService();
+        var failure = new InvalidOperationException("Initializer failed.");
+        CancellationToken initializationToken = default;
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddScoped(_ => scopedDisposable);
+        builder.Services.AddSingleton(_ => singletonDisposable);
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "failure",
+                0,
+                [],
+                exception: failure,
+                servicesCallback: (services, token) =>
+                {
+                    initializationToken = token;
+                    _ = services.GetServices<AsyncOnlyDisposableService>().ToArray();
+                }));
+
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
+
+        Assert.Same(failure, exception);
+        Assert.True(initializationToken.IsCancellationRequested);
+
+        await scopedDisposable.DisposeStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+        Assert.False(singletonDisposable.DisposeStarted.Task.IsCompleted);
+        scopedDisposable.ContinueDisposal();
+        await scopedDisposable.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+
+        await singletonDisposable.DisposeStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+        singletonDisposable.ContinueDisposal();
+        await singletonDisposable.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public void BuildRejectsBaseUriThatChangedSinceBuilderCreation()
+    {
+        var jsMethods = new TestInternalJSImportMethods();
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        jsMethods.HostStartupValuesJson =
+            """{"document.baseURI":"https://www.example.com/other/","location.href":"https://www.example.com/other/page"}""";
+
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
+
+        Assert.Equal("The browser base URI changed during host initialization.", exception.Message);
+    }
+
+    [Fact]
+    public async Task RunCancellationCancelsBuildTimeInitialization()
     {
         var calls = new List<string>();
         using var cancellationTokenSource = new CancellationTokenSource();
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer("canceled", -300, calls, callback: token =>
-            {
-                cancellationTokenSource.Cancel();
-                token.ThrowIfCancellationRequested();
-            }));
-        builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer("not-run", -200, calls));
+            new TestHostInitializer(
+                "canceled",
+                -300,
+                calls,
+                asyncCallback: async token =>
+                {
+                    initializerStarted.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                }));
         var host = builder.Build();
+        await initializerStarted.Task;
+        var runTask = host.RunAsyncCore(
+            cancellationTokenSource.Token,
+            new TestSatelliteResourcesLoader());
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            host.RunAsyncCore(cancellationTokenSource.Token, new TestSatelliteResourcesLoader()));
+        cancellationTokenSource.Cancel();
 
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runTask);
         Assert.Equal(["canceled"], calls);
+        await host.DisposeAsync();
     }
 
     [Fact]
-    public void HostEnvironmentBaseAddressIsAvailableBeforeRunAsync()
+    public async Task DisposeCancelsAndObservesBuildTimeInitialization()
+    {
+        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken initializationToken = default;
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "initializer",
+                0,
+                [],
+                asyncCallback: async token =>
+                {
+                    initializationToken = token;
+                    initializerStarted.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                }));
+
+        var host = builder.Build();
+        await initializerStarted.Task;
+
+        await host.DisposeAsync();
+
+        Assert.True(initializationToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task DisposeWaitsForCancellationIgnoringInitializationBeforeDisposingServices()
+    {
+        var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken initializationToken = default;
+        var hostedServiceResolved = false;
+        var hostedService = new TestHostedService();
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "initializer",
+                0,
+                [],
+                asyncCallback: token =>
+                {
+                    initializationToken = token;
+                    initializerStarted.SetResult();
+                    return continueInitializer.Task;
+                }));
+        builder.Services.AddScoped<IHostedService>(_ =>
+        {
+            hostedServiceResolved = true;
+            return hostedService;
+        });
+
+        var host = builder.Build();
+        await initializerStarted.Task;
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var runTask = host.RunAsyncCore(
+            cancellationTokenSource.Token,
+            new TestSatelliteResourcesLoader());
+
+        var disposeTask = host.DisposeAsync().AsTask();
+
+        Assert.True(initializationToken.IsCancellationRequested);
+        Assert.False(disposeTask.IsCompleted);
+        Assert.False(hostedServiceResolved);
+        Assert.False(hostedService.StartCalled);
+
+        continueInitializer.SetResult();
+        await disposeTask.TimeoutAfter(TimeSpan.FromSeconds(3));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runTask);
+
+        Assert.False(hostedServiceResolved);
+        Assert.False(hostedService.StartCalled);
+
+        cancellationTokenSource.Cancel();
+    }
+
+    [Fact]
+    public async Task RunAndDisposeSurfaceAsynchronousInitializationFailure()
+    {
+        var failInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var failure = new InvalidOperationException("Initializer failed asynchronously.");
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "initializer",
+                0,
+                [],
+                asyncCallback: _ => failInitializer.Task));
+        var host = builder.Build();
+        var runTask = host.RunAsyncCore(CancellationToken.None, new TestSatelliteResourcesLoader());
+
+        failInitializer.SetException(failure);
+
+        Assert.Same(failure, await Assert.ThrowsAsync<InvalidOperationException>(() => runTask));
+        Assert.Same(
+            failure,
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await host.DisposeAsync()));
+    }
+
+    [Fact]
+    public void HostEnvironmentBaseAddressIsNormalizedBeforeBuild()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
 
@@ -283,7 +440,8 @@ public class WebAssemblyHostTest
 
         // Assert
         Assert.True(testHostedService.StartCalled);
-        Assert.Equal(cts.Token, testHostedService.StartToken);
+        Assert.NotEqual(cts.Token, testHostedService.StartToken);
+        Assert.True(testHostedService.StartToken.IsCancellationRequested);
     }
 
     [Fact]
@@ -433,20 +591,55 @@ public class WebAssemblyHostTest
         string name,
         int order,
         List<string> calls,
-        bool requiresJSInterop = false,
+        bool browserPhase = false,
         Exception exception = null,
-        Action<CancellationToken> callback = null) : IHostInitializer
+        Action<CancellationToken> callback = null,
+        Func<CancellationToken, Task> asyncCallback = null,
+        Action<IServiceProvider, CancellationToken> servicesCallback = null) : IHostInitializer
     {
         public int Order => order;
 
-        public bool RequiresJSInterop => requiresJSInterop;
+        public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+            => browserPhase ? Task.CompletedTask : Invoke(services, cancellationToken);
 
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+            => browserPhase ? Invoke(services, cancellationToken) : Task.CompletedTask;
+
+        private Task Invoke(IServiceProvider services, CancellationToken cancellationToken)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);
+            servicesCallback?.Invoke(services, cancellationToken);
 
-            return exception is null ? Task.CompletedTask : Task.FromException(exception);
+            return exception is not null
+                ? Task.FromException(exception)
+                : asyncCallback?.Invoke(cancellationToken) ?? Task.CompletedTask;
+        }
+    }
+
+    private sealed class AsyncOnlyDisposableService(Exception disposeException = null) : IAsyncDisposable
+    {
+        private readonly TaskCompletionSource _continueDisposal =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource DisposeStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource DisposeCompleted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void ContinueDisposal() => _continueDisposal.SetResult();
+
+        public async ValueTask DisposeAsync()
+        {
+            DisposeStarted.SetResult();
+            await _continueDisposal.Task;
+            DisposeCompleted.SetResult();
+
+            if (disposeException is not null)
+            {
+                throw disposeException;
+            }
         }
     }
 

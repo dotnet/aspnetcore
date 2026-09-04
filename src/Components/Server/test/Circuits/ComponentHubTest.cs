@@ -130,7 +130,7 @@ public class ComponentHubTest
                     Sequence = 0,
                 },
             ],
-            DeferredHostInitializers =
+            BrowserHostInitializers =
             [
                 new TestHostInitializer(() =>
                 {
@@ -756,7 +756,7 @@ public class ComponentHubTest
         public IReadOnlyDictionary<string, string> StartupValues { get; private set; } =
             new Dictionary<string, string>();
 
-        public IHostInitializer[] DeferredHostInitializers { get; init; } = [];
+        public IHostInitializer[] BrowserHostInitializers { get; init; } = [];
 
         public IReadOnlyList<ComponentDescriptor> Descriptors { get; init; } = [];
 
@@ -780,14 +780,14 @@ public class ComponentHubTest
                 serviceScope: new AsyncServiceScope(serviceScope.Object),
                 clientProxy: client,
                 descriptors: Descriptors,
-                deferredHostInitializers: DeferredHostInitializers);
+                browserHostInitializers: BrowserHostInitializers);
             return ValueTask.FromResult(circuitHost);
         }
     }
 
     private sealed class TestHostInitializer(Func<Task> initialize) : IHostInitializer
     {
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
             => initialize();
     }
 

@@ -11,9 +11,7 @@ internal sealed class NavigationManagerJSRuntimeInitializer : IHostInitializer
 {
     public int Order => -150;
 
-    public bool RequiresJSInterop => true;
-
-    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+    public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
