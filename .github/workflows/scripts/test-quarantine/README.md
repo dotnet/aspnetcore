@@ -63,7 +63,8 @@ regression, stale failure, existing quarantine, or Case B record into a KBE.
 - At least two distinct post-cutoff failures, exact current quarantine state,
   regression exclusion, and originating Case A category are enforced before
   KBE rendering.
-- At most ten issue-tool calls per workflow activation.
+- gh-aw v0.88.2 permits one custom `create_quarantine_issue` call per
+  activation, bounding new Case A output to one issue/PR/comment chain.
 - Current repository only; fixed title and label policy.
 - Exact-title open issues are reused without editing or relabeling them.
 - Threat detection must succeed before writes.

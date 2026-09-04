@@ -2239,7 +2239,8 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 
 This workflow has the following limits:
 - Maximum of 10 new PRs
-- Maximum of 10 new issues
+- Maximum of 1 new Case A quarantine issue (`create_quarantine_issue` is a
+  custom gh-aw v0.88.2 safe-output script, whose tool limit is one call)
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -2252,6 +2253,10 @@ Before creating any outputs, build a complete plan of all actions you intend to 
 - **Re-quarantine actions (Case B)** each consume: 1 PR + 1 comment (no new issue — reuse the existing one). These two outputs are atomic — never create a re-quarantine PR without its investigation comment.
 
 If the total planned actions exceed any output limit, **trim from the bottom of the priority list** until all limits are satisfied. It is always safe to defer work to the next day's run.
+
+Because only one `create_quarantine_issue` call is available, choose only the
+highest-priority eligible Case A test this run. Re-quarantine and unquarantine
+actions may still use the remaining PR/comment budget.
 
 ### Priority order
 
