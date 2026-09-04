@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"8c50f09fb1829f2ae2cdd324671420b48072d98c879593e0df9a71f34ed82050","body_hash":"5c9f5f6fb9da2c21be2dc85d3114b805f09a8f77cee627b862cc787f70c2a198","compiler_version":"v0.88.2","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"9271a1804551c0dc4fb0085a97979950aa2f8489","version":"v0.88.2"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.12","digest":"sha256:390051be4ed1847f774fd8980b61d3a3523574c0175d00c3fc7cdf2002a88202","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.12@sha256:390051be4ed1847f774fd8980b61d3a3523574c0175d00c3fc7cdf2002a88202"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.12","digest":"sha256:d7d533d87c80d87ff91ac0e21e9299055c3beedff1536262b97ed700fb065a32","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.12@sha256:d7d533d87c80d87ff91ac0e21e9299055c3beedff1536262b97ed700fb065a32"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.12","digest":"sha256:52c34aca98d2a6833c329f1505912a6949c4fda16618c010c979bd59ea99254f","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.12@sha256:52c34aca98d2a6833c329f1505912a6949c4fda16618c010c979bd59ea99254f"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.15","digest":"sha256:60cd97533e93d8e7be36b979c0f08a70846189bda6190f28bbd6d427bc0d9b6e","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.15@sha256:60cd97533e93d8e7be36b979c0f08a70846189bda6190f28bbd6d427bc0d9b6e"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"github","tools":["get_commit","get_file_contents","get_latest_release","get_pull_request","get_pull_request_comments","get_pull_request_diff","get_pull_request_files","get_pull_request_review_comments","get_pull_request_reviews","get_pull_request_status","get_release_by_tag","get_tag","issue_read","list_branches","list_commits","list_issue_types","list_issues","list_pull_requests","list_releases","list_starred_repositories","list_tags","pull_request_read","search_code","search_issues","search_pull_requests","search_repositories"]},{"name":"safeoutputs","tools":["add_comment","add_labels","create_issue","create_pull_request","missing_data","missing_tool","noop"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"7354932b649e5cd00a1fe22e94e5e8257721b88add6472d76b6fed3a6b9d6b88","body_hash":"8f1cbbb91002b0ce25ed181c76785cef06204c39a17422ae64c64d6585f073b4","compiler_version":"v0.88.2","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"9271a1804551c0dc4fb0085a97979950aa2f8489","version":"v0.88.2"}],"skills":[".github/skills/create-kbe"],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.12","digest":"sha256:390051be4ed1847f774fd8980b61d3a3523574c0175d00c3fc7cdf2002a88202","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.12@sha256:390051be4ed1847f774fd8980b61d3a3523574c0175d00c3fc7cdf2002a88202"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.12","digest":"sha256:d7d533d87c80d87ff91ac0e21e9299055c3beedff1536262b97ed700fb065a32","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.12@sha256:d7d533d87c80d87ff91ac0e21e9299055c3beedff1536262b97ed700fb065a32"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.12","digest":"sha256:52c34aca98d2a6833c329f1505912a6949c4fda16618c010c979bd59ea99254f","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.12@sha256:52c34aca98d2a6833c329f1505912a6949c4fda16618c010c979bd59ea99254f"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.15","digest":"sha256:60cd97533e93d8e7be36b979c0f08a70846189bda6190f28bbd6d427bc0d9b6e","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.15@sha256:60cd97533e93d8e7be36b979c0f08a70846189bda6190f28bbd6d427bc0d9b6e"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"github","tools":["get_commit","get_file_contents","get_latest_release","get_pull_request","get_pull_request_comments","get_pull_request_diff","get_pull_request_files","get_pull_request_review_comments","get_pull_request_reviews","get_pull_request_status","get_release_by_tag","get_tag","issue_read","list_branches","list_commits","list_issue_types","list_issues","list_pull_requests","list_releases","list_starred_repositories","list_tags","pull_request_read","search_code","search_issues","search_pull_requests","search_repositories"]},{"name":"safeoutputs","tools":["add_comment","add_labels","create_pull_request","create_quarantine_issue","missing_data","missing_tool","noop"]}]}
 # This file was automatically generated by gh-aw (v0.88.2). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -50,10 +50,13 @@
 #   - actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
 #   - actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
 #   - actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#   - actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (source v7)
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+#   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (source v8)
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+#   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (source v7)
 #   - github/gh-aw-actions/setup@9271a1804551c0dc4fb0085a97979950aa2f8489 # v0.88.2
 #
 # Container images used:
@@ -853,6 +856,10 @@ on:
   # if is_wi and job and wi_name:
   # probes.append({"job": job, "workitem": wi_name, "build": occ["build"]})
   # if idx == 0 and not is_wi:
+  # e["evidence_build"] = occ["build"]
+  # e["run_id"] = occ["runId"]
+  # e["result_id"] = occ["resultId"]
+  # e["leg"] = wi_name or job or ""
   # em, st = det.get("errorMessage"), det.get("stackTrace")
   # if em:
   # e["error"] = scrub_secrets(em)[:ERROR_CAP]
@@ -1018,6 +1025,12 @@ on:
   # def main():
   # # Source A: failed/partial builds on main, both pipelines, last 30 days.
   # a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
+  # # Make the representative occurrence deterministic and recent. Any eligible
+  # # post-cutoff Case A candidate necessarily has its newest raw failure after
+  # # that cutoff, so the attached error/stack cannot come from stale pre-fix data.
+  # a_builds.sort(
+  # key=lambda b: (b.get("startTime") or "", int(b.get("id") or 0)),
+  # reverse=True)
   # bmeta = {}
   # for b in a_builds:
   # bmeta[str(b["id"])] = build_meta(b)
@@ -1041,6 +1054,11 @@ on:
   # if b_ids:
   # for b in builds_by_ids(b_ids):
   # bmeta[str(b["id"])] = build_meta(b)
+  # b_ids.sort(
+  # key=lambda bid: (
+  # bmeta.get(str(bid), {}).get("startedUtc") or "",
+  # int(bid)),
+  # reverse=True)
   # source_b = enrich(aggregate(b_ids))
   #
   # # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
@@ -1199,12 +1217,86 @@ on:
   # # test-name keys and collapse unrelated failures into duplicate keys.
   # js = main()
   # validate_part1_json(js)
+  # evidence_path = os.path.join(
+  # os.environ.get("RUNNER_TEMP", "/tmp"),
+  # "test-quarantine-part1.json")
+  # with open(evidence_path, "w", encoding="utf-8") as evidence_file:
+  # evidence_file.write(js)
   # gh_out = os.environ.get("GITHUB_OUTPUT")
   # if not gh_out:
   # sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
   # with open(gh_out, "a") as f:
   # write_part1_chunks(f, js)
   # SCRIPT
+  # - name: Check out trusted source history for Case A eligibility
+  # uses: actions/checkout@v7
+  # with:
+  # fetch-depth: 0
+  # - env:
+  # CLOSED_QUARANTINE_PRS: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
+  # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # id: case_a_eligibility
+  # name: Collect deterministic Case A eligibility
+  # run: |
+  # python3 << 'SCRIPT'
+  # import json
+  # import os
+  # import pathlib
+  #
+  # closed_prs = os.environ.get("CLOSED_QUARANTINE_PRS", "")
+  # try:
+  # parsed = json.loads(closed_prs)
+  # except json.JSONDecodeError as ex:
+  # raise SystemExit(f"FATAL: CLOSED_QUARANTINE_PRS is invalid JSON: {ex}")
+  # if not isinstance(parsed, list):
+  # raise SystemExit("FATAL: CLOSED_QUARANTINE_PRS must be a JSON array")
+  # pathlib.Path(
+  # os.environ.get("RUNNER_TEMP", "/tmp"),
+  # "test-quarantine-closed-prs.json",
+  # ).write_text(json.dumps(parsed, separators=(",", ":")), encoding="utf-8")
+  # SCRIPT
+  #
+  # python3 .github/workflows/scripts/test-quarantine/collect_case_a_eligibility.py \
+  # --part1 "${RUNNER_TEMP}/test-quarantine-part1.json" \
+  # --closed-prs "${RUNNER_TEMP}/test-quarantine-closed-prs.json" \
+  # --output "${RUNNER_TEMP}/test-quarantine-case-a-eligibility.json" \
+  # --repo-root "${GITHUB_WORKSPACE}" \
+  # --repository "${GITHUB_REPOSITORY}" \
+  # --ref "${GITHUB_REF}" \
+  # --commit "${GITHUB_SHA}" \
+  # --history-ref "refs/remotes/origin/main"
+  #
+  # python3 << 'SCRIPT'
+  # import json
+  # import os
+  # import pathlib
+  #
+  # receipt = json.loads(pathlib.Path(
+  # os.environ["RUNNER_TEMP"],
+  # "test-quarantine-case-a-eligibility.json",
+  # ).read_text(encoding="utf-8"))
+  # eligible = sorted(
+  # name for name, record in receipt.get("tests", {}).items()
+  # if record.get("status") == "eligible"
+  # )
+  # eligible_json = json.dumps(eligible, separators=(",", ":"))
+  # if len(eligible_json.encode("utf-8")) > 120000:
+  # raise SystemExit("FATAL: eligible_test_names exceeds the safe job-output limit")
+  # output = os.environ.get("GITHUB_OUTPUT")
+  # if not output:
+  # raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
+  # with open(output, "a", encoding="utf-8") as stream:
+  # stream.write(f"eligible_test_names={eligible_json}\n")
+  # SCRIPT
+  # - name: Upload deterministic evidence for safe output validation
+  # uses: actions/upload-artifact@v7
+  # with:
+  # if-no-files-found: error
+  # name: test-quarantine-evidence-${{ github.run_id }}
+  # path: |
+  # ${{ runner.temp }}/test-quarantine-part1.json
+  # ${{ runner.temp }}/test-quarantine-case-a-eligibility.json
+  # retention-days: 1
   workflow_dispatch:
     inputs:
       aw_context:
@@ -1258,6 +1350,8 @@ jobs:
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
       setup-span-id: ${{ steps.setup.outputs.span-id }}
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
+      skill_install_errors: ${{ steps.collect-skill-install-failures.outputs.errors || '' }}
+      skill_install_failure_count: ${{ steps.collect-skill-install-failures.outputs.failure_count || '0' }}
       stale_lock_file_failed: ${{ steps.check-lock-file.outputs.stale_lock_file_failed == 'true' }}
     steps:
       - name: Setup Scripts
@@ -1297,6 +1391,7 @@ jobs:
           GH_AW_INFO_FIREWALL_TYPE: "squid"
           GH_AW_INFO_AGENT_RUNTIME: ""
           GH_AW_COMPILED_STRICT: "true"
+          GH_AW_INFO_SKILLS: '[".github/skills/create-kbe"]'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -1406,6 +1501,36 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require(path.join(actionsDir, 'check_version_updates.cjs'));
             await main();
+      - name: Upgrade gh CLI for frontmatter skills
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/ensure_gh_cli_min_version.sh" "2.90.0"
+      - name: "Install frontmatter skill: .github/skills/create-kbe"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_AW_INFO_ENGINE_ID: "copilot"
+          GH_AW_GH_SKILL_AGENT_NAME: "github-copilot"
+          GH_AW_SKILL_DIR: ".github/skills"
+          GH_AW_FRONTMATTER_SKILLS: ".github/skills/create-kbe"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const path = require('path');
+            const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
+            const { setupGlobals } = require(path.join(actionsDir, 'setup_globals.cjs'));
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require(path.join(actionsDir, 'install_frontmatter_skills.cjs'));
+            await main();
+      - name: Collect skill install failures
+        id: collect-skill-install-failures
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const path = require('path');
+            const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
+            const { setupGlobals } = require(path.join(actionsDir, 'setup_globals.cjs'));
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require(path.join(actionsDir, 'collect_skill_install_failures.cjs'));
+            await main();
       - name: Log runtime features
         if: ${{ contains(toJSON(vars), '"GH_AW_RUNTIME_FEATURES":') }}
         run: bash "${RUNNER_TEMP}/gh-aw/actions/log_runtime_features_summary.sh"
@@ -1425,6 +1550,7 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_CLOSED_QUARANTINE_PRS: ${{ needs.pre_activation.outputs.closed_quarantine_prs }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ELIGIBLE_TEST_NAMES: ${{ needs.pre_activation.outputs.eligible_test_names }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
@@ -1444,7 +1570,7 @@ jobs:
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_ISSUE_NUMBERS: ${{ needs.pre_activation.outputs.requarantine_issue_numbers }}
           GH_AW_PROMPT_CONTENT_0000: "<system>\n"
-          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: add_comment(max:10), create_issue(max:10), create_pull_request(max:10), add_labels, missing_tool, missing_data, noop\n"
+          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: add_comment(max:10), create_pull_request(max:10), add_labels, missing_tool, missing_data, noop, create_quarantine_issue\n"
           GH_AW_PROMPT_CONTENT_0002: "</safe-output-tools>\n"
           GH_AW_PROMPT_CONTENT_0003: "<github-context>\nThe following GitHub context information is available for this workflow:\n{{#if github.actor}}\n- **actor**: __GH_AW_GITHUB_ACTOR__\n{{/if}}\n{{#if github.repository}}\n- **repository**: __GH_AW_GITHUB_REPOSITORY__\n{{/if}}\n{{#if github.workspace}}\n- **workspace**: __GH_AW_GITHUB_WORKSPACE__\n{{/if}}\n{{#if github.event.issue.number || (github.aw.context.item_type == 'issue' && github.aw.context.item_number)}}\n- **issue-number**: #__GH_AW_EXPR_802A9F6A__\n{{/if}}\n{{#if github.event.discussion.number || (github.aw.context.item_type == 'discussion' && github.aw.context.item_number)}}\n- **discussion-number**: #__GH_AW_EXPR_1A3A194A__\n{{/if}}\n{{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}\n- **pull-request-number**: #__GH_AW_EXPR_463A214A__\n{{/if}}\n{{#if github.event.comment.id || github.aw.context.comment_id}}\n- **comment-id**: __GH_AW_EXPR_FF1D34CE__\n{{/if}}\n{{#if github.run_id}}\n- **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__\n{{/if}}\n- **checkouts**: The following repositories have been checked out and are available in the workspace:\n  - repo `__GH_AW_GITHUB_REPOSITORY__` → `$GITHUB_WORKSPACE` (cwd) [full history, all branches available as remote-tracking refs]\n  - **Note**: If a branch you need is not in the list above and is not listed as an additional fetched ref, it has NOT been checked out. For private repositories you cannot fetch it. If the branch is required and not available, exit with an error and ask the user to add it to the `fetch:` option of the `checkout:` configuration (e.g., `fetch: [\"refs/pulls/open/*\"]` for all open PR refs, or `fetch: [\"main\", \"feature/my-branch\"]` for specific branches).\n  - **Warning: No git credentials are available to the agent.** Credentials are\n    intentionally removed after the checkout step for security. This means any git\n    operation that needs to authenticate to the remote will fail. In private repositories, that includes:\n    - `git fetch`, `git pull`, `git clone`, and `git push` (direct push, not via safe-output tools)\n    - Checking out or switching to a remote branch that is not already fetched\n    - Deepening a shallow clone (`git fetch --unshallow`)\n    - On-demand blob fetches in partial/blobless clones (operations on files not in the initial checkout)\n    Do NOT attempt to configure credentials, run `git credential fill`, or modify `.gitconfig` —\n    authentication will not succeed. If you encounter credential prompts or authentication errors,\n    stop immediately and report the limitation rather than spending turns trying to work around it.\n</github-context>\n\n"
           GH_AW_PROMPT_CONTENT_0004: "</system>\n"
@@ -1461,6 +1587,7 @@ jobs:
           GH_AW_PROMPT: ${{ runner.temp }}/gh-aw/aw-prompts/prompt.txt
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_CLOSED_QUARANTINE_PRS: ${{ needs.pre_activation.outputs.closed_quarantine_prs }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ELIGIBLE_TEST_NAMES: ${{ needs.pre_activation.outputs.eligible_test_names }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
@@ -1503,6 +1630,7 @@ jobs:
           GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: ${{ needs.pat_pool.outputs.pat_number }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_CLOSED_QUARANTINE_PRS: ${{ needs.pre_activation.outputs.closed_quarantine_prs }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ELIGIBLE_TEST_NAMES: ${{ needs.pre_activation.outputs.eligible_test_names }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
@@ -1546,6 +1674,7 @@ jobs:
                 GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: process.env.GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_CLOSED_QUARANTINE_PRS: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_CLOSED_QUARANTINE_PRS,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ELIGIBLE_TEST_NAMES: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ELIGIBLE_TEST_NAMES,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10,
@@ -1766,7 +1895,7 @@ jobs:
         env:
           GH_AW_FILE_ROOT: "${{ runner.temp }}/gh-aw"
           GH_AW_FILE_CONFIG: "{\"files\":[{\"path\":\"safeoutputs/config.json\",\"content_env\":\"GH_AW_SAFE_OUTPUTS_CONFIG\"}]}"
-          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"add_comment\":{\"max\":10,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"re-quarantine\"]},\"create_issue\":{\"labels\":[\"test-failure\"],\"max\":10,\"title_prefix\":\"Quarantine \"},\"create_pull_request\":{\"allowed_files\":[\"src/**/*.cs\"],\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"test-failure\"],\"max\":10,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"request_review\",\"title_prefix\":\"[test-quarantine] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"add_comment\":{\"discussions\":false,\"max\":10,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"re-quarantine\"]},\"create_pull_request\":{\"allowed_files\":[\"src/**/*.cs\"],\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"test-failure\"],\"max\":10,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"request_review\",\"title_prefix\":\"[test-quarantine] \"},\"create_quarantine_issue\":{\"description\":\"Create or reuse one quarantine issue for one exact test. Select a runtime-style matcher with the create-kbe skill. Use incomplete when a unique matcher or duplicate search cannot be verified.\",\"inputs\":{\"duplicate_status\":{\"default\":null,\"description\":\"Result of the required existing-issue search: none, existing-open, recently-closed, ambiguous, filtered, or search-failed\",\"required\":true,\"type\":\"string\"},\"duplicate_summary\":{\"default\":null,\"description\":\"Concise evidence supporting duplicate_status\",\"required\":true,\"type\":\"string\"},\"log_excerpt\":{\"default\":null,\"description\":\"Optional sanitized per-test log excerpt for human readers only\",\"required\":false,\"type\":\"string\"},\"log_url\":{\"default\":null,\"description\":\"Optional HTTPS link to the complete Helix log\",\"required\":false,\"type\":\"string\"},\"matcher\":{\"default\":null,\"description\":\"Literal/regex text, or a JSON string array for literal-array\",\"required\":false,\"type\":\"string\"},\"matcher_kind\":{\"default\":\"incomplete\",\"description\":\"Matcher representation: literal, literal-array, regex, or incomplete\",\"required\":false,\"type\":\"string\"},\"temporary_id\":{\"default\":null,\"description\":\"Temporary ID matching ^aw_[A-Za-z0-9_]{3,12}$\",\"required\":true,\"type\":\"string\"},\"test_name\":{\"default\":null,\"description\":\"Exact fully qualified test name from Part 1 evidence\",\"required\":true,\"type\":\"string\"}}},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
         with:
           script: |
             const path = require('path');
@@ -1782,11 +1911,60 @@ jobs:
               "description_suffixes": {
                 "add_comment": " CONSTRAINTS: Maximum 10 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
                 "add_labels": " CONSTRAINTS: Only these labels are allowed: [\"re-quarantine\"].",
-                "create_issue": " CONSTRAINTS: Maximum 10 issue(s) can be created. Title will be prefixed with \"Quarantine \". Labels [\"test-failure\"] will be automatically added.",
                 "create_pull_request": " CONSTRAINTS: Maximum 10 pull request(s) can be created. Title will be prefixed with \"[test-quarantine] \". Labels [\"test-failure\"] will be automatically added."
               },
               "repo_params": {},
-              "dynamic_tools": []
+              "dynamic_tools": [
+                {
+                  "description": "Create or reuse one quarantine issue for one exact test. Select a runtime-style matcher with the create-kbe skill. Use incomplete when a unique matcher or duplicate search cannot be verified.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duplicate_status": {
+                        "description": "Result of the required existing-issue search: none, existing-open, recently-closed, ambiguous, filtered, or search-failed",
+                        "type": "string"
+                      },
+                      "duplicate_summary": {
+                        "description": "Concise evidence supporting duplicate_status",
+                        "type": "string"
+                      },
+                      "log_excerpt": {
+                        "description": "Optional sanitized per-test log excerpt for human readers only",
+                        "type": "string"
+                      },
+                      "log_url": {
+                        "description": "Optional HTTPS link to the complete Helix log",
+                        "type": "string"
+                      },
+                      "matcher": {
+                        "description": "Literal/regex text, or a JSON string array for literal-array",
+                        "type": "string"
+                      },
+                      "matcher_kind": {
+                        "default": "incomplete",
+                        "description": "Matcher representation: literal, literal-array, regex, or incomplete",
+                        "type": "string"
+                      },
+                      "temporary_id": {
+                        "description": "Temporary ID matching ^aw_[A-Za-z0-9_]{3,12}$",
+                        "type": "string"
+                      },
+                      "test_name": {
+                        "description": "Exact fully qualified test name from Part 1 evidence",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "duplicate_status",
+                      "duplicate_summary",
+                      "temporary_id",
+                      "test_name"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "create_quarantine_issue"
+                }
+              ]
             }
           GH_AW_VALIDATION_JSON: |
             {
@@ -1844,44 +2022,6 @@ jobs:
                   "repo": {
                     "type": "string",
                     "maxLength": 256
-                  }
-                }
-              },
-              "create_issue": {
-                "defaultMax": 1,
-                "fields": {
-                  "blocked_by": {},
-                  "body": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 65000,
-                    "minLength": 20
-                  },
-                  "fields": {
-                    "type": "array"
-                  },
-                  "labels": {
-                    "type": "array",
-                    "itemType": "string",
-                    "itemSanitize": true,
-                    "itemMaxLength": 128
-                  },
-                  "parent": {
-                    "issueOrPRNumber": true
-                  },
-                  "repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  },
-                  "temporary_id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 128
                   }
                 }
               },
@@ -2645,6 +2785,7 @@ jobs:
           GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
           GH_AW_AMBIENT_CONTEXT: ${{ needs.agent.outputs.ambient_context }}
           GH_AW_WORKFLOW_ID: "test-quarantine"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -2664,6 +2805,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -2681,6 +2823,7 @@ jobs:
           GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
           GH_AW_WORKFLOW_NAME: "Daily Test Quarantine Management"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/test-quarantine.md"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -2698,6 +2841,7 @@ jobs:
           GH_AW_REPORT_INCOMPLETE_CREATE_ISSUE: "true"
           GH_AW_WORKFLOW_NAME: "Daily Test Quarantine Management"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/test-quarantine.md"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -2742,6 +2886,8 @@ jobs:
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_OAUTH_TOKEN_CHECK_FAILED: ${{ needs.activation.outputs.oauth_token_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
+          GH_AW_SKILL_INSTALL_FAILURE_COUNT: ${{ needs.activation.outputs.skill_install_failure_count || '0' }}
+          GH_AW_SKILL_INSTALL_ERRORS: ${{ needs.activation.outputs.skill_install_errors || '' }}
           GH_AW_DAILY_AI_CREDITS_EXCEEDED: ${{ needs.activation.outputs.daily_ai_credits_exceeded }}
           GH_AW_DAILY_AI_CREDITS_TOTAL_EFFECTIVE_TOKENS: ${{ needs.activation.outputs.daily_ai_credits_total_effective_tokens }}
           GH_AW_DAILY_AI_CREDITS_THRESHOLD: ${{ needs.activation.outputs.daily_ai_credits_threshold }}
@@ -2750,6 +2896,7 @@ jobs:
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
           GH_AW_TIMEOUT_MINUTES: "90"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -2769,6 +2916,7 @@ jobs:
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/test-quarantine.md"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_REPORT_FAILED_JOBS: "true"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -3119,8 +3267,10 @@ jobs:
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
+      case_a_eligibility_result: ${{ steps.case_a_eligibility.outcome }}
       closed_quarantine_prs: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
       closed_quarantine_prs_result: ${{ steps.closed_quarantine_prs.outcome }}
+      eligible_test_names: ${{ steps.case_a_eligibility.outputs.eligible_test_names }}
       matched_command: ''
       part1_aggregate_result: ${{ steps.part1_aggregate.outcome }}
       part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
@@ -3957,6 +4107,10 @@ jobs:
                       if is_wi and job and wi_name:
                           probes.append({"job": job, "workitem": wi_name, "build": occ["build"]})
                       if idx == 0 and not is_wi:
+                          e["evidence_build"] = occ["build"]
+                          e["run_id"] = occ["runId"]
+                          e["result_id"] = occ["resultId"]
+                          e["leg"] = wi_name or job or ""
                           em, st = det.get("errorMessage"), det.get("stackTrace")
                           if em:
                               e["error"] = scrub_secrets(em)[:ERROR_CAP]
@@ -4122,6 +4276,12 @@ jobs:
           def main():
               # Source A: failed/partial builds on main, both pipelines, last 30 days.
               a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
+              # Make the representative occurrence deterministic and recent. Any eligible
+              # post-cutoff Case A candidate necessarily has its newest raw failure after
+              # that cutoff, so the attached error/stack cannot come from stale pre-fix data.
+              a_builds.sort(
+                  key=lambda b: (b.get("startTime") or "", int(b.get("id") or 0)),
+                  reverse=True)
               bmeta = {}
               for b in a_builds:
                   bmeta[str(b["id"])] = build_meta(b)
@@ -4145,6 +4305,11 @@ jobs:
               if b_ids:
                   for b in builds_by_ids(b_ids):
                       bmeta[str(b["id"])] = build_meta(b)
+                  b_ids.sort(
+                      key=lambda bid: (
+                          bmeta.get(str(bid), {}).get("startedUtc") or "",
+                          int(bid)),
+                      reverse=True)
               source_b = enrich(aggregate(b_ids))
 
               # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
@@ -4303,6 +4468,11 @@ jobs:
               # test-name keys and collapse unrelated failures into duplicate keys.
               js = main()
               validate_part1_json(js)
+              evidence_path = os.path.join(
+                  os.environ.get("RUNNER_TEMP", "/tmp"),
+                  "test-quarantine-part1.json")
+              with open(evidence_path, "w", encoding="utf-8") as evidence_file:
+                  evidence_file.write(js)
               gh_out = os.environ.get("GITHUB_OUTPUT")
               if not gh_out:
                   sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
@@ -4311,6 +4481,75 @@ jobs:
           SCRIPT
         env:
           SOURCE_B_BUILD_IDS: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
+      - name: Check out trusted source history for Case A eligibility
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (source v7)
+        with:
+          fetch-depth: 0
+      - name: Collect deterministic Case A eligibility
+        id: case_a_eligibility
+        run: |
+          python3 << 'SCRIPT'
+          import json
+          import os
+          import pathlib
+
+          closed_prs = os.environ.get("CLOSED_QUARANTINE_PRS", "")
+          try:
+              parsed = json.loads(closed_prs)
+          except json.JSONDecodeError as ex:
+              raise SystemExit(f"FATAL: CLOSED_QUARANTINE_PRS is invalid JSON: {ex}")
+          if not isinstance(parsed, list):
+              raise SystemExit("FATAL: CLOSED_QUARANTINE_PRS must be a JSON array")
+          pathlib.Path(
+              os.environ.get("RUNNER_TEMP", "/tmp"),
+              "test-quarantine-closed-prs.json",
+          ).write_text(json.dumps(parsed, separators=(",", ":")), encoding="utf-8")
+          SCRIPT
+
+          python3 .github/workflows/scripts/test-quarantine/collect_case_a_eligibility.py \
+            --part1 "${RUNNER_TEMP}/test-quarantine-part1.json" \
+            --closed-prs "${RUNNER_TEMP}/test-quarantine-closed-prs.json" \
+            --output "${RUNNER_TEMP}/test-quarantine-case-a-eligibility.json" \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF}" \
+            --commit "${GITHUB_SHA}" \
+            --history-ref "refs/remotes/origin/main"
+
+          python3 << 'SCRIPT'
+          import json
+          import os
+          import pathlib
+
+          receipt = json.loads(pathlib.Path(
+              os.environ["RUNNER_TEMP"],
+              "test-quarantine-case-a-eligibility.json",
+          ).read_text(encoding="utf-8"))
+          eligible = sorted(
+              name for name, record in receipt.get("tests", {}).items()
+              if record.get("status") == "eligible"
+          )
+          eligible_json = json.dumps(eligible, separators=(",", ":"))
+          if len(eligible_json.encode("utf-8")) > 120000:
+              raise SystemExit("FATAL: eligible_test_names exceeds the safe job-output limit")
+          output = os.environ.get("GITHUB_OUTPUT")
+          if not output:
+              raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
+          with open(output, "a", encoding="utf-8") as stream:
+              stream.write(f"eligible_test_names={eligible_json}\n")
+          SCRIPT
+        env:
+          CLOSED_QUARANTINE_PRS: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload deterministic evidence for safe output validation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (source v7)
+        with:
+          if-no-files-found: error
+          name: test-quarantine-evidence-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/test-quarantine-part1.json
+            ${{ runner.temp }}/test-quarantine-case-a-eligibility.json
+          retention-days: 1
 
   safe_outputs:
     needs:
@@ -4324,6 +4563,9 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+    concurrency:
+      group: "test-quarantine-safe-outputs-${{ github.repository }}"
+      cancel-in-progress: false
     timeout-minutes: 45
     env:
       GH_AW_AGENT_AIC: ${{ needs.agent.outputs.aic }}
@@ -4347,8 +4589,6 @@ jobs:
       comment_url: ${{ steps.process_safe_outputs.outputs.comment_url }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
-      created_issue_number: ${{ steps.process_safe_outputs.outputs.created_issue_number }}
-      created_issue_url: ${{ steps.process_safe_outputs.outputs.created_issue_url }}
       created_pr_number: ${{ steps.process_safe_outputs.outputs.created_pr_number }}
       created_pr_url: ${{ steps.process_safe_outputs.outputs.created_pr_url }}
       process_safe_outputs_items_applied: ${{ steps.process_safe_outputs.outputs.items_applied }}
@@ -4424,6 +4664,591 @@ jobs:
           GH_HOST="${GITHUB_SERVER_URL#https://}"
           GH_HOST="${GH_HOST#http://}"
           echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Download deterministic quarantine evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (source v8)
+        with:
+          name: test-quarantine-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/test-quarantine-evidence
+        continue-on-error: true
+      - name: Configure Safe Output Scripts
+        run: |
+          cat > "${RUNNER_TEMP}/gh-aw/actions/safe_output_script_create_quarantine_issue.cjs" << 'GH_AW_SAFE_OUTPUT_SCRIPT_CREATE_QUARANTINE_ISSUE_fdf6662b8b2cadf7_EOF'
+          // @ts-check
+          /// <reference types="./safe-output-script" />
+          // Auto-generated safe-output script handler: create-quarantine-issue
+
+          const { sanitizeContent } = require("./sanitize_content.cjs");
+
+          /** @type {import('./types/safe-output-script').SafeOutputScriptMain} */
+          async function main(config = {}) {
+            const { duplicate_status, duplicate_summary, log_excerpt, log_url, matcher, matcher_kind, temporary_id, test_name } = config;
+            return async function handleCreateQuarantineIssue(item, resolvedTemporaryIds, temporaryIdMap) {
+              // --- BEGIN quarantine-kbe-handler ---
+              const fs = require("fs");
+              const path = require("path");
+              const crypto = require("crypto");
+
+              const stateKey = Symbol.for("aspnetcore.test-quarantine.kbe-handler");
+              const state = globalThis[stateKey] ??= { calls: 0, claimedTests: new Set() };
+              state.claimedTests ??= new Set();
+              state.calls++;
+
+              const fail = (error) => {
+                core.error(error);
+                return { success: false, error };
+              };
+              const escapeHtml = (value) => String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("`", "&#96;");
+              const cap = (value, length) => String(value ?? "").slice(0, length);
+              const scrubSecrets = (value) => {
+                let text = String(value ?? "");
+                const patterns = [
+                  /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}/g,
+                  /eyJ[A-Za-z0-9_-]{20,}/g,
+                  /\bgh[pousr]_[A-Za-z0-9]{20,}\b/g,
+                  /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g,
+                  /\bbearer\s+[A-Za-z0-9._~+/=-]{20,}/gi,
+                  /\bhttps?:\/\/[^/\s:@"]+:[^@\s/"]{6,}@/gi,
+                  /[?&]sig=[A-Za-z0-9%/+_=-]{20,}/gi,
+                  /\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"']{12,}/gi,
+                  /[A-Za-z0-9][A-Za-z0-9+/=_-]{51,}/g,
+                ];
+                for (const pattern of patterns) {
+                  text = text.replace(pattern, "[REDACTED]");
+                }
+                return text;
+              };
+              const temporaryId = String(item.temporary_id ?? "").trim();
+              const testName = String(item.test_name ?? "").trim();
+              const duplicateStatus = String(item.duplicate_status ?? "").trim();
+              const duplicateSummary = cap(sanitizeContent(item.duplicate_summary ?? ""), 1000);
+              const matcherKind = String(item.matcher_kind ?? "incomplete").trim();
+              const rawMatcher = cap(item.matcher ?? "", 4000);
+
+              if (state.calls > 1) {
+                return fail("create_quarantine_issue exceeded the per-run limit of 1 call");
+              }
+              if (!/^aw_[A-Za-z0-9_]{3,12}$/.test(temporaryId)) {
+                return fail(`Invalid temporary_id: ${temporaryId}`);
+              }
+              if (!testName || testName.length > 1000) {
+                return fail("test_name must be a non-empty exact test identity under 1000 characters");
+              }
+              if (temporaryIdMap.has(temporaryId.toLowerCase())) {
+                return fail(`temporary_id was already resolved: ${temporaryId}`);
+              }
+              if (!["none", "existing-open", "recently-closed", "ambiguous", "filtered", "search-failed"].includes(duplicateStatus)) {
+                return fail(`Invalid duplicate_status: ${duplicateStatus}`);
+              }
+              if (process.env.GH_AW_DETECTION_CONCLUSION &&
+                  process.env.GH_AW_DETECTION_CONCLUSION !== "success") {
+                return fail(`Threat detection did not succeed: ${process.env.GH_AW_DETECTION_CONCLUSION}`);
+              }
+
+              const evidencePath = path.join(
+                process.env.RUNNER_TEMP || "/tmp",
+                "test-quarantine-evidence",
+                "test-quarantine-part1.json");
+              const eligibilityPath = path.join(
+                process.env.RUNNER_TEMP || "/tmp",
+                "test-quarantine-evidence",
+                "test-quarantine-case-a-eligibility.json");
+              let evidence;
+              let evidenceBytes;
+              try {
+                evidenceBytes = fs.readFileSync(evidencePath);
+                evidence = JSON.parse(evidenceBytes.toString("utf8"));
+              } catch (error) {
+                return fail(`Unable to read deterministic Part 1 evidence: ${error.message}`);
+              }
+
+              const sourceA = evidence.source_a ?? {};
+              const sourceB = evidence.source_b ?? {};
+              const builds = evidence.builds ?? {};
+              const repo = `${context.repo.owner}/${context.repo.repo}`;
+              let eligibilityReason = "";
+              let eligibilityRecord = null;
+              try {
+                const eligibility = JSON.parse(fs.readFileSync(eligibilityPath, "utf8"));
+                const part1Hash = crypto.createHash("sha256").update(evidenceBytes).digest("hex");
+                const expectedRef = process.env.GITHUB_REF || eligibility.ref;
+                const expectedCommit = process.env.GITHUB_SHA || eligibility.commit;
+                if (eligibility.schema_version !== 1 ||
+                    eligibility.part1_sha256 !== part1Hash ||
+                    eligibility.repository !== repo ||
+                    eligibility.ref !== expectedRef ||
+                    eligibility.commit !== expectedCommit ||
+                    eligibility.history_ref !== "refs/remotes/origin/main" ||
+                    !/^[0-9a-f]{40}$/.test(String(eligibility.history_commit ?? ""))) {
+                  eligibilityReason = "deterministic Case A receipt identity does not match this workflow run";
+                } else {
+                  eligibilityRecord = eligibility.tests?.[testName] ?? null;
+                  if (!eligibilityRecord) {
+                    eligibilityReason = "test is absent from the deterministic Case A eligibility receipt";
+                  }
+                }
+              } catch (error) {
+                eligibilityReason = `unable to read deterministic Case A eligibility: ${error.message}`;
+              }
+
+              const selectedRecords = [sourceA[testName], sourceB[testName]].filter(Boolean);
+              if (selectedRecords.length === 0) {
+                const sourceCMatches = (evidence.source_c ?? []).filter(entry =>
+                  String(entry.fail_blocks ?? "").split(/\r?\n/).some(line => {
+                    const normalizedLine = line.trimEnd();
+                    return normalizedLine.endsWith("[FAIL]") &&
+                      normalizedLine.slice(0, -"[FAIL]".length).trim() === testName;
+                  }));
+                if (sourceCMatches.length > 0) {
+                  const sourceCBuilds = [...new Set(sourceCMatches.map(entry => entry.build))];
+                  const newestSourceCBuild = sourceCBuilds
+                    .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
+                    .filter(build => Number.isFinite(build.started))
+                    .sort((left, right) => right.started - left.started)[0];
+                  selectedRecords.push({
+                    assembly: sourceCMatches[0].workitem || "unknown",
+                    builds: sourceCBuilds,
+                    evidence_build: newestSourceCBuild?.id,
+                    leg: sourceCMatches[0].job || sourceCMatches[0].workitem || "unknown",
+                    error: sourceCMatches.map(entry => entry.fail_blocks).join("\n\n"),
+                    stack: "",
+                  });
+                }
+              }
+              if (selectedRecords.length === 0) {
+                return fail(`test_name is absent from deterministic Part 1 evidence: ${testName}`);
+              }
+
+              const buildIds = [...new Set(selectedRecords.flatMap(record => record.builds ?? []))];
+              const mostRecentBuild = buildIds
+                .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
+                .filter(build => Number.isFinite(build.started))
+                .sort((left, right) => right.started - left.started)[0];
+              if (!mostRecentBuild) {
+                return fail(`No timestamped failing build exists for ${testName}`);
+              }
+
+              let eligibleRecord = null;
+              if (!eligibilityReason) {
+                const sourceResolution = eligibilityRecord.source_resolution ?? {};
+                const eligibleBuilds = eligibilityRecord.eligible_failure_builds;
+                const receiptEvidence = eligibilityRecord.evidence ?? {};
+                const cutoffUtc = Date.parse(eligibilityRecord.cutoff?.utc ?? "");
+                const uniqueEligibleBuilds = Array.isArray(eligibleBuilds)
+                  ? [...new Set(eligibleBuilds.map(String))]
+                  : [];
+                if (eligibilityRecord.status !== "eligible" ||
+                    eligibilityRecord.originating_case !== "case-a" ||
+                    sourceResolution.status !== "exact" ||
+                    !sourceResolution.path ||
+                    !sourceResolution.type ||
+                    !sourceResolution.method ||
+                    eligibilityRecord.current_quarantine_state !== "not-quarantined" ||
+                    eligibilityRecord.latest_quarantine_transition !== "none" ||
+                    eligibilityRecord.is_consistent_regression !== false ||
+                    (sourceA[testName] && sourceA[testName].is_consistent_regression !== false) ||
+                    uniqueEligibleBuilds.length < 2 ||
+                    !Number.isFinite(cutoffUtc)) {
+                  eligibilityReason = "deterministic evidence does not prove the minimum Case A eligibility invariants";
+                } else if (uniqueEligibleBuilds.some(buildId => {
+                  const startedUtc = Date.parse(builds[buildId]?.startedUtc ?? "");
+                  return !Number.isFinite(startedUtc) ||
+                    startedUtc <= cutoffUtc ||
+                    !buildIds.map(String).includes(buildId) ||
+                    !(eligibilityRecord.raw_failure_builds ?? []).map(String).includes(buildId);
+                })) {
+                  eligibilityReason = "deterministic Case A receipt contains an invalid post-cutoff failure build";
+                } else if (!/^\d+$/.test(String(receiptEvidence.build ?? "")) ||
+                    !/^\d+$/.test(String(receiptEvidence.run_id ?? "")) ||
+                    !/^\d+$/.test(String(receiptEvidence.result_id ?? "")) ||
+                    !uniqueEligibleBuilds.includes(String(receiptEvidence.build))) {
+                  eligibilityReason = "deterministic Case A receipt lacks a bound eligible evidence result";
+                } else {
+                  eligibleRecord = selectedRecords.find(record =>
+                    (record.builds ?? []).map(String).includes(String(receiptEvidence.build)) &&
+                    String(record.evidence_build) === String(receiptEvidence.build) &&
+                    String(record.run_id) === String(receiptEvidence.run_id) &&
+                    String(record.result_id) === String(receiptEvidence.result_id)) ?? null;
+                  if (!eligibleRecord) {
+                    eligibilityReason = "deterministic Case A receipt contradicts the Part 1 evidence identity";
+                  }
+                }
+              }
+
+              let matcher = rawMatcher;
+              let matcherValues = null;
+              let regex = null;
+              let validationReason = "";
+
+              const genericLiteral = /^(?:Assert\.[A-Za-z0-9_]+\(\) Failure|(?:System\.)?[A-Za-z0-9_.]+Exception|Operation timed out|Connection reset|No space left on device|Segmentation fault|SIG[A-Z]+|exit(?:code)?\s*:?\s*\d+)$/i;
+              const genericInfrastructure = /\b(?:timed out|timeout|connection reset|no space left|segmentation fault|test host process crashed|process exited|exited with code|signal SIG[A-Z]+)\b/i;
+              const isBroadLiteral = (value) => {
+                const text = String(value ?? "").trim();
+                return text.length < 24 ||
+                  text === testName ||
+                  testName.startsWith(text) ||
+                  genericLiteral.test(text) ||
+                  genericInfrastructure.test(text) ||
+                  /^at\s+[A-Za-z0-9_.+`<>]+\([^)]*\)$/i.test(text) ||
+                  /^(?:0x[0-9a-f]+|[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/i.test(text);
+              };
+              const orderedLiteralMatch = (text, values) => {
+                const lines = String(text).split(/\r?\n/);
+                let nextLine = 0;
+                for (const value of values) {
+                  const found = lines.findIndex((line, index) => index >= nextLine && line.includes(value));
+                  if (found < 0) {
+                    return false;
+                  }
+                  nextLine = found + 1;
+                }
+                return true;
+              };
+              const hasSharedRegexSyntax = (pattern) => {
+                let canQuantify = false;
+                for (let index = 1; index < pattern.length; index++) {
+                  const character = pattern[index];
+                  if (character === "\\") {
+                    const escaped = pattern[++index];
+                    if (!escaped || !/[\\.^$*+?()[\]{}|nrt]/.test(escaped)) {
+                      return false;
+                    }
+                    canQuantify = true;
+                    continue;
+                  }
+                  if (character === "[") {
+                    let end = index + 1;
+                    let escaped = false;
+                    for (; end < pattern.length; end++) {
+                      if (!escaped && pattern[end] === "]") {
+                        break;
+                      }
+                      escaped = !escaped && pattern[end] === "\\";
+                      if (pattern[end] !== "\\") {
+                        escaped = false;
+                      }
+                    }
+                    if (end >= pattern.length) {
+                      return false;
+                    }
+                    const content = pattern.slice(index + 1, end);
+                    if (!content || content === "^" || /&&|--|\[/.test(content)) {
+                      return false;
+                    }
+                    let contentIndex = content.startsWith("^") ? 1 : 0;
+                    for (; contentIndex < content.length; contentIndex++) {
+                      const classCharacter = content[contentIndex];
+                      if (classCharacter === "\\") {
+                        const classEscape = content[++contentIndex];
+                        if (!classEscape || !/[nrt\\\-\]]/.test(classEscape)) {
+                          return false;
+                        }
+                      } else if (!/[A-Za-z0-9 _.,:/-]/.test(classCharacter)) {
+                        return false;
+                      }
+                    }
+                    index = end;
+                    canQuantify = true;
+                    continue;
+                  }
+                  if (character === "{") {
+                    if (!canQuantify) {
+                      return false;
+                    }
+                    const end = pattern.indexOf("}", index + 1);
+                    const quantifier = pattern.slice(index, end + 1);
+                    const quantifierMatch = quantifier.match(/^\{(\d+)(?:,(\d*))?\}$/);
+                    if (end < 0 || !quantifierMatch) {
+                      return false;
+                    }
+                    const minimum = Number(quantifierMatch[1]);
+                    const maximum = quantifierMatch[2] === undefined
+                      ? minimum
+                      : quantifierMatch[2] === "" ? 10000 : Number(quantifierMatch[2]);
+                    if (minimum > 10000 || maximum > 10000 || maximum < minimum) {
+                      return false;
+                    }
+                    index = end;
+                    canQuantify = false;
+                    continue;
+                  }
+                  if ("*+?".includes(character)) {
+                    if (!canQuantify) {
+                      return false;
+                    }
+                    canQuantify = false;
+                    continue;
+                  }
+                  if (".()|]}^".includes(character) ||
+                      (character === "$" && index !== pattern.length - 1) ||
+                      character.charCodeAt(0) < 0x20 ||
+                      character.charCodeAt(0) > 0x7e) {
+                    return false;
+                  }
+                  canQuantify = character !== "$";
+                }
+                return true;
+              };
+
+              if (matcherKind === "literal") {
+                matcher = rawMatcher.trim();
+                if (isBroadLiteral(matcher) || /[\r\n]/.test(matcher)) {
+                  validationReason = "literal matcher is missing, multiline, or too broad";
+                }
+              } else if (matcherKind === "literal-array") {
+                try {
+                  matcherValues = JSON.parse(rawMatcher);
+                } catch {
+                  validationReason = "literal-array matcher is not valid JSON";
+                }
+                if (!validationReason &&
+                    (!Array.isArray(matcherValues) || matcherValues.length < 2 || matcherValues.length > 6 ||
+                     matcherValues.some(value => typeof value !== "string" || !value.trim() || /[\r\n]/.test(value)))) {
+                  validationReason = "literal-array must contain 2-6 non-empty single-line strings";
+                }
+                if (!validationReason &&
+                    !matcherValues.some(value => !isBroadLiteral(value) && value.trim() !== testName)) {
+                  validationReason = "literal-array does not contain a specific failure anchor";
+                }
+              } else if (matcherKind === "regex") {
+                matcher = rawMatcher.trim();
+                if (!matcher.startsWith("^") || matcher.length < 16 || matcher.length > 300 ||
+                    !hasSharedRegexSyntax(matcher) || !/[A-Za-z0-9_]{8,}/.test(matcher)) {
+                  validationReason = "regex is unanchored, broad, unsupported, or lacks a stable literal";
+                } else {
+                  try {
+                    regex = new RegExp(matcher, "is");
+                  } catch {
+                    validationReason = "regex does not compile";
+                  }
+                }
+              } else if (matcherKind !== "incomplete") {
+                validationReason = `unsupported matcher_kind: ${matcherKind}`;
+              }
+
+              const matches = (text) => {
+                if (matcherKind === "literal") {
+                  return text.includes(matcher);
+                }
+                if (matcherKind === "literal-array") {
+                  return orderedLiteralMatch(text, matcherValues);
+                }
+                if (matcherKind === "regex") {
+                  regex.lastIndex = 0;
+                  return regex.test(text);
+                }
+                return false;
+              };
+              const recordFields = (record) => [record.error, record.stack].filter(Boolean);
+              const matchingRecord = !validationReason && matcherKind !== "incomplete"
+                ? selectedRecords.find(record => recordFields(record).some(field => matches(field)))
+                : null;
+              if (!validationReason && matcherKind !== "incomplete" && !matchingRecord) {
+                validationReason = "matcher does not match this test's deterministic error or stack evidence";
+              }
+
+              if (!validationReason && matcherKind !== "incomplete") {
+                for (const [otherName, record] of [
+                  ...Object.entries(sourceA),
+                  ...Object.entries(sourceB),
+                ]) {
+                  if (otherName !== testName &&
+                      recordFields(record).some(field => matches(field))) {
+                    validationReason = `matcher also matches another failure record: ${otherName}`;
+                    break;
+                  }
+                }
+              }
+
+              if (!validationReason && matcherKind !== "incomplete" &&
+                  eligibleRecord &&
+                  !recordFields(eligibleRecord).some(field => matches(field))) {
+                validationReason = "matcher does not match the eligible deterministic evidence result";
+              }
+
+              const primaryRecord = eligibleRecord ?? matchingRecord ?? selectedRecords[0];
+              const evidenceBuild = primaryRecord.evidence_build ?? primaryRecord.builds?.[0];
+              if (!/^\d+$/.test(String(evidenceBuild ?? "")) || !builds[String(evidenceBuild)]) {
+                return fail(`Evidence build is absent from deterministic build metadata for ${testName}`);
+              }
+              const evidenceRunId = primaryRecord.run_id;
+              const evidenceResultId = primaryRecord.result_id;
+              if (!validationReason && matcherKind !== "incomplete" &&
+                  (!/^\d+$/.test(String(evidenceRunId ?? "")) ||
+                   !/^\d+$/.test(String(evidenceResultId ?? "")) ||
+                   !(primaryRecord.builds ?? []).map(String).includes(String(evidenceBuild)))) {
+                validationReason = "matcher evidence is not bound to an exact build, test run, and result";
+              }
+              const kbeVerified = !eligibilityReason &&
+                !validationReason &&
+                matcherKind !== "incomplete" &&
+                duplicateStatus === "none";
+              const kbeEnabled = kbeVerified &&
+                process.env.TEST_QUARANTINE_ENABLE_KBE === "true";
+              const legName = primaryRecord.leg ?? "unknown";
+              const assembly = primaryRecord.assembly || "unknown";
+              const fullTitle = `Quarantine ${testName}`;
+              const title = fullTitle.length <= 256
+                ? fullTitle
+                : `${fullTitle.slice(0, 236)} [${crypto.createHash("sha256").update(testName).digest("hex").slice(0, 16)}]`;
+              const buildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${mostRecentBuild.id}&view=results`;
+              const evidenceBuildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${evidenceBuild}&view=results`;
+              const incompleteReason = eligibilityReason ||
+                validationReason ||
+                (duplicateStatus !== "none" ? `duplicate search result: ${duplicateStatus}` : "matcher was not supplied");
+
+              let logLink = "";
+              if (item.log_url) {
+                try {
+                  const parsed = new URL(String(item.log_url));
+                  if (parsed.protocol === "https:" &&
+                      !parsed.username &&
+                      !parsed.password &&
+                      !parsed.search &&
+                      !parsed.hash &&
+                      (parsed.hostname === "helix.dot.net" ||
+                       parsed.hostname.endsWith(".blob.core.windows.net") ||
+                       parsed.hostname.endsWith(".vsblob.vsassets.io"))) {
+                    logLink = `\n\n<a href="${escapeHtml(parsed.href)}">Complete log</a>`;
+                  } else {
+                    core.warning("Ignoring log_url with credentials, query data, or an unapproved host");
+                  }
+                } catch {
+                  core.warning("Ignoring invalid log_url");
+                }
+              }
+
+              const errorDetails = escapeHtml(cap(primaryRecord.error || "No error message was captured.", 12000));
+              const stack = escapeHtml(cap(primaryRecord.stack || "No stack trace was captured.", 12000));
+              const logExcerpt = escapeHtml(cap(
+                scrubSecrets(item.log_excerpt || "No per-test log excerpt was supplied."),
+                20000));
+              const escapedTestName = escapeHtml(testName);
+              const escapedLeg = escapeHtml(legName);
+              const escapedAssembly = escapeHtml(assembly);
+              const escapedDuplicate = escapeHtml(duplicateSummary || duplicateStatus);
+              const runUrl = `https://github.com/${repo}/actions/runs/${context.runId}`;
+              const labels = ["test-failure", ...(kbeEnabled ? ["Known Build Error"] : [])];
+
+              const sections = [
+                "<!-- gh-aw-agentic-workflow: test-quarantine -->",
+                "",
+                "## Failing Test(s)",
+                "",
+                `<code>${escapedTestName}</code>`,
+                "",
+                "## Failure Frequency",
+                "",
+                `Observed in ${buildIds.length} distinct failing builds in the deterministic 30-day evidence snapshot.`,
+                "",
+                "## Error Details",
+                "",
+                `<pre><code>${errorDetails}</code></pre>`,
+                "",
+                "## Stacktrace",
+                "",
+                `<details><summary>Stack trace</summary><pre><code>${stack}</code></pre></details>`,
+                "",
+                "## Logs",
+                "",
+                `<details><summary>Per-test log excerpt</summary><pre><code>${logExcerpt}</code></pre>${logLink}</details>`,
+                "",
+                "## Build Information",
+                "",
+                `Build: ${buildUrl}`,
+                `Build error leg or test failing: ${escapedLeg} - ${escapedAssembly} - ${escapedTestName}`,
+                "",
+                "## Build Insights Verification",
+                "",
+                `Evidence build: ${evidenceBuildUrl}`,
+                `Test result identity: run ${escapeHtml(evidenceRunId || "unavailable")}, result ${escapeHtml(evidenceResultId || "unavailable")}`,
+                `Case A eligibility: ${eligibilityReason ? `incomplete - ${escapeHtml(eligibilityReason)}` : "verified from the collector-authored receipt"}`,
+                `Duplicate search: ${escapeHtml(duplicateStatus)} - ${escapedDuplicate}`,
+                kbeVerified
+                  ? `Matcher verified against deterministic VSTMR evidence.${kbeEnabled ? "" : " Known Build Error labeling is disabled by repository policy."}`
+                  : `KBE activation incomplete: ${escapeHtml(incompleteReason)}.`,
+                "",
+                `> Created by the [test-quarantine workflow](${runUrl}).`,
+              ];
+
+              if (kbeVerified) {
+                const blob = {
+                  ErrorMessage: matcherKind === "literal"
+                    ? matcher
+                    : matcherKind === "literal-array" ? matcherValues : "",
+                  ErrorPattern: matcherKind === "regex" ? matcher : "",
+                  BuildRetry: false,
+                  ExcludeConsoleLog: true,
+                };
+                sections.push("", "## Error Message", "", "```json", JSON.stringify(blob, null, 2), "```");
+              }
+
+              const body = sections.join("\n");
+              if (body.length > 65000) {
+                return fail(`Rendered issue body exceeds GitHub's 65000 character limit: ${body.length}`);
+              }
+              if (state.claimedTests.has(testName)) {
+                return fail(`test_name was already claimed by this run: ${testName}`);
+              }
+              state.claimedTests.add(testName);
+
+              let existingIssues;
+              try {
+                existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: "open",
+                  labels: "test-failure",
+                  per_page: 100,
+                });
+              } catch (error) {
+                return fail(`Unable to check for an existing quarantine issue: ${error.message}`);
+              }
+              const existing = existingIssues.find(issue => !issue.pull_request && issue.title === title);
+              if (existing) {
+                core.info(`Reusing existing quarantine issue #${existing.number}`);
+                return { success: true, temporaryId, repo, number: existing.number };
+              }
+
+              if (process.env.GH_AW_SAFE_OUTPUTS_STAGED === "true") {
+                await core.summary
+                  .addHeading(title, 3)
+                  .addRaw(`Labels: ${labels.join(", ")}`)
+                  .addEOL()
+                  .addRaw(body)
+                  .write();
+                return { success: true, staged: true };
+              }
+
+              let response;
+              try {
+                response = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title,
+                  body,
+                  labels,
+                });
+              } catch (error) {
+                return fail(`Unable to create quarantine issue: ${error.message}`);
+              }
+              return {
+                success: true,
+                temporaryId,
+                repo,
+                number: response.data.number,
+              };
+              // --- END quarantine-kbe-handler ---
+
+            };
+          }
+          module.exports = { main };
+
+          GH_AW_SAFE_OUTPUT_SCRIPT_CREATE_QUARANTINE_ISSUE_fdf6662b8b2cadf7_EOF
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -4433,7 +5258,9 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.blob.core.windows.net,*.vsblob.vsassets.io,*.vssps.visualstudio.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dev.azure.com,helix.dot.net,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,learn.microsoft.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,s.symcb.com,s.symcd.com,security.ubuntu.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vstmr.dev.azure.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":10,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"re-quarantine\"]},\"create_issue\":{\"labels\":[\"test-failure\"],\"max\":10,\"title_prefix\":\"Quarantine \"},\"create_pull_request\":{\"allowed_files\":[\"src/**/*.cs\"],\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"test-failure\"],\"max\":10,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"request_review\",\"title_prefix\":\"[test-quarantine] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUT_SCRIPTS: "{\"create_quarantine_issue\":\"safe_output_script_create_quarantine_issue.cjs\"}"
+          TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"discussions\":false,\"max\":10,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"re-quarantine\"]},\"create_pull_request\":{\"allowed_files\":[\"src/**/*.cs\"],\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"test-failure\"],\"max\":10,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"request_review\",\"title_prefix\":\"[test-quarantine] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
