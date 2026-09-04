@@ -51,6 +51,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     private int _nextComponentId;
     private bool _isBatchInProgress;
+    private int _renderQueueDeferralDepth;
     private ulong _lastEventHandlerId;
     private List<Task>? _pendingTasks;
     private Task? _disposeTask;
@@ -830,7 +831,29 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
+        if (_renderQueueDeferralDepth > 0)
+        {
+            return;
+        }
+
         ProcessRenderQueue();
+    }
+
+    internal void BeginRenderQueueDeferral()
+    {
+        Dispatcher.AssertAccess();
+        _renderQueueDeferralDepth++;
+    }
+
+    internal void EndRenderQueueDeferral()
+    {
+        Dispatcher.AssertAccess();
+        Debug.Assert(_renderQueueDeferralDepth > 0);
+
+        if (--_renderQueueDeferralDepth == 0 && !_isBatchInProgress)
+        {
+            ProcessPendingRender();
+        }
     }
 
     private void ProcessRenderQueue()

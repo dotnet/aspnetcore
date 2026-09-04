@@ -32,12 +32,20 @@ public partial class StaticHtmlRenderer
     /// <param name="output">The output destination.</param>
     protected internal virtual void WriteComponentHtml(int componentId, TextWriter output)
     {
-        // We're about to walk over some buffers inside the renderer that can be mutated during rendering.
-        // So, we require exclusive access to the renderer during this synchronous process.
+        // The frame buffers must remain stable for the whole synchronous walk. Dispatcher access prevents
+        // concurrent execution, and render queue deferral prevents reentrant rendering from mutating them.
         Dispatcher.AssertAccess();
 
-        var frames = GetCurrentRenderTreeFrames(componentId);
-        RenderFrames(componentId, output, frames, 0, frames.Count);
+        BeginRenderQueueDeferral();
+        try
+        {
+            var frames = GetCurrentRenderTreeFrames(componentId);
+            RenderFrames(componentId, output, frames, 0, frames.Count);
+        }
+        finally
+        {
+            EndRenderQueueDeferral();
+        }
     }
 
     /// <summary>
