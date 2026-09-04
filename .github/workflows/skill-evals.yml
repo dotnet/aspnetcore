@@ -1,0 +1,576 @@
+name: Skill evaluations
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request:
+    paths:
+      - '.github/skills/**'
+      - 'eng/skill-evals/**'
+      - '.github/workflows/skill-evals.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/skills/**'
+      - 'eng/skill-evals/**'
+      - '.github/workflows/skill-evals.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Operation to run
+        type: choice
+        required: true
+        default: Validate
+        options:
+          - Validate
+          - Test
+          - Lint
+          - Run
+      eval:
+        description: Skill to evaluate when action is Run, or the PR-dispatch override
+        type: choice
+        required: true
+        default: review-public-api
+        options:
+          - review-public-api
+          - validate-blazor-feature
+      run_type:
+        description: Trial count to use when action is Run
+        type: choice
+        required: true
+        default: Smoke
+        options:
+          - Smoke
+          - Full
+      pr_number:
+        description: Optional PR number for testing the exact-SHA PR evaluation path
+        type: string
+        required: false
+      head_sha:
+        description: Exact PR commit to evaluate when pr_number is supplied
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Skill eval checks
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && inputs.action != 'Run')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+
+      - name: Run skill eval checks
+        shell: pwsh
+        env:
+          ACTION: ${{ github.event_name == 'workflow_dispatch' && inputs.action || 'Validate' }}
+        run: ./eng/skill-evals/run.ps1 -Action $env:ACTION
+
+      - name: Test trusted staging boundary
+        if: github.event_name != 'workflow_dispatch' || inputs.action == 'Validate'
+        shell: pwsh
+        run: ./eng/skill-evals/test_stage_run.ps1
+
+  gate:
+    name: Resolve PR evaluation
+    if: >-
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/evaluate')) ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.action == 'Run' &&
+       inputs.pr_number != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: skill-eval-gate-${{ github.event.issue.number || inputs.pr_number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      statuses: write
+    outputs:
+      evals: ${{ steps.resolve.outputs.evals }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      run_type: ${{ steps.resolve.outputs.run_type }}
+      should_eval: ${{ steps.resolve.outputs.should_eval }}
+    steps:
+      - name: Require default branch control plane
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"
+          if [[ "$SELECTED_REF" != "$EXPECTED_REF" ]]; then
+            echo "::error::PAT-backed evaluations require the trusted default branch '$EXPECTED_REF', not '$SELECTED_REF'."
+            exit 1
+          fi
+
+      - name: Checkout trusted workflow revision
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Authorize and resolve evaluation target
+        id: resolve
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_ACTOR: ${{ github.event.comment.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          DISPATCH_ACTOR: ${{ github.actor }}
+          DISPATCH_PR_NUMBER: ${{ inputs.pr_number }}
+          DISPATCH_HEAD_SHA: ${{ inputs.head_sha }}
+          DISPATCH_EVAL: ${{ inputs.eval }}
+          DISPATCH_RUN_TYPE: ${{ inputs.run_type }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo 'evals=[]'
+            echo 'head_sha='
+            echo 'pr_number='
+            echo 'run_type=Smoke'
+            echo 'should_eval=false'
+          } >> "$GITHUB_OUTPUT"
+
+          case "$EVENT_NAME" in
+            issue_comment)
+              ACTOR="$COMMENT_ACTOR"
+              PR_NUMBER="$ISSUE_NUMBER"
+              FIRST_LINE="${COMMENT_BODY%%$'\n'*}"
+              FIRST_LINE="${FIRST_LINE//$'\r'/}"
+              if [[ "$FIRST_LINE" =~ ^[[:space:]]*/evaluate[[:space:]]+([0-9a-fA-F]{7,40})[[:space:]]*$ ]]; then
+                REQUESTED_SHA="${BASH_REMATCH[1]}"
+              elif [[ "$FIRST_LINE" =~ ^[[:space:]]*/evaluate[[:space:]]*$ ]]; then
+                REQUESTED_SHA=""
+              else
+                echo 'Ignoring malformed /evaluate command.'
+                exit 0
+              fi
+              ;;
+            workflow_dispatch)
+              ACTOR="$DISPATCH_ACTOR"
+              PR_NUMBER="$DISPATCH_PR_NUMBER"
+              REQUESTED_SHA="$DISPATCH_HEAD_SHA"
+              ;;
+            *)
+              echo "::error::Unsupported event '$EVENT_NAME'."
+              exit 1
+              ;;
+          esac
+
+          if ! PERMISSION="$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" --jq '.permission' 2>/dev/null)"; then
+            echo "::notice::Unable to verify permission for $ACTOR; ignoring the evaluation request."
+            exit 0
+          fi
+          if [[ "$PERMISSION" != 'admin' && "$PERMISSION" != 'maintain' && "$PERMISSION" != 'write' ]]; then
+            echo "::notice::$ACTOR does not have permission to run model-bearing skill evaluations; ignoring the request."
+            exit 0
+          fi
+
+          PR_DATA="$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")"
+          PR_STATE="$(jq -r '.state' <<< "$PR_DATA")"
+          PR_HEAD="$(jq -r '.head.sha' <<< "$PR_DATA")"
+          BASE_SHA="$(jq -r '.base.sha' <<< "$PR_DATA")"
+          HEAD_REPOSITORY="$(jq -r '.head.repo.full_name' <<< "$PR_DATA")"
+          if [[ "$PR_STATE" != 'open' ]]; then
+            echo "::error::PR #$PR_NUMBER is not open."
+            exit 1
+          fi
+          if [[ "$HEAD_REPOSITORY" != "$REPOSITORY" ]]; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body '❌ Model-bearing skill evaluations cannot execute fork-controlled content. Promote the change to a trusted branch in this repository first.'
+            exit 0
+          fi
+
+          if [[ -z "$REQUESTED_SHA" ]]; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body "👋 Bind the evaluation to an exact commit by commenting \`/evaluate $PR_HEAD\`."
+            exit 0
+          fi
+          if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            echo "::error::'$REQUESTED_SHA' is not a 7-40 character hexadecimal commit SHA."
+            exit 1
+          fi
+
+          FULL_SHA="$(gh api "repos/$REPOSITORY/commits/$REQUESTED_SHA" --jq '.sha')"
+          PR_COMMITS="$(gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/commits" --jq '.[].sha')"
+          if ! grep -Fxq "$FULL_SHA" <<< "$PR_COMMITS"; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body "❌ Commit \`$FULL_SHA\` is not part of PR #$PR_NUMBER."
+            exit 1
+          fi
+          if [[ "$FULL_SHA" != "$PR_HEAD" ]]; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body "⚠️ Evaluating \`${FULL_SHA:0:7}\`, not the current PR head \`${PR_HEAD:0:7}\`. Newer commits are not included."
+          fi
+
+          git fetch --no-tags origin "+refs/pull/$PR_NUMBER/head:refs/remotes/pull/$PR_NUMBER/head"
+          git fetch --no-tags origin "$BASE_SHA"
+          mapfile -t ALL_EVALS < <(
+            git ls-tree -r --name-only "$FULL_SHA" eng/skill-evals |
+              awk -F/ '$1 == "eng" && $2 == "skill-evals" && NF == 4 && $4 == "eval.vally.yaml" { print $3 }' |
+              sort -u
+          )
+          if [[ "${#ALL_EVALS[@]}" -eq 0 ]]; then
+            echo 'No standard skill evaluations exist at the requested commit.'
+            exit 0
+          fi
+
+          AFFECTED=()
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' ]]; then
+            if ! printf '%s\n' "${ALL_EVALS[@]}" | grep -Fxq "$DISPATCH_EVAL"; then
+              echo "::error::'$DISPATCH_EVAL' is not a standard skill evaluation at $FULL_SHA."
+              exit 1
+            fi
+            AFFECTED=("$DISPATCH_EVAL")
+          else
+            mapfile -t CHANGED_FILES < <(git diff --name-only "$BASE_SHA...$FULL_SHA")
+            CENTRAL_CHANGE=false
+            for FILE in "${CHANGED_FILES[@]}"; do
+              MATCHED_EVAL=false
+              for EVAL_NAME in "${ALL_EVALS[@]}"; do
+                if [[ "$FILE" == ".github/skills/$EVAL_NAME/"* ||
+                      "$FILE" == "eng/skill-evals/$EVAL_NAME/"* ]]; then
+                  AFFECTED+=("$EVAL_NAME")
+                  MATCHED_EVAL=true
+                fi
+              done
+              if [[ "$FILE" == '.github/workflows/skill-evals.yml' ||
+                    ("$FILE" == 'eng/skill-evals/'* && "$MATCHED_EVAL" == 'false') ]]; then
+                CENTRAL_CHANGE=true
+              fi
+            done
+            if [[ "$CENTRAL_CHANGE" == 'true' ]]; then
+              AFFECTED=("${ALL_EVALS[@]}")
+            fi
+          fi
+
+          mapfile -t AFFECTED < <(printf '%s\n' "${AFFECTED[@]}" | sed '/^$/d' | sort -u)
+          if [[ "${#AFFECTED[@]}" -eq 0 ]]; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body "ℹ️ Commit \`${FULL_SHA:0:7}\` does not change a skill with a standard evaluation."
+            exit 0
+          fi
+
+          CURRENT_STATE="$(
+            gh api "repos/$REPOSITORY/commits/$FULL_SHA/status" \
+              --jq '[.statuses[] | select(.context == "skill-evaluations")][0].state // ""'
+          )"
+          if [[ "$CURRENT_STATE" == 'pending' ]]; then
+            gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
+              --body "⏳ Skill evaluation is already running for commit \`${FULL_SHA:0:7}\`."
+            exit 0
+          fi
+
+          EVALS_JSON="$(printf '%s\n' "${AFFECTED[@]}" | jq -R . | jq -sc .)"
+          RUN_TYPE="${DISPATCH_RUN_TYPE:-Smoke}"
+          gh api "repos/$REPOSITORY/statuses/$FULL_SHA" \
+            -f state=pending \
+            -f context='skill-evaluations' \
+            -f description="Running $RUN_TYPE skill evaluation" \
+            -f target_url="$RUN_URL"
+
+          {
+            echo "evals=$EVALS_JSON"
+            echo "head_sha=$FULL_SHA"
+            echo "pr_number=$PR_NUMBER"
+            echo "run_type=$RUN_TYPE"
+            echo 'should_eval=true'
+          } >> "$GITHUB_OUTPUT"
+
+  run:
+    name: Run skill evaluations
+    needs: gate
+    if: >-
+      always() &&
+      ((github.event_name == 'workflow_dispatch' &&
+        inputs.action == 'Run' &&
+        inputs.pr_number == '') ||
+       (needs.gate.result == 'success' &&
+        needs.gate.outputs.should_eval == 'true'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: copilot-pat-pool
+    permissions:
+      contents: read
+      statuses: read
+    concurrency:
+      group: skill-evals-model-run
+      cancel-in-progress: false
+    outputs:
+      claimed: ${{ steps.claim.outputs.claimed }}
+    steps:
+      - name: Require default branch control plane
+        id: control-plane
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SELECTED_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          EXPECTED_REF="refs/heads/$DEFAULT_BRANCH"
+          if [[ "$SELECTED_REF" != "$EXPECTED_REF" ]]; then
+            echo "::error::PAT-backed evaluations require the trusted default branch '$EXPECTED_REF', not '$SELECTED_REF'."
+            exit 1
+          fi
+          echo 'trusted=true' >> "$GITHUB_OUTPUT"
+
+      - name: Claim serialized evaluation
+        id: claim
+        if: steps.control-plane.outputs.trusted == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ needs.gate.outputs.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$HEAD_SHA" ]]; then
+            echo 'claimed=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          STATUS="$(
+            gh api "repos/$REPOSITORY/commits/$HEAD_SHA/status" \
+              --jq '[.statuses[] | select(.context == "skill-evaluations")][0]'
+          )"
+          STATE="$(jq -r '.state // ""' <<< "$STATUS")"
+          TARGET_URL="$(jq -r '.target_url // ""' <<< "$STATUS")"
+          if [[ "$STATE" == 'pending' && "$TARGET_URL" == "$RUN_URL" ]]; then
+            # A preceding serialized model job may have completed while its
+            # separate read-only reporter is still replacing this pending claim.
+            sleep 20
+            STATUS="$(
+              gh api "repos/$REPOSITORY/commits/$HEAD_SHA/status" \
+                --jq '[.statuses[] | select(.context == "skill-evaluations")][0]'
+            )"
+            STATE="$(jq -r '.state // ""' <<< "$STATUS")"
+            TARGET_URL="$(jq -r '.target_url // ""' <<< "$STATUS")"
+            if [[ "$STATE" == 'pending' && "$TARGET_URL" == "$RUN_URL" ]]; then
+              echo 'claimed=true' >> "$GITHUB_OUTPUT"
+            else
+              echo 'claimed=false' >> "$GITHUB_OUTPUT"
+              echo "::notice::A completed evaluation replaced this racing claim; skipping the duplicate model run."
+            fi
+          else
+            echo 'claimed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::A newer or completed evaluation owns $HEAD_SHA; skipping this duplicate model run."
+          fi
+
+      - name: Checkout trusted control plane
+        if: steps.claim.outputs.claimed == 'true'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: _trusted-control-plane
+          persist-credentials: false
+
+      - name: Checkout exact candidate revision
+        if: steps.claim.outputs.claimed == 'true'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ needs.gate.outputs.head_sha || github.sha }}
+          path: _candidate-source
+          persist-credentials: false
+
+      - name: Set up Node.js
+        if: steps.claim.outputs.claimed == 'true'
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+
+      - name: Stage trusted skill eval inputs
+        if: steps.claim.outputs.claimed == 'true'
+        shell: pwsh
+        env:
+          CANDIDATE_ROOT: ${{ github.workspace }}/_candidate-source
+          CANDIDATE_SHA: ${{ needs.gate.outputs.head_sha || github.sha }}
+          EVALS_JSON: ${{ needs.gate.outputs.evals || format('["{0}"]', inputs.eval) }}
+          STAGING_ROOT: ${{ runner.temp }}/skill-eval-execution
+          TRUSTED_ROOT: ${{ github.workspace }}/_trusted-control-plane
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (Test-Path $env:STAGING_ROOT) {
+              Remove-Item $env:STAGING_ROOT -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $env:STAGING_ROOT | Out-Null
+
+          $evalNames = @($env:EVALS_JSON | ConvertFrom-Json)
+          foreach ($evalName in $evalNames) {
+              & "$env:TRUSTED_ROOT/eng/skill-evals/stage_run.ps1" `
+                  -TrustedRoot $env:TRUSTED_ROOT `
+                  -CandidateRoot $env:CANDIDATE_ROOT `
+                  -EvalName $evalName `
+                  -Destination (Join-Path $env:STAGING_ROOT $evalName)
+          }
+
+          $artifactRoot = Join-Path $env:GITHUB_WORKSPACE 'artifacts/skill-evals'
+          New-Item -ItemType Directory -Path $artifactRoot -Force | Out-Null
+          [ordered]@{
+              trusted_control_plane_sha = $env:TRUSTED_SHA
+              exact_candidate_sha = $env:CANDIDATE_SHA
+              evals = $evalNames
+          } |
+              ConvertTo-Json |
+              Set-Content (Join-Path $artifactRoot 'provenance.json')
+
+      - name: Run skill eval
+        if: steps.claim.outputs.claimed == 'true'
+        shell: pwsh
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
+          EVALS_JSON: ${{ needs.gate.outputs.evals || format('["{0}"]', inputs.eval) }}
+          RUN_TYPE: ${{ needs.gate.outputs.run_type || inputs.run_type }}
+          STAGING_ROOT: ${{ runner.temp }}/skill-eval-execution
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:COPILOT_GITHUB_TOKEN)) {
+              throw 'COPILOT_PAT_0 is not configured in the copilot-pat-pool environment.'
+          }
+
+          $failedEvals = @()
+          $evalNames = @($env:EVALS_JSON | ConvertFrom-Json)
+          foreach ($evalName in $evalNames) {
+              $executionRoot = Join-Path $env:STAGING_ROOT $evalName
+              $outputDirectory = Join-Path $env:GITHUB_WORKSPACE "artifacts/skill-evals/$evalName"
+              $arguments = @(
+                  '-NoProfile'
+                  '-File'
+                  (Join-Path $executionRoot 'eng/skill-evals/run.ps1')
+                  'Run'
+                  '-Eval'
+                  (Join-Path $executionRoot "eng/skill-evals/$evalName/eval.vally.yaml")
+                  '-OutputDirectory'
+                  $outputDirectory
+              )
+              if ($env:RUN_TYPE -eq 'Smoke') {
+                  $arguments += @(
+                      '-Experiment'
+                      (Join-Path $executionRoot 'eng/skill-evals/skills-smoke.experiment.yaml')
+                  )
+              }
+              $arguments += @('--workers', '1')
+
+              & pwsh @arguments
+              $vallyExitCode = $LASTEXITCODE
+              if ($vallyExitCode -notin @(0, 1)) {
+                  Write-Error "Vally failed for '$evalName' with unexpected exit code $vallyExitCode." -ErrorAction Continue
+                  $failedEvals += $evalName
+                  continue
+              }
+
+              try {
+                  & (Join-Path $executionRoot 'eng/skill-evals/assert_results.ps1') `
+                      -OutputDirectory $outputDirectory
+              } catch {
+                  Write-Error "The complete result-set gate failed for '$evalName': $_" -ErrorAction Continue
+                  $failedEvals += $evalName
+                  continue
+              }
+
+              if ($vallyExitCode -eq 1) {
+                  Write-Warning "Vally exited with code 1 for '$evalName'; both variants produced complete successful results and the skilled score met its threshold."
+              }
+          }
+
+          if ($failedEvals.Count -gt 0) {
+              throw "Skill evaluation failed for: $($failedEvals -join ', ')."
+          }
+          exit 0
+
+      - name: Upload skill eval results
+        if: ${{ always() && steps.claim.outputs.claimed == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: skill-evals-${{ needs.gate.outputs.run_type || inputs.run_type }}-${{ github.run_id }}
+          path: artifacts/skill-evals
+          if-no-files-found: warn
+          retention-days: 7
+
+  report:
+    name: Report PR evaluation
+    needs: [gate, run]
+    if: >-
+      always() &&
+      needs.gate.result == 'success' &&
+      needs.gate.outputs.should_eval == 'true' &&
+      needs.run.outputs.claimed != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Publish status and PR comment
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EVALS_JSON: ${{ needs.gate.outputs.evals }}
+          HEAD_SHA: ${{ needs.gate.outputs.head_sha }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          RUN_TYPE: ${{ needs.gate.outputs.run_type }}
+          RUN_RESULT: ${{ needs.run.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          EVAL_NAMES="$(jq -r 'join(", ")' <<< "$EVALS_JSON")"
+          case "$RUN_RESULT" in
+            success)
+              STATE=success
+              DESCRIPTION="$RUN_TYPE skill evaluation passed"
+              BODY="✅ **$RUN_TYPE skill evaluation passed** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
+              if [[ "$RUN_TYPE" == 'Smoke' ]]; then
+                BODY+=" Smoke validates the pipeline and skilled thresholds; use a Full run for persuasive quality evidence."
+              fi
+              ;;
+            failure)
+              STATE=failure
+              DESCRIPTION="$RUN_TYPE skill evaluation failed"
+              BODY="❌ **$RUN_TYPE skill evaluation did not pass** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
+              ;;
+            *)
+              STATE=error
+              DESCRIPTION="$RUN_TYPE skill evaluation incomplete"
+              BODY="⚠️ **$RUN_TYPE skill evaluation did not complete** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`; no quality conclusion was produced."
+              ;;
+          esac
+          BODY+=" [View the workflow run and artifacts]($RUN_URL)."
+
+          gh api "repos/$REPOSITORY/statuses/$HEAD_SHA" \
+            -f state="$STATE" \
+            -f context='skill-evaluations' \
+            -f description="$DESCRIPTION" \
+            -f target_url="$RUN_URL"
+          gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" --body "$BODY"

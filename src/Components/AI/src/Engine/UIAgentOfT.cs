@@ -102,9 +102,21 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
                     $"but this agent requires state of type '{typeof(TState)}'.");
             }
 
-            State.Value = typedState;
+            if (context.IsPredictiveState)
+            {
+                State.SetPredictiveValue(typedState);
+            }
+            else
+            {
+                State.Value = typedState;
+            }
         }
 
         return context.HasHandledContent ? context.GetFilteredUpdate() : update;
+    }
+
+    internal override void RejectPendingPredictiveState()
+    {
+        State.RejectPredictiveState();
     }
 }

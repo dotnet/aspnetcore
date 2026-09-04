@@ -1,11 +1,14 @@
-@page "/forms/client-validation/custom-validator"
+﻿@page "/forms/client-validation/custom-validator"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+
+<script type="module" src="@Assets["RazorComponents/Pages/Forms/ClientValidation/CustomValidator.razor.js"]"></script>
 
 <h2 id="page-title">Custom validator</h2>
 
 <style>
-    .validation-message { color: red; }
+    .validation-message { color: red; }
+
 
 </style>
 
@@ -19,28 +22,6 @@
     <button type="submit" id="submit">Submit</button>
 </EditForm>
 
-<script suppress-error="BL9992">
-    // Register the custom 'startswith' validator once the validation service exists.
-    // No re-scan is needed: the rule is already in the carrier payload; the engine
-    // resolves the validator function by name when validation runs on submit.
-    (function register() {
-        if (window.Blazor && Blazor.formValidation) {
-            Blazor.formValidation.addValidator('startswith', function (context) {
-                if (!context.value) {
-                    return { success: true };
-                }
-                var prefix = context.params['prefix'] || '';
-                return { success: context.value.indexOf(prefix) === 0 };
-            });
-            var marker = document.createElement('span');
-            marker.id = 'custom-validator-ready';
-            document.body.appendChild(marker);
-        } else {
-            setTimeout(register, 30);
-        }
-    })();
-</script>
-
 @code {
     [SupplyParameterFromForm] private CustomValidatorModel? Form { get; set; }
 
@@ -53,8 +34,8 @@
     }
 
     // A custom ValidationAttribute that also contributes a client-side rule by implementing
-    // IClientValidationRuleProvider. The framework emits its rule into the carrier payload; the
-    // matching JS validator is registered above via Blazor.formValidation.addValidator.
+    // IClientValidationRuleProvider. The framework emits its rule into the carrier payload.
+    // The matching JS validator is registered from CustomValidator.razor.js.
     private sealed class StartsWithAttribute : ValidationAttribute, IClientValidationRuleProvider
     {
         private readonly string _prefix;
