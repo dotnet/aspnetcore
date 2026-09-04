@@ -211,10 +211,12 @@ internal sealed class MacOSCertificateManager : CertificateManager
                     certificatePath
                 ));
 
-            var processOutput = CertificateManagerProcessRunner.Run(processInfo);
-            if (processOutput.ExitCode != 0)
+            using var process = Process.Start(processInfo);
+            process!.WaitForExit();
+
+            if (process.ExitCode != 0)
             {
-                Log.MacOSRemoveCertificateTrustRuleError(processOutput.ExitCode);
+                Log.MacOSRemoveCertificateTrustRuleError(process.ExitCode);
             }
 
             Log.MacOSRemoveCertificateTrustRuleEnd();
