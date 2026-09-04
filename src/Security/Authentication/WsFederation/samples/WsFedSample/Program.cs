@@ -54,7 +54,7 @@ public class Program
                 certificatePayload = memoryStream.ToArray();
             }
 
-            return new X509Certificate2(certificatePayload, "testPassword");
+            return X509CertificateLoader.LoadPkcs12(certificatePayload, "testPassword");
         }
     }
 }

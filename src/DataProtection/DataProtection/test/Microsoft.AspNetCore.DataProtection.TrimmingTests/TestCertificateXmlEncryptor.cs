@@ -7,7 +7,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 
-var cert = new X509Certificate2(Convert.FromBase64String(Constants.Key), Constants.Password);
+var cert = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(Constants.Key), Constants.Password);
 
 var encryptor = new CertificateXmlEncryptor(cert, NullLoggerFactory.Instance);
 
