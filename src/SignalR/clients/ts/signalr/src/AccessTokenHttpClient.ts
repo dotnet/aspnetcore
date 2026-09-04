@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { HttpError } from "./Errors";
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 
@@ -42,20 +43,40 @@ export class AccessTokenHttpClient extends HttpClient {
             accessToken = await this._accessTokenFactory();
             this._accessToken = accessToken;
         }
-
         this._setAuthorizationHeader(request, accessToken);
-        const response = await this._innerClient.send(request);
+
+        let response: HttpResponse;
+        try {
+            response = await this._innerClient.send(request);
+        } catch (error) {
+            // The inner client throws an HttpError for non-2xx responses, which prevents
+            // the 401 handling below from ever seeing the status code. Surface a thrown
+            // 401 here so the access token can be renewed and the request retried once.
+            if (allowRetry && error instanceof HttpError && error.statusCode === 401 && this._accessTokenFactory) {
+                return await this._retryWithNewToken(request);
+            }
+            throw error;
+        }
 
         if (isRefresh) {
             this._refreshRequestTokens.set(response, accessToken);
         }
 
         if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
-            this._accessToken = await this._accessTokenFactory();
-            this._setAuthorizationHeader(request, this._accessToken);
-            return await this._innerClient.send(request);
+            return await this._retryWithNewToken(request);
         }
         return response;
+    }
+
+    /**
+     * Renews the access token via the access token factory and resends the request.
+     * The retried request is intentionally not guarded against another 401 so a
+     * failing retry surfaces to the caller instead of retrying indefinitely.
+     */
+    private async _retryWithNewToken(request: HttpRequest): Promise<HttpResponse> {
+        this._accessToken = await this._accessTokenFactory!();
+        this._setAuthorizationHeader(request, this._accessToken);
+        return await this._innerClient.send(request);
     }
 
     public markNegotiateRequest(request: HttpRequest): void {

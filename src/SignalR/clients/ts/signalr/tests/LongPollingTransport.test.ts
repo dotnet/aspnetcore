@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
+import { HttpError } from "../src/Errors";
 import { HttpResponse } from "../src/HttpClient";
 import { TransferFormat } from "../src/ITransport";
 import { LongPollingTransport } from "../src/LongPollingTransport";
@@ -370,6 +371,39 @@ describe("LongPollingTransport", () => {
             expect(firstAuthHeader).toEqual("Basic test");
             expect(deleteAuthHeader).toEqual("Basic test");
             expect(secondAuthHeader).toEqual("Basic test");
+        });
+    });
+
+    it("retries thrown 401 poll errors", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let pollCount = 0;
+            let firstAuthHeader = "";
+            let retryAuthHeader = "";
+            const accessTokenFactory = () => `token${pollCount}`;
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient()
+                .on("GET", (r) => {
+                    pollCount++;
+                    if (pollCount === 1) {
+                        firstAuthHeader = r.headers!.Authorization;
+                        return new HttpResponse(200);
+                    } else if (pollCount === 2) {
+                        // The inner client throws an HttpError for the 401 rather than returning a response;
+                        // the poll must renew the access token and retry with it.
+                        throw new HttpError("Unauthorized", 401);
+                    }
+                    retryAuthHeader = r.headers!.Authorization;
+                    return new HttpResponse(204);
+                }), accessTokenFactory);
+
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+            await closed;
+
+            expect(firstAuthHeader).toEqual("Bearer token0");
+            expect(retryAuthHeader).toEqual("Bearer token2");
+            expect(pollCount).toEqual(3);
         });
     });
 });
