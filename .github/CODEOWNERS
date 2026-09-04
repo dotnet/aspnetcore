@@ -21,6 +21,7 @@
 /src/Http/Routing/                                                                @halter73
 /src/HttpClientFactory/                                                           @halter73
 /src/Installers/                                                                  @dotnet/aspnet-build @wtgodbe
+/src/Identity/                                                                    @Youssef1313 @cincuranet @rokonec @davpetr
 /src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
 /src/Middleware/                                                                  @BrennanConroy
 /src/Mvc/                                                                         @dotnet/minimal-apis @Youssef1313 @cincuranet @rokonec @davpetr
@@ -34,4 +35,4 @@
 /src/Servers/                                                                     @halter73 @BrennanConroy @sammonort
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @wtgodbe
-/**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review @Rick-Anderson @tdykstra
+/**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review @tdykstra

@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseAspNetCoreSharedRuntime>false</UseAspNetCoreSharedRuntime>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>false</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
     <RuntimeIdentifiers>$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>

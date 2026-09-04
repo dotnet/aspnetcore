@@ -59,16 +59,21 @@ model-bearing `Run` action requires selecting one standard skill and defaults to
 the one-run-per-stimulus smoke experiment. Full runs retain the standard spec's
 trial count. Both modes use the repository-scoped `copilot-pat-pool`
 environment with one worker, serialize model-bearing runs, and retain the raw
-Vally output as a workflow artifact for seven days. The shared environment
-provides `COPILOT_PAT_0`; same-repository `write`, `maintain`, or `admin` access
-is the authorization boundary for selecting and running a host workflow
-revision. The in-file default-ref checks prevent accidental non-default
-dispatches of the unmodified workflow, but a trusted writer could deliberately
-change those checks in a branch-selected workflow revision.
-The fine-grained PAT grants only `Copilot Requests (Read)` for public
-repositories and expires after eight days. It materializes only in the Vally
-execution step as `COPILOT_GITHUB_TOKEN`; checkout, target resolution, staging,
-artifact upload, and reporting never receive it.
+Vally output as a workflow artifact for seven days. A dedicated trusted job
+finds the configured `COPILOT_PAT_0` through `COPILOT_PAT_9` pool entries,
+randomly selects one, and exposes only its numeric slot to the worker. The Vally
+step resolves that slot to the selected secret, or uses the repository
+`COPILOT_GITHUB_TOKEN` when the pool is empty. Same-repository `write`,
+`maintain`, or `admin` access is the authorization boundary for selecting and
+running a host workflow revision. The in-file default-ref checks prevent
+accidental non-default dispatches of the unmodified workflow, but a trusted
+writer could deliberately change those checks in a branch-selected workflow
+revision.
+Pool entries are fine-grained PATs that grant only `Copilot Requests (Read)` for
+public repositories and expire after eight days. The selected credential
+materializes only in the Vally execution step as `COPILOT_GITHUB_TOKEN`;
+checkout, target resolution, staging, artifact upload, and reporting never
+receive it.
 
 After the workflow is present on the repository's default branch, maintainers
 with `write`, `maintain`, or `admin` permission can request a smoke evaluation
@@ -132,19 +137,28 @@ authorize PAT use. Because `copilot-pat-pool` is shared, apply that decision
 consistently across all workflows that consume the environment rather than
 uniquely to this workflow.
 
-`Validate`, `Lint`, and `Run` use the exact
-`@microsoft/vally-cli@0.13.0` package through `npx` and the Microsoft package
-feed proxy. Pass `-Vally <command> -VallyPrefix <arguments>` only to
-intentionally override that invocation. The runner prints the resolved command
-and reported version for provenance. Additional Vally arguments can be appended
-to the command. If the package is not already cached, `npx` downloads that
-exact version from the proxy; validation is model-free, not offline. It does not
-install a package into the repository or modify dependency manifests. Run
+Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
+`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.14.0`
+and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
+packages to that compatible version so the SDK and native platform package
+retain the same `./sdk` entry point. The workflow installs that lockfile with
+`npm ci` before any Copilot credential enters scope and verifies the Vally,
+Copilot, and Linux x64 platform entry points.
+
+The local runner defaults to the installed pinned toolchain when present.
+Local model-bearing `Run` operations require
+`npm ci --prefix eng/skill-evals/evaluation-tools` first. Model-free validation
+can still download the exact Vally version through `npx` and the Microsoft
+package feed proxy without modifying the checked-in manifests. Set
+`SKILL_EVAL_VALLY` to another installed Vally executable, or pass
+`-Vally <command> -VallyPrefix <arguments>`, to intentionally override that
+invocation. The runner prints the resolved command and reported version for
+provenance. Additional Vally arguments can be appended to the command. Run
 output defaults to `artifacts/skill-evals`.
 
-Standard runs use Vally's experiment `--compare` mode. Vally 0.13 removed the
-old per-stimulus `pairwise` grader, so comparison is owned by the experiment
-rather than repeated in each eval spec.
+Standard runs use Vally's experiment `--compare` mode. Vally 0.13 and later do
+not use the old per-stimulus `pairwise` grader, so comparison is owned by the
+experiment rather than repeated in each eval spec.
 
 ## Result interpretation and provenance
 
