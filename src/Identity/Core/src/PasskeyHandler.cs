@@ -767,6 +767,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             });
         }
 
+        // Default (no IdentityPasskeyOptions.ValidateOrigin override): reject requests marked as cross-origin,
+        // then require the origin in the WebAuthn client data to match the actual request's Origin header.
+        // This is a same-origin check; there is no separate allow-list unless ValidateOrigin is overridden.
         if (string.IsNullOrEmpty(clientData.Origin) ||
             clientData.CrossOrigin == true ||
             !Uri.TryCreate(clientData.Origin, UriKind.Absolute, out var originUri))
