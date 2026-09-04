@@ -1838,6 +1838,1387 @@ public partial class ResultsOfTTests
         Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>>(((Delegate)GeneratedCodeIsUpToDate).GetMethodInfo(), null));
     }
 
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_Result_IsAssignedResult(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(),
+                2 => new ChecksumResult2(),
+                3 => new ChecksumResult3(),
+                4 => new ChecksumResult4(),
+                5 => new ChecksumResult5(),
+                6 => new ChecksumResult6(),
+                _ => new ChecksumResult7()
+            };
+        }
+
+        // Act
+        var result = MyApi(input);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_ExecuteResult_ExecutesAssignedResult(int input)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int checksum)
+        {
+            return checksum switch
+            {
+                1 => new ChecksumResult1(checksum),
+                2 => new ChecksumResult2(checksum),
+                3 => new ChecksumResult3(checksum),
+                4 => new ChecksumResult4(checksum),
+                5 => new ChecksumResult5(checksum),
+                6 => new ChecksumResult6(checksum),
+                _ => new ChecksumResult7(checksum)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Fact]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContent> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        var result = MyApi();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+
+    [Fact]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContent> MyApi()
+        {
+            return (ChecksumResult1)null;
+        }
+        var httpContext = GetHttpContext();
+
+        // Act & Assert
+        var result = MyApi();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsFirstTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<IResult, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsSecondTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, IResult, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsThirdTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, IResult, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsFourthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, IResult, ChecksumResult5, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsFifthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, IResult, ChecksumResult6, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsSixthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, IResult, ChecksumResult7> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsIResult_AsSeventhTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, IResult> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                _ => new ChecksumResult7(7)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsFirstTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsSecondTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsThirdTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsFourthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsFifthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsSixthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_AcceptsNestedResultsOfT_AsSeventhTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7>)new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider()
+    {
+        // Arrange
+        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult3) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult4) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult5) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult6) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult7) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderAreNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7>>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7>>(((Delegate)GeneratedCodeIsUpToDate).GetMethodInfo(), null));
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_Result_IsAssignedResult(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(),
+                2 => new ChecksumResult2(),
+                3 => new ChecksumResult3(),
+                4 => new ChecksumResult4(),
+                5 => new ChecksumResult5(),
+                6 => new ChecksumResult6(),
+                7 => new ChecksumResult7(),
+                _ => new ChecksumResult8()
+            };
+        }
+
+        // Act
+        var result = MyApi(input);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_ExecuteResult_ExecutesAssignedResult(int input)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int checksum)
+        {
+            return checksum switch
+            {
+                1 => new ChecksumResult1(checksum),
+                2 => new ChecksumResult2(checksum),
+                3 => new ChecksumResult3(checksum),
+                4 => new ChecksumResult4(checksum),
+                5 => new ChecksumResult5(checksum),
+                6 => new ChecksumResult6(checksum),
+                7 => new ChecksumResult7(checksum),
+                _ => new ChecksumResult8(checksum)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Fact]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContent> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        var result = MyApi();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+
+    [Fact]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContent> MyApi()
+        {
+            return (ChecksumResult1)null;
+        }
+        var httpContext = GetHttpContext();
+
+        // Act & Assert
+        var result = MyApi();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsFirstTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<IResult, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsSecondTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, IResult, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsThirdTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, IResult, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsFourthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, IResult, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsFifthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, IResult, ChecksumResult6, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsSixthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, IResult, ChecksumResult7, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsSeventhTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, IResult, ChecksumResult8> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(ChecksumResult1))]
+    [InlineData(2, typeof(ChecksumResult2))]
+    [InlineData(3, typeof(ChecksumResult3))]
+    [InlineData(4, typeof(ChecksumResult4))]
+    [InlineData(5, typeof(ChecksumResult5))]
+    [InlineData(6, typeof(ChecksumResult6))]
+    [InlineData(7, typeof(ChecksumResult7))]
+    [InlineData(8, typeof(ChecksumResult8))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsIResult_AsEighthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, IResult> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => new ChecksumResult1(1),
+                2 => new ChecksumResult2(2),
+                3 => new ChecksumResult3(3),
+                4 => new ChecksumResult4(4),
+                5 => new ChecksumResult5(5),
+                6 => new ChecksumResult6(6),
+                7 => new ChecksumResult7(7),
+                _ => new ChecksumResult8(8)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsFirstTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsSecondTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsThirdTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsFourthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsFifthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsSixthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsSeventhTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Theory]
+    [InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(3, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(4, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(5, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(6, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(7, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(8, typeof(Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>))]
+    [InlineData(9, typeof(ChecksumResult9))]
+    public async Task ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_AcceptsNestedResultsOfT_AsEighthTypeArg(int input, Type expectedResultType)
+    {
+        // Arrange
+        Results<Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>, ChecksumResult9> MyApi(int id)
+        {
+            return id switch
+            {
+                1 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult1(1),
+                2 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult2(2),
+                3 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult3(3),
+                4 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult4(4),
+                5 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult5(5),
+                6 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult6(6),
+                7 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult7(7),
+                8 => (Results<ChecksumResult1, ChecksumResult2, ChecksumResult3, ChecksumResult4, ChecksumResult5, ChecksumResult6, ChecksumResult7, ChecksumResult8>)new ChecksumResult8(8),
+                _ => new ChecksumResult9(9)
+            };
+        }
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = MyApi(input);
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.IsType(expectedResultType, result.Result);
+        Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider()
+    {
+        // Arrange
+        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7, ProvidesMetadataResult8> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7, ProvidesMetadataResult8>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult3) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult4) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult5) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult6) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult7) });
+        Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult8) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderAreNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7, ProvidesMetadataResult8>>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6, ProvidesMetadataResult7, ProvidesMetadataResult8>>(((Delegate)GeneratedCodeIsUpToDate).GetMethodInfo(), null));
+    }
+
     abstract class ChecksumResult : IResult
     {
         public ChecksumResult(int checksum = 0)
@@ -1937,6 +3318,7 @@ public partial class ResultsOfTTests
             builder.Metadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult6) });
         }
     }
+
     class ChecksumResult7 : ChecksumResult
     {
         public ChecksumResult7(int checksum = 0) : base(checksum) { }
@@ -1948,6 +3330,33 @@ public partial class ResultsOfTTests
         public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
             builder.Metadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult7) });
+        }
+    }
+
+    class ChecksumResult8 : ChecksumResult
+    {
+        public ChecksumResult8(int checksum = 0) : base(checksum) { }
+    }
+    class ProvidesMetadataResult8 : IResult, IEndpointMetadataProvider
+    {
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            builder.Metadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult8) });
+        }
+    }
+    class ChecksumResult9 : ChecksumResult
+    {
+        public ChecksumResult9(int checksum = 0) : base(checksum) { }
+    }
+    class ProvidesMetadataResult9 : IResult, IEndpointMetadataProvider
+    {
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            builder.Metadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult9) });
         }
     }
 
