@@ -7,10 +7,13 @@ This guide provides step-by-step instructions for investigating, reviewing, and 
 You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
 * Add the applicable workflow steps to your `todos` and follow them strictly.
 
+The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
+
 For behavioral investigations and reviews:
 - Create or identify a scenario at the smallest faithful validation boundary.
 - Faithful validation includes the component, service, runtime, or browser mechanism that owns or produces each disputed precondition and observes the claimed material effect at the appropriate boundary.
 - Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
+- For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
 - Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
 - Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
 - Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
@@ -18,6 +21,7 @@ For behavioral investigations and reviews:
 For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
+  - Components and template files move. Resolve historical paths with `git log --follow --name-status` or `git ls-tree` before using `git show <commit>:<path>`.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.
 - Once the fix or feature is validated in the sample, implement E2E tests for it.
@@ -26,11 +30,22 @@ For implementation work:
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
 
+### Cross-runtime design checkpoint
+
+Before editing behavior that crosses Components renderers, runtimes, or DI scopes:
+
+- Define the relevant behavior matrix: Server/WebAssembly/Auto, global/per-page interactivity, initial activation/enhanced navigation, prerendered/non-prerendered, and interactive `Router` present/absent. Mark intentionally excluded cells before implementation.
+- Map the producing owner, consuming owner, DI lifetime and scope, assembly boundary, initial restore ordering, value-update ordering, render-mode destinations, and stale-state clearing.
+- Request architecture review before product edits and final correctness review after targeted tests are green. Add another architecture review only when the implementation introduces a new boundary.
+
 ### Code clarity and durable knowledge
 
 - Before adding a comment, make local behavior discoverable through precise names,
   named methods or variables, and smaller single-purpose responsibilities. A named
   method can improve clarity even when it does not reduce duplication.
+- Rely on existing abstractions and extend them with the semantic operation or
+  context needed by the caller rather than downcasting to a concrete implementation.
+  Keep implementation-specific lifecycle and state handling behind the abstraction.
 - Add a concise implementation comment only when a durable nonlocal reason cannot
   be expressed by structure alone, such as ordering across JavaScript and .NET
   callbacks, lifecycle ownership transfer, compatibility constraints, or a
@@ -56,6 +71,8 @@ The `src/Components/Samples` folder contains canonical Blazor Web App samples, a
 
 Together these cover every interactivity platform (Server/WebAssembly/Auto/None) and location (Global/Per-page) by editing a single `@rendermode` rather than restructuring.
 
+Before expanding validation across this full matrix, state the render modes and lifecycle boundaries the task requires. Evaluate that requested matrix first, and report broader compatibility separately rather than silently redefining the task.
+
 **Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
 - Test the feature interactively in a real browser
@@ -76,36 +93,67 @@ Together these cover every interactivity platform (Server/WebAssembly/Auto/None)
 
 ## Build Tips
 
+### Build and retry discipline
+
+On Windows, serialize builds that share the `artifacts` directory and stop sample or test-server processes before rebuilding. After two consecutive failures at the same E2E boundary, stop rerunning the full command. Isolate the boundary with a focused unit or project check or a manually driven test server, then resume the E2E loop.
+
 ### Efficient Build Strategy
 
 To avoid unnecessary full repository builds, follow this optimized approach:
+
+After a build fails, identify whether the cause is a source error in the changed project, a missing or stale prerequisite, or unrelated repository infrastructure before changing commands. Use the smallest supported build that still exercises the change. Do not repeatedly retry broad builds with different exclusions unless each retry addresses an identified failure cause, and report any validation boundary that remains untested.
 
 #### 1. Initial Setup - Check for First Build
 Before running any commands, check if a full build has already been completed:
 - Look for `artifacts\agent-sentinel.txt` in the repository root
 - If this file exists, skip to step 2
-- If not present, run the initial build and create the sentinel file:
+- If not present, initialize submodules, run the initial build, and create the sentinel file:
 
 ```bash
+git submodule update --init --recursive
 .\eng\build.cmd
 echo "We ran eng\build.cmd successfully" > artifacts\agent-sentinel.txt
 ```
 
-#### 2. Check for JavaScript Assets
-Before running tests or samples, verify that JavaScript assets are built:
-- Check for `src\Components\Web.JS\dist\Debug\blazor.web.js`
-- If not present, run from the repository root: `npm run build`
+**Always initialize submodules first in a fresh worktree.** Components code depends transitively on `src\submodules\MessagePack-CSharp`; without it the build fails on unresolved MessagePack types. Worktrees do not inherit the submodules of the checkout they were created from, so do this once per worktree.
+
+#### Standard build flags
+
+Unless you are specifically working on IIS, append `-p:UseIisNativeAssets=false` to every `dotnet build` in this repo. Components work never needs the ANCM native assets, and without this flag builds that pull in IIS projects fail because ANCM has not been built. The commands below already include it.
+
+#### 2. Check that JavaScript Assets are Fresh
+
+The .NET Debug build consumes `src\Components\Web.JS\dist\Debug\_framework\blazor.web.js`. A stale bundle produces **no error** - tests and samples simply behave as if your `.ts` change was never made.
+
+Before running tests or samples, verify the bundle is newer than the newest `.ts` source. Run from the repository root.
+
+PowerShell:
+```powershell
+$newest = Get-ChildItem src\Components\Web.JS\src -Recurse -Filter *.ts | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+$bundle = Get-Item src\Components\Web.JS\dist\Debug\_framework\blazor.web.js -ErrorAction SilentlyContinue
+if (-not $bundle -or $bundle.LastWriteTimeUtc -lt $newest.LastWriteTimeUtc) { "STALE" } else { "fresh" }
+```
+
+bash:
+```bash
+bundle=src/Components/Web.JS/dist/Debug/_framework/blazor.web.js
+if [ ! -f "$bundle" ] || [ -n "$(find src/Components/Web.JS/src -name '*.ts' -newer "$bundle" -print | head -n 1)" ]; then echo STALE; else echo fresh; fi
+```
+
+- If it reports `STALE`, run `npm run build` from `src\Components\Web.JS`, then re-run the check.
+- Always use `npm run build`. **Never** use `npm run build:production` on its own: it writes only `dist\Release` and leaves `dist\Debug` stale, so the Debug build keeps using your old code.
+- Re-run this check after any `git stash`, `git checkout -- <path>`, or branch switch that touches a `.ts` file - those change the sources without rebuilding the bundle.
 
 #### 3. Iterating on C# Changes
 
 **Most of the time (no dependency changes):**
 ```bash
-dotnet build --no-restore -v:q
+dotnet build --no-restore -v:q -p:UseIisNativeAssets=false
 ```
 
 Or with `eng\build.cmd`:
 ```bash
-.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet
+.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet /p:UseIisNativeAssets=false
 ```
 
 **When you've added/changed project references or package dependencies:**
@@ -117,7 +165,7 @@ First restore:
 
 Then build:
 ```bash
-dotnet build --no-restore -v:q
+dotnet build --no-restore -v:q -p:UseIisNativeAssets=false
 ```
 
 **Note:** The `-v:q` (or `-verbosity:quiet`) flag minimizes build output to only show success/failure and error details. Remove this flag if you need to see detailed build output for debugging.
@@ -127,7 +175,7 @@ dotnet build --no-restore -v:q
 When fixing build errors in a specific project, you can build just that project without its dependencies for even faster iteration:
 
 ```bash
-dotnet build <path-to-project.csproj> --no-restore --no-dependencies -v:q
+dotnet build <path-to-project.csproj> --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false
 ```
 
 **When to use `--no-dependencies`:**
@@ -143,16 +191,17 @@ dotnet build <path-to-project.csproj> --no-restore --no-dependencies -v:q
 **Example:**
 ```bash
 # Fix a compilation error in Components.Endpoints
-dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj --no-restore --no-dependencies -v:q
+dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false
 ```
 
 #### Quick Reference
 
-1. **First time only**: `.\eng\build.cmd` → create `artifacts\agent-sentinel.txt`
-2. **Check JS assets**: Verify `src\Components\Web.JS\dist\Debug\blazor.web.js` exists, run `npm run build` if missing
-3. **Most C# changes**: `dotnet build --no-restore -v:q`
-4. **Fixing build errors in one project**: `dotnet build <project.csproj> --no-restore --no-dependencies -v:q`
+1. **First time only**: `git submodule update --init --recursive` → `.\eng\build.cmd` → create `artifacts\agent-sentinel.txt`
+2. **Check JS assets are fresh**: Verify `src\Components\Web.JS\dist\Debug\_framework\blazor.web.js` is newer than the newest `.ts` source (see step 2 above for the command); run `npm run build` - never `build:production` alone - if `STALE`
+3. **Most C# changes**: `dotnet build --no-restore -v:q -p:UseIisNativeAssets=false`
+4. **Fixing build errors in one project**: `dotnet build <project.csproj> --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false`
 5. **Added/changed dependencies**: Run `.\restore.cmd` first, then use step 3
+6. **Always pass `-p:UseIisNativeAssets=false`** unless you are working on IIS - Components never needs ANCM native assets
 
 ### E2E Testing Structure
 
@@ -167,7 +216,7 @@ Tests live in `src/Components/test`. The structure includes:
 2. **Start Components.TestServer**:
    ```bash
    cd src\Components\test\testassets\Components.TestServer
-   dotnet run --project Components.TestServer.csproj
+   dotnet run --project Components.TestServer.csproj -p:UseIisNativeAssets=false
    ```
 3. **Navigate to the test server** - The main server runs on `http://127.0.0.1:5019/subdir`
 4. **Select a test scenario** - The main page shows a dropdown with all available test components
@@ -230,17 +279,21 @@ E2E tests are located in `src/Components/test/E2ETest`.
 2. Try to add an additional test to existing test files when possible
 3. When adding test coverage, prefer extending existing test components and assets over creating a set of new ones if it doesn't complicate the existing ones excessively. This reduces test infrastructure complexity and keeps related scenarios together.
 
+For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
+
 ### Running E2E Tests
 
 The E2E tests use Selenium. To build and run tests:
 
 ```bash
 # Build the E2E test project and its dependencies
-dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q
+dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q -p:UseIisNativeAssets=false
 
 # After the build succeeds, run a specific test
 dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~TestName"
 ```
+
+`-p:UseIisNativeAssets=false` is required here: the E2E project transitively references IIS projects that otherwise fail because ANCM has not been built. If this build instead fails on MessagePack types, your submodules are not initialized - see step 1 of the Efficient Build Strategy.
 
 For the first E2E run in a fresh worktree, or after relevant build, configuration, or output changes, run the dependency-aware build above. Do not use `--no-dependencies` to prepare E2E tests when referenced test-app outputs may be stale or missing. It may copy existing dependency outputs, but it does not rebuild referenced projects or apps. After the build succeeds, `--no-build` is the supported fast loop for repeated targeted tests while those inputs remain unchanged.
 
