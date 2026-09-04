@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -24,7 +23,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
     internal Http3InMemory Http3Api { get; private set; }
 
     internal TestServiceContext _serviceContext;
-    internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
+    internal readonly TestTimeoutHandler _mockTimeoutHandler = new();
 
     protected readonly RequestDelegate _noopApplication;
     protected readonly RequestDelegate _notImplementedApp;
@@ -123,7 +122,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
             Scheduler = PipeScheduler.Inline,
         };
 
-        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.FakeTimeProvider, _mockTimeoutHandler.Object, LoggerFactory);
+        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.FakeTimeProvider, _mockTimeoutHandler, LoggerFactory);
     }
 
     public void AssertExpectedErrorMessages(string expectedErrorMessage)

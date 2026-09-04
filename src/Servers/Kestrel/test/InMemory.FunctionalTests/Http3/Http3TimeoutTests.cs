@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -358,11 +357,11 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't send any more data and advance just to and then past the grace period.
         Http3Api.AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -371,7 +370,7 @@ public class Http3TimeoutTests : Http3TestBase
             null);
         MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -470,17 +469,17 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(TimeSpan.FromSeconds((requestStream.BytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         // The "hello, world" bytes are buffered from before the timeout, but not an END_STREAM data frame.
         var data = await requestStream.ExpectDataAsync();
         Assert.Equal(_helloWorldBytes.Length, data.Length);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -514,16 +513,16 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't read data frame to induce "socket" backpressure.
         Http3Api.AdvanceTime(timeToWriteMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         // The _maxData bytes are buffered from before the timeout, but not an END_STREAM data frame.
         await requestStream.ExpectDataAsync();
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -556,11 +555,11 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         Http3Api.AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -569,7 +568,7 @@ public class Http3TimeoutTests : Http3TestBase
             null);
         MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -611,11 +610,11 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         Http3Api.AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -624,7 +623,7 @@ public class Http3TimeoutTests : Http3TestBase
             null);
         MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -667,11 +666,11 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         Http3Api.AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -680,7 +679,7 @@ public class Http3TimeoutTests : Http3TestBase
             null);
         MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -716,17 +715,17 @@ public class Http3TimeoutTests : Http3TestBase
         // Don't send any more data and advance just to and then past the grace period.
         Http3Api.AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         await requestStream.SendDataAsync(_helloWorldBytes, endStream: true);
 
         await requestStream.ExpectReceiveEndOfStream();
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]

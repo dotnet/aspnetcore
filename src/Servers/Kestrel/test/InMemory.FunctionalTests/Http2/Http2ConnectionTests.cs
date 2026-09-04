@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -6062,9 +6061,10 @@ public class Http2ConnectionTests : Http2TestBase
     {
         CreateConnection();
 
-        var tlsHandshakeMock = new Mock<ITlsHandshakeFeature>();
-        tlsHandshakeMock.SetupGet(m => m.Protocol).Returns(SslProtocols.Tls12);
-        _connection.ConnectionFeatures.Set<ITlsHandshakeFeature>(tlsHandshakeMock.Object);
+        _connection.ConnectionFeatures.Set<ITlsHandshakeFeature>(new TestTlsHandshakeFeature
+        {
+            Protocol = SslProtocols.Tls12
+        });
 
         InitializeConnectionWithoutPreface(_noopApplication);
 
@@ -6339,5 +6339,24 @@ public class Http2ConnectionTests : Http2TestBase
 
             return data;
         }
+    }
+
+    private sealed class TestTlsHandshakeFeature : ITlsHandshakeFeature
+    {
+        public SslProtocols Protocol { get; set; }
+
+#pragma warning disable SYSLIB0058 // TLS cipher algorithm enums are obsolete.
+        public CipherAlgorithmType CipherAlgorithm { get; set; }
+
+        public int CipherStrength { get; set; }
+
+        public HashAlgorithmType HashAlgorithm { get; set; }
+
+        public int HashStrength { get; set; }
+
+        public ExchangeAlgorithmType KeyExchangeAlgorithm { get; set; }
+
+        public int KeyExchangeStrength { get; set; }
+#pragma warning restore SYSLIB0058
     }
 }

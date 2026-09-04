@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -34,24 +33,85 @@ public class KestrelConfigurationLoaderTests
         return serverOptions;
     }
 
-    private static Mock<IConfiguration> CreateMockConfiguration() => CreateMockConfiguration(out _);
+    private static TrackingConfiguration CreateMockConfiguration() => CreateMockConfiguration(out _);
 
-    private static Mock<IConfiguration> CreateMockConfiguration(out Mock<IChangeToken> mockReloadToken)
+    private static TrackingConfiguration CreateMockConfiguration(out TestReloadToken mockReloadToken)
     {
         var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
-{
+        {
             new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
             new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
         }).Build();
 
-        mockReloadToken = new Mock<IChangeToken>();
+        mockReloadToken = new TestReloadToken();
+        return new TrackingConfiguration(currentConfig, mockReloadToken);
+    }
 
-        var mockConfig = new Mock<IConfiguration>();
-        mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(currentConfig.GetSection);
-        mockConfig.Setup(c => c.GetChildren()).Returns(currentConfig.GetChildren);
-        mockConfig.Setup(c => c.GetReloadToken()).Returns(mockReloadToken.Object);
+    private sealed class TrackingConfiguration : IConfiguration
+    {
+        private readonly IConfiguration _innerConfig;
+        private readonly IChangeToken _reloadToken;
 
-        return mockConfig;
+        public TrackingConfiguration(IConfiguration innerConfig, IChangeToken reloadToken)
+        {
+            _innerConfig = innerConfig;
+            _reloadToken = reloadToken;
+        }
+
+        public List<string> GetSectionKeys { get; } = new();
+
+        public int GetSectionCount => GetSectionKeys.Count;
+
+        public string this[string key]
+        {
+            get => _innerConfig[key];
+            set => _innerConfig[key] = value;
+        }
+
+        public IConfigurationSection GetSection(string key)
+        {
+            GetSectionKeys.Add(key);
+            return _innerConfig.GetSection(key);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren() => _innerConfig.GetChildren();
+
+        public IChangeToken GetReloadToken() => _reloadToken;
+
+        public void ClearInvocations() => GetSectionKeys.Clear();
+    }
+
+    private sealed class TestReloadToken : IChangeToken
+    {
+        private bool _hasChanged;
+
+        public int HasChangedGetCount { get; private set; }
+
+        public bool HasChanged
+        {
+            get
+            {
+                HasChangedGetCount++;
+                return _hasChanged;
+            }
+        }
+
+        public bool ActiveChangeCallbacks => false;
+
+        public void SetHasChanged(bool value) => _hasChanged = value;
+
+        public void ClearInvocations() => HasChangedGetCount = 0;
+
+        public IDisposable RegisterChangeCallback(Action<object> callback, object state) => EmptyDisposable.Instance;
+
+        private sealed class EmptyDisposable : IDisposable
+        {
+            public static readonly EmptyDisposable Instance = new();
+
+            public void Dispose()
+            {
+            }
+        }
     }
 
     [Fact]
@@ -1851,20 +1911,20 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration();
-        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+        serverOptions.Configure(mockConfig, reloadOnChange);
 
         Action load = loadInternal ? serverOptions.ConfigurationLoader.LoadInternal : serverOptions.ConfigurationLoader.Load;
 
         load();
 
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.True(mockConfig.GetSectionCount >= 1);
 
-        mockConfig.Invocations.Clear();
+        mockConfig.ClearInvocations();
 
         load();
 
         // In any case, nothing has changed, so nothing is read
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.Never);
+        Assert.Equal(0, mockConfig.GetSectionCount);
     }
 
     [Theory]
@@ -1876,7 +1936,7 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration();
-        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+        serverOptions.Configure(mockConfig, reloadOnChange);
 
         var oldConfigurationLoader = serverOptions.ConfigurationLoader;
 
@@ -1889,11 +1949,11 @@ public class KestrelConfigurationLoaderTests
             serverOptions.ConfigurationLoader.Load();
         }
 
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.True(mockConfig.GetSectionCount >= 1);
 
-        mockConfig.Invocations.Clear();
+        mockConfig.ClearInvocations();
 
-        serverOptions.Configure(mockConfig.Object, reloadOnChange: false);
+        serverOptions.Configure(mockConfig, reloadOnChange: false);
         var newConfigurationLoader = serverOptions.ConfigurationLoader;
         Assert.NotSame(oldConfigurationLoader, newConfigurationLoader);
 
@@ -1907,7 +1967,7 @@ public class KestrelConfigurationLoaderTests
         }
 
         // In any case, the configuration loader has been replaced, so this is a "first" load
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.True(mockConfig.GetSectionCount >= 1);
     }
 
     [Theory]
@@ -1919,26 +1979,26 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration(out var mockReloadToken);
-        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+        serverOptions.Configure(mockConfig, reloadOnChange);
 
         Action load = loadInternal ? serverOptions.ConfigurationLoader.LoadInternal : serverOptions.ConfigurationLoader.Load;
 
         load();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.Equal(0, mockReloadToken.HasChangedGetCount);
+        Assert.True(mockConfig.GetSectionCount >= 1);
 
-        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+        mockReloadToken.SetHasChanged(true);
 
-        mockReloadToken.Invocations.Clear();
-        mockConfig.Invocations.Clear();
+        mockReloadToken.ClearInvocations();
+        mockConfig.ClearInvocations();
 
         load();
 
-        Func<Times> reloadTimes = loadInternal && reloadOnChange ? Times.AtLeastOnce : Times.Never;
+        var reloadExpected = loadInternal && reloadOnChange;
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, reloadTimes);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), reloadTimes);
+        Assert.True(reloadExpected ? mockReloadToken.HasChangedGetCount >= 1 : mockReloadToken.HasChangedGetCount == 0);
+        Assert.True(reloadExpected ? mockConfig.GetSectionCount >= 1 : mockConfig.GetSectionCount == 0);
     }
 
     [Fact]
@@ -1946,24 +2006,24 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration(out var mockReloadToken);
-        serverOptions.Configure(mockConfig.Object, reloadOnChange: true);
+        serverOptions.Configure(mockConfig, reloadOnChange: true);
 
         serverOptions.ConfigurationLoader.LoadInternal();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.Equal(0, mockReloadToken.HasChangedGetCount);
+        Assert.True(mockConfig.GetSectionCount >= 1);
 
-        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+        mockReloadToken.SetHasChanged(true);
 
-        mockReloadToken.Invocations.Clear();
-        mockConfig.Invocations.Clear();
+        mockReloadToken.ClearInvocations();
+        mockConfig.ClearInvocations();
 
         serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
 
         serverOptions.ConfigurationLoader.Load();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.Never);
+        Assert.Equal(0, mockReloadToken.HasChangedGetCount);
+        Assert.Equal(0, mockConfig.GetSectionCount);
         Assert.Single(serverOptions.CodeBackedListenOptions); // Still have to process endpoints
     }
 
@@ -1972,22 +2032,22 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration(out var mockReloadToken);
-        serverOptions.Configure(mockConfig.Object, reloadOnChange: true);
+        serverOptions.Configure(mockConfig, reloadOnChange: true);
 
         serverOptions.ConfigurationLoader.Load();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.Equal(0, mockReloadToken.HasChangedGetCount);
+        Assert.True(mockConfig.GetSectionCount >= 1);
 
-        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+        mockReloadToken.SetHasChanged(true);
 
-        mockReloadToken.Invocations.Clear();
-        mockConfig.Invocations.Clear();
+        mockReloadToken.ClearInvocations();
+        mockConfig.ClearInvocations();
 
         serverOptions.ConfigurationLoader.LoadInternal();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+        Assert.True(mockReloadToken.HasChangedGetCount >= 1);
+        Assert.True(mockConfig.GetSectionCount >= 1);
     }
 
     [Fact]
@@ -2055,23 +2115,23 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration();
-        serverOptions.Configure(mockConfig.Object);
+        serverOptions.Configure(mockConfig);
 
         serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
 
         serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
 
         Assert.Single(serverOptions.CodeBackedListenOptions);
-        mockConfig.Verify(c => c.GetSection(It.IsNotIn("EndpointDefaults")), Times.Never); // It does read the EndpointDefaults sections
+        Assert.DoesNotContain(mockConfig.GetSectionKeys, key => key != "EndpointDefaults"); // It does read the EndpointDefaults sections
 
-        mockConfig.Invocations.Clear();
+        mockConfig.ClearInvocations();
 
         serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added after ProcessEndpointsToAdd"));
 
         serverOptions.ConfigurationLoader.Load();
 
         Assert.Single(serverOptions.CodeBackedListenOptions);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce); // Still need to load, even if endpoints have been processed
+        Assert.True(mockConfig.GetSectionCount >= 1); // Still need to load, even if endpoints have been processed
     }
 
     [Fact]
@@ -2079,7 +2139,7 @@ public class KestrelConfigurationLoaderTests
     {
         var serverOptions = CreateServerOptions();
         var mockConfig = CreateMockConfiguration();
-        serverOptions.Configure(mockConfig.Object);
+        serverOptions.Configure(mockConfig);
 
         serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
 
@@ -2087,7 +2147,7 @@ public class KestrelConfigurationLoaderTests
 
         Assert.Single(serverOptions.CodeBackedListenOptions);
 
-        mockConfig.Invocations.Clear();
+        mockConfig.ClearInvocations();
 
         serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added after Load"));
 

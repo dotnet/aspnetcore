@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup>
+    <ExcludeMoq>true</ExcludeMoq>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+</Project>

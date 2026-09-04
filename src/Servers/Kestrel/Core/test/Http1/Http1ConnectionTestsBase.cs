@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -25,7 +24,7 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
     internal MemoryPool<byte> _pipelineFactory;
     internal SequencePosition _consumed;
     internal SequencePosition _examined;
-    internal Mock<ITimeoutControl> _timeoutControl;
+    internal TestTimeoutControl _timeoutControl;
 
     protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
@@ -38,11 +37,11 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
         _transport = pair.Transport;
         _application = pair.Application;
 
-        var connectionContext = Mock.Of<ConnectionContext>();
+        var connectionContext = new TestConnectionContext();
         var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
         var connectionFeatures = new FeatureCollection();
-        connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+        connectionFeatures.Set(new TestConnectionLifetimeFeature());
         connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
 
         _serviceContext = new TestServiceContext(LoggerFactory)
@@ -50,12 +49,12 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
             Scheduler = PipeScheduler.Inline
         };
 
-        _timeoutControl = new Mock<ITimeoutControl>();
+        _timeoutControl = new TestTimeoutControl();
         _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
-            connectionContext: Mock.Of<ConnectionContext>(),
+            connectionContext: connectionContext,
             transport: pair.Transport,
-            timeoutControl: _timeoutControl.Object,
+            timeoutControl: _timeoutControl,
             memoryPool: _pipelineFactory,
             connectionFeatures: connectionFeatures,
             metricsContext: metricsContext);

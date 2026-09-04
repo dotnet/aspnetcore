@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -81,10 +81,10 @@ public class KestrelServerOptionsTests
 
         // Ensure configure doesn't throw because of missing services.
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
-        serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
-        serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
-        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
+        serviceCollection.AddSingleton<IHostEnvironment>(new TestHostEnvironment());
+        serviceCollection.AddSingleton<ILogger<KestrelServer>>(NullLogger<KestrelServer>.Instance);
+        serviceCollection.AddSingleton<ILogger<HttpsConnectionMiddleware>>(NullLogger<HttpsConnectionMiddleware>.Instance);
+        serviceCollection.AddSingleton<IHttpsConfigurationService>(new TestHttpsConfigurationService());
         options.ApplicationServices = serviceCollection.BuildServiceProvider();
 
         options.Configure();

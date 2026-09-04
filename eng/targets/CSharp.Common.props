@@ -8,7 +8,7 @@
 
   <ItemGroup Condition=" $(IsTestProject) ">
     <Reference Include="Microsoft.AspNetCore.InternalTesting" />
-    <Reference Include="Moq" />
+    <Reference Include="Moq" Condition="'$(ExcludeMoq)' != 'true'" />
     <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
   </ItemGroup>
 
