@@ -2,11 +2,13 @@
 
 import datetime
 import importlib.util
+import io
 import json
 import os
 import pathlib
 import subprocess
 import tempfile
+from unittest import mock
 
 
 SCRIPT = pathlib.Path(__file__).with_name("collect_case_a_eligibility.py")
@@ -122,7 +124,276 @@ def record(receipt):
     return receipt["tests"][TEST_NAME]
 
 
+class FakeResponse(io.BytesIO):
+    def __init__(self, payload, link=""):
+        super().__init__(json.dumps(payload).encode())
+        self.headers = {"Link": link}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
+
+def test_github_pr_files():
+    try:
+        MODULE.github_pr_files("dotnet/aspnetcore", 42, "")
+    except ValueError as error:
+        assert str(error) == "A GitHub token is required to inspect pull request files"
+    else:
+        raise AssertionError("github_pr_files must reject a missing token")
+
+    responses = [
+        FakeResponse(
+            [{
+                "filename": "src/New.cs",
+                "previous_filename": "src/Old.cs",
+            }],
+            '<https://api.github.com/next-page>; rel="next"',
+        ),
+        FakeResponse([{"filename": "src/Other.cs"}]),
+    ]
+    requests = []
+
+    def urlopen(request, timeout):
+        requests.append((request, timeout))
+        return responses.pop(0)
+
+    with mock.patch.object(MODULE.urllib.request, "urlopen", side_effect=urlopen):
+        files = MODULE.github_pr_files("dotnet/aspnetcore", 42, "token-123")
+
+    assert files == {"src/New.cs", "src/Old.cs", "src/Other.cs"}
+    assert [request.full_url for request, _ in requests] == [
+        "https://api.github.com/repos/dotnet/aspnetcore/pulls/42/files?per_page=100",
+        "https://api.github.com/next-page",
+    ]
+    assert all(timeout == 30 for _, timeout in requests)
+    for request, _ in requests:
+        assert request.get_method() == "GET"
+        assert request.get_header("Authorization") == "Bearer token-123"
+        assert request.get_header("Accept") == "application/vnd.github+json"
+        assert request.get_header("User-agent") == "aspnetcore-test-quarantine"
+
+    with mock.patch.object(
+        MODULE.urllib.request,
+        "urlopen",
+        side_effect=OSError("network unavailable"),
+    ) as failing_urlopen:
+        try:
+            MODULE.github_pr_files("dotnet/aspnetcore", 42, "token-123")
+        except OSError as error:
+            assert str(error) == "network unavailable"
+        else:
+            raise AssertionError("github_pr_files must fail when a page cannot be read")
+    failing_urlopen.assert_called_once()
+
+
+def initialize_repository(root, project_count=1):
+    run(root, "git", "init", "-q")
+    run(root, "git", "config", "user.email", "test@example.com")
+    run(root, "git", "config", "user.name", "Test")
+    project = root / "src/Sample.Tests"
+    project.mkdir(parents=True)
+    for index in range(project_count):
+        suffix = "" if index == 0 else str(index + 1)
+        (project / f"Sample.Tests{suffix}.csproj").write_text(
+            "<Project />",
+            encoding="utf-8",
+        )
+    file_path = root / TEST_PATH
+    file_path.write_text(source(), encoding="utf-8")
+    return project, file_path
+
+
+def test_assembly_quarantine_history():
+    for delete_file in (False, True):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, _ = initialize_repository(root)
+            commit(root, "Add test", "2026-08-01T00:00:00Z")
+            assembly_info = project / "AssemblyInfo.cs"
+            assembly_info.write_text(
+                '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+                encoding="utf-8",
+            )
+            commit(root, "Quarantine test assembly", "2026-08-02T00:00:00Z")
+            if delete_file:
+                assembly_info.unlink()
+                message = "Delete assembly quarantine file"
+            else:
+                assembly_info.write_text(
+                    "using Microsoft.AspNetCore.Testing;\n",
+                    encoding="utf-8",
+                )
+                message = "Remove assembly quarantine"
+            commit(root, message, "2026-08-03T00:00:00Z")
+            removal_commit = run_output(
+                root,
+                "git",
+                "rev-parse",
+                "HEAD",
+            )
+
+            result = record(collect(root, evidence()))
+            assert result["status"] == "ineligible", result
+            assert result["originating_case"] == "case-b"
+            assert result["latest_quarantine_transition"] == "removed"
+            assert result["cutoff"]["commit"] == removal_commit
+            assert result["cutoff"]["reason"] == "latest-quarantine-transition"
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        state_cache = {}
+        invalid_state = MODULE.historical_assembly_state(
+            root,
+            "src/Sample.Tests",
+            "not-a-commit",
+            state_cache,
+        )
+        assert invalid_state["status"] == "ambiguous"
+        assert state_cache[("src/Sample.Tests", "not-a-commit")] == invalid_state
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test assembly", "2026-08-02T00:00:00Z")
+        assembly_info.write_text(
+            "using Microsoft.AspNetCore.Testing;\n",
+            encoding="utf-8",
+        )
+        commit(root, "Remove assembly quarantine", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+        renamed_path = project / "RenamedSampleTests.cs"
+        run(root, "git", "mv", file_path, renamed_path)
+        commit(root, "Rename test file", "2026-08-04T00:00:00Z")
+
+        result = record(collect(root, evidence()))
+        assert result["status"] == "ineligible", result
+        assert result["originating_case"] == "case-b"
+        assert result["source_resolution"]["path"] == (
+            "src/Sample.Tests/RenamedSampleTests.cs"
+        )
+        assert result["latest_quarantine_transition"] == "removed"
+        assert result["cutoff"]["commit"] == removal_commit
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.unlink()
+        (project / "BaseTests.cs").write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class BaseTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        derived_path = project / "DerivedTests.cs"
+        derived_path.write_text(
+            """using Microsoft.AspNetCore.Tests;
+
+namespace Microsoft.AspNetCore.Server.Tests;
+
+public class DerivedTests : BaseTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add inherited test", "2026-08-01T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test assembly", "2026-08-02T00:00:00Z")
+        assembly_info.write_text(
+            "using Microsoft.AspNetCore.Testing;\n",
+            encoding="utf-8",
+        )
+        commit(root, "Remove assembly quarantine", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+        (project / "IntermediateTests.cs").write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class IntermediateTests : BaseTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        derived_path.write_text(
+            """using Microsoft.AspNetCore.Tests;
+
+namespace Microsoft.AspNetCore.Server.Tests;
+
+public class DerivedTests : IntermediateTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Add intermediate test runner", "2026-08-04T00:00:00Z")
+
+        test_name = (
+            "Microsoft.AspNetCore.Server.Tests."
+            "DerivedTests.ReturnsExpectedResponse"
+        )
+        inherited_evidence = evidence()
+        inherited_evidence["source_a"][test_name] = (
+            inherited_evidence["source_a"].pop(TEST_NAME)
+        )
+        result = collect(root, inherited_evidence)["tests"][test_name]
+        assert result["status"] == "ineligible", result
+        assert result["originating_case"] == "case-b"
+        assert result["latest_quarantine_transition"] == "removed"
+        assert result["cutoff"]["commit"] == removal_commit
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, _ = initialize_repository(root, project_count=2)
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Add ambiguously associated quarantine", "2026-08-01T00:00:00Z")
+        assembly_info.write_text(
+            "using Microsoft.AspNetCore.Testing;\n",
+            encoding="utf-8",
+        )
+        commit(root, "Remove ambiguous quarantine", "2026-08-02T00:00:00Z")
+
+        result = record(collect(root, evidence()))
+        assert result["status"] == "unproven", result
+        assert result["latest_quarantine_transition"] == "ambiguous"
+        assert "quarantine-history-ambiguous" in result["reasons"]
+
+
+def run_output(root, *args):
+    return subprocess.check_output(
+        args,
+        cwd=root,
+        text=True,
+    ).strip()
+
+
 def main():
+    test_github_pr_files()
+
     assert MODULE.github_changed_paths([
         {
             "filename": "src/New.cs",
@@ -190,9 +461,11 @@ def main():
 
         file_path.write_text(source(), encoding="utf-8")
         commit(root, "Unquarantine test", "2026-08-05T00:00:00Z")
+        method_removal_commit = run_output(root, "git", "rev-parse", "HEAD")
         case_b = record(collect(root, evidence()))
         assert case_b["status"] == "ineligible"
         assert case_b["originating_case"] == "case-b"
+        assert case_b["cutoff"]["commit"] == method_removal_commit
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -324,6 +597,8 @@ public class DerivedTests : BaseTests
         inherited_case_b = collect(root, derived_evidence)["tests"][derived_name]
         assert inherited_case_b["status"] == "ineligible", inherited_case_b
         assert inherited_case_b["originating_case"] == "case-b"
+
+    test_assembly_quarantine_history()
 
     print("All Case A eligibility collector tests passed.")
 

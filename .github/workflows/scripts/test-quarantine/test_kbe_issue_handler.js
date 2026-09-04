@@ -173,6 +173,7 @@ async function runWithoutReset(item = createItem(), options = {}) {
 
   const calls = {
     create: [],
+    paginate: [],
     summary: [],
     errors: [],
     warnings: [],
@@ -203,18 +204,43 @@ async function runWithoutReset(item = createItem(), options = {}) {
     info: value => calls.info.push(String(value)),
   };
   const existingIssues = options.existingIssues ?? [];
+  const issuePages = options.existingIssuePages ?? [existingIssues];
+  const listForRepo = async () => {
+    throw new Error(
+      "github.rest.issues.listForRepo must be invoked through github.paginate",
+    );
+  };
   const github = {
-    paginate: async () => existingIssues,
+    paginate: async (endpoint, parameters) => {
+      calls.paginate.push({ endpoint, parameters });
+      assert.equal(
+        endpoint,
+        listForRepo,
+        "The handler must paginate github.rest.issues.listForRepo.",
+      );
+      assert.deepEqual(parameters, {
+        owner: "dotnet",
+        repo: "aspnetcore",
+        state: "open",
+        labels: "test-failure",
+        per_page: 100,
+      });
+      return issuePages.flat();
+    },
     rest: {
       issues: {
-        listForRepo: async () => ({ data: existingIssues }),
+        listForRepo,
         create: async request => {
           calls.create.push(request);
           return { data: { number: options.issueNumber ?? 70001 } };
         },
       },
       search: {
-        issuesAndPullRequests: async () => ({ data: { items: existingIssues } }),
+        issuesAndPullRequests: async () => {
+          throw new Error(
+            "github.rest.search.issuesAndPullRequests is eventually consistent and must not be used",
+          );
+        },
       },
     },
   };
@@ -246,6 +272,20 @@ async function runWithoutReset(item = createItem(), options = {}) {
       require,
       URL,
     );
+    for (const call of calls.paginate) {
+      assert.equal(
+        call.endpoint,
+        listForRepo,
+        "The handler must paginate github.rest.issues.listForRepo.",
+      );
+      assert.deepEqual(call.parameters, {
+        owner: "dotnet",
+        repo: "aspnetcore",
+        state: "open",
+        labels: "test-failure",
+        per_page: 100,
+      });
+    }
     return { result, calls };
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -335,6 +375,47 @@ async function main() {
     });
     assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
     assert.doesNotMatch(createdIssue(output).body, /```json/);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      eligibilityRecord: {
+        status: "eligible",
+        current_quarantine_state: "method-quarantined",
+        reasons: ["already-quarantined"],
+      },
+    });
+    const issue = createdIssue(output);
+    assert.deepEqual(issue.labels, ["test-failure"]);
+    assert.doesNotMatch(issue.body, /```json/);
+    assert.match(issue.body, /minimum Case A eligibility invariants/);
+    assert.doesNotMatch(issue.body, /matcher does not match/);
+  }
+
+  for (const eligibilityRecord of [
+    {
+      status: "eligible",
+      source_resolution: {
+        status: "ambiguous",
+        path: "",
+        type: "",
+        method: "",
+      },
+      reasons: ["ambiguous-source-resolution"],
+    },
+    {
+      status: "eligible",
+      latest_quarantine_transition: "ambiguous",
+      reasons: ["ambiguous-quarantine-history"],
+    },
+  ]) {
+    const output = await run(createItem(), { enableKbe: true, eligibilityRecord });
+    const issue = createdIssue(output);
+    assert.deepEqual(issue.labels, ["test-failure"], JSON.stringify(eligibilityRecord.reasons));
+    assert.doesNotMatch(issue.body, /```json/, JSON.stringify(eligibilityRecord.reasons));
+    assert.match(issue.body, /minimum Case A eligibility invariants/);
+    assert.doesNotMatch(issue.body, /matcher does not match/);
   }
 
   {
@@ -524,20 +605,86 @@ async function main() {
       existingIssues: [{ number: 54321, title }],
     });
     assert.equal(output.calls.create.length, 0);
+    assert.equal(output.calls.paginate.length, 1);
     assert.equal(output.result.temporaryId, "aw_sample");
+    assert.equal(output.result.repo, "dotnet/aspnetcore");
     assert.equal(output.result.number, 54321);
   }
 
   {
+    const title = `Quarantine ${testName}`;
+    const output = await run(createItem(), {
+      existingIssuePages: [
+        [
+          { number: 10, title: "Quarantine Some.Other.Test" },
+          { number: 11, title: `${title} follow-up` },
+        ],
+        [
+          { number: 12, title: `quarantine ${testName}` },
+          { number: 54321, title },
+        ],
+      ],
+    });
+    assert.equal(output.calls.create.length, 0);
+    assert.equal(output.calls.paginate.length, 1);
+    assert.equal(output.result.number, 54321);
+  }
+
+  {
+    const title = `Quarantine ${testName}`;
+    const output = await run(createItem(), {
+      existingIssuePages: [
+        [
+          { number: 10, title: "Quarantine Some.Other.Test" },
+          { number: 11, title, pull_request: { url: "https://api.github.com/pulls/11" } },
+        ],
+        [
+          { number: 12, title: ` ${title}` },
+          { number: 13, title: `${title} `, pull_request: { url: "https://api.github.com/pulls/13" } },
+        ],
+      ],
+    });
+    const issue = createdIssue(output);
+    assert.equal(issue.title, title);
+    assert.equal(output.calls.paginate.length, 1);
+    assert.equal(output.result.number, 70001);
+  }
+
+  {
+    const secondEvidence = createEvidence();
+    secondEvidence.source_a[otherTestName] = {
+      ...secondEvidence.source_a[testName],
+      stack: `at ${otherTestName}()`,
+    };
+    delete secondEvidence.source_a[testName];
+    const secondItem = createItem({
+      temporary_id: "aw_second",
+      test_name: otherTestName,
+    });
+
+    delete globalThis[stateKey];
+    const standalone = await runWithoutReset(secondItem, { evidence: secondEvidence });
+    assert.equal(standalone.result.success, true, "The second payload must be valid on its own.");
+
     delete globalThis[stateKey];
     const first = await runWithoutReset(createItem());
     assert.equal(first.result.success, true);
-    const second = await runWithoutReset(createItem({
+    const second = await runWithoutReset(secondItem, { evidence: secondEvidence });
+    assert.equal(second.result.success, false);
+    assert.match(second.result.error, /per-run limit of 1 call/);
+    assert.equal(second.calls.create.length, 0);
+    assert.equal(second.calls.paginate.length, 0);
+  }
+
+  {
+    globalThis[stateKey] = { calls: 0, claimedTests: new Set([testName]) };
+    const output = await runWithoutReset(createItem({
       temporary_id: "aw_duplicate",
     }));
-    assert.equal(second.result.success, false);
-    assert.match(second.result.error, /already claimed by this run/);
-    assert.equal(second.calls.create.length, 0);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /already claimed by this run/);
+    assert.equal(output.calls.create.length, 0);
+    delete globalThis[stateKey];
   }
 
   {
@@ -717,23 +864,10 @@ async function main() {
 
   {
     delete globalThis[stateKey];
-    for (let index = 0; index < 10; index++) {
-      const indexedTestName = `${testName}${index}`;
-      const evidence = createEvidence();
-      evidence.source_a[indexedTestName] = {
-        ...evidence.source_a[testName],
-        stack: `at ${indexedTestName}()`,
-      };
-      delete evidence.source_a[testName];
-      const output = await runWithoutReset(createItem({
-        temporary_id: `aw_test_${index}`,
-        test_name: indexedTestName,
-      }), { evidence });
-      assert.equal(output.result.success, true);
-    }
-    const output = await runWithoutReset(createItem({ temporary_id: "aw_test_10" }));
-    assert.equal(output.result.success, false);
-    assert.match(output.result.error, /per-run limit/);
+    const output = await runWithoutReset(createItem());
+    assert.equal(output.result.success, true);
+    assert.equal(globalThis[stateKey].calls, 1);
+    delete globalThis[stateKey];
   }
 
   console.log("All quarantine KBE handler tests passed.");

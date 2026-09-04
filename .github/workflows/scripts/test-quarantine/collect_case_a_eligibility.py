@@ -13,6 +13,15 @@ import urllib.request
 
 WORK_ITEM_SUFFIX = ".WorkItemExecution"
 QUARANTINE = "QuarantinedTest"
+ASSEMBLY_QUARANTINE_PATTERN = re.compile(
+    r"\[\s*assembly\s*:\s*QuarantinedTest\b"
+)
+METHOD_PATTERN = re.compile(
+    r"(?m)^[ \t]*(?:public|internal|protected|private)\s+"
+    r"(?:(?:static|virtual|override|sealed|async|new|unsafe|partial|extern)\s+)*"
+    r"(?:[A-Za-z_][A-Za-z0-9_?.<>\[\],]*\s+)+"
+    r"(?P<method>[A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^>{}]*>)?\s*\("
+)
 
 
 def parse_utc(value):
@@ -27,6 +36,15 @@ def git(root, *args):
         text=True,
         stderr=subprocess.DEVNULL,
     ).strip()
+
+
+def git_result(root, *args):
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def sanitize_csharp(text):
@@ -179,15 +197,9 @@ def build_source_index(root):
     files = []
     type_quarantines = {}
     assembly_quarantines = {}
+    assembly_quarantine_ambiguities = {}
     method_index = {}
     type_index = {}
-    method_pattern = re.compile(
-        r"(?m)^[ \t]*(?:public|internal|protected|private)\s+"
-        r"(?:(?:static|virtual|override|sealed|async|new|unsafe|partial|extern)\s+)*"
-        r"(?:[A-Za-z_][A-Za-z0-9_?.<>\[\],]*\s+)+"
-        r"(?P<method>[A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^>{}]*>)?\s*\("
-    )
-    assembly_pattern = re.compile(r"\[\s*assembly\s*:\s*QuarantinedTest\b")
 
     for file_path in pathlib.Path(root, "src").rglob("*.cs"):
         relative_path = str(file_path.relative_to(root)).replace(os.sep, "/")
@@ -211,8 +223,12 @@ def build_source_index(root):
             file_namespace,
             ranges,
         ))
-        if assembly_pattern.search(clean):
-            assembly_quarantines[str(project_root)] = True
+        if ASSEMBLY_QUARANTINE_PATTERN.search(clean):
+            project_files = list(project_root.glob("*.csproj"))
+            if len(project_files) == 1:
+                assembly_quarantines[str(project_root)] = True
+            else:
+                assembly_quarantine_ambiguities[str(project_root)] = True
 
         for entry in ranges:
             if entry[2] != "type":
@@ -235,6 +251,10 @@ def build_source_index(root):
                 "project_root": str(project_root),
                 "quarantined": quarantined,
                 "assembly_quarantined": assembly_quarantines.get(str(project_root), False),
+                "assembly_quarantine_ambiguous": assembly_quarantine_ambiguities.get(
+                    str(project_root),
+                    False,
+                ),
             })
 
     for declarations in type_index.values():
@@ -243,9 +263,15 @@ def build_source_index(root):
                 declaration["project_root"],
                 False,
             )
+            declaration["assembly_quarantine_ambiguous"] = (
+                assembly_quarantine_ambiguities.get(
+                    declaration["project_root"],
+                    False,
+                )
+            )
 
     for relative_path, project_root, clean, lines, file_namespace, ranges in files:
-        for method_match in method_pattern.finditer(clean):
+        for method_match in METHOD_PATTERN.finditer(clean):
             position = method_match.start()
             type_name = full_type_name(ranges, position, file_namespace)
             method = method_match.group("method")
@@ -262,6 +288,10 @@ def build_source_index(root):
                     False,
                 ),
                 "assembly_quarantined": assembly_quarantines.get(project_root, False),
+                "assembly_quarantine_ambiguous": assembly_quarantine_ambiguities.get(
+                    project_root,
+                    False,
+                ),
             })
     return {
         "methods": method_index,
@@ -315,34 +345,340 @@ def resolve_source(root, test_name, source_index=None):
         result["type_quarantined"]
         or any(entry["quarantined"] for entry in runner_types)
     )
-    result["assembly_quarantined"] = (
-        result["assembly_quarantined"]
-        or any(entry["assembly_quarantined"] for entry in runner_types)
-    )
+    assembly_declaration = runner_types[0] if runner_types else result
+    result["assembly_quarantined"] = assembly_declaration["assembly_quarantined"]
+    result["assembly_quarantine_ambiguous"] = assembly_declaration[
+        "assembly_quarantine_ambiguous"
+    ]
+    result["assembly_project_root"] = assembly_declaration["project_root"]
     locations = [{
         "path": result["path"],
         "type": result["declaring_type"],
         "method": result["method"],
+        "project_root": result["project_root"],
     }]
     locations.extend({
         "path": entry["path"],
         "type": entry["type"],
         "method": None,
+        "project_root": entry["project_root"],
     } for entry in runner_types)
     result["history_locations"] = list({
         (entry["path"], entry["type"], entry["method"]): entry
         for entry in locations
     }.values())
+    assembly_locations = [locations[0]]
+    if runner_types:
+        assembly_locations.append(locations[1])
+    result["assembly_history_locations"] = list({
+        (entry["path"], entry["type"], entry["method"]): entry
+        for entry in assembly_locations
+    }.values())
     return result
 
 
-def assembly_quarantined(root, relative_path):
-    project_root = find_project_root(root, relative_path)
-    pattern = re.compile(r"\[\s*assembly\s*:\s*QuarantinedTest\b")
-    for candidate in project_root.rglob("*.cs"):
-        if pattern.search(sanitize_csharp(candidate.read_text(encoding="utf-8", errors="replace"))):
-            return True
-    return False
+def historical_assembly_state(root, project_root, commit, state_cache):
+    cache_key = (project_root, commit)
+    if cache_key in state_cache:
+        return state_cache[cache_key]
+    if commit is None:
+        return {"status": "exact", "quarantined": False}
+
+    tree = git_result(
+        root,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        commit,
+        "--",
+        project_root,
+    )
+    if tree.returncode != 0:
+        result = {"status": "ambiguous"}
+        state_cache[cache_key] = result
+        return result
+    paths = tree.stdout.splitlines()
+    project_directories = {}
+    for path in paths:
+        if path.endswith(".csproj"):
+            directory = str(pathlib.PurePosixPath(path).parent)
+            project_directories.setdefault(directory, []).append(path)
+
+    matches = git_result(
+        root,
+        "grep",
+        "-l",
+        "-F",
+        QUARANTINE,
+        commit,
+        "--",
+        project_root,
+    )
+    if matches.returncode not in (0, 1):
+        return {"status": "ambiguous"}
+
+    assembly_files = []
+    for match in matches.stdout.splitlines():
+        relative_path = match.split(":", 1)[-1]
+        if not relative_path.endswith(".cs"):
+            continue
+        content = git_result(root, "show", f"{commit}:{relative_path}")
+        if content.returncode != 0:
+            return {"status": "ambiguous"}
+        if not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(content.stdout)):
+            continue
+
+        directory = pathlib.PurePosixPath(relative_path).parent
+        associated_directory = None
+        while True:
+            directory_string = str(directory)
+            if directory_string in project_directories:
+                associated_directory = directory_string
+                break
+            if directory_string in ("", "."):
+                break
+            directory = directory.parent
+        if associated_directory is None:
+            return {"status": "ambiguous"}
+        if associated_directory != project_root:
+            continue
+        if len(project_directories[associated_directory]) != 1:
+            return {"status": "ambiguous"}
+        assembly_files.append(relative_path)
+
+    state = {
+        "status": "exact",
+        "quarantined": bool(assembly_files),
+        "paths": assembly_files,
+    }
+    state_cache[cache_key] = state
+    return state
+
+
+def assembly_quarantine_history(root, project_root, history_ref):
+    history = git_result(
+        root,
+        "log",
+        "--first-parent",
+        "--format=%H%x09%P%x09%cI",
+        "-G",
+        QUARANTINE,
+        history_ref,
+        "--",
+        project_root,
+    )
+    if history.returncode != 0:
+        return {"status": "ambiguous"}
+
+    events = []
+    state_cache = {}
+    for line in history.stdout.splitlines():
+        sha, parent_values, timestamp = line.split("\t", 2)
+        parent = parent_values.split()[0] if parent_values else None
+        current_state = historical_assembly_state(
+            root,
+            project_root,
+            sha,
+            state_cache,
+        )
+        parent_state = historical_assembly_state(
+            root,
+            project_root,
+            parent,
+            state_cache,
+        )
+        if (
+            current_state["status"] != "exact"
+            or parent_state["status"] != "exact"
+        ):
+            return {"status": "ambiguous", "commit": sha, "utc": timestamp}
+        if current_state["quarantined"] == parent_state["quarantined"]:
+            continue
+        events.append({
+            "status": "added" if current_state["quarantined"] else "removed",
+            "commit": sha,
+            "parent": parent,
+            "utc": timestamp,
+            "scope": "assembly",
+        })
+    return {"status": "exact", "events": events}
+
+
+def historical_project_source_index(
+    root,
+    project_root,
+    commit,
+    source_cache,
+    content_cache,
+):
+    cache_key = (commit, project_root)
+    if cache_key in source_cache:
+        return source_cache[cache_key]
+
+    tree = git_result(
+        root,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        commit,
+        "--",
+        project_root,
+    )
+    if tree.returncode != 0:
+        return {"status": "ambiguous"}
+    paths = tree.stdout.splitlines()
+    project_directories = {}
+    for path in paths:
+        if path.endswith(".csproj"):
+            directory = str(pathlib.PurePosixPath(path).parent)
+            project_directories.setdefault(directory, []).append(path)
+    if len(project_directories.get(project_root, [])) > 1:
+        result = {"status": "ambiguous"}
+        source_cache[cache_key] = result
+        return result
+
+    types = set()
+    methods = {}
+    for relative_path in paths:
+        if not relative_path.endswith(".cs"):
+            continue
+        directory = pathlib.PurePosixPath(relative_path).parent
+        while str(directory) not in project_directories:
+            if str(directory) in ("", "."):
+                directory = None
+                break
+            directory = directory.parent
+        if directory is None or str(directory) != project_root:
+            continue
+
+        content_key = (commit, relative_path)
+        if content_key not in content_cache:
+            content = git_result(root, "show", f"{commit}:{relative_path}")
+            if content.returncode != 0:
+                result = {"status": "ambiguous"}
+                source_cache[cache_key] = result
+                return result
+            content_cache[content_key] = content.stdout
+        clean = sanitize_csharp(content_cache[content_key])
+        file_namespace = None
+        namespace_match = re.search(
+            r"(?m)^[ \t]*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;",
+            clean,
+        )
+        if namespace_match:
+            file_namespace = namespace_match.group(1)
+        ranges = declaration_ranges(clean)
+        for entry in ranges:
+            if entry[2] != "type":
+                continue
+            types.add(full_type_name(
+                ranges,
+                entry[4],
+                file_namespace,
+                declared_type=entry[3],
+            ))
+        for match in METHOD_PATTERN.finditer(clean):
+            key = (
+                full_type_name(ranges, match.start(), file_namespace),
+                match.group("method"),
+            )
+            methods[key] = methods.get(key, 0) + 1
+
+    result = {
+        "status": "exact",
+        "types": types,
+        "methods": methods,
+    }
+    source_cache[cache_key] = result
+    return result
+
+
+def source_location_status(
+    root,
+    location,
+    commit,
+    source_cache,
+    content_cache,
+):
+    relative_project_root = str(
+        pathlib.Path(location["project_root"]).relative_to(root)
+    ).replace(os.sep, "/")
+    source_index = historical_project_source_index(
+        root,
+        relative_project_root,
+        commit,
+        source_cache,
+        content_cache,
+    )
+    if source_index["status"] != "exact":
+        return "ambiguous"
+    if location["method"] is None:
+        return "exact" if location["type"] in source_index["types"] else "missing"
+    matches = source_index["methods"].get(
+        (location["type"], location["method"]),
+        0,
+    )
+    if matches > 1:
+        return "ambiguous"
+    return "exact" if matches == 1 else "missing"
+
+
+def assembly_quarantine_transition(
+    root,
+    project_root,
+    locations,
+    history_ref,
+    history_cache,
+    source_cache,
+    content_cache,
+):
+    root = pathlib.Path(root)
+    relative_project_root = str(
+        pathlib.Path(project_root).relative_to(root)
+    ).replace(os.sep, "/")
+    if relative_project_root not in history_cache:
+        history_cache[relative_project_root] = assembly_quarantine_history(
+            root,
+            relative_project_root,
+            history_ref,
+        )
+    history = history_cache[relative_project_root]
+    if history["status"] != "exact":
+        return {
+            "status": "ambiguous",
+            "commit": history.get("commit"),
+            "utc": history.get("utc"),
+        }
+
+    for event in history["events"]:
+        applicable_commit = (
+            event["parent"] if event["status"] == "removed" else event["commit"]
+        )
+        if applicable_commit is None:
+            continue
+        location_statuses = [
+            source_location_status(
+                root,
+                location,
+                applicable_commit,
+                source_cache,
+                content_cache,
+            )
+            for location in locations
+        ]
+        if "ambiguous" in location_statuses:
+            return {
+                "status": "ambiguous",
+                "commit": event["commit"],
+                "utc": event["utc"],
+            }
+        if all(status == "exact" for status in location_statuses):
+            return {
+                key: value
+                for key, value in event.items()
+                if key != "parent"
+            }
+    return {"status": "none"}
 
 
 def quarantine_transition(root, relative_path, method, type_name, history_ref):
@@ -388,8 +724,7 @@ def quarantine_transition(root, relative_path, method, type_name, history_ref):
             hunk_relevant = False
             hunk_ambiguous = False
             for change_index, changed_line in changed:
-                if re.search(r"\[\s*assembly\s*:\s*QuarantinedTest\b", changed_line):
-                    hunk_relevant = True
+                if ASSEMBLY_QUARANTINE_PATTERN.search(changed_line):
                     continue
                 target = None
                 for candidate in hunk_lines[change_index + 1:change_index + 21]:
@@ -488,6 +823,9 @@ def github_changed_paths(items):
 
 
 def github_pr_files(repository, pr_number, token):
+    if not token:
+        raise ValueError("A GitHub token is required to inspect pull request files")
+
     url = f"https://api.github.com/repos/{repository}/pulls/{pr_number}/files?per_page=100"
     files = set()
     while url:
@@ -534,6 +872,9 @@ def collect(
     test_names = sorted(set(source_a) | set(source_b))
     receipts = {}
     pr_files_cache = {}
+    assembly_history_cache = {}
+    historical_source_cache = {}
+    historical_content_cache = {}
 
     for test_name in test_names:
         reasons = []
@@ -568,6 +909,9 @@ def collect(
         if source["status"] != "exact":
             reasons.append(f"source-{source['status']}")
             continue
+        if source["assembly_quarantine_ambiguous"]:
+            reasons.append("current-assembly-association-ambiguous")
+            continue
 
         quarantined = (
             source["method_quarantined"]
@@ -587,6 +931,15 @@ def collect(
             )
             for location in source["history_locations"]
         ]
+        transitions.append(assembly_quarantine_transition(
+            root,
+            source["assembly_project_root"],
+            source["assembly_history_locations"],
+            history_ref,
+            assembly_history_cache,
+            historical_source_cache,
+            historical_content_cache,
+        ))
         if any(item["status"] == "ambiguous" for item in transitions):
             transition = {"status": "ambiguous"}
         else:
@@ -600,12 +953,20 @@ def collect(
                 default={"status": "none"},
             )
         receipt["latest_quarantine_transition"] = transition["status"]
+        if transition["status"] == "ambiguous":
+            reasons.append("quarantine-history-ambiguous")
+            continue
         if quarantined:
             receipt["status"] = "ineligible"
             receipt["originating_case"] = "already-quarantined"
             reasons.append("currently-quarantined")
             continue
         if transition["status"] == "removed":
+            receipt["cutoff"] = {
+                "utc": transition["utc"],
+                "reason": "latest-quarantine-transition",
+                "commit": transition["commit"],
+            }
             receipt["status"] = "ineligible"
             receipt["originating_case"] = "case-b"
             reasons.append("latest-quarantine-transition-removed")

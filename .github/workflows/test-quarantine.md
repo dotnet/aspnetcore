@@ -1376,8 +1376,8 @@ safe-outputs:
         const matcherKind = String(item.matcher_kind ?? "incomplete").trim();
         const rawMatcher = cap(item.matcher ?? "", 4000);
 
-        if (state.calls > 10) {
-          return fail("create_quarantine_issue exceeded the per-run limit of 10 calls");
+        if (state.calls > 1) {
+          return fail("create_quarantine_issue exceeded the per-run limit of 1 call");
         }
         if (!/^aw_[A-Za-z0-9_]{3,12}$/.test(temporaryId)) {
           return fail(`Invalid temporary_id: ${temporaryId}`);
@@ -1845,9 +1845,11 @@ safe-outputs:
 
         let existingIssues;
         try {
-          const searchTitle = title.replace(/["\\\r\n]/g, " ");
-          existingIssues = await github.paginate(github.rest.search.issuesAndPullRequests, {
-            q: `repo:${repo} is:issue is:open in:title "${searchTitle}"`,
+          existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: "open",
+            labels: "test-failure",
             per_page: 100,
           });
         } catch (error) {
@@ -2240,7 +2242,8 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 This workflow has the following limits:
 - Maximum of 10 new PRs
 - Maximum of 1 new Case A quarantine issue (`create_quarantine_issue` is a
-  custom gh-aw v0.88.2 safe-output script, whose tool limit is one call)
+  custom gh-aw v0.88.2 safe-output script; the repository handler independently
+  rejects a second call in the same run)
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -2255,8 +2258,9 @@ Before creating any outputs, build a complete plan of all actions you intend to 
 If the total planned actions exceed any output limit, **trim from the bottom of the priority list** until all limits are satisfied. It is always safe to defer work to the next day's run.
 
 Because only one `create_quarantine_issue` call is available, choose only the
-highest-priority eligible Case A test this run. Re-quarantine and unquarantine
-actions may still use the remaining PR/comment budget.
+highest-priority eligible Case A test this run. A second call is rejected by the
+repository handler, so a discarded first choice cannot be retried. Re-quarantine
+and unquarantine actions may still use the remaining PR/comment budget.
 
 ### Priority order
 
