@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-prototype-builtins */
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from '../../JSInterop/Microsoft.JSInterop';
 import { attachDebuggerHotkey } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';

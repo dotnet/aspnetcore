@@ -2,16 +2,12 @@
   "name": "@microsoft/dotnet-js-interop",
   "version": "11.0.0-dev",
   "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
-  "main": "dist/src/Microsoft.JSInterop.js",
-  "types": "dist/src/Microsoft.JSInterop.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "type": "module",
   "scripts": {
     "clean": "rimraf ./dist",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:debug": "node --nolazy --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
     "build": "npm run clean && npm run build:esm",
-    "build:lint": "eslint -c .eslintrc.json --ext .ts ./src",
     "build:esm": "tsc --project ./tsconfig.json",
     "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
@@ -24,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/JSInterop",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/Components/Web.JS/JSInterop",
   "files": [
     "dist/**"
   ],

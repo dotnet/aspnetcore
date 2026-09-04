@@ -10,13 +10,15 @@
         "strict": true,
         "declaration": true,
         "declarationMap": true,
-        "outDir": "dist",
+        "rootDir": "../src/JSInterop",
+        "outDir": "dist/src",
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
         "module": "ESNext",
         "skipLibCheck": true,
         "composite": true
     },
     "include": [
-        "./src/**/*.ts"
+        "../src/JSInterop/**/*.ts"
     ],
     "exclude": [
         "./dist/**"
