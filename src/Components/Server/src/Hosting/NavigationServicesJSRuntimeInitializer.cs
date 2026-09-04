@@ -12,9 +12,7 @@ internal sealed class NavigationServicesJSRuntimeInitializer : IHostInitializer
 {
     public int Order => -100;
 
-    public bool RequiresJSInterop => true;
-
-    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+    public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

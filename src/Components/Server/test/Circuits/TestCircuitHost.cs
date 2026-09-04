@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, IHostInitializer[] deferredHostInitializers, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, deferredHostInitializers, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, HostInitializerInvoker hostInitializerInvoker, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, hostInitializerInvoker, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
     {
     }
 
@@ -28,7 +28,7 @@ internal class TestCircuitHost : CircuitHost
         AsyncServiceScope? serviceScope = null,
         RemoteRenderer remoteRenderer = null,
         IReadOnlyList<ComponentDescriptor> descriptors = null,
-        IHostInitializer[] deferredHostInitializers = null,
+        IHostInitializer[] browserHostInitializers = null,
         CircuitHandler[] handlers = null,
         CircuitClientProxy clientProxy = null)
     {
@@ -76,7 +76,7 @@ internal class TestCircuitHost : CircuitHost
             descriptors ?? new List<ComponentDescriptor>(),
             jsRuntime,
             navigationManager,
-            deferredHostInitializers ?? [],
+            new HostInitializerInvoker([.. browserHostInitializers ?? []], serviceScope.Value.ServiceProvider),
             handlers,
             circuitMetrics,
             circuitActivitySource,

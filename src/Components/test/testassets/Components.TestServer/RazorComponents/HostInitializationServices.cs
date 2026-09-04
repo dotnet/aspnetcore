@@ -19,9 +19,9 @@ internal sealed class TestBrowserStartupValueProvider : IBrowserStartupValueProv
 
 internal sealed class StartupValuesHostInitializer : IHostInitializer
 {
-    public int Order => -100;
+    public int Order => -75;
 
-    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+    public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var startupValues = services.GetRequiredService<IHostStartupValues>();
@@ -35,9 +35,8 @@ internal sealed class StartupValuesHostInitializer : IHostInitializer
 internal sealed class JSReadyHostInitializer : IHostInitializer
 {
     public int Order => 100;
-    public bool RequiresJSInterop => true;
 
-    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+    public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var state = services.GetRequiredService<HostInitializationState>();

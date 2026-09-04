@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.InternalTesting;
@@ -437,7 +438,7 @@ public class CircuitPersistenceManagerTest
             [],
             jsRuntime,
             navigationManager,
-            [],
+            new HostInitializerInvoker([], scope.ServiceProvider),
             circuitHandlers,
             circuitMetrics,
             componentsActivitySource,

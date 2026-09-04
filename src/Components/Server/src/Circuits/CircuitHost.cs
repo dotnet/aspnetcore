@@ -28,8 +28,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
-    private readonly IHostInitializer[] _deferredHostInitializers;
-    private Task _deferredHostInitializersTask = Task.CompletedTask;
+    private readonly HostInitializerInvoker _hostInitializerInvoker;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -57,7 +56,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
-        IHostInitializer[] deferredHostInitializers,
+        HostInitializerInvoker hostInitializerInvoker,
         CircuitHandler[] circuitHandlers,
         CircuitMetrics circuitMetrics,
         CircuitActivitySource circuitActivitySource,
@@ -77,7 +76,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
-        _deferredHostInitializers = deferredHostInitializers ?? throw new ArgumentNullException(nameof(deferredHostInitializers));
+        _hostInitializerInvoker = hostInitializerInvoker ?? throw new ArgumentNullException(nameof(hostInitializerInvoker));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
         _circuitActivitySource = circuitActivitySource;
@@ -140,8 +139,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
-                _deferredHostInitializersTask = RunDeferredHostInitializersAsync(cancellationToken);
-                await _deferredHostInitializersTask;
+                await _hostInitializerInvoker.InitializeBrowserAsync(cancellationToken);
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
                 // the components immediately during start.
@@ -198,14 +196,6 @@ internal partial class CircuitHost : IAsyncDisposable
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
         }));
-    }
-
-    private async Task RunDeferredHostInitializersAsync(CancellationToken cancellationToken)
-    {
-        foreach (var initializer in _deferredHostInitializers)
-        {
-            await initializer.InitializeAsync(Services, cancellationToken);
-        }
     }
 
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -806,7 +796,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 try
                 {
-                    await _deferredHostInitializersTask;
+                    await _hostInitializerInvoker.InitializeBrowserAsync(cancellation);
                 }
                 catch
                 {

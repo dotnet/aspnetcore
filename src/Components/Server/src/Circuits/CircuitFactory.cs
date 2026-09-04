@@ -55,7 +55,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var scope = _scopeFactory.CreateAsyncScope();
         scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
         scope.ServiceProvider
-            .GetRequiredKeyedService<InteractiveHostStartupValues>(typeof(ComponentHub))
+            .GetRequiredKeyedService<InteractiveHostStartupValues>(HostInitializerKey.Server)
             .Initialize(startupValues);
 
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -64,32 +64,12 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
 
-        IHostInitializer[] deferredHostInitializers;
+        var hostInitializerInvoker = _hostInitializers.GetInitializerInvoker(
+            scope.ServiceProvider,
+            HostInitializerKey.Server);
         try
         {
-            var hostInitializers = _hostInitializers.Initializers;
-
-            var firstDeferredInitializerIndex = -1;
-            for (var i = 0; i < hostInitializers.Length; i++)
-            {
-                if (hostInitializers[i].RequiresJSInterop)
-                {
-                    firstDeferredInitializerIndex = i;
-                    break;
-                }
-            }
-
-            var initializersToRun = firstDeferredInitializerIndex < 0
-                ? hostInitializers.Length
-                : firstDeferredInitializerIndex;
-            for (var i = 0; i < initializersToRun; i++)
-            {
-                await hostInitializers[i].InitializeAsync(scope.ServiceProvider, cancellationToken);
-            }
-
-            deferredHostInitializers = firstDeferredInitializerIndex < 0
-                ? []
-                : hostInitializers.AsSpan(firstDeferredInitializerIndex..).ToArray();
+            await hostInitializerInvoker.InitializeHostAsync(cancellationToken);
         }
         catch
         {
@@ -140,7 +120,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             components,
             jsRuntime,
             navigationManager,
-            deferredHostInitializers,
+            hostInitializerInvoker,
             circuitHandlers,
             _circuitMetrics,
             circuitActivitySource,

@@ -15,35 +15,20 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class ComponentServiceCollectionExtensionsTest
 {
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void EqualOrderInitializersPreserveServiceRegistrationOrder(bool registerUserFirst)
+    [Fact]
+    public void FrameworkInitializersAreKeyedAndUserInitializersAreShared()
     {
         var services = new ServiceCollection();
         var userInitializer = new TestHostInitializer();
-        if (registerUserFirst)
-        {
-            services.AddSingleton<IHostInitializer>(userInitializer);
-        }
-
+        services.AddSingleton<IHostInitializer>(userInitializer);
         services.AddServerSideBlazor();
-
-        if (!registerUserFirst)
-        {
-            services.AddSingleton<IHostInitializer>(userInitializer);
-        }
 
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var collection = provider.GetRequiredService<HostInitializerCollection>();
-        var initializers = collection.Initializers;
-        var navigationInitializerIndex = Array.FindIndex(
-            initializers.ToArray(),
-            initializer => initializer.GetType() == typeof(NavigationManagerInitializer));
-        var userInitializerIndex = initializers.IndexOf(userInitializer);
 
-        Assert.Equal(registerUserFirst, userInitializerIndex < navigationInitializerIndex);
+        Assert.Same(userInitializer, Assert.Single(provider.GetServices<IHostInitializer>()));
+        Assert.Equal(3, provider.GetKeyedServices<IHostInitializer>(HostInitializerKey.Server).Count());
         Assert.Same(collection, scope.ServiceProvider.GetRequiredService<HostInitializerCollection>());
         Assert.Equal(1, userInitializer.OrderAccessCount);
     }
@@ -60,12 +45,9 @@ public class ComponentServiceCollectionExtensionsTest
 
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
-        var initializers = scope.ServiceProvider.GetServices<IHostInitializer>();
-
-        foreach (var initializer in initializers)
-        {
-            await initializer.InitializeAsync(scope.ServiceProvider);
-        }
+        await scope.ServiceProvider.GetRequiredService<HostInitializerCollection>()
+            .GetInitializerInvoker(scope.ServiceProvider)
+            .InitializeBrowserAsync();
     }
 
     [Fact]
@@ -214,13 +196,13 @@ public class ComponentServiceCollectionExtensionsTest
             get
             {
                 OrderAccessCount++;
-                return -200;
+                return 0;
             }
         }
 
         public int OrderAccessCount { get; private set; }
 
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 }

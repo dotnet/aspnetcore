@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 public class CircuitFactoryTest
 {
     [Fact]
-    public async Task DefersEntireOrderedSuffixAfterFirstJSInitializer()
+    public async Task RunsHostPhaseBeforeBrowserPhase()
     {
         var calls = new List<string>();
         using var provider = CreateServices(
             new TestHostInitializer("lower", -300, calls),
-            new TestHostInitializer("user-js", -150, calls, requiresJSInterop: true),
-            new TestHostInitializer("later-non-js", 0, calls));
+            new TestHostInitializer("user-browser", -125, calls, browserPhase: true),
+            new TestHostInitializer("later-browser", 0, calls, browserPhase: true));
 
         await using var circuitHost = await CreateCircuitHostAsync(
             provider.GetRequiredService<ICircuitFactory>());
@@ -37,29 +37,32 @@ public class CircuitFactoryTest
 
         await circuitHost.InitializeAsync(null, default, CancellationToken.None);
 
-        Assert.Equal(["lower", "user-js", "later-non-js"], calls);
+        Assert.Equal(["lower", "user-browser", "later-browser"], calls);
         Assert.True(navigationManager.HasAttachedJSRuntime);
         Assert.True(navigationInterception.HasAttachedJSRuntime);
         Assert.True(scrollToLocationHash.HasAttachedJSRuntime);
     }
 
     [Fact]
-    public async Task PreservesRegistrationOrderForEqualOrderAcrossDeferredBoundary()
+    public async Task CircuitUsesSharedAndServerInitializersOnly()
     {
         var calls = new List<string>();
-        using var provider = CreateServices(
-            new TestHostInitializer("first", -250, calls),
-            new TestHostInitializer("second-js", -250, calls, requiresJSInterop: true),
-            new TestHostInitializer("third", -250, calls));
+        var services = CreateBaseServices();
+        services.AddSingleton<IHostInitializer>(new TestHostInitializer("shared", -300, calls));
+        services.AddKeyedSingleton<IHostInitializer>(
+            HostInitializerKey.Static,
+            new TestHostInitializer("static", -250, calls));
+        services.AddKeyedSingleton<IHostInitializer>(
+            HostInitializerKey.Server,
+            new TestHostInitializer("server", -225, calls));
+        services.AddRazorComponents();
+        services.AddServerSideBlazor();
+        using var provider = services.BuildServiceProvider();
 
         await using var circuitHost = await CreateCircuitHostAsync(
             provider.GetRequiredService<ICircuitFactory>());
 
-        Assert.Equal(["first"], calls);
-
-        await circuitHost.InitializeAsync(null, default, CancellationToken.None);
-
-        Assert.Equal(["first", "second-js", "third"], calls);
+        Assert.Equal(["shared", "server"], calls);
     }
 
     [Theory]
@@ -89,7 +92,7 @@ public class CircuitFactoryTest
         var exception = new InvalidOperationException("Initializer failed.");
         using var provider = CreateServices(
             new TestHostInitializer("failure", -300, calls, exception: exception),
-            new TestHostInitializer("not-run", -200, calls));
+            new TestHostInitializer("not-run", -250, calls));
 
         var actualException = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await CreateCircuitHostAsync(
@@ -110,7 +113,7 @@ public class CircuitFactoryTest
                 cancellationTokenSource.Cancel();
                 token.ThrowIfCancellationRequested();
             }),
-            new TestHostInitializer("not-run", -200, calls));
+            new TestHostInitializer("not-run", -250, calls));
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await CreateCircuitHostAsync(
@@ -132,19 +135,12 @@ public class CircuitFactoryTest
 
         Assert.Equal(2, initializer.ScopedDependencyIds.Count);
         Assert.NotEqual(initializer.ScopedDependencyIds[0], initializer.ScopedDependencyIds[1]);
-        Assert.Same(
-            initializer,
-            provider.GetRequiredService<HostInitializerCollection>().Initializers.Single(
-                candidate => candidate is ScopeRecordingInitializer));
+        Assert.Same(initializer, Assert.Single(provider.GetServices<IHostInitializer>()));
     }
 
     private static ServiceProvider CreateServices(params IHostInitializer[] initializers)
     {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddMetrics();
-        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+        var services = CreateBaseServices();
         services.AddScoped<ScopedDependency>();
         services.AddServerSideBlazor();
         foreach (var initializer in initializers)
@@ -153,6 +149,16 @@ public class CircuitFactoryTest
         }
 
         return services.BuildServiceProvider();
+    }
+
+    private static ServiceCollection CreateBaseServices()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMetrics();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+        return services;
     }
 
     private static ServiceProvider CreateCombinedServices(bool addServerFirst)
@@ -198,15 +204,19 @@ public class CircuitFactoryTest
         string name,
         int order,
         List<string> calls,
-        bool requiresJSInterop = false,
+        bool browserPhase = false,
         Exception exception = null,
         Action<CancellationToken> callback = null) : IHostInitializer
     {
         public int Order => order;
 
-        public bool RequiresJSInterop => requiresJSInterop;
+        public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+            => browserPhase ? Task.CompletedTask : Invoke(cancellationToken);
 
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeBrowserAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+            => browserPhase ? Invoke(cancellationToken) : Task.CompletedTask;
+
+        private Task Invoke(CancellationToken cancellationToken)
         {
             calls.Add(name);
             callback?.Invoke(cancellationToken);
@@ -221,7 +231,7 @@ public class CircuitFactoryTest
 
         public List<Guid> ScopedDependencyIds { get; } = [];
 
-        public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+        public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
         {
             ScopedDependencyIds.Add(services.GetRequiredService<ScopedDependency>().Id);
             return Task.CompletedTask;

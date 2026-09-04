@@ -66,14 +66,14 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
-        services.TryAddKeyedScoped<HttpContextHostStartupValues>(typeof(IHostStartupValues));
+        services.TryAddKeyedScoped<HttpContextHostStartupValues>(HostInitializerKey.Static);
         services.TryAddKeyedScoped<IHostStartupValues>(
-            typeof(IHostStartupValues),
+            HostInitializerKey.Static,
             static (services, key) => services.GetRequiredKeyedService<HttpContextHostStartupValues>(key));
         services.TryAddScoped<IHostStartupValues>(
-            static services => services.GetRequiredKeyedService<IHostStartupValues>(typeof(IHostStartupValues)));
+            static services => services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Static));
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+            ServiceDescriptor.KeyedSingleton<IHostInitializer, NavigationManagerInitializer>(HostInitializerKey.Static));
         services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHttpContextStartupValueProvider, NavigationHttpContextStartupValueProvider>());

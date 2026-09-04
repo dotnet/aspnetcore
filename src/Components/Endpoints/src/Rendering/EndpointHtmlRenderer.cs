@@ -87,17 +87,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         httpContext.RequestServices
-            .GetRequiredKeyedService<HttpContextHostStartupValues>(typeof(IHostStartupValues))
+            .GetRequiredKeyedService<HttpContextHostStartupValues>(HostInitializerKey.Static)
             .Initialize(httpContext);
 
-        var hostInitializers = httpContext.RequestServices.GetRequiredService<HostInitializerCollection>();
-        foreach (var initializer in hostInitializers.Initializers)
-        {
-            if (!initializer.RequiresJSInterop)
-            {
-                await initializer.InitializeAsync(httpContext.RequestServices, httpContext.RequestAborted);
-            }
-        }
+        var hostInitializerInvoker = httpContext.RequestServices
+            .GetRequiredService<HostInitializerCollection>()
+            .GetInitializerInvoker(httpContext.RequestServices, HostInitializerKey.Static);
+        await hostInitializerInvoker.InitializeHostAsync(httpContext.RequestAborted);
 
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
