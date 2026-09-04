@@ -41,6 +41,44 @@ public class Http2StreamTests : Http2TestBase
         AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task HEADERS_Received_NewLineCharactersInDynamicTable_ConnectionError(string newLineChars)
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>("TestHeader", "initialValue"),
+        };
+
+        await InitializeConnectionAsync(_noopApplication);
+        await StartStreamAsync(1, headers, endStream: true);
+
+        var headersWithNewLineChars = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>("TestHeader", newLineChars),
+        };
+
+        await StartStreamAsync(3, headersWithNewLineChars, endStream: true);
+
+        await WaitForConnectionErrorAsync<Exception>(
+            ignoreNonGoAwayFrames: true,
+            3,
+            Http2ErrorCode.PROTOCOL_ERROR,
+            "Malformed request: invalid headers.");
+
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
+    }
+
     [Fact]
     public async Task HEADERS_Received_EmptyMethod_Reset()
     {
@@ -5636,7 +5674,7 @@ public class Http2StreamTests : Http2TestBase
                 // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
                 // That something is the client side receiving the trailers.
                 await trailersTcs.Task;
-                
+
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 // RequestAborted will no longer fire after CompleteAsync.
