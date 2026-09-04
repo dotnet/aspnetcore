@@ -72,6 +72,89 @@ public class BufferedReadStreamTests
         Assert.Equal(content, line);
     }
 
+    [Fact]
+    public void Read_Span_DrainsBufferedDataBeforeReadingInner()
+    {
+        // The buffer is rented from the pool, so its actual size may exceed the requested size.
+        // The content is long enough that some of it always remains in the inner stream.
+        const string content = "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz";
+        var stream = MakeStream(content, bufferSize: 5);
+        Assert.True(stream.EnsureBuffered(5));
+        var buffered = stream.BufferedData.Count;
+        Assert.InRange(buffered, 5, content.Length - 3);
+
+        Span<byte> buffer = stackalloc byte[3];
+
+        // A span smaller than the buffered data drains it partially.
+        var read = stream.Read(buffer);
+        Assert.Equal(3, read);
+        Assert.Equal(content.Substring(0, 3), Encoding.UTF8.GetString(buffer.Slice(0, read)));
+        Assert.Equal(buffered - 3, stream.BufferedData.Count);
+
+        // Each read returns only buffered data, so the last one returns the remainder
+        // rather than topping up from the inner stream.
+        var consumed = read;
+        while (stream.BufferedData.Count > 0)
+        {
+            var remaining = stream.BufferedData.Count;
+            read = stream.Read(buffer);
+            Assert.Equal(Math.Min(remaining, buffer.Length), read);
+            Assert.Equal(content.Substring(consumed, read), Encoding.UTF8.GetString(buffer.Slice(0, read)));
+            consumed += read;
+        }
+        Assert.Equal(buffered, consumed);
+
+        // With the buffer drained, the read falls through to the inner stream.
+        read = stream.Read(buffer);
+        Assert.Equal(3, read);
+        Assert.Equal(content.Substring(consumed, 3), Encoding.UTF8.GetString(buffer.Slice(0, read)));
+        Assert.Equal(0, stream.BufferedData.Count);
+    }
+
+    [Fact]
+    public void Read_Array_DrainsBufferedDataBeforeReadingInner()
+    {
+        const string content = "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz";
+        var stream = MakeStream(content, bufferSize: 5);
+        Assert.True(stream.EnsureBuffered(5));
+        var buffered = stream.BufferedData.Count;
+        Assert.InRange(buffered, 5, content.Length - 3);
+
+        var buffer = new byte[3];
+
+        var read = stream.Read(buffer, 0, buffer.Length);
+        Assert.Equal(3, read);
+        Assert.Equal(content.Substring(0, 3), Encoding.UTF8.GetString(buffer, 0, read));
+        Assert.Equal(buffered - 3, stream.BufferedData.Count);
+
+        var consumed = read;
+        while (stream.BufferedData.Count > 0)
+        {
+            var remaining = stream.BufferedData.Count;
+            read = stream.Read(buffer, 0, buffer.Length);
+            Assert.Equal(Math.Min(remaining, buffer.Length), read);
+            Assert.Equal(content.Substring(consumed, read), Encoding.UTF8.GetString(buffer, 0, read));
+            consumed += read;
+        }
+        Assert.Equal(buffered, consumed);
+
+        read = stream.Read(buffer, 0, buffer.Length);
+        Assert.Equal(3, read);
+        Assert.Equal(content.Substring(consumed, 3), Encoding.UTF8.GetString(buffer, 0, read));
+        Assert.Equal(0, stream.BufferedData.Count);
+    }
+
+    [Fact]
+    public void Write_Span_WritesToInnerStream()
+    {
+        var inner = new MemoryStream();
+        var stream = new BufferedReadStream(inner, bufferSize: 16);
+
+        stream.Write("hello"u8);
+
+        Assert.Equal("hello", Encoding.UTF8.GetString(inner.ToArray()));
+    }
+
     private static BufferedReadStream MakeStream(string text, int bufferSize)
     {
         return new BufferedReadStream(new MemoryStream(Encoding.UTF8.GetBytes(text)), bufferSize);
