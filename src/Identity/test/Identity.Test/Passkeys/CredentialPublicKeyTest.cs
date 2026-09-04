@@ -67,31 +67,33 @@ public class CredentialPublicKeyTest
     {
         // Arrange
         // ES256K (secp256k1 / "P256K") is defined in the COSEAlgorithmIdentifier
-        // and COSEEllipticCurve enums but isn't in IsSupportedAlgorithm, and
-        // P256K isn't one of the curves IsValidKtyCrvCombination accepts for
-        // kty=EC2. This is rejected by the existing kty+crv check, before the
-        // new alg+crv check ever runs; the underlying key material below is
-        // generated on P-256 purely so the CBOR writer has valid X/Y
-        // coordinates, since P256K isn't a curve .NET's ECDsa can create.
+        // and COSEEllipticCurve enums but isn't in IsSupportedAlgorithm. A
+        // P256K crv is rejected up front with NotSupportedException, since
+        // it's a valid COSE curve this implementation simply doesn't support
+        // (distinct from a genuinely invalid kty+crv or alg+crv combination).
+        // The underlying key material below is generated on P-256 purely so
+        // the CBOR writer has valid X/Y coordinates, since P256K isn't a
+        // curve .NET's ECDsa can create.
         var bytes = EncodeEcPublicKeyCbor(AlgES256K, CrvP256K, keyMaterialCrv: CrvP256);
 
         // Act & Assert
         var exception = Assert.Throws<PasskeyException>(() => CredentialPublicKey.Decode(bytes));
 
-        Assert.IsType<CborContentException>(exception.InnerException);
-        Assert.Contains("key type", exception.InnerException!.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<NotSupportedException>(exception.InnerException);
+        Assert.Contains("P256K", exception.InnerException!.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
     public void Decode_Throws_WhenCrvIsNotValidForKty()
     {
         // Arrange
-        // CrvP256K is a recognized COSEEllipticCurve value, but
-        // IsValidKtyCrvCombination doesn't accept it for kty=EC2 (it's only
-        // valid for kty=OKP curves, none of which are P256K). This exercises
-        // the kty+crv check directly, independent of alg. Key material is
-        // generated on P-256 since P256K isn't a curve .NET's ECDsa can create.
-        var bytes = EncodeEcPublicKeyCbor(AlgES256, CrvP256K, keyMaterialCrv: CrvP256);
+        // kty=OKP (1) paired with CrvP384: P384 is a recognized
+        // COSEEllipticCurve value, but IsValidKtyCrvCombination only accepts
+        // it for kty=EC2, not kty=OKP. This exercises the kty+crv check
+        // directly, independent of alg or the P256K-specific
+        // NotSupportedException path above.
+        const int KeyTypeOkp = 1;
+        var bytes = EncodeEcPublicKeyCbor(AlgES256, CrvP384, kty: KeyTypeOkp);
 
         // Act & Assert
         var exception = Assert.Throws<PasskeyException>(() => CredentialPublicKey.Decode(bytes));
@@ -102,9 +104,9 @@ public class CredentialPublicKeyTest
 
     /// <summary>
     /// Encodes a CTAP2-canonical COSE EC2 public key with the given (possibly
-    /// invalid) alg/crv combination. The same helper backs both the valid and
-    /// mismatched theories so both exercise the identical decode path; only
-    /// the alg/crv values written into the CBOR differ.
+    /// invalid) alg/crv/kty combination. The same helper backs both the valid
+    /// and mismatched theories so both exercise the identical decode path;
+    /// only the alg/crv/kty values written into the CBOR differ.
     /// </summary>
     /// <param name="keyMaterialCrv">
     /// The curve to actually generate EC key material on. Defaults to
@@ -113,7 +115,11 @@ public class CredentialPublicKeyTest
     /// can create (e.g. P256K), and the test only cares about the encoded
     /// crv label being rejected, not about real key material for that curve.
     /// </param>
-    private static byte[] EncodeEcPublicKeyCbor(int algId, int crv, int? keyMaterialCrv = null)
+    /// <param name="kty">
+    /// The COSE key type label to write. Defaults to EC2 (2). Only needs to
+    /// differ when testing an intentionally mismatched kty+crv combination.
+    /// </param>
+    private static byte[] EncodeEcPublicKeyCbor(int algId, int crv, int? keyMaterialCrv = null, int kty = 2)
     {
         using var ecdsa = ECDsa.Create(MapCrvToECCurve(keyMaterialCrv ?? crv));
         var parameters = ecdsa.ExportParameters(includePrivateParameters: false);
@@ -125,13 +131,12 @@ public class CredentialPublicKeyTest
         const int LabelCrv = -1;
         const int LabelX = -2;
         const int LabelY = -3;
-        const int KeyTypeEC2 = 2;
 
         var writer = new CborWriter(CborConformanceMode.Ctap2Canonical);
         writer.WriteStartMap(5); // kty, alg, crv, x, y
 
         writer.WriteInt32(LabelKeyType);
-        writer.WriteInt32(KeyTypeEC2);
+        writer.WriteInt32(kty);
 
         writer.WriteInt32(LabelAlg);
         writer.WriteInt32(algId);

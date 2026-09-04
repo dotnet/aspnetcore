@@ -153,6 +153,14 @@ internal sealed class CredentialPublicKey
         reader.ReadCoseKeyLabel((int)COSEKeyParameter.Crv);
         var crv = (COSEEllipticCurve)reader.ReadInt32();
 
+        if (crv == COSEEllipticCurve.P256K)
+        {
+            // P256K (secp256k1) is a valid COSE curve, but this implementation
+            // has never supported it. Distinguish "recognized but unsupported"
+            // from "not a valid kty+crv combination" below.
+            throw new NotSupportedException("The COSE curve 'P256K' is not supported.");
+        }
+
         if (!IsValidKtyCrvCombination(kty, crv))
         {
             throw new CborContentException($"The COSE key type '{kty}' is not valid for crv '{crv}'.");
@@ -211,9 +219,8 @@ internal sealed class CredentialPublicKey
         // alg/crv pairings for the currently supported EC2 algorithms.
         // Adding another EC2 algorithm to IsSupportedAlgorithm also requires
         // updating this switch. ES256K is intentionally omitted: it isn't in
-        // IsSupportedAlgorithm, and P256K isn't accepted by
-        // IsValidKtyCrvCombination above, so a key using it is already
-        // rejected before this runs.
+        // IsSupportedAlgorithm, and a P256K crv is already rejected above
+        // with NotSupportedException before this runs.
         static bool IsValidAlgCrvCombination(COSEAlgorithmIdentifier alg, COSEEllipticCurve crv)
         {
             return (alg, crv) switch
