@@ -100,6 +100,49 @@ public class OpenIdConnectAuthenticateTests
         Assert.StartsWith("/error?FailureMessage=", transaction.Response.Headers.GetValues("Location").First());
     }
 
+    [Fact]
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/53048. An error response
+    // (for example prompt=none returning error=login_required) must still delete the nonce and
+    // correlation cookies for that flow, otherwise they accumulate on repeated failed sign-ins
+    // until the request headers grow too large.
+    public async Task ErrorResponseDeletesNonceAndCorrelationCookies()
+    {
+        var settings = new TestSettings(
+            opt =>
+            {
+                opt.StateDataFormat = new TestStateDataFormatWithNonce();
+                // Identity string protection keeps the nonce cookie name deterministic for the test.
+                opt.StringDataFormat = new TestStringDataFormat();
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.ClientId = "Test Id";
+                opt.Events = new OpenIdConnectEvents()
+                {
+                    OnRemoteFailure = ctx =>
+                    {
+                        ctx.HandleResponse();
+                        ctx.Response.StatusCode = StatusCodes.Status200OK;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+        var server = settings.CreateTestServer();
+
+        var nonceCookieName = OpenIdConnectDefaults.CookieNoncePrefix + "nonce-value";
+
+        var transaction = await server.SendAsync(
+            "https://example.com/signin-oidc?error=login_required&state=protected_state",
+            $".AspNetCore.Correlation.correlationId=N; {nonceCookieName}=N");
+
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+        Assert.Contains(
+            transaction.SetCookie,
+            cookie => cookie.StartsWith($"{nonceCookieName}=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
+        Assert.Contains(
+            transaction.SetCookie,
+            cookie => cookie.StartsWith(".AspNetCore.Correlation.correlationId=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
+    }
+
     private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>
     {
         private AuthenticationProperties Data { get; set; }
@@ -130,5 +173,37 @@ public class OpenIdConnectAuthenticateTests
         {
             throw new NotImplementedException();
         }
+    }
+
+    private class TestStateDataFormatWithNonce : ISecureDataFormat<AuthenticationProperties>
+    {
+        public string Protect(AuthenticationProperties data) => "protected_state";
+
+        public string Protect(AuthenticationProperties data, string purpose) => throw new NotImplementedException();
+
+        public AuthenticationProperties Unprotect(string protectedText)
+        {
+            Assert.Equal("protected_state", protectedText);
+            var properties = new AuthenticationProperties(new Dictionary<string, string>()
+                {
+                    { ".xsrf", "correlationId" },
+                    { "N", "nonce-value" },
+                });
+            properties.RedirectUri = "http://testhost/redirect";
+            return properties;
+        }
+
+        public AuthenticationProperties Unprotect(string protectedText, string purpose) => throw new NotImplementedException();
+    }
+
+    private class TestStringDataFormat : ISecureDataFormat<string>
+    {
+        public string Protect(string data) => data;
+
+        public string Protect(string data, string purpose) => data;
+
+        public string Unprotect(string protectedText) => protectedText;
+
+        public string Unprotect(string protectedText, string purpose) => protectedText;
     }
 }
