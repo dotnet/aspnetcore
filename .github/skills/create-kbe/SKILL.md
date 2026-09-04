@@ -5,8 +5,8 @@ description: Select and verify a Build Insights Known Build Error matcher for on
 
 # Create a Known Build Error for ASP.NET Core
 
-Use this skill only after the caller has selected one exact failing test that is
-eligible for quarantine.
+Use this skill only after the caller has selected one exact failing test from
+the workflow's deterministic Case A eligible-test array.
 
 Read and follow these in order:
 
@@ -26,5 +26,7 @@ Core rules:
 - If the matcher, evidence, or duplicate search is uncertain, report the KBE as
   incomplete. The quarantine issue may still be created without activating
   Build Insights matching.
+- Never promote a test absent from the deterministic eligible-test array. The
+  agent cannot replace or override the collector-authored eligibility receipt.
 - Do not render the final issue body or choose labels. The deterministic
   quarantine issue handler owns those operations.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -65,6 +66,7 @@ function createEvidence(overrides = {}) {
         leg: "Linux_Test",
         error: "Expected response body to contain stable-marker-123 but it was empty.",
         stack: "at Microsoft.AspNetCore.Tests.SampleTests.ReturnsExpectedResponse()",
+        is_consistent_regression: false,
       },
     },
     source_b: {},
@@ -86,6 +88,56 @@ function createItem(overrides = {}) {
   };
 }
 
+function createEligibility(evidenceText, evidence, overrides = {}) {
+  const tests = {};
+  for (const [name, record] of Object.entries(evidence.source_a ?? {})) {
+    tests[name] = {
+      status: "eligible",
+      originating_case: "case-a",
+      source_resolution: {
+        status: "exact",
+        path: "src/Sample.Tests/SampleTests.cs",
+        type: name.slice(0, name.lastIndexOf(".")),
+        method: name.slice(name.lastIndexOf(".") + 1),
+      },
+      current_quarantine_state: "not-quarantined",
+      latest_quarantine_transition: "none",
+      is_consistent_regression: false,
+      raw_failure_builds: record.builds,
+      excluded_builds: [],
+      cutoff: {
+        utc: "2026-08-01T00:00:00Z",
+        reason: "latest-test-file-change",
+        commit: "source-commit",
+      },
+      eligible_failure_builds: record.builds,
+      evidence: {
+        build: record.evidence_build,
+        run_id: record.run_id,
+        result_id: record.result_id,
+      },
+      reasons: [],
+    };
+  }
+  if (overrides.testName && overrides.record) {
+    tests[overrides.testName] = {
+      ...(tests[overrides.testName] ?? {}),
+      ...overrides.record,
+    };
+  }
+  return {
+    schema_version: 1,
+    part1_sha256: crypto.createHash("sha256").update(evidenceText).digest("hex"),
+    repository: "dotnet/aspnetcore",
+    ref: "refs/heads/main",
+    commit: "workflow-commit",
+    history_ref: "refs/remotes/origin/main",
+    history_commit: "a".repeat(40),
+    tests,
+    ...overrides.root,
+  };
+}
+
 async function run(item = createItem(), options = {}) {
   delete globalThis[stateKey];
   return runWithoutReset(item, options);
@@ -95,10 +147,27 @@ async function runWithoutReset(item = createItem(), options = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "test-quarantine-kbe-"));
   const evidenceDirectory = path.join(root, "test-quarantine-evidence");
   fs.mkdirSync(evidenceDirectory);
+  const evidence = options.evidence ?? createEvidence();
+  const evidenceText = JSON.stringify(evidence);
   if (!options.missingEvidence) {
     fs.writeFileSync(
       path.join(evidenceDirectory, "test-quarantine-part1.json"),
-      JSON.stringify(options.evidence ?? createEvidence()),
+      evidenceText,
+    );
+  }
+  if (!options.missingEligibility) {
+    const eligibility = options.eligibility ?? createEligibility(
+      evidenceText,
+      evidence,
+      {
+        testName: item.test_name,
+        record: options.eligibilityRecord,
+        root: options.eligibilityRoot,
+      },
+    );
+    fs.writeFileSync(
+      path.join(evidenceDirectory, "test-quarantine-case-a-eligibility.json"),
+      JSON.stringify(eligibility),
     );
   }
 
@@ -159,6 +228,8 @@ async function runWithoutReset(item = createItem(), options = {}) {
     TEST_QUARANTINE_ENABLE_KBE: options.enableKbe ? "true" : "false",
     GH_AW_SAFE_OUTPUTS_STAGED: options.staged ? "true" : "false",
     GH_AW_DETECTION_CONCLUSION: options.threatConclusion ?? "success",
+    GITHUB_REF: "refs/heads/main",
+    GITHUB_SHA: "workflow-commit",
   };
   const localProcess = { env };
   const temporaryIdMap = options.temporaryIdMap ?? new Map();
@@ -203,6 +274,87 @@ async function main() {
   {
     const output = await run(createItem(), { enableKbe: true });
     assert.deepEqual(createdIssue(output).labels, ["test-failure", "Known Build Error"]);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      eligibilityRecord: {
+        status: "ineligible",
+        eligible_failure_builds: [102],
+        reasons: ["fewer-than-two-post-cutoff-failures"],
+      },
+    });
+    const issue = createdIssue(output);
+    assert.deepEqual(issue.labels, ["test-failure"]);
+    assert.doesNotMatch(issue.body, /```json/);
+    assert.match(issue.body, /minimum Case A eligibility invariants/);
+  }
+
+  {
+    const evidence = createEvidence();
+    evidence.source_a[testName].is_consistent_regression = true;
+    const output = await run(createItem(), {
+      evidence,
+      enableKbe: true,
+      eligibilityRecord: {
+        status: "ineligible",
+        is_consistent_regression: true,
+        reasons: ["consistent-regression-or-unproven"],
+      },
+    });
+    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
+    assert.doesNotMatch(createdIssue(output).body, /```json/);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      eligibilityRecord: {
+        cutoff: {
+          utc: "2026-08-18T00:00:00Z",
+          reason: "latest-test-file-change",
+          commit: "source-commit",
+        },
+      },
+    });
+    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
+    assert.doesNotMatch(createdIssue(output).body, /```json/);
+    assert.match(createdIssue(output).body, /invalid post-cutoff failure build/);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      eligibilityRecord: {
+        status: "ineligible",
+        originating_case: "case-b",
+        current_quarantine_state: "not-quarantined",
+        latest_quarantine_transition: "removed",
+      },
+    });
+    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
+    assert.doesNotMatch(createdIssue(output).body, /```json/);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      missingEligibility: true,
+    });
+    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
+    assert.doesNotMatch(createdIssue(output).body, /```json/);
+    assert.match(createdIssue(output).body, /unable to read deterministic Case A eligibility/);
+  }
+
+  {
+    const output = await run(createItem(), {
+      enableKbe: true,
+      eligibilityRoot: { part1_sha256: "tampered" },
+    });
+    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
+    assert.doesNotMatch(createdIssue(output).body, /```json/);
+    assert.match(createdIssue(output).body, /receipt identity does not match/);
   }
 
   {
@@ -377,6 +529,18 @@ async function main() {
   }
 
   {
+    delete globalThis[stateKey];
+    const first = await runWithoutReset(createItem());
+    assert.equal(first.result.success, true);
+    const second = await runWithoutReset(createItem({
+      temporary_id: "aw_duplicate",
+    }));
+    assert.equal(second.result.success, false);
+    assert.match(second.result.error, /already claimed by this run/);
+    assert.equal(second.calls.create.length, 0);
+  }
+
+  {
     const live = await run(createItem(), { enableKbe: true });
     const liveIssue = createdIssue(live);
     const output = await run(createItem(), { staged: true, enableKbe: true });
@@ -441,7 +605,7 @@ async function main() {
     const output = await run(createItem(), { evidence });
     const issue = createdIssue(output);
     assert.doesNotMatch(issue.body, /```json/);
-    assert.match(issue.body, /not bound to an exact build, test run, and result/);
+    assert.match(issue.body, /absent from the deterministic Case A eligibility receipt/);
   }
 
   {
@@ -458,7 +622,7 @@ async function main() {
     const output = await run(createItem(), { evidence });
     const issue = createdIssue(output);
     assert.doesNotMatch(issue.body, /```json/);
-    assert.match(issue.body, /not bound to an exact build, test run, and result/);
+    assert.match(issue.body, /lacks a bound eligible evidence result/);
   }
 
   {
@@ -554,9 +718,17 @@ async function main() {
   {
     delete globalThis[stateKey];
     for (let index = 0; index < 10; index++) {
+      const indexedTestName = `${testName}${index}`;
+      const evidence = createEvidence();
+      evidence.source_a[indexedTestName] = {
+        ...evidence.source_a[testName],
+        stack: `at ${indexedTestName}()`,
+      };
+      delete evidence.source_a[testName];
       const output = await runWithoutReset(createItem({
         temporary_id: `aw_test_${index}`,
-      }));
+        test_name: indexedTestName,
+      }), { evidence });
       assert.equal(output.result.success, true);
     }
     const output = await runWithoutReset(createItem({ temporary_id: "aw_test_10" }));

@@ -3,9 +3,11 @@
 Use these rules when one concrete ASP.NET Core test failure might become a
 Build Insights `Known Build Error`.
 
-The caller remains responsible for deciding that the test is flaky and eligible
-for quarantine. These instructions cover only duplicate detection and matcher
-selection.
+The workflow's deterministic collector decides whether the test satisfies the
+minimum Case A quarantine gates. The agent may choose only an exact test listed
+in the injected eligible-test array. These instructions cover duplicate
+detection and matcher selection; they do not permit overriding a missing,
+ineligible, or unproven collector receipt.
 
 ## Search for an existing issue
 
@@ -97,8 +99,9 @@ If the evidence cannot produce a matcher meeting this bar, use
 
 Before calling the quarantine issue tool:
 
-1. Confirm the exact test identity exists in injected `source_a`/`source_b` or
-   as the exact individual name before `[FAIL]` in a Source C block.
+1. Confirm the exact test identity is present in the workflow's injected
+   deterministic Case A eligible-test array. Source C-only tests are not
+   eligible for automatic KBE activation.
 2. Confirm every literal or array element occurs verbatim in that test's
    failure message or stack trace.
 3. Confirm the regex matches that evidence when regex is necessary.
@@ -106,7 +109,8 @@ Before calling the quarantine issue tool:
    injected evidence snapshot.
 5. Record the duplicate-search classification and a concise summary.
 
-The deterministic handler repeats the evidence and specificity checks. It
-renders the final four-key JSON block, fixes `BuildRetry` to `false`, fixes
-`ExcludeConsoleLog` to `true`, and decides whether the `Known Build Error` label
-is permitted. Never construct or paste that JSON yourself.
+The deterministic handler verifies the collector-authored receipt, repeats the
+evidence and specificity checks, renders the final four-key JSON block, fixes
+`BuildRetry` to `false`, fixes `ExcludeConsoleLog` to `true`, and decides whether
+the `Known Build Error` label is permitted. Never construct or paste that JSON
+yourself.

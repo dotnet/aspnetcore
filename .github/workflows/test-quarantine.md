@@ -1167,11 +1167,75 @@ on:
                 write_part1_chunks(f, js)
         SCRIPT
 
-    - name: Upload Part 1 evidence for safe output validation
+    - name: Check out trusted source history for Case A eligibility
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Collect deterministic Case A eligibility
+      id: case_a_eligibility
+      env:
+        CLOSED_QUARANTINE_PRS: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python3 << 'SCRIPT'
+        import json
+        import os
+        import pathlib
+
+        closed_prs = os.environ.get("CLOSED_QUARANTINE_PRS", "")
+        try:
+            parsed = json.loads(closed_prs)
+        except json.JSONDecodeError as ex:
+            raise SystemExit(f"FATAL: CLOSED_QUARANTINE_PRS is invalid JSON: {ex}")
+        if not isinstance(parsed, list):
+            raise SystemExit("FATAL: CLOSED_QUARANTINE_PRS must be a JSON array")
+        pathlib.Path(
+            os.environ.get("RUNNER_TEMP", "/tmp"),
+            "test-quarantine-closed-prs.json",
+        ).write_text(json.dumps(parsed, separators=(",", ":")), encoding="utf-8")
+        SCRIPT
+
+        python3 .github/workflows/scripts/test-quarantine/collect_case_a_eligibility.py \
+          --part1 "${RUNNER_TEMP}/test-quarantine-part1.json" \
+          --closed-prs "${RUNNER_TEMP}/test-quarantine-closed-prs.json" \
+          --output "${RUNNER_TEMP}/test-quarantine-case-a-eligibility.json" \
+          --repo-root "${GITHUB_WORKSPACE}" \
+          --repository "${GITHUB_REPOSITORY}" \
+          --ref "${GITHUB_REF}" \
+          --commit "${GITHUB_SHA}" \
+          --history-ref "refs/remotes/origin/main"
+
+        python3 << 'SCRIPT'
+        import json
+        import os
+        import pathlib
+
+        receipt = json.loads(pathlib.Path(
+            os.environ["RUNNER_TEMP"],
+            "test-quarantine-case-a-eligibility.json",
+        ).read_text(encoding="utf-8"))
+        eligible = sorted(
+            name for name, record in receipt.get("tests", {}).items()
+            if record.get("status") == "eligible"
+        )
+        eligible_json = json.dumps(eligible, separators=(",", ":"))
+        if len(eligible_json.encode("utf-8")) > 120000:
+            raise SystemExit("FATAL: eligible_test_names exceeds the safe job-output limit")
+        output = os.environ.get("GITHUB_OUTPUT")
+        if not output:
+            raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
+        with open(output, "a", encoding="utf-8") as stream:
+            stream.write(f"eligible_test_names={eligible_json}\n")
+        SCRIPT
+
+    - name: Upload deterministic evidence for safe output validation
       uses: actions/upload-artifact@v7
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
-        path: ${{ runner.temp }}/test-quarantine-part1.json
+        path: |
+          ${{ runner.temp }}/test-quarantine-part1.json
+          ${{ runner.temp }}/test-quarantine-case-a-eligibility.json
         retention-days: 1
         if-no-files-found: error
 
@@ -1182,6 +1246,7 @@ jobs:
       requarantine_issue_numbers: ${{ steps.requarantine_issues.outputs.requarantine_issue_numbers }}
       closed_quarantine_prs: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
       source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
+      eligible_test_names: ${{ steps.case_a_eligibility.outputs.eligible_test_names }}
       # part1_data is chunked across fixed outputs to stay under the 131072-byte MAX_ARG_STRLEN
       # per-env-var limit (see write_part1_chunks above); the prompt concatenates them back.
       part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
@@ -1214,10 +1279,12 @@ permissions:
 
 safe-outputs:
   report-failure-as-issue: false
+  concurrency-group: test-quarantine-safe-outputs-${{ github.repository }}
   env:
     TEST_QUARANTINE_ENABLE_KBE: ${{ vars.TEST_QUARANTINE_ENABLE_KBE || 'false' }}
   steps:
-    - name: Download deterministic Part 1 evidence
+    - name: Download deterministic quarantine evidence
+      continue-on-error: true
       uses: actions/download-artifact@v8
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
@@ -1269,7 +1336,8 @@ safe-outputs:
         const crypto = require("crypto");
 
         const stateKey = Symbol.for("aspnetcore.test-quarantine.kbe-handler");
-        const state = globalThis[stateKey] ??= { calls: 0 };
+        const state = globalThis[stateKey] ??= { calls: 0, claimedTests: new Set() };
+        state.claimedTests ??= new Set();
         state.calls++;
 
         const fail = (error) => {
@@ -1332,9 +1400,15 @@ safe-outputs:
           process.env.RUNNER_TEMP || "/tmp",
           "test-quarantine-evidence",
           "test-quarantine-part1.json");
+        const eligibilityPath = path.join(
+          process.env.RUNNER_TEMP || "/tmp",
+          "test-quarantine-evidence",
+          "test-quarantine-case-a-eligibility.json");
         let evidence;
+        let evidenceBytes;
         try {
-          evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+          evidenceBytes = fs.readFileSync(evidencePath);
+          evidence = JSON.parse(evidenceBytes.toString("utf8"));
         } catch (error) {
           return fail(`Unable to read deterministic Part 1 evidence: ${error.message}`);
         }
@@ -1342,6 +1416,32 @@ safe-outputs:
         const sourceA = evidence.source_a ?? {};
         const sourceB = evidence.source_b ?? {};
         const builds = evidence.builds ?? {};
+        const repo = `${context.repo.owner}/${context.repo.repo}`;
+        let eligibilityReason = "";
+        let eligibilityRecord = null;
+        try {
+          const eligibility = JSON.parse(fs.readFileSync(eligibilityPath, "utf8"));
+          const part1Hash = crypto.createHash("sha256").update(evidenceBytes).digest("hex");
+          const expectedRef = process.env.GITHUB_REF || eligibility.ref;
+          const expectedCommit = process.env.GITHUB_SHA || eligibility.commit;
+          if (eligibility.schema_version !== 1 ||
+              eligibility.part1_sha256 !== part1Hash ||
+              eligibility.repository !== repo ||
+              eligibility.ref !== expectedRef ||
+              eligibility.commit !== expectedCommit ||
+              eligibility.history_ref !== "refs/remotes/origin/main" ||
+              !/^[0-9a-f]{40}$/.test(String(eligibility.history_commit ?? ""))) {
+            eligibilityReason = "deterministic Case A receipt identity does not match this workflow run";
+          } else {
+            eligibilityRecord = eligibility.tests?.[testName] ?? null;
+            if (!eligibilityRecord) {
+              eligibilityReason = "test is absent from the deterministic Case A eligibility receipt";
+            }
+          }
+        } catch (error) {
+          eligibilityReason = `unable to read deterministic Case A eligibility: ${error.message}`;
+        }
+
         const selectedRecords = [sourceA[testName], sourceB[testName]].filter(Boolean);
         if (selectedRecords.length === 0) {
           const sourceCMatches = (evidence.source_c ?? []).filter(entry =>
@@ -1377,6 +1477,53 @@ safe-outputs:
           .sort((left, right) => right.started - left.started)[0];
         if (!mostRecentBuild) {
           return fail(`No timestamped failing build exists for ${testName}`);
+        }
+
+        let eligibleRecord = null;
+        if (!eligibilityReason) {
+          const sourceResolution = eligibilityRecord.source_resolution ?? {};
+          const eligibleBuilds = eligibilityRecord.eligible_failure_builds;
+          const receiptEvidence = eligibilityRecord.evidence ?? {};
+          const cutoffUtc = Date.parse(eligibilityRecord.cutoff?.utc ?? "");
+          const uniqueEligibleBuilds = Array.isArray(eligibleBuilds)
+            ? [...new Set(eligibleBuilds.map(String))]
+            : [];
+          if (eligibilityRecord.status !== "eligible" ||
+              eligibilityRecord.originating_case !== "case-a" ||
+              sourceResolution.status !== "exact" ||
+              !sourceResolution.path ||
+              !sourceResolution.type ||
+              !sourceResolution.method ||
+              eligibilityRecord.current_quarantine_state !== "not-quarantined" ||
+              eligibilityRecord.latest_quarantine_transition !== "none" ||
+              eligibilityRecord.is_consistent_regression !== false ||
+              (sourceA[testName] && sourceA[testName].is_consistent_regression !== false) ||
+              uniqueEligibleBuilds.length < 2 ||
+              !Number.isFinite(cutoffUtc)) {
+            eligibilityReason = "deterministic evidence does not prove the minimum Case A eligibility invariants";
+          } else if (uniqueEligibleBuilds.some(buildId => {
+            const startedUtc = Date.parse(builds[buildId]?.startedUtc ?? "");
+            return !Number.isFinite(startedUtc) ||
+              startedUtc <= cutoffUtc ||
+              !buildIds.map(String).includes(buildId) ||
+              !(eligibilityRecord.raw_failure_builds ?? []).map(String).includes(buildId);
+          })) {
+            eligibilityReason = "deterministic Case A receipt contains an invalid post-cutoff failure build";
+          } else if (!/^\d+$/.test(String(receiptEvidence.build ?? "")) ||
+              !/^\d+$/.test(String(receiptEvidence.run_id ?? "")) ||
+              !/^\d+$/.test(String(receiptEvidence.result_id ?? "")) ||
+              !uniqueEligibleBuilds.includes(String(receiptEvidence.build))) {
+            eligibilityReason = "deterministic Case A receipt lacks a bound eligible evidence result";
+          } else {
+            eligibleRecord = selectedRecords.find(record =>
+              (record.builds ?? []).map(String).includes(String(receiptEvidence.build)) &&
+              String(record.evidence_build) === String(receiptEvidence.build) &&
+              String(record.run_id) === String(receiptEvidence.run_id) &&
+              String(record.result_id) === String(receiptEvidence.result_id)) ?? null;
+            if (!eligibleRecord) {
+              eligibilityReason = "deterministic Case A receipt contradicts the Part 1 evidence identity";
+            }
+          }
         }
 
         let matcher = rawMatcher;
@@ -1564,7 +1711,13 @@ safe-outputs:
           }
         }
 
-        const primaryRecord = matchingRecord ?? selectedRecords[0];
+        if (!validationReason && matcherKind !== "incomplete" &&
+            eligibleRecord &&
+            !recordFields(eligibleRecord).some(field => matches(field))) {
+          validationReason = "matcher does not match the eligible deterministic evidence result";
+        }
+
+        const primaryRecord = eligibleRecord ?? matchingRecord ?? selectedRecords[0];
         const evidenceBuild = primaryRecord.evidence_build ?? primaryRecord.builds?.[0];
         if (!/^\d+$/.test(String(evidenceBuild ?? "")) || !builds[String(evidenceBuild)]) {
           return fail(`Evidence build is absent from deterministic build metadata for ${testName}`);
@@ -1577,21 +1730,22 @@ safe-outputs:
              !(primaryRecord.builds ?? []).map(String).includes(String(evidenceBuild)))) {
           validationReason = "matcher evidence is not bound to an exact build, test run, and result";
         }
-        const kbeVerified = !validationReason &&
+        const kbeVerified = !eligibilityReason &&
+          !validationReason &&
           matcherKind !== "incomplete" &&
           duplicateStatus === "none";
         const kbeEnabled = kbeVerified &&
           process.env.TEST_QUARANTINE_ENABLE_KBE === "true";
         const legName = primaryRecord.leg ?? "unknown";
         const assembly = primaryRecord.assembly || "unknown";
-        const repo = `${context.repo.owner}/${context.repo.repo}`;
         const fullTitle = `Quarantine ${testName}`;
         const title = fullTitle.length <= 256
           ? fullTitle
           : `${fullTitle.slice(0, 236)} [${crypto.createHash("sha256").update(testName).digest("hex").slice(0, 16)}]`;
         const buildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${mostRecentBuild.id}&view=results`;
         const evidenceBuildUrl = `https://dev.azure.com/dnceng-public/public/_build/results?buildId=${evidenceBuild}&view=results`;
-        const incompleteReason = validationReason ||
+        const incompleteReason = eligibilityReason ||
+          validationReason ||
           (duplicateStatus !== "none" ? `duplicate search result: ${duplicateStatus}` : "matcher was not supplied");
 
         let logLink = "";
@@ -1659,6 +1813,7 @@ safe-outputs:
           "",
           `Evidence build: ${evidenceBuildUrl}`,
           `Test result identity: run ${escapeHtml(evidenceRunId || "unavailable")}, result ${escapeHtml(evidenceResultId || "unavailable")}`,
+          `Case A eligibility: ${eligibilityReason ? `incomplete - ${escapeHtml(eligibilityReason)}` : "verified from the collector-authored receipt"}`,
           `Duplicate search: ${escapeHtml(duplicateStatus)} - ${escapedDuplicate}`,
           kbeVerified
             ? `Matcher verified against deterministic VSTMR evidence.${kbeEnabled ? "" : " Known Build Error labeling is disabled by repository policy."}`
@@ -1683,6 +1838,10 @@ safe-outputs:
         if (body.length > 65000) {
           return fail(`Rendered issue body exceeds GitHub's 65000 character limit: ${body.length}`);
         }
+        if (state.claimedTests.has(testName)) {
+          return fail(`test_name was already claimed by this run: ${testName}`);
+        }
+        state.claimedTests.add(testName);
 
         let existingIssues;
         try {
@@ -1841,6 +2000,22 @@ The injected object has this shape:
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
 - `trim` — present only if the whole payload approached the 1MB injection limit and optional enrichment had to be shed (e.g. `stack_dropped`, `error_dropped`). The per-test failure counts are never dropped; if you see this, error/stack for some tests may be missing and you can fetch them for a final candidate via its `helix` coordinates (Part 3).
+
+The deterministic collector also resolved current source/history and applied
+the minimum Case A gates before the agent started. The exact fully qualified
+tests eligible for a new Case A issue are:
+
+```json
+${{ needs.pre_activation.outputs.eligible_test_names }}
+```
+
+For Case A, choose only from this list. The safe-output handler independently
+reads the collector-authored receipt and will downgrade any missing,
+contradictory, stale, already-quarantined, Case B, regression, or otherwise
+unproven selection to an ordinary `test-failure` issue with no Build Insights
+JSON and no `Known Build Error` label. The agent cannot override those facts.
+Continue to perform the existing history investigation for diagnosis and for
+Case B handling, but do not promote a test absent from this list into Case A.
 
 **Names ending in `.WorkItemExecution` are work-item (whole-assembly) crashes, not individual tests.** Use `source_c` `fail_blocks` to find the specific `[FAIL]` test inside a crashed work item; an individual test only becomes a quarantine candidate under the rules in Step 1.2.
 
