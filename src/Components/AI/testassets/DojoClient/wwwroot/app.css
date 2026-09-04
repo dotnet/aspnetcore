@@ -22,3 +22,15 @@ html, body {
 .dojo-scenario__welcome {
     color: #6c757d;
 }
+
+.agentic-chat {
+    min-height: 100vh;
+    transition: background 200ms ease;
+}
+
+.agentic-chat__action-status {
+    display: block;
+    margin: 0.5rem 1rem;
+    color: #495057;
+    font-size: 0.875rem;
+}

@@ -1,7 +1,7 @@
 ---
 name: validate-blazor-feature
 description: >-
-  Validate a Blazor feature or behavior interactively in a browser using the canonical Components samples in this repo, before writing E2E tests. USE FOR exercising a Blazor change in src/Components (a render-mode behavior, an interactive component, enhanced navigation, forms, streaming, prerendering), deciding which sample to use, where to add a test page, how to set the render mode (Server/WebAssembly/Auto/static SSR), how to confirm the app is actually interactive (not just static SSR), and how to inspect the browser console and network for errors. Covers BlazorWebAppGlobal, BlazorWebAppPerPage, and BlazorWebAssemblyStandalone, launching them against the in-tree framework, and driving them with the Playwright MCP browser tools. DO NOT USE FOR writing the permanent E2E/Selenium tests themselves, non-Components areas, or unit tests.
+  Validate a Blazor feature or behavior interactively in a browser using the canonical Components samples in this repo, before writing E2E tests. USE FOR exercising a Blazor change in src/Components (a render-mode behavior, an interactive component, enhanced navigation, forms, streaming, prerendering), deciding which sample to use, where to add a test page, how to set the render mode (Server/WebAssembly/Auto/static SSR), how to confirm the app is actually interactive (not just static SSR), and how to inspect the browser console and network for errors. Covers BlazorWebAppGlobal, BlazorWebAppPerPage, and BlazorWebAssemblyStandalone, launching them against the in-tree framework, and driving them with the Playwright MCP browser tools. DO NOT USE FOR writing permanent E2E/Selenium or unit tests, non-Components areas, comparative alternatives research, or isolated native-browser API/HTML/CSS experiments when no Blazor feature implementation is being validated; prefer a minimal browser probe instead.
 ---
 
 # Validate a Blazor feature with the Components samples
@@ -66,6 +66,8 @@ Read the launch URL from stdout: Web App hosts print `Now listening on: http://l
 ## 4. Drive it in the browser (Playwright MCP)
 
 Use the `playwright-browser_*` tools. For an interactive behavior, prove it behaviorally; rendered markup alone is a false positive (static SSR emits the same HTML).
+
+For transient DOM or browser-state behavior, first run the probe against the unmodified baseline and confirm that it detects the reported transition. A passing probe that cannot observe the known failure is not evidence for the fix. Choose instrumentation whose timing matches the behavior: `MutationObserver` callbacks run after synchronous mutations, so reading live DOM state in the callback may expose only the final state. Inspect the mutation records or instrument the exact operation when an intermediate synchronous state matters.
 
 1. `playwright-browser_navigate` to `<base>/<route>`.
 2. For WebAssembly/Auto/standalone, the runtime boots asynchronously: `playwright-browser_wait_for` the expected text (e.g. `Current count`) before interacting. First paint can take many seconds.
