@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.Read(System.Span<byte> buffer) -> int
+override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.Write(System.ReadOnlySpan<byte> buffer) -> void

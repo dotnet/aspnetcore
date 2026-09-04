@@ -187,6 +187,12 @@ public class BufferedReadStream : Stream
     }
 
     /// <inheritdoc/>
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        _inner.Write(buffer);
+    }
+
+    /// <inheritdoc/>
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
         return _inner.WriteAsync(buffer, cancellationToken);
@@ -203,17 +209,23 @@ public class BufferedReadStream : Stream
     {
         ValidateBufferArguments(buffer, offset, count);
 
+        return Read(buffer.AsSpan(offset, count));
+    }
+
+    /// <inheritdoc/>
+    public override int Read(Span<byte> buffer)
+    {
         // Drain buffer
         if (_bufferCount > 0)
         {
-            int toCopy = Math.Min(_bufferCount, count);
-            Buffer.BlockCopy(_buffer, _bufferOffset, buffer, offset, toCopy);
+            var toCopy = Math.Min(_bufferCount, buffer.Length);
+            _buffer.AsSpan(_bufferOffset, toCopy).CopyTo(buffer);
             _bufferOffset += toCopy;
             _bufferCount -= toCopy;
             return toCopy;
         }
 
-        return _inner.Read(buffer, offset, count);
+        return _inner.Read(buffer);
     }
 
     /// <inheritdoc/>
