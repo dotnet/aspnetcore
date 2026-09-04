@@ -12,7 +12,10 @@ async function fetchWithErrorHandling(url, options = {}) {
     if (!response.ok) {
         const text = await response.text();
         console.error(text);
-        throw new Error(`The server responded with status ${response.status}.`);
+        const contentType = response.headers.get('content-type') ?? '';
+        throw new Error(contentType.startsWith('text/plain') && text
+            ? text
+            : `The server responded with status ${response.status}.`);
     }
     return response;
 }
@@ -38,13 +41,25 @@ async function reauthenticateCredential(signal) {
 }
 
 async function requestCredential(email, mediation, signal) {
-    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?username=${email}`, {
+    const query = new URLSearchParams({ username: email });
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?${query}`, {
         method: 'POST',
         signal,
     });
     const optionsJson = await optionsResponse.json();
     const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
     return await navigator.credentials.get({ publicKey: options, mediation, signal });
+}
+
+async function registerCredential(email, signal) {
+    const query = new URLSearchParams({ username: email });
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRegistrationOptions?${query}`, {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseCreationOptionsFromJSON(optionsJson);
+    return await navigator.credentials.create({ publicKey: options, signal });
 }
 
 customElements.define('passkey-submit', class extends HTMLElement {
@@ -99,6 +114,15 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.abortController?.abort();
     }
 
+    getEmail() {
+        const email = new FormData(this.internals.form).get(this.attrs.emailName);
+        if (typeof email !== 'string') {
+            throw new Error('The email address is missing.');
+        }
+
+        return email;
+    }
+
     async obtainCredential(useConditionalMediation, signal) {
         if (!browserSupportsPasskeys) {
             throw new Error('Some passkey features are missing. Please update your browser.');
@@ -109,9 +133,10 @@ customElements.define('passkey-submit', class extends HTMLElement {
         } else if (this.attrs.operation === 'Reauthenticate') {
             return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
-            const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;
-            return await requestCredential(email, mediation, signal);
+            return await requestCredential(this.getEmail(), mediation, signal);
+        } else if (this.attrs.operation === 'Register') {
+            return await registerCredential(this.getEmail(), signal);
         } else {
             throw new Error(`Unknown passkey operation '${this.attrs.operation}'.`);
         }

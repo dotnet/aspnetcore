@@ -123,7 +123,17 @@
         if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
         {
             // When performing passkey sign-in, don't perform form validation.
-            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
+            try
+            {
+                result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
+            }
+            catch (InvalidOperationException)
+            {
+                // The ceremony state lives in a single cookie, so another tab can replace it
+                // before this form is posted.
+                errorMessage = "Error: Your passkey session expired. Please try again.";
+                return;
+            }
         }
         else
         {
