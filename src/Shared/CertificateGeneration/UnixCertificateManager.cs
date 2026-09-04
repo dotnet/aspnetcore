@@ -691,9 +691,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             RedirectStandardError = true,
         };
 
-        using var process = Process.Start(startInfo)!;
-        process.WaitForExit();
-        return process.ExitCode == 0;
+        return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
     }
 
     /// <remarks>
@@ -714,9 +712,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -743,9 +739,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -767,9 +761,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            if (process.ExitCode == 0)
+            if (CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0)
             {
                 return true;
             }
@@ -939,17 +931,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            var processOutput = CertificateManagerProcessRunner.Run(processInfo);
+            if (processOutput.ExitCode != 0)
             {
                 Log.UnixOpenSslVersionFailed();
                 return false;
             }
 
-            var match = OpenSslVersionRegex.Match(stdout);
+            var match = OpenSslVersionRegex.Match(processOutput.StandardOutput);
             if (!match.Success)
             {
                 Log.UnixOpenSslVersionParsingFailed();
@@ -983,17 +972,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            var processOutput = CertificateManagerProcessRunner.Run(processInfo);
+            if (processOutput.ExitCode != 0)
             {
                 Log.UnixOpenSslHashFailed(certificatePath);
                 return false;
             }
 
-            hash = stdout.Trim();
+            hash = processOutput.StandardOutput.Trim();
             return true;
         }
         catch (Exception ex)
