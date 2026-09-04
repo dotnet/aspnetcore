@@ -1,6 +1,6 @@
 # JSInterop
 
-This directory contains sources for [`Microsoft.JSInterop`](https://www.nuget.org/packages/Microsoft.JSInterop), a package that provides abstractions and features for interop between .NET and JavaScript code.
+This directory contains sources for [`Microsoft.JSInterop`](https://www.nuget.org/packages/Microsoft.JSInterop), a package that provides abstractions and features for interop between .NET and JavaScript code. The JavaScript implementation and npm package are under [`Web.JS`](../Web.JS).
 
 The primary use case is for applications built with Blazor. For usage information, see the following documentation:
 
@@ -19,7 +19,7 @@ This section provides a brief overview of the architecture.
 
 For these types to become usable in a particular runtime environment, such as Blazor Server or Blazor WebAssembly, the runtime environment implements its own concrete subclasses that know how to dispatch calls to the actual JavaScript runtime that is available in that environment. For example, Blazor Server uses the SignalR-based circuit to send invocations to the end user's browser.
 
-`Microsoft.JSInterop.JS` is the JavaScript-side counterpart to the preceding. It runs within a standard web browser environment, receives the invocations from .NET code, executes them, and sends back results in the format understood by the `JSRuntime` base class. This includes special handling for certain parameter types such as `ElementReference` and `DotNetObjectReference`. `Microsoft.JSInterop.JS` also exposes JavaScript functions that can be used to issue calls from JavaScript to .NET.
+The JavaScript-side counterpart runs within a standard web browser environment, receives the invocations from .NET code, executes them, and sends back results in the format understood by the `JSRuntime` base class. This includes special handling for certain parameter types such as `ElementReference` and `DotNetObjectReference`. It also exposes JavaScript functions that can be used to issue calls from JavaScript to .NET.
 
 Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments such as Blazor Server or Blazor WebAssembly must initialize it by registering environment-specific callbacks that know how to dispatch invocations across their own communication channels.
 
@@ -29,19 +29,15 @@ Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments suc
 
 To build the .NET code, you can:
 
- * Run `dotnet build` in the `Microsoft.JSInterop/src` directory. You can also read more [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
- * Run `dotnet build` or `dotnet test` in the `Microsoft.JSInterop/test` directory. You can also read more about how to [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line).
+ * Run `dotnet build` in the `src` directory. You can also read more [on building the project](../../../docs/BuildFromSource.md#step-3-build-the-repo).
+ * Run `dotnet build` or `dotnet test` in the `test` directory. You can also read more about how to [run the tests on the command line](../../../docs/BuildFromSource.md#running-tests-on-command-line).
 
-Alternatively, open `JSInterop.slnf` in Visual Studio.
+Alternatively, open `Components.slnf` in Visual Studio.
 
 To build the JavaScript code, execute the following commands in a command shell:
 
- * `cd Microsoft.JSInterop.JS/src`
- * `npm run preclean`
- * `npm run build`
-
-**Warning:** Due to special requirements related to ASP.NET Core's CI process for Linux distributions, we store the compiled JavaScript artifacts for `Microsoft.JSInterop.JS` in source control in the `Microsoft.JSInterop.JS/src/dist` directory. If you edit and build JavaScript sources, your Git client should indicate that those outputs have changed. You will need to include changes to those `dist` files in any PRs that you submit. When this leads to merge conflicts, we have to resolve them manually by rebasing and rebuilding.
+ * `npm run build --workspace @microsoft/dotnet-js-interop`
 
 ## More Information
 
-For more information, see the [ASP.NET Core README](../../README.md).
+For more information, see the [ASP.NET Core README](../../../README.md).

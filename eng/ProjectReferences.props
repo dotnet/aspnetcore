@@ -165,7 +165,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization" ProjectPath="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepoRoot)src\ObjectPool\src\Microsoft.Extensions.ObjectPool.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />

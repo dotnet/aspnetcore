@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <IncludeComponentsWebAssets>false</IncludeComponentsWebAssets>
   </PropertyGroup>
 
   <ItemGroup>

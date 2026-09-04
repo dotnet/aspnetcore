@@ -14,6 +14,8 @@
       "src\\Components\\Endpoints\\test\\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
+      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\Components\\JSInterop\\test\\Microsoft.JSInterop.Tests.csproj",
       "src\\Components\\Media\\src\\Microsoft.AspNetCore.Components.Media.csproj",
       "src\\Components\\Media\\test\\Microsoft.AspNetCore.Components.Media.Tests.csproj",
       "src\\Components\\Samples\\BlazorWebAppGlobal.Client\\BlazorWebAppGlobal.Client.csproj",

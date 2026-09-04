@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { DotNet } from "../src/Microsoft.JSInterop";
+import * as DotNet from "../../src/JSInterop/Microsoft.JSInterop";
 
 const jsObjectId = "__jsObjectId";
 let lastAsyncResult: null | { callId: number, succeeded: boolean, resultOrError: any } = null;
@@ -105,7 +105,7 @@ describe("CallDispatcher", () => {
     });
 
     test("ConstructorCall: Constructor function is invoked and returns reference to new object", () => {
-        window["testCtor"] = function () { this.a = 10; };
+        window["testCtor"] = function (this: { a: number }) { this.a = 10; };
 
         const result = dispatcher.invokeJSFromDotNet(
             "testCtor",
