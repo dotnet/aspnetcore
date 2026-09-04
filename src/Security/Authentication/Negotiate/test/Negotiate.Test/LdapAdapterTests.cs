@@ -191,4 +191,40 @@ public class LdapAdapterTests
     {
         Assert.Equal(string.Empty, LdapAdapter.EscapeLdapFilterValue(string.Empty));
     }
+
+    [Theory]
+    // Valid Security Groups
+    [InlineData("-2147483646", true)] // 0x80000000 | 0x2 (Global Security)
+    [InlineData("-2147483644", true)] // 0x80000000 | 0x4 (Domain Local Security)
+    [InlineData("-2147483640", true)] // 0x80000000 | 0x8 (Universal Security)
+    // Valid Distribution Groups
+    [InlineData("2", false)]          // 0x2 (Global Distribution)
+    [InlineData("4", false)]          // 0x4 (Domain Local Distribution)
+    [InlineData("8", false)]          // 0x8 (Universal Distribution)
+    // Edge cases and missing attributes fail open
+    [InlineData("garbage", true)]
+    [InlineData(null, true)]
+    public void IsSecurityGroup_EvaluatesGroupTypeAttributeCorrectly(string groupTypeValue, bool expectedIsSecurityGroup)
+    {
+        // Test parsing from string (common in higher level LDAP wrappers)
+        Assert.Equal(expectedIsSecurityGroup, LdapAdapter.IsSecurityGroup(groupTypeValue));
+
+        // Test parsing from byte array (how System.DirectoryServices.Protocols surfaces attributes)
+        if (groupTypeValue != null)
+        {
+            var byteValue = System.Text.Encoding.UTF8.GetBytes(groupTypeValue);
+            Assert.Equal(expectedIsSecurityGroup, LdapAdapter.IsSecurityGroup(byteValue));
+        }
+    }
+
+    [Theory]
+    [InlineData("2", false, false)]            // distribution group, switch off -> no role claim
+    [InlineData("2", true, true)]              // distribution group, switch on  -> role claim restored
+    [InlineData("-2147483646", false, true)]   // security group, switch off     -> role claim
+    [InlineData("-2147483646", true, true)]    // security group, switch on      -> role claim
+    [InlineData(null, false, true)]            // groupType absent               -> fail open
+    public void ShouldEmitRoleClaim_HonoursGroupTypeAndOptOutSwitch(string groupTypeValue, bool allowNonSecurityEnabledGroupClaims, bool expected)
+    {
+        Assert.Equal(expected, LdapAdapter.ShouldEmitRoleClaim(groupTypeValue, allowNonSecurityEnabledGroupClaims));
+    }
 }
