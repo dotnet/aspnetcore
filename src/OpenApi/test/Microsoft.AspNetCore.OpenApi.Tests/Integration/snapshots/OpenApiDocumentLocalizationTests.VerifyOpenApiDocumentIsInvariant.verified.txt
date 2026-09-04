@@ -2336,6 +2336,25 @@
         }
       }
     },
+    "/unions/beasts": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeastEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/obsolete/deprecated": {
       "post": {
         "tags": [
@@ -2819,6 +2838,79 @@
         "properties": {
           "relatedLocation": {
             "$ref": "#/components/schemas/LocationDto"
+          }
+        }
+      },
+      "Beast": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/BeastLion"
+          },
+          {
+            "$ref": "#/components/schemas/BeastDachshund"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "lion": "#/components/schemas/BeastLion",
+            "dachshund": "#/components/schemas/BeastDachshund"
+          }
+        }
+      },
+      "BeastDachshund": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "dachshund"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "BeastEnvelope": {
+        "required": [
+          "beasts"
+        ],
+        "type": "object",
+        "properties": {
+          "beasts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OneOrManyBeast"
+              }
+            ]
+          }
+        }
+      },
+      "BeastLion": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "lion"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -3424,6 +3516,19 @@
           }
         },
         "deprecated": true
+      },
+      "OneOrManyBeast": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Beast"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Beast"
+            }
+          }
+        ]
       },
       "ParentObject": {
         "type": "object",
