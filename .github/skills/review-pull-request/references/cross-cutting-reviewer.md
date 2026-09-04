@@ -29,7 +29,7 @@ independent, single-dimension pass.
 - CHECK: Minimize public surface area; keep speculative hooks, options, extension points, and constructor overloads internal until a demonstrated scenario and API review justify them.
 - CHECK: Preserve public member names, constructor signatures, enum values, default option values, extension-method behavior, analyzer IDs, template identifiers, package identities, and shared-framework metadata unless the breaking change is deliberate and reviewed.
 - CHECK: Use `[Obsolete]` with actionable migration guidance for deprecated APIs, and keep parallel or additive overloads when compatibility requires old members to remain.
-- CHECK: Choose API shapes matching existing ASP.NET Core and .NET patterns: focused interfaces, explicit property names over ambiguous conversions, fluent extension methods that chain correctly, and abstract or virtual members only when inheritance is intentional.
+- CHECK: Use the briefed `review-public-api` design criteria for changed public/protected APIs and shipped defaults/conventions. Verify any proposed finding against frozen signatures and contracts rather than reporting a design preference as a defect.
 - CHECK: Public XML docs must accurately describe purpose, parameters, return values, exceptions, defaults, lifecycle, and non-obvious examples for IntelliSense and generated docs.
 
 ##### Nullability, validation, and correctness invariants

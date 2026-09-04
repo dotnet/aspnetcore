@@ -5,6 +5,11 @@ Review only the ASP.NET Core auth/security area in `src/Security/**`, `src/Ident
 This file is reference material. The `review-pull-request` skill gives each dimension below an
 independent, single-dimension pass.
 
+Apply each CHECK to behavior the changed framework component owns or delegates. Trace the relevant
+implementation, validators, and callbacks while preserving documented options, defaults, and event
+contracts. Do not prescribe application deployment choices or require every handler to reimplement
+validation owned by another component.
+
 #### Overarching principles
 
 - Prefer secure defaults over optional security. Authentication, cookies, antiforgery, token validation, key management, and redirect handling should be safe unless a caller explicitly opts into a documented weaker mode.
@@ -18,23 +23,21 @@ independent, single-dimension pass.
 ##### Scope, API shape, and compatibility
 
 - CHECK: Keep auth/security behavior in the owned area; do not move protocol-library, database-provider, or app-specific policy decisions into shared ASP.NET Core infrastructure.
-- CHECK: Public APIs must preserve binary compatibility through overloads instead of new default parameters, complete XML docs, nullable annotations that match real invariants, and clear migration guidance for obsolete members.
 - CHECK: Prefer current authentication APIs such as direct `HttpContext` methods, scheme-specific options lookup, and modern default-scheme configuration; do not reintroduce legacy shims unless compatibility requires them.
 - CHECK: Make collection and options surfaces communicate mutability: expose read-only policy/scheme maps unless callers intentionally mutate through a controlled method.
-- CHECK: Avoid new static helpers, broad utility classes, or virtual members unless they have a clear extensibility and testability contract.
 
 ##### Cryptography, secrets, and key material
 
-- CHECK: Use vetted cryptographic primitives and platform abstractions for password hashing, encryption, signing, random generation, and token protection; never add custom crypto or weak derivation.
-- CHECK: Compare secrets, tokens, signatures, authenticators, and verification codes with constant-time APIs when equality can reveal secret-dependent timing.
-- CHECK: Keep key material, client secrets, credentials, tokens, recovery codes, and security stamps out of exceptions, logs, telemetry, URLs, and public API return values.
+- CHECK: Use DataProtection with explicit purpose isolation for feature-level protected payloads; do not invent cryptographic schemes. For password hashing, secure randomness, protocol cryptography, and DataProtection internals, use the established platform or library abstractions appropriate to the operation.
+- CHECK: Use `CryptographicOperations.FixedTimeEquals` for secret byte equality. Retain established compatibility helpers where the target framework lacks the API, and preserve specialized library-owned verification rather than replacing it with ordinary equality.
+- CHECK: Keep key material, client secrets, credentials, tokens, recovery codes, and security stamps out of exceptions, logs, and telemetry. Prevent unintended disclosure through URLs or unrelated API results; preserve documented, purpose-specific issuance and retrieval contracts.
 - CHECK: Generate nonces, correlation IDs, authenticators, and reset tokens with cryptographically secure randomness and protocol-appropriate entropy.
 - CHECK: Validate certificate, key, and credential inputs at the boundary and fail closed when required material is missing, malformed, or incompatible; certificates used to encrypt new DataProtection keys must be valid and not expired, while expired certificates may be retained to decrypt historical keys.
 
 ##### DataProtection key ring and purpose isolation
 
-- CHECK: Protect sensitive data through DataProtection with explicit purpose isolation for each feature, scheme, token, and versioned payload; do not reuse protectors across unrelated data.
-- CHECK: Preserve key ring lifetime, activation, expiration, revocation, rotation, and propagation semantics across in-scope stores such as file system, registry, Redis, and Entity Framework; treat Azure Blob, Key Vault, and other provider-specific storage as external integrations or samples unless the changed product code owns them.
+- CHECK: For changes to DataProtection consumers, preserve explicit purpose isolation for each feature, scheme, token, and versioned payload; do not reuse protectors across unrelated data.
+- CHECK: For changes to framework key management, preserve activation, expiration, revocation, rotation, propagation, and configured generation/fallback behavior; for changed in-repository stores, preserve the persistence contract consumed by key management. Do not prescribe application deployment choices or review unrelated external providers.
 - CHECK: Use key-repository abstractions that are safe for their DI lifetime and create scoped or fresh persistence contexts as needed; never cache a mutable database context or XML document in singleton key-management paths.
 - CHECK: Keep key persistence diagnostics useful but safe: log friendly key identifiers and storage context, skip malformed persisted entries deliberately, and avoid serializing secret key material.
 - CHECK: Keep credential configuration bindable and minimal; load certificates or external credentials only in the component that uses them and validates their lifetime.
@@ -63,14 +66,14 @@ independent, single-dimension pass.
 
 - CHECK: Security-sensitive cookies use secure defaults: `HttpOnly`, `Secure` when appropriate for transport, explicit `SameSite`, scoped names/paths/domains, and minimal lifetime.
 - CHECK: Authentication, Identity, nonce, correlation, antiforgery, and sign-in cookies must be essential when the feature cannot function securely under consent gating.
-- CHECK: Use `SameSite=Strict` for same-site authentication cookies where compatible; use documented `Lax` or `None` exceptions only for cross-site protocol redirects that require them.
+- CHECK: Preserve documented `SameSite` defaults and configured behavior, including supported cross-site login and navigation flows; do not treat `Strict` as a universal replacement for `Lax` or `None`.
 - CHECK: Keep cookie ticket expiration, sliding renewal, and any concrete server-side auth-state cache lifetime aligned so cookies cannot outlive the validated authentication state.
 - CHECK: Bind cookies to TLS token binding or equivalent transport-bound data only through null-safe feature access and stable Base64 encoding.
 - CHECK: Assert cookie attributes in tests for sign-in, sign-out, external login, antiforgery, consent, HTTPS, and remote-callback flows.
 
 ##### OAuth, OIDC, and remote authentication protocols
 
-- CHECK: Validate state, nonce, correlation IDs, callback path, issuer, audience, signature, token lifetime, and protocol response type before accepting a remote sign-in.
+- CHECK: For changed remote-authentication handlers or shared plumbing, trace the validation required by the supported protocol and flow through local checks, delegated validators, and events. Identify changed bypasses or weakening of the configured contract; do not apply OIDC-only requirements to OAuth-only flows or duplicate library-owned validation.
 - CHECK: For OAuth/OIDC authorization-code flows, use PKCE where supported; generate high-entropy verifiers, store them only in protected correlation state, enforce documented challenge methods, and reject verifier replay, mismatch, or downgrade.
 - CHECK: Build redirect URIs with framework helpers and reject open redirects; never concatenate untrusted hosts, paths, query strings, or return URLs into protocol redirects.
 - CHECK: Keep `AuthenticationProperties.Parameters` and typed challenge properties for transient provider parameters; do not pollute serialized items or mutate dictionaries around serialization.
@@ -82,9 +85,9 @@ independent, single-dimension pass.
 
 ##### JWT bearer and token validation
 
-- CHECK: Validate token format, signature, issuer, audience, expiration, not-before, algorithm, signing key, and replay-sensitive claims before constructing or trusting a principal.
+- CHECK: Trace changed token-validation paths through the configured token handlers, validation parameters, and events. Preserve format, signature, issuer, audience, lifetime, algorithm, signing-key, and replay validation as required by that contract before accepting a principal; do not require the bearer handler to reimplement library-owned checks.
 - CHECK: Apply bounded, consistent clock skew to token, nonce, correlation, cookie, `nbf`, and `exp` validation; avoid unbounded or inconsistent grace periods.
-- CHECK: Use bearer tokens only over HTTPS, carry least-privilege scopes, and ensure logout/revocation paths do not leave reusable server-side state.
+- CHECK: Preserve `RequireHttpsMetadata` defaults and enforcement when changing metadata configuration or retrieval; distinguish that framework contract from application transport policy, issuer-granted scopes, and revocation unless the changed component owns those behaviors.
 - CHECK: Null-check parsed token objects and validation results before reading claims or expiration metadata so malformed tokens fail clearly.
 - CHECK: Keep token validation parameters explicit in samples, tests, and defaults; do not silently relax issuer, audience, lifetime, or signing-key validation for convenience.
 

@@ -132,8 +132,19 @@ contract facts you need into the briefing you give the routed reviewer(s):
 | `**/*.csproj`, `**/*.props`, `**/*.targets` | `docs/ProjectProperties.md`, `docs/AddingNewProjects.md`, `docs/SharedFramework.md`, `docs/tooling-consolidation.md` |
 | `eng/**`, `Directory.Build.*`, `**/*.props`, `**/*.targets` | `docs/BuildFromSource.md`, `docs/BuildErrors.md` |
 | `**/PublicAPI.Shipped.txt`, `**/PublicAPI.Unshipped.txt` | `docs/APIBaselines.md` |
+| Public/protected API or shipped default/convention changes established from the frozen diff, including API-baseline changes | `.github/skills/review-public-api/SKILL.md` |
 | `.gitmodules`, `src/submodules/**` | `docs/Submodules.md` |
 | `src/Servers/Kestrel/**/WebTransport/**`, `src/Servers/Kestrel/samples/WebTransport*SampleApp/**` | `docs/WebTransport.md` |
+
+For API guidance, resolve and record the reviewed PR's base ref to an immutable SHA, distinct from
+its frozen head SHA. Use the same read-only repository-document retrieval as above; a sibling
+skill is not necessarily installed in a hosted skill bundle. Brief only applicable design criteria
+and their citations to the existing cross-cutting `Public API surface, compatibility, and lifecycle`
+worker. Do not invoke another skill or panel, copy its full prompt, file a proposal through
+`api-review`, or import its output format or reconstruction of signatures from memory. Verify
+signatures and contracts from frozen source; a design preference alone is not a defect. If the
+reference is unavailable, record the limitation and continue source/contract review without
+claiming that the shared API criteria were applied.
 
 Do not read these documents when the change does not touch the matching paths — they are irrelevant
 context that dilutes the review.
