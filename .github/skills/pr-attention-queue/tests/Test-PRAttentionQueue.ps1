@@ -127,6 +127,8 @@ Assert-True (($correctnessResult.items | Where-Object number -eq 102).reasonCode
 Assert-True (($correctnessResult.items | Where-Object number -eq 103).bucket -eq "WaitingOnCI") "A non-clean merge state must not be ready to merge."
 Assert-True (($correctnessResult.items | Where-Object number -eq 103).reasonCodes -contains "merge-state-not-clean") "The non-clean merge state must have a stable reason."
 Assert-True (($correctnessResult.items | Where-Object number -eq 104).bucket -eq "ReadyToMerge") "An approved clean pull request should be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 116).bucket -eq "WaitingOnAuthor") "A branch behind its base must not be assigned to CI."
+Assert-True (($correctnessResult.items | Where-Object number -eq 116).reasonCodes -contains "branch-update-required") "A behind branch must explain the required update."
 Assert-True (($correctnessResult.items | Where-Object number -eq 105).bucket -eq "WaitingOnAuthor") "Recent reviewer feedback must override a stale team request."
 Assert-True (($correctnessResult.items | Where-Object number -eq 106).bucket -eq "ReviewNow") "A later author response should return the pull request to review."
 Assert-True (($correctnessResult.items | Where-Object number -eq 107).humanReviewCount -eq 0) "Author-authored reviews must not count as human reviewer activity."
@@ -169,6 +171,7 @@ Assert-True (($digestControlResult.items | Where-Object number -eq 113).bucket -
 Assert-True (-not ($digestControlResult.items | Where-Object number -eq 113).shownInDigest) "A caller-owned pull request must not consume a digest slot."
 Assert-True (($digestControlResult.items | Where-Object number -eq 113).digestExclusionReasons -contains "excluded-author") "Caller exclusion must be explicit."
 Assert-True (($digestControlResult.items | Where-Object number -eq 112).shownInDigest) "An eligible independent pull request should fill the digest."
+Assert-True (($digestControlResult.items | Where-Object number -eq 112).stackDepth -eq 0) "A fork branch named main must not be treated as an upstream stack ancestor."
 Assert-True ($digestControlResult.filter.excludeDigestAuthors -contains "current-user") "The resolved filter must echo digest author exclusions."
 
 $digestControlMarkdown = & $scriptPath `

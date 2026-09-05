@@ -488,5 +488,77 @@
     "changedFiles": 1,
     "milestone": null,
     "assignees": []
+  },
+  {
+    "number": 114,
+    "title": "Unhealthy fork branch named main",
+    "url": "https://github.com/dotnet/aspnetcore/pull/114",
+    "author": { "login": "fork-author", "is_bot": false },
+    "isDraft": false,
+    "isCrossRepository": true,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-20T18:00:00Z",
+    "headRefOid": "1141141141141141141141141141141141141141",
+    "headRefName": "main",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "FAILURE" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/ForkMain.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 116,
+    "title": "Approved pull request behind its base branch",
+    "url": "https://github.com/dotnet/aspnetcore/pull/116",
+    "author": { "login": "behind-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-04-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1161161161161161161161161161161161161161",
+    "headRefName": "behind-base",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BEHIND",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1161161161161161161161161161161161161161" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Behind.cs" }
+    ],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
   }
 ]

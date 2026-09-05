@@ -848,6 +848,12 @@ function Get-Classification {
             $nextActor = "CI/automation"
             $reasonCodes.Add($(if ($checkState -eq "Pending") { "ci-pending" } else { "mergeability-unknown" }))
         }
+        elseif ($mergeStateStatus -eq "BEHIND") {
+            $bucket = "WaitingOnAuthor"
+            $nextActor = "author/maintainer"
+            $reasonCodes.Add("branch-update-required")
+            $blockers.Add("The head branch must be updated with its base branch before merge.")
+        }
         elseif ($mergeStateStatus -ne "CLEAN") {
             $bucket = "WaitingOnCI"
             $nextActor = "CI/automation"
@@ -1010,6 +1016,10 @@ function Get-DisplayMetadata {
             "blocked-label" = [pscustomobject]@{
                 label = "Blocking label"
                 description = "A blocking label requires an explicit maintainer decision."
+            }
+            "branch-update-required" = [pscustomobject]@{
+                label = "Branch update required"
+                description = "The approved pull request is behind its base branch and must be updated before merge."
             }
             "bot-authored" = [pscustomobject]@{
                 label = "Bot authored"
@@ -1272,7 +1282,7 @@ function Add-DigestExclusions {
 
     $itemsByHeadBranch = @{}
     foreach ($item in $Items) {
-        if ([string]::IsNullOrWhiteSpace($item.headBranch)) {
+        if ($item.isCrossRepository -or [string]::IsNullOrWhiteSpace($item.headBranch)) {
             continue
         }
 
@@ -1426,6 +1436,7 @@ function Invoke-PRAttentionQueue {
             "headRefOid",
             "headRefName",
             "baseRefName",
+            "isCrossRepository",
             "files",
             "additions",
             "deletions",
@@ -1587,6 +1598,10 @@ function Invoke-PRAttentionQueue {
             url = [string]$pullRequest.url
             headSha = [string](Get-PropertyValue -Object $pullRequest -Name "headRefOid" -DefaultValue "")
             headBranch = [string](Get-PropertyValue -Object $pullRequest -Name "headRefName" -DefaultValue "")
+            isCrossRepository = [bool](Get-PropertyValue `
+                -Object $pullRequest `
+                -Name "isCrossRepository" `
+                -DefaultValue $false)
             author = $authorInfo.Login
             authorClass = if ($classification.IsCommunity) { "Community" } else { "InternalOrUnknown" }
             labels = $labels

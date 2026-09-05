@@ -38,9 +38,10 @@ pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 `
 ```
 
 The queue also detects bounded stack ancestry when an open PR's base branch matches another
-in-scope open PR's head branch. A reviewable child keeps its `ReviewNow` classification, but an
-unhealthy ancestor prevents it from consuming an unattended digest position. The JSON item explains
-this through `digestExclusionReasons`, `stackDepth`, and `stackBlockedBy`.
+in-scope, same-repository open PR's head branch. Cross-repository fork branch names are never treated
+as upstream stack bases. A reviewable child keeps its `ReviewNow` classification, but an unhealthy
+ancestor prevents it from consuming an unattended digest position. The JSON item explains this
+through `digestExclusionReasons`, `stackDepth`, and `stackBlockedBy`.
 
 ## Read-only boundary
 
@@ -158,6 +159,8 @@ Classification precedence is evidence-driven:
 
 - An exact `* NO MERGE *` label requires maintainer triage even when CI is also pending.
 - `pending-ci-rerun` routes to `WaitingOnCI`.
+- An approved PR whose merge state is `BEHIND` routes to author/maintainer branch-update work rather
+  than CI.
 - A current non-author `COMMENTED` review routes to `WaitingOnAuthor` unless the author responded or
   pushed afterward.
 - A newer review request after reviewer feedback returns ownership to a reviewer.
