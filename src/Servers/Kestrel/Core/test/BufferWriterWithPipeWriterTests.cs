@@ -1,17 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace System.IO.Pipelines.Tests;
 
-public class BufferWriterTests : IDisposable
+public class BufferWriterWithPipeWriterTests : IDisposable
 {
     protected Pipe Pipe;
-    public BufferWriterTests()
+    public BufferWriterWithPipeWriterTests()
     {
         Pipe = new Pipe(new PipeOptions(useSynchronizationContext: false, pauseWriterThreshold: 0, resumeWriterThreshold: 0));
     }
@@ -107,7 +104,7 @@ public class BufferWriterTests : IDisposable
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
 
-        writer.Write(new byte[] { 1, 2, 3 });
+        writer.Write([1, 2, 3]);
         writer.Commit();
 
         Assert.Equal(3, writer.BytesCommitted);
@@ -119,9 +116,9 @@ public class BufferWriterTests : IDisposable
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
 
-        writer.Write(new byte[] { 1 });
-        writer.Write(new byte[] { 2 });
-        writer.Write(new byte[] { 3 });
+        writer.Write([1]);
+        writer.Write([2]);
+        writer.Write([3]);
         writer.Commit();
 
         Assert.Equal(3, writer.BytesCommitted);
@@ -151,7 +148,7 @@ public class BufferWriterTests : IDisposable
         writer.Ensure(10);
         Assert.True(writer.Span.Length > 10);
         Assert.Equal(0, writer.BytesCommitted);
-        Assert.Equal(new byte[] { }, Read());
+        Assert.Equal([], Read());
     }
 
     [Fact]
@@ -160,7 +157,7 @@ public class BufferWriterTests : IDisposable
         int initialLength = Pipe.Writer.GetMemory().Length;
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
         Assert.Equal(initialLength, writer.Span.Length);
-        Assert.Equal(new byte[] { }, Read());
+        Assert.Equal([], Read());
     }
 
     [Fact]
@@ -170,12 +167,13 @@ public class BufferWriterTests : IDisposable
 
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
 
-        writer.Write(new byte[] { 1, 2, 3 });
+        writer.Write([1, 2, 3]);
+        Assert.Equal(initialLength - 3, writer.Span.Length);
+
         writer.Commit();
 
         Assert.Equal(3, writer.BytesCommitted);
-        Assert.Equal(initialLength - 3, writer.Span.Length);
-        Assert.Equal(Pipe.Writer.GetMemory().Length, writer.Span.Length);
+        Assert.True(writer.Span.IsEmpty);
         Assert.Equal(new byte[] { 1, 2, 3 }, Read());
     }
 
@@ -184,7 +182,7 @@ public class BufferWriterTests : IDisposable
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
 
-        writer.Write(new byte[] { 1, 2, 3 });
+        writer.Write([1, 2, 3]);
         Assert.Equal(0, writer.BytesCommitted);
 
         writer.Commit();
