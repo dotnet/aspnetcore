@@ -121,7 +121,20 @@ public partial class ParameterBinder
         else if (modelBindingContext.ValueProvider.ContainsPrefix(parameter.Name))
         {
             // We have a match for the parameter name, use that as that prefix.
-            modelBindingContext.ModelName = parameter.Name;
+            // However, for complex types, an exact match of the parameter name (without any
+            // delimiter-separated sub-keys) likely indicates a property name collision rather
+            // than a true prefix. In that case, fall back to empty string so properties
+            // can be bound directly. See https://github.com/dotnet/aspnetcore/issues/57637
+            if (metadata.IsComplexType &&
+                modelBindingContext.ValueProvider is IEnumerableValueProvider enumerableValueProvider &&
+                enumerableValueProvider.GetKeysFromPrefix(parameter.Name).Count == 0)
+            {
+                modelBindingContext.ModelName = string.Empty;
+            }
+            else
+            {
+                modelBindingContext.ModelName = parameter.Name;
+            }
         }
         else
         {
