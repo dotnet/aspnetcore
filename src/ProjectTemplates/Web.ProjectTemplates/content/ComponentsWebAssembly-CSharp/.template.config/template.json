@@ -193,6 +193,7 @@
       "type": "parameter",
       "datatype": "string",
       "replaces": "https:////aadB2CInstance.b2clogin.com/",
+      "defaultValue": "https://aadB2CInstance.b2clogin.com/",
       "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
     },
     "SignUpSignInPolicyId": {
