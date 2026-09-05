@@ -1018,9 +1018,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         _isLeasedMemoryInvalid = true;
 
-        _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
-
         var responseHeaders = CreateResponseHeaders(appCompleted);
+
+        _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
         Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _responseBodyMode, appCompleted);
     }
