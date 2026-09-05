@@ -126,15 +126,7 @@ public class HttpResponseStreamWriter : TextWriter
             return;
         }
 
-        while (count > 0)
-        {
-            if (_charBufferCount == _charBufferSize)
-            {
-                FlushInternal(flushEncoder: false);
-            }
-
-            CopyToCharBuffer(values, ref index, ref count);
-        }
+        Write(values.AsSpan(index, count));
     }
 
     /// <inheritdoc/>
@@ -154,7 +146,7 @@ public class HttpResponseStreamWriter : TextWriter
 
             remaining -= written;
             value = value.Slice(written);
-        };
+        }
     }
 
     /// <inheritdoc/>
@@ -162,22 +154,7 @@ public class HttpResponseStreamWriter : TextWriter
     {
         ThrowIfDisposed();
 
-        if (value == null)
-        {
-            return;
-        }
-
-        var count = value.Length;
-        var index = 0;
-        while (count > 0)
-        {
-            if (_charBufferCount == _charBufferSize)
-            {
-                FlushInternal(flushEncoder: false);
-            }
-
-            CopyToCharBuffer(value, ref index, ref count);
-        }
+        Write(value.AsSpan());
     }
 
     /// <inheritdoc/>
@@ -228,84 +205,17 @@ public class HttpResponseStreamWriter : TextWriter
             return GetObjectDisposedTask();
         }
 
-        if (values == null || count == 0)
+        if (values == null)
         {
             return Task.CompletedTask;
         }
 
-        var remaining = _charBufferSize - _charBufferCount;
-        if (remaining >= count)
-        {
-            // Enough room in buffer, no need to go async
-            CopyToCharBuffer(values, ref index, ref count);
-            return Task.CompletedTask;
-        }
-        else
-        {
-            return WriteAsyncAwaited(values, index, count);
-        }
-    }
-
-    private async Task WriteAsyncAwaited(char[] values, int index, int count)
-    {
-        Debug.Assert(count > 0);
-        Debug.Assert(_charBufferSize - _charBufferCount < count);
-
-        while (count > 0)
-        {
-            if (_charBufferCount == _charBufferSize)
-            {
-                await FlushInternalAsync(flushEncoder: false);
-            }
-
-            CopyToCharBuffer(values, ref index, ref count);
-        }
+        return WriteAsync(values.AsMemory(index, count));
     }
 
     /// <inheritdoc/>
     public override Task WriteAsync(string? value)
-    {
-        if (_disposed)
-        {
-            return GetObjectDisposedTask();
-        }
-
-        if (string.IsNullOrEmpty(value))
-        {
-            return Task.CompletedTask;
-        }
-
-        var remaining = _charBufferSize - _charBufferCount;
-        if (remaining >= value.Length)
-        {
-            // Enough room in buffer, no need to go async
-            CopyToCharBuffer(value);
-            return Task.CompletedTask;
-        }
-        else
-        {
-            return WriteAsyncAwaited(value);
-        }
-    }
-
-    private async Task WriteAsyncAwaited(string value)
-    {
-        var count = value.Length;
-
-        Debug.Assert(count > 0);
-        Debug.Assert(_charBufferSize - _charBufferCount < count);
-
-        var index = 0;
-        while (count > 0)
-        {
-            if (_charBufferCount == _charBufferSize)
-            {
-                await FlushInternalAsync(flushEncoder: false);
-            }
-
-            CopyToCharBuffer(value, ref index, ref count);
-        }
-    }
+        => WriteAsync(value.AsMemory());
 
     /// <inheritdoc/>
     [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
@@ -356,7 +266,7 @@ public class HttpResponseStreamWriter : TextWriter
 
             remaining -= written;
             value = value.Slice(written);
-        };
+        }
     }
 
     /// <inheritdoc/>
@@ -383,7 +293,7 @@ public class HttpResponseStreamWriter : TextWriter
         {
             // Enough room in buffer, no need to go async
             CopyToCharBuffer(value.Span);
-            CopyToCharBuffer(NewLine);
+            CopyToCharBuffer(NewLine.AsSpan());
             return Task.CompletedTask;
         }
         else
@@ -400,38 +310,7 @@ public class HttpResponseStreamWriter : TextWriter
 
     /// <inheritdoc/>
     public override Task WriteLineAsync(char[] values, int index, int count)
-    {
-        if (_disposed)
-        {
-            return GetObjectDisposedTask();
-        }
-
-        if ((values == null || count == 0) && NewLine.Length == 0)
-        {
-            return Task.CompletedTask;
-        }
-
-        values ??= Array.Empty<char>();
-
-        var remaining = _charBufferSize - _charBufferCount;
-        if (remaining >= values.Length + NewLine.Length)
-        {
-            // Enough room in buffer, no need to go async
-            CopyToCharBuffer(values, ref index, ref count);
-            CopyToCharBuffer(NewLine);
-            return Task.CompletedTask;
-        }
-        else
-        {
-            return WriteLineAsyncAwaited(values, index, count);
-        }
-    }
-
-    private async Task WriteLineAsyncAwaited(char[] values, int index, int count)
-    {
-        await WriteAsync(values, index, count);
-        await WriteAsync(NewLine);
-    }
+        => WriteLineAsync(values.AsMemory(index, count));
 
     /// <inheritdoc/>
     public override Task WriteLineAsync(char value)
@@ -448,7 +327,7 @@ public class HttpResponseStreamWriter : TextWriter
             _charBuffer[_charBufferCount] = value;
             _charBufferCount++;
 
-            CopyToCharBuffer(NewLine);
+            CopyToCharBuffer(NewLine.AsSpan());
 
             return Task.CompletedTask;
         }
@@ -466,38 +345,7 @@ public class HttpResponseStreamWriter : TextWriter
 
     /// <inheritdoc/>
     public override Task WriteLineAsync(string? value)
-    {
-        if (_disposed)
-        {
-            return GetObjectDisposedTask();
-        }
-
-        if (string.IsNullOrEmpty(value) && NewLine.Length == 0)
-        {
-            return Task.CompletedTask;
-        }
-
-        value ??= string.Empty;
-
-        var remaining = _charBufferSize - _charBufferCount;
-        if (remaining >= value.Length + NewLine.Length)
-        {
-            // Enough room in buffer, no need to go async
-            CopyToCharBuffer(value);
-            CopyToCharBuffer(NewLine);
-            return Task.CompletedTask;
-        }
-        else
-        {
-            return WriteLineAsyncAwaited(value);
-        }
-    }
-
-    private async Task WriteLineAsyncAwaited(string value)
-    {
-        await WriteAsync(value);
-        await WriteAsync(NewLine);
-    }
+        => WriteLineAsync(value.AsMemory());
 
     // We want to flush the stream when Flush/FlushAsync is explicitly
     // called by the user (example: from a Razor view).
@@ -570,13 +418,7 @@ public class HttpResponseStreamWriter : TextWriter
             return;
         }
 
-        var count = _encoder.GetBytes(
-            _charBuffer,
-            0,
-            _charBufferCount,
-            _byteBuffer,
-            0,
-            flush: flushEncoder);
+        var count = _encoder.GetBytes(_charBuffer.AsSpan(0, _charBufferCount), _byteBuffer, flush: flushEncoder);
 
         _charBufferCount = 0;
 
@@ -595,13 +437,7 @@ public class HttpResponseStreamWriter : TextWriter
             return;
         }
 
-        var count = _encoder.GetBytes(
-            _charBuffer,
-            0,
-            _charBufferCount,
-            _byteBuffer,
-            0,
-            flush: flushEncoder);
+        var count = _encoder.GetBytes(_charBuffer.AsSpan(0, _charBufferCount), _byteBuffer, flush: flushEncoder);
 
         _charBufferCount = 0;
 
@@ -609,50 +445,6 @@ public class HttpResponseStreamWriter : TextWriter
         {
             await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
         }
-    }
-
-    private void CopyToCharBuffer(string value)
-    {
-        Debug.Assert(_charBufferSize - _charBufferCount >= value.Length);
-
-        value.CopyTo(
-            sourceIndex: 0,
-            destination: _charBuffer,
-            destinationIndex: _charBufferCount,
-            count: value.Length);
-
-        _charBufferCount += value.Length;
-    }
-
-    private void CopyToCharBuffer(string value, ref int index, ref int count)
-    {
-        var remaining = Math.Min(_charBufferSize - _charBufferCount, count);
-
-        value.CopyTo(
-            sourceIndex: index,
-            destination: _charBuffer,
-            destinationIndex: _charBufferCount,
-            count: remaining);
-
-        _charBufferCount += remaining;
-        index += remaining;
-        count -= remaining;
-    }
-
-    private void CopyToCharBuffer(char[] values, ref int index, ref int count)
-    {
-        var remaining = Math.Min(_charBufferSize - _charBufferCount, count);
-
-        Buffer.BlockCopy(
-            src: values,
-            srcOffset: index * sizeof(char),
-            dst: _charBuffer,
-            dstOffset: _charBufferCount * sizeof(char),
-            count: remaining * sizeof(char));
-
-        _charBufferCount += remaining;
-        index += remaining;
-        count -= remaining;
     }
 
     private int CopyToCharBuffer(ReadOnlySpan<char> value)
