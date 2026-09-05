@@ -5538,19 +5538,22 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var edge = arguments[0];
             var c = document.getElementById('scroll-container');
             var rect = c.getBoundingClientRect();
+            var scale = c.offsetHeight > 0 ? rect.height / c.offsetHeight : 1;
+            var viewportTop = rect.top + c.clientTop * scale;
+            var viewportBottom = viewportTop + c.clientHeight * scale;
             var items = c.querySelectorAll('.item');
             var best = edge === 'top' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
             for (var i = 0; i < items.length; i++) {
                 var r = items[i].getBoundingClientRect();
-                if (r.bottom <= rect.top + 1) continue; // above viewport
-                if (r.top >= rect.bottom - 1) continue;  // below viewport
+                if (r.bottom <= viewportTop + 1) continue; // above viewport
+                if (r.top >= viewportBottom - 1) continue;  // below viewport
                 if (edge === 'top') {
                     if (r.top < best) best = r.top;
                 } else {
                     if (r.bottom > best) best = r.bottom;
                 }
             }
-            return edge === 'top' ? (best <= rect.top + 2) : (best >= rect.bottom - 2);
+            return edge === 'top' ? (best <= viewportTop + 2) : (best >= viewportBottom - 2);
         ", edge);
     }
 
