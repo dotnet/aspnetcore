@@ -121,6 +121,11 @@
     <CrossgenOutput Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">false</CrossgenOutput>
   </PropertyGroup>
 
+  <!-- Disable runtime-async on ppc64le, s390x, and Mono builds where the JIT/runtime does not support the new .NET 11 async IL format. -->
+  <PropertyGroup>
+    <UseRuntimeAsync Condition="'$(TargetArchitecture)' == 'ppc64le' or '$(TargetArchitecture)' == 's390x' or '$(DotNetBuildUseMonoRuntime)' == 'true'">false</UseRuntimeAsync>
+  </PropertyGroup>
+
   <!-- Warnings and errors -->
   <PropertyGroup>
     <!-- Ensure API docs are available. -->
