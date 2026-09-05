@@ -52,6 +52,98 @@ test("controller renders digest lanes by the engine-provided rank", async () => 
   );
 });
 
+test("controller separates discussion verification from ordinary review actions", async () => {
+  const withDiscussionVerification = structuredClone(fixture);
+  const candidate = withDiscussionVerification.queue.items.find(
+    (item) => item.bucket === "ReviewNow" && item.shownInDigest,
+  );
+  candidate.shownInDigest = false;
+  candidate.digestRank = null;
+  candidate.digestExclusionReasons.push("discussion-verification-needed");
+  candidate.shownInDiscussionVerification = true;
+  candidate.discussionVerificationRank = 1;
+  candidate.discussionAssessment = {
+    state: "verification-needed",
+    complete: true,
+    signals: ["author-disposition-mentioned"],
+    commentTotalCount: 1,
+    commentEvidenceTruncated: false,
+    comments: [{
+      author: candidate.author,
+      actor: "author",
+      association: "CONTRIBUTOR",
+      createdAt: "2026-09-02T18:00:00.000Z",
+      kind: "disposition",
+      excerpt: "I am happy to close this pull request.",
+    }],
+    threads: {
+      totalCount: 1,
+      returnedCount: 1,
+      complete: true,
+      unresolvedCount: 1,
+      outdatedUnresolvedCount: 0,
+    },
+  };
+  withDiscussionVerification.queue.display.digestExclusionReasons[
+    "discussion-verification-needed"
+  ] = {
+    label: "Discussion verification needed",
+    description: "Human interpretation is needed before review.",
+  };
+  withDiscussionVerification.queue.display.discussion = {
+    states: {
+      "verification-needed": {
+        label: "Verify discussion",
+        description: "Discussion requires human interpretation.",
+      },
+    },
+    signals: {
+      "author-disposition-mentioned": {
+        label: "Author requested disposition",
+        description: "The author asked whether to close the pull request.",
+      },
+    },
+    commentKinds: {
+      disposition: {
+        label: "Disposition",
+        description: "The comment raises whether work should continue.",
+      },
+    },
+  };
+  withDiscussionVerification.queue.discussion = {
+    candidateLimit: 20,
+    assessedCandidateCount: 3,
+    verificationNeededCount: 1,
+    unassessedReviewNowCount: 0,
+  };
+  withDiscussionVerification.queue.items
+    .filter((item) => item.bucket === "ReviewNow" && item.shownInDigest)
+    .sort((left, right) => left.digestRank - right.digestRank)
+    .forEach((item, index) => {
+      item.digestRank = index + 1;
+    });
+
+  const controller = createQueueController({
+    initialOptions: withDiscussionVerification.options,
+    load: async () => withDiscussionVerification,
+  });
+  await controller.initialize();
+  const state = controller.getState();
+  const verificationItem = state.snapshot.discussionVerification[0];
+
+  assert.equal(verificationItem.number, candidate.number);
+  assert.equal(verificationItem.discussion.state, "verification-needed");
+  assert.equal(verificationItem.discussion.threads.unresolvedCount, 1);
+  assert.equal(
+    state.snapshot.primary.reviewNow.some((item) => item.number === candidate.number),
+    false,
+  );
+  assert.throws(
+    () => controller.resolveAction({ itemId: verificationItem.id, kind: "review" }),
+    (error) => error.code === "action_not_allowed",
+  );
+});
+
 test("refresh coalesces callers and atomically replaces the snapshot", async () => {
   let calls = 0;
   let release;
