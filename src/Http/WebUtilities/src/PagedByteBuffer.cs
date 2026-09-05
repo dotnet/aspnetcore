@@ -44,20 +44,23 @@ internal sealed class PagedByteBuffer : IDisposable
         => Add(buffer.AsMemory(offset, count));
 
     public void Add(ReadOnlyMemory<byte> memory)
+        => Add(memory.Span);
+
+    public void Add(ReadOnlySpan<byte> span)
     {
         ThrowIfDisposed();
 
-        while (!memory.IsEmpty)
+        while (!span.IsEmpty)
         {
             var currentPage = CurrentPage;
-            var copyLength = Math.Min(memory.Length, currentPage.Length - _currentPageIndex);
+            var copyLength = Math.Min(span.Length, currentPage.Length - _currentPageIndex);
 
-            memory.Slice(0, copyLength).CopyTo(currentPage.AsMemory(_currentPageIndex, copyLength));
+            span.Slice(0, copyLength).CopyTo(currentPage.AsSpan(_currentPageIndex, copyLength));
 
             Length += copyLength;
             _currentPageIndex += copyLength;
 
-            memory = memory.Slice(copyLength);
+            span = span.Slice(copyLength);
         }
     }
 
