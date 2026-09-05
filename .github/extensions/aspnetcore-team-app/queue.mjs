@@ -211,6 +211,9 @@ function validateItem(queue, item) {
   if (item.stackDepth !== undefined) {
     requireNonNegativeInteger(item.stackDepth, "item.stackDepth");
   }
+  if (item.isCrossRepository !== undefined && typeof item.isCrossRepository !== "boolean") {
+    throw queueError("queue_item_invalid", "item.isCrossRepository must be a boolean");
+  }
   requireStringArray(item.reasonCodes, "item.reasonCodes");
   requireStringArray(item.blockers, "item.blockers");
   if (item.digestExclusionReasons !== undefined) {

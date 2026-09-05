@@ -24,7 +24,7 @@ export async function startInstance(instanceId, input, log) {
   }
 
   const controller = createQueueController({
-    initialOptions: { source: "live", preset: input.preset ?? "blazor" },
+    initialOptions: buildLiveOptions(input, "blazor"),
     load: loadQueue,
   });
 
@@ -70,10 +70,17 @@ export function refreshInstance(instanceId, input = {}) {
     throw error;
   }
 
-  return entry.controller.refresh({
+  return entry.controller.refresh(buildLiveOptions(input));
+}
+
+export function buildLiveOptions(input = {}, defaultPreset) {
+  return {
     source: "live",
-    preset: input.preset,
-  });
+    preset: input.preset ?? defaultPreset,
+    ...(input.excludeDigestAuthor
+      ? { excludeDigestAuthor: input.excludeDigestAuthor }
+      : {}),
+  };
 }
 
 export async function stopInstance(instanceId) {
