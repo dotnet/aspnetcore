@@ -22,7 +22,9 @@ The canvas does not classify or rank pull requests in JavaScript. It invokes
 `Get-PRAttentionQueue.ps1` and validates the skill's versioned JSON contract.
 Discussion verification is also supplied by the skill. It surfaces bounded top-level comment
 evidence, current thread counts, and explicit truncation signals without changing the canonical
-bucket or applying an opaque model judgment.
+bucket or applying an opaque model judgment. A current unresolved inline thread is routed to
+**Verify discussion** because the first-version query does not retrieve inline comment text;
+resolved and outdated threads remain factual context rather than an ownership inference.
 
 ## Actions
 
@@ -54,6 +56,7 @@ rebases, edits files, commits, or pushes.
 - No GitHub or repository mutation.
 - No opaque quality or priority score.
 - No inference that a timestamp-only author response makes a PR unconditionally review-ready.
+- No claim that a current unresolved inline thread is semantically clear without its comment text.
 - No automatic interpretation of truncated discussion history.
 - No automatic polling.
 - No issue triage, shipping, or repository-health modes yet.
