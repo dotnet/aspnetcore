@@ -10,4 +10,6 @@ internal sealed class PasskeyAttestationState
     public required ReadOnlyMemory<byte> Challenge { get; init; }
 
     public required PasskeyUserEntity UserEntity { get; init; }
+
+    public bool IsConditionallyMediated { get; init; }
 }

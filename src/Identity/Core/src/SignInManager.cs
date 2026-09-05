@@ -121,6 +121,11 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the configured passkey handler supports conditionally mediated passkey creation.
+    /// </summary>
+    public virtual bool SupportsPasskeyConditionalCreation => _passkeyHandler?.SupportsConditionalCreation ?? false;
+
+    /// <summary>
     /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
     /// </summary>
     /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> for.</param>
@@ -535,6 +540,40 @@ public class SignInManager<TUser> where TUser : class
 
         var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, Context);
         await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
+        return result.CreationOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
+    /// </summary>
+    /// <param name="userEntity">The user entity for which to create passkey options.</param>
+    /// <param name="isConditionallyMediated">
+    /// <see langword="true"/> if the passkey will be created with conditional mediation; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <returns>A JSON string representing the created passkey options.</returns>
+    /// <remarks>
+    /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
+    /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
+    /// call must specify <c>mediation: "conditional"</c>.
+    /// The caller must only request conditional mediation after a recent successful password authentication.
+    /// An existing authenticated session by itself is not sufficient authorization to add a new passkey.
+    /// The protected attestation state prevents the client from changing the mediation mode after options
+    /// are issued, but it does not authorize issuing conditional options.
+    /// </remarks>
+    public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated)
+    {
+        if (!isConditionallyMediated)
+        {
+            return await MakePasskeyCreationOptionsAsync(userEntity);
+        }
+
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, isConditionallyMediated, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
         return result.CreationOptionsJson;
     }
 

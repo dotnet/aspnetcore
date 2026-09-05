@@ -1,0 +1,97 @@
+﻿@page "/Account/PasskeyUpgrade"
+
+@using BlazorWebCSharp._1.Data
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<PasskeyUpgrade> Logger
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Signing in</PageTitle>
+
+<h1>Signing you in...</h1>
+<p>One moment while we finish signing you in.</p>
+
+<form @formname="passkey-upgrade" @onsubmit="UpgradeToPasskey" method="post">
+    <PasskeySubmit
+        Operation="PasskeyOperation.Upgrade"
+        Name="Input"
+        CreationOptionsJson="@creationOptionsJson"
+        class="btn btn-primary">Continue</PasskeySubmit>
+</form>
+
+@code {
+    private string? creationOptionsJson;
+    private ApplicationUser? user;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? SuppliedCreationOptionsJson { get; set; }
+
+    [SupplyParameterFromForm(FormName = "passkey-upgrade")]
+    private PasskeyInputModel Input { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        creationOptionsJson = SuppliedCreationOptionsJson;
+        SuppliedCreationOptionsJson = null;
+        Input ??= new();
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            // There's nothing to upgrade if nobody is signed in, so just continue.
+            RedirectManager.RedirectTo(ReturnUrl);
+            return;
+        }
+
+        if (!HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(creationOptionsJson))
+        {
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+    }
+
+    private async Task UpgradeToPasskey()
+    {
+        // The user did not ask for a passkey to be created, so a failure here is never
+        // reported to them. Whatever happens, they continue to where they were going.
+        if (user is not null && !string.IsNullOrEmpty(Input.CredentialJson))
+        {
+            var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
+            if (attestationResult.Succeeded)
+            {
+                if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+                {
+                    attestationResult.Passkey.Name = defaultName;
+                }
+
+                var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+                if (addPasskeyResult.Succeeded)
+                {
+                    Logger.LogInformation("User upgraded to a passkey.");
+                }
+                else
+                {
+                    Logger.LogWarning("The upgraded passkey could not be added to the user's account.");
+                }
+            }
+            else
+            {
+                Logger.LogWarning("Passkey attestation failed during upgrade: {Message}", attestationResult.Failure.Message);
+            }
+        }
+
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
+}
