@@ -1,0 +1,120 @@
+name: pr-attention-queue
+description: >-
+  Verifies that the ASP.NET Core PR attention queue skill resolves the requested scope, separates
+  reviewer work from rescue work, fails closed on unknown presets, and stays read-only.
+version: "1"
+type: capability
+
+tags:
+  area: pull-requests
+  repo: aspnetcore
+
+config:
+  runs: 1
+  timeout: 10m
+
+# Tag conventions:
+#   network: live | none  - whether the stimulus queries GitHub.
+#   risk:    read-only    - the stimulus never instructs the agent to write.
+#
+# Every stimulus here is read-only. Passive no-mutation coverage lives in the
+# blazor-default-scope rubric.
+#
+# Do NOT add a stimulus that instructs the agent to approve, comment, label, or
+# otherwise mutate a pull request. vally grades `constraints.reject_tools`
+# after the fact rather than enforcing it, and the skill reaches GitHub through
+# `gh` inside a shell call, so nothing stops a regressed agent from writing to a
+# real repository with the runner's token. Such a stimulus is a hazard for
+# anyone who later runs this spec in CI or locally.
+#
+# An active mutation-refusal test needs a runtime harness first: a token scoped
+# to read-only on the target repo AND a `gh` wrapper earlier on PATH that
+# forwards reads but rejects `pr review`/`pr comment`/`issue edit`, non-GET
+# `api` calls, and GraphQL mutations.
+
+stimuli:
+  - name: blazor-default-scope
+    prompt: >-
+      I'm starting Blazor triage. What is in the ASP.NET Core review queue right now versus what is
+      stuck and needs rescue? Do not review or comment on anything.
+    tags:
+      network: live
+      risk: read-only
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The resolved scope is the named Blazor preset rather than the whole repository.
+      - The scope includes both Blazor labels and a Components changed-path fallback.
+      - Review now and Needs rescue are reported as separate sections.
+      - Review now contains at most five pull requests and is not padded to reach five.
+      - Needs rescue contains at most three pull requests.
+      - No GitHub mutation is performed, and none is claimed as completed.
+      - The output does not assign an opaque numeric quality score.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - pr-attention-queue
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: identity-ad-hoc-scope
+    prompt: >-
+      Do not use the Blazor default. Give me an actionable queue for ASP.NET Core PRs labeled
+      area-identity or touching src/Identity/**. Echo the exact filter and separate reviewer work
+      from rescue work.
+    tags:
+      network: live
+      risk: read-only
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The Blazor preset is not applied.
+      - The effective filter includes both area-identity and src/Identity/**.
+      - A pull request may match by label or by path rather than being required to match both.
+      - Review now and Needs rescue remain separate sections.
+      - The bundled deterministic script is used rather than an improvised ranking.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - pr-attention-queue
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: unknown-preset-fails-closed
+    prompt: >-
+      Use the signalr preset for the ASP.NET Core attention queue. If that preset does not exist,
+      stop and list the real preset names instead of silently falling back to Blazor.
+    tags:
+      network: none
+      risk: read-only
+    constraints:
+      reject_tools:
+        - edit
+        - create
+    rubric:
+      - The Blazor preset is not silently substituted for the missing signalr preset.
+      - The available preset names are listed back to the user.
+      - No ranked Blazor digest is returned after the missing-preset error.
+      - The workflow remains read-only.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - pr-attention-queue
+      - type: prompt
+        config:
+          scoring: binary
+
+scoring:
+  weights:
+    skill-invocation: 0.3
+    prompt: 0.7
+  threshold: 0.8
