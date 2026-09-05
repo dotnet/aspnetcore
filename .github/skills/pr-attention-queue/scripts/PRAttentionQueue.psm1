@@ -113,6 +113,23 @@ function Test-AllWildcardMatches {
     return $true
 }
 
+function Test-AnyExactMatch {
+    param(
+        [string[]]$Values,
+        [string[]]$ExpectedValues
+    )
+
+    foreach ($expectedValue in $ExpectedValues) {
+        foreach ($value in $Values) {
+            if ([string]::Equals($value, $expectedValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 function Test-IsBotLogin {
     param(
         [string]$Login,
@@ -203,7 +220,8 @@ function Get-CheckState {
 function Get-HumanReviews {
     param(
         [object]$PullRequest,
-        [string[]]$KnownBotPatterns
+        [string[]]$KnownBotPatterns,
+        [string]$AuthorLogin
     )
 
     return @(
@@ -216,6 +234,7 @@ function Get-HumanReviews {
 
             if ($state -ne "DISMISSED" -and
                 $submittedAt -and
+                -not [string]::Equals($login, $AuthorLogin, [System.StringComparison]::OrdinalIgnoreCase) -and
                 -not (Test-IsBotLogin -Login $login -IsBot $isBot -KnownBotPatterns $KnownBotPatterns)) {
                 $commit = Get-PropertyValue -Object $review -Name "commit"
                 [pscustomobject]@{
@@ -344,6 +363,7 @@ function Add-PullRequestDetails {
 pr$number`: pullRequest(number: $number) {
   number
   mergeable
+  mergeStateStatus
   reviewDecision
   reviews(last: 50) {
     nodes {
@@ -483,6 +503,10 @@ pr$number`: pullRequest(number: $number) {
             $pullRequest | Add-Member `
                 -NotePropertyName "mergeable" `
                 -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") `
+                -Force
+            $pullRequest | Add-Member `
+                -NotePropertyName "mergeStateStatus" `
+                -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeStateStatus" -DefaultValue "UNKNOWN") `
                 -Force
             $pullRequest | Add-Member `
                 -NotePropertyName "reviewDecision" `
@@ -691,7 +715,12 @@ function Get-Classification {
     )
 
     $knownBotPatterns = @($Settings.knownBotPatterns)
-    $humanReviews = @(Get-HumanReviews -PullRequest $PullRequest -KnownBotPatterns $knownBotPatterns)
+    $humanReviews = @(
+        Get-HumanReviews `
+            -PullRequest $PullRequest `
+            -KnownBotPatterns $knownBotPatterns `
+            -AuthorLogin $AuthorInfo.Login
+    )
     $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
     $latestAuthorCommentAt = Get-LatestAuthorCommentAt -PullRequest $PullRequest -AuthorLogin $AuthorInfo.Login
     $humanReviewRequests = @(Get-HumanReviewRequests -PullRequest $PullRequest -KnownBotPatterns $knownBotPatterns)
@@ -709,12 +738,15 @@ function Get-Classification {
     $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
     $reviewDecision = [string](Get-PropertyValue -Object $PullRequest -Name "reviewDecision" -DefaultValue "")
     $mergeable = [string](Get-PropertyValue -Object $PullRequest -Name "mergeable" -DefaultValue "UNKNOWN")
+    $mergeStateStatus = [string](Get-PropertyValue -Object $PullRequest -Name "mergeStateStatus" -DefaultValue "CLEAN")
     $isDraft = [bool](Get-PropertyValue -Object $PullRequest -Name "isDraft" -DefaultValue $false)
     $checkState = Get-CheckState -PullRequest $PullRequest
     $ageDays = Get-DaysSince -From $createdAt -To $SnapshotTime
     $isCommunity = Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.communityLabels)
     $isBot = Test-IsBotLogin -Login $AuthorInfo.Login -IsBot $AuthorInfo.IsBot -KnownBotPatterns $knownBotPatterns
-    $blocked = Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.blockedLabels)
+    $blocked = (Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.blockedLabels)) -or
+        (Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.blockedLabelsExact))
+    $ciRerunPending = Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.pendingCiLabels)
     $designGate = Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.designGateLabels)
     $headChangedAfterReview = $latestHumanReview -and
         $latestHumanReview.CommitOid -and
@@ -724,6 +756,9 @@ function Get-Classification {
         $latestAuthorCommentAt -and
         $latestAuthorCommentAt -gt $latestHumanReview.SubmittedAt
     $authorRespondedAfterReview = $headChangedAfterReview -or $authorCommentedAfterReview
+    $latestReviewerCommentIsCurrent = $latestHumanReview -and
+        $latestHumanReview.State -eq "COMMENTED" -and
+        (-not $latestReviewRequestAt -or $latestHumanReview.SubmittedAt -ge $latestReviewRequestAt)
     $reviewerRescueAfterDays = [int]$Settings.reviewerRescueAfterDays
 
     $bucket = "ReviewNow"
@@ -742,6 +777,12 @@ function Get-Classification {
         $nextActor = "author"
         $reasonCodes.Add("draft")
     }
+    elseif ($blocked) {
+        $bucket = "NeedsRescue"
+        $nextActor = "maintainer/triager"
+        $reasonCodes.Add("blocked-label")
+        $blockers.Add("A blocking label requires an explicit triage decision.")
+    }
     elseif ($designGate) {
         $bucket = "DesignDecision"
         $nextActor = "API/design owner"
@@ -754,11 +795,11 @@ function Get-Classification {
         $reasonCodes.Add("merge-conflict")
         $blockers.Add("The pull request conflicts with its base branch.")
     }
-    elseif ($blocked) {
-        $bucket = "NeedsRescue"
-        $nextActor = "maintainer/triager"
-        $reasonCodes.Add("blocked-label")
-        $blockers.Add("A blocking label requires an explicit triage decision.")
+    elseif ($ciRerunPending) {
+        $bucket = "WaitingOnCI"
+        $nextActor = "CI/automation"
+        $reasonCodes.Add("ci-rerun-pending")
+        $blockers.Add("The pull request is explicitly waiting for CI to be rerun.")
     }
     elseif ($reviewDecision -eq "CHANGES_REQUESTED" -or
         ($latestHumanReview -and $latestHumanReview.State -eq "CHANGES_REQUESTED")) {
@@ -807,6 +848,12 @@ function Get-Classification {
             $nextActor = "CI/automation"
             $reasonCodes.Add($(if ($checkState -eq "Pending") { "ci-pending" } else { "mergeability-unknown" }))
         }
+        elseif ($mergeStateStatus -ne "CLEAN") {
+            $bucket = "WaitingOnCI"
+            $nextActor = "CI/automation"
+            $reasonCodes.Add("merge-state-not-clean")
+            $blockers.Add("GitHub reports merge state '$mergeStateStatus'; Ready to merge requires CLEAN.")
+        }
         else {
             $bucket = "ReadyToMerge"
             $nextActor = "merger"
@@ -845,6 +892,12 @@ function Get-Classification {
             $nextActor = "human reviewer"
         }
     }
+    elseif ($latestReviewerCommentIsCurrent) {
+        $bucket = "WaitingOnAuthor"
+        $nextActor = "author"
+        $reasonCodes.Add("reviewer-commented")
+        $waitingSince = $latestHumanReview.SubmittedAt
+    }
     elseif ($humanReviewRequestCount -gt 0) {
         $reasonCodes.Add("review-requested")
         if ($latestReviewRequestAt) {
@@ -877,12 +930,6 @@ function Get-Classification {
             $nextActor = "human reviewer"
             $reasonCodes.Add("needs-first-review")
         }
-    }
-    elseif ($latestHumanReview.State -eq "COMMENTED") {
-        $bucket = "WaitingOnAuthor"
-        $nextActor = "author"
-        $reasonCodes.Add("reviewer-commented")
-        $waitingSince = $latestHumanReview.SubmittedAt
     }
     else {
         $bucket = "ReviewNow"
@@ -984,6 +1031,10 @@ function Get-DisplayMetadata {
                 label = "CI pending"
                 description = "One or more required checks have not completed."
             }
+            "ci-rerun-pending" = [pscustomobject]@{
+                label = "CI rerun pending"
+                description = "The repository explicitly marks the pull request as waiting for a CI rerun."
+            }
             "community-contribution" = [pscustomobject]@{
                 label = "Community contribution"
                 description = "The repository labels this pull request as a community contribution."
@@ -1007,6 +1058,10 @@ function Get-DisplayMetadata {
             "mergeability-unknown" = [pscustomobject]@{
                 label = "Mergeability unknown"
                 description = "GitHub has not finished computing whether the pull request is mergeable."
+            }
+            "merge-state-not-clean" = [pscustomobject]@{
+                label = "Merge state not clean"
+                description = "GitHub does not report the pull request merge state as CLEAN."
             }
             "mergeable" = [pscustomobject]@{
                 label = "Mergeable"
@@ -1053,6 +1108,16 @@ function Get-DisplayMetadata {
                 description = "The author responded to review and the pull request is waiting for reviewer follow-up."
             }
         }
+        digestExclusionReasons = [pscustomobject][ordered]@{
+            "excluded-author" = [pscustomobject]@{
+                label = "Excluded author"
+                description = "The pull request remains in the census but does not consume a digest slot because its author was explicitly excluded."
+            }
+            "stacked-on-unhealthy-pr" = [pscustomobject]@{
+                label = "Unhealthy stack ancestor"
+                description = "The pull request remains reviewable but does not consume an unattended digest slot while an ancestor pull request is unhealthy."
+            }
+        }
     }
 }
 
@@ -1097,9 +1162,21 @@ function Render-MarkdownTable {
 function Render-Markdown {
     param([object]$Result)
 
-    $reviewNow = @($Result.items | Where-Object { $_.shownInDigest -and $_.bucket -eq "ReviewNow" })
-    $needsRescue = @($Result.items | Where-Object { $_.shownInDigest -and $_.bucket -eq "NeedsRescue" })
-    $readyToMerge = @($Result.items | Where-Object { $_.shownInDigest -and $_.bucket -eq "ReadyToMerge" })
+    $reviewNow = @(
+        $Result.items |
+            Where-Object { $_.shownInDigest -and $_.bucket -eq "ReviewNow" } |
+            Sort-Object digestRank
+    )
+    $needsRescue = @(
+        $Result.items |
+            Where-Object { $_.shownInDigest -and $_.bucket -eq "NeedsRescue" } |
+            Sort-Object digestRank
+    )
+    $readyToMerge = @(
+        $Result.items |
+            Where-Object { $_.shownInDigest -and $_.bucket -eq "ReadyToMerge" } |
+            Sort-Object digestRank
+    )
 
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("<!-- PR_ATTENTION_QUEUE_BEGIN -->")
@@ -1108,6 +1185,10 @@ function Render-Markdown {
     $lines.Add("**Scope:** $($Result.filter.name) - $($Result.filter.description)")
     $lines.Add("")
     $lines.Add("**Selection:** $($Result.filter.selection)")
+    if ($Result.filter.excludeDigestAuthors.Count -gt 0) {
+        $lines.Add("")
+        $lines.Add("**Digest author exclusions:** $($Result.filter.excludeDigestAuthors -join ', ')")
+    }
     $lines.Add("")
     $lines.Add("**Snapshot:** $($Result.generatedAt) · **Repository:** $($Result.repository)")
     $lines.Add("")
@@ -1183,6 +1264,80 @@ function Select-ReviewNowDigestItems {
     return @($selected)
 }
 
+function Add-DigestExclusions {
+    param(
+        [object[]]$Items,
+        [string[]]$ExcludedAuthors
+    )
+
+    $itemsByHeadBranch = @{}
+    foreach ($item in $Items) {
+        if ([string]::IsNullOrWhiteSpace($item.headBranch)) {
+            continue
+        }
+
+        if (-not $itemsByHeadBranch.ContainsKey($item.headBranch)) {
+            $itemsByHeadBranch[$item.headBranch] = [System.Collections.Generic.List[object]]::new()
+        }
+
+        $itemsByHeadBranch[$item.headBranch].Add($item)
+    }
+
+    $unhealthyBuckets = @(
+        "NeedsRescue",
+        "WaitingOnAuthor",
+        "WaitingOnCI",
+        "DesignDecision",
+        "Draft",
+        "Excluded"
+    )
+
+    foreach ($item in $Items) {
+        if (Test-AnyExactMatch -Values @($item.author) -ExpectedValues $ExcludedAuthors) {
+            $item.digestExclusionReasons = @($item.digestExclusionReasons + "excluded-author")
+        }
+
+        if ($item.bucket -ne "ReviewNow" -or [string]::IsNullOrWhiteSpace($item.baseBranch)) {
+            continue
+        }
+
+        $visitedBranches = [System.Collections.Generic.HashSet[string]]::new(
+            [System.StringComparer]::OrdinalIgnoreCase)
+        $baseBranch = $item.baseBranch
+        $blockedAncestors = [System.Collections.Generic.List[int]]::new()
+        $stackDepth = 0
+
+        while ($stackDepth -lt 20 -and $visitedBranches.Add($baseBranch)) {
+            if (-not $itemsByHeadBranch.ContainsKey($baseBranch)) {
+                break
+            }
+
+            $ancestors = @($itemsByHeadBranch[$baseBranch])
+            if ($ancestors.Count -ne 1) {
+                break
+            }
+
+            $ancestor = $ancestors[0]
+            $stackDepth++
+            if ($ancestor.bucket -in $unhealthyBuckets) {
+                $blockedAncestors.Add([int]$ancestor.number)
+            }
+
+            if ([string]::IsNullOrWhiteSpace($ancestor.baseBranch)) {
+                break
+            }
+
+            $baseBranch = $ancestor.baseBranch
+        }
+
+        $item.stackDepth = $stackDepth
+        $item.stackBlockedBy = @($blockedAncestors)
+        if ($blockedAncestors.Count -gt 0) {
+            $item.digestExclusionReasons = @($item.digestExclusionReasons + "stacked-on-unhealthy-pr")
+        }
+    }
+}
+
 function Invoke-PRAttentionQueue {
     [CmdletBinding()]
     param(
@@ -1193,6 +1348,7 @@ function Invoke-PRAttentionQueue {
         [string[]]$RequireLabel = @(),
         [string[]]$ExcludeLabel = @(),
         [string[]]$Author = @(),
+        [string[]]$ExcludeDigestAuthor = @(),
         [switch]$AllRepo,
         [ValidateSet("Markdown", "Json")]
         [string]$OutputFormat = "Markdown",
@@ -1268,6 +1424,7 @@ function Invoke-PRAttentionQueue {
             "createdAt",
             "updatedAt",
             "headRefOid",
+            "headRefName",
             "baseRefName",
             "files",
             "additions",
@@ -1429,6 +1586,7 @@ function Invoke-PRAttentionQueue {
             title = [string]$pullRequest.title
             url = [string]$pullRequest.url
             headSha = [string](Get-PropertyValue -Object $pullRequest -Name "headRefOid" -DefaultValue "")
+            headBranch = [string](Get-PropertyValue -Object $pullRequest -Name "headRefName" -DefaultValue "")
             author = $authorInfo.Login
             authorClass = if ($classification.IsCommunity) { "Community" } else { "InternalOrUnknown" }
             labels = $labels
@@ -1443,6 +1601,7 @@ function Invoke-PRAttentionQueue {
             reasonCodes = $classification.ReasonCodes
             blockers = $classification.Blockers
             checkState = $classification.CheckState
+            mergeStateStatus = [string](Get-PropertyValue -Object $pullRequest -Name "mergeStateStatus" -DefaultValue "CLEAN")
             ageDays = $classification.AgeDays
             idleDays = $classification.IdleDays
             humanReviewCount = $classification.HumanReviewCount
@@ -1460,6 +1619,10 @@ function Invoke-PRAttentionQueue {
                 "path-only"
             }
             shownInDigest = $false
+            digestRank = $null
+            digestExclusionReasons = @()
+            stackDepth = 0
+            stackBlockedBy = @()
         })
     }
 
@@ -1472,9 +1635,11 @@ function Invoke-PRAttentionQueue {
             "Conflicting pull requests among them can appear in a review bucket until the next run.")
     }
 
+    Add-DigestExclusions -Items @($matchedItems) -ExcludedAuthors $ExcludeDigestAuthor
+
     $reviewNow = @(
         $matchedItems |
-            Where-Object { $_.bucket -eq "ReviewNow" } |
+            Where-Object { $_.bucket -eq "ReviewNow" -and $_.digestExclusionReasons.Count -eq 0 } |
             Sort-Object `
                 @{ Expression = { $_.idleDays }; Descending = $true },
                 @{ Expression = { if ($_.authorClass -eq "Community") { 1 } else { 0 } }; Descending = $true },
@@ -1485,7 +1650,7 @@ function Invoke-PRAttentionQueue {
 
     $needsRescue = @(
         $matchedItems |
-            Where-Object { $_.bucket -eq "NeedsRescue" } |
+            Where-Object { $_.bucket -eq "NeedsRescue" -and $_.digestExclusionReasons.Count -eq 0 } |
             Sort-Object `
                 @{ Expression = { $_.idleDays }; Descending = $true },
                 @{ Expression = { if ($_.authorClass -eq "Community") { 1 } else { 0 } }; Descending = $true },
@@ -1496,26 +1661,37 @@ function Invoke-PRAttentionQueue {
 
     $readyToMerge = @(
         $matchedItems |
-            Where-Object { $_.bucket -eq "ReadyToMerge" } |
+            Where-Object { $_.bucket -eq "ReadyToMerge" -and $_.digestExclusionReasons.Count -eq 0 } |
             Sort-Object `
                 @{ Expression = { $_.idleDays }; Descending = $true },
                 @{ Expression = { $_.ageDays }; Descending = $true },
                 @{ Expression = { $_.number }; Descending = $false }
     )
 
-    foreach ($item in Select-ReviewNowDigestItems `
+    $selectedReviewNow = @(
+        Select-ReviewNowDigestItems `
         -Items $reviewNow `
         -MaximumItems $MaxReviewNow `
-        -MaximumPerAuthor $MaxReviewNowPerAuthor) {
+        -MaximumPerAuthor $MaxReviewNowPerAuthor
+    )
+    for ($index = 0; $index -lt $selectedReviewNow.Count; $index++) {
+        $item = $selectedReviewNow[$index]
         $item.shownInDigest = $true
+        $item.digestRank = $index + 1
     }
 
-    foreach ($item in $needsRescue | Select-Object -First $MaxNeedsRescue) {
+    $selectedNeedsRescue = @($needsRescue | Select-Object -First $MaxNeedsRescue)
+    for ($index = 0; $index -lt $selectedNeedsRescue.Count; $index++) {
+        $item = $selectedNeedsRescue[$index]
         $item.shownInDigest = $true
+        $item.digestRank = $index + 1
     }
 
-    foreach ($item in $readyToMerge | Select-Object -First $MaxReadyToMerge) {
+    $selectedReadyToMerge = @($readyToMerge | Select-Object -First $MaxReadyToMerge)
+    for ($index = 0; $index -lt $selectedReadyToMerge.Count; $index++) {
+        $item = $selectedReadyToMerge[$index]
         $item.shownInDigest = $true
+        $item.digestRank = $index + 1
     }
 
     $orderedItems = @(
@@ -1589,6 +1765,7 @@ function Invoke-PRAttentionQueue {
             requireLabels = $scope.RequireLabels
             excludeLabels = $scope.ExcludeLabels
             authors = $scope.Authors
+            excludeDigestAuthors = @($ExcludeDigestAuthor)
             allRepositoryPullRequests = $scope.AllRepositoryPullRequests
             selection = $selection
         }

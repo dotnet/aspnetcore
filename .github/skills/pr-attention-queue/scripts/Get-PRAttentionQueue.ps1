@@ -32,6 +32,7 @@ param(
     [string[]]$RequireLabel = @(),
     [string[]]$ExcludeLabel = @(),
     [string[]]$Author = @(),
+    [string[]]$ExcludeDigestAuthor = @(),
     [switch]$AllRepo,
     [ValidateSet("Markdown", "Json")]
     [string]$OutputFormat = "Markdown",
@@ -59,6 +60,7 @@ Invoke-PRAttentionQueue `
     -RequireLabel $RequireLabel `
     -ExcludeLabel $ExcludeLabel `
     -Author $Author `
+    -ExcludeDigestAuthor $ExcludeDigestAuthor `
     -AllRepo:$AllRepo `
     -OutputFormat $OutputFormat `
     -MaxReviewNow $MaxReviewNow `

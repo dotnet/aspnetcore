@@ -28,6 +28,19 @@ blocked, automated, or ambiguous work.
 
 The digest also limits how many PRs from one author can occupy `Review now`. This prevents a stacked
 series from consuming the entire daily scan budget; the full JSON universe still retains every PR.
+Use `-ExcludeDigestAuthor` to keep explicitly named authors in the classified universe and census
+without allowing their PRs to consume capped digest positions:
+
+```powershell
+pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 `
+  -Preset blazor `
+  -ExcludeDigestAuthor PureWeen
+```
+
+The queue also detects bounded stack ancestry when an open PR's base branch matches another
+in-scope open PR's head branch. A reviewable child keeps its `ReviewNow` classification, but an
+unhealthy ancestor prevents it from consuming an unattended digest position. The JSON item explains
+this through `digestExclusionReasons`, `stackDepth`, and `stackBlockedBy`.
 
 ## Read-only boundary
 
@@ -131,7 +144,7 @@ The script assigns one bucket and next actor:
 |---|---|---|
 | `ReviewNow` | A reviewer can productively act now | Human reviewer |
 | `NeedsRescue` | Stale, unowned, or blocked work needs a triage decision | Maintainer/triager |
-| `ReadyToMerge` | Approved, mergeable, and checks are complete | Merger |
+| `ReadyToMerge` | Approved, checks are complete, and GitHub reports `mergeStateStatus == CLEAN` | Merger |
 | `WaitingOnAuthor` | Requested changes, a reviewer comment, or conflicts require author action | Author |
 | `WaitingOnCI` | CI or automation must complete or be investigated | CI/automation |
 | `DesignDecision` | API/design ownership must resolve a gate | API/design owner |
@@ -140,6 +153,16 @@ The script assigns one bucket and next actor:
 
 Do not promote a PR from `NeedsRescue`, `WaitingOnAuthor`, `WaitingOnCI`, or `DesignDecision` into
 `ReviewNow` because it looks important.
+
+Classification precedence is evidence-driven:
+
+- An exact `* NO MERGE *` label requires maintainer triage even when CI is also pending.
+- `pending-ci-rerun` routes to `WaitingOnCI`.
+- A current non-author `COMMENTED` review routes to `WaitingOnAuthor` unless the author responded or
+  pushed afterward.
+- A newer review request after reviewer feedback returns ownership to a reviewer.
+- Author-authored review records do not count as reviewer activity.
+- Unresolved review threads alone do not determine the next actor.
 
 ### 4. Report the result
 
@@ -159,9 +182,13 @@ For each visible PR preserve:
 - next actor
 - stable reason codes
 - blockers when present
+- the engine-provided one-based `digestRank`
 
 Do not invent a quality, confidence, priority, or 1-10 score. Community status is neglect-risk
 evidence, not a quota and not a judgment about code quality.
+
+JSON and Markdown consumers must render visible items by `digestRank`. The full `items` array retains
+its compatibility ordering and must not be treated as the selected digest order.
 
 ### 5. Be honest about incomplete data
 

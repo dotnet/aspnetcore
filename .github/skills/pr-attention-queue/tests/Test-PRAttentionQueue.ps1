@@ -18,6 +18,7 @@ $skillRoot = Split-Path -Parent $PSScriptRoot
 $scriptPath = Join-Path $skillRoot "scripts/Get-PRAttentionQueue.ps1"
 $modulePath = Join-Path $skillRoot "scripts/PRAttentionQueue.psm1"
 $fixturePath = Join-Path $PSScriptRoot "fixtures/pull-requests.json"
+$correctnessFixturePath = Join-Path $PSScriptRoot "fixtures/correctness-pull-requests.json"
 $snapshot = [datetime]"2026-09-03T18:00:00Z"
 
 Import-Module -Scope Local -Force $modulePath
@@ -112,5 +113,71 @@ Assert-True ($markdownText.Contains("matched only by changed path")) "Markdown m
 Assert-True ($markdownText.Contains("incidentally")) "Markdown must report incidental path exclusions."
 Assert-True ($markdownText.Contains("**Overflow:**")) "Markdown must report digest overflow."
 Assert-True (-not $markdownText.Contains("@community-user")) "Markdown must not mention contributors."
+
+$correctnessJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -OutputFormat Json
+$correctnessResult = $correctnessJson | ConvertFrom-Json -Depth 100
+
+Assert-True (($correctnessResult.items | Where-Object number -eq 101).bucket -eq "NeedsRescue") "An explicit no-merge label must win over pending CI."
+Assert-True (($correctnessResult.items | Where-Object number -eq 101).reasonCodes -contains "blocked-label") "The no-merge result must identify the blocking label."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).bucket -eq "WaitingOnCI") "A pending CI rerun must not be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).reasonCodes -contains "ci-rerun-pending") "The pending rerun must have a stable reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 103).bucket -eq "WaitingOnCI") "A non-clean merge state must not be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 103).reasonCodes -contains "merge-state-not-clean") "The non-clean merge state must have a stable reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 104).bucket -eq "ReadyToMerge") "An approved clean pull request should be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 105).bucket -eq "WaitingOnAuthor") "Recent reviewer feedback must override a stale team request."
+Assert-True (($correctnessResult.items | Where-Object number -eq 106).bucket -eq "ReviewNow") "A later author response should return the pull request to review."
+Assert-True (($correctnessResult.items | Where-Object number -eq 107).humanReviewCount -eq 0) "Author-authored reviews must not count as human reviewer activity."
+Assert-True (($correctnessResult.items | Where-Object number -eq 107).bucket -eq "NeedsRescue") "A stale request must remain rescue work when the only review is author-authored."
+
+$rankingJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-ranking `
+    -MaxReviewNow 2 `
+    -OutputFormat Json
+$rankingResult = $rankingJson | ConvertFrom-Json -Depth 100
+$rankedItems = @($rankingResult.items | Where-Object shownInDigest | Sort-Object digestRank)
+Assert-True ($rankedItems[0].number -eq 109) "Community neglect risk must determine the first digest rank."
+Assert-True ($rankedItems[0].digestRank -eq 1) "The first selected item must expose digest rank one."
+Assert-True ($rankedItems[1].number -eq 108) "The second selected item must preserve the deterministic rank."
+Assert-True ($rankedItems[1].digestRank -eq 2) "The second selected item must expose digest rank two."
+
+$rankingMarkdown = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-ranking `
+    -MaxReviewNow 2 `
+    -OutputFormat Markdown
+$rankingMarkdownText = $rankingMarkdown -join [Environment]::NewLine
+Assert-True ($rankingMarkdownText.IndexOf("[#109]") -lt $rankingMarkdownText.IndexOf("[#108]")) "Markdown must render selected items by digest rank."
+
+$digestControlJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-stack `
+    -ExcludeDigestAuthor current-user `
+    -MaxReviewNow 2 `
+    -OutputFormat Json
+$digestControlResult = $digestControlJson | ConvertFrom-Json -Depth 100
+Assert-True (($digestControlResult.items | Where-Object number -eq 111).bucket -eq "ReviewNow") "Stack health must not rewrite the child bucket."
+Assert-True (-not ($digestControlResult.items | Where-Object number -eq 111).shownInDigest) "A child with an unhealthy ancestor must not consume a digest slot."
+Assert-True (($digestControlResult.items | Where-Object number -eq 111).digestExclusionReasons -contains "stacked-on-unhealthy-pr") "The child must explain its digest exclusion."
+Assert-True (($digestControlResult.items | Where-Object number -eq 113).bucket -eq "ReviewNow") "Caller exclusion must not rewrite the bucket."
+Assert-True (-not ($digestControlResult.items | Where-Object number -eq 113).shownInDigest) "A caller-owned pull request must not consume a digest slot."
+Assert-True (($digestControlResult.items | Where-Object number -eq 113).digestExclusionReasons -contains "excluded-author") "Caller exclusion must be explicit."
+Assert-True (($digestControlResult.items | Where-Object number -eq 112).shownInDigest) "An eligible independent pull request should fill the digest."
+Assert-True ($digestControlResult.filter.excludeDigestAuthors -contains "current-user") "The resolved filter must echo digest author exclusions."
+
+$digestControlMarkdown = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-stack `
+    -ExcludeDigestAuthor current-user `
+    -OutputFormat Markdown
+$digestControlMarkdownText = $digestControlMarkdown -join [Environment]::NewLine
+Assert-True ($digestControlMarkdownText.Contains("**Digest author exclusions:** current-user")) "Markdown must echo digest author exclusions."
 
 Write-Output "All PR attention queue tests passed."

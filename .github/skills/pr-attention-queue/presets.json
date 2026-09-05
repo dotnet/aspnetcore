@@ -13,6 +13,12 @@
       "blocked",
       "do-not-merge"
     ],
+    "blockedLabelsExact": [
+      "* NO MERGE *"
+    ],
+    "pendingCiLabels": [
+      "pending-ci-rerun"
+    ],
     "designGateLabels": [
       "api-ready-for-review",
       "needs-api-approval",
