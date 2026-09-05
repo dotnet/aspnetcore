@@ -232,6 +232,99 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void SpacerIntersection_MatchesNativeThresholdZeroEdgeSemantics()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        var js = (IJavaScriptExecutor)Browser;
+
+        var results = (ReadOnlyCollection<object>)js.ExecuteAsyncScript(
+            """
+            const done = arguments[arguments.length - 1];
+            const cases = [
+                { name: 'edge-adjacent nonzero spacer', top: -10, height: 10 },
+                { name: 'separated spacer', top: -11, height: 10 },
+                { name: 'edge-adjacent zero-height spacer', top: 0, height: 0 },
+                { name: 'overlapping spacer', top: -9, height: 10 },
+            ];
+
+            Promise.all(cases.map(async (testCase, index) => {
+                const container = document.createElement('div');
+                Object.assign(container.style, {
+                    position: 'fixed',
+                    top: '100px',
+                    left: `${100 + index * 120}px`,
+                    width: '100px',
+                    height: '100px',
+                    overflowY: 'auto',
+                });
+
+                const spacerBefore = document.createElement('div');
+                Object.assign(spacerBefore.style, {
+                    position: 'absolute',
+                    top: `${testCase.top}px`,
+                    width: '10px',
+                });
+                spacerBefore.setAttribute('data-blazor-virtualize-reserved-height', `${testCase.height}`);
+                spacerBefore.setAttribute('data-blazor-virtualize-rendered-window-version', '1');
+
+                const item = document.createElement('div');
+                Object.assign(item.style, {
+                    position: 'absolute',
+                    top: '20px',
+                    height: '20px',
+                });
+
+                const spacerAfter = document.createElement('div');
+                Object.assign(spacerAfter.style, {
+                    position: 'absolute',
+                    top: '500px',
+                    width: '10px',
+                });
+                spacerAfter.setAttribute('data-blazor-virtualize-reserved-height', '10');
+                spacerAfter.setAttribute('data-blazor-virtualize-rendered-window-version', '1');
+
+                container.append(spacerBefore, item, spacerAfter);
+                document.body.append(container);
+
+                const calls = [];
+                const helper = {
+                    _callDispatcher: {},
+                    _id: index + 1,
+                    invokeMethodAsync(methodName, ...args) {
+                        calls.push({ methodName, args });
+                        return Promise.resolve();
+                    },
+                    dispose() {},
+                };
+
+                Blazor._internal.Virtualize.init(helper, spacerBefore, spacerAfter, 0, 0);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                Blazor._internal.Virtualize.dispose(helper);
+                container.remove();
+
+                return {
+                    name: testCase.name,
+                    wasReported: calls.some(call => call.methodName === 'OnSpacerBeforeVisible'),
+                };
+            })).then(done);
+            """);
+
+        Assert.Collection(
+            results,
+            result => AssertIntersectionResult(result, "edge-adjacent nonzero spacer", expected: true),
+            result => AssertIntersectionResult(result, "separated spacer", expected: false),
+            result => AssertIntersectionResult(result, "edge-adjacent zero-height spacer", expected: true),
+            result => AssertIntersectionResult(result, "overlapping spacer", expected: true));
+
+        static void AssertIntersectionResult(object value, string expectedName, bool expected)
+        {
+            var result = (Dictionary<string, object>)value;
+            Assert.Equal(expectedName, result["name"]);
+            Assert.Equal(expected, result["wasReported"]);
+        }
+    }
+
+    [Fact]
     public void RerendersWhenItemSizeShrinks_Sync()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
@@ -4996,7 +5089,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item identity stabilize.
+    /// item range, item count, scroll extent, scrollTop, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
@@ -5004,8 +5097,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
     {
         long lastScrollTop = -1;
+        long lastScrollHeight = -1;
         int lastItemCount = -1;
         string lastFirstIndex = "";
+        string lastFirstRenderedIndex = "";
+        string lastLastRenderedIndex = "";
         int stableCount = 0;
 
         Browser.True(() =>
@@ -5023,12 +5119,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         break;
                     }
                 }
-                return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
+                var index = item => item ? item.getAttribute('data-index') || item.textContent : '';
+                return {
+                    scrollTop: Math.round(c.scrollTop),
+                    scrollHeight: Math.round(c.scrollHeight),
+                    itemCount: items.length,
+                    firstIndex: firstIdx,
+                    firstRenderedIndex: index(items[0]),
+                    lastRenderedIndex: index(items[items.length - 1])
+                };
             ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToInt64(result["scrollHeight"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
             var firstIndex = result["firstIndex"]?.ToString() ?? "";
+            var firstRenderedIndex = result["firstRenderedIndex"]?.ToString() ?? "";
+            var lastRenderedIndex = result["lastRenderedIndex"]?.ToString() ?? "";
 
             if (string.IsNullOrEmpty(firstIndex))
             {
@@ -5037,7 +5144,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 // item to reappear rather than reporting this moment as stable.
                 stableCount = 0;
             }
-            else if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
+            else if (scrollTop == lastScrollTop
+                && scrollHeight == lastScrollHeight
+                && itemCount == lastItemCount
+                && firstIndex == lastFirstIndex
+                && firstRenderedIndex == lastFirstRenderedIndex
+                && lastRenderedIndex == lastLastRenderedIndex)
             {
                 stableCount++;
             }
@@ -5047,11 +5159,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }
 
             lastScrollTop = scrollTop;
+            lastScrollHeight = scrollHeight;
             lastItemCount = itemCount;
             lastFirstIndex = firstIndex;
+            lastFirstRenderedIndex = firstRenderedIndex;
+            lastLastRenderedIndex = lastRenderedIndex;
 
-            // Require 3 consecutive stable reads to account for async provider delays.
-            return stableCount >= 3;
+            // Require 5 consecutive stable reads to account for async provider delays and geometry updates.
+            return stableCount >= 5;
         }, TimeSpan.FromSeconds(15), "Render cycle did not settle in time");
     }
 
@@ -5446,8 +5561,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var expected = value.ToString(CultureInfo.InvariantCulture);
         var input = Browser.Exists(By.Id(elementId));
-        // Clear() on <input type=number> is unreliable across drivers; Ctrl+A + Delete works.
-        input.SendKeys(Keys.Control + "a");
+        // Clear() on <input type=number> is unreliable across drivers; select-all + Delete works.
+        input.SendKeys((OperatingSystem.IsMacOS() ? Keys.Command : Keys.Control) + "a");
         input.SendKeys(Keys.Delete);
         input.SendKeys(expected);
         input.SendKeys(Keys.Tab);
@@ -5552,6 +5667,227 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }
             return edge === 'top' ? (best <= rect.top + 2) : (best >= rect.bottom - 2);
         ", edge);
+    }
+
+    [Fact]
+    public void InitialItemIndex_NearEndResize_DoesNotApplyStaleRenderedWindowMeasurement()
+    {
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 2900);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetStaleMeasurementContainerHeight(js, 2500);
+        Browser.Exists(By.Id("set-stale-measurement-scenario")).Click();
+        Browser.Contains("Stale measurement scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        SetManualInitialIndex(1990);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        AssertViewportState("initial 2500px");
+
+        for (var cycle = 1; cycle <= 3; cycle++)
+        {
+            SetStaleMeasurementContainerHeight(js, 2000);
+            AssertViewportState($"cycle {cycle} at 2000px");
+            SetStaleMeasurementContainerHeight(js, 2500);
+            AssertViewportState($"cycle {cycle} at 2500px");
+        }
+
+        var severeLogs = Browser.Manage().Logs.GetLog(LogType.Browser)
+            .Where(entry => entry.Level == LogLevel.Severe)
+            .ToArray();
+        Assert.Empty(severeLogs);
+
+        void AssertViewportState(string stage)
+        {
+            WaitForRenderToSettle(container, js);
+            var firstVisibleItem = GetTopRenderedIndex(js);
+            var topCovered = ViewportEdgeCoveredByRealItem(js, "top");
+            var bottomCovered = ViewportEdgeCoveredByRealItem(js, "bottom");
+            var scrollHeight = Convert.ToDouble(
+                js.ExecuteScript("return document.getElementById('scroll-container').scrollHeight;"),
+                CultureInfo.InvariantCulture);
+            var atScrollEnd = Convert.ToBoolean(
+                js.ExecuteScript("""
+                    const container = document.getElementById('scroll-container');
+                    return Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) <= 2;
+                    """),
+                CultureInfo.InvariantCulture);
+
+            Assert.True(firstVisibleItem == 1950
+                && topCovered
+                && (bottomCovered || atScrollEnd)
+                && Math.Abs(scrollHeight - 100_000) <= 2,
+                $"Unexpected viewport state after {stage}: firstVisibleItem={firstVisibleItem}, " +
+                $"scrollTop={GetScrollTop(js, container)}, scrollHeight={scrollHeight}, " +
+                $"topCovered={topCovered}, bottomCovered={bottomCovered}, atScrollEnd={atScrollEnd}.");
+        }
+    }
+
+    [Fact]
+    public void ParentRerender_InvalidatesPendingRenderedWindowMeasurement()
+    {
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 1200);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetStaleMeasurementContainerHeight(js, 650);
+        Browser.Exists(By.Id("set-stale-measurement-scenario")).Click();
+        Browser.Exists(By.Id("unload-list")).Click();
+        SetManualInitialIndex(1900);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+        WaitForRenderToSettle(container, js);
+        Browser.True(() => ViewportEdgeCoveredByRealItem(js, "top"));
+        Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"));
+
+        js.ExecuteScript("""
+            window.__virtualizeOriginalSetTimeout = window.setTimeout;
+            window.__virtualizeHeldTimeouts = [];
+            window.setTimeout = function(callback, delay, ...args) {
+                if (delay === 50) {
+                    const held = window.__virtualizeHeldTimeouts;
+                    held.push(() => callback(...args));
+                    return -1000 - held.length;
+                }
+                return window.__virtualizeOriginalSetTimeout(callback, delay, ...args);
+            };
+            """);
+
+        try
+        {
+            SetStaleMeasurementContainerHeight(js, 600);
+            Browser.True(() => Convert.ToInt64(
+                js.ExecuteScript("return window.__virtualizeHeldTimeouts.length;"),
+                CultureInfo.InvariantCulture) > 0);
+
+            SetStaleMeasurementContainerHeight(js, 650);
+            js.ExecuteAsyncScript("""
+                const done = arguments[arguments.length - 1];
+                requestAnimationFrame(() => requestAnimationFrame(done));
+                """);
+
+            Browser.Exists(By.Id("shrink-rendered-content")).Click();
+            Browser.Contains(
+                "Shrank rendered content without changing Virtualize parameters",
+                () => Browser.Exists(By.Id("status")).Text);
+
+            var versionAfterParentRender = Convert.ToInt64(
+                js.ExecuteScript("""
+                    return Number(document.querySelector(
+                        '#scroll-container [data-blazor-virtualize-rendered-window-version]').getAttribute(
+                            'data-blazor-virtualize-rendered-window-version'));
+                    """),
+                CultureInfo.InvariantCulture);
+
+            var heldCallbackCount = Convert.ToInt32(
+                js.ExecuteScript("""
+                    window.setTimeout = window.__virtualizeOriginalSetTimeout;
+                    const callbacks = window.__virtualizeHeldTimeouts.splice(0);
+                    callbacks.forEach(callback => callback());
+                    return callbacks.length;
+                    """),
+                CultureInfo.InvariantCulture);
+            Assert.True(heldCallbackCount > 0);
+
+            WaitForRenderToSettle(container, js);
+            var topCovered = ViewportEdgeCoveredByRealItem(js, "top");
+            var bottomCovered = ViewportEdgeCoveredByRealItem(js, "bottom");
+            var scrollHeight = Convert.ToDouble(
+                js.ExecuteScript("return document.getElementById('scroll-container').scrollHeight;"),
+                CultureInfo.InvariantCulture);
+            var viewportState = (string)js.ExecuteScript("""
+                const container = document.getElementById('scroll-container');
+                const viewport = container.getBoundingClientRect();
+                const items = Array.from(container.querySelectorAll('.item'));
+                const spacers = Array.from(container.querySelectorAll(
+                    ':scope > [data-blazor-virtualize-rendered-window-version]'));
+                const first = items[0]?.getBoundingClientRect();
+                const last = items.at(-1)?.getBoundingClientRect();
+                const before = spacers[0]?.getBoundingClientRect();
+                const after = spacers.at(-1)?.getBoundingClientRect();
+                return JSON.stringify({
+                    scrollTop: container.scrollTop,
+                    scrollHeight: container.scrollHeight,
+                    clientHeight: container.clientHeight,
+                    viewportTop: viewport.top,
+                    viewportBottom: viewport.bottom,
+                    firstTop: first?.top,
+                    firstBottom: first?.bottom,
+                    lastTop: last?.top,
+                    lastBottom: last?.bottom,
+                    beforeTop: before?.top,
+                    beforeBottom: before?.bottom,
+                    beforeReserved: spacers[0]?.getAttribute('data-blazor-virtualize-reserved-height'),
+                    measuredAverage: spacers[0]?.getAttribute('data-proof-measured-average'),
+                    measuredCount: spacers[0]?.getAttribute('data-proof-measured-count'),
+                    parameterVersion: spacers[0]?.getAttribute('data-proof-parameter-version'),
+                    lastMeasuredWindow: spacers[0]?.getAttribute('data-proof-last-measured-window'),
+                    afterTop: after?.top,
+                    afterBottom: after?.bottom,
+                    afterReserved: spacers.at(-1)?.getAttribute('data-blazor-virtualize-reserved-height'),
+                    afterTransform: spacers.at(-1)?.style.transform,
+                    itemCount: items.length,
+                    firstIndex: items[0]?.getAttribute('data-index'),
+                    lastIndex: items.at(-1)?.getAttribute('data-index')
+                });
+                """);
+            js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 10000;");
+            js.ExecuteAsyncScript("""
+                const done = arguments[arguments.length - 1];
+                setTimeout(done, 1000);
+                """);
+            var centerItemIndex = Convert.ToInt32(
+                js.ExecuteScript("""
+                    const container = document.getElementById('scroll-container');
+                    const viewport = container.getBoundingClientRect();
+                    const center = viewport.top + viewport.height / 2;
+                    const item = Array.from(container.querySelectorAll('.item')).find(element => {
+                        const bounds = element.getBoundingClientRect();
+                        return bounds.top <= center && bounds.bottom > center;
+                    });
+                    return Number(item?.getAttribute('data-index') ?? -1);
+                    """),
+                CultureInfo.InvariantCulture);
+            Assert.InRange(
+                centerItemIndex,
+                950,
+                1050);
+
+            js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+            WaitForRenderToSettle(container, js);
+            var firstRenderedItemIndex = Convert.ToInt32(
+                js.ExecuteScript("""
+                    return Number(document.querySelector('#scroll-container .item')?.getAttribute('data-index') ?? -1);
+                    """),
+                CultureInfo.InvariantCulture);
+            Assert.Equal(0, firstRenderedItemIndex);
+
+            Assert.True(
+                Math.Abs(scrollHeight - 20_000) <= container.Size.Height,
+                $"The scroll extent differed from the rendered item geometry by more than one viewport. State={viewportState}.");
+            Assert.True(bottomCovered, $"The viewport bottom was uncovered after parent render. State={viewportState}.");
+            Assert.True(
+                topCovered,
+                $"The opposite viewport edge was uncovered after parent render. Version={versionAfterParentRender}.");
+        }
+        finally
+        {
+            js.ExecuteScript("""
+                if (window.__virtualizeOriginalSetTimeout) {
+                    window.setTimeout = window.__virtualizeOriginalSetTimeout;
+                }
+                window.__virtualizeHeldTimeouts = [];
+                """);
+        }
+    }
+
+    private static void SetStaleMeasurementContainerHeight(IJavaScriptExecutor js, int height)
+    {
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = `${arguments[0]}px`;", height);
     }
 
     [Fact]
