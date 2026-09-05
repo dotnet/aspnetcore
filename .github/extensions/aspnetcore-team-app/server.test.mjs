@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildLiveOptions,
   isAllowedPostRequest,
   parseRefreshRequest,
 } from "./server.mjs";
@@ -35,6 +36,22 @@ test("refresh requests accept only an optional preset", () => {
     () => parseRefreshRequest({ source: "fixture" }),
     (error) => error.code === "invalid_refresh",
   );
+});
+
+test("canvas open and refresh options preserve digest author exclusions", () => {
+  assert.deepEqual(
+    buildLiveOptions({ preset: "blazor", excludeDigestAuthor: "PureWeen" }, "blazor"),
+    {
+      source: "live",
+      preset: "blazor",
+      excludeDigestAuthor: "PureWeen",
+    },
+  );
+  assert.deepEqual(buildLiveOptions({ excludeDigestAuthor: "PureWeen" }), {
+    source: "live",
+    preset: undefined,
+    excludeDigestAuthor: "PureWeen",
+  });
 });
 
 test("POST protection permits same-origin iframe requests and rejects cross-origin requests", () => {
