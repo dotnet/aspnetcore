@@ -52,14 +52,16 @@ state, and withholds ambiguous items in **Verify discussion before review**.
 This is deliberately not an LLM judgment. It only reports transparent evidence:
 
 - author wording that explicitly raises close/continue disposition;
-- a non-author top-level comment after the latest author response, categorized as actionable,
-  informational, or unknown by a narrow documented text heuristic;
-- counts of resolved, unresolved, and outdated review threads; and
+- actionable or unknown non-author top-level discussion, including feedback after the latest author
+  response, categorized by a narrow documented text heuristic;
+- counts of resolved, unresolved, and outdated review threads. A current unresolved inline thread is
+  surfaced for verification because this bounded pass does not read its comment text; and
 - whether the bounded comments or thread queries were truncated.
 
-An unresolved thread alone does not change ownership. An author response alone does not clear later
-non-author feedback. A bounded query that is incomplete is surfaced for verification rather than
-being treated as clear. Candidates outside the configured assessment limit cannot enter the
+An unresolved thread alone does not change ownership, but a current unresolved thread without
+collected inline-comment evidence cannot be called clear. An author response alone does not clear
+later non-author feedback. A bounded query that is incomplete is surfaced for verification rather
+than being treated as clear. Candidates outside the configured assessment limit cannot enter the
 unattended digest and are reported through the queue warning and `discussion-not-assessed`.
 
 ## Read-only boundary

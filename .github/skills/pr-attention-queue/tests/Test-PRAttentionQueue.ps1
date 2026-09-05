@@ -192,24 +192,29 @@ $discussionJson = & $scriptPath `
     -OutputFormat Json
 $discussionResult = $discussionJson | ConvertFrom-Json -Depth 100
 
-Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 5) "Discussion assessment must not rewrite deterministic classification."
+Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 7) "Discussion assessment must not rewrite deterministic classification."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.state -eq "verification-needed") "An author close-or-continue response must require discussion verification."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.signals -contains "author-disposition-mentioned") "Author disposition evidence must be explicit."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).reasonCodes -contains "needs-first-review") "An author disposition test must not require a formal review."
 Assert-True (-not (($discussionResult.items | Where-Object number -eq 117).shownInDigest)) "An author disposition response must not be presented as ordinary review."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).shownInDiscussionVerification) "An author disposition response must surface for discussion verification."
 Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.threads.unresolvedCount -eq 1) "Unresolved thread state must be surfaced as evidence."
 Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.signals -contains "non-author-discussion-after-author-response") "Later owner feedback must require discussion verification."
 Assert-True (-not (($discussionResult.items | Where-Object number -eq 118).shownInDigest)) "Later owner feedback must not be presented as ordinary review."
 Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].actor -eq "repository-member") "Repository-member feedback must be attributed."
-Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].kind -eq "actionable") "Actionable feedback must be distinguished from informational comments."
-Assert-True (($discussionResult.items | Where-Object number -eq 119).discussionAssessment.state -eq "clear") "A normal author response with unresolved threads must remain an ordinary review candidate."
-Assert-True (($discussionResult.items | Where-Object number -eq 119).shownInDigest) "A normal author response must remain in the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].kind -eq "actionable") "A polite prefix must not hide actionable feedback."
+Assert-True (($discussionResult.items | Where-Object number -eq 119).discussionAssessment.signals -contains "current-inline-discussion-unassessed") "A current unresolved thread without comment evidence must require verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 119).shownInDigest)) "Unread current inline feedback must not enter the unattended digest."
 Assert-True (($discussionResult.items | Where-Object number -eq 120).discussionAssessment.state -eq "clear") "Explicit informational follow-up must not block ordinary review."
 Assert-True (($discussionResult.items | Where-Object number -eq 120).shownInDigest) "An informational follow-up must not remove the candidate from the digest."
 Assert-True (($discussionResult.items | Where-Object number -eq 121).discussionAssessment.signals -contains "discussion-incomplete") "Truncated discussion must be disclosed."
 Assert-True (-not (($discussionResult.items | Where-Object number -eq 121).shownInDigest)) "Truncated discussion must not enter the unattended digest."
-Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 5) "The bounded assessment count must be emitted."
-Assert-True ($discussionResult.discussion.verificationNeededCount -eq 3) "The assessment summary must count verification-needed candidates."
+Assert-True (($discussionResult.items | Where-Object number -eq 122).discussionAssessment.state -eq "clear") "Resolved and outdated threads must remain a positive control."
+Assert-True (($discussionResult.items | Where-Object number -eq 122).shownInDigest) "Resolved and outdated threads must not remove a normal roundtrip from the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 123).discussionAssessment.signals -contains "non-author-discussion-requires-verification") "An initial owner concern without a formal review or author response must require verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 123).shownInDigest)) "An initial owner concern must not enter the unattended digest."
+Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 7) "The bounded assessment count must be emitted."
+Assert-True ($discussionResult.discussion.verificationNeededCount -eq 5) "The assessment summary must count verification-needed candidates."
 
 $discussionMarkdown = & $scriptPath `
     -InputPath $discussionFixturePath `

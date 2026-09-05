@@ -320,12 +320,13 @@ function Get-DiscussionCommentKind {
         return "disposition"
     }
 
-    if ($normalizedBody -match "^(fyi|for context|thanks|thank you|nit:)\b") {
-        return "informational"
+    if ($normalizedBody -match "\b(please|should|need to|needs to|avoid|regress|could you|would you|why|fix|change|update|remove|add|consider|incorrect|wrong|issue|problem|fail|failure|break|blocking|block|must)\b|\?") {
+        return "actionable"
     }
 
-    if ($normalizedBody -match "\b(please|should|need to|needs to|avoid|regress|could you|would you|why)\b|\?") {
-        return "actionable"
+    if (-not $IsAuthor -and
+        $normalizedBody -match "^(fyi|for context|thanks|thank you|nit:)([,.!:\s]|$)") {
+        return "informational"
     }
 
     if ($IsAuthor) {
@@ -421,17 +422,15 @@ function Get-DiscussionAssessment {
         }
     ) | Sort-Object -Property CreatedAt -Descending
 
-    $latestAuthorResponseAt = @(
+    $latestAuthorActivityAt = @(
         $comments |
             Where-Object {
-                $_.Actor -eq "author" -and
-                $latestHumanReview -and
-                $_.CreatedAt -gt $latestHumanReview.SubmittedAt
+                $_.Actor -eq "author"
             } |
             Select-Object -First 1
     )
-    $latestAuthorResponseAt = if ($latestAuthorResponseAt.Count -gt 0) {
-        $latestAuthorResponseAt[0].CreatedAt
+    $latestAuthorActivityAt = if ($latestAuthorActivityAt.Count -gt 0) {
+        $latestAuthorActivityAt[0].CreatedAt
     }
     else {
         $null
@@ -444,16 +443,17 @@ function Get-DiscussionAssessment {
 
     foreach ($comment in $comments) {
         if ($comment.Actor -eq "author" -and
-            $comment.Kind -eq "disposition" -and
-            $latestHumanReview -and
-            $comment.CreatedAt -gt $latestHumanReview.SubmittedAt) {
+            $comment.Kind -eq "disposition") {
             $signals.Add("author-disposition-mentioned")
         }
-        elseif ($latestAuthorResponseAt -and
-            $comment.Actor -notin @("author", "automation") -and
-            $comment.CreatedAt -gt $latestAuthorResponseAt -and
+        elseif ($comment.Actor -notin @("author", "automation") -and
             $comment.Kind -ne "informational") {
-            $signals.Add("non-author-discussion-after-author-response")
+            if ($latestAuthorActivityAt -and $comment.CreatedAt -gt $latestAuthorActivityAt) {
+                $signals.Add("non-author-discussion-after-author-response")
+            }
+            else {
+                $signals.Add("non-author-discussion-requires-verification")
+            }
         }
     }
 
@@ -461,6 +461,12 @@ function Get-DiscussionAssessment {
     $outdatedUnresolvedThreads = @(
         $unresolvedThreads | Where-Object { [bool](Get-PropertyValue -Object $_ -Name "isOutdated" -DefaultValue $false) }
     )
+    $currentUnresolvedThreads = @(
+        $unresolvedThreads | Where-Object { -not [bool](Get-PropertyValue -Object $_ -Name "isOutdated" -DefaultValue $false) }
+    )
+    if ($currentUnresolvedThreads.Count -gt 0) {
+        $signals.Add("current-inline-discussion-unassessed")
+    }
     $uniqueSignals = @($signals | Select-Object -Unique)
     $state = if ($uniqueSignals.Count -gt 0) { "verification-needed" } else { "clear" }
 
@@ -1416,7 +1422,7 @@ function Get-DisplayMetadata {
             states = [pscustomobject][ordered]@{
                 "clear" = [pscustomobject]@{
                     label = "Discussion checked"
-                    description = "The bounded recent discussion evidence did not identify a conflicting disposition or later non-author feedback."
+                    description = "The bounded recent discussion evidence did not identify a disposition, non-author concern, or unread current inline thread."
                 }
                 "verification-needed" = [pscustomobject]@{
                     label = "Verify discussion"
@@ -1430,7 +1436,11 @@ function Get-DisplayMetadata {
             signals = [pscustomobject][ordered]@{
                 "author-disposition-mentioned" = [pscustomobject]@{
                     label = "Author requested disposition"
-                    description = "The author raised whether the pull request should continue or close after review."
+                    description = "The author raised whether the pull request should continue or close."
+                }
+                "current-inline-discussion-unassessed" = [pscustomobject]@{
+                    label = "Current inline discussion"
+                    description = "A current unresolved review thread was found, but its comment evidence was not collected."
                 }
                 "discussion-incomplete" = [pscustomobject]@{
                     label = "Discussion incomplete"
@@ -1443,6 +1453,10 @@ function Get-DisplayMetadata {
                 "non-author-discussion-after-author-response" = [pscustomobject]@{
                     label = "Later non-author discussion"
                     description = "A non-author comment after the latest author response needs human interpretation."
+                }
+                "non-author-discussion-requires-verification" = [pscustomobject]@{
+                    label = "Non-author discussion"
+                    description = "A non-author actionable or unknown comment needs human interpretation."
                 }
             }
             commentKinds = [pscustomobject][ordered]@{
@@ -1460,7 +1474,7 @@ function Get-DisplayMetadata {
                 }
                 "informational" = [pscustomobject]@{
                     label = "Informational"
-                    description = "The comment starts with an explicit informational marker."
+                    description = "The comment has an explicit informational marker and no detected request, question, or concern."
                 }
                 "unknown" = [pscustomobject]@{
                     label = "Unknown"
