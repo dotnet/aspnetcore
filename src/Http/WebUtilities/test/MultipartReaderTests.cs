@@ -93,6 +93,18 @@ public class MultipartReaderTests
 "\r\n" +
 "--9051914041544843365";
 
+    private static string ReadToEndUsingSpans(Stream stream, int spanLength)
+    {
+        var buffer = new byte[spanLength];
+        var result = new MemoryStream();
+        int read;
+        while ((read = stream.Read(buffer.AsSpan())) > 0)
+        {
+            result.Write(buffer, 0, read);
+        }
+        return Encoding.ASCII.GetString(result.ToArray());
+    }
+
     private static MemoryStream MakeStream(string text)
     {
         return new MemoryStream(Encoding.UTF8.GetBytes(text));
@@ -498,6 +510,29 @@ public class MultipartReaderTests
 
         read = section.Body.Read(buffer, 0, buffer.Length);
         Assert.Equal("fault", GetString(buffer, read));
+
+        Assert.Null(await reader.ReadNextSectionAsync());
+    }
+
+    [Theory]
+    // The default buffer holds the whole body, so every read sees the full boundary.
+    [InlineData(4096)]
+    // A buffer smaller than the body forces partial boundary matches at the end of the buffered data.
+    [InlineData(64)]
+    public async Task MultipartReader_ReadSectionBodyIntoSpan_ReadsEachSection(int bufferSize)
+    {
+        var stream = MakeStream(TwoPartBody);
+        var reader = new MultipartReader(Boundary, stream, bufferSize);
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("text default", ReadToEndUsingSpans(section.Body, spanLength: 5));
+
+        section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("Content of a.txt.\r\n", ReadToEndUsingSpans(section.Body, spanLength: 5));
 
         Assert.Null(await reader.ReadNextSectionAsync());
     }
