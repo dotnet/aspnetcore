@@ -602,12 +602,12 @@ public static class LocalizedParameterActions
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class SelfFormattingAttribute : ValidationAttribute, IValidationMessageFormatter
+public sealed class SelfFormattingAttribute : ValidationAttribute
 {
     public string Extra { get; set; } = string.Empty;
 
     public override bool IsValid(object? value) => value is not null;
 
-    public string FormatMessage(CultureInfo culture, string messageTemplate, string displayName)
-        => string.Format(culture, messageTemplate, displayName, Extra);
+    public override string FormatMessage(string format, string name)
+        => string.Format(CultureInfo.CurrentCulture, format, name, Extra);
 }

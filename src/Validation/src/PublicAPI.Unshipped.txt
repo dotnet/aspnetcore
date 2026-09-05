@@ -27,8 +27,6 @@ Microsoft.Extensions.Validation.IValidatableTypeInfo
 Microsoft.Extensions.Validation.IValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
 Microsoft.Extensions.Validation.IValidatableTypeInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 Microsoft.Extensions.Validation.IValidatableTypeInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-Microsoft.Extensions.Validation.IValidationMessageFormatter
-Microsoft.Extensions.Validation.IValidationMessageFormatter.FormatMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
 Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationError! validationError) -> void
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.init -> void
