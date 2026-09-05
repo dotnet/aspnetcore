@@ -1,0 +1,89 @@
+@using Microsoft.AspNetCore.Components.AI
+
+<div class="claim-approval">
+    <h3>Confirm the preliminary findings</h3>
+    <p>Use this decision only after the photos and damage findings look complete.</p>
+
+    @if (Block.Status == ApprovalStatus.Pending)
+    {
+        <div class="claim-approval__reason">
+            <label for="@_reasonId">Reason if rejecting</label>
+            <textarea id="@_reasonId"
+                      @bind="_reason"
+                      aria-describedby="@_errorId"
+                      placeholder="Explain what looks incorrect"></textarea>
+            @if (!string.IsNullOrEmpty(_validationMessage))
+            {
+                <span id="@_errorId" class="claim-approval__error" role="alert">
+                    @_validationMessage
+                </span>
+            }
+        </div>
+        <div class="claim-approval__actions">
+            <button type="button" @onclick="ApproveAsync">Approve assessment</button>
+            <button type="button" @onclick="RequestMoreEvidence">
+                Add more evidence
+            </button>
+            <button type="button" @onclick="RejectAsync">Reject assessment</button>
+        </div>
+    }
+    else
+    {
+        <strong role="status">
+            @(_additionalEvidenceRequested
+                ? "More evidence requested"
+                : Block.Status switch
+            {
+                ApprovalStatus.Approved => "Assessment approved",
+                _ => "Assessment rejected",
+            })
+        </strong>
+    }
+</div>
+
+@code {
+    private readonly string _reasonId = $"claim-reason-{Guid.NewGuid():N}";
+    private readonly string _errorId = $"claim-reason-error-{Guid.NewGuid():N}";
+    private string _reason = string.Empty;
+    private string? _validationMessage;
+    private bool _additionalEvidenceRequested;
+
+    [Parameter, EditorRequired]
+    public FunctionApprovalBlock Block { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnApproved { get; set; }
+
+    [Parameter]
+    public EventCallback OnAdditionalEvidence { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnRejected { get; set; }
+
+    private async Task ApproveAsync()
+    {
+        await OnApproved.InvokeAsync();
+        Block.Approve();
+    }
+
+    private async Task RejectAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_reason))
+        {
+            _validationMessage = "Enter a reason before rejecting the assessment.";
+            return;
+        }
+
+        _validationMessage = null;
+        var reason = _reason.Trim();
+        await OnRejected.InvokeAsync(reason);
+        Block.Reject(reason);
+    }
+
+    private async Task RequestMoreEvidence()
+    {
+        _additionalEvidenceRequested = true;
+        await OnAdditionalEvidence.InvokeAsync();
+        Block.Reject("Additional evidence requested");
+    }
+}

@@ -44,6 +44,9 @@
     <ProjectReference Include="../DojoClient/DojoClient.csproj">
       <E2EApp>true</E2EApp>
     </ProjectReference>
+    <ProjectReference Include="../../samples/ClaimApp/ClaimApp.csproj">
+      <E2EApp>true</E2EApp>
+    </ProjectReference>
   </ItemGroup>
 
   <!--

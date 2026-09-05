@@ -131,6 +131,67 @@ public class AgentContextApprovalTests
             Assert.Single(turn.ResponseBlocks.OfType<RichContentBlock>()).RawText);
     }
 
+    [Fact]
+    public async Task RetryAsync_AfterContinuationFailure_RetriesApprovalResponseRound()
+    {
+        var callCount = 0;
+        List<ChatMessage>? retryMessages = null;
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            callCount++;
+            return callCount switch
+            {
+                1 => EmitApprovalRequest(cancellationToken),
+                2 => ResponseEmitters.EmitErrorAfterTokens(
+                    ["partial"],
+                    new InvalidOperationException("boom")),
+                _ => CaptureAndRespond(),
+            };
+
+            IAsyncEnumerable<ChatResponseUpdate> CaptureAndRespond()
+            {
+                retryMessages = messages.ToList();
+                return ResponseEmitters.EmitTextResponse(
+                    "Approved.",
+                    cancellationToken);
+            }
+        });
+        using var agent = new UIAgent(client);
+        using var context = new AgentContext(agent);
+        using var subscription = context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                context.Turns[^1].ResponseBlocks
+                    .OfType<FunctionApprovalBlock>()
+                    .Single()
+                    .Approve();
+            }
+        });
+
+        await context.SendMessageAsync("Delete the report");
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        var turn = Assert.Single(context.Turns);
+        Assert.Single(turn.RequestBlocks);
+        Assert.Single(turn.ResponseBlocks.OfType<FunctionApprovalBlock>());
+        Assert.Empty(turn.ResponseBlocks.OfType<RichContentBlock>());
+
+        await context.RetryAsync();
+
+        Assert.Equal(3, callCount);
+        Assert.Equal(
+            [ChatRole.User, ChatRole.Assistant, ChatRole.User],
+            retryMessages?.Select(message => message.Role));
+        Assert.True(Assert.IsType<ToolApprovalResponseContent>(
+            Assert.Single(retryMessages![^1].Contents)).Approved);
+        Assert.Single(turn.RequestBlocks);
+        Assert.Single(turn.ResponseBlocks.OfType<FunctionApprovalBlock>());
+        Assert.Equal(
+            "Approved.",
+            Assert.Single(turn.ResponseBlocks.OfType<RichContentBlock>()).RawText);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> EmitApprovalRequest(
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
