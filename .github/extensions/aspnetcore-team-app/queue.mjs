@@ -1,0 +1,434 @@
+import { execFile } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+const extensionDirectory = dirname(fileURLToPath(import.meta.url));
+const repositoryRoot = resolve(extensionDirectory, "../../..");
+const scriptPath = resolve(
+  repositoryRoot,
+  ".github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1",
+);
+const fixturePath = resolve(
+  repositoryRoot,
+  ".github/skills/pr-attention-queue/tests/fixtures/pull-requests.json",
+);
+
+export const SUPPORTED_SCHEMA_VERSION = "1.0.0";
+export const BUCKETS = [
+  "ReviewNow",
+  "NeedsRescue",
+  "ReadyToMerge",
+  "WaitingOnAuthor",
+  "WaitingOnCI",
+  "DesignDecision",
+  "Draft",
+  "Excluded",
+];
+export const SECONDARY_BUCKETS = [
+  "WaitingOnAuthor",
+  "WaitingOnCI",
+  "DesignDecision",
+  "Draft",
+  "Excluded",
+];
+export function normalizeOptions(input = {}, fallback = {}) {
+  const source = input.source ?? fallback.source ?? "live";
+  const preset = input.preset ?? fallback.preset ?? "blazor";
+  const excludeDigestAuthor = input.excludeDigestAuthor ?? fallback.excludeDigestAuthor;
+
+  if (!["fixture", "live"].includes(source)) {
+    throw queueError("invalid_source", "source must be fixture or live");
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(preset)) {
+    throw queueError("invalid_preset", "preset must be a simple named preset");
+  }
+  if (
+    excludeDigestAuthor !== undefined
+    && (
+      typeof excludeDigestAuthor !== "string"
+      || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(excludeDigestAuthor)
+    )
+  ) {
+    throw queueError("invalid_excluded_author", "excludeDigestAuthor must be a GitHub login");
+  }
+
+  return {
+    source,
+    preset,
+    ...(excludeDigestAuthor ? { excludeDigestAuthor } : {}),
+  };
+}
+
+export async function loadQueue(input = {}) {
+  const options = normalizeOptions(input);
+  const args = [
+    "-NoProfile",
+    "-File",
+    scriptPath,
+    "-OutputFormat",
+    "Json",
+    "-Preset",
+    options.preset,
+  ];
+
+  if (options.source === "fixture") {
+    args.push("-InputPath", fixturePath);
+  }
+  if (options.excludeDigestAuthor) {
+    args.push("-ExcludeDigestAuthor", options.excludeDigestAuthor);
+  }
+
+  let stdout;
+  try {
+    ({ stdout } = await execFileAsync("pwsh", args, {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      maxBuffer: 8 * 1024 * 1024,
+      timeout: options.source === "live" ? 180_000 : 30_000,
+    }));
+  } catch (error) {
+    const detail = error.stderr?.trim() || error.message;
+    throw queueError("queue_script_failed", `PR attention queue script failed: ${detail}`);
+  }
+
+  return {
+    options,
+    queue: parseQueueJson(stdout),
+  };
+}
+
+export function parseQueueJson(stdout) {
+  let queue;
+  try {
+    queue = JSON.parse(stdout);
+  } catch (error) {
+    throw queueError("queue_json_invalid", `PR attention queue returned invalid JSON: ${error.message}`);
+  }
+
+  return validateQueue(queue);
+}
+
+export function validateQueue(queue) {
+  requireRecord(queue, "queue", "queue_shape_invalid");
+  if (queue.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+    throw queueError(
+      "queue_schema_unsupported",
+      `Unsupported PR attention queue schema version: ${String(queue.schemaVersion)}`,
+    );
+  }
+
+  requireString(queue.generatedAt, "generatedAt");
+  if (Number.isNaN(Date.parse(queue.generatedAt))) {
+    throw queueError("queue_shape_invalid", "generatedAt must be an ISO date");
+  }
+  requireRepository(queue.repository);
+
+  requireRecord(queue.display, "display");
+  requireRecord(queue.display.buckets, "display.buckets");
+  requireRecord(queue.display.reasonCodes, "display.reasonCodes");
+  if (queue.display.digestExclusionReasons !== undefined) {
+    requireRecord(queue.display.digestExclusionReasons, "display.digestExclusionReasons");
+  }
+  if (queue.display.discussion !== undefined) {
+    validateDiscussionDisplay(queue.display.discussion);
+  }
+  for (const bucket of BUCKETS) {
+    requireDisplayEntry(queue.display.buckets[bucket], `display.buckets.${bucket}`);
+  }
+  requireRecord(queue.filter, "filter");
+  for (const field of ["name", "description", "coverage", "selection"]) {
+    requireString(queue.filter[field], `filter.${field}`);
+  }
+  if (queue.filter.excludeDigestAuthors !== undefined) {
+    requireStringArray(queue.filter.excludeDigestAuthors, "filter.excludeDigestAuthors");
+  }
+
+  requireRecord(queue.query, "query");
+  if (queue.query.complete !== true) {
+    throw queueError("queue_incomplete", "PR attention queue did not return a complete repository query");
+  }
+  requireNonNegativeInteger(queue.query.openPullRequestCount, "query.openPullRequestCount");
+  requireNonNegativeInteger(queue.query.returnedPullRequestCount, "query.returnedPullRequestCount");
+
+  requireRecord(queue.census, "census");
+  for (const field of [
+    "openPullRequests",
+    "matched",
+    "labelOnly",
+    "pathOnly",
+    "labelAndPath",
+    "incidentalPathExcluded",
+    "unresolvedMergeable",
+  ]) {
+    requireNonNegativeInteger(queue.census[field], `census.${field}`);
+  }
+  requireRecord(queue.census.byBucket, "census.byBucket");
+  for (const bucket of BUCKETS) {
+    requireNonNegativeInteger(queue.census.byBucket[bucket], `census.byBucket.${bucket}`);
+  }
+
+  requireRecord(queue.overflow, "overflow");
+  for (const field of ["reviewNow", "needsRescue", "readyToMerge"]) {
+    requireNonNegativeInteger(queue.overflow[field], `overflow.${field}`);
+  }
+
+  requireRecord(queue.caps, "caps");
+  for (const field of ["reviewNow", "reviewNowPerAuthor", "needsRescue", "readyToMerge"]) {
+    requireNonNegativeInteger(queue.caps[field], `caps.${field}`);
+  }
+  if (queue.discussion !== undefined) {
+    validateDiscussionSummary(queue.discussion);
+  }
+
+  requireStringArray(queue.warnings, "warnings");
+  if (!Array.isArray(queue.items)) {
+    throw queueError("queue_shape_invalid", "items must be an array");
+  }
+  for (const item of queue.items) {
+    validateItem(queue, item);
+  }
+  validateDigestRanks(queue.items);
+
+  return queue;
+}
+
+function validateItem(queue, item) {
+  requireRecord(item, "item");
+  requirePositiveInteger(item.number, "item.number");
+  for (const field of ["title", "author", "bucket", "nextActor", "scopeMatch", "headSha"]) {
+    requireString(item[field], `item.${field}`);
+  }
+  for (const field of ["headBranch", "baseBranch", "mergeStateStatus"]) {
+    if (item[field] !== undefined) {
+      requireStringValue(item[field], `item.${field}`);
+    }
+  }
+  if (!BUCKETS.includes(item.bucket)) {
+    throw queueError("queue_item_invalid", `Unknown item bucket: ${item.bucket}`);
+  }
+  if (typeof item.shownInDigest !== "boolean") {
+    throw queueError("queue_item_invalid", "item.shownInDigest must be a boolean");
+  }
+  requireNonNegativeInteger(item.ageDays, "item.ageDays");
+  requireNonNegativeInteger(item.idleDays, "item.idleDays");
+  requireNonNegativeInteger(item.changedFiles, "item.changedFiles");
+  if (item.stackDepth !== undefined) {
+    requireNonNegativeInteger(item.stackDepth, "item.stackDepth");
+  }
+  if (item.isCrossRepository !== undefined && typeof item.isCrossRepository !== "boolean") {
+    throw queueError("queue_item_invalid", "item.isCrossRepository must be a boolean");
+  }
+  requireStringArray(item.reasonCodes, "item.reasonCodes");
+  requireStringArray(item.blockers, "item.blockers");
+  if (item.digestExclusionReasons !== undefined) {
+    requireStringArray(item.digestExclusionReasons, "item.digestExclusionReasons");
+  }
+  if (item.discussionAssessment !== undefined && item.discussionAssessment !== null) {
+    validateDiscussionAssessment(queue, item.discussionAssessment);
+  }
+  if (item.shownInDiscussionVerification !== undefined
+      && typeof item.shownInDiscussionVerification !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.shownInDiscussionVerification must be a boolean",
+    );
+  }
+  if (item.shownInDiscussionVerification && item.discussionVerificationRank !== undefined) {
+    requirePositiveInteger(item.discussionVerificationRank, "item.discussionVerificationRank");
+  }
+  if (item.stackBlockedBy !== undefined) {
+    if (
+      !Array.isArray(item.stackBlockedBy)
+      || item.stackBlockedBy.some((number) => !Number.isInteger(number) || number < 1)
+    ) {
+      throw queueError("queue_item_invalid", "item.stackBlockedBy must contain positive integers");
+    }
+  }
+  if (item.shownInDigest && item.digestRank !== undefined) {
+    requirePositiveInteger(item.digestRank, "item.digestRank");
+  } else if (!item.shownInDigest && item.digestRank !== undefined && item.digestRank !== null) {
+    throw queueError("queue_item_invalid", "item.digestRank must be null outside the digest");
+  }
+
+  for (const reasonCode of item.reasonCodes) {
+    requireDisplayEntry(
+      queue.display.reasonCodes[reasonCode],
+      `display.reasonCodes.${reasonCode}`,
+    );
+  }
+  for (const reasonCode of item.digestExclusionReasons ?? []) {
+    requireDisplayEntry(
+      queue.display.digestExclusionReasons?.[reasonCode],
+      `display.digestExclusionReasons.${reasonCode}`,
+    );
+  }
+
+  const expectedUrl = `https://github.com/${queue.repository}/pull/${item.number}`;
+  if (item.url !== expectedUrl) {
+    throw queueError("queue_item_invalid", `item.url must match ${expectedUrl}`);
+  }
+
+}
+
+function validateDiscussionDisplay(discussion) {
+  requireRecord(discussion, "display.discussion", "queue_display_invalid");
+  for (const field of ["states", "signals", "commentKinds"]) {
+    requireRecord(discussion[field], `display.discussion.${field}`, "queue_display_invalid");
+  }
+}
+
+function validateDiscussionSummary(discussion) {
+  requireRecord(discussion, "discussion");
+  for (const field of [
+    "candidateLimit",
+    "assessedCandidateCount",
+    "verificationNeededCount",
+    "unassessedReviewNowCount",
+  ]) {
+    requireNonNegativeInteger(discussion[field], `discussion.${field}`);
+  }
+}
+
+function validateDiscussionAssessment(queue, assessment) {
+  requireRecord(assessment, "item.discussionAssessment", "queue_item_invalid");
+  requireString(assessment.state, "item.discussionAssessment.state", "queue_item_invalid");
+  if (typeof assessment.complete !== "boolean") {
+    throw queueError("queue_item_invalid", "item.discussionAssessment.complete must be a boolean");
+  }
+  requireStringArray(assessment.signals, "item.discussionAssessment.signals");
+  requireNonNegativeInteger(
+    assessment.commentTotalCount,
+    "item.discussionAssessment.commentTotalCount",
+  );
+  if (typeof assessment.commentEvidenceTruncated !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.discussionAssessment.commentEvidenceTruncated must be a boolean",
+    );
+  }
+  if (!Array.isArray(assessment.comments)) {
+    throw queueError("queue_item_invalid", "item.discussionAssessment.comments must be an array");
+  }
+  for (const comment of assessment.comments) {
+    requireRecord(comment, "item.discussionAssessment.comments[]", "queue_item_invalid");
+    for (const field of ["author", "actor", "association", "createdAt", "kind", "excerpt"]) {
+      requireStringValue(comment[field], `item.discussionAssessment.comments[].${field}`);
+    }
+    if (Number.isNaN(Date.parse(comment.createdAt))) {
+      throw queueError(
+        "queue_item_invalid",
+        "item.discussionAssessment.comments[].createdAt must be an ISO date",
+      );
+    }
+    requireDisplayEntry(
+      queue.display.discussion?.commentKinds?.[comment.kind],
+      `display.discussion.commentKinds.${comment.kind}`,
+    );
+  }
+  requireRecord(assessment.threads, "item.discussionAssessment.threads", "queue_item_invalid");
+  for (const field of [
+    "totalCount",
+    "returnedCount",
+    "unresolvedCount",
+    "outdatedUnresolvedCount",
+  ]) {
+    requireNonNegativeInteger(assessment.threads[field], `item.discussionAssessment.threads.${field}`);
+  }
+  if (typeof assessment.threads.complete !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.discussionAssessment.threads.complete must be a boolean",
+    );
+  }
+  requireDisplayEntry(
+    queue.display.discussion?.states?.[assessment.state],
+    `display.discussion.states.${assessment.state}`,
+  );
+  for (const signal of assessment.signals) {
+    requireDisplayEntry(
+      queue.display.discussion?.signals?.[signal],
+      `display.discussion.signals.${signal}`,
+    );
+  }
+}
+
+function validateDigestRanks(items) {
+  for (const bucket of ["ReviewNow", "NeedsRescue", "ReadyToMerge"]) {
+    const digestItems = items.filter((item) => item.bucket === bucket && item.shownInDigest);
+    const rankedItems = digestItems.filter((item) => item.digestRank !== undefined);
+    if (rankedItems.length === 0) {
+      continue;
+    }
+    if (rankedItems.length !== digestItems.length) {
+      throw queueError("queue_item_invalid", `${bucket} digest ranks must be present together`);
+    }
+
+    const ranks = rankedItems
+      .map((item) => item.digestRank)
+      .sort((left, right) => left - right);
+    for (let index = 0; index < ranks.length; index += 1) {
+      if (ranks[index] !== index + 1) {
+        throw queueError(
+          "queue_item_invalid",
+          `${bucket} digest ranks must be unique and contiguous`,
+        );
+      }
+    }
+  }
+}
+
+function requireDisplayEntry(value, path) {
+  requireRecord(value, path, "queue_display_invalid");
+  requireString(value.label, `${path}.label`, "queue_display_invalid");
+  requireString(value.description, `${path}.description`, "queue_display_invalid");
+}
+
+function requireRepository(value) {
+  if (typeof value !== "string" || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
+    throw queueError("queue_shape_invalid", "repository must be in owner/name form");
+  }
+}
+
+function requireRecord(value, path, code = "queue_shape_invalid") {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw queueError(code, `${path} must be an object`);
+  }
+}
+
+function requireString(value, path, code = "queue_shape_invalid") {
+  if (typeof value !== "string" || !value.trim()) {
+    throw queueError(code, `${path} must be a non-empty string`);
+  }
+}
+
+function requireStringValue(value, path) {
+  if (typeof value !== "string") {
+    throw queueError("queue_shape_invalid", `${path} must be a string`);
+  }
+}
+
+function requireStringArray(value, path) {
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) {
+    throw queueError("queue_shape_invalid", `${path} must be an array of strings`);
+  }
+}
+
+function requirePositiveInteger(value, path) {
+  if (!Number.isInteger(value) || value < 1) {
+    throw queueError("queue_item_invalid", `${path} must be a positive integer`);
+  }
+}
+
+function requireNonNegativeInteger(value, path) {
+  if (!Number.isInteger(value) || value < 0) {
+    throw queueError("queue_shape_invalid", `${path} must be a non-negative integer`);
+  }
+}
+
+function queueError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
