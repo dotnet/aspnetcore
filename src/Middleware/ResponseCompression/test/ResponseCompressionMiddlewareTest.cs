@@ -1114,7 +1114,8 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 34, expectedEncoding: "gzip");
+        var expectedBody = File.ReadAllBytes("testfile1kb.txt");
+        await CheckGzipResponseCompressed(response, expectedBody);
 
         Assert.False(fakeSendFile.SendFileInvoked);
     }
@@ -1164,7 +1165,11 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 46, expectedEncoding: "gzip");
+        var fileBody = File.ReadAllBytes("testfile1kb.txt");
+        var expectedBody = new byte[100 + fileBody.Length];
+        Array.Fill(expectedBody, (byte)'a', 0, 100);
+        fileBody.CopyTo(expectedBody, 100);
+        await CheckGzipResponseCompressed(response, expectedBody);
 
         Assert.False(fakeSendFile.SendFileInvoked);
     }
@@ -1288,6 +1293,24 @@ public class ResponseCompressionMiddlewareTest
 
     private static void CheckResponseCompressed(HttpResponseMessage response, long? expectedBodyLength, string expectedEncoding)
     {
+        CheckResponseCompressedHeaders(response, expectedEncoding);
+        Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
+    }
+
+    private static async Task CheckGzipResponseCompressed(HttpResponseMessage response, byte[] expectedBody)
+    {
+        CheckResponseCompressedHeaders(response, "gzip");
+
+        using var compressedBody = await response.Content.ReadAsStreamAsync();
+        using var gzipBody = new GZipStream(compressedBody, CompressionMode.Decompress);
+        using var decompressedBody = new MemoryStream();
+        await gzipBody.CopyToAsync(decompressedBody);
+
+        Assert.Equal(expectedBody, decompressedBody.ToArray());
+    }
+
+    private static void CheckResponseCompressedHeaders(HttpResponseMessage response, string expectedEncoding)
+    {
         var containsVaryAcceptEncoding = false;
         foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
         {
@@ -1300,7 +1323,6 @@ public class ResponseCompressionMiddlewareTest
         Assert.True(containsVaryAcceptEncoding);
         Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out _));
         Assert.Single(response.Content.Headers.ContentEncoding, expectedEncoding);
-        Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
     }
 
     private static void CheckResponseNotCompressed(HttpResponseMessage response, long? expectedBodyLength, bool sendVaryHeader)
