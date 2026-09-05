@@ -6,6 +6,8 @@
     "reviewerRescueAfterDays": 30,
     "pathMatchMinimumShare": 0.25,
     "mergeableResolveAttempts": 3,
+    "discussionCandidateLimit": 20,
+    "maxDiscussionVerification": 3,
     "communityLabels": [
       "community-contribution"
     ],

@@ -19,6 +19,7 @@ $scriptPath = Join-Path $skillRoot "scripts/Get-PRAttentionQueue.ps1"
 $modulePath = Join-Path $skillRoot "scripts/PRAttentionQueue.psm1"
 $fixturePath = Join-Path $PSScriptRoot "fixtures/pull-requests.json"
 $correctnessFixturePath = Join-Path $PSScriptRoot "fixtures/correctness-pull-requests.json"
+$discussionFixturePath = Join-Path $PSScriptRoot "fixtures/discussion-pull-requests.json"
 $snapshot = [datetime]"2026-09-03T18:00:00Z"
 
 Import-Module -Scope Local -Force $modulePath
@@ -182,5 +183,41 @@ $digestControlMarkdown = & $scriptPath `
     -OutputFormat Markdown
 $digestControlMarkdownText = $digestControlMarkdown -join [Environment]::NewLine
 Assert-True ($digestControlMarkdownText.Contains("**Digest author exclusions:** current-user")) "Markdown must echo digest author exclusions."
+
+$discussionJson = & $scriptPath `
+    -InputPath $discussionFixturePath `
+    -Now $snapshot `
+    -Label area-discussion `
+    -MaxReviewNow 5 `
+    -OutputFormat Json
+$discussionResult = $discussionJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 5) "Discussion assessment must not rewrite deterministic classification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.state -eq "verification-needed") "An author close-or-continue response must require discussion verification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.signals -contains "author-disposition-mentioned") "Author disposition evidence must be explicit."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 117).shownInDigest)) "An author disposition response must not be presented as ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).shownInDiscussionVerification) "An author disposition response must surface for discussion verification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.threads.unresolvedCount -eq 1) "Unresolved thread state must be surfaced as evidence."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.signals -contains "non-author-discussion-after-author-response") "Later owner feedback must require discussion verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 118).shownInDigest)) "Later owner feedback must not be presented as ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].actor -eq "repository-member") "Repository-member feedback must be attributed."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].kind -eq "actionable") "Actionable feedback must be distinguished from informational comments."
+Assert-True (($discussionResult.items | Where-Object number -eq 119).discussionAssessment.state -eq "clear") "A normal author response with unresolved threads must remain an ordinary review candidate."
+Assert-True (($discussionResult.items | Where-Object number -eq 119).shownInDigest) "A normal author response must remain in the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 120).discussionAssessment.state -eq "clear") "Explicit informational follow-up must not block ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 120).shownInDigest) "An informational follow-up must not remove the candidate from the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 121).discussionAssessment.signals -contains "discussion-incomplete") "Truncated discussion must be disclosed."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 121).shownInDigest)) "Truncated discussion must not enter the unattended digest."
+Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 5) "The bounded assessment count must be emitted."
+Assert-True ($discussionResult.discussion.verificationNeededCount -eq 3) "The assessment summary must count verification-needed candidates."
+
+$discussionMarkdown = & $scriptPath `
+    -InputPath $discussionFixturePath `
+    -Now $snapshot `
+    -Label area-discussion `
+    -OutputFormat Markdown
+$discussionMarkdownText = $discussionMarkdown -join [Environment]::NewLine
+Assert-True ($discussionMarkdownText.Contains("## Verify discussion before review")) "Markdown must separate discussion verification from ordinary review."
+Assert-True ($discussionMarkdownText.Contains("[#117]")) "Markdown must surface author disposition evidence."
 
 Write-Output "All PR attention queue tests passed."

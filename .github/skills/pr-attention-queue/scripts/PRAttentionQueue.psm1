@@ -305,6 +305,182 @@ function Get-HumanReviewRequests {
     }
 }
 
+function Get-DiscussionCommentKind {
+    param(
+        [string]$Body,
+        [bool]$IsAuthor
+    )
+
+    $normalizedBody = ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
+    if ([string]::IsNullOrWhiteSpace($normalizedBody)) {
+        return "unknown"
+    }
+
+    if ($IsAuthor -and $normalizedBody -match "\b(no longer reproduce|unable to reproduce|happy to close|may no longer be required|no longer needed|obsolete)\b") {
+        return "disposition"
+    }
+
+    if ($normalizedBody -match "^(fyi|for context|thanks|thank you|nit:)\b") {
+        return "informational"
+    }
+
+    if ($normalizedBody -match "\b(please|should|need to|needs to|avoid|regress|could you|would you|why)\b|\?") {
+        return "actionable"
+    }
+
+    if ($IsAuthor) {
+        return "author-response"
+    }
+
+    return "unknown"
+}
+
+function Get-DiscussionAssessment {
+    param(
+        [object]$PullRequest,
+        [object]$AuthorInfo,
+        [string[]]$KnownBotPatterns
+    )
+
+    $humanReviews = @(
+        Get-HumanReviews `
+            -PullRequest $PullRequest `
+            -KnownBotPatterns $KnownBotPatterns `
+            -AuthorLogin $AuthorInfo.Login
+    )
+    $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
+    $discussionComments = @(
+        ConvertTo-Array (Get-PropertyValue -Object $PullRequest -Name "discussionComments")
+    )
+    $hasDiscussionCommentData = $null -ne $PullRequest.PSObject.Properties["discussionComments"]
+    if (-not $hasDiscussionCommentData) {
+        $discussionComments = @(
+            ConvertTo-Array (Get-PropertyValue -Object $PullRequest -Name "comments")
+        )
+    }
+
+    $hasDiscussionThreadData = $null -ne $PullRequest.PSObject.Properties["discussionThreads"]
+    $discussionThreads = @(
+        ConvertTo-Array (Get-PropertyValue -Object $PullRequest -Name "discussionThreads")
+    )
+    $commentsComplete = [bool](Get-PropertyValue `
+        -Object $PullRequest `
+        -Name "discussionCommentsComplete" `
+        -DefaultValue ($discussionComments.Count -eq 0 -or ($discussionComments | Where-Object {
+            $null -eq $_.PSObject.Properties["bodyText"] -and $null -eq $_.PSObject.Properties["body"]
+        }).Count -eq 0))
+    $threadsComplete = [bool](Get-PropertyValue `
+        -Object $PullRequest `
+        -Name "discussionThreadsComplete" `
+        -DefaultValue ($hasDiscussionThreadData -or $discussionThreads.Count -eq 0))
+    $commentTotalCount = [int](Get-PropertyValue `
+        -Object $PullRequest `
+        -Name "discussionCommentTotalCount" `
+        -DefaultValue $discussionComments.Count)
+    $threadTotalCount = [int](Get-PropertyValue `
+        -Object $PullRequest `
+        -Name "discussionThreadTotalCount" `
+        -DefaultValue $discussionThreads.Count)
+
+    $comments = @(
+        foreach ($comment in $discussionComments) {
+            $commentAuthor = Get-PropertyValue -Object $comment -Name "author"
+            $login = [string](Get-PropertyValue -Object $commentAuthor -Name "login" -DefaultValue "")
+            $createdAtValue = Get-PropertyValue -Object $comment -Name "createdAt"
+            if ([string]::IsNullOrWhiteSpace($login) -or -not $createdAtValue) {
+                continue
+            }
+
+            $body = [string](Get-PropertyValue `
+                -Object $comment `
+                -Name "bodyText" `
+                -DefaultValue (Get-PropertyValue -Object $comment -Name "body" -DefaultValue ""))
+            $isAuthor = [string]::Equals($login, $AuthorInfo.Login, [System.StringComparison]::OrdinalIgnoreCase)
+            $isBot = Test-IsBotLogin -Login $login -IsBot $false -KnownBotPatterns $KnownBotPatterns
+            $association = [string](Get-PropertyValue -Object $comment -Name "authorAssociation" -DefaultValue "NONE")
+            $actor = if ($isAuthor) {
+                "author"
+            }
+            elseif ($isBot) {
+                "automation"
+            }
+            elseif ($association -in @("OWNER", "MEMBER", "COLLABORATOR")) {
+                "repository-member"
+            }
+            else {
+                "non-author"
+            }
+            [pscustomobject]@{
+                Author = $login
+                Actor = $actor
+                Association = $association
+                CreatedAt = [datetime]$createdAtValue
+                Kind = Get-DiscussionCommentKind -Body $body -IsAuthor $isAuthor
+                Excerpt = if ($body.Length -gt 280) { "$($body.Substring(0, 277))..." } else { $body }
+            }
+        }
+    ) | Sort-Object -Property CreatedAt -Descending
+
+    $latestAuthorResponseAt = @(
+        $comments |
+            Where-Object {
+                $_.Actor -eq "author" -and
+                $latestHumanReview -and
+                $_.CreatedAt -gt $latestHumanReview.SubmittedAt
+            } |
+            Select-Object -First 1
+    )
+    $latestAuthorResponseAt = if ($latestAuthorResponseAt.Count -gt 0) {
+        $latestAuthorResponseAt[0].CreatedAt
+    }
+    else {
+        $null
+    }
+
+    $signals = [System.Collections.Generic.List[string]]::new()
+    if (-not $commentsComplete -or -not $threadsComplete) {
+        $signals.Add("discussion-incomplete")
+    }
+
+    foreach ($comment in $comments) {
+        if ($comment.Actor -eq "author" -and
+            $comment.Kind -eq "disposition" -and
+            $latestHumanReview -and
+            $comment.CreatedAt -gt $latestHumanReview.SubmittedAt) {
+            $signals.Add("author-disposition-mentioned")
+        }
+        elseif ($latestAuthorResponseAt -and
+            $comment.Actor -notin @("author", "automation") -and
+            $comment.CreatedAt -gt $latestAuthorResponseAt -and
+            $comment.Kind -ne "informational") {
+            $signals.Add("non-author-discussion-after-author-response")
+        }
+    }
+
+    $unresolvedThreads = @($discussionThreads | Where-Object { -not [bool](Get-PropertyValue -Object $_ -Name "isResolved" -DefaultValue $false) })
+    $outdatedUnresolvedThreads = @(
+        $unresolvedThreads | Where-Object { [bool](Get-PropertyValue -Object $_ -Name "isOutdated" -DefaultValue $false) }
+    )
+    $uniqueSignals = @($signals | Select-Object -Unique)
+    $state = if ($uniqueSignals.Count -gt 0) { "verification-needed" } else { "clear" }
+
+    return [pscustomobject]@{
+        State = $state
+        Complete = $commentsComplete -and $threadsComplete
+        Signals = $uniqueSignals
+        Comments = @($comments | Select-Object -First 10)
+        CommentTotalCount = $commentTotalCount
+        CommentEvidenceTruncated = $comments.Count -gt 10 -or -not $commentsComplete
+        Threads = [pscustomobject]@{
+            TotalCount = $threadTotalCount
+            ReturnedCount = $discussionThreads.Count
+            Complete = $threadsComplete
+            UnresolvedCount = $unresolvedThreads.Count
+            OutdatedUnresolvedCount = $outdatedUnresolvedThreads.Count
+        }
+    }
+}
+
 function Get-DaysSince {
     param(
         [datetime]$From,
@@ -517,6 +693,106 @@ pr$number`: pullRequest(number: $number) {
             $pullRequest | Add-Member -NotePropertyName "comments" -NotePropertyValue $comments -Force
             $pullRequest | Add-Member -NotePropertyName "statusCheckRollup" -NotePropertyValue $statusCheckRollup -Force
 
+        }
+    }
+}
+
+function Add-DiscussionEvidenceDetails {
+    param(
+        [string]$RepositoryName,
+        [object[]]$Candidates
+    )
+
+    if ($Candidates.Count -eq 0) {
+        return
+    }
+
+    $repositoryParts = $RepositoryName.Split("/")
+    if ($repositoryParts.Count -ne 2) {
+        throw "Repository must use the owner/name format."
+    }
+
+    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
+        $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
+        $aliases = @(
+            foreach ($candidate in $chunk) {
+                $number = [int]$candidate.PullRequest.number
+                @"
+pr$number`: pullRequest(number: $number) {
+  comments(last: 50) {
+    totalCount
+    pageInfo { hasPreviousPage }
+    nodes {
+      author { login }
+      authorAssociation
+      createdAt
+      bodyText
+    }
+  }
+  reviewThreads(last: 50) {
+    totalCount
+    pageInfo { hasPreviousPage }
+    nodes {
+      isResolved
+      isOutdated
+    }
+  }
+}
+"@
+            }
+        )
+
+        $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
+            ($aliases -join [Environment]::NewLine) +
+            '}}'
+        $result = Invoke-GhJson -Arguments @(
+            "api",
+            "graphql",
+            "-f",
+            "query=$query",
+            "-F",
+            "owner=$($repositoryParts[0])",
+            "-F",
+            "name=$($repositoryParts[1])"
+        )
+
+        foreach ($candidate in $chunk) {
+            $pullRequest = $candidate.PullRequest
+            $number = [int]$pullRequest.number
+            $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$number"
+            if ($null -eq $detail) {
+                throw "GitHub did not return discussion evidence for pull request #$number."
+            }
+
+            $commentsConnection = Get-PropertyValue -Object $detail -Name "comments"
+            $threadsConnection = Get-PropertyValue -Object $detail -Name "reviewThreads"
+            $comments = @(
+                ConvertTo-Array (Get-PropertyValue -Object $commentsConnection -Name "nodes")
+            )
+            $threads = @(
+                ConvertTo-Array (Get-PropertyValue -Object $threadsConnection -Name "nodes")
+            )
+            $commentsPageInfo = Get-PropertyValue -Object $commentsConnection -Name "pageInfo"
+            $threadsPageInfo = Get-PropertyValue -Object $threadsConnection -Name "pageInfo"
+
+            $pullRequest | Add-Member -NotePropertyName "discussionComments" -NotePropertyValue $comments -Force
+            $pullRequest | Add-Member `
+                -NotePropertyName "discussionCommentTotalCount" `
+                -NotePropertyValue ([int](Get-PropertyValue -Object $commentsConnection -Name "totalCount" -DefaultValue $comments.Count)) `
+                -Force
+            $pullRequest | Add-Member `
+                -NotePropertyName "discussionCommentsComplete" `
+                -NotePropertyValue (-not [bool](Get-PropertyValue -Object $commentsPageInfo -Name "hasPreviousPage" -DefaultValue $true)) `
+                -Force
+            $pullRequest | Add-Member -NotePropertyName "discussionThreads" -NotePropertyValue $threads -Force
+            $pullRequest | Add-Member `
+                -NotePropertyName "discussionThreadTotalCount" `
+                -NotePropertyValue ([int](Get-PropertyValue -Object $threadsConnection -Name "totalCount" -DefaultValue $threads.Count)) `
+                -Force
+            $pullRequest | Add-Member `
+                -NotePropertyName "discussionThreadsComplete" `
+                -NotePropertyValue (-not [bool](Get-PropertyValue -Object $threadsPageInfo -Name "hasPreviousPage" -DefaultValue $true)) `
+                -Force
         }
     }
 }
@@ -1127,6 +1403,70 @@ function Get-DisplayMetadata {
                 label = "Unhealthy stack ancestor"
                 description = "The pull request remains reviewable but does not consume an unattended digest slot while an ancestor pull request is unhealthy."
             }
+            "discussion-verification-needed" = [pscustomobject]@{
+                label = "Discussion verification needed"
+                description = "Recent discussion requires a human to verify whether ordinary code review is the right next action."
+            }
+            "discussion-not-assessed" = [pscustomobject]@{
+                label = "Discussion not assessed"
+                description = "Bounded discussion evidence was not collected for this lower-ranked candidate, so it cannot enter the unattended digest."
+            }
+        }
+        discussion = [pscustomobject][ordered]@{
+            states = [pscustomobject][ordered]@{
+                "clear" = [pscustomobject]@{
+                    label = "Discussion checked"
+                    description = "The bounded recent discussion evidence did not identify a conflicting disposition or later non-author feedback."
+                }
+                "verification-needed" = [pscustomobject]@{
+                    label = "Verify discussion"
+                    description = "Recent discussion or incomplete evidence needs human interpretation before normal review begins."
+                }
+                "not-assessed" = [pscustomobject]@{
+                    label = "Discussion not assessed"
+                    description = "This lower-ranked candidate was outside the bounded discussion-evidence pass."
+                }
+            }
+            signals = [pscustomobject][ordered]@{
+                "author-disposition-mentioned" = [pscustomobject]@{
+                    label = "Author requested disposition"
+                    description = "The author raised whether the pull request should continue or close after review."
+                }
+                "discussion-incomplete" = [pscustomobject]@{
+                    label = "Discussion incomplete"
+                    description = "The bounded comments or review threads were truncated, so the assessment cannot be complete."
+                }
+                "discussion-not-assessed" = [pscustomobject]@{
+                    label = "Discussion not assessed"
+                    description = "The candidate was outside the bounded discussion-evidence pass."
+                }
+                "non-author-discussion-after-author-response" = [pscustomobject]@{
+                    label = "Later non-author discussion"
+                    description = "A non-author comment after the latest author response needs human interpretation."
+                }
+            }
+            commentKinds = [pscustomobject][ordered]@{
+                "actionable" = [pscustomobject]@{
+                    label = "Actionable"
+                    description = "The deterministic text heuristic found an explicit request, question, or concern."
+                }
+                "author-response" = [pscustomobject]@{
+                    label = "Author response"
+                    description = "The author replied after review without an explicit disposition phrase."
+                }
+                "disposition" = [pscustomobject]@{
+                    label = "Disposition"
+                    description = "The author explicitly raised whether the pull request should continue or close."
+                }
+                "informational" = [pscustomobject]@{
+                    label = "Informational"
+                    description = "The comment starts with an explicit informational marker."
+                }
+                "unknown" = [pscustomobject]@{
+                    label = "Unknown"
+                    description = "The bounded text heuristic could not safely classify the comment."
+                }
+            }
         }
     }
 }
@@ -1162,6 +1502,10 @@ function Render-MarkdownTable {
         if ($item.blockers.Count -gt 0) {
             $whyParts.Add("Blocker: $($item.blockers -join ' ')")
         }
+        $discussionAssessment = Get-PropertyValue -Object $item -Name "discussionAssessment"
+        if ($discussionAssessment -and $discussionAssessment.state -eq "verification-needed") {
+            $whyParts.Add("Discussion: $($discussionAssessment.signals -join ', ')")
+        }
         $why = Escape-MarkdownCell -Value ($whyParts -join ". ")
         $lines.Add("| [#$($item.number)]($($item.url)) | $title | ``$($item.author)`` | $($item.idleDays)d | $($item.nextActor) | $why |")
     }
@@ -1187,6 +1531,11 @@ function Render-Markdown {
             Where-Object { $_.shownInDigest -and $_.bucket -eq "ReadyToMerge" } |
             Sort-Object digestRank
     )
+    $discussionVerification = @(
+        $Result.items |
+            Where-Object { $_.shownInDiscussionVerification } |
+            Sort-Object discussionVerificationRank
+    )
 
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("<!-- PR_ATTENTION_QUEUE_BEGIN -->")
@@ -1205,6 +1554,12 @@ function Render-Markdown {
     $lines.Add("## Review now ($($reviewNow.Count))")
     $lines.Add("")
     $lines.Add((Render-MarkdownTable -Items $reviewNow -EmptyText "No pull requests currently have a human reviewer as the next actor."))
+    $lines.Add("")
+    $lines.Add("## Verify discussion before review ($($discussionVerification.Count))")
+    $lines.Add("")
+    $lines.Add((Render-MarkdownTable `
+        -Items $discussionVerification `
+        -EmptyText "No selected review candidates require discussion verification."))
     $lines.Add("")
     $lines.Add("## Needs rescue ($($needsRescue.Count))")
     $lines.Add("")
@@ -1638,6 +1993,10 @@ function Invoke-PRAttentionQueue {
             digestExclusionReasons = @()
             stackDepth = 0
             stackBlockedBy = @()
+            deterministicReviewRank = $null
+            discussionAssessment = $null
+            shownInDiscussionVerification = $false
+            discussionVerificationRank = $null
         })
     }
 
@@ -1663,6 +2022,107 @@ function Invoke-PRAttentionQueue {
                 @{ Expression = { $_.number }; Descending = $false }
     )
 
+    for ($index = 0; $index -lt $reviewNow.Count; $index++) {
+        $reviewNow[$index].deterministicReviewRank = $index + 1
+    }
+
+    $discussionCandidateLimit = [int](Get-PropertyValue `
+        -Object $configuration.settings `
+        -Name "discussionCandidateLimit" `
+        -DefaultValue 20)
+    $maxDiscussionVerification = [int](Get-PropertyValue `
+        -Object $configuration.settings `
+        -Name "maxDiscussionVerification" `
+        -DefaultValue 3)
+    $discussionItems = @($reviewNow | Select-Object -First $discussionCandidateLimit)
+    $candidatesByNumber = @{}
+    foreach ($candidate in $matchedCandidates) {
+        $candidatesByNumber[[int]$candidate.PullRequest.number] = $candidate
+    }
+
+    if (-not $InputPath) {
+        $discussionCandidates = @(
+            foreach ($item in $discussionItems) {
+                $candidatesByNumber[[int]$item.number]
+            }
+        )
+        Add-DiscussionEvidenceDetails -RepositoryName $Repository -Candidates $discussionCandidates
+    }
+
+    foreach ($item in $discussionItems) {
+        $candidate = $candidatesByNumber[[int]$item.number]
+        $assessment = Get-DiscussionAssessment `
+            -PullRequest $candidate.PullRequest `
+            -AuthorInfo $candidate.AuthorInfo `
+            -KnownBotPatterns @($configuration.settings.knownBotPatterns)
+        $item.discussionAssessment = [pscustomobject]@{
+            state = $assessment.State
+            complete = $assessment.Complete
+            signals = $assessment.Signals
+            commentTotalCount = $assessment.CommentTotalCount
+            commentEvidenceTruncated = $assessment.CommentEvidenceTruncated
+            comments = @(
+                foreach ($comment in $assessment.Comments) {
+                    [pscustomobject]@{
+                        author = $comment.Author
+                        actor = $comment.Actor
+                        association = $comment.Association
+                        createdAt = $comment.CreatedAt.ToUniversalTime().ToString("o")
+                        kind = $comment.Kind
+                        excerpt = $comment.Excerpt
+                    }
+                }
+            )
+            threads = [pscustomobject]@{
+                totalCount = $assessment.Threads.TotalCount
+                returnedCount = $assessment.Threads.ReturnedCount
+                complete = $assessment.Threads.Complete
+                unresolvedCount = $assessment.Threads.UnresolvedCount
+                outdatedUnresolvedCount = $assessment.Threads.OutdatedUnresolvedCount
+            }
+        }
+        if ($assessment.State -eq "verification-needed") {
+            $item.digestExclusionReasons = @($item.digestExclusionReasons + "discussion-verification-needed")
+        }
+    }
+
+    foreach ($item in $reviewNow | Select-Object -Skip $discussionCandidateLimit) {
+        $item.discussionAssessment = [pscustomobject]@{
+            state = "not-assessed"
+            complete = $false
+            signals = @("discussion-not-assessed")
+            commentTotalCount = 0
+            commentEvidenceTruncated = $false
+            comments = @()
+            threads = [pscustomobject]@{
+                totalCount = 0
+                returnedCount = 0
+                complete = $false
+                unresolvedCount = 0
+                outdatedUnresolvedCount = 0
+            }
+        }
+        $item.digestExclusionReasons = @($item.digestExclusionReasons + "discussion-not-assessed")
+    }
+
+    $discussionVerificationItems = @(
+        $reviewNow |
+            Where-Object { $_.discussionAssessment.state -eq "verification-needed" }
+    )
+    for ($index = 0; $index -lt [Math]::Min($discussionVerificationItems.Count, $maxDiscussionVerification); $index++) {
+        $item = $discussionVerificationItems[$index]
+        $item.shownInDiscussionVerification = $true
+        $item.discussionVerificationRank = $index + 1
+    }
+
+    $unassessedDiscussionItems = @(
+        $reviewNow | Where-Object { $_.discussionAssessment.state -eq "not-assessed" }
+    )
+    if ($unassessedDiscussionItems.Count -gt 0) {
+        $warnings.Add("Discussion evidence was assessed for the first $discussionCandidateLimit Review now candidate(s). " +
+            "$($unassessedDiscussionItems.Count) lower-ranked candidate(s) cannot enter the unattended digest.")
+    }
+
     $needsRescue = @(
         $matchedItems |
             Where-Object { $_.bucket -eq "NeedsRescue" -and $_.digestExclusionReasons.Count -eq 0 } |
@@ -1685,7 +2145,7 @@ function Invoke-PRAttentionQueue {
 
     $selectedReviewNow = @(
         Select-ReviewNowDigestItems `
-        -Items $reviewNow `
+        -Items @($reviewNow | Where-Object { $_.digestExclusionReasons.Count -eq 0 }) `
         -MaximumItems $MaxReviewNow `
         -MaximumPerAuthor $MaxReviewNowPerAuthor
     )
@@ -1788,6 +2248,12 @@ function Invoke-PRAttentionQueue {
             openPullRequestCount = $openPullRequestCount
             returnedPullRequestCount = $pullRequests.Count
             complete = $pullRequests.Count -eq $openPullRequestCount
+        }
+        discussion = [pscustomobject]@{
+            candidateLimit = $discussionCandidateLimit
+            assessedCandidateCount = $discussionItems.Count
+            verificationNeededCount = $discussionVerificationItems.Count
+            unassessedReviewNowCount = $unassessedDiscussionItems.Count
         }
         census = [pscustomobject]@{
             openPullRequests = $openPullRequestCount

@@ -314,7 +314,8 @@
     "comments": [
       {
         "author": { "login": "roundtrip-author", "is_bot": false },
-        "createdAt": "2026-09-01T18:00:00Z"
+        "createdAt": "2026-09-01T18:00:00Z",
+        "bodyText": "I addressed the requested changes."
       }
     ],
     "commits": [

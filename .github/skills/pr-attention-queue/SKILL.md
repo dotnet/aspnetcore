@@ -43,6 +43,25 @@ as upstream stack bases. A reviewable child keeps its `ReviewNow` classification
 ancestor prevents it from consuming an unattended digest position. The JSON item explains this
 through `digestExclusionReasons`, `stackDepth`, and `stackBlockedBy`.
 
+Before a `ReviewNow` item can consume an unattended digest position, the first bounded set of
+deterministically ranked review candidates receives a separate **discussion assessment**. It does
+not change the item's deterministic bucket or base rank. Instead, it reads the latest 50 top-level
+comments and latest 50 review threads for each candidate, surfaces compact safe excerpts and thread
+state, and withholds ambiguous items in **Verify discussion before review**.
+
+This is deliberately not an LLM judgment. It only reports transparent evidence:
+
+- author wording that explicitly raises close/continue disposition;
+- a non-author top-level comment after the latest author response, categorized as actionable,
+  informational, or unknown by a narrow documented text heuristic;
+- counts of resolved, unresolved, and outdated review threads; and
+- whether the bounded comments or thread queries were truncated.
+
+An unresolved thread alone does not change ownership. An author response alone does not clear later
+non-author feedback. A bounded query that is incomplete is surfaced for verification rather than
+being treated as clear. Candidates outside the configured assessment limit cannot enter the
+unattended digest and are reported through the queue warning and `discussion-not-assessed`.
+
 ## Read-only boundary
 
 Keep the entire workflow read-only:
@@ -115,7 +134,9 @@ The script:
 2. Matches the resolved label/path scope.
 3. Classifies each matched PR from current GitHub facts.
 4. Ranks each actionability bucket using waiting time and neglect risk.
-5. Emits the resolved scope, census, warnings, and capped digest.
+5. Collects bounded discussion evidence for the leading Review now candidates, separately from
+   classification.
+6. Emits the resolved scope, census, warnings, discussion evidence, and capped digest.
 
 Use JSON when the user requests the full classified universe or when diagnosing the result:
 
@@ -136,6 +157,11 @@ maintain a second semantic mapping.
 
 An incomplete repository query is an error, not a partial result. Consumers must reject output
 where `query.complete` is not `true`.
+
+The root `discussion` summary and each assessed item's `discussionAssessment` are additive contract
+fields. `discussionAssessment.state == verification-needed` is not a new bucket or an inference
+that the author is next. It means the item must be opened and its surfaced evidence interpreted
+before starting an ordinary review. Renderers must not present a `Review` action for those items.
 
 ### 3. Preserve the classifications
 
@@ -172,10 +198,12 @@ Classification precedence is evidence-driven:
 Lead with the resolved scope and snapshot time, then present:
 
 1. **Review now**: zero to five PRs, never padded.
-2. **Needs rescue**: zero to three PRs.
-3. **Ready to merge**: a compact list.
-4. Counts for waiting, draft, excluded, and overflow items.
-5. Any coverage or data warnings.
+2. **Verify discussion before review**: zero to three bounded, ambiguous review candidates. Keep
+   this separate from Review now and show its evidence and completeness state.
+3. **Needs rescue**: zero to three PRs.
+4. **Ready to merge**: a compact list.
+5. Counts for waiting, draft, excluded, and overflow items.
+6. Any coverage or discussion-data warnings.
 
 For each visible PR preserve:
 
@@ -186,12 +214,15 @@ For each visible PR preserve:
 - stable reason codes
 - blockers when present
 - the engine-provided one-based `digestRank`
+- discussion assessment signals, thread counts, and bounded-comment completeness when verification
+  is required
 
 Do not invent a quality, confidence, priority, or 1-10 score. Community status is neglect-risk
 evidence, not a quota and not a judgment about code quality.
 
 JSON and Markdown consumers must render visible items by `digestRank`. The full `items` array retains
-its compatibility ordering and must not be treated as the selected digest order.
+its compatibility ordering and must not be treated as the selected digest order. The
+`deterministicReviewRank` is the original Review now order before discussion evidence is applied.
 
 ### 5. Be honest about incomplete data
 
@@ -199,8 +230,9 @@ The script fails when the open-PR query is truncated or its count cannot be reco
 data is incomplete, report the limitation and do not present a partial ranking as the complete
 queue.
 
-Path coverage warnings matter. A labels-only ad hoc scope can miss mislabeled PRs; repeat the
-warning emitted by the script.
+Path coverage and discussion-completeness warnings matter. A labels-only ad hoc scope can miss
+mislabeled PRs, while a truncated discussion query can miss older context. Repeat the warning
+emitted by the script and never report incomplete discussion evidence as a clean assessment.
 
 ## Choosing a different tool
 

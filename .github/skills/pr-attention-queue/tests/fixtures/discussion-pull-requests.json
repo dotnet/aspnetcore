@@ -1,0 +1,259 @@
+[
+  {
+    "number": 117,
+    "title": "Author asks whether the fix should close",
+    "url": "https://github.com/dotnet/aspnetcore/pull/117",
+    "author": { "login": "disposition-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-discussion" }],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-11T18:00:00Z",
+    "headRefOid": "1171171171171171171171171171171171171171",
+    "headRefName": "disposition",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [{
+      "author": { "login": "reviewer", "is_bot": false },
+      "state": "COMMENTED",
+      "submittedAt": "2026-08-10T18:00:00Z",
+      "commit": { "oid": "1171171171171171171171171171171171171171" }
+    }],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "disposition-author", "is_bot": false },
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I can no longer reproduce this and am happy to close the pull request."
+    }],
+    "discussionComments": [{
+      "author": { "login": "disposition-author" },
+      "authorAssociation": "CONTRIBUTOR",
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I can no longer reproduce this and am happy to close the pull request."
+    }],
+    "discussionCommentsComplete": true,
+    "discussionThreads": [{
+      "isResolved": false,
+      "isOutdated": false
+    }],
+    "discussionThreadsComplete": true,
+    "files": [{ "path": "src/Discussion/Disposition.cs" }],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 118,
+    "title": "Owner objects after author benchmark response",
+    "url": "https://github.com/dotnet/aspnetcore/pull/118",
+    "author": { "login": "benchmark-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-discussion" }],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-21T18:00:00Z",
+    "headRefOid": "1181181181181181181181181181181181181181",
+    "headRefName": "benchmark",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [{
+      "author": { "login": "reviewer", "is_bot": false },
+      "state": "COMMENTED",
+      "submittedAt": "2026-08-10T18:00:00Z",
+      "commit": { "oid": "1181181181181181181181181181181181181181" }
+    }],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "benchmark-author", "is_bot": false },
+        "createdAt": "2026-08-20T18:00:00Z",
+        "bodyText": "I added benchmark artifacts."
+      },
+      {
+        "author": { "login": "owner", "is_bot": false },
+        "createdAt": "2026-08-21T18:00:00Z",
+        "bodyText": "The numbers do not justify this optimization. We should avoid it."
+      }
+    ],
+    "discussionComments": [
+      {
+        "author": { "login": "benchmark-author" },
+        "authorAssociation": "CONTRIBUTOR",
+        "createdAt": "2026-08-20T18:00:00Z",
+        "bodyText": "I added benchmark artifacts."
+      },
+      {
+        "author": { "login": "owner" },
+        "authorAssociation": "MEMBER",
+        "createdAt": "2026-08-21T18:00:00Z",
+        "bodyText": "The numbers do not justify this optimization. We should avoid it."
+      }
+    ],
+    "discussionCommentsComplete": true,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "files": [{ "path": "src/Discussion/Benchmark.cs" }],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 119,
+    "title": "Author addressed reviewer feedback",
+    "url": "https://github.com/dotnet/aspnetcore/pull/119",
+    "author": { "login": "ordinary-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-discussion" }],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-11T18:00:00Z",
+    "headRefOid": "1191191191191191191191191191191191191191",
+    "headRefName": "ordinary",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [{
+      "author": { "login": "reviewer", "is_bot": false },
+      "state": "COMMENTED",
+      "submittedAt": "2026-08-10T18:00:00Z",
+      "commit": { "oid": "1191191191191191191191191191191191191191" }
+    }],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "ordinary-author", "is_bot": false },
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I addressed the feedback in the latest update."
+    }],
+    "discussionComments": [{
+      "author": { "login": "ordinary-author" },
+      "authorAssociation": "CONTRIBUTOR",
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I addressed the feedback in the latest update."
+    }],
+    "discussionCommentsComplete": true,
+    "discussionThreads": [{
+      "isResolved": false,
+      "isOutdated": false
+    }],
+    "discussionThreadsComplete": true,
+    "files": [{ "path": "src/Discussion/Ordinary.cs" }],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 120,
+    "title": "Informational owner comment after response",
+    "url": "https://github.com/dotnet/aspnetcore/pull/120",
+    "author": { "login": "information-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-discussion" }],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-12T18:00:00Z",
+    "headRefOid": "1201201201201201201201201201201201201201",
+    "headRefName": "information",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [{
+      "author": { "login": "reviewer", "is_bot": false },
+      "state": "COMMENTED",
+      "submittedAt": "2026-08-10T18:00:00Z",
+      "commit": { "oid": "1201201201201201201201201201201201201201" }
+    }],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "information-author", "is_bot": false },
+        "createdAt": "2026-08-11T18:00:00Z",
+        "bodyText": "I addressed the feedback."
+      },
+      {
+        "author": { "login": "owner", "is_bot": false },
+        "createdAt": "2026-08-12T18:00:00Z",
+        "bodyText": "FYI, this is now covered by the latest test run."
+      }
+    ],
+    "discussionComments": [
+      {
+        "author": { "login": "information-author" },
+        "authorAssociation": "CONTRIBUTOR",
+        "createdAt": "2026-08-11T18:00:00Z",
+        "bodyText": "I addressed the feedback."
+      },
+      {
+        "author": { "login": "owner" },
+        "authorAssociation": "MEMBER",
+        "createdAt": "2026-08-12T18:00:00Z",
+        "bodyText": "FYI, this is now covered by the latest test run."
+      }
+    ],
+    "discussionCommentsComplete": true,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "files": [{ "path": "src/Discussion/Information.cs" }],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 121,
+    "title": "Truncated discussion data",
+    "url": "https://github.com/dotnet/aspnetcore/pull/121",
+    "author": { "login": "truncated-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [{ "name": "area-discussion" }],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-11T18:00:00Z",
+    "headRefOid": "1211211211211211211211211211211211211211",
+    "headRefName": "truncated",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [{ "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }],
+    "latestReviews": [{
+      "author": { "login": "reviewer", "is_bot": false },
+      "state": "COMMENTED",
+      "submittedAt": "2026-08-10T18:00:00Z",
+      "commit": { "oid": "1211211211211211211211211211211211211211" }
+    }],
+    "reviewRequests": [],
+    "comments": [{
+      "author": { "login": "truncated-author", "is_bot": false },
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I addressed the feedback."
+    }],
+    "discussionComments": [{
+      "author": { "login": "truncated-author" },
+      "authorAssociation": "CONTRIBUTOR",
+      "createdAt": "2026-08-11T18:00:00Z",
+      "bodyText": "I addressed the feedback."
+    }],
+    "discussionCommentsComplete": false,
+    "discussionCommentTotalCount": 51,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "files": [{ "path": "src/Discussion/Truncated.cs" }],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  }
+]
