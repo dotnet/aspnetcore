@@ -11,6 +11,7 @@ The mandatory sample-to-E2E workflow, including permanent automated test coverag
 
 For behavioral investigations and reviews:
 - Create or identify a scenario at the smallest faithful validation boundary.
+- Before treating a combination of behaviors as a product defect, determine when each feature was introduced and identify any relevant compatibility switches. Use authoritative sources to verify that the configured switch values support the newer feature; compatibility switches preserve older behavior but do not guarantee that newer features work with that behavior. If support is unclear, report the uncertainty and escalate it. Report confirmed unsupported combinations explicitly instead of proposing product changes to make them work.
 - Faithful validation includes the component, service, runtime, or browser mechanism that owns or produces each disputed precondition and observes the claimed material effect at the appropriate boundary.
 - Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
 - For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
