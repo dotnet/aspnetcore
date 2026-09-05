@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Components.WasmRemoteAuthenticationSessionStorage</RootNamespace>
+    <StaticWebAssetBasePath>WasmRemoteAuthenticationSessionStorage</StaticWebAssetBasePath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
+    <!-- Avoid spending time brotli compression publish output.-->
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+  </ItemGroup>
+
+</Project>
