@@ -200,7 +200,7 @@ Classification precedence is evidence-driven:
 Lead with the resolved scope and snapshot time, then present:
 
 1. **Review now**: zero to five PRs, never padded.
-2. **Verify discussion before review**: zero to three bounded, ambiguous review candidates. Keep
+2. **Verify discussion before review**: zero to five bounded, ambiguous review candidates. Keep
    this separate from Review now and show its evidence and completeness state.
 3. **Needs rescue**: zero to three PRs.
 4. **Ready to merge**: a compact list.

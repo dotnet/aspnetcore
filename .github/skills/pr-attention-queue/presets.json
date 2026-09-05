@@ -7,7 +7,7 @@
     "pathMatchMinimumShare": 0.25,
     "mergeableResolveAttempts": 3,
     "discussionCandidateLimit": 20,
-    "maxDiscussionVerification": 3,
+    "maxDiscussionVerification": 5,
     "communityLabels": [
       "community-contribution"
     ],

@@ -213,6 +213,7 @@ Assert-True (($discussionResult.items | Where-Object number -eq 122).discussionA
 Assert-True (($discussionResult.items | Where-Object number -eq 122).shownInDigest) "Resolved and outdated threads must not remove a normal roundtrip from the digest."
 Assert-True (($discussionResult.items | Where-Object number -eq 123).discussionAssessment.signals -contains "non-author-discussion-requires-verification") "An initial owner concern without a formal review or author response must require verification."
 Assert-True (-not (($discussionResult.items | Where-Object number -eq 123).shownInDigest)) "An initial owner concern must not enter the unattended digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 123).shownInDiscussionVerification) "All five fixture verification cases must remain visible in the capped verification lane."
 Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 7) "The bounded assessment count must be emitted."
 Assert-True ($discussionResult.discussion.verificationNeededCount -eq 5) "The assessment summary must count verification-needed candidates."
 
