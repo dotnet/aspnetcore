@@ -144,6 +144,13 @@ internal partial class RemoteJSRuntime : JSRuntime
             }
         }
 
+        if (!_clientProxy.Connected)
+        {
+            throw new JSDisconnectedException(
+                "JavaScript interop calls cannot be issued at this time. This is because the circuit is disconnected " +
+                "and is attempting to reconnect.");
+        }
+
         Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle, invocationInfo.Identifier);
 
         _clientProxy.SendAsync(
@@ -225,8 +232,15 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     public void MarkPermanentlyDisconnected()
     {
+        MarkDisconnected();
         _permanentlyDisconnected = true;
         _clientProxy = null;
+    }
+
+    public void MarkDisconnected()
+    {
+        FailPendingTasks(new JSDisconnectedException(
+            "JavaScript interop calls cannot complete because the circuit disconnected."));
     }
 
     protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
