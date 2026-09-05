@@ -209,23 +209,34 @@ public class BufferedReadStream : Stream
     {
         ValidateBufferArguments(buffer, offset, count);
 
-        return Read(buffer.AsSpan(offset, count));
+        if (_bufferCount > 0)
+        {
+            return DrainBuffer(buffer.AsSpan(offset, count));
+        }
+
+        // Forward to the matching inner overload. Going through Read(Span<byte>) would
+        // fall back to Stream's rent-and-copy shim if the inner stream doesn't override it.
+        return _inner.Read(buffer, offset, count);
     }
 
     /// <inheritdoc/>
     public override int Read(Span<byte> buffer)
     {
-        // Drain buffer
         if (_bufferCount > 0)
         {
-            var toCopy = Math.Min(_bufferCount, buffer.Length);
-            _buffer.AsSpan(_bufferOffset, toCopy).CopyTo(buffer);
-            _bufferOffset += toCopy;
-            _bufferCount -= toCopy;
-            return toCopy;
+            return DrainBuffer(buffer);
         }
 
         return _inner.Read(buffer);
+    }
+
+    private int DrainBuffer(Span<byte> buffer)
+    {
+        var toCopy = Math.Min(_bufferCount, buffer.Length);
+        _buffer.AsSpan(_bufferOffset, toCopy).CopyTo(buffer);
+        _bufferOffset += toCopy;
+        _bufferCount -= toCopy;
+        return toCopy;
     }
 
     /// <inheritdoc/>
