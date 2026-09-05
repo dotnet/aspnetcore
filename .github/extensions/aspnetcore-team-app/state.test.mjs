@@ -92,6 +92,10 @@ test("controller separates discussion verification from ordinary review actions"
   };
   withDiscussionVerification.queue.display.discussion = {
     states: {
+      clear: {
+        label: "Discussion clear",
+        description: "Bounded discussion evidence is complete without a verification signal.",
+      },
       "verification-needed": {
         label: "Verify discussion",
         description: "Discussion requires human interpretation.",
