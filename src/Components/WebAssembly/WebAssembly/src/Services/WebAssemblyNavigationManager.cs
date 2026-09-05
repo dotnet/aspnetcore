@@ -21,9 +21,18 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     /// </summary>
     public static WebAssemblyNavigationManager Instance { get; set; } = default!;
 
-    public WebAssemblyNavigationManager(string baseUri, string uri)
+    internal void InitializeNavigation(string baseUri, string uri)
+        => Initialize(baseUri, uri);
+
+    internal static string NormalizeBaseUriForHostEnvironment(string baseUri)
     {
-        Initialize(baseUri, uri);
+        var lastSlashIndex = baseUri.LastIndexOf('/');
+        if (lastSlashIndex >= 0)
+        {
+            baseUri = baseUri[..(lastSlashIndex + 1)];
+        }
+
+        return baseUri;
     }
 
     public void CreateLogger(ILoggerFactory loggerFactory)

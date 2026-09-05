@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -94,12 +96,12 @@ public sealed class WebAssemblyHostBuilder
         InitializeWebAssemblyRenderer();
 
         // Retrieve required attributes from JSRuntimeInvoker
-        InitializeNavigationManager();
+        var baseAddress = GetNormalizedBaseAddress();
         InitializeRegisteredRootComponents();
         InitializePersistedState();
         InitializeDefaultServices();
 
-        var hostEnvironment = InitializeEnvironment();
+        var hostEnvironment = InitializeEnvironment(baseAddress);
         HostEnvironment = hostEnvironment;
 
         _createServiceProvider = () =>
@@ -183,18 +185,14 @@ public sealed class WebAssemblyHostBuilder
         _persistedState = _jsMethods.GetPersistedState();
     }
 
-    private void InitializeNavigationManager()
-    {
-        var baseUri = _jsMethods.NavigationManager_GetBaseUri();
-        var uri = _jsMethods.NavigationManager_GetLocationHref();
+    private string GetNormalizedBaseAddress()
+        => WebAssemblyNavigationManager.NormalizeBaseUriForHostEnvironment(
+            _jsMethods.NavigationManager_GetBaseUri());
 
-        WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
-    }
-
-    private WebAssemblyHostEnvironment InitializeEnvironment()
+    private WebAssemblyHostEnvironment InitializeEnvironment(string baseAddress)
     {
         var applicationEnvironment = _jsMethods.GetApplicationEnvironment();
-        var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
+        var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, baseAddress);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
         Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
@@ -323,17 +321,96 @@ public sealed class WebAssemblyHostBuilder
         // to configure services inside *that scope* inside their startup code, we create *both* the
         // service provider and the scope here.
         var services = _createServiceProvider();
-        var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+        AsyncServiceScope? scope = null;
+        CancellationTokenSource? hostCancellationTokenSource = null;
+        try
+        {
+            scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+            hostCancellationTokenSource = new CancellationTokenSource();
 
-        return new WebAssemblyHost(this, services, scope, _persistedState);
+            return new WebAssemblyHost(
+                this,
+                services,
+                scope.Value,
+                _persistedState,
+                hostCancellationTokenSource);
+        }
+        catch
+        {
+            _ = DisposeFailedBuildAsync(scope, services, hostCancellationTokenSource);
+            throw;
+        }
+    }
+
+    private static async Task DisposeFailedBuildAsync(
+        AsyncServiceScope? scope,
+        IServiceProvider services,
+        CancellationTokenSource? hostCancellationTokenSource)
+    {
+        try
+        {
+            hostCancellationTokenSource?.Cancel();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (scope is not null)
+            {
+                await scope.Value.DisposeAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (services is IAsyncDisposable asyncDisposableServices)
+            {
+                await asyncDisposableServices.DisposeAsync();
+            }
+            else if (services is IDisposable disposableServices)
+            {
+                disposableServices.Dispose();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            hostCancellationTokenSource?.Dispose();
+        }
+        catch
+        {
+        }
     }
 
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
     [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
+        Services.AddSingleton<InteractiveHostStartupValues>();
+        Services.TryAddSingleton<IHostStartupValues>(
+            static services => services.GetRequiredService<InteractiveHostStartupValues>());
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostInitializer, NavigationManagerInitializer>());
+        Services.TryAddSingleton<HostInitializerCollection>();
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
-        Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
+        Services.AddSingleton(static services =>
+        {
+            var navigationManager = new WebAssemblyNavigationManager();
+            WebAssemblyNavigationManager.Instance = navigationManager;
+            return navigationManager;
+        });
+        Services.AddSingleton<NavigationManager>(
+            static services => services.GetRequiredService<WebAssemblyNavigationManager>());
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(_jsMethods);

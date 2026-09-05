@@ -3,8 +3,8 @@
 
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,6 +19,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly ILoggerFactory _loggerFactory;
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
+    private readonly HostInitializerCollection _hostInitializers;
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
 
@@ -27,11 +28,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
         CircuitMetrics circuitMetrics,
+        HostInitializerCollection hostInitializers,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
         _loggerFactory = loggerFactory;
         _circuitIdFactory = circuitIdFactory;
+        _hostInitializers = hostInitializers;
         _options = options.Value;
         _logger = _loggerFactory.CreateLogger<CircuitFactory>();
 
@@ -43,30 +46,35 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         CircuitClientProxy client,
         string baseUri,
         string uri,
+        IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
-        ResourceAssetCollection resourceCollection)
+        ResourceAssetCollection resourceCollection,
+        CancellationToken cancellationToken)
     {
         var scope = _scopeFactory.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
+        scope.ServiceProvider
+            .GetRequiredKeyedService<InteractiveHostStartupValues>(HostInitializerKey.Server)
+            .Initialize(startupValues);
+
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
         jsRuntime.Initialize(client);
 
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
-        var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
-        var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
         var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
 
-        if (client.Connected)
+        var hostInitializerInvoker = _hostInitializers.GetInitializerInvoker(
+            scope.ServiceProvider,
+            HostInitializerKey.Server);
+        try
         {
-            navigationManager.AttachJsRuntime(jsRuntime);
-            navigationManager.Initialize(baseUri, uri);
-
-            navigationInterception.AttachJSRuntime(jsRuntime);
-            scrollToLocationHash.AttachJSRuntime(jsRuntime);
+            await hostInitializerInvoker.InitializeHostAsync(cancellationToken);
         }
-        else
+        catch
         {
-            navigationManager.Initialize(baseUri, uri);
+            await scope.DisposeAsync();
+            throw;
         }
 
         if (components.Count > 0)
@@ -112,6 +120,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             components,
             jsRuntime,
             navigationManager,
+            hostInitializerInvoker,
             circuitHandlers,
             _circuitMetrics,
             circuitActivitySource,

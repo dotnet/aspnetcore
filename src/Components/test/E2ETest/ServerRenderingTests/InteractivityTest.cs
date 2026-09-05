@@ -42,6 +42,25 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void HostInitializersRunBeforeInteractiveServerRendering()
+    {
+        Navigate($"{ServerPathBase}/host-initialization");
+
+        Browser.Equal("Server:True", () => Browser.FindElement(By.Id("host-initialization-renderer")).Text);
+        Browser.True(() =>
+        {
+            var events = Browser.FindElements(By.CssSelector("#host-initialization-events li"));
+            return events.Count == 2 &&
+                events[0].Text.StartsWith("values:", StringComparison.Ordinal) &&
+                events[0].Text != "values:-" &&
+                events[1].Text == "js-ready";
+        });
+
+        Browser.Click(By.Id("host-initialization-click"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("host-initialization-click-count")).Text);
+    }
+
+    [Fact]
     public void CanRenderInteractiveServerComponentFromRazorClassLibrary()
     {
         // '3' configures the increment amount.

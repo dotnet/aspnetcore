@@ -1,15 +1,55 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class ComponentServiceCollectionExtensionsTest
 {
+    [Fact]
+    public void FrameworkInitializersAreKeyedAndUserInitializersAreShared()
+    {
+        var services = new ServiceCollection();
+        var userInitializer = new TestHostInitializer();
+        services.AddSingleton<IHostInitializer>(userInitializer);
+        services.AddServerSideBlazor();
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var collection = provider.GetRequiredService<HostInitializerCollection>();
+
+        Assert.Same(userInitializer, Assert.Single(provider.GetServices<IHostInitializer>()));
+        Assert.Equal(3, provider.GetKeyedServices<IHostInitializer>(HostInitializerKey.Server).Count());
+        Assert.Same(collection, scope.ServiceProvider.GetRequiredService<HostInitializerCollection>());
+        Assert.Equal(1, userInitializer.OrderAccessCount);
+    }
+
+    [Fact]
+    public async Task ServerInitializersDoNotResolveInteractiveServicesInStaticScope()
+    {
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        services.AddScoped<NavigationManager>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<INavigationInterception>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<IScrollToLocationHash>(_ => throw new InvalidOperationException("Unexpected resolution."));
+        services.AddScoped<IJSRuntime>(_ => throw new InvalidOperationException("Unexpected resolution."));
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        await scope.ServiceProvider.GetRequiredService<HostInitializerCollection>()
+            .GetInitializerInvoker(scope.ServiceProvider)
+            .InitializeBrowserAsync();
+    }
+
     [Fact]
     public void AddServerSideSignalR_RegistersBlazorPack()
     {
@@ -75,5 +115,94 @@ public class ComponentServiceCollectionExtensionsTest
 
         // Configuring Blazor options is kept separate from the global options.
         Assert.Equal(TimeSpan.FromMinutes(10), globalOptions.Value.HandshakeTimeout);
+    }
+
+    [Theory]
+    [InlineData("Endpoints")]
+    [InlineData("Server")]
+    [InlineData("EndpointsThenServer")]
+    [InlineData("ServerThenEndpoints")]
+    public void HostStartupValuesRegistrationUsesTheExpectedNonInteractiveHolder(string registrations)
+    {
+        var services = new ServiceCollection();
+        switch (registrations)
+        {
+            case "Endpoints":
+                services.AddRazorComponents();
+                break;
+            case "Server":
+                services.AddServerSideBlazor();
+                break;
+            case "EndpointsThenServer":
+                services.AddRazorComponents();
+                services.AddServerSideBlazor();
+                break;
+            case "ServerThenEndpoints":
+                services.AddServerSideBlazor();
+                services.AddRazorComponents();
+                break;
+        }
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
+        var expectedAssembly = registrations is "Server"
+            ? "Microsoft.AspNetCore.Components.Server"
+            : "Microsoft.AspNetCore.Components.Endpoints";
+
+        Assert.Equal(expectedAssembly, startupValues.GetType().Assembly.GetName().Name);
+    }
+
+    [Fact]
+    public void HostStartupValuesRegistrationSelectsServerHolderForInteractiveScope()
+    {
+        var services = new ServiceCollection();
+        services.AddRazorComponents();
+        services.AddServerSideBlazor();
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
+
+        var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
+        Assert.IsType<InteractiveHostStartupValues>(startupValues);
+    }
+
+    [Fact]
+    public void AddServerSideBlazorRepeatedlyDoesNotDuplicateHostStartupValueRegistrations()
+    {
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        var countAfterFirstCall = services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues));
+
+        services.AddServerSideBlazor();
+
+        Assert.Equal(
+            countAfterFirstCall,
+            services.Count(descriptor => descriptor.ServiceType == typeof(IHostStartupValues)));
+        Assert.Equal(3, services.Count(descriptor => descriptor.ServiceType == typeof(IHostInitializer)));
+        Assert.All(
+            services.Where(descriptor => descriptor.ServiceType == typeof(IHostInitializer)),
+            descriptor => Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime));
+        Assert.Equal(
+            ServiceLifetime.Singleton,
+            Assert.Single(services.Where(descriptor => descriptor.ServiceType == typeof(HostInitializerCollection))).Lifetime);
+    }
+
+    private sealed class TestHostInitializer : IHostInitializer
+    {
+        public int Order
+        {
+            get
+            {
+                OrderAccessCount++;
+                return 0;
+            }
+        }
+
+        public int OrderAccessCount { get; private set; }
+
+        public Task InitializeHostAsync(IServiceProvider services, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

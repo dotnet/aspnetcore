@@ -19,6 +19,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
+import { evaluateHostStartupValuesJson } from './Services/HostStartupValues';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
@@ -104,6 +105,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveWebAssemblyDotNetDataStream = receiveWebAssemblyDotNetDataStream;
   Blazor._internal.receiveByteArray = receiveByteArray;
+  Blazor._internal.getHostStartupValues = evaluateHostStartupValuesJson;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);

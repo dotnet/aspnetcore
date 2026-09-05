@@ -19,6 +19,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { evaluateHostStartupValues } from '../../Services/HostStartupValues';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -112,12 +113,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
+    const applicationState = this._applicationState || '';
+    const startupValuesJson = await this.getStartupValuesJson();
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
+      startupValuesJson,
       componentsJson,
-      this._applicationState || ''
+      applicationState
     );
 
     if (!this._circuitId) {
@@ -131,6 +133,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return true;
+  }
+
+  private async getStartupValuesJson(): Promise<string> {
+    const keysJson = await this._connection!.invoke<string>('GetStartupValueKeys');
+    return JSON.stringify(evaluateHostStartupValues(keysJson));
   }
 
   private async startConnection(): Promise<HubConnection> {
@@ -197,7 +204,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
-
     connection.on('JS.RequestPause', async () => {
       try {
         await this.handleServerInitiatedPause();
@@ -466,11 +472,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
+      const startupValuesJson = await this.getStartupValuesJson();
       const newCircuitId = await this._connection!.invoke<string>(
         'ResumeCircuit',
         this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
+        startupValuesJson,
         persistedCircuitState?.components ?? '[]',
         persistedCircuitState?.applicationState ?? '',
       );

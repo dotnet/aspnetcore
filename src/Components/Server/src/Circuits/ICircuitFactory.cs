@@ -12,7 +12,9 @@ internal interface ICircuitFactory
         CircuitClientProxy client,
         string baseUri,
         string uri,
+        IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,
-        ResourceAssetCollection resourceCollection);
+        ResourceAssetCollection resourceCollection,
+        CancellationToken cancellationToken);
 }
