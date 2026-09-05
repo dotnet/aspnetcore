@@ -72,4 +72,12 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class RazorComponentResultOfT
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>";
+
+        // The generic type is defined in Microsoft.AspNetCore.Components.Endpoints and has arity 1.
+        public const string MetadataName = "Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult`1";
+    }
 }
