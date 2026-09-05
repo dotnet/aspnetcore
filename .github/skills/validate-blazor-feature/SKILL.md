@@ -1,12 +1,12 @@
 ---
 name: validate-blazor-feature
 description: >-
-  Validate a Blazor feature or behavior interactively in a browser using the canonical Components samples in this repo, before writing E2E tests. USE FOR exercising a Blazor change in src/Components (a render-mode behavior, an interactive component, enhanced navigation, forms, streaming, prerendering), deciding which sample to use, where to add a test page, how to set the render mode (Server/WebAssembly/Auto/static SSR), how to confirm the app is actually interactive (not just static SSR), and how to inspect the browser console and network for errors. Covers BlazorWebAppGlobal, BlazorWebAppPerPage, and BlazorWebAssemblyStandalone, launching them against the in-tree framework, and driving them with the Playwright MCP browser tools. DO NOT USE FOR writing permanent E2E/Selenium or unit tests, non-Components areas, comparative alternatives research, or isolated native-browser API/HTML/CSS experiments when no Blazor feature implementation is being validated; prefer a minimal browser probe instead.
+  Validate a Blazor feature or regression in a real browser using canonical Components samples before selecting permanent coverage. USE FOR exercising src/Components changes with Playwright; choosing the sample or render mode; proving interactivity; checking browser errors; turning a failure into a temporary JavaScript diagnostic assertion; assessing determinism; investigating producer or timing behavior; replacing arbitrary Selenium sleeps with observable waits or gates; choosing a faithful unit-versus-browser boundary; and recording the permanent-test handoff. Always use for Components tasks involving deterministic browser evidence, flaky Selenium or Thread.Sleep, timing gates, or a JS-versus-Selenium decision. It may author temporary probes but does not write permanent tests. DO NOT USE FOR non-Components work, comparative alternatives research, or isolated browser API/HTML/CSS experiments without a Blazor implementation; use a minimal browser probe instead.
 ---
 
 # Validate a Blazor feature with the Components samples
 
-Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. Validate behavior before writing E2E tests; remove the sample code afterward (`git checkout`/`git clean`) once the E2E test covers it.
+Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. When the run reproduces a browser regression or failure that needs permanent coverage, also reduce it to a deterministic diagnostic probe before selecting permanent coverage. Remove any temporary diagnostic and sample code once the selected permanent test covers it.
 
 ## 1. Pick the sample and where the page goes
 
@@ -88,12 +88,52 @@ After interacting, inspect the console. **Scope it to the current page**: call `
 
 See [references/error-checks.md](references/error-checks.md) for the catalog of common failures, the symptom each produces, and the fix.
 
-## 6. Finish
+## 6. Distill the reproduction and establish determinism (browser regressions only)
+
+Apply this section only when steps 4-5 reproduced a browser regression or failure that needs permanent coverage. Skip it for new-feature validation with no failure to reduce.
+
+After Playwright reproduces the failure, reduce the scenario to the smallest JavaScript probe and assertion that observes the same final browser state. Run it in the real page with Playwright evaluation or from temporary scratch code. This probe is diagnostic: do not add it to a Jest or `.test.ts` suite, do not include it in the production change, and remove it after the permanent scenario supersedes it.
+
+Repeat the unchanged scenario and probe a recorded, bounded number of times. When repository evidence does not suggest another count, 10 runs is a reasonable default confidence sample, not proof that the behavior is deterministic across machines, browsers, or load. Record the count, environment, assertion, and failure signature. Call the reproduction deterministic under the exercised conditions only when every run fails the same assertion for the same reason; never describe the bounded sample as proving determinism.
+
+If the runs do not agree, stop the permanent-test handoff and investigate the owning producer and timing:
+
+- Add targeted logging or browser observations that distinguish whether the producer ran, which precondition differed, and where ordering changed.
+- Use a faithful unit or lower-boundary test when that module's contract is the final observable and the test exercises its real inputs.
+- When managed timing must be controlled for the browser scenario, introduce an explicit test gate such as a `TaskCompletionSource`, endpoint, or test-only release action and wait for observable browser state before and after releasing it.
+- Do not make the race appear stable by inserting an arbitrary fixed delay.
+
+When the browser reproduction is deterministic, record that the permanent real-browser scenario must preserve the same setup and final assertion. For Components Selenium, prefer observable waits such as `Browser.True` and `Browser.Equal` (which poll with `WebDriverWait`) when the final observable is sufficient. For generated-template behavior, use the existing Playwright template suite and its observable waits. Use an explicit test-controlled gate only when deterministic managed or intermediate timing must be controlled. A bounded polling helper may delay between observable checks when it also enforces a timeout; a fixed sleep is not the synchronization mechanism for the regression assertion.
+
+## 7. Record the permanent regression boundary
+
+Before handing off to permanent tests, record:
+
+- **Behavior owner**: the subsystem that owns the behavior.
+- **Production producer**: the real mechanism that creates the disputed preconditions.
+- **Final observable**: the material result the regression test must assert.
+- **Selected permanent surface**: the test suite that exercises that producer and observable.
+- **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
+
+For browser-owned user-visible behavior (real DOM measurement, layout or geometry, scrolling, browser observers, browser scheduling or event ordering, browser-dependent JS interop, navigation, focus or selection, and rendering or rehydration), hand off to the repository's real-browser suite that owns the production path. Use C# Selenium under `src/Components/test/E2ETest` for Components-owned behavior. When generated template content owns the behavior, use the existing Playwright tests under `src/ProjectTemplates/test/Templates.Blazor.Tests` instead of duplicating it in Components E2E. Require the identical assertion to be red without the fix and green with it. Include a nearest-opposite control, meaning the closest scenario that must stay green, and, when meaningful, an adjacent control driven by the same production producer. A browser fix remains blocked while Jest is its only regression proof.
+
+Do not recommend adding or retaining Jest or `.test.ts` coverage as proof of the same browser scenario, including as supplemental coverage or in an existing test file. When synthetic geometry, mocked observers or events, or direct state or callback injection stand in for that browser scenario's real producer, they are temporary diagnostic probes outside the production change.
+
+JavaScript or TypeScript unit coverage remains appropriate when the module's deterministic contract is the final observable and its harness faithfully supplies the contract inputs. This includes pure helpers, structural DOM algorithms over ordinary nodes, manager callback or timer-state contracts, and validation-engine contracts. These tests do not prove that real browser scheduling, layout, observers, or a user-visible producer path is reachable; claims about those behaviors remain Selenium scenarios. Managed or service behavior fully owned and observable below the browser remains at that faithful lower boundary.
+
+If WebDriver cannot perform or observe one exact operation, name that limitation and permit only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep the permanent scenario orchestration and final user-visible assertion in C# Selenium.
+
+Treat `src/Components/AGENTS.md` section "Permanent regression test boundary" as the normative policy when recording this handoff.
+
+This skill validates the sample interactively and records the handoff. It does not write the permanent Selenium test.
+
+## 8. Finish
 
 - Stop the sample server by its specific PID.
 - Remove the Playwright artifacts folder (`.playwright-mcp/`) it drops into the working directory.
-- Per the Components workflow, once an E2E test covers the behavior, remove the sample scenario code: `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples`.
+- Remove any temporary JavaScript diagnostic probe.
+- Per the Components workflow, once the selected permanent test covers the behavior, remove the sample scenario code: `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples`.
 
 ## Completion criteria
 
-The validation is done when: the page loaded (200, framework JS served), the behavior was exercised by a real interaction, the resulting state change was observed in a snapshot, and the console shows no real errors for the page under test. Only then move on to writing the E2E test.
+The validation is done when: the page loaded (200, framework JS served), the behavior was exercised by a real interaction, the resulting state change was observed in a snapshot, and the console shows no real errors for the page under test. For a regression, also record the temporary probe, bounded repeat result, and whether every run failed for the same reason. Only then record the five-field handoff to the selected permanent real-browser surface; inconsistent behavior returns to producer/timing investigation or an explicit gate.
