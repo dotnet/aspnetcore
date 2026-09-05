@@ -25,6 +25,12 @@ const session = await joinSession({
             description: "Named pr-attention-queue preset. Defaults to blazor.",
             enum: ["blazor", "all-repo"],
           },
+          excludeDigestAuthor: {
+            type: "string",
+            description:
+              "Optional GitHub login to retain in the census while excluding its PRs from digest positions.",
+            pattern: "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$",
+          },
         },
         additionalProperties: false,
       },
@@ -38,6 +44,10 @@ const session = await joinSession({
               preset: {
                 type: "string",
                 enum: ["blazor", "all-repo"],
+              },
+              excludeDigestAuthor: {
+                type: "string",
+                pattern: "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$",
               },
             },
             additionalProperties: false,

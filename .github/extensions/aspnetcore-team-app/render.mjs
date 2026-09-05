@@ -406,9 +406,13 @@ export const HTML = `<!doctype html>
       elements.preset.value = snapshot.options.preset;
       elements.subtitle.textContent =
         snapshot.repository + " | generated " + new Date(snapshot.generatedAt).toLocaleString();
+      const excludedAuthors = snapshot.filter.excludeDigestAuthors ?? [];
+      const digestExclusions = excludedAuthors.length
+        ? " | digest excludes @" + excludedAuthors.join(", @")
+        : "";
       elements.scope.textContent =
         snapshot.filter.description + " | " + snapshot.filter.selection
-        + " | " + snapshot.filter.coverage;
+        + " | " + snapshot.filter.coverage + digestExclusions;
       elements.ready.hidden = false;
       elements.secondary.hidden = false;
 

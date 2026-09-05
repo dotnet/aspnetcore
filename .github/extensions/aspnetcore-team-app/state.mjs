@@ -40,6 +40,7 @@ export function createQueueController({
       if (
         requestedOptions.source !== refreshOptions.source
         || requestedOptions.preset !== refreshOptions.preset
+        || requestedOptions.excludeDigestAuthor !== refreshOptions.excludeDigestAuthor
       ) {
         throw stateError(
           "refresh_in_progress",
@@ -183,6 +184,13 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       changedFiles: item.changedFiles,
       scopeMatch: item.scopeMatch,
       shownInDigest: item.shownInDigest,
+      digestRank: item.digestRank ?? null,
+      digestExclusions: (item.digestExclusionReasons ?? []).map((code) => ({
+        code,
+        ...queue.display.digestExclusionReasons?.[code],
+      })),
+      stackDepth: item.stackDepth ?? 0,
+      stackBlockedBy: [...(item.stackBlockedBy ?? [])],
     };
     groups[item.bucket].push(publicItem);
     actions.set(id, {
@@ -208,10 +216,22 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       caps: queue.caps,
       warnings: [...queue.warnings],
       primary: {
-        reviewNow: groups.ReviewNow.filter((item) => item.shownInDigest),
-        needsRescue: groups.NeedsRescue.filter((item) => item.shownInDigest),
+        reviewNow: groups.ReviewNow
+          .filter((item) => item.shownInDigest)
+          .sort((left, right) =>
+            (left.digestRank ?? Number.MAX_SAFE_INTEGER)
+            - (right.digestRank ?? Number.MAX_SAFE_INTEGER)),
+        needsRescue: groups.NeedsRescue
+          .filter((item) => item.shownInDigest)
+          .sort((left, right) =>
+            (left.digestRank ?? Number.MAX_SAFE_INTEGER)
+            - (right.digestRank ?? Number.MAX_SAFE_INTEGER)),
       },
-      readyToMerge: groups.ReadyToMerge.filter((item) => item.shownInDigest),
+      readyToMerge: groups.ReadyToMerge
+        .filter((item) => item.shownInDigest)
+        .sort((left, right) =>
+          (left.digestRank ?? Number.MAX_SAFE_INTEGER)
+          - (right.digestRank ?? Number.MAX_SAFE_INTEGER)),
       secondary: Object.fromEntries(
         SECONDARY_BUCKETS.map((bucket) => [bucket, groups[bucket]]),
       ),
@@ -242,6 +262,7 @@ export function summarizeState(state) {
       name: state.snapshot.filter.name,
       description: state.snapshot.filter.description,
       selection: state.snapshot.filter.selection,
+      excludeDigestAuthors: state.snapshot.filter.excludeDigestAuthors ?? [],
     },
     query: state.snapshot.query,
     census: state.snapshot.census,
@@ -262,6 +283,7 @@ export function summarizeState(state) {
       blockers: item.blockers,
       ageDays: item.ageDays,
       idleDays: item.idleDays,
+      digestRank: item.digestRank,
     })),
   };
 }
