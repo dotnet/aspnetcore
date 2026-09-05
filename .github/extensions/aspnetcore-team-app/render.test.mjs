@@ -17,6 +17,8 @@ test("renderer presents two primary lanes and secondary classifications", () => 
   assert.match(HTML, /snapshot\.primary\.needsRescue/);
   assert.match(HTML, /Secondary classifications/);
   assert.match(HTML, /snapshot\.readyToMerge/);
+  assert.match(HTML, /snapshot\.discussionVerification/);
+  assert.match(HTML, /Verify discussion/);
 });
 
 test("browser actions send only opaque item IDs and action kinds", () => {

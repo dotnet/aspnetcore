@@ -125,7 +125,14 @@ export function createQueueController({
     if (!item) {
       throw stateError("stale_item", "This queue item is stale. Refresh and try again.");
     }
-    if (kind === "review" && item.bucket !== "ReviewNow") {
+    if (
+      kind === "review"
+      && (
+        item.bucket !== "ReviewNow"
+        || item.discussionState === "verification-needed"
+        || item.discussionState === "not-assessed"
+      )
+    ) {
       throw stateError("action_not_allowed", "Review is only available for Review now items.");
     }
     if (kind === "investigate-rescue" && item.bucket !== "NeedsRescue") {
@@ -191,6 +198,26 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       })),
       stackDepth: item.stackDepth ?? 0,
       stackBlockedBy: [...(item.stackBlockedBy ?? [])],
+      shownInDiscussionVerification: item.shownInDiscussionVerification ?? false,
+      discussionVerificationRank: item.discussionVerificationRank ?? null,
+      discussion: item.discussionAssessment
+        ? {
+          state: item.discussionAssessment.state,
+          complete: item.discussionAssessment.complete,
+          signals: item.discussionAssessment.signals.map((code) => ({
+            code,
+            ...queue.display.discussion.signals[code],
+          })),
+          commentTotalCount: item.discussionAssessment.commentTotalCount,
+          commentEvidenceTruncated: item.discussionAssessment.commentEvidenceTruncated,
+          comments: item.discussionAssessment.comments.map((comment) => ({
+            ...comment,
+            kindDisplay: queue.display.discussion.commentKinds[comment.kind],
+          })),
+          threads: { ...item.discussionAssessment.threads },
+          display: queue.display.discussion.states[item.discussionAssessment.state],
+        }
+        : null,
     };
     groups[item.bucket].push(publicItem);
     actions.set(id, {
@@ -198,6 +225,7 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       repository: queue.repository,
       number: item.number,
       bucket: item.bucket,
+      discussionState: item.discussionAssessment?.state ?? null,
       url: `https://github.com/${queue.repository}/pull/${item.number}`,
     });
   }
@@ -214,6 +242,7 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       census: queue.census,
       overflow: queue.overflow,
       caps: queue.caps,
+      discussion: queue.discussion ?? null,
       warnings: [...queue.warnings],
       primary: {
         reviewNow: groups.ReviewNow
@@ -227,6 +256,9 @@ export function createSnapshot(queue, options, createId = randomUUID) {
             (left.digestRank ?? Number.MAX_SAFE_INTEGER)
             - (right.digestRank ?? Number.MAX_SAFE_INTEGER)),
       },
+      discussionVerification: groups.ReviewNow
+        .filter((item) => item.shownInDiscussionVerification)
+        .sort((left, right) => left.discussionVerificationRank - right.discussionVerificationRank),
       readyToMerge: groups.ReadyToMerge
         .filter((item) => item.shownInDigest)
         .sort((left, right) =>
@@ -268,6 +300,7 @@ export function summarizeState(state) {
     census: state.snapshot.census,
     overflow: state.snapshot.overflow,
     caps: state.snapshot.caps,
+    discussion: state.snapshot.discussion,
     warnings: state.snapshot.warnings,
     visibleItems: [
       ...state.snapshot.primary.reviewNow,
@@ -284,6 +317,7 @@ export function summarizeState(state) {
       ageDays: item.ageDays,
       idleDays: item.idleDays,
       digestRank: item.digestRank,
+      discussion: item.discussion,
     })),
   };
 }

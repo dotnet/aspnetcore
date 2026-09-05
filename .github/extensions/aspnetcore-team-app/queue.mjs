@@ -131,6 +131,9 @@ export function validateQueue(queue) {
   if (queue.display.digestExclusionReasons !== undefined) {
     requireRecord(queue.display.digestExclusionReasons, "display.digestExclusionReasons");
   }
+  if (queue.display.discussion !== undefined) {
+    validateDiscussionDisplay(queue.display.discussion);
+  }
   for (const bucket of BUCKETS) {
     requireDisplayEntry(queue.display.buckets[bucket], `display.buckets.${bucket}`);
   }
@@ -174,6 +177,9 @@ export function validateQueue(queue) {
   requireRecord(queue.caps, "caps");
   for (const field of ["reviewNow", "reviewNowPerAuthor", "needsRescue", "readyToMerge"]) {
     requireNonNegativeInteger(queue.caps[field], `caps.${field}`);
+  }
+  if (queue.discussion !== undefined) {
+    validateDiscussionSummary(queue.discussion);
   }
 
   requireStringArray(queue.warnings, "warnings");
@@ -219,6 +225,19 @@ function validateItem(queue, item) {
   if (item.digestExclusionReasons !== undefined) {
     requireStringArray(item.digestExclusionReasons, "item.digestExclusionReasons");
   }
+  if (item.discussionAssessment !== undefined && item.discussionAssessment !== null) {
+    validateDiscussionAssessment(queue, item.discussionAssessment);
+  }
+  if (item.shownInDiscussionVerification !== undefined
+      && typeof item.shownInDiscussionVerification !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.shownInDiscussionVerification must be a boolean",
+    );
+  }
+  if (item.shownInDiscussionVerification && item.discussionVerificationRank !== undefined) {
+    requirePositiveInteger(item.discussionVerificationRank, "item.discussionVerificationRank");
+  }
   if (item.stackBlockedBy !== undefined) {
     if (
       !Array.isArray(item.stackBlockedBy)
@@ -251,6 +270,88 @@ function validateItem(queue, item) {
     throw queueError("queue_item_invalid", `item.url must match ${expectedUrl}`);
   }
 
+}
+
+function validateDiscussionDisplay(discussion) {
+  requireRecord(discussion, "display.discussion", "queue_display_invalid");
+  for (const field of ["states", "signals", "commentKinds"]) {
+    requireRecord(discussion[field], `display.discussion.${field}`, "queue_display_invalid");
+  }
+}
+
+function validateDiscussionSummary(discussion) {
+  requireRecord(discussion, "discussion");
+  for (const field of [
+    "candidateLimit",
+    "assessedCandidateCount",
+    "verificationNeededCount",
+    "unassessedReviewNowCount",
+  ]) {
+    requireNonNegativeInteger(discussion[field], `discussion.${field}`);
+  }
+}
+
+function validateDiscussionAssessment(queue, assessment) {
+  requireRecord(assessment, "item.discussionAssessment", "queue_item_invalid");
+  requireString(assessment.state, "item.discussionAssessment.state", "queue_item_invalid");
+  if (typeof assessment.complete !== "boolean") {
+    throw queueError("queue_item_invalid", "item.discussionAssessment.complete must be a boolean");
+  }
+  requireStringArray(assessment.signals, "item.discussionAssessment.signals");
+  requireNonNegativeInteger(
+    assessment.commentTotalCount,
+    "item.discussionAssessment.commentTotalCount",
+  );
+  if (typeof assessment.commentEvidenceTruncated !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.discussionAssessment.commentEvidenceTruncated must be a boolean",
+    );
+  }
+  if (!Array.isArray(assessment.comments)) {
+    throw queueError("queue_item_invalid", "item.discussionAssessment.comments must be an array");
+  }
+  for (const comment of assessment.comments) {
+    requireRecord(comment, "item.discussionAssessment.comments[]", "queue_item_invalid");
+    for (const field of ["author", "actor", "association", "createdAt", "kind", "excerpt"]) {
+      requireStringValue(comment[field], `item.discussionAssessment.comments[].${field}`);
+    }
+    if (Number.isNaN(Date.parse(comment.createdAt))) {
+      throw queueError(
+        "queue_item_invalid",
+        "item.discussionAssessment.comments[].createdAt must be an ISO date",
+      );
+    }
+    requireDisplayEntry(
+      queue.display.discussion?.commentKinds?.[comment.kind],
+      `display.discussion.commentKinds.${comment.kind}`,
+    );
+  }
+  requireRecord(assessment.threads, "item.discussionAssessment.threads", "queue_item_invalid");
+  for (const field of [
+    "totalCount",
+    "returnedCount",
+    "unresolvedCount",
+    "outdatedUnresolvedCount",
+  ]) {
+    requireNonNegativeInteger(assessment.threads[field], `item.discussionAssessment.threads.${field}`);
+  }
+  if (typeof assessment.threads.complete !== "boolean") {
+    throw queueError(
+      "queue_item_invalid",
+      "item.discussionAssessment.threads.complete must be a boolean",
+    );
+  }
+  requireDisplayEntry(
+    queue.display.discussion?.states?.[assessment.state],
+    `display.discussion.states.${assessment.state}`,
+  );
+  for (const signal of assessment.signals) {
+    requireDisplayEntry(
+      queue.display.discussion?.signals?.[signal],
+      `display.discussion.signals.${signal}`,
+    );
+  }
 }
 
 function validateDigestRanks(items) {

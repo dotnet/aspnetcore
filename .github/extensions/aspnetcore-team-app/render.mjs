@@ -134,6 +134,31 @@ export const HTML = `<!doctype html>
       padding: 10px 12px;
     }
 
+    .discussion-verification {
+      border: 1px solid var(--true-color-orange, #bc4c00);
+      border-radius: 8px;
+      margin-top: 16px;
+      padding: 12px;
+    }
+
+    .discussion-evidence {
+      background: var(--background-color-muted, #f6f8fa);
+      border-radius: 6px;
+      margin-top: 8px;
+      padding: 8px;
+    }
+
+    .discussion-evidence > summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-semibold, 600);
+    }
+
+    .discussion-comment {
+      border-top: 1px solid var(--border-color-default, #d0d7de);
+      margin-top: 8px;
+      padding-top: 8px;
+    }
+
     .stats {
       display: grid;
       gap: 8px;
@@ -344,6 +369,7 @@ export const HTML = `<!doctype html>
     <section id="warnings"></section>
     <section id="stats" class="stats" aria-label="Queue statistics"></section>
     <section id="lanes" class="lanes"></section>
+    <section id="discussion-verification" class="discussion-verification"></section>
     <section id="ready" class="ready-strip"></section>
     <details id="secondary" class="secondary">
       <summary>Secondary classifications</summary>
@@ -366,6 +392,7 @@ export const HTML = `<!doctype html>
       lanes: document.getElementById("lanes"),
       preset: document.getElementById("preset"),
       ready: document.getElementById("ready"),
+      discussionVerification: document.getElementById("discussion-verification"),
       refresh: document.getElementById("refresh"),
       scope: document.getElementById("scope"),
       secondary: document.getElementById("secondary"),
@@ -398,6 +425,7 @@ export const HTML = `<!doctype html>
         elements.stats.replaceChildren();
         elements.lanes.replaceChildren(element("div", "empty", "Loading live GitHub data..."));
         elements.ready.hidden = true;
+        elements.discussionVerification.hidden = true;
         elements.secondary.hidden = true;
         elements.warnings.replaceChildren();
         return;
@@ -414,11 +442,13 @@ export const HTML = `<!doctype html>
         snapshot.filter.description + " | " + snapshot.filter.selection
         + " | " + snapshot.filter.coverage + digestExclusions;
       elements.ready.hidden = false;
+      elements.discussionVerification.hidden = false;
       elements.secondary.hidden = false;
 
       renderWarnings(snapshot.warnings);
       renderStats(snapshot);
       renderPrimaryLanes(snapshot);
+      renderDiscussionVerification(snapshot);
       renderReady(snapshot);
       renderSecondary(snapshot);
     }
@@ -504,7 +534,7 @@ export const HTML = `<!doctype html>
       }
     }
 
-    function renderCard(snapshot, item) {
+    function renderCard(snapshot, item, suppressReviewAction) {
       const card = element("article", "card " + item.bucket);
       card.append(element("h3", "", "#" + item.number + " " + item.title));
       card.append(
@@ -524,19 +554,74 @@ export const HTML = `<!doctype html>
       }
       card.append(pills);
 
+      if (item.discussion) {
+        const assessment = element("details", "discussion-evidence");
+        const state = item.discussion.display.label;
+        assessment.append(
+          element(
+            "summary",
+            "",
+            state + " | "
+              + item.discussion.threads.unresolvedCount + " unresolved thread(s)"
+              + (item.discussion.complete ? "" : " | incomplete"),
+          ),
+        );
+        for (const signal of item.discussion.signals) {
+          assessment.append(element("p", "", signal.label + ": " + signal.description));
+        }
+        for (const comment of item.discussion.comments) {
+          const evidence = element("div", "discussion-comment");
+          evidence.append(
+            element(
+              "strong",
+              "",
+              "@" + comment.author + " | " + comment.actor + " | " + comment.kindDisplay.label,
+            ),
+          );
+          evidence.append(element("div", "muted", new Date(comment.createdAt).toLocaleString()));
+          evidence.append(element("p", "", comment.excerpt || "(No text returned.)"));
+          assessment.append(evidence);
+        }
+        card.append(assessment);
+      }
+
       for (const blocker of item.blockers) {
         card.append(element("p", "blocker", blocker));
       }
 
       const actions = element("div", "actions");
       actions.append(actionButton(item, "open", "Open PR", false));
-      if (item.bucket === "ReviewNow") {
+      if (item.bucket === "ReviewNow" && !suppressReviewAction) {
         actions.append(actionButton(item, "review", "Review", true));
       } else if (item.bucket === "NeedsRescue") {
         actions.append(actionButton(item, "investigate-rescue", "Investigate rescue", true));
       }
       card.append(actions);
       return card;
+    }
+
+    function renderDiscussionVerification(snapshot) {
+      const items = snapshot.discussionVerification;
+      elements.discussionVerification.replaceChildren();
+      const title = snapshot.display.discussion?.states?.["verification-needed"]?.label
+        || "Verify discussion";
+      elements.discussionVerification.append(element("h2", "", title));
+      elements.discussionVerification.append(
+        element(
+          "p",
+          "muted",
+          "These remain deterministic Review now classifications, but recent discussion needs a human disposition check before starting ordinary code review.",
+        ),
+      );
+      if (!items.length) {
+        elements.discussionVerification.append(
+          element("div", "empty", "No selected candidates require discussion verification."),
+        );
+        return;
+      }
+      for (const item of items) {
+        elements.discussionVerification.append(renderCard(snapshot, item, true));
+      }
     }
 
     function renderReady(snapshot) {
