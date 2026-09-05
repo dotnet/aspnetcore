@@ -27,7 +27,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/");
         app = Browser.MountTestComponent<SampleQuickGridComponent>();
     }
 
@@ -214,4 +214,51 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             return row ? getComputedStyle(row).cursor : null;");
         Assert.Equal("pointer", cursorStyle);
     }
+
+    [Fact]
+    public void PaginatorUsesEmbeddedEnglishFallbackText()
+    {
+        var paginator = app.FindElement(By.ClassName("paginator"));
+
+        Assert.Equal(
+            "43 items",
+            NormalizeWhitespace(paginator.FindElement(By.CssSelector(".summary")).Text));
+
+        Assert.Equal(
+            "Page 1 of 5",
+            NormalizeWhitespace(paginator.FindElement(By.CssSelector("nav > div")).Text));
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-first",
+            "Go to first page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-previous",
+            "Go to previous page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-next",
+            "Go to next page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-last",
+            "Go to last page");
+
+        void AssertPaginatorControlHasEnglishFallbackText(
+            string selector,
+            string expectedText)
+        {
+            var control = paginator.FindElement(By.CssSelector(selector));
+
+            Assert.Equal(expectedText, control.GetDomAttribute("title"));
+            Assert.Equal(expectedText, control.GetDomAttribute("aria-label"));
+        }
+    }
+
+    private static string NormalizeWhitespace(string value)
+        => string.Join(
+            " ",
+            value.Split(
+                new[] { ' ', '\t', '\r', '\n' },
+                System.StringSplitOptions.RemoveEmptyEntries));
 }
