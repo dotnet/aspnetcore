@@ -1324,6 +1324,40 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
+    public void AddAttribute_Element_EventCallbackOfT_WithExplicitReceiverAndNullDelegate_DoesNotAddFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        var receiver = Mock.Of<IHandleEvent>();
+        var callback = new EventCallback<string>(receiver, @delegate: null);
+
+        Assert.True(callback.RequiresExplicitReceiver);
+        Assert.False(callback.HasDelegate);
+
+        builder.OpenElement(0, "elem");
+        builder.AddAttribute(1, "onmousemove", callback);
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
+    }
+
+    [Fact]
+    public void AddAttribute_Element_EventCallback_WithExplicitReceiverAndNullDelegate_DoesNotAddFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        var receiver = Mock.Of<IHandleEvent>();
+        var callback = new EventCallback(receiver, @delegate: null);
+
+        Assert.True(callback.RequiresExplicitReceiver);
+        Assert.False(callback.HasDelegate);
+
+        builder.OpenElement(0, "elem");
+        builder.AddAttribute(1, "onclick", callback);
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(), frame => AssertFrame.Element(frame, "elem", 1, 0));
+    }
+
+    [Fact]
     public void AddAttribute_Component_EventCallbackOfT_AddsFrame()
     {
         // Arrange
