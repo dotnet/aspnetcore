@@ -1,0 +1,68 @@
+#nullable enable
+const Microsoft.AspNetCore.Authentication.Dbsc.DbscDefaults.AuthenticationScheme = "DBSC" -> string!
+const Microsoft.AspNetCore.Authentication.Dbsc.DbscDefaults.RefreshPath = "/.well-known/dbsc/refresh" -> string!
+const Microsoft.AspNetCore.Authentication.Dbsc.DbscDefaults.RegistrationPath = "/.well-known/dbsc/registration" -> string!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscDefaults
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.DbscEvents() -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnRegistrationHeaderCreating.get -> System.Func<Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnRegistrationHeaderCreating.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnSessionRefreshed.get -> System.Func<Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnSessionRefreshed.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnSessionRegistered.get -> System.Func<Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.OnSessionRegistered.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler
+Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.DbscHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! cookieOptionsMonitor) -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.Events.get -> Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.Events.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
+override Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+override Microsoft.AspNetCore.Authentication.Dbsc.DbscHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.AllowedRefreshInitiators.get -> System.Collections.Generic.IList<string!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.ChallengeMaxAge.get -> System.TimeSpan
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.ChallengeMaxAge.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.DbscOptions() -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.Events.get -> Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.Events.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.IncludeSite.get -> bool
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.IncludeSite.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.RefreshPath.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.RefreshPath.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.RegistrationPath.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.RegistrationPath.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.ScopeSpecifications.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule!>!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.ShortLivedCookieExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.ShortLivedCookieExpiration.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.SourceScheme.get -> string!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.SourceScheme.set -> void
+override Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions.Validate(string! scheme) -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistration
+static Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistration.WriteRegistrationAsync(Microsoft.AspNetCore.Http.HttpContext! context, string! dbscScheme) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext.DbscRegistrationHeaderCreatingContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions! options, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext.Principal.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext.Principal.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext.DbscRefreshedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions! options, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext.Principal.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext.Principal.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext.DbscRegisteredContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions! options, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext.Principal.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext.Principal.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.DbscScopeRule() -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Domain.get -> string!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Domain.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Path.get -> string!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Path.set -> void
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Type.get -> string!
+Microsoft.AspNetCore.Authentication.Dbsc.DbscScopeRule.Type.set -> void
+Microsoft.Extensions.DependencyInjection.DbscExtensions
+static Microsoft.Extensions.DependencyInjection.DbscExtensions.AddDbsc(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DbscExtensions.AddDbsc(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DbscExtensions.AddDbsc(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Dbsc.DbscOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+virtual Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.RegistrationHeaderCreating(Microsoft.AspNetCore.Authentication.Dbsc.DbscRegistrationHeaderCreatingContext! context) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.SessionRefreshed(Microsoft.AspNetCore.Authentication.Dbsc.DbscRefreshedContext! context) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Authentication.Dbsc.DbscEvents.SessionRegistered(Microsoft.AspNetCore.Authentication.Dbsc.DbscRegisteredContext! context) -> System.Threading.Tasks.Task!

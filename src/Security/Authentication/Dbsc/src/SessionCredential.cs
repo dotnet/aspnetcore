@@ -1,0 +1,38 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.AspNetCore.Authentication.Dbsc;
+
+/// <summary>
+/// Represents a credential in the DBSC session instructions. Corresponds to the "JSON Session
+/// Credential Format" defined in W3C Device Bound Session Credentials §9.9.
+/// </summary>
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+internal sealed class SessionCredential
+{
+    /// <summary>
+    /// Gets the credential type (always "cookie").
+    /// </summary>
+    [JsonInclude]
+    [JsonPropertyName("type")]
+    internal string Type { get; } = "cookie";
+
+    /// <summary>
+    /// Gets or sets the cookie name. This key is required and must be non-empty per W3C Device Bound
+    /// Session Credentials §9.9.
+    /// </summary>
+    [JsonInclude]
+    [JsonPropertyName("name")]
+    internal required string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cookie attributes string. Defaults to an empty string, matching the spec
+    /// default when the attributes are absent. See W3C Device Bound Session Credentials §9.9.
+    /// </summary>
+    [JsonInclude]
+    [JsonPropertyName("attributes")]
+    internal string Attributes { get; set; } = string.Empty;
+}
