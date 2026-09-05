@@ -65,13 +65,15 @@ public class MessageList : IComponent, IDisposable
             _agentContext = newAgentContext;
             _listContext.OnRegistrationsChanged = Render;
 
-            _turnAddedSub = _agentContext.RegisterOnTurnAdded(OnTurnAdded);
-            _statusChangedSub = _agentContext.RegisterOnStatusChanged(_ => Render());
+            _turnAddedSub = _agentContext.RegisterOnTurnAdded(
+                turn => DispatchToRenderer(() => OnTurnAdded(turn)));
+            _statusChangedSub = _agentContext.RegisterOnStatusChanged(
+                _ => DispatchToRenderer(Render));
 
             foreach (var turn in _agentContext.Turns)
             {
                 var renderer = new ConversationTurnRenderer(
-                    _agentContext, turn, _listContext, Render);
+                    _agentContext, turn, _listContext, Render, DispatchToRenderer);
                 _turnRenderers.Add(renderer);
             }
         }
@@ -86,9 +88,29 @@ public class MessageList : IComponent, IDisposable
     private void OnTurnAdded(ConversationTurn turn)
     {
         var renderer = new ConversationTurnRenderer(
-            _agentContext, turn, _listContext, Render);
+            _agentContext, turn, _listContext, Render, DispatchToRenderer);
         _turnRenderers.Add(renderer);
         Render();
+    }
+
+    // Conversation callbacks arrive on whichever thread the agent pipeline is running on: a UI
+    // action completes its result with RunContinuationsAsynchronously, so the streaming loop
+    // resumes off the renderer's synchronization context. Both the renderer-state mutation and
+    // the render itself have to run on the dispatcher, so the whole callback is marshalled
+    // rather than only the Render call.
+    private void DispatchToRenderer(Action action)
+    {
+        var dispatcher = _renderHandle.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            // Discarding the task is safe: it only represents the dispatch, and exceptions inside
+            // the work item are reported through the renderer.
+            _ = dispatcher.InvokeAsync(action);
+        }
     }
 
     private void Render()

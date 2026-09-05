@@ -64,13 +64,29 @@ public class MessageInput : IComponent, IDisposable
         // so re-registering on every parameter set would accumulate handlers and retain the
         // component on each parent re-render.
         _statusSub ??= _agentContext.RegisterOnStatusChanged(status =>
-        {
-            _isDisabled = status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
-            Render();
-        });
+            DispatchToRenderer(() =>
+            {
+                _isDisabled = status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+                Render();
+            }));
 
         Render();
         return Task.CompletedTask;
+    }
+
+    // Status changes are raised from the agent pipeline, which does not run on the renderer's
+    // synchronization context once a UI action has resumed it on the thread pool.
+    private void DispatchToRenderer(Action action)
+    {
+        var dispatcher = _renderHandle.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            _ = dispatcher.InvokeAsync(action);
+        }
     }
 
     private void Render()
