@@ -35,6 +35,23 @@ test("controller publishes an opaque, action-safe snapshot", async () => {
   assert.match(action.item.url, /^https:\/\/github\.com\/dotnet\/aspnetcore\/pull\/\d+$/);
 });
 
+test("controller renders digest lanes by the engine-provided rank", async () => {
+  const reversed = structuredClone(fixture);
+  reversed.queue.items.reverse();
+  const controller = createQueueController({
+    initialOptions: reversed.options,
+    load: async () => reversed,
+  });
+
+  await controller.initialize();
+  const reviewNow = controller.getState().snapshot.primary.reviewNow;
+
+  assert.deepEqual(
+    reviewNow.map((item) => item.digestRank),
+    reviewNow.map((_, index) => index + 1),
+  );
+});
+
 test("refresh coalesces callers and atomically replaces the snapshot", async () => {
   let calls = 0;
   let release;

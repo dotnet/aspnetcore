@@ -36,6 +36,7 @@ export const SECONDARY_BUCKETS = [
 export function normalizeOptions(input = {}, fallback = {}) {
   const source = input.source ?? fallback.source ?? "live";
   const preset = input.preset ?? fallback.preset ?? "blazor";
+  const excludeDigestAuthor = input.excludeDigestAuthor ?? fallback.excludeDigestAuthor;
 
   if (!["fixture", "live"].includes(source)) {
     throw queueError("invalid_source", "source must be fixture or live");
@@ -43,8 +44,21 @@ export function normalizeOptions(input = {}, fallback = {}) {
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(preset)) {
     throw queueError("invalid_preset", "preset must be a simple named preset");
   }
+  if (
+    excludeDigestAuthor !== undefined
+    && (
+      typeof excludeDigestAuthor !== "string"
+      || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(excludeDigestAuthor)
+    )
+  ) {
+    throw queueError("invalid_excluded_author", "excludeDigestAuthor must be a GitHub login");
+  }
 
-  return { source, preset };
+  return {
+    source,
+    preset,
+    ...(excludeDigestAuthor ? { excludeDigestAuthor } : {}),
+  };
 }
 
 export async function loadQueue(input = {}) {
@@ -61,6 +75,9 @@ export async function loadQueue(input = {}) {
 
   if (options.source === "fixture") {
     args.push("-InputPath", fixturePath);
+  }
+  if (options.excludeDigestAuthor) {
+    args.push("-ExcludeDigestAuthor", options.excludeDigestAuthor);
   }
 
   let stdout;
@@ -111,12 +128,18 @@ export function validateQueue(queue) {
   requireRecord(queue.display, "display");
   requireRecord(queue.display.buckets, "display.buckets");
   requireRecord(queue.display.reasonCodes, "display.reasonCodes");
+  if (queue.display.digestExclusionReasons !== undefined) {
+    requireRecord(queue.display.digestExclusionReasons, "display.digestExclusionReasons");
+  }
   for (const bucket of BUCKETS) {
     requireDisplayEntry(queue.display.buckets[bucket], `display.buckets.${bucket}`);
   }
   requireRecord(queue.filter, "filter");
   for (const field of ["name", "description", "coverage", "selection"]) {
     requireString(queue.filter[field], `filter.${field}`);
+  }
+  if (queue.filter.excludeDigestAuthors !== undefined) {
+    requireStringArray(queue.filter.excludeDigestAuthors, "filter.excludeDigestAuthors");
   }
 
   requireRecord(queue.query, "query");
@@ -160,6 +183,7 @@ export function validateQueue(queue) {
   for (const item of queue.items) {
     validateItem(queue, item);
   }
+  validateDigestRanks(queue.items);
 
   return queue;
 }
@@ -170,6 +194,11 @@ function validateItem(queue, item) {
   for (const field of ["title", "author", "bucket", "nextActor", "scopeMatch", "headSha"]) {
     requireString(item[field], `item.${field}`);
   }
+  for (const field of ["headBranch", "baseBranch", "mergeStateStatus"]) {
+    if (item[field] !== undefined) {
+      requireStringValue(item[field], `item.${field}`);
+    }
+  }
   if (!BUCKETS.includes(item.bucket)) {
     throw queueError("queue_item_invalid", `Unknown item bucket: ${item.bucket}`);
   }
@@ -179,8 +208,27 @@ function validateItem(queue, item) {
   requireNonNegativeInteger(item.ageDays, "item.ageDays");
   requireNonNegativeInteger(item.idleDays, "item.idleDays");
   requireNonNegativeInteger(item.changedFiles, "item.changedFiles");
+  if (item.stackDepth !== undefined) {
+    requireNonNegativeInteger(item.stackDepth, "item.stackDepth");
+  }
   requireStringArray(item.reasonCodes, "item.reasonCodes");
   requireStringArray(item.blockers, "item.blockers");
+  if (item.digestExclusionReasons !== undefined) {
+    requireStringArray(item.digestExclusionReasons, "item.digestExclusionReasons");
+  }
+  if (item.stackBlockedBy !== undefined) {
+    if (
+      !Array.isArray(item.stackBlockedBy)
+      || item.stackBlockedBy.some((number) => !Number.isInteger(number) || number < 1)
+    ) {
+      throw queueError("queue_item_invalid", "item.stackBlockedBy must contain positive integers");
+    }
+  }
+  if (item.shownInDigest && item.digestRank !== undefined) {
+    requirePositiveInteger(item.digestRank, "item.digestRank");
+  } else if (!item.shownInDigest && item.digestRank !== undefined && item.digestRank !== null) {
+    throw queueError("queue_item_invalid", "item.digestRank must be null outside the digest");
+  }
 
   for (const reasonCode of item.reasonCodes) {
     requireDisplayEntry(
@@ -188,10 +236,42 @@ function validateItem(queue, item) {
       `display.reasonCodes.${reasonCode}`,
     );
   }
+  for (const reasonCode of item.digestExclusionReasons ?? []) {
+    requireDisplayEntry(
+      queue.display.digestExclusionReasons?.[reasonCode],
+      `display.digestExclusionReasons.${reasonCode}`,
+    );
+  }
 
   const expectedUrl = `https://github.com/${queue.repository}/pull/${item.number}`;
   if (item.url !== expectedUrl) {
     throw queueError("queue_item_invalid", `item.url must match ${expectedUrl}`);
+  }
+
+}
+
+function validateDigestRanks(items) {
+  for (const bucket of ["ReviewNow", "NeedsRescue", "ReadyToMerge"]) {
+    const digestItems = items.filter((item) => item.bucket === bucket && item.shownInDigest);
+    const rankedItems = digestItems.filter((item) => item.digestRank !== undefined);
+    if (rankedItems.length === 0) {
+      continue;
+    }
+    if (rankedItems.length !== digestItems.length) {
+      throw queueError("queue_item_invalid", `${bucket} digest ranks must be present together`);
+    }
+
+    const ranks = rankedItems
+      .map((item) => item.digestRank)
+      .sort((left, right) => left - right);
+    for (let index = 0; index < ranks.length; index += 1) {
+      if (ranks[index] !== index + 1) {
+        throw queueError(
+          "queue_item_invalid",
+          `${bucket} digest ranks must be unique and contiguous`,
+        );
+      }
+    }
   }
 }
 
@@ -216,6 +296,12 @@ function requireRecord(value, path, code = "queue_shape_invalid") {
 function requireString(value, path, code = "queue_shape_invalid") {
   if (typeof value !== "string" || !value.trim()) {
     throw queueError(code, `${path} must be a non-empty string`);
+  }
+}
+
+function requireStringValue(value, path) {
+  if (typeof value !== "string") {
+    throw queueError("queue_shape_invalid", `${path} must be a string`);
   }
 }
 
