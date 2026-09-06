@@ -543,6 +543,148 @@ Assert-True ($mockEvidence.metrics.threadCandidates -eq 1) "Thread hydration mus
 Assert-True (($mockEvidence.candidates | Where-Object number -eq 301).personalCoverage.reviewThreads.state -eq "assessed") "The selected candidate must receive thread coverage."
 Assert-True (($mockEvidence.candidates | Where-Object number -eq 302).personalCoverage.reviewThreads.state -eq "unassessed") "The unselected candidate must remain unassessed."
 
+$hydratedEvidence = & $module {
+    function Invoke-GhJson {
+        param([string[]]$Arguments)
+        $query = [string]($Arguments | Where-Object { $_ -like "query=*" } | Select-Object -First 1)
+        if ($query -like "*reviewThreads*") {
+            $publishedThread = [pscustomobject]@{
+                id = "thread-303"
+                isResolved = $false
+                isOutdated = $false
+                comments = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                    nodes = @(
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "reviewer" }
+                            createdAt = "2026-09-06T10:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/303#discussion_r303"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "reviewer" }
+                                state = "COMMENTED"
+                                submittedAt = "2026-09-06T10:00:01Z"
+                                url = "https://github.com/dotnet/aspnetcore/pull/303#pullrequestreview-303"
+                            }
+                        }
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "community-author" }
+                            createdAt = "2026-09-06T11:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/303#discussion_r303-reply"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "community-author" }
+                                state = "COMMENTED"
+                                submittedAt = "2026-09-06T11:00:01Z"
+                                url = "https://github.com/dotnet/aspnetcore/pull/303#pullrequestreview-304"
+                            }
+                        }
+                    )
+                }
+            }
+            $pendingThread = [pscustomobject]@{
+                id = "thread-304"
+                isResolved = $false
+                isOutdated = $false
+                comments = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                    nodes = @(
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "reviewer" }
+                            createdAt = "2026-09-06T12:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/304#discussion_r304"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "reviewer" }
+                                state = "PENDING"
+                                submittedAt = $null
+                                url = "https://github.com/dotnet/aspnetcore/pull/304#pending-review"
+                            }
+                        }
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "community-author" }
+                            createdAt = "2026-09-06T13:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/304#discussion_r304-reply"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "community-author" }
+                                state = "PENDING"
+                                submittedAt = $null
+                                url = "https://github.com/dotnet/aspnetcore/pull/304#pending-reply"
+                            }
+                        }
+                    )
+                }
+            }
+            return [pscustomobject]@{
+                data = [pscustomobject]@{
+                    repository = [pscustomobject]@{
+                        pr303 = [pscustomobject]@{
+                            reviewThreads = [pscustomobject]@{
+                                pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                                nodes = @($publishedThread)
+                            }
+                        }
+                        pr304 = [pscustomobject]@{
+                            reviewThreads = [pscustomobject]@{
+                                pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                                nodes = @($pendingThread)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $repository = [ordered]@{}
+        foreach ($number in @(303, 304)) {
+            $repository["pr$number"] = [pscustomobject]@{
+                number = $number
+                title = "Hydrated personal PR $number"
+                url = "https://github.com/dotnet/aspnetcore/pull/$number"
+                author = [pscustomobject]@{ login = "author-$number" }
+                state = "OPEN"
+                isDraft = $false
+                updatedAt = "2026-09-06T12:00:00Z"
+                headRefOid = "head-$number"
+                reviewRequests = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasNextPage = $false }
+                    nodes = @()
+                }
+                reviews = [pscustomobject]@{ nodes = @() }
+            }
+        }
+        return [pscustomobject]@{
+            data = [pscustomobject]@{
+                repository = [pscustomobject]$repository
+            }
+        }
+    }
+
+    $candidates = @(
+        [pscustomobject]@{
+            number = 303
+            url = "https://github.com/dotnet/aspnetcore/pull/303"
+            personalDiscoveryKinds = @("reviewed-by")
+        }
+        [pscustomobject]@{
+            number = 304
+            url = "https://github.com/dotnet/aspnetcore/pull/304"
+            personalDiscoveryKinds = @("commenter")
+        }
+    )
+    $null = Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates $candidates `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+    [pscustomobject]@{
+        published = Get-PersonalInboxItem -Item ($candidates | Where-Object number -eq 303) -PersonalLogin "reviewer"
+        pending = Get-PersonalInboxItem -Item ($candidates | Where-Object number -eq 304) -PersonalLogin "reviewer"
+    }
+}
+Assert-True (($hydratedEvidence.published.signals.kind -contains "review-thread-reply") -and
+    (($hydratedEvidence.published.signals | Where-Object kind -eq "review-thread-reply").evidenceUrl -like "*discussion_r303-reply")) "A submitted COMMENTED review and later participant reply must produce a thread signal after production hydration."
+Assert-True (-not ($hydratedEvidence.pending.signals.kind -contains "review-thread-reply")) "PENDING reviews must not produce a thread signal after production hydration."
+
 foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)) {
     if (Test-Path -LiteralPath $temporaryPath) {
         Remove-Item -Force -LiteralPath $temporaryPath

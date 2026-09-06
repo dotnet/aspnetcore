@@ -1398,7 +1398,23 @@ pr$number`: pullRequest(number: $number) {
                                     authorLogin = [string](Get-PropertyValue -Object $commentAuthor -Name "login" -DefaultValue "")
                                     createdAt = Get-PropertyValue -Object $comment -Name "createdAt"
                                     url = [string](Get-PropertyValue -Object $comment -Name "url" -DefaultValue $candidate.url)
-                                    publicationState = [string](Get-PropertyValue `
+                                    publicationState = if (
+                                        [string]::Equals(
+                                            [string](Get-PropertyValue `
+                                                -Object (Get-PropertyValue -Object $comment -Name "pullRequestReview") `
+                                                -Name "state" `
+                                                -DefaultValue "PENDING"),
+                                            "PENDING",
+                                            [System.StringComparison]::OrdinalIgnoreCase) -or
+                                        $null -eq (Get-PropertyValue `
+                                            -Object (Get-PropertyValue -Object $comment -Name "pullRequestReview") `
+                                            -Name "submittedAt")) {
+                                        "PENDING"
+                                    }
+                                    else {
+                                        "PUBLISHED"
+                                    }
+                                    reviewState = [string](Get-PropertyValue `
                                         -Object (Get-PropertyValue -Object $comment -Name "pullRequestReview") `
                                         -Name "state" `
                                         -DefaultValue "UNKNOWN")
