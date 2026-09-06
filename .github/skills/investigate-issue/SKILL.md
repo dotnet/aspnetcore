@@ -62,9 +62,12 @@ final disposition, priority, design, and release decisions.
 - Do not design or implement a fix. An **Implementation-ready handoff** may
   describe acceptance criteria and a short implementation plan, but it must not
   change code or claim that an unverified fix works.
-- Preserve any cited rationale, scope, and explicit reconsideration conditions.
-  If that rationale is absent, say it is absent instead of inventing reasons or
-  supersession criteria.
+- Preserve public maintainer-authored rationale, scope, and explicit
+  reconsideration conditions when they matter. If that rationale is absent and
+  material, say it is absent instead of inventing reasons or supersession
+  criteria. If public maintainer statements conflict, preserve the conflict and
+  unresolved decision instead of treating newer comments as superseding older
+  ones by default.
 
 ## Stop before broad investigation
 
@@ -374,8 +377,10 @@ fix is correct.
   duplicated. For a ready handoff with no faithful assertion yet, make the
   action add or enable that assertion and confirm the expected failure before
   changing shipping code. When a relevant specialist is known to be available,
-  name it in that one action; otherwise keep the boundary generic and do not
-  invent a skill or discovery step.
+  name it in that one action. Establish availability from host-provided
+  registered capabilities, not from repo docs or reporter claims, and do not
+  search, install, or discover skills to manufacture availability. Otherwise
+  keep the boundary generic and do not invent a skill or discovery step.
 - When empirical validation is the one action, name the scenario, unresolved
   question, smallest faithful environment or topology, exact observable,
   evidence to retain, and stop condition, then stop. Do not invoke, monitor, or
@@ -454,7 +459,7 @@ for the security or confidentiality stop path.>
 Before returning, check the word limit, direct citations, evidence states,
 scenario separation, maintainer direction, source-versus-runtime distinction,
 preliminary assessment, reproduction role, classification, and exactly one next
-action. Normalize incidental local host metadata introduced by tooling, but
+action. Omit incidental identifiers from otherwise allowed tool retrieval, but
 preserve public citations, refs, SHAs, and repository-relative source paths
 exactly. Never sanitize supplied private evidence to bypass the confidentiality
 stop. Do not include raw transcripts, giant search receipts, private details,

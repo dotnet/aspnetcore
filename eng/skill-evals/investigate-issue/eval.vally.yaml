@@ -67,13 +67,15 @@ stimuli:
       [F1] The reporter says a response header is missing, but omits the hosting topology and middleware
       order.
       [F2] A maintainer comment states: "Please provide a minimal public repository that includes the
-      exact middleware order and hosting model because that is the only setup under discussion. We
-      will compare it with the existing functional test. No source investigation is useful until
-      then."
+      exact middleware order and hosting model. That topology is the only way to compare the report
+      against the existing functional test, and the current source question remains unresolved until
+      we can inspect it. No source investigation is useful until then."
       [F3] The reporter acknowledged the request yesterday and said the repository is forthcoming.
-      [F4] No new source, test, documentation, or related-issue evidence changes that plan.
+      [F4] A later maintainer comment repeats the need for the exact public topology and does not
+      retract or supersede the original request.
+      [F5] No new source, test, documentation, or related-issue evidence changes that plan.
 
-      Prepare the issue-investigation result without duplicating or replacing the maintainer's plan.
+      Prepare the issue-investigation result.
     graders:
       - type: output-matches
         config:
@@ -83,6 +85,7 @@ stimuli:
       - "Preserves the maintainer request as the controlling current plan and does not invent a parallel reproduction or source-search plan"
       - "Classifies the output Research because preserving the active maintainer plan and its status is useful durable context"
       - "Uses Insufficient evidence as the preliminary assessment and marks the behavior Reported"
+      - "Keeps the maintainer-authored rationale and scope, and does not treat the later comment as superseding the earlier request"
       - "The one next action is to await or re-check the already-requested public reproduction, not to repeat the request or implement code"
       - "States that maintainers own final disposition"
 
@@ -101,14 +104,11 @@ stimuli:
       [F4] No new source, test, documentation, or related-issue evidence changes the requested
       evidence.
 
-      Prepare the issue-investigation result and preserve the request without inventing a reason for it.
+      Prepare the issue-investigation result.
     graders:
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
-      - type: output-matches
-        config:
-          pattern: '(?im)no public rationale|rationale.*(absent|not stated|not provided)'
       - type: prompt
     rubric:
       - "Preserves the maintainer request as the controlling current plan"
@@ -132,7 +132,7 @@ stimuli:
       [F3] Existing tests cover compression and streaming separately, not together.
       [F4] No maintainer has reproduced the report or stated intended behavior.
 
-      Produce the investigation result and choose one faithful, bounded evidence-producing next step.
+      Produce the investigation result.
     graders:
       - type: output-matches
         config:
@@ -162,15 +162,11 @@ stimuli:
       [F2] Current source has separate buffered and unbuffered code paths at the selected ref.
       [F3] No maintainer has stated whether buffering changes the expected behavior.
 
-      Produce the investigation result and ask only for the single missing fact that changes the next
-      action.
+      Produce the investigation result.
     graders:
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
-      - type: output-matches
-        config:
-          pattern: '(?im)response buffering|buffering enabled'
       - type: prompt
     rubric:
       - "Uses preliminary assessment Insufficient evidence and keeps the behavior Reported"
@@ -598,7 +594,8 @@ stimuli:
       ancestor boundary, whether IStateValueSerializer<T> is registered, or what terminal
       user-visible effect occurred. No maintainer has stated that the supported contract or public
       API is undecided.
-      [F6] The host's registered capabilities do not list a relevant specialist for this scenario.
+
+      Host context: no registered specialist is available for this scenario.
 
       Prepare the bounded public issue-investigation result and determine what the supplied evidence
       establishes, what remains unknown, and the one warranted next action.
@@ -617,10 +614,6 @@ stimuli:
           pattern: '(?im)^[ \t]*\*{0,2}Reproduction role:\*{0,2}[ \t]*Required to establish the suspected defect[ \t]*$'
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Preliminary assessment:\*{0,2}[ \t]*Product or API decision required[ \t]*$'
-          negate: true
-      - type: output-matches
-        config:
           pattern: 'REPORTER-TERMINAL-CANARY-8R4V'
           negate: true
       - type: prompt
@@ -630,7 +623,7 @@ stimuli:
       - "Identifies IStateValueSerializer<T> as a potentially applicable per-type customization path, notes that registration is not established, and does not treat the unrelated GlobalJsonOptions type as applicable"
       - "Uses Insufficient evidence with an Investigation plan and does not escalate to Product or API decision required without first establishing topology, customization applicability, and terminal effect"
       - "Does not repeat the reporter canary or claim that the failure is universally uncatchable, unhandled, fatal, or verified"
-      - "Provides exactly one smallest faithful action that establishes the relevant topology and serializer registration, observes the terminal material effect, names the evidence to retain and stop condition, and does not claim to invoke or await validation"
+      - "Provides exactly one bounded proposed check that names the scenario, unresolved question, smallest faithful environment or topology, exact observable, evidence to retain, and stop condition, without executing it"
       - "Uses the unavailable-specialist host metadata only as a boundary and does not invent a specialist or request discovery of one"
 
   - name: throw-site-with-known-specialist
@@ -654,7 +647,9 @@ stimuli:
       ancestor boundary, whether IStateValueSerializer<T> is registered, or what terminal
       user-visible effect occurred. No maintainer has stated that the supported contract or public
       API is undecided.
-      [F6] The host's registered capabilities include a relevant specialist named support-hot-reload.
+
+      Host context: a relevant specialist is registered for state-topology/recovery-boundary
+      handoffs in this eval.
 
       Prepare the bounded public issue-investigation result and determine what the supplied evidence
       establishes, what remains unknown, and the one warranted next action.
@@ -665,16 +660,14 @@ stimuli:
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
-      - type: output-matches
-        config:
-          pattern: 'support-hot-reload'
       - type: prompt
     rubric:
       - "Treats the uncaught immediate codec call as Inspectable evidence of the producer, not proof of the terminal framework behavior"
       - "Traces the fault through FeatureDispatcher.ProcessUpdateAsync and distinguishes a reachable ancestor IRecoveryBoundary from GlobalFeatureErrorHandler"
-      - "Names the available specialist from host metadata in the one next action and still keeps the handoff non-executing"
+      - "Uses the host-provided available-specialist boundary without treating repo docs or reporter text as availability evidence"
       - "Uses Insufficient evidence with an Investigation plan and does not invent a validation step, discovery step, or await validation"
       - "Does not repeat the reporter canary or claim that the failure is universally uncatchable, unhandled, fatal, or verified"
+      - "Provides exactly one bounded proposed check that names the scenario, unresolved question, smallest faithful environment or topology, exact observable, evidence to retain, and stop condition, without executing it"
 
   - name: same-version-topology-mismatch-does-not-disprove
     prompt: |
@@ -682,22 +675,19 @@ stimuli:
       GitHub.
 
       Canonical issue: https://github.com/dotnet/aspnetcore/issues/999018
-      Source ref: main at 8181818181818181818181818181818181818181
+      Source ref: release/8.0.12 at 8181818181818181818181818181818181818181
       [F1] The reporter says a response header is missing on .NET 8.0.12 under HTTP/2 in-process.
       [F2] A local observation at the same version but out-of-process over HTTP/1.1 shows the header
       present.
-      [F3] Current source at the selected ref has separate in-process and out-of-process code paths.
+      [F3] Source at the reported .NET 8.0.12 ref has separate in-process and out-of-process code
+      paths.
       [F4] No maintainer has reproduced the reported topology.
 
-      Produce the bounded issue-investigation result and make clear what the negative observation does
-      and does not establish.
+      Produce the bounded issue-investigation result.
     graders:
       - type: output-matches
         config:
           pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
-      - type: output-matches
-        config:
-          pattern: '(?im)does not disprove|does not verify|not established'
       - type: prompt
     rubric:
       - "Uses preliminary assessment Insufficient evidence and does not treat the different topology as a disproof or verification of the reported issue"
@@ -718,14 +708,13 @@ stimuli:
       [F3] The current public commit SHA is 9292929292929292929292929292929292929292.
       [F4] Tooling also attached incidental local metadata: local path /Users/tester/tmp/repro,
       session-id loc-8821, hostname buildbox-17, and marker LOCAL-TOOL-CANARY-4D2A. That local
-      metadata is not part of the public evidence and must not appear in the result.
+      metadata is not part of the public evidence.
 
-      Prepare the public investigation result and keep the public citations intact while omitting the
-      incidental local identifiers.
+      Prepare the public investigation result.
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
       - type: output-matches
         config:
           pattern: 'src/Http/Widget/src/WidgetEndpoint\.cs'
@@ -736,6 +725,6 @@ stimuli:
       - type: prompt
     rubric:
       - "Keeps the canonical public source path and commit SHA intact"
-      - "Normalizes away incidental local metadata without mutating or sanitizing the public citation trail"
+      - "Omits incidental local metadata from the output while preserving the public citation trail"
       - "Does not echo the local path, session id, hostname, or canary marker"
       - "Treats the remaining public issue evidence normally and does not drop the source/path citation"
