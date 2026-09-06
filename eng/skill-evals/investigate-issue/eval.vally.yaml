@@ -79,7 +79,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
       - type: prompt
     rubric:
       - "Preserves the maintainer request as the controlling current plan and does not invent a parallel reproduction or source-search plan"
@@ -108,7 +108,7 @@ stimuli:
     graders:
       - type: output-matches
         config:
-          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
       - type: prompt
     rubric:
       - "Preserves the maintainer request as the controlling current plan"
