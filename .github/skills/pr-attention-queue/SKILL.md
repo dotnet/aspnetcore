@@ -64,6 +64,43 @@ later non-author feedback. A bounded query that is incomplete is surfaced for ve
 than being treated as clear. Candidates outside the configured assessment limit cannot enter the
 unattended digest and are reported through the queue warning and `discussion-not-assessed`.
 
+The same queue also includes an additive community inbox that operates on the full scoped inventory,
+not just the review digest. The inbox exposes:
+
+- a seven-day recent community window with a visible date range and newest contribution;
+- community provenance only from configured repository labels, while unlabeled in-scope PRs remain
+  visible under `Unclassified` rather than being silently treated as internal or community work;
+- full community and unclassified inventories beyond preview caps so older, blocked, draft, or
+  waiting PRs remain discoverable with their actual state;
+- evidence metadata that records whether a non-author human response was seen, whether no response
+  was established with complete evidence, or whether the bounded evidence remains unknown because it
+  is incomplete, truncated, or contains a current unresolved inline thread without captured comment
+  text; and
+- local timing metadata that distinguishes query/classification/discussion/inbox collection cost
+  without pretending the result is a complete discussion crawl.
+
+A recorded response does not mean the discussion is resolved. `no-response` is only valid when the
+bounded evidence is complete and there were zero top-level human responses. If the evidence is
+incomplete, truncated, or requires human interpretation because of unresolved inline discussion, the
+result remains `unknown` rather than `no-response`.
+
+The JSON output also includes an optional repository-wide **personal inbox** when an authenticated
+identity is available. The personal view is additive and does not replace the resolved general
+scope. It uses bounded GitHub search and notification evidence to surface:
+
+- current direct review requests for the authenticated user;
+- unread repository notification activity associated with the user's participation or mention;
+- a current head that differs from the commit attached to the user's latest submitted review; and
+- a published reply by another participant after the user's latest participation in a review thread.
+
+Multiple signals produce one personal card. The personal scope is always `all-repo`, while the
+general queue may remain Blazor-scoped. Team-only requests, local-only investigations, and plain
+comments without a reviewed commit do not create a fabricated review baseline. Coverage is explicit
+per discovery, notification, own-review, and review-thread source. Missing or deferred evidence is
+`unavailable`, `partial`, or `unassessed`, never an invented empty result. Use `-PersonalLogin` for
+fixture-driven tests or a deterministic local probe; live runs resolve the authenticated `gh` user.
+The workflow remains read-only and never marks notifications read or writes GitHub state.
+
 ## Read-only boundary
 
 Keep the entire workflow read-only:

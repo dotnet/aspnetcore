@@ -33,6 +33,8 @@ param(
     [string[]]$ExcludeLabel = @(),
     [string[]]$Author = @(),
     [string[]]$ExcludeDigestAuthor = @(),
+    [string]$PersonalLogin,
+    [switch]$DisablePersonalInbox,
     [switch]$AllRepo,
     [ValidateSet("Markdown", "Json")]
     [string]$OutputFormat = "Markdown",
@@ -61,6 +63,8 @@ Invoke-PRAttentionQueue `
     -ExcludeLabel $ExcludeLabel `
     -Author $Author `
     -ExcludeDigestAuthor $ExcludeDigestAuthor `
+    -PersonalLogin $PersonalLogin `
+    -DisablePersonalInbox:$DisablePersonalInbox `
     -AllRepo:$AllRepo `
     -OutputFormat $OutputFormat `
     -MaxReviewNow $MaxReviewNow `

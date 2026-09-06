@@ -81,6 +81,50 @@ function Invoke-GhJson {
     throw "GitHub CLI failed after $MaxAttempts attempts."
 }
 
+function Invoke-GhText {
+    param(
+        [string[]]$Arguments,
+        [ValidateRange(1, 5)]
+        [int]$MaxAttempts = 3
+    )
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = "gh"
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+
+        foreach ($argument in $Arguments) {
+            $startInfo.ArgumentList.Add($argument)
+        }
+
+        $process = [System.Diagnostics.Process]::new()
+        $process.StartInfo = $startInfo
+        if (-not $process.Start()) {
+            throw "Failed to start the GitHub CLI."
+        }
+
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+
+        if ($process.ExitCode -eq 0) {
+            return $stdout.Trim()
+        }
+
+        $message = if ([string]::IsNullOrWhiteSpace($stderr)) { $stdout } else { $stderr }
+        $isTransient = $message -match "HTTP 50[234]|Bad Gateway|timeout|timed out|stream error|dial tcp|connection abort|connection reset"
+        if (-not $isTransient -or $attempt -eq $MaxAttempts) {
+            throw "GitHub CLI failed: $($message.Trim())"
+        }
+
+        Start-Sleep -Seconds ([Math]::Pow(2, $attempt))
+    }
+
+    throw "GitHub CLI failed after $MaxAttempts attempts."
+}
+
 function Test-AnyWildcardMatch {
     param(
         [string[]]$Values,
@@ -487,13 +531,57 @@ function Get-DiscussionAssessment {
     }
 }
 
+function ConvertTo-UtcDateTime {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    if ($Value -is [datetime]) {
+        $dateTime = [datetime]$Value
+
+        switch ($dateTime.Kind) {
+            ([System.DateTimeKind]::Utc) { return $dateTime }
+            ([System.DateTimeKind]::Local) { return $dateTime.ToUniversalTime() }
+            default { return [System.DateTime]::SpecifyKind($dateTime, [System.DateTimeKind]::Utc) }
+        }
+    }
+
+    $stringValue = [string]$Value
+    if ([string]::IsNullOrWhiteSpace($stringValue)) {
+        return $null
+    }
+
+    try {
+        return [System.DateTimeOffset]::Parse($stringValue).UtcDateTime
+    }
+    catch {
+        try {
+            return [datetime]::Parse(
+                $stringValue,
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+        }
+        catch {
+            return $null
+        }
+    }
+}
+
 function Get-DaysSince {
     param(
         [datetime]$From,
         [datetime]$To
     )
 
-    return [Math]::Max(0, [Math]::Floor(($To.ToUniversalTime() - $From.ToUniversalTime()).TotalDays))
+    $fromUtc = ConvertTo-UtcDateTime -Value $From
+    $toUtc = ConvertTo-UtcDateTime -Value $To
+    if ($null -eq $fromUtc -or $null -eq $toUtc) {
+        return 0
+    }
+
+    return [Math]::Max(0, [Math]::Floor(($toUtc - $fromUtc).TotalDays))
 }
 
 function Get-FullFilePaths {
@@ -519,6 +607,650 @@ function Get-FullFilePaths {
             }
         }
     )
+}
+
+function Get-PersonalCoverage {
+    param(
+        [object]$PullRequest,
+        [string]$SourceName
+    )
+
+    $coverage = Get-PropertyValue -Object (Get-PropertyValue -Object $PullRequest -Name "personalCoverage") -Name $SourceName
+    if ($coverage) {
+        return [pscustomobject]@{
+            state = [string](Get-PropertyValue -Object $coverage -Name "state" -DefaultValue "assessed")
+            detail = [string](Get-PropertyValue -Object $coverage -Name "detail" -DefaultValue "")
+        }
+    }
+
+    if ($null -ne $PullRequest.PSObject.Properties["personalCoverage"]) {
+        return [pscustomobject]@{
+            state = "assessed"
+            detail = ""
+        }
+    }
+
+    return [pscustomobject]@{
+        state = "unavailable"
+        detail = "Personal evidence was not collected."
+    }
+}
+
+function Get-PersonalInboxItem {
+    param(
+        [object]$Item,
+        [string]$PersonalLogin
+    )
+
+    $reviewRequests = @(
+        ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalReviewRequests")
+    )
+    $directRequests = @(
+        $reviewRequests |
+            Where-Object {
+                [string]::Equals(
+                    [string](Get-PropertyValue -Object $_ -Name "login" -DefaultValue ""),
+                    $PersonalLogin,
+                    [System.StringComparison]::OrdinalIgnoreCase)
+            }
+    )
+    $reviews = @(
+        ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalReviews")
+    ) | Sort-Object {
+        ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "submittedAt")
+    } -Descending
+    $latestReview = if ($reviews.Count -gt 0) { $reviews[0] } else { $null }
+    $latestReviewCommit = [string](Get-PropertyValue -Object $latestReview -Name "commitOid" -DefaultValue "")
+    $headSha = [string](Get-PropertyValue -Object $Item -Name "headRefOid" -DefaultValue (Get-PropertyValue -Object $Item -Name "headSha" -DefaultValue ""))
+    $changedSinceReviewStatus = if ($null -eq $latestReview) {
+        "unassessed"
+    }
+    elseif ([string]::IsNullOrWhiteSpace($latestReviewCommit) -or [string]::IsNullOrWhiteSpace($headSha)) {
+        "unknown"
+    }
+    elseif ([string]::Equals($latestReviewCommit, $headSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+        "no"
+    }
+    else {
+        "yes"
+    }
+
+    $notifications = @(
+        ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalNotifications")
+    ) | Where-Object {
+        [bool](Get-PropertyValue -Object $_ -Name "unread" -DefaultValue $false)
+    }
+    $latestNotification = $notifications |
+        Sort-Object { ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "updatedAt") } -Descending |
+        Select-Object -First 1
+
+    $threadReplies = [System.Collections.Generic.List[object]]::new()
+    foreach ($thread in ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalReviewThreads")) {
+        $participation = @(
+            ConvertTo-Array (Get-PropertyValue -Object $thread -Name "participation")
+        ) | Sort-Object {
+            ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "createdAt")
+        } -Descending
+        $latestOwnParticipation = $participation |
+            Where-Object {
+                [string]::Equals(
+                    [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue ""),
+                    $PersonalLogin,
+                    [System.StringComparison]::OrdinalIgnoreCase)
+            } |
+            Select-Object -First 1
+        if ($null -eq $latestOwnParticipation) {
+            continue
+        }
+
+        $reply = $participation |
+            Where-Object {
+                -not [string]::IsNullOrWhiteSpace(
+                    [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue "")
+                ) -and
+                $null -ne (ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "createdAt")) -and
+                -not [string]::Equals(
+                    [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue ""),
+                    $PersonalLogin,
+                    [System.StringComparison]::OrdinalIgnoreCase) -and
+                (ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "createdAt")) -gt
+                (ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $latestOwnParticipation -Name "createdAt"))
+            } |
+            Select-Object -First 1
+        if ($reply) {
+            $threadReplies.Add([pscustomobject]@{
+                threadId = [string](Get-PropertyValue -Object $thread -Name "threadId" -DefaultValue "")
+                authorLogin = [string](Get-PropertyValue -Object $reply -Name "authorLogin" -DefaultValue "")
+                createdAt = Get-PropertyValue -Object $reply -Name "createdAt"
+                url = [string](Get-PropertyValue -Object $reply -Name "url" -DefaultValue $Item.url)
+                isResolved = [bool](Get-PropertyValue -Object $thread -Name "isResolved" -DefaultValue $false)
+            })
+        }
+    }
+
+    $signals = [System.Collections.Generic.List[object]]::new()
+    if ($directRequests.Count -gt 0) {
+        $request = $directRequests |
+            Sort-Object { ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "requestedAt") } -Descending |
+            Select-Object -First 1
+        $signals.Add([pscustomobject]@{
+            kind = "direct-request"
+            eventAt = Get-PropertyValue -Object $request -Name "requestedAt"
+            evidenceUrl = [string](Get-PropertyValue -Object $request -Name "url" -DefaultValue $Item.url)
+            detail = "GitHub currently requests your review."
+        })
+    }
+    if ($latestNotification) {
+        $signals.Add([pscustomobject]@{
+            kind = "follow-up-notification"
+            eventAt = Get-PropertyValue -Object $latestNotification -Name "updatedAt"
+            evidenceUrl = [string](Get-PropertyValue -Object $latestNotification -Name "url" -DefaultValue $Item.url)
+            detail = "GitHub has unread activity associated with your participation or mention."
+            unread = $true
+            reason = [string](Get-PropertyValue -Object $latestNotification -Name "reason" -DefaultValue "")
+        })
+    }
+    if ($changedSinceReviewStatus -eq "yes") {
+        $signals.Add([pscustomobject]@{
+            kind = "changed-since-own-review"
+            eventAt = $null
+            evidenceUrl = [string](Get-PropertyValue -Object $latestReview -Name "url" -DefaultValue $Item.url)
+            detail = "The current head differs from the commit attached to your latest submitted review."
+            baselineCommit = $latestReviewCommit
+            currentHead = $headSha
+        })
+    }
+    foreach ($reply in $threadReplies) {
+        $signals.Add([pscustomobject]@{
+            kind = "review-thread-reply"
+            eventAt = $reply.createdAt
+            evidenceUrl = $reply.url
+            detail = "A participant replied after your latest participation in a review thread."
+            responder = $reply.authorLogin
+            threadId = $reply.threadId
+            resolved = $reply.isResolved
+        })
+    }
+
+    $discoveryKinds = @(
+        ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalDiscoveryKinds")
+    )
+    $participated = $reviews.Count -gt 0 -or
+        @($Item.personalComments).Count -gt 0 -or
+        @($Item.personalMentions).Count -gt 0 -or
+        "reviewed-by" -in $discoveryKinds
+    $signalOrder = @{
+        "direct-request" = 0
+        "follow-up-notification" = 1
+        "changed-since-own-review" = 2
+        "review-thread-reply" = 3
+    }
+    $orderedSignals = @(
+        $signals |
+            Sort-Object `
+                @{ Expression = { $signalOrder[$_.kind] }; Ascending = $true },
+                @{ Expression = { ConvertTo-UtcDateTime -Value $_.eventAt }; Descending = $true },
+                @{ Expression = { [int]$Item.number }; Ascending = $true }
+    )
+
+    $coverage = [ordered]@{
+        discovery = Get-PersonalCoverage -PullRequest $Item -SourceName "discovery"
+        notifications = Get-PersonalCoverage -PullRequest $Item -SourceName "notifications"
+        ownReview = Get-PersonalCoverage -PullRequest $Item -SourceName "ownReview"
+        reviewThreads = Get-PersonalCoverage -PullRequest $Item -SourceName "reviewThreads"
+    }
+
+    return [pscustomobject]@{
+        number = [int]$Item.number
+        title = [string]$Item.title
+        url = [string]$Item.url
+        author = [string]$Item.author
+        bucket = [string](Get-PropertyValue -Object $Item -Name "bucket" -DefaultValue "Unknown")
+        nextActor = [string](Get-PropertyValue -Object $Item -Name "nextActor" -DefaultValue "unknown")
+        blockers = @($Item.blockers)
+        headSha = $headSha
+        latestOwnReview = if ($latestReview) {
+            [pscustomobject]@{
+                state = [string](Get-PropertyValue -Object $latestReview -Name "state" -DefaultValue "")
+                submittedAt = Get-PropertyValue -Object $latestReview -Name "submittedAt"
+                commitOid = $latestReviewCommit
+                url = [string](Get-PropertyValue -Object $latestReview -Name "url" -DefaultValue $Item.url)
+            }
+        }
+        else { $null }
+        changedSinceOwnReview = [pscustomobject]@{
+            status = $changedSinceReviewStatus
+            baselineCommit = $latestReviewCommit
+            currentHead = $headSha
+        }
+        teamReviewRequests = @(
+            ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalTeamReviewRequests")
+        )
+        discoveryKinds = @(
+            ConvertTo-Array (Get-PropertyValue -Object $Item -Name "personalDiscoveryKinds")
+        )
+        participatedOrMentioned = $participated
+        directRequest = $directRequests.Count -gt 0
+        signals = $orderedSignals
+        coverage = [pscustomobject]$coverage
+        digestVisible = [bool](Get-PropertyValue -Object $Item -Name "shownInDigest" -DefaultValue $false)
+        digestRank = Get-PropertyValue -Object $Item -Name "digestRank"
+        generalScope = [string](Get-PropertyValue -Object $Item -Name "scopeMatch" -DefaultValue "personal-only")
+        generalDigestExclusionReasons = @($Item.digestExclusionReasons)
+    }
+}
+
+function Get-PersonalSearchCandidates {
+    param(
+        [string]$RepositoryName,
+        [string]$PersonalLogin
+    )
+
+    $queries = @(
+        "repo:$RepositoryName is:pr is:open reviewed-by:$PersonalLogin",
+        "repo:$RepositoryName is:pr is:open review-requested:$PersonalLogin",
+        "repo:$RepositoryName is:pr is:open commenter:$PersonalLogin",
+        "repo:$RepositoryName is:pr is:open mentions:$PersonalLogin"
+    )
+    $queryKinds = @(
+        "reviewed-by",
+        "review-requested",
+        "commenter",
+        "mentions"
+    )
+    $results = @{}
+    $incomplete = $false
+    for ($queryIndex = 0; $queryIndex -lt $queries.Count; $queryIndex++) {
+        $query = $queries[$queryIndex]
+        $queryKind = $queryKinds[$queryIndex]
+        for ($page = 1; $page -le 10; $page++) {
+            $encodedQuery = [Uri]::EscapeDataString($query)
+            $response = Invoke-GhJson -Arguments @(
+                "api",
+                "search/issues?q=$encodedQuery&per_page=100&page=$page"
+            )
+            $incomplete = $incomplete -or [bool](Get-PropertyValue -Object $response -Name "incomplete_results" -DefaultValue $false)
+            $pageItems = @(ConvertTo-Array (Get-PropertyValue -Object $response -Name "items"))
+            foreach ($item in $pageItems) {
+                $number = [int](Get-PropertyValue -Object $item -Name "number")
+                $existing = if ($results.ContainsKey($number)) { $results[$number] } else { $null }
+                if ($existing) {
+                    $kinds = @(
+                        ConvertTo-Array (Get-PropertyValue -Object $existing -Name "personalDiscoveryKinds")
+                    )
+                    if ($queryKind -notin $kinds) {
+                        $existing.personalDiscoveryKinds = @($kinds + $queryKind)
+                    }
+                    continue
+                }
+
+                $item | Add-Member `
+                    -NotePropertyName "personalDiscoveryKinds" `
+                    -NotePropertyValue @($queryKind) `
+                    -Force
+                $results[$number] = $item
+            }
+
+            $totalCount = [int](Get-PropertyValue -Object $response -Name "total_count" -DefaultValue $pageItems.Count)
+            if ($pageItems.Count -eq 0 -or $page * 100 -ge $totalCount) {
+                break
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        items = @($results.Values | Sort-Object number)
+        coverage = if ($incomplete) { "partial" } else { "assessed" }
+    }
+}
+
+function Get-RepositoryNotifications {
+    param([string]$RepositoryName)
+
+    $allNotifications = [System.Collections.Generic.List[object]]::new()
+    $coverageState = "assessed"
+    $coverageDetail = "Repository notification access succeeded for the bounded feed."
+    try {
+        for ($page = 1; $page -le 10; $page++) {
+            $notifications = Invoke-GhJson -Arguments @(
+                "api",
+                "repos/$RepositoryName/notifications?all=true&per_page=100&page=$page"
+            )
+            foreach ($notification in ConvertTo-Array $notifications) {
+                $allNotifications.Add($notification)
+            }
+
+            if (@($notifications).Count -lt 100) {
+                break
+            }
+
+            if ($page -eq 10) {
+                $coverageState = "partial"
+                $coverageDetail = "Repository notification access was capped at ten pages of 100 entries."
+            }
+        }
+    }
+    catch {
+        $coverageState = "unavailable"
+        $coverageDetail = "Repository notification access failed: $($_.Exception.Message)"
+    }
+
+    return [pscustomobject]@{
+        items = @($allNotifications)
+        coverage = [pscustomobject]@{
+            state = $coverageState
+            detail = $coverageDetail
+        }
+    }
+}
+
+function Add-PersonalReviewThreadDetails {
+    param(
+        [string]$RepositoryName,
+        [object[]]$Candidates
+    )
+
+    if ($Candidates.Count -eq 0) {
+        return
+    }
+
+    $repositoryParts = $RepositoryName.Split("/")
+    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
+        $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
+        $aliases = @(
+            foreach ($candidate in $chunk) {
+                $number = [int]$candidate.number
+                @"
+pr$number`: pullRequest(number: $number) {
+  reviewThreads(last: 50) {
+    pageInfo { hasPreviousPage }
+    nodes {
+      id
+      isResolved
+      isOutdated
+      comments(last: 20) {
+        pageInfo { hasPreviousPage }
+        nodes {
+          author { login }
+          createdAt
+          url
+        }
+      }
+    }
+  }
+}
+"@
+            }
+        )
+        $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
+            ($aliases -join [Environment]::NewLine) +
+            '}}'
+        $result = Invoke-GhJson -Arguments @(
+            "api",
+            "graphql",
+            "-f",
+            "query=$query",
+            "-F",
+            "owner=$($repositoryParts[0])",
+            "-F",
+            "name=$($repositoryParts[1])"
+        )
+
+        foreach ($candidate in $chunk) {
+            $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$([int]$candidate.number)"
+            $threads = @(
+                ConvertTo-Array (Get-PropertyValue `
+                    -Object (Get-PropertyValue -Object $detail -Name "reviewThreads") `
+                    -Name "nodes")
+            )
+            $threadConnection = Get-PropertyValue -Object $detail -Name "reviewThreads"
+            $candidate | Add-Member -NotePropertyName "personalReviewThreads" -NotePropertyValue @(
+                foreach ($thread in $threads) {
+                    $commentConnection = Get-PropertyValue -Object $thread -Name "comments"
+                    [pscustomobject]@{
+                        threadId = [string](Get-PropertyValue -Object $thread -Name "id" -DefaultValue "")
+                        isResolved = [bool](Get-PropertyValue -Object $thread -Name "isResolved" -DefaultValue $false)
+                        isOutdated = [bool](Get-PropertyValue -Object $thread -Name "isOutdated" -DefaultValue $false)
+                        commentsPartial = [bool](Get-PropertyValue -Object (Get-PropertyValue -Object $commentConnection -Name "pageInfo") -Name "hasPreviousPage" -DefaultValue $false)
+                        participation = @(
+                            foreach ($comment in ConvertTo-Array (Get-PropertyValue `
+                                -Object (Get-PropertyValue -Object $thread -Name "comments") `
+                                -Name "nodes")) {
+                                $commentAuthor = Get-PropertyValue -Object $comment -Name "author"
+                                [pscustomobject]@{
+                                    authorLogin = [string](Get-PropertyValue -Object $commentAuthor -Name "login" -DefaultValue "")
+                                    createdAt = Get-PropertyValue -Object $comment -Name "createdAt"
+                                    url = [string](Get-PropertyValue -Object $comment -Name "url" -DefaultValue $candidate.url)
+                                }
+                            }
+                        )
+                    }
+                }
+            ) -Force
+            $candidate | Add-Member -NotePropertyName "personalReviewThreadsPartial" -NotePropertyValue (
+                [bool](Get-PropertyValue -Object (Get-PropertyValue -Object $threadConnection -Name "pageInfo") -Name "hasPreviousPage" -DefaultValue $false) -or
+                @($candidate.personalReviewThreads | Where-Object { $_.commentsPartial }).Count -gt 0
+            ) -Force
+        }
+    }
+}
+
+function Add-PersonalEvidenceDetails {
+    param(
+        [string]$RepositoryName,
+        [object[]]$Candidates,
+        [string]$PersonalLogin,
+        [object[]]$Notifications,
+        [object]$NotificationCoverage
+    )
+
+    $repositoryParts = $RepositoryName.Split("/")
+    if ($repositoryParts.Count -ne 2) {
+        throw "Repository must use the owner/name format."
+    }
+
+    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
+        $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
+        $aliases = @(
+            foreach ($candidate in $chunk) {
+                $number = [int](Get-PropertyValue -Object $candidate -Name "number")
+                @"
+pr$number`: pullRequest(number: $number) {
+  number
+  title
+  url
+  author { login }
+  state
+  isDraft
+  updatedAt
+  headRefOid
+  reviewRequests(first: 50) {
+    pageInfo { hasNextPage }
+    nodes {
+      requestedReviewer {
+        ... on User { login }
+        ... on Team { slug name }
+      }
+    }
+  }
+  reviews(last: 1, author: `$login, states: [COMMENTED, APPROVED, CHANGES_REQUESTED, DISMISSED]) {
+    nodes {
+      author { login }
+      state
+      submittedAt
+      url
+      commit { oid }
+    }
+  }
+}
+"@
+            }
+        )
+        $query = 'query($owner:String!,$name:String!,$login:String!){repository(owner:$owner,name:$name){' +
+            ($aliases -join [Environment]::NewLine) +
+            '}}'
+        $result = Invoke-GhJson -Arguments @(
+            "api",
+            "graphql",
+            "-f",
+            "query=$query",
+            "-F",
+            "owner=$($repositoryParts[0])",
+            "-F",
+            "name=$($repositoryParts[1])",
+            "-F",
+            "login=$PersonalLogin"
+        )
+
+        foreach ($candidate in $chunk) {
+            $number = [int](Get-PropertyValue -Object $candidate -Name "number")
+            $details = Get-PropertyValue -Object $result.data.repository -Name "pr$number"
+            if ($null -eq $details) {
+                throw "GitHub did not return personal details for pull request #$number."
+            }
+
+            foreach ($propertyName in @(
+                "number", "title", "url", "author", "state", "isDraft", "updatedAt", "headRefOid"
+            )) {
+                $propertyValue = Get-PropertyValue -Object $details -Name $propertyName
+                if ($null -ne $propertyValue) {
+                    $candidate | Add-Member -NotePropertyName $propertyName -NotePropertyValue $propertyValue -Force
+                }
+            }
+
+            $reviewRequestConnection = Get-PropertyValue -Object $details -Name "reviewRequests"
+            $reviewRequests = @(
+                ConvertTo-Array (Get-PropertyValue -Object $reviewRequestConnection -Name "nodes")
+            )
+            $candidate | Add-Member -NotePropertyName "personalReviewRequests" -NotePropertyValue @(
+                foreach ($request in $reviewRequests) {
+                    $reviewer = Get-PropertyValue -Object $request -Name "requestedReviewer"
+                    $login = [string](Get-PropertyValue -Object $reviewer -Name "login" -DefaultValue "")
+                    if ([string]::Equals($login, $PersonalLogin, [System.StringComparison]::OrdinalIgnoreCase)) {
+                        [pscustomobject]@{
+                            login = $login
+                            requestedAt = $null
+                            url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue $candidate.html_url)
+                        }
+                    }
+                }
+            ) -Force
+            $candidate | Add-Member -NotePropertyName "personalTeamReviewRequests" -NotePropertyValue @(
+                foreach ($request in $reviewRequests) {
+                    $reviewer = Get-PropertyValue -Object $request -Name "requestedReviewer"
+                    $teamSlug = [string](Get-PropertyValue -Object $reviewer -Name "slug" -DefaultValue "")
+                    if ($teamSlug) {
+                        [pscustomobject]@{
+                            slug = $teamSlug
+                            name = [string](Get-PropertyValue -Object $reviewer -Name "name" -DefaultValue "")
+                            url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue $candidate.html_url)
+                        }
+                    }
+                }
+            ) -Force
+            $candidate | Add-Member -NotePropertyName "personalReviews" -NotePropertyValue @(
+                ConvertTo-Array (Get-PropertyValue -Object (Get-PropertyValue -Object $details -Name "reviews") -Name "nodes") |
+                    ForEach-Object {
+                        $commit = Get-PropertyValue -Object $_ -Name "commit"
+                        [pscustomobject]@{
+                            state = [string](Get-PropertyValue -Object $_ -Name "state")
+                            submittedAt = Get-PropertyValue -Object $_ -Name "submittedAt"
+                            commitOid = [string](Get-PropertyValue -Object $commit -Name "oid" -DefaultValue "")
+                            url = [string](Get-PropertyValue -Object $_ -Name "url" -DefaultValue $candidate.html_url)
+                        }
+                    }
+            ) -Force
+            $requestCoverage = if ([bool](Get-PropertyValue -Object (Get-PropertyValue -Object $reviewRequestConnection -Name "pageInfo") -Name "hasNextPage" -DefaultValue $false)) {
+                [pscustomobject]@{
+                    state = "partial"
+                    detail = "GitHub returned the first 50 current review requests."
+                }
+            }
+            else {
+                [pscustomobject]@{
+                    state = "assessed"
+                    detail = "GitHub returned all current review requests."
+                }
+            }
+            $candidate | Add-Member -NotePropertyName "personalReviewRequestCoverage" -NotePropertyValue $requestCoverage -Force
+        }
+    }
+
+    foreach ($candidate in $Candidates) {
+        $candidate | Add-Member -NotePropertyName "personalNotifications" -NotePropertyValue @(
+            foreach ($notification in $Notifications) {
+                $subject = Get-PropertyValue -Object $notification -Name "subject"
+                $subjectUrl = [string](Get-PropertyValue -Object $subject -Name "url" -DefaultValue "")
+                if ($subjectUrl -match "/issues/$number$" -or $subjectUrl -match "/pulls/$number$") {
+                    [pscustomobject]@{
+                        unread = -not [bool](Get-PropertyValue -Object $notification -Name "read" -DefaultValue $true)
+                        updatedAt = Get-PropertyValue -Object $notification -Name "updated_at"
+                        reason = [string](Get-PropertyValue -Object $notification -Name "reason" -DefaultValue "")
+                        url = [string](Get-PropertyValue -Object $candidate -Name "html_url" -DefaultValue $candidate.url)
+                    }
+                }
+            }
+        ) -Force
+        $discoveryKinds = @(
+            ConvertTo-Array (Get-PropertyValue -Object $candidate -Name "personalDiscoveryKinds")
+        )
+        $candidate | Add-Member -NotePropertyName "personalComments" -NotePropertyValue @(
+            if ("commenter" -in $discoveryKinds) {
+                [pscustomobject]@{
+                    source = "commenter-search"
+                    url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue $candidate.html_url)
+                }
+            }
+        ) -Force
+        $candidate | Add-Member -NotePropertyName "personalMentions" -NotePropertyValue @(
+            if ("mentions" -in $discoveryKinds) {
+                [pscustomobject]@{
+                    source = "mentions-search"
+                    url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue $candidate.html_url)
+                }
+            }
+        ) -Force
+        $candidate | Add-Member -NotePropertyName "personalCoverage" -NotePropertyValue ([pscustomobject]@{
+            discovery = [pscustomobject]@{ state = "assessed"; detail = "Four bounded repository search qualifiers were queried." }
+            notifications = $NotificationCoverage
+            ownReview = [pscustomobject]@{ state = "assessed"; detail = "GitHub returned the latest submitted review authored by the authenticated user." }
+            reviewRequests = Get-PropertyValue -Object $candidate -Name "personalReviewRequestCoverage" -DefaultValue ([pscustomobject]@{
+                state = "assessed"
+                detail = "GitHub returned current review requests."
+            })
+            reviewThreads = [pscustomobject]@{ state = "unassessed"; detail = "Review-thread hydration is deferred in this bounded collector." }
+        }) -Force
+    }
+
+    try {
+        Add-PersonalReviewThreadDetails -RepositoryName $RepositoryName -Candidates $Candidates
+        foreach ($candidate in $Candidates) {
+            $coverage = Get-PropertyValue -Object $candidate -Name "personalCoverage"
+            if ($coverage) {
+                $coverage.reviewThreads = [pscustomobject]@{
+                    state = if ([bool](Get-PropertyValue -Object $candidate -Name "personalReviewThreadsPartial" -DefaultValue $true)) {
+                        "partial"
+                    }
+                    else {
+                        "assessed"
+                    }
+                    detail = "Up to 50 review threads and 20 comments per thread were hydrated; publication requires an author, timestamp, and canonical URL."
+                }
+            }
+        }
+    }
+    catch {
+        foreach ($candidate in $Candidates) {
+            $coverage = Get-PropertyValue -Object $candidate -Name "personalCoverage"
+            if ($coverage) {
+                $coverage.reviewThreads = [pscustomobject]@{
+                    state = "unavailable"
+                    detail = "GitHub did not permit bounded review-thread hydration."
+                }
+            }
+            $candidate | Add-Member -NotePropertyName "personalReviewThreads" -NotePropertyValue @() -Force
+        }
+    }
 }
 
 function Add-PullRequestDetails {
@@ -1495,6 +2227,380 @@ function Escape-MarkdownCell {
     return $Value.Replace("|", "\|").Replace("`r", " ").Replace("`n", " ")
 }
 
+function Get-ResponseEvidence {
+    param(
+        [object]$DiscussionAssessment,
+        [string]$ItemUrl
+    )
+
+    if ($null -eq $DiscussionAssessment) {
+        return [pscustomobject]@{
+            status = "unknown"
+            recordedNonAuthorHumanResponse = $false
+            complete = $false
+            commentTotalCount = 0
+            evidenceCoverage = "not-collected"
+            canonicalEvidenceUrl = $ItemUrl
+        }
+    }
+
+    $comments = @($DiscussionAssessment.comments)
+    $recordedResponse = @(
+        $comments |
+            Where-Object {
+                $_.Actor -in @("repository-member", "non-author") -and
+                $_.Kind -ne "informational"
+            }
+    ).Count -gt 0
+    $complete = [bool](Get-PropertyValue -Object $DiscussionAssessment -Name "complete" -DefaultValue $false)
+    $commentTotalCount = [int](Get-PropertyValue -Object $DiscussionAssessment -Name "commentTotalCount" -DefaultValue $comments.Count)
+
+    $signals = @(
+        if ($null -ne $DiscussionAssessment -and $null -ne $DiscussionAssessment.PSObject.Properties["signals"]) {
+            @($DiscussionAssessment.signals)
+        }
+        else {
+            @()
+        }
+    )
+    $state = [string](Get-PropertyValue -Object $DiscussionAssessment -Name "state" -DefaultValue "unknown")
+    $commentEvidenceTruncated = [bool](Get-PropertyValue -Object $DiscussionAssessment -Name "commentEvidenceTruncated" -DefaultValue $false)
+    $hasIncompleteOrAmbiguousEvidence = $state -eq "verification-needed" -or
+        $commentEvidenceTruncated -or
+        -not $complete -or
+        $signals.Count -gt 0
+
+    $status = if ($recordedResponse) {
+        "recorded-response"
+    }
+    elseif ($complete -and $commentTotalCount -eq 0 -and -not $hasIncompleteOrAmbiguousEvidence) {
+        "no-response"
+    }
+    else {
+        "unknown"
+    }
+
+    return [pscustomobject]@{
+        status = $status
+        recordedNonAuthorHumanResponse = $recordedResponse
+        complete = $complete
+        commentTotalCount = $commentTotalCount
+        evidenceCoverage = if ($complete) {
+            "complete"
+        }
+        elseif ($DiscussionAssessment.state -eq "verification-needed") {
+            "bounded-and-ambiguous"
+        }
+        else {
+            "bounded"
+        }
+        canonicalEvidenceUrl = $ItemUrl
+    }
+}
+
+function Get-InboxItemSummary {
+    param(
+        [object]$Item,
+        [object]$Settings
+    )
+
+    $discussionAssessment = Get-PropertyValue -Object $Item -Name "discussionAssessment"
+    $responseEvidence = Get-ResponseEvidence -DiscussionAssessment $discussionAssessment -ItemUrl $Item.url
+    $itemLabels = @($Item.labels)
+    $inboxProvenance = if (Test-AnyWildcardMatch -Values $itemLabels -Patterns @($Settings.communityLabels)) {
+        "community"
+    }
+    else {
+        "unclassified"
+    }
+
+    $createdAtValue = ConvertTo-UtcDateTime -Value $Item.createdAt
+    return [pscustomobject]@{
+        number = [int]$Item.number
+        title = [string]$Item.title
+        url = [string]$Item.url
+        createdAt = if ($null -ne $createdAtValue) { $createdAtValue.ToUniversalTime().ToString("o") } else { $null }
+        bucket = [string]$Item.bucket
+        nextActor = [string]$Item.nextActor
+        reasonCodes = @($Item.reasonCodes)
+        provenance = $inboxProvenance
+        responseEvidence = $responseEvidence
+    }
+}
+
+function Get-InboxData {
+    param(
+        [object[]]$Items,
+        [object]$Settings,
+        [datetime]$SnapshotTime
+    )
+
+    $communityLabelPatterns = @($Settings.communityLabels)
+    $recentWindowDays = 7
+    $snapshotUtc = ConvertTo-UtcDateTime -Value $SnapshotTime
+    $recentWindowStart = if ($null -ne $snapshotUtc) { $snapshotUtc.AddDays(-$recentWindowDays) } else { $SnapshotTime.AddDays(-$recentWindowDays) }
+
+    $communityItems = @(
+        $Items |
+            Where-Object {
+                Test-AnyWildcardMatch -Values $_.labels -Patterns $communityLabelPatterns
+            } |
+            Sort-Object `
+                @{ Expression = {
+                    $createdAt = ConvertTo-UtcDateTime -Value $_.createdAt
+                    if ($null -eq $createdAt) { [datetime]::MinValue } else { $createdAt }
+                }; Descending = $true },
+                @{ Expression = { $_.number }; Descending = $false }
+    )
+
+    $unclassifiedItems = @(
+        $Items |
+            Where-Object {
+                -not (Test-AnyWildcardMatch -Values $_.labels -Patterns $communityLabelPatterns)
+            } |
+            Sort-Object `
+                @{ Expression = {
+                    switch ($_.bucket) {
+                        "NeedsRescue" { 0 }
+                        "ReviewNow" { 1 }
+                        "WaitingOnAuthor" { 2 }
+                        "WaitingOnCI" { 3 }
+                        "DesignDecision" { 4 }
+                        "ReadyToMerge" { 5 }
+                        "Draft" { 6 }
+                        default { 7 }
+                    }
+                }; Ascending = $true },
+                @{ Expression = { $_.idleDays }; Descending = $true },
+                @{ Expression = { $_.number }; Descending = $false }
+    )
+
+    $recentCommunity = @(
+        $communityItems |
+            Where-Object {
+                $createdAt = ConvertTo-UtcDateTime -Value $_.createdAt
+                $createdAt -and $createdAt -ge $recentWindowStart -and $createdAt -le $snapshotUtc
+            }
+    )
+
+    $communityPreview = @($communityItems | Select-Object -First 5)
+    $unclassifiedPreview = @($unclassifiedItems | Select-Object -First 5)
+
+    return [pscustomobject]@{
+        recentCommunityWindowDays = $recentWindowDays
+        recentCommunityWindowStart = $recentWindowStart.ToUniversalTime().ToString("o")
+        recentCommunityWindowEnd = $snapshotUtc.ToUniversalTime().ToString("o")
+        recentCommunity = [pscustomobject]@{
+            count = $recentCommunity.Count
+            newest = if ($recentCommunity.Count -gt 0) { [int]$recentCommunity[0].number } else { $null }
+            preview = @(
+                $recentCommunity |
+                    Select-Object -First 5 |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+            inventory = @(
+                $recentCommunity |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+        }
+        community = [pscustomobject]@{
+            count = $communityItems.Count
+            preview = @(
+                $communityPreview |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+            inventory = @(
+                $communityItems |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+        }
+        unclassified = [pscustomobject]@{
+            count = $unclassifiedItems.Count
+            preview = @(
+                $unclassifiedPreview |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+            inventory = @(
+                $unclassifiedItems |
+                    ForEach-Object { Get-InboxItemSummary -Item $_ -Settings $Settings }
+            )
+        }
+        evidence = [pscustomobject]@{
+            collection = "bounded top-level comments and review threads"
+            coverage = "bounded and explicit; no claim of 'no response' when evidence is incomplete"
+            recordedResponseCount = @(
+                $Items |
+                    Where-Object {
+                        (Get-ResponseEvidence -DiscussionAssessment $_.discussionAssessment -ItemUrl $_.url).status -eq "recorded-response"
+                    }
+            ).Count
+            unknownResponseCount = @(
+                $Items |
+                    Where-Object {
+                        (Get-ResponseEvidence -DiscussionAssessment $_.discussionAssessment -ItemUrl $_.url).status -eq "unknown"
+                    }
+            ).Count
+            noResponseCount = @(
+                $Items |
+                    Where-Object {
+                        (Get-ResponseEvidence -DiscussionAssessment $_.discussionAssessment -ItemUrl $_.url).status -eq "no-response"
+                    }
+            ).Count
+        }
+    }
+}
+
+function Get-PersonalData {
+    param(
+        [object[]]$GeneralItems,
+        [object[]]$PersonalCandidates,
+        [string]$PersonalLogin,
+        [string]$CollectionState = "assessed"
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PersonalLogin)) {
+        return [pscustomobject]@{
+            enabled = $false
+            login = $null
+            scope = "all-repo"
+            preview = @()
+            inventory = @()
+            coverage = [pscustomobject]@{
+                state = "unavailable"
+                discovery = "No authenticated GitHub identity was available."
+                notifications = "unavailable"
+                ownReview = "unavailable"
+                reviewThreads = "unavailable"
+            }
+        }
+    }
+
+    $generalByNumber = @{}
+    foreach ($item in $GeneralItems) {
+        $generalByNumber[[int]$item.number] = $item
+    }
+
+    $candidateByNumber = @{}
+    foreach ($candidate in $PersonalCandidates) {
+        $state = [string](Get-PropertyValue -Object $candidate -Name "state" -DefaultValue "OPEN")
+        if ($state -and $state -ne "OPEN") {
+            continue
+        }
+
+        $candidateByNumber[[int](Get-PropertyValue -Object $candidate -Name "number")] = $candidate
+    }
+
+    $allCandidates = [System.Collections.Generic.List[object]]::new()
+    foreach ($number in $candidateByNumber.Keys) {
+        $candidate = $candidateByNumber[$number]
+        if ($generalByNumber.ContainsKey([int]$number)) {
+            $generalItem = $generalByNumber[[int]$number]
+            foreach ($propertyName in @(
+                "personalReviews", "personalReviewRequests", "personalNotifications",
+                "personalReviewThreads", "personalComments", "personalMentions", "personalCoverage",
+                "personalTeamReviewRequests", "personalDiscoveryKinds"
+            )) {
+                $property = $candidate.PSObject.Properties[$propertyName]
+                if ($null -ne $property) {
+                    $generalItem | Add-Member -NotePropertyName $propertyName -NotePropertyValue $property.Value -Force
+                }
+            }
+            $allCandidates.Add($generalItem)
+            continue
+        }
+
+        $headSha = [string](Get-PropertyValue -Object $candidate -Name "headRefOid" -DefaultValue "")
+        $mergeState = [string](Get-PropertyValue -Object $candidate -Name "mergeStateStatus" -DefaultValue "")
+        $isDraft = [bool](Get-PropertyValue -Object $candidate -Name "isDraft" -DefaultValue $false)
+        $bucket = if ($isDraft) { "Draft" } elseif ($mergeState -eq "CONFLICTING") { "WaitingOnAuthor" } else { "OutOfScope" }
+        $nextActor = if ($isDraft -or $mergeState -eq "CONFLICTING") { "author" } else { "unknown" }
+        $allCandidates.Add([pscustomobject]@{
+            number = [int]$candidate.number
+            title = [string](Get-PropertyValue -Object $candidate -Name "title" -DefaultValue "")
+            url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue (Get-PropertyValue -Object $candidate -Name "html_url" -DefaultValue ""))
+            author = [string](Get-PropertyValue -Object (Get-PropertyValue -Object $candidate -Name "author") -Name "login" -DefaultValue "")
+            state = [string](Get-PropertyValue -Object $candidate -Name "state" -DefaultValue "OPEN")
+            bucket = $bucket
+            nextActor = $nextActor
+            blockers = if ($mergeState -eq "CONFLICTING") { @("The pull request conflicts with its base branch.") } else { @() }
+            headRefOid = $headSha
+            headSha = $headSha
+            personalReviews = @($candidate.personalReviews)
+            personalReviewRequests = @($candidate.personalReviewRequests)
+            personalNotifications = @($candidate.personalNotifications)
+            personalReviewThreads = @($candidate.personalReviewThreads)
+            personalComments = @($candidate.personalComments)
+            personalMentions = @($candidate.personalMentions)
+            personalTeamReviewRequests = @($candidate.personalTeamReviewRequests)
+            personalDiscoveryKinds = @($candidate.personalDiscoveryKinds)
+            personalCoverage = $candidate.personalCoverage
+            digestExclusionReasons = @()
+            shownInDigest = $false
+            digestRank = $null
+            scopeMatch = "personal-only"
+        })
+    }
+
+    $cards = @(
+        $allCandidates |
+            ForEach-Object { Get-PersonalInboxItem -Item $_ -PersonalLogin $PersonalLogin } |
+            Where-Object { $_.signals.Count -gt 0 -or $_.participatedOrMentioned } |
+            Sort-Object `
+                @{ Expression = {
+                    if ($_.signals.Count -eq 0) { 4 } else {
+                        switch ($_.signals[0].kind) {
+                            "direct-request" { 0 }
+                            "follow-up-notification" { 1 }
+                            "changed-since-own-review" { 2 }
+                            "review-thread-reply" { 3 }
+                            default { 4 }
+                        }
+                    }
+                }; Ascending = $true },
+                @{ Expression = {
+                    $eventAt = if ($_.signals.Count -gt 0) { $_.signals[0].eventAt } else { $null }
+                    ConvertTo-UtcDateTime -Value $eventAt
+                }; Descending = $true },
+                @{ Expression = { $_.number }; Ascending = $true }
+    )
+
+    $activeCards = @($cards | Where-Object { $_.signals.Count -gt 0 })
+    return [pscustomobject]@{
+        enabled = $true
+        login = $PersonalLogin
+        scope = "all-repo"
+        activeCount = $activeCards.Count
+        preview = @($activeCards | Select-Object -First 5)
+        inventory = @($cards)
+        coverage = [pscustomobject]@{
+            state = if ($CollectionState -eq "unavailable") {
+                "unavailable"
+            }
+            elseif ($CollectionState -eq "partial" -or @(
+                $cards |
+                    Where-Object {
+                        $_.coverage.discovery.state -eq "unavailable" -or
+                        $_.coverage.notifications.state -eq "unavailable" -or
+                        $_.coverage.ownReview.state -eq "unavailable" -or
+                        $_.coverage.reviewThreads.state -eq "unavailable"
+                    }
+            ).Count -gt 0) { "partial" } else { "assessed" }
+            discovery = if ($CollectionState -eq "unavailable") {
+                "Personal GitHub search or hydration was unavailable; no empty result is claimed."
+            }
+            elseif ($CollectionState -eq "partial") {
+                "Four repository search qualifiers were unioned; GitHub reported incomplete search coverage."
+            }
+            else {
+                "Four repository search qualifiers were unioned and deduplicated."
+            }
+            notifications = if (@($cards | Where-Object { $_.coverage.notifications.state -eq "unavailable" }).Count -gt 0) { "partial" } else { "assessed" }
+            ownReview = "bounded"
+            reviewThreads = "partial; only hydrated thread evidence is asserted"
+        }
+    }
+}
+
 function Render-MarkdownTable {
     param(
         [object[]]$Items,
@@ -1550,6 +2656,10 @@ function Render-Markdown {
             Where-Object { $_.shownInDiscussionVerification } |
             Sort-Object discussionVerificationRank
     )
+    $inbox = Get-PropertyValue -Object $Result -Name "inbox" -DefaultValue ([pscustomobject]@{})
+    $recentCommunity = @(Get-PropertyValue -Object $inbox -Name "recentCommunity" -DefaultValue ([pscustomobject]@{ inventory = @() }).inventory)
+    $communityInventory = @(Get-PropertyValue -Object $inbox -Name "community" -DefaultValue ([pscustomobject]@{ inventory = @() }).inventory)
+    $unclassifiedInventory = @(Get-PropertyValue -Object $inbox -Name "unclassified" -DefaultValue ([pscustomobject]@{ inventory = @() }).inventory)
 
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add("<!-- PR_ATTENTION_QUEUE_BEGIN -->")
@@ -1582,6 +2692,95 @@ function Render-Markdown {
     $lines.Add("## Ready to merge ($($readyToMerge.Count))")
     $lines.Add("")
     $lines.Add((Render-MarkdownTable -Items $readyToMerge -EmptyText "No pull requests are currently ready to merge."))
+    $lines.Add("")
+    $lines.Add("## Recent community contributions (7-day window)")
+    $lines.Add("")
+    $inboxRecentCommunity = Get-PropertyValue -Object $inbox -Name "recentCommunity" -DefaultValue ([pscustomobject]@{ count = 0; preview = @(); inventory = @(); windowStart = $null; windowEnd = $null })
+    $inboxRecentWindowStart = Get-PropertyValue -Object $inbox -Name "recentCommunityWindowStart" -DefaultValue $null
+    $inboxRecentWindowEnd = Get-PropertyValue -Object $inbox -Name "recentCommunityWindowEnd" -DefaultValue $null
+    $lines.Add("**Window:** $($inboxRecentWindowStart) to $($inboxRecentWindowEnd) · **Count:** $($inboxRecentCommunity.count)")
+    $lines.Add("")
+    $lines.Add((Render-MarkdownTable -Items @($inboxRecentCommunity.preview | ForEach-Object { [pscustomobject]@{
+            number = $_.number
+            title = $_.title
+            url = $_.url
+            author = $_.provenance
+            idleDays = 0
+            nextActor = $_.nextActor
+            reasonCodes = $_.reasonCodes
+            blockers = @()
+            discussionAssessment = $null
+        } }) -EmptyText "No community contributions opened in the last seven days."))
+    $lines.Add("")
+    $lines.Add("## Community attention ($($communityInventory.Count))")
+    $lines.Add("")
+    $lines.Add((Render-MarkdownTable -Items @($communityInventory | ForEach-Object { [pscustomobject]@{
+            number = $_.number
+            title = $_.title
+            url = $_.url
+            author = $_.provenance
+            idleDays = 0
+            nextActor = $_.nextActor
+            reasonCodes = $_.reasonCodes
+            blockers = @()
+            discussionAssessment = $null
+        } }) -EmptyText "No community contributions are currently in the scoped inventory."))
+    $lines.Add("")
+    $lines.Add("## Unclassified contributions ($($unclassifiedInventory.Count))")
+    $lines.Add("")
+    $lines.Add((Render-MarkdownTable -Items @($unclassifiedInventory | ForEach-Object { [pscustomobject]@{
+            number = $_.number
+            title = $_.title
+            url = $_.url
+            author = $_.provenance
+            idleDays = 0
+            nextActor = $_.nextActor
+            reasonCodes = $_.reasonCodes
+            blockers = @()
+            discussionAssessment = $null
+        } }) -EmptyText "No in-scope pull requests are currently unclassified."))
+    $lines.Add("")
+    $lines.Add("## Inbox evidence coverage")
+    $lines.Add("")
+    $inboxEvidence = Get-PropertyValue -Object $inbox -Name "evidence" -DefaultValue ([pscustomobject]@{ collection = "not-collected"; coverage = "not-collected"; recordedResponseCount = 0; unknownResponseCount = 0; noResponseCount = 0 })
+    $lines.Add("**Collection:** $($inboxEvidence.collection)")
+    $lines.Add("**Coverage:** $($inboxEvidence.coverage)")
+    $lines.Add("**Recorded responses:** $($inboxEvidence.recordedResponseCount) · **Unknown:** $($inboxEvidence.unknownResponseCount) · **No response:** $($inboxEvidence.noResponseCount)")
+    $lines.Add("")
+    $personal = Get-PropertyValue -Object $Result -Name "personal" -DefaultValue ([pscustomobject]@{
+        enabled = $false
+        login = $null
+        activeCount = 0
+        preview = @()
+        coverage = [pscustomobject]@{ state = "unavailable" }
+    })
+    $lines.Add("## My PR inbox (All dotnet/aspnetcore)")
+    $lines.Add("")
+    if (-not $personal.enabled) {
+        $lines.Add("Personal GitHub follow-up evidence is unavailable for this run.")
+    }
+    else {
+        $lines.Add("**Identity:** ``$($personal.login)`` · **Active signals:** $($personal.activeCount) · **Coverage:** $($personal.coverage.state)")
+        $lines.Add("")
+        $personalRows = @(
+            $personal.preview | ForEach-Object {
+                [pscustomobject]@{
+                    number = $_.number
+                    title = $_.title
+                    url = $_.url
+                    author = $_.author
+                    idleDays = 0
+                    nextActor = if ($_.signals.Count -gt 0) { ($_.signals.kind -join ", ") } else { "participated/mentioned" }
+                    reasonCodes = @($_.signals.detail)
+                    blockers = $_.blockers
+                    discussionAssessment = $null
+                }
+            }
+        )
+        $lines.Add((Render-MarkdownTable -Items $personalRows -EmptyText "No active personal follow-ups were found."))
+        $lines.Add("")
+        $lines.Add("The full personal inventory is retained in JSON. Direct requests, unread notifications, changed heads, and evidenced review-thread replies are separate signals.")
+    }
     $lines.Add("")
     $lines.Add("## Queue census")
     $lines.Add("")
@@ -1728,6 +2927,8 @@ function Invoke-PRAttentionQueue {
         [string[]]$ExcludeLabel = @(),
         [string[]]$Author = @(),
         [string[]]$ExcludeDigestAuthor = @(),
+        [string]$PersonalLogin,
+        [switch]$DisablePersonalInbox,
         [switch]$AllRepo,
         [ValidateSet("Markdown", "Json")]
         [string]$OutputFormat = "Markdown",
@@ -1834,6 +3035,76 @@ function Invoke-PRAttentionQueue {
         }
     }
 
+    $resolvedPersonalLogin = $PersonalLogin
+    $personalCandidates = @()
+    $personalNotifications = @()
+    $personalCollectionState = "unavailable"
+    $personalSearchCoverage = "unavailable"
+    if (-not $DisablePersonalInbox.IsPresent) {
+        if ($InputPath) {
+            $personalCandidates = @(
+                $pullRequests | Where-Object {
+                    $null -ne $_.PSObject.Properties["personalReviews"] -or
+                    $null -ne $_.PSObject.Properties["personalReviewRequests"] -or
+                    $null -ne $_.PSObject.Properties["personalNotifications"] -or
+                    $null -ne $_.PSObject.Properties["personalReviewThreads"] -or
+                    $null -ne $_.PSObject.Properties["personalComments"] -or
+                    $null -ne $_.PSObject.Properties["personalMentions"]
+                }
+            )
+            if ([string]::IsNullOrWhiteSpace($resolvedPersonalLogin)) {
+                $resolvedPersonalLogin = [string](Get-PropertyValue `
+                    -Object ($personalCandidates | Select-Object -First 1) `
+                    -Name "personalLogin" `
+                    -DefaultValue "")
+            }
+            $personalCollectionState = if ($resolvedPersonalLogin) { "assessed" } else { "unavailable" }
+            $personalSearchCoverage = $personalCollectionState
+        }
+        else {
+            try {
+                $resolvedPersonalLogin = if ($resolvedPersonalLogin) {
+                    $resolvedPersonalLogin
+                }
+                else {
+                    Invoke-GhText -Arguments @("api", "user", "--jq", ".login")
+                }
+                $searchResult = Get-PersonalSearchCandidates -RepositoryName $Repository -PersonalLogin $resolvedPersonalLogin
+                $personalCandidates = @($searchResult.items)
+                $personalSearchCoverage = [string]$searchResult.coverage
+                $notificationResult = Get-RepositoryNotifications -RepositoryName $Repository
+                $personalNotifications = @($notificationResult.items)
+                foreach ($notification in $personalNotifications) {
+                    $subject = Get-PropertyValue -Object $notification -Name "subject"
+                    $subjectUrl = [string](Get-PropertyValue -Object $subject -Name "url" -DefaultValue "")
+                    if ($subjectUrl -match "/(?:issues|pulls)/(\d+)$") {
+                        $number = [int]$Matches[1]
+                        $isOpenPullRequest = @(
+                            $pullRequests |
+                                Where-Object { [int](Get-PropertyValue -Object $_ -Name "number" -DefaultValue 0) -eq $number }
+                        ).Count -gt 0
+                        if ($isOpenPullRequest -and -not @($personalCandidates | Where-Object { [int]$_.number -eq $number })) {
+                            $personalCandidates += [pscustomobject]@{ number = $number }
+                        }
+                    }
+                }
+                Add-PersonalEvidenceDetails `
+                    -RepositoryName $Repository `
+                    -Candidates $personalCandidates `
+                    -PersonalLogin $resolvedPersonalLogin `
+                    -Notifications $personalNotifications `
+                    -NotificationCoverage $notificationResult.coverage
+                $personalCollectionState = $personalSearchCoverage
+            }
+            catch {
+                $warnings.Add("Personal inbox collection unavailable: $($_.Exception.Message)")
+                $personalCandidates = @()
+                $personalNotifications = @()
+                $personalCollectionState = "unavailable"
+            }
+        }
+    }
+
     $matchedItems = [System.Collections.Generic.List[object]]::new()
     $matchedCandidates = [System.Collections.Generic.List[object]]::new()
     $pathOnlyCount = 0
@@ -1844,6 +3115,8 @@ function Invoke-PRAttentionQueue {
     $unresolvedMergeable = 0
     $pathMatchMinimumShare = [double](Get-PropertyValue `
         -Object $configuration.settings -Name "pathMatchMinimumShare" -DefaultValue 0)
+    $totalStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $queryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     foreach ($pullRequest in $pullRequests) {
         $labels = @(Get-LabelNames -PullRequest $pullRequest)
@@ -1942,6 +3215,9 @@ function Invoke-PRAttentionQueue {
         }
     }
 
+    $queryStopwatch.Stop()
+    $classificationStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
     foreach ($candidate in $matchedCandidates) {
         $pullRequest = $candidate.PullRequest
         $labels = $candidate.Labels
@@ -1960,12 +3236,20 @@ function Invoke-PRAttentionQueue {
 
         $milestoneValue = Get-PropertyValue -Object $pullRequest -Name "milestone"
         $milestoneTitle = [string](Get-PropertyValue -Object $milestoneValue -Name "title" -DefaultValue "")
+        $personalCandidate = @(
+            $personalCandidates |
+                Where-Object { [int](Get-PropertyValue -Object $_ -Name "number" -DefaultValue 0) -eq [int]$pullRequest.number } |
+                Select-Object -First 1
+        )
+        $personalCandidate = if ($personalCandidate.Count -gt 0) { $personalCandidate[0] } else { $null }
 
         $matchedItems.Add([pscustomobject]@{
             number = [int]$pullRequest.number
             title = [string]$pullRequest.title
             url = [string]$pullRequest.url
+            createdAt = ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $pullRequest -Name "createdAt")
             headSha = [string](Get-PropertyValue -Object $pullRequest -Name "headRefOid" -DefaultValue "")
+            headRefOid = [string](Get-PropertyValue -Object $pullRequest -Name "headRefOid" -DefaultValue "")
             headBranch = [string](Get-PropertyValue -Object $pullRequest -Name "headRefName" -DefaultValue "")
             isCrossRepository = [bool](Get-PropertyValue `
                 -Object $pullRequest `
@@ -2011,8 +3295,17 @@ function Invoke-PRAttentionQueue {
             discussionAssessment = $null
             shownInDiscussionVerification = $false
             discussionVerificationRank = $null
+            personalReviews = if ($personalCandidate) { @($personalCandidate.personalReviews) } else { @() }
+            personalReviewRequests = if ($personalCandidate) { @($personalCandidate.personalReviewRequests) } else { @() }
+            personalNotifications = if ($personalCandidate) { @($personalCandidate.personalNotifications) } else { @() }
+            personalReviewThreads = if ($personalCandidate) { @($personalCandidate.personalReviewThreads) } else { @() }
+            personalComments = if ($personalCandidate) { @($personalCandidate.personalComments) } else { @() }
+            personalMentions = if ($personalCandidate) { @($personalCandidate.personalMentions) } else { @() }
+            personalCoverage = if ($personalCandidate) { $personalCandidate.personalCoverage } else { $null }
         })
     }
+
+    $classificationStopwatch.Stop()
 
     if ($unresolvedPathCoverage -gt 0) {
         $warnings.Add("$unresolvedPathCoverage fixture pull request(s) had incomplete changed-file data.")
@@ -2048,6 +3341,7 @@ function Invoke-PRAttentionQueue {
         -Object $configuration.settings `
         -Name "maxDiscussionVerification" `
         -DefaultValue 3)
+    $discussionStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $discussionItems = @($reviewNow | Select-Object -First $discussionCandidateLimit)
     $candidatesByNumber = @{}
     foreach ($candidate in $matchedCandidates) {
@@ -2136,6 +3430,8 @@ function Invoke-PRAttentionQueue {
         $warnings.Add("Discussion evidence was assessed for the first $discussionCandidateLimit Review now candidate(s). " +
             "$($unassessedDiscussionItems.Count) lower-ranked candidate(s) cannot enter the unattended digest.")
     }
+
+    $discussionStopwatch.Stop()
 
     $needsRescue = @(
         $matchedItems |
@@ -2240,6 +3536,20 @@ function Invoke-PRAttentionQueue {
         $selection += " AND $($constraintParts -join ' AND ')"
     }
 
+    # Timing is kept local to the queue result: query cost covers repository fetch and
+    # scope matching; classification, discussion, and inbox costs are reported separately.
+    $inboxStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $inbox = Get-InboxData -Items $orderedItems -Settings $configuration.settings -SnapshotTime $Now
+    $inboxStopwatch.Stop()
+    $personalStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $personal = Get-PersonalData `
+        -GeneralItems $orderedItems `
+        -PersonalCandidates $personalCandidates `
+        -PersonalLogin $resolvedPersonalLogin `
+        -CollectionState $personalCollectionState
+    $personalStopwatch.Stop()
+    $totalStopwatch.Stop()
+
     $result = [pscustomobject]@{
         schemaVersion = "1.0.0"
         display = Get-DisplayMetadata
@@ -2292,6 +3602,17 @@ function Invoke-PRAttentionQueue {
         }
         warnings = @($warnings)
         items = $orderedItems
+        inbox = $inbox
+        personal = $personal
+        timing = [pscustomobject]@{
+            collectionMs = [int]($queryStopwatch.ElapsedMilliseconds)
+            queryMs = [int]($queryStopwatch.ElapsedMilliseconds)
+            classificationMs = [int]($classificationStopwatch.ElapsedMilliseconds)
+            discussionMs = [int]($discussionStopwatch.ElapsedMilliseconds)
+            inboxMs = [int]($inboxStopwatch.ElapsedMilliseconds)
+            personalMs = [int]($personalStopwatch.ElapsedMilliseconds)
+            totalMs = [int]($totalStopwatch.ElapsedMilliseconds)
+        }
     }
 
     if ($OutputFormat -eq "Json") {

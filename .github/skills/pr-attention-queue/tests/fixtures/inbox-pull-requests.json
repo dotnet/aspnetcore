@@ -1,0 +1,440 @@
+[
+  {
+    "number": 201,
+    "title": "Recent community fix with no human response",
+    "url": "https://github.com/dotnet/aspnetcore/pull/201",
+    "author": { "login": "community-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-09-03T16:00:00Z",
+    "updatedAt": "2026-09-03T16:00:00Z",
+    "headRefOid": "2012012012012012012012012012012012012011",
+    "headRefName": "recent-community-no-response",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "discussionComments": [],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 0,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/test/Community201.cs" }],
+    "additions": 12,
+    "deletions": 4,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": [],
+    "personalReviews": [
+      {
+        "state": "COMMENTED",
+        "submittedAt": "2026-09-03T17:00:00Z",
+        "commitOid": "2010000000000000000000000000000000000000",
+        "url": "https://github.com/dotnet/aspnetcore/pull/201#pullrequestreview-201"
+      }
+    ],
+    "personalReviewRequests": [],
+    "personalNotifications": [],
+    "personalReviewThreads": [],
+    "personalComments": [],
+    "personalMentions": [],
+    "personalCoverage": {
+      "discovery": { "state": "assessed", "detail": "Fixture search union." },
+      "notifications": { "state": "assessed", "detail": "Fixture notifications." },
+      "ownReview": { "state": "assessed", "detail": "Fixture review baseline." },
+      "reviewThreads": { "state": "assessed", "detail": "Fixture thread evidence." }
+    }
+  },
+  {
+    "number": 202,
+    "title": "Recent community update with recorded response",
+    "url": "https://github.com/dotnet/aspnetcore/pull/202",
+    "author": { "login": "community-author-two", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-09-02T18:00:00Z",
+    "updatedAt": "2026-09-02T18:00:00Z",
+    "headRefOid": "2022022022022022022022022022022022022022",
+    "headRefName": "recent-community-recorded-response",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "community-author-two", "is_bot": false },
+        "createdAt": "2026-09-02T12:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      },
+      {
+        "author": { "login": "owner", "is_bot": false },
+        "createdAt": "2026-09-02T18:00:00Z",
+        "bodyText": "This still looks risky; please revise the approach before review."
+      }
+    ],
+    "discussionComments": [
+      {
+        "author": { "login": "community-author-two" },
+        "authorAssociation": "CONTRIBUTOR",
+        "createdAt": "2026-09-02T12:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      },
+      {
+        "author": { "login": "owner" },
+        "authorAssociation": "MEMBER",
+        "createdAt": "2026-09-02T18:00:00Z",
+        "bodyText": "This still looks risky; please revise the approach before review."
+      }
+    ],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 2,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/test/Community202.cs" }],
+    "additions": 18,
+    "deletions": 6,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": [],
+    "personalReviews": [],
+    "personalReviewRequests": [
+      {
+        "login": "reviewer",
+        "requestedAt": "2026-09-02T19:00:00Z",
+        "url": "https://github.com/dotnet/aspnetcore/pull/202"
+      }
+    ],
+    "personalNotifications": [],
+    "personalReviewThreads": [],
+    "personalComments": [],
+    "personalMentions": [],
+    "personalCoverage": {
+      "discovery": { "state": "assessed", "detail": "Fixture search union." },
+      "notifications": { "state": "assessed", "detail": "Fixture notifications." },
+      "ownReview": { "state": "assessed", "detail": "Fixture review baseline." },
+      "reviewThreads": { "state": "assessed", "detail": "Fixture thread evidence." }
+    }
+  },
+  {
+    "number": 203,
+    "title": "Recent community contribution with truncated evidence",
+    "url": "https://github.com/dotnet/aspnetcore/pull/203",
+    "author": { "login": "community-author-three", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-08-30T12:00:00Z",
+    "updatedAt": "2026-08-30T12:00:00Z",
+    "headRefOid": "2032032032032032032032032032032032032031",
+    "headRefName": "recent-community-truncated",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "community-author-three", "is_bot": false },
+        "createdAt": "2026-08-30T12:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      }
+    ],
+    "discussionComments": [
+      {
+        "author": { "login": "community-author-three" },
+        "authorAssociation": "CONTRIBUTOR",
+        "createdAt": "2026-08-30T12:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      }
+    ],
+    "discussionCommentsComplete": false,
+    "discussionCommentTotalCount": 51,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Components/test/Community203.cs" }],
+    "additions": 16,
+    "deletions": 5,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": [],
+    "personalReviews": [],
+    "personalReviewRequests": [],
+    "personalNotifications": [
+      {
+        "unread": true,
+        "updatedAt": "2026-09-01T12:00:00Z",
+        "url": "https://github.com/dotnet/aspnetcore/pull/203"
+      }
+    ],
+    "personalReviewThreads": [],
+    "personalComments": [],
+    "personalMentions": [],
+    "personalCoverage": {
+      "discovery": { "state": "partial", "detail": "Fixture search index is bounded." },
+      "notifications": { "state": "assessed", "detail": "Fixture notification evidence." },
+      "ownReview": { "state": "unavailable", "detail": "No submitted review baseline." },
+      "reviewThreads": { "state": "unassessed", "detail": "Thread hydration deferred." }
+    }
+  },
+  {
+    "number": 204,
+    "title": "Recent community contribution with unresolved inline discussion",
+    "url": "https://github.com/dotnet/aspnetcore/pull/204",
+    "author": { "login": "community-author-four", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-08-29T09:00:00Z",
+    "updatedAt": "2026-08-29T09:00:00Z",
+    "headRefOid": "2042042042042042042042042042042042042041",
+    "headRefName": "recent-community-inline",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [
+      {
+        "author": { "login": "community-author-four", "is_bot": false },
+        "createdAt": "2026-08-29T09:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      }
+    ],
+    "discussionComments": [
+      {
+        "author": { "login": "community-author-four" },
+        "authorAssociation": "CONTRIBUTOR",
+        "createdAt": "2026-08-29T09:00:00Z",
+        "bodyText": "I addressed the feedback in the latest update."
+      }
+    ],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 1,
+    "discussionThreads": [
+      { "isResolved": false, "isOutdated": false }
+    ],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 1,
+    "files": [{ "path": "src/Components/Components/test/Community204.cs" }],
+    "additions": 8,
+    "deletions": 3,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": [],
+    "personalReviews": [
+      {
+        "state": "APPROVED",
+        "submittedAt": "2026-08-28T10:00:00Z",
+        "commitOid": "2042042042042042042042042042042042042041",
+        "url": "https://github.com/dotnet/aspnetcore/pull/204#pullrequestreview-204"
+      }
+    ],
+    "personalReviewRequests": [],
+    "personalNotifications": [],
+    "personalReviewThreads": [
+      {
+        "threadId": "discussion_r204",
+        "isResolved": false,
+        "participation": [
+          {
+            "authorLogin": "reviewer",
+            "createdAt": "2026-08-28T10:00:00Z",
+            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204"
+          },
+          {
+            "authorLogin": "community-author-four",
+            "createdAt": "2026-08-29T11:00:00Z",
+            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204-reply"
+          }
+        ]
+      }
+    ],
+    "personalComments": [],
+    "personalMentions": [],
+    "personalCoverage": {
+      "discovery": { "state": "assessed", "detail": "Fixture search union." },
+      "notifications": { "state": "assessed", "detail": "Fixture notifications." },
+      "ownReview": { "state": "assessed", "detail": "Fixture review baseline." },
+      "reviewThreads": { "state": "assessed", "detail": "Fixture thread evidence." }
+    }
+  },
+  {
+    "number": 205,
+    "title": "Unclassified Blazor change",
+    "url": "https://github.com/dotnet/aspnetcore/pull/205",
+    "author": { "login": "unclassified-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-08-31T11:00:00Z",
+    "updatedAt": "2026-08-31T11:00:00Z",
+    "headRefOid": "2052052052052052052052052052052052052051",
+    "headRefName": "unclassified-blazor",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "discussionComments": [],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 0,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Web/src/Rendering/Unclassified205.cs" }],
+    "additions": 5,
+    "deletions": 2,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 206,
+    "title": "Older community contribution retained in full inventory",
+    "url": "https://github.com/dotnet/aspnetcore/pull/206",
+    "author": { "login": "older-community-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-07-15T18:00:00Z",
+    "updatedAt": "2026-07-15T18:00:00Z",
+    "headRefOid": "2062062062062062062062062062062062062061",
+    "headRefName": "older-community",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "discussionComments": [],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 0,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Web/src/Rendering/OlderCommunity206.cs" }],
+    "additions": 9,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 207,
+    "title": "Community backlog item included in the retained inventory",
+    "url": "https://github.com/dotnet/aspnetcore/pull/207",
+    "author": { "login": "community-author-five", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-08-20T10:00:00Z",
+    "updatedAt": "2026-08-20T10:00:00Z",
+    "headRefOid": "2072072072072072072072072072072072072071",
+    "headRefName": "community-backlog",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "discussionComments": [],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 0,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Web/src/Rendering/Community207.cs" }],
+    "additions": 11,
+    "deletions": 2,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 208,
+    "title": "Community backlog item beyond the preview window",
+    "url": "https://github.com/dotnet/aspnetcore/pull/208",
+    "author": { "login": "community-author-six", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-07-30T15:00:00Z",
+    "updatedAt": "2026-07-30T15:00:00Z",
+    "headRefOid": "2082082082082082082082082082082082082081",
+    "headRefName": "community-backlog-two",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "discussionComments": [],
+    "discussionCommentsComplete": true,
+    "discussionCommentTotalCount": 0,
+    "discussionThreads": [],
+    "discussionThreadsComplete": true,
+    "discussionThreadTotalCount": 0,
+    "files": [{ "path": "src/Components/Web/src/Rendering/Community208.cs" }],
+    "additions": 7,
+    "deletions": 2,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  }
+]

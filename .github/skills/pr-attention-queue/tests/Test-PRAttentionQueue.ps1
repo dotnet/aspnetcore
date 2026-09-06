@@ -20,6 +20,7 @@ $modulePath = Join-Path $skillRoot "scripts/PRAttentionQueue.psm1"
 $fixturePath = Join-Path $PSScriptRoot "fixtures/pull-requests.json"
 $correctnessFixturePath = Join-Path $PSScriptRoot "fixtures/correctness-pull-requests.json"
 $discussionFixturePath = Join-Path $PSScriptRoot "fixtures/discussion-pull-requests.json"
+$inboxFixturePath = Join-Path $PSScriptRoot "fixtures/inbox-pull-requests.json"
 $snapshot = [datetime]"2026-09-03T18:00:00Z"
 
 Import-Module -Scope Local -Force $modulePath
@@ -225,5 +226,47 @@ $discussionMarkdown = & $scriptPath `
 $discussionMarkdownText = $discussionMarkdown -join [Environment]::NewLine
 Assert-True ($discussionMarkdownText.Contains("## Verify discussion before review")) "Markdown must separate discussion verification from ordinary review."
 Assert-True ($discussionMarkdownText.Contains("[#117]")) "Markdown must surface author disposition evidence."
+
+$inboxJson = & $scriptPath `
+    -InputPath $inboxFixturePath `
+    -Now $snapshot `
+    -Label area-blazor `
+    -OutputFormat Json
+$inboxResult = $inboxJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($inboxResult.inbox.recentCommunityWindowDays -eq 7) "The recent community window must be explicitly seven days."
+Assert-True ($inboxResult.inbox.recentCommunity.count -eq 4) "The recent community inventory must use the seven-day window."
+Assert-True ($inboxResult.inbox.recentCommunity.newest -eq 201) "The newest recent contribution should be surfaced first."
+Assert-True ($inboxResult.inbox.community.count -eq 7) "The full community inventory must retain older items beyond the preview window."
+Assert-True (@($inboxResult.inbox.community.preview).Count -eq 5) "The community preview must remain capped at five items."
+Assert-True (@($inboxResult.inbox.community.inventory).Count -gt @($inboxResult.inbox.community.preview).Count) "The full community inventory must remain available beyond the preview cap."
+Assert-True ($inboxResult.inbox.unclassified.count -eq 1) "Unlabeled in-scope PRs must remain visible as unclassified."
+Assert-True (($inboxResult.inbox.unclassified.inventory | Where-Object number -eq 205).provenance -eq "unclassified") "Unlabeled contributions must not be mistaken for community."
+$inboxRecentCommunity = @($inboxResult.inbox.recentCommunity.inventory)
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 201).responseEvidence.status -eq "no-response") "Complete evidence without a non-author human response must be marked no-response."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 202).responseEvidence.status -eq "recorded-response") "A recorded non-author human response must be preserved as evidence."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 203).responseEvidence.status -eq "unknown") "Truncated discussion evidence must never be reported as no-response."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 204).responseEvidence.status -eq "unknown") "Current unresolved inline discussion without captured evidence must remain unknown."
+Assert-True ($inboxResult.inbox.evidence.coverage.Contains("bounded")) "The inbox evidence coverage metadata must be explicit."
+Assert-True ($inboxResult.inbox.evidence.unknownResponseCount -ge 2) "The inbox metadata must count ambiguous evidence as unknown."
+
+$personalJson = & $scriptPath `
+    -InputPath $inboxFixturePath `
+    -Now $snapshot `
+    -Label area-blazor `
+    -PersonalLogin reviewer `
+    -OutputFormat Json
+$personalResult = $personalJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($personalResult.personal.enabled) "The personal inbox must be enabled when an authenticated identity is supplied."
+Assert-True ($personalResult.personal.login -eq "reviewer") "The personal inbox must echo the authenticated identity."
+Assert-True ($personalResult.personal.scope -eq "all-repo") "The personal inbox must retain repository-wide scope."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals.kind -contains "changed-since-own-review") "A changed head after the user's review must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 202).signals.kind -contains "direct-request") "A direct review request must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 203).signals.kind -contains "follow-up-notification") "An unread notification must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 204).signals.kind -contains "review-thread-reply") "A later participant reply must produce a thread signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals[0].evidenceUrl.Contains("pullrequestreview-201")) "Personal signals must retain canonical evidence links."
+Assert-True (($personalResult.personal.coverage.reviewThreads -like "partial*") -or ($personalResult.personal.coverage.reviewThreads -eq "assessed")) "Personal coverage must disclose bounded thread evidence."
+Assert-True (($personalResult.personal.inventory | Select-Object -ExpandProperty number -Unique).Count -eq @($personalResult.personal.inventory).Count) "Multiple signals must remain one card per pull request."
 
 Write-Output "All PR attention queue tests passed."
