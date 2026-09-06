@@ -177,16 +177,38 @@ test("skill output normalizes from a clean process without repository cwd assump
   const { promisify } = await import("node:util");
   const run = promisify(execFile);
   const modulePath = new URL("./personal.mjs", import.meta.url).pathname;
-  const result = await run(
-    process.execPath,
-    [
-      "--input-type=module",
-      "-e",
-      `import { normalizePersonalInbox } from ${JSON.stringify(modulePath)}; console.log(normalizePersonalInbox(${JSON.stringify(personal())}, { repository: "dotnet/aspnetcore" }).identity);`,
-    ],
-    { cwd: "/tmp" },
+  const persistedPath = `/tmp/aspnetcore-personal-inbox-${process.pid}.json`;
+  fs.writeFileSync(
+    persistedPath,
+    JSON.stringify({
+      personal: personal(),
+      queue: { repository: "dotnet/aspnetcore" },
+    }),
   );
-  assert.equal(result.stdout.trim(), "PureWeen");
+  try {
+    const childScript = `
+      import { readFile } from "node:fs/promises";
+      import { normalizePersonalInbox } from ${JSON.stringify(modulePath)};
+      const persisted = JSON.parse(await readFile(${JSON.stringify(persistedPath)}, "utf8"));
+      const normalized = normalizePersonalInbox(persisted.personal, persisted.queue);
+      console.log(JSON.stringify({
+        identity: normalized.identity,
+        membership: normalized.items.map((item) => item.number),
+      }));
+    `;
+    const results = await Promise.all([
+      run(process.execPath, ["--input-type=module", "-e", childScript], { cwd: "/tmp" }),
+      run(process.execPath, ["--input-type=module", "-e", childScript], { cwd: "/tmp" }),
+    ]);
+    const normalizedResults = results.map((result) => JSON.parse(result.stdout.trim()));
+    assert.deepEqual(normalizedResults[0], {
+      identity: "PureWeen",
+      membership: [101, 102, 103],
+    });
+    assert.deepEqual(normalizedResults[1], normalizedResults[0]);
+  } finally {
+    fs.rmSync(persistedPath, { force: true });
+  }
 });
 
 test("fixture personal display keeps active preview separate from collapsed inventory", async () => {
