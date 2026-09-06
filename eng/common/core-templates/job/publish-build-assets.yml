@@ -58,8 +58,6 @@ jobs:
     parameters:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: Publish-Build-Assets
-    - group: AzureDevOps-Artifact-Feeds-Pats
     - name: runCodesignValidationInjection
       value: false
     # unconditional - needed for logs publishing (redactor tool version)

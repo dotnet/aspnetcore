@@ -384,6 +384,19 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
+    [Theory]
+    [InlineData(16)]
+    [InlineData(256)]
+    [InlineData(4096)]
+    public void ParseList_InvalidQualitySuffixRecoversFollowingValue(int tokenLength)
+    {
+        var input = $"{new string('a', tokenLength)};, valid;q=0.5";
+
+        var result = StringWithQualityHeaderValue.ParseList(new[] { input });
+
+        Assert.Equal(new[] { new StringWithQualityHeaderValue("valid", 0.5) }, result);
+    }
+
     [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {

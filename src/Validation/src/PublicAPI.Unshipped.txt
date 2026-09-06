@@ -34,18 +34,8 @@ Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.get -> System.IS
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.init -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidationError!>!>?
 Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.init -> void
-Microsoft.Extensions.Validation.ValidationMessageKeyContext
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.DeclaringType.get -> System.Type!
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.DeclaringType.init -> void
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.MemberName.get -> string!
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.MemberName.init -> void
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidationMessageKeyContext() -> void
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidatorType.get -> System.Type!
-Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidatorType.init -> void
 Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.get -> System.Func<System.Type!, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>!
 Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.set -> void
-Microsoft.Extensions.Validation.ValidationOptions.MessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.ValidationMessageKeyContext!, string?>?
-Microsoft.Extensions.Validation.ValidationOptions.MessageKeyProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
 *REMOVED*abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!

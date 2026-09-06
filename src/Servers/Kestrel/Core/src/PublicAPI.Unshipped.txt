@@ -1,2 +1,25 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.DirectTlsEndpoint(System.Net.IPAddress! address, int port) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.DirectTlsEndpoint(System.Net.IPAddress! address, int port, Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions! options) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.DirectTlsEndpoint(System.Net.IPEndPoint! endpoint, Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions! options) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.Options.get -> Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions!
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.DirectTlsEndpointOptions() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateMode.get -> Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateMode.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateValidation.get -> System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2!, System.Security.Cryptography.X509Certificates.X509Chain?, System.Net.Security.SslPolicyErrors, bool>?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateValidation.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.HandshakeTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.HandshakeTimeout.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificate.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificateSelector.get -> System.Func<Microsoft.AspNetCore.Connections.ConnectionContext?, string?, System.Security.Cryptography.X509Certificates.X509Certificate2?>?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificateSelector.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.get -> System.Security.Authentication.SslProtocols
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.WorkerCount.get -> int?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.WorkerCount.set -> void
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseTlsClientHelloListener(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>! tlsClientHelloBytesCallback, System.TimeSpan? timeout = null) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!

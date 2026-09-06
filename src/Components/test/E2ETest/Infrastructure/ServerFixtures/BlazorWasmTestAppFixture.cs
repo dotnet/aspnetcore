@@ -36,8 +36,38 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             return CreateStaticWebHost(staticFilePath);
         }
 
-        ContentRoot = FindSampleOrTestSitePath(
-            typeof(TProgram).Assembly.FullName);
+        var clientAssemblyPath = typeof(TProgram).Assembly.Location;
+        ContentRoot = FindSampleOrTestSitePath(typeof(TProgram).Assembly.FullName);
+        var indexHtmlPath = Path.Combine(ContentRoot, "wwwroot", "index.html");
+        var runtimeManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.runtime.json");
+        var endpointsManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.endpoints.json");
+        var clientAssemblyExists = File.Exists(clientAssemblyPath);
+        var contentRootExists = Directory.Exists(ContentRoot);
+        var indexHtmlExists = File.Exists(indexHtmlPath);
+        var runtimeManifestExists = File.Exists(runtimeManifestPath);
+        var endpointsManifestExists = File.Exists(endpointsManifestPath);
+
+        if (!clientAssemblyExists ||
+            !contentRootExists ||
+            !indexHtmlExists ||
+            !runtimeManifestExists ||
+            !endpointsManifestExists)
+        {
+            throw new InvalidOperationException(
+                $"""
+                The Blazor WebAssembly E2E test app is not ready to start.
+                Client assembly: '{clientAssemblyPath}' ({(clientAssemblyExists ? "found" : "missing")})
+                Content root: '{ContentRoot}' ({(contentRootExists ? "found" : "missing")})
+                Entry point: '{indexHtmlPath}' ({(indexHtmlExists ? "found" : "missing")})
+                Runtime manifest: '{runtimeManifestPath}' ({(runtimeManifestExists ? "found" : "missing")})
+                Endpoints manifest: '{endpointsManifestPath}' ({(endpointsManifestExists ? "found" : "missing")})
+
+                Rebuild the E2E project and referenced test apps before rerunning the test with --no-build:
+                  dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore
+                A --no-dependencies build can copy existing dependency outputs, but it does not rebuild referenced client apps.
+                Do not use it when referenced app outputs may be stale or missing.
+                """);
+        }
 
         var host = "127.0.0.1";
         if (E2ETestOptions.Instance.SauceTest)
@@ -45,14 +75,13 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             host = E2ETestOptions.Instance.Sauce.HostName;
         }
 
-        var assemblyLocation = typeof(TProgram).Assembly.Location;
         var args = new List<string>
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
                 "--Gateway:PathBase", PathBase,
-                "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
-                "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
+                "--staticWebAssets", runtimeManifestPath,
+                "--ClientApps:app:EndpointsManifest", endpointsManifestPath,
                 "--ClientApps:app:PathPrefix", "",
             };
 

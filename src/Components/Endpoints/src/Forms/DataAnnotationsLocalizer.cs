@@ -43,7 +43,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
     // Keep in sync with the generated ResolveAttributeErrorMessage/FormatErrorMessage in
     // src/Validation/gen/Templates/ValidatableInfo.cs, which this mirrors for the SSR client payload.
     public string? ResolveAttributeErrorMessage(
-       string memberName,
+       string? memberName,
        string displayName,
        Type type,
        ValidationAttribute attribute,
@@ -54,38 +54,78 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
             return attribute.FormatErrorMessage(displayName);
         }
 
-        var lookupKey = GetErrorMessageKey(attribute, memberName, type);
-
-        if (string.IsNullOrEmpty(lookupKey))
-        {
-            return attribute.FormatErrorMessage(displayName);
-        }
-
         var localizer = GetStringLocalizer(type, localizerFactory);
-        var localizedTemplate = localizer[lookupKey];
+        var localizedTemplate = FindLocalizedTemplate(localizer, attribute, memberName, type);
 
-        if (localizedTemplate.ResourceNotFound)
+        if (localizedTemplate is null)
         {
             return attribute.FormatErrorMessage(displayName);
         }
 
         // Format the localized template with attribute-specific arguments
-        return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
+        return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate, displayName);
     }
 
-    private string? GetErrorMessageKey(ValidationAttribute attribute, string memberName, Type type)
+    // Resolves the localized message template for a validation attribute.
+    //
+    // An explicit ErrorMessage is used verbatim as the lookup key. Otherwise the built-in key
+    // convention is applied, walking from the most specific key to the least specific one:
+    //
+    //   {DeclaringType}_{MemberName}_{AttributeType}_Error
+    //   {DeclaringType}_{AttributeType}_Error
+    //   {AttributeType}_Error
+    //
+    // Returns null when no key resolves, in which case the caller falls back to the
+    // non-localized message produced by the attribute itself.
+    //
+    // Keep in sync with the generated LocalizationHelpers.FindLocalizedTemplate in
+    // src/Validation/gen/Templates/LocalizationHelpers.cs.
+    private static string? FindLocalizedTemplate(
+        IStringLocalizer localizer,
+        ValidationAttribute attribute,
+        string? memberName,
+        Type declaringType)
     {
         if (!string.IsNullOrEmpty(attribute.ErrorMessage))
         {
-            return attribute.ErrorMessage;
+            var explicitMatch = localizer[attribute.ErrorMessage];
+            if (!explicitMatch.ResourceNotFound)
+            {
+                return explicitMatch.Value;
+            }
         }
 
-        return options.MessageKeyProvider?.Invoke(new ValidationMessageKeyContext
+        var attributeName = attribute.GetType().Name;
+        var typeName = GetKeySegment(declaringType);
+
+        // The member-specific tier is skipped when there is no member to key on, which is the case
+        // for a type-level attribute that reports no member names.
+        if (memberName is not null)
         {
-            ValidatorType = attribute.GetType(),
-            MemberName = memberName,
-            DeclaringType = type,
-        });
+            var memberMatch = localizer[$"{typeName}_{memberName}_{attributeName}_Error"];
+            if (!memberMatch.ResourceNotFound)
+            {
+                return memberMatch.Value;
+            }
+        }
+
+        var typeMatch = localizer[$"{typeName}_{attributeName}_Error"];
+        if (!typeMatch.ResourceNotFound)
+        {
+            return typeMatch.Value;
+        }
+
+        var globalMatch = localizer[$"{attributeName}_Error"];
+
+        return globalMatch.ResourceNotFound ? null : globalMatch.Value;
+    }
+
+    private static string GetKeySegment(Type type)
+    {
+        var name = (Nullable.GetUnderlyingType(type) ?? type).Name;
+        var arityIndex = name.IndexOf('`');
+
+        return arityIndex < 0 ? name : name[..arityIndex];
     }
 
     private IStringLocalizer GetStringLocalizer(Type type, IStringLocalizerFactory localizerFactory)
