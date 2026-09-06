@@ -1177,23 +1177,37 @@ pr$number`: pullRequest(number: $number) {
     }
 
     foreach ($candidate in $Candidates) {
+        $candidateNumber = [int](Get-PropertyValue -Object $candidate -Name "number")
+        $discoveryKinds = @(
+            ConvertTo-Array (Get-PropertyValue -Object $candidate -Name "personalDiscoveryKinds")
+        )
+        $hasSearchEvidence = @(
+            $discoveryKinds | Where-Object {
+                $_ -in @("reviewed-by", "review-requested", "commenter", "mentions")
+            }
+        ).Count -gt 0
+        $hasCurrentDirectRequest = @(
+            ConvertTo-Array (Get-PropertyValue -Object $candidate -Name "personalReviewRequests")
+        ).Count -gt 0
         $candidate | Add-Member -NotePropertyName "personalNotifications" -NotePropertyValue @(
             foreach ($notification in $Notifications) {
                 $subject = Get-PropertyValue -Object $notification -Name "subject"
                 $subjectUrl = [string](Get-PropertyValue -Object $subject -Name "url" -DefaultValue "")
-                if ($subjectUrl -match "/issues/$number$" -or $subjectUrl -match "/pulls/$number$") {
+                $reason = [string](Get-PropertyValue -Object $notification -Name "reason" -DefaultValue "")
+                $isPersonallyRelevant = $hasSearchEvidence -or
+                    $reason -eq "mention" -or
+                    ($reason -eq "review_requested" -and $hasCurrentDirectRequest)
+                if ($isPersonallyRelevant -and
+                    ($subjectUrl -match "/issues/$candidateNumber$" -or $subjectUrl -match "/pulls/$candidateNumber$")) {
                     [pscustomobject]@{
-                        unread = -not [bool](Get-PropertyValue -Object $notification -Name "read" -DefaultValue $true)
+                        unread = [bool](Get-PropertyValue -Object $notification -Name "unread" -DefaultValue $false)
                         updatedAt = Get-PropertyValue -Object $notification -Name "updated_at"
-                        reason = [string](Get-PropertyValue -Object $notification -Name "reason" -DefaultValue "")
+                        reason = $reason
                         url = [string](Get-PropertyValue -Object $candidate -Name "html_url" -DefaultValue $candidate.url)
                     }
                 }
             }
         ) -Force
-        $discoveryKinds = @(
-            ConvertTo-Array (Get-PropertyValue -Object $candidate -Name "personalDiscoveryKinds")
-        )
         $candidate | Add-Member -NotePropertyName "personalComments" -NotePropertyValue @(
             if ("commenter" -in $discoveryKinds) {
                 [pscustomobject]@{
@@ -3077,14 +3091,19 @@ function Invoke-PRAttentionQueue {
                 foreach ($notification in $personalNotifications) {
                     $subject = Get-PropertyValue -Object $notification -Name "subject"
                     $subjectUrl = [string](Get-PropertyValue -Object $subject -Name "url" -DefaultValue "")
-                    if ($subjectUrl -match "/(?:issues|pulls)/(\d+)$") {
+                    $reason = [string](Get-PropertyValue -Object $notification -Name "reason" -DefaultValue "")
+                    if ($reason -in @("mention", "review_requested") -and
+                        $subjectUrl -match "/(?:issues|pulls)/(\d+)$") {
                         $number = [int]$Matches[1]
                         $isOpenPullRequest = @(
                             $pullRequests |
                                 Where-Object { [int](Get-PropertyValue -Object $_ -Name "number" -DefaultValue 0) -eq $number }
                         ).Count -gt 0
                         if ($isOpenPullRequest -and -not @($personalCandidates | Where-Object { [int]$_.number -eq $number })) {
-                            $personalCandidates += [pscustomobject]@{ number = $number }
+                            $personalCandidates += [pscustomobject]@{
+                                number = $number
+                                personalDiscoveryKinds = @("notification-only")
+                            }
                         }
                     }
                 }
