@@ -265,11 +265,212 @@ Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).
 Assert-True (($personalResult.personal.inventory | Where-Object number -eq 202).signals.kind -contains "direct-request") "A direct review request must produce a personal signal."
 Assert-True (($personalResult.personal.inventory | Where-Object number -eq 203).signals.kind -contains "follow-up-notification") "An unread notification must produce a personal signal."
 Assert-True (($personalResult.personal.inventory | Where-Object number -eq 204).signals.kind -contains "review-thread-reply") "A later participant reply must produce a thread signal."
-Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 203).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/issues/203")) "REST subject.url must map the notification to PR 203."
-Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 204).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pulls/204")) "REST subject.url must map the notification to PR 204."
+Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 203).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/203")) "REST subject.url must map the notification to the canonical PR URL for PR 203."
+Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 204).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/204")) "REST subject.url must map the notification to the canonical PR URL for PR 204."
 Assert-True (-not (($personalResult.personal.inventory | Where-Object number -eq 201).signals.kind -contains "follow-up-notification")) "Read notifications must not create follow-up signals."
 Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals[0].evidenceUrl.Contains("pullrequestreview-201")) "Personal signals must retain canonical evidence links."
 Assert-True (($personalResult.personal.coverage.reviewThreads -like "partial*") -or ($personalResult.personal.coverage.reviewThreads -eq "assessed")) "Personal coverage must disclose bounded thread evidence."
 Assert-True (($personalResult.personal.inventory | Select-Object -ExpandProperty number -Unique).Count -eq @($personalResult.personal.inventory).Count) "Multiple signals must remain one card per pull request."
+
+$module = Get-Module PRAttentionQueue
+$cachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-notification-cache-$PID.json"
+if (Test-Path -LiteralPath $cachePath) {
+    Remove-Item -Force -LiteralPath $cachePath
+}
+$transportCalls = [System.Collections.Generic.List[object]]::new()
+$conditionalTransport = {
+    param([object[]]$Arguments)
+    $transportCalls.Add(@($Arguments))
+    if ($transportCalls.Count -eq 1) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-1`"`r`nLast-Modified: Mon, 01 Sep 2026 12:00:00 GMT`r`nX-Poll-Interval: 0`r`n`r`n[{`"id`":`"one`"}]"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    Assert-True (@($Arguments) -contains "If-None-Match: `"etag-1`"") "A warm notification request must send the cached ETag."
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 304 Not Modified`r`n`r`n"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$firstNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $conditionalTransport $cachePath
+$secondNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $conditionalTransport $cachePath
+Assert-True ($firstNotification.value[0].id -eq "one") "The mocked cold notification response must be parsed."
+Assert-True ($secondNotification.notModified) "The mocked warm notification response must use HTTP 304."
+Assert-True ($secondNotification.value[0].id -eq "one") "HTTP 304 must reuse the exact cached notification body."
+Assert-True ($transportCalls.Count -eq 2) "The conditional transport test must perform exactly one cold and one warm request."
+
+$pollCachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-poll-cache-$PID.json"
+if (Test-Path -LiteralPath $pollCachePath) {
+    Remove-Item -Force -LiteralPath $pollCachePath
+}
+$pollCalls = [System.Collections.Generic.List[object]]::new()
+$pollTransport = {
+    param([object[]]$Arguments)
+    $pollCalls.Add(@($Arguments))
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-poll`"`r`nX-Poll-Interval: 120`r`n`r`n[{`"id`":`"poll`"}]"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$null = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $pollTransport $pollCachePath
+$deferredPoll = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $pollTransport $pollCachePath
+Assert-True ($deferredPoll.retryLater) "A successful X-Poll-Interval must defer an immediate second poll."
+Assert-True ($pollCalls.Count -eq 1) "X-Poll-Interval deferral must not issue an early second request."
+
+$backoffCalls = [System.Collections.Generic.List[object]]::new()
+$backoffTransport = {
+    param([object[]]$Arguments)
+    $backoffCalls.Add(@($Arguments))
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 429 Too Many Requests`r`nRetry-After: 31`r`n`r`n"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$backoffError = $null
+try {
+    & $module {
+        param($transport, $path)
+        Invoke-GhConditionalJson `
+            -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+            -Identity "reviewer" `
+            -RepositoryName "dotnet/aspnetcore" `
+            -Page 1 `
+            -CachePath $path `
+            -Transport $transport
+    } $backoffTransport (Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-backoff-cache-$PID.json")
+}
+catch {
+    $backoffError = $_.Exception.Message
+}
+Assert-True ($backoffError -like "retry-later:*") "A server delay beyond the retry budget must surface retry-later."
+Assert-True ($backoffCalls.Count -eq 1) "A long server delay must not retry early."
+
+$emptyEvidence = & $module {
+    Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates @() `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+}
+Assert-True ($emptyEvidence.requestCount -eq 0) "An empty personal candidate union must return zero evidence requests."
+Assert-True ($null -ne $emptyEvidence.elapsedMs) "An empty personal candidate union must still return evidence metrics."
+
+$mockEvidence = & $module {
+    function Invoke-GhJson {
+        param([string[]]$Arguments)
+        $query = [string]($Arguments | Where-Object { $_ -like "query=*" } | Select-Object -First 1)
+        $repository = [ordered]@{}
+        foreach ($number in @(301, 302)) {
+            if ($query -like "*reviewThreads*") {
+                $repository["pr$number"] = [pscustomobject]@{
+                    reviewThreads = [pscustomobject]@{
+                        pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                        nodes = @()
+                    }
+                }
+            }
+            else {
+                $repository["pr$number"] = [pscustomobject]@{
+                    number = $number
+                    title = "Mock personal PR $number"
+                    url = "https://github.com/dotnet/aspnetcore/pull/$number"
+                    author = [pscustomobject]@{ login = "author-$number" }
+                    state = "OPEN"
+                    isDraft = $false
+                    updatedAt = "2026-09-06T12:00:00Z"
+                    headRefOid = "head-$number"
+                    reviewRequests = [pscustomobject]@{
+                        pageInfo = [pscustomobject]@{ hasNextPage = $false }
+                        nodes = @()
+                    }
+                    reviews = [pscustomobject]@{ nodes = @() }
+                }
+            }
+        }
+        return [pscustomobject]@{
+            data = [pscustomobject]@{
+                repository = [pscustomobject]$repository
+            }
+        }
+    }
+
+    $candidates = @(
+        [pscustomobject]@{
+            number = 301
+            url = "https://github.com/dotnet/aspnetcore/pull/301"
+            personalDiscoveryKinds = @("reviewed-by")
+        }
+        [pscustomobject]@{
+            number = 302
+            url = "https://github.com/dotnet/aspnetcore/pull/302"
+            personalDiscoveryKinds = @("mentions")
+        }
+    )
+    $result = Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates $candidates `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+    [pscustomobject]@{
+        metrics = $result
+        candidates = $candidates
+    }
+}
+Assert-True ($mockEvidence.metrics.requestCount -eq 2) "Two mocked candidates should produce one details and one bounded thread request."
+Assert-True ($mockEvidence.metrics.threadCandidates -eq 1) "Thread hydration must be limited to the explicit relevant subset."
+Assert-True (($mockEvidence.candidates | Where-Object number -eq 301).personalCoverage.reviewThreads.state -eq "assessed") "The selected candidate must receive thread coverage."
+Assert-True (($mockEvidence.candidates | Where-Object number -eq 302).personalCoverage.reviewThreads.state -eq "unassessed") "The unselected candidate must remain unassessed."
+
+foreach ($temporaryPath in @($cachePath, $pollCachePath)) {
+    if (Test-Path -LiteralPath $temporaryPath) {
+        Remove-Item -Force -LiteralPath $temporaryPath
+    }
+}
 
 Write-Output "All PR attention queue tests passed."

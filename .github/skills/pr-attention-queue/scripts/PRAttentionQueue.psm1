@@ -126,6 +126,7 @@ function Invoke-GhText {
 }
 
 $script:PersonalNotificationCacheVersion = 1
+$script:PersonalNotificationMaxRetryDelaySeconds = 30
 
 function Get-NotificationCacheKey {
     param(
@@ -238,7 +239,7 @@ function Get-BackoffSeconds {
         return 0
     }
 
-    return [Math]::Min(120, ($delays | Measure-Object -Maximum).Maximum)
+    return ($delays | Measure-Object -Maximum).Maximum
 }
 
 function Invoke-GhConditionalJson {
@@ -248,6 +249,7 @@ function Invoke-GhConditionalJson {
         [string]$RepositoryName,
         [int]$Page,
         [string]$CachePath,
+        [scriptblock]$Transport,
         [ValidateRange(1, 5)]
         [int]$MaxAttempts = 3
     )
@@ -261,6 +263,28 @@ function Invoke-GhConditionalJson {
     $cached = if ($cache.ContainsKey($key)) { $cache[$key] } else { $null }
     $requestCount = 0
     $backoffSeconds = 0
+    if ($cached -and $cached.body -and $cached.fetchedAtUtc -and $cached.pollIntervalSeconds) {
+        $fetchedAt = [DateTimeOffset]::MinValue
+        $pollInterval = 0
+        if ([DateTimeOffset]::TryParse([string]$cached.fetchedAtUtc, [ref]$fetchedAt) -and
+            [int]::TryParse([string]$cached.pollIntervalSeconds, [ref]$pollInterval) -and
+            $pollInterval -gt 0) {
+            $retryAfter = [int][Math]::Ceiling(
+                ($fetchedAt.AddSeconds($pollInterval) - [DateTimeOffset]::UtcNow).TotalSeconds
+            )
+            if ($retryAfter -gt 0) {
+                return [pscustomobject]@{
+                    value = $cached.body | ConvertFrom-Json -Depth 20
+                    requestCount = 0
+                    cached = $true
+                    notModified = $false
+                    retryLater = $true
+                    retryAfterSeconds = $retryAfter
+                    backoffSeconds = 0
+                }
+            }
+        }
+    }
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         $arguments = @("api", "--include", $Endpoint)
@@ -271,24 +295,33 @@ function Invoke-GhConditionalJson {
             $arguments += @("-H", "If-Modified-Since: $($cached.lastModified)")
         }
 
-        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = "gh"
-        $startInfo.UseShellExecute = $false
-        $startInfo.RedirectStandardOutput = $true
-        $startInfo.RedirectStandardError = $true
-        foreach ($argument in $arguments) {
-            $startInfo.ArgumentList.Add($argument)
+        if ($null -ne $Transport) {
+            $transportResult = & $Transport $arguments
+            $stdout = [string](Get-PropertyValue -Object $transportResult -Name "stdout" -DefaultValue "")
+            $stderr = [string](Get-PropertyValue -Object $transportResult -Name "stderr" -DefaultValue "")
+            $exitCode = [int](Get-PropertyValue -Object $transportResult -Name "exitCode" -DefaultValue 0)
         }
+        else {
+            $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+            $startInfo.FileName = "gh"
+            $startInfo.UseShellExecute = $false
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            foreach ($argument in $arguments) {
+                $startInfo.ArgumentList.Add($argument)
+            }
 
-        $process = [System.Diagnostics.Process]::new()
-        $process.StartInfo = $startInfo
-        if (-not $process.Start()) {
-            throw "Failed to start the GitHub CLI."
+            $process = [System.Diagnostics.Process]::new()
+            $process.StartInfo = $startInfo
+            if (-not $process.Start()) {
+                throw "Failed to start the GitHub CLI."
+            }
+
+            $stdout = $process.StandardOutput.ReadToEnd()
+            $stderr = $process.StandardError.ReadToEnd()
+            $process.WaitForExit()
+            $exitCode = $process.ExitCode
         }
-
-        $stdout = $process.StandardOutput.ReadToEnd()
-        $stderr = $process.StandardError.ReadToEnd()
-        $process.WaitForExit()
         $requestCount++
 
         $responseText = $stdout
@@ -326,15 +359,19 @@ function Invoke-GhConditionalJson {
                 requestCount = $requestCount
                 cached = $true
                 notModified = $true
+                retryLater = $false
+                retryAfterSeconds = 0
                 backoffSeconds = $backoffSeconds
             }
         }
 
-        if ($status -ge 200 -and $status -lt 300 -and $process.ExitCode -eq 0) {
+        if ($status -ge 200 -and $status -lt 300 -and $exitCode -eq 0) {
             $cache[$key] = @{
                 body = $body
                 etag = Get-ResponseHeader -Headers $headers -Name "etag"
                 lastModified = Get-ResponseHeader -Headers $headers -Name "last-modified"
+                fetchedAtUtc = [DateTimeOffset]::UtcNow.ToString("o")
+                pollIntervalSeconds = [int](Get-ResponseHeader -Headers $headers -Name "x-poll-interval")
             }
             Write-NotificationCache -Path $CachePath -Entries $cache
             return [pscustomobject]@{
@@ -342,6 +379,8 @@ function Invoke-GhConditionalJson {
                 requestCount = $requestCount
                 cached = $false
                 notModified = $false
+                retryLater = $false
+                retryAfterSeconds = 0
                 backoffSeconds = $backoffSeconds
             }
         }
@@ -352,6 +391,10 @@ function Invoke-GhConditionalJson {
         if (-not $isTransient -or $attempt -eq $MaxAttempts) {
             $message = if ([string]::IsNullOrWhiteSpace($stderr)) { $body } else { $stderr }
             throw "GitHub notification request failed with HTTP $status`: $($message.Trim())"
+        }
+
+        if ($delay -gt $script:PersonalNotificationMaxRetryDelaySeconds) {
+            throw "retry-later: GitHub requested a $delay-second delay before retrying notification access."
         }
 
         if ($delay -gt 0) {
@@ -998,10 +1041,7 @@ function Get-PersonalInboxItem {
             evidenceUrl = [string](Get-PropertyValue `
                 -Object $latestNotification `
                 -Name "url" `
-                -DefaultValue (Get-PropertyValue `
-                    -Object (Get-PropertyValue -Object $latestNotification -Name "subject") `
-                    -Name "url" `
-                    -DefaultValue $Item.url))
+                -DefaultValue $Item.url)
             detail = "GitHub has unread activity associated with your participation or mention."
             unread = $true
             reason = [string](Get-PropertyValue -Object $latestNotification -Name "reason" -DefaultValue "")
@@ -1173,7 +1213,8 @@ function Get-RepositoryNotifications {
     param(
         [string]$RepositoryName,
         [string]$PersonalLogin,
-        [string]$CachePath
+        [string]$CachePath,
+        [scriptblock]$Transport
     )
 
     $allNotifications = [System.Collections.Generic.List[object]]::new()
@@ -1182,6 +1223,7 @@ function Get-RepositoryNotifications {
     $requestCount = 0
     $cachedPages = 0
     $notModifiedPages = 0
+    $retryLaterPages = 0
     $backoffSeconds = 0
     $errorMessage = $null
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -1193,7 +1235,8 @@ function Get-RepositoryNotifications {
                 -Identity $PersonalLogin `
                 -RepositoryName $RepositoryName `
                 -Page $page `
-                -CachePath $CachePath
+                -CachePath $CachePath `
+                -Transport $Transport
             $notifications = $response.value
             $requestCount += $response.requestCount
             $backoffSeconds += $response.backoffSeconds
@@ -1202,6 +1245,9 @@ function Get-RepositoryNotifications {
             }
             if ($response.notModified) {
                 $notModifiedPages++
+            }
+            if ($response.retryLater) {
+                $retryLaterPages++
             }
             foreach ($notification in ConvertTo-Array $notifications) {
                 $allNotifications.Add($notification)
@@ -1234,6 +1280,7 @@ function Get-RepositoryNotifications {
             requestCount = $requestCount
             cachedPages = $cachedPages
             notModifiedPages = $notModifiedPages
+            retryLaterPages = $retryLaterPages
             backoffSeconds = $backoffSeconds
             elapsedMs = [int]$stopwatch.ElapsedMilliseconds
             error = $errorMessage
@@ -1508,7 +1555,7 @@ pr$number`: pullRequest(number: $number) {
                         unread = [bool](Get-PropertyValue -Object $notification -Name "unread" -DefaultValue $false)
                         updatedAt = Get-PropertyValue -Object $notification -Name "updated_at"
                         reason = $reason
-                        url = $subjectUrl
+                        url = [string](Get-PropertyValue -Object $candidate -Name "url" -DefaultValue $candidate.html_url)
                     }
                 }
             }
@@ -1542,26 +1589,52 @@ pr$number`: pullRequest(number: $number) {
         }) -Force
     }
 
+    $threadCandidates = @(
+        $Candidates |
+            Where-Object {
+                $hasDirectRequest = @(
+                    ConvertTo-Array (Get-PropertyValue -Object $_ -Name "personalReviewRequests")
+                ).Count -gt 0
+                $hasUnreadNotification = @(
+                    ConvertTo-Array (Get-PropertyValue -Object $_ -Name "personalNotifications")
+                ) | Where-Object {
+                    [bool](Get-PropertyValue -Object $_ -Name "unread" -DefaultValue $false)
+                }
+                $discoveryKinds = @(
+                    ConvertTo-Array (Get-PropertyValue -Object $_ -Name "personalDiscoveryKinds")
+                )
+                $hasExplicitThreadSignal = $discoveryKinds -contains "reviewed-by" -or
+                    $discoveryKinds -contains "commenter"
+                $hasDirectRequest -or $hasUnreadNotification -or $hasExplicitThreadSignal
+            } |
+            Select-Object -First 10
+    )
+    $threadCandidateNumbers = @($threadCandidates | ForEach-Object { [int]$_.number })
+
     try {
-        $requestCount += [int](Add-PersonalReviewThreadDetails -RepositoryName $RepositoryName -Candidates $Candidates)
+        $requestCount += [int](Add-PersonalReviewThreadDetails -RepositoryName $RepositoryName -Candidates $threadCandidates)
         foreach ($candidate in $Candidates) {
             $coverage = Get-PropertyValue -Object $candidate -Name "personalCoverage"
             if ($coverage) {
-                $coverage.reviewThreads = [pscustomobject]@{
-                    state = if ([bool](Get-PropertyValue -Object $candidate -Name "personalReviewThreadsPartial" -DefaultValue $true)) {
-                        "partial"
+                if ([int]$candidate.number -in $threadCandidateNumbers) {
+                    $coverage.reviewThreads = [pscustomobject]@{
+                        state = if ([bool](Get-PropertyValue -Object $candidate -Name "personalReviewThreadsPartial" -DefaultValue $true)) {
+                            "partial"
+                        }
+                        else {
+                            "assessed"
+                        }
+                        detail = "Up to 50 review threads and 20 comments per thread were hydrated for a bounded relevant subset; publication requires an author, timestamp, and canonical URL."
                     }
-                    else {
-                        "assessed"
-                    }
-                    detail = "Up to 50 review threads and 20 comments per thread were hydrated; publication requires an author, timestamp, and canonical URL."
                 }
-            }
-
-            $stopwatch.Stop()
-            return [pscustomobject]@{
-                requestCount = $requestCount
-                elapsedMs = [int]$stopwatch.ElapsedMilliseconds
+                else {
+                    $candidate | Add-Member -NotePropertyName "personalReviewThreads" -NotePropertyValue @() -Force
+                    $candidate | Add-Member -NotePropertyName "personalReviewThreadsPartial" -NotePropertyValue $false -Force
+                    $coverage.reviewThreads = [pscustomobject]@{
+                        state = "unassessed"
+                        detail = "Review-thread hydration was deferred because this candidate had no direct request, unread notification, or explicit participation signal in the bounded selection."
+                    }
+                }
             }
         }
     }
@@ -1576,6 +1649,13 @@ pr$number`: pullRequest(number: $number) {
             }
             $candidate | Add-Member -NotePropertyName "personalReviewThreads" -NotePropertyValue @() -Force
         }
+    }
+
+    $stopwatch.Stop()
+    return [pscustomobject]@{
+        requestCount = $requestCount
+        elapsedMs = [int]$stopwatch.ElapsedMilliseconds
+        threadCandidates = $threadCandidates.Count
     }
 }
 
@@ -3373,11 +3453,12 @@ function Invoke-PRAttentionQueue {
     $personalSearchCoverage = "unavailable"
     $personalIdentityRequests = 0
     $personalSearchMetrics = [pscustomobject]@{ requestCount = 0; elapsedMs = 0 }
-    $personalEvidenceMetrics = [pscustomobject]@{ requestCount = 0; elapsedMs = 0 }
+    $personalEvidenceMetrics = [pscustomobject]@{ requestCount = 0; elapsedMs = 0; threadCandidates = 0 }
     $personalNotificationMetrics = [pscustomobject]@{
         requestCount = 0
         cachedPages = 0
         notModifiedPages = 0
+        retryLaterPages = 0
         backoffSeconds = 0
         elapsedMs = 0
         state = "unavailable"
@@ -4011,6 +4092,7 @@ function Invoke-PRAttentionQueue {
             personalNotificationRequests = [int]$personalNotificationMetrics.requestCount
             personalNotificationCachedPages = [int]$personalNotificationMetrics.cachedPages
             personalNotificationNotModifiedPages = [int]$personalNotificationMetrics.notModifiedPages
+            personalNotificationRetryLaterPages = [int]$personalNotificationMetrics.retryLaterPages
             personalNotificationBackoffSeconds = [int]$personalNotificationMetrics.backoffSeconds
             personalNotificationMs = [int]$personalNotificationMetrics.elapsedMs
             personalApiCalls = [int](
@@ -4021,6 +4103,7 @@ function Invoke-PRAttentionQueue {
             )
             personalSearchMs = [int]$personalSearchMetrics.elapsedMs
             personalEvidenceMs = [int]$personalEvidenceMetrics.elapsedMs
+            personalThreadCandidates = [int]$personalEvidenceMetrics.threadCandidates
             totalMs = [int]($totalStopwatch.ElapsedMilliseconds)
         }
     }
