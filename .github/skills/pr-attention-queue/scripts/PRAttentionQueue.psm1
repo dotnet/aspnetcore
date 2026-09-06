@@ -292,13 +292,13 @@ function Invoke-GhConditionalJson {
         $requestCount++
 
         $responseText = $stdout
-        $statusStart = $responseText.LastIndexOf("HTTP/")
-        if ($statusStart -lt 0) {
+        $statusLines = [regex]::Matches($responseText, "(?m)^HTTP/\S+\s+\d{3}.*$")
+        if ($statusLines.Count -eq 0) {
             $message = if ([string]::IsNullOrWhiteSpace($stderr)) { $stdout } else { $stderr }
             throw "GitHub notification request returned no HTTP response: $($message.Trim())"
         }
 
-        $responseText = $responseText.Substring($statusStart)
+        $responseText = $responseText.Substring($statusLines[$statusLines.Count - 1].Index)
         $separator = [regex]::Match($responseText, "\r?\n\r?\n")
         if (-not $separator.Success) {
             throw "GitHub notification request returned malformed headers."
