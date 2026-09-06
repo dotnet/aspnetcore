@@ -497,6 +497,14 @@ export const HTML = `<!doctype html>
       return node;
     }
 
+    function formatOptionalDate(value, formatter = (date) => date.toLocaleString()) {
+      if (value === null || value === undefined || value === "") {
+        return "unknown";
+      }
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "unknown" : formatter(date);
+    }
+
     function render(state) {
       const snapshot = state.snapshot;
       renderStatus(state.refresh, snapshot);
@@ -723,7 +731,7 @@ export const HTML = `<!doctype html>
             "muted",
             "@" + item.author
               + (item.authorIsBot ? " | bot-authored" : "")
-              + " | updated " + new Date(item.updatedAt).toLocaleString(),
+              + " | updated " + formatOptionalDate(item.updatedAt),
           ),
         );
 
@@ -953,7 +961,7 @@ export const HTML = `<!doctype html>
         metadata.push("Next actor: " + item.nextActor);
       }
       if (item.createdAt) {
-        metadata.push("Opened " + new Date(item.createdAt).toLocaleDateString());
+        metadata.push("Opened " + formatOptionalDate(item.createdAt, (date) => date.toLocaleDateString()));
       }
       if (metadata.length) {
         card.append(element("div", "muted", metadata.join(" | ")));
@@ -1090,7 +1098,7 @@ export const HTML = `<!doctype html>
               "@" + comment.author + " | " + comment.actor + " | " + comment.kindDisplay.label,
             ),
           );
-          evidence.append(element("div", "muted", new Date(comment.createdAt).toLocaleString()));
+          evidence.append(element("div", "muted", formatOptionalDate(comment.createdAt)));
           evidence.append(element("p", "", comment.excerpt || "(No text returned.)"));
           assessment.append(evidence);
         }

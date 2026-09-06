@@ -49,6 +49,9 @@ test("renderer exposes cached freshness and action-withheld states", () => {
 test("renderer exposes the personal PR inbox without creating a follow-up lane", () => {
   assert.match(HTML, /My PR inbox/);
   assert.match(HTML, /snapshot\.personalInbox/);
+  assert.match(HTML, /formatOptionalDate\(item\.updatedAt\)/);
+  assert.match(HTML, /formatOptionalDate\(item\.createdAt, \(date\) => date\.toLocaleDateString\(\)\)/);
+  assert.match(HTML, /formatOptionalDate\(comment\.createdAt\)/);
   assert.match(HTML, /Direct review request/);
   assert.match(HTML, /Changed since own review/);
   assert.match(HTML, /Reply in participated thread/);
