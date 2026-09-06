@@ -1117,6 +1117,8 @@ function Get-PersonalSearchCandidates {
     )
     $results = @{}
     $incomplete = $false
+    $requestCount = 0
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     for ($queryIndex = 0; $queryIndex -lt $queries.Count; $queryIndex++) {
         $query = $queries[$queryIndex]
         $queryKind = $queryKinds[$queryIndex]
@@ -1126,6 +1128,7 @@ function Get-PersonalSearchCandidates {
                 "api",
                 "search/issues?q=$encodedQuery&per_page=100&page=$page"
             )
+            $requestCount++
             $incomplete = $incomplete -or [bool](Get-PropertyValue -Object $response -Name "incomplete_results" -DefaultValue $false)
             $pageItems = @(ConvertTo-Array (Get-PropertyValue -Object $response -Name "items"))
             foreach ($item in $pageItems) {
@@ -1155,9 +1158,14 @@ function Get-PersonalSearchCandidates {
         }
     }
 
+    $stopwatch.Stop()
     return [pscustomobject]@{
         items = @($results.Values | Sort-Object number)
         coverage = if ($incomplete) { "partial" } else { "assessed" }
+        metrics = [pscustomobject]@{
+            requestCount = $requestCount
+            elapsedMs = [int]$stopwatch.ElapsedMilliseconds
+        }
     }
 }
 
@@ -1237,10 +1245,11 @@ function Add-PersonalReviewThreadDetails {
     )
 
     if ($Candidates.Count -eq 0) {
-        return
+        return 0
     }
 
     $repositoryParts = $RepositoryName.Split("/")
+    $requestCount = 0
     for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
         $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
         $aliases = @(
@@ -1281,6 +1290,7 @@ pr$number`: pullRequest(number: $number) {
             "-F",
             "name=$($repositoryParts[1])"
         )
+        $requestCount++
 
         foreach ($candidate in $chunk) {
             $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$([int]$candidate.number)"
@@ -1319,6 +1329,8 @@ pr$number`: pullRequest(number: $number) {
             ) -Force
         }
     }
+
+    return $requestCount
 }
 
 function Add-PersonalEvidenceDetails {
@@ -1336,6 +1348,8 @@ function Add-PersonalEvidenceDetails {
         throw "Repository must use the owner/name format."
     }
 
+    $requestCount = 0
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
         $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
         $aliases = @(
@@ -1388,6 +1402,7 @@ pr$number`: pullRequest(number: $number) {
             "-F",
             "login=$PersonalLogin"
         )
+        $requestCount++
 
         foreach ($candidate in $chunk) {
             $number = [int](Get-PropertyValue -Object $candidate -Name "number")
@@ -1525,7 +1540,7 @@ pr$number`: pullRequest(number: $number) {
     }
 
     try {
-        Add-PersonalReviewThreadDetails -RepositoryName $RepositoryName -Candidates $Candidates
+        $requestCount += [int](Add-PersonalReviewThreadDetails -RepositoryName $RepositoryName -Candidates $Candidates)
         foreach ($candidate in $Candidates) {
             $coverage = Get-PropertyValue -Object $candidate -Name "personalCoverage"
             if ($coverage) {
@@ -1538,6 +1553,12 @@ pr$number`: pullRequest(number: $number) {
                     }
                     detail = "Up to 50 review threads and 20 comments per thread were hydrated; publication requires an author, timestamp, and canonical URL."
                 }
+            }
+
+            $stopwatch.Stop()
+            return [pscustomobject]@{
+                requestCount = $requestCount
+                elapsedMs = [int]$stopwatch.ElapsedMilliseconds
             }
         }
     }
@@ -3341,11 +3362,15 @@ function Invoke-PRAttentionQueue {
         }
     }
 
+    $personalStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $resolvedPersonalLogin = $PersonalLogin
     $personalCandidates = @()
     $personalNotifications = @()
     $personalCollectionState = "unavailable"
     $personalSearchCoverage = "unavailable"
+    $personalIdentityRequests = 0
+    $personalSearchMetrics = [pscustomobject]@{ requestCount = 0; elapsedMs = 0 }
+    $personalEvidenceMetrics = [pscustomobject]@{ requestCount = 0; elapsedMs = 0 }
     $personalNotificationMetrics = [pscustomobject]@{
         requestCount = 0
         cachedPages = 0
@@ -3381,11 +3406,13 @@ function Invoke-PRAttentionQueue {
                     $resolvedPersonalLogin
                 }
                 else {
+                    $personalIdentityRequests++
                     Invoke-GhText -Arguments @("api", "user", "--jq", ".login")
                 }
                 $searchResult = Get-PersonalSearchCandidates -RepositoryName $Repository -PersonalLogin $resolvedPersonalLogin
                 $personalCandidates = @($searchResult.items)
                 $personalSearchCoverage = [string]$searchResult.coverage
+                $personalSearchMetrics = $searchResult.metrics
                 $notificationResult = Get-RepositoryNotifications `
                     -RepositoryName $Repository `
                     -PersonalLogin $resolvedPersonalLogin `
@@ -3415,7 +3442,7 @@ function Invoke-PRAttentionQueue {
                         }
                     }
                 }
-                Add-PersonalEvidenceDetails `
+                $personalEvidenceMetrics = Add-PersonalEvidenceDetails `
                     -RepositoryName $Repository `
                     -Candidates $personalCandidates `
                     -PersonalLogin $resolvedPersonalLogin `
@@ -3887,7 +3914,6 @@ function Invoke-PRAttentionQueue {
     $inboxStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $inbox = Get-InboxData -Items $orderedItems -Settings $configuration.settings -SnapshotTime $Now
     $inboxStopwatch.Stop()
-    $personalStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $personal = Get-PersonalData `
         -GeneralItems $orderedItems `
         -PersonalCandidates $personalCandidates `
@@ -3963,6 +3989,14 @@ function Invoke-PRAttentionQueue {
             personalNotificationNotModifiedPages = [int]$personalNotificationMetrics.notModifiedPages
             personalNotificationBackoffSeconds = [int]$personalNotificationMetrics.backoffSeconds
             personalNotificationMs = [int]$personalNotificationMetrics.elapsedMs
+            personalApiCalls = [int](
+                $personalIdentityRequests +
+                $personalSearchMetrics.requestCount +
+                $personalNotificationMetrics.requestCount +
+                $personalEvidenceMetrics.requestCount
+            )
+            personalSearchMs = [int]$personalSearchMetrics.elapsedMs
+            personalEvidenceMs = [int]$personalEvidenceMetrics.elapsedMs
             totalMs = [int]($totalStopwatch.ElapsedMilliseconds)
         }
     }
