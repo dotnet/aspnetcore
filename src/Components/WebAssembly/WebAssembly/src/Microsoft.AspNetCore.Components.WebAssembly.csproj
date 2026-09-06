@@ -16,7 +16,17 @@
 
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+    <!-- Browser-only assembly: JSImport partials are [SupportedOSPlatform("browser")] (dotnet/runtime #131055). CA1416 is not meaningful here since all code runs on the Mono WebAssembly runtime. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
+  <!-- Components.TestServer publishes multiple referenced WebAssembly apps that all traverse this
+       project. Skip the redundant traversal on that publish path to avoid concurrent compression. -->
+  <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">
+    <StaticWebAssetsGetPublishAssetsTargets>_SkipGetPublishAssetsForTrimmedBuild</StaticWebAssetsGetPublishAssetsTargets>
+  </PropertyGroup>
+
+  <Target Name="_SkipGetPublishAssetsForTrimmedBuild" />
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />

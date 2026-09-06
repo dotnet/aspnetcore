@@ -66,6 +66,44 @@ public class Startup
                 }
             }
 
+            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+            await context.Response.WriteAsync(Environment.NewLine);
+            await context.Response.WriteAsync("ITlsConnectionFeature.TryGetChannelBindingBytes:" + Environment.NewLine);
+            if (tlsFeature is null)
+            {
+                await context.Response.WriteAsync("  feature not present (non-HTTPS request)" + Environment.NewLine);
+            }
+            else if (!tlsFeature.TryGetChannelBindingBytes(System.Security.Authentication.ExtendedProtection.ChannelBindingKind.Endpoint, out var bytes))
+            {
+                await context.Response.WriteAsync("  TryGetChannelBindingBytes(Endpoint) returned false — IIS did not enable channel binding on this URL group." + Environment.NewLine);
+                await context.Response.WriteAsync("  Configure <security>/<authentication>/<windowsAuthentication><extendedProtection tokenChecking=\"Allow\"/> in web.config." + Environment.NewLine);
+            }
+            else
+            {
+                var sb = new System.Text.StringBuilder();
+                var raw = bytes.Span;
+                sb.Append("  raw length = ").Append(raw.Length).AppendLine(" bytes (SEC_CHANNEL_BINDINGS header + appdata)");
+                if (raw.Length >= 32)
+                {
+                    var appDataLen = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(24, 4));
+                    var appDataOff = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(28, 4));
+                    sb.Append("  appdata length = ").Append(appDataLen).Append(", offset = ").Append(appDataOff).AppendLine();
+                    if (appDataOff + appDataLen <= raw.Length)
+                    {
+                        var appData = raw.Slice((int)appDataOff, (int)appDataLen);
+                        var sep = appData.IndexOf((byte)':');
+                        if (sep > 0 && sep + 1 < appData.Length)
+                        {
+                            var prefix = System.Text.Encoding.ASCII.GetString(appData.Slice(0, sep + 1));
+                            var hash = Convert.ToHexString(appData.Slice(sep + 1));
+                            sb.Append("  prefix = \"").Append(prefix).AppendLine("\"");
+                            sb.Append("  cert hash = ").AppendLine(hash);
+                        }
+                    }
+                }
+                await context.Response.WriteAsync(sb.ToString());
+            }
+
             await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
             if (_authSchemeProvider != null)
             {

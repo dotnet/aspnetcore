@@ -1,0 +1,7 @@
+@* Hosts the async DataAnnotations form with a source-generated validatable model, so validation
+   runs through the Microsoft.Extensions.Validation (MEV) path (IValidatableTypeInfo.ValidateAsync). *@
+<AsyncDataAnnotationsForm Model="_model" />
+
+@code {
+    private readonly MevPathModel _model = new();
+}

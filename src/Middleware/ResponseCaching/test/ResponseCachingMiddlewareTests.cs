@@ -949,7 +949,7 @@ public class ResponseCachingMiddlewareTests
 
         // Pre-set a base key so CreateBaseKey succeeds, then set up vary rules in cache
         // so the middleware will call CreateLookupVaryByKeys -> CreateStorageVaryByKey
-        var baseKey = $"GET{(char)0x1e}{(char)0x1e}";
+        var baseKey = $"GET{(char)0x1e}{(char)0x1e}{(char)0x1e}";
         context.BaseKey = baseKey;
         var varyByRules = new CachedVaryByRules()
         {

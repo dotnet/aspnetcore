@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -473,6 +474,37 @@ internal partial class IISHttpContext : IFeatureCollection,
     internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
     {
         return IsHttps ? this : null;
+    }
+
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        channelBindingToken = default;
+
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint
+        // binding (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return false;
+        }
+
+        if (!IsHttps)
+        {
+            return false;
+        }
+
+        // Whether http.sys actually populates HTTP_REQUEST_CHANNEL_BIND_STATUS is governed
+        // by IIS configuration (<system.webServer>/<security>/<authentication>/
+        // extendedProtection), not by managed code — IIS owns the URL group properties.
+        // If IIS has not enabled per-request channel binding, GetChannelBindingToken()
+        // will return null and we will report false to the caller.
+        var bytes = GetChannelBindingToken();
+        if (bytes is not null)
+        {
+            channelBindingToken = bytes;
+            return true;
+        }
+
+        return false;
     }
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers

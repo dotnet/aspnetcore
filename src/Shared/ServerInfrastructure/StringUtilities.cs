@@ -87,7 +87,7 @@ internal static class StringUtilities
     private static bool IsValidHeaderString(string value)
     {
         // Method for Debug.Assert to ensure BytesOrdinalEqualsStringAndAscii
-        // is not called with an unvalidated string comparitor.
+        // is not called with an unvalidated string comparator.
         try
         {
             if (value is null)
@@ -176,10 +176,10 @@ internal static class StringUtilities
         {
             var number = (int)tupleNumber;
             // Slice the buffer so we can use constant offsets in a backwards order
-            // and the highest index [7] will eliminate the bounds checks for all the lower indicies.
+            // and the highest index [7] will eliminate the bounds checks for all the lower indices.
             buffer = buffer.Slice(i);
 
-            // This must be explicity typed as ReadOnlySpan<byte>
+            // This must be explicitly typed as ReadOnlySpan<byte>
             // This then becomes a non-allocating mapping to the data section of the assembly.
             // If it is a var, Span<byte> or byte[], it allocates the byte array per call.
             ReadOnlySpan<byte> hexEncodeMap = "0123456789ABCDEF"u8;

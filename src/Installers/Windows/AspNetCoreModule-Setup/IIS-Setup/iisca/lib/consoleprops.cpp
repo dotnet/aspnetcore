@@ -233,7 +233,7 @@ ScheduleSetConsolePropertiesCA(
 			goto exit;
 		}
 
-		// Only run if the comonent is installing or reinstalling
+		// Only run if the component is installing or reinstalling
 		if ( MsiUtilIsInstalling( installStateCurrent, installStateAction ) ||
 			MsiUtilIsReInstalling( installStateCurrent, installStateAction ) )
 		{
@@ -550,7 +550,7 @@ ExecuteSetConsolePropertiesCA(
 			pConsoleProps->dwScreenBufferSize.Y = (short) dwBufferHeight;
 
 			pConsoleProps->ColorTable[6] = RGB(238, 237, 240); // text color
-			pConsoleProps->ColorTable[5] = RGB(1, 36, 86); // backgroud color
+			pConsoleProps->ColorTable[5] = RGB(1, 36, 86); // background color
 			pConsoleProps->wFillAttribute = ((5 << 4) | 6 );
 
 

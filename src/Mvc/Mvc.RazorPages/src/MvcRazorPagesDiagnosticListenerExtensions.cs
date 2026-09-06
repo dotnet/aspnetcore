@@ -23,7 +23,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(arguments != null);
         Debug.Assert(instance != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeHandlerMethodImpl(diagnosticListener, actionContext, handlerMethodDescriptor, arguments, instance);
@@ -59,7 +59,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(arguments != null);
         Debug.Assert(instance != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterHandlerMethodImpl(diagnosticListener, actionContext, handlerMethodDescriptor, arguments, instance, result);
@@ -91,7 +91,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutionContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeOnPageHandlerExecutionImpl(diagnosticListener, handlerExecutionContext, filter);
@@ -121,7 +121,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterOnPageHandlerExecutionImpl(diagnosticListener, handlerExecutedContext, filter);
@@ -151,7 +151,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutingContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeOnPageHandlerExecutingImpl(diagnosticListener, handlerExecutingContext, filter);
@@ -181,7 +181,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutingContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterOnPageHandlerExecutingImpl(diagnosticListener, handlerExecutingContext, filter);
@@ -211,7 +211,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeOnPageHandlerExecutedImpl(diagnosticListener, handlerExecutedContext, filter);
@@ -241,7 +241,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerExecutedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterOnPageHandlerExecutedImpl(diagnosticListener, handlerExecutedContext, filter);
@@ -271,7 +271,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerSelectedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeOnPageHandlerSelectionImpl(diagnosticListener, handlerSelectedContext, filter);
@@ -301,7 +301,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerSelectedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterOnPageHandlerSelectionImpl(diagnosticListener, handlerSelectedContext, filter);
@@ -331,7 +331,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerSelectedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeOnPageHandlerSelectedImpl(diagnosticListener, handlerSelectedContext, filter);
@@ -361,7 +361,7 @@ internal static class MvcRazorPagesDiagnosticListenerExtensions
         Debug.Assert(handlerSelectedContext != null);
         Debug.Assert(filter != null);
 
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterOnPageHandlerSelectedImpl(diagnosticListener, handlerSelectedContext, filter);

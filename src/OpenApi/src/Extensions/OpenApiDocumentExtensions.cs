@@ -27,11 +27,13 @@ internal static class OpenApiDocumentExtensions
         object? description = null;
         object? example = null;
         object? defaultAnnotation = null;
+        object? deprecatedAnnotation = null;
         if (schema is OpenApiSchema { Metadata: not null } actualSchema)
         {
             actualSchema.Metadata.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
             actualSchema.Metadata.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
             actualSchema.Metadata.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultAnnotation);
+            actualSchema.Metadata.TryGetValue(OpenApiConstants.RefDeprecatedAnnotation, out deprecatedAnnotation);
         }
 
         schemaReference = new OpenApiSchemaReference(schemaId, document)
@@ -39,6 +41,7 @@ internal static class OpenApiDocumentExtensions
             Description = description as string,
             Examples = example is JsonNode exampleJson ? [exampleJson] : null,
             Default = defaultAnnotation as JsonNode,
+            Deprecated = deprecatedAnnotation is true,
         };
 
         return schemaAdded;

@@ -58,8 +58,6 @@
       "src\\Mvc\\Mvc.Abstractions\\test\\Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj",
       "src\\Mvc\\Mvc.Analyzers\\src\\Microsoft.AspNetCore.Mvc.Analyzers.csproj",
       "src\\Mvc\\Mvc.Analyzers\\test\\Mvc.Analyzers.Test.csproj",
-      "src\\Mvc\\Mvc.Api.Analyzers\\src\\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj",
-      "src\\Mvc\\Mvc.Api.Analyzers\\test\\Mvc.Api.Analyzers.Test.csproj",
       "src\\Mvc\\Mvc.ApiExplorer\\src\\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj",
       "src\\Mvc\\Mvc.ApiExplorer\\test\\Microsoft.AspNetCore.Mvc.ApiExplorer.Test.csproj",
       "src\\Mvc\\Mvc.Core\\src\\Microsoft.AspNetCore.Mvc.Core.csproj",

@@ -46,9 +46,9 @@ internal sealed partial class ManifestStaticWebAssetFileProvider : IFileProvider
 
         // Iterate over the path segments until we reach the destination. Whenever we encounter
         // a pattern, we start tracking it as well as the content root directory. On every segment
-        // we evalutate the directory to see if there is a subfolder with the current segment and
+        // we evaluate the directory to see if there is a subfolder with the current segment and
         // replace it on the dictionary if it exists or remove it if it does not.
-        // When we reach our destination we enumerate the files in that folder and evalute them against
+        // When we reach our destination we enumerate the files in that folder and evaluate them against
         // the pattern to compute the final list.
         HashSet<IFileInfo>? files = null;
         for (var i = 0; i < segments.Length; i++)

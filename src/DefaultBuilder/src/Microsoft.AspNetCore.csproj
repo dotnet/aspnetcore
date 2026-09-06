@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SafeHttpMethods.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)AntiforgeryValidationFeature.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)WebHostUtilities\WebHostUtilities.cs" LinkBase="Shared" />
   </ItemGroup>

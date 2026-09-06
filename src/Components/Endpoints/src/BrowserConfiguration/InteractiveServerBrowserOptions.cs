@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components;
@@ -32,4 +33,13 @@ public sealed class InteractiveServerBrowserOptions
     /// Maps to <c>CircuitStartOptions.reconnectionOptions.dialogId</c>.
     /// </summary>
     public string? ReconnectionDialogId { get; set; }
+
+    /// <summary>
+    /// Gets additional library-provided configuration that is serialized alongside the
+    /// known options and flows to the client circuit start options. Libraries (for example
+    /// the auto-pause package) populate their own key here so they can read it from a
+    /// JavaScript initializer without the core runtime needing to know about them.
+    /// </summary>
+    [JsonExtensionData]
+    public IDictionary<string, JsonElement> Extensions { get; } = new Dictionary<string, JsonElement>();
 }

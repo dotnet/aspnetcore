@@ -89,6 +89,7 @@ public class DefaultTagHelperContent : TagHelperContent
             return AppendCore(null);
         }
 
+        // codeql[SM00430] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink. codeql[SM02175] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink. codeql[SM00431] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink.
         return AppendCore(new HtmlString(encoded));
     }
 
