@@ -44,7 +44,16 @@
       }
     ],
     "personalReviewRequests": [],
-    "personalNotifications": [],
+    "personalNotifications": [
+      {
+        "unread": false,
+        "updated_at": "2026-09-03T12:00:00Z",
+        "reason": "comment",
+        "subject": {
+          "url": "https://api.github.com/repos/dotnet/aspnetcore/issues/201"
+        }
+      }
+    ],
     "personalReviewThreads": [],
     "personalComments": [],
     "personalMentions": [],
@@ -188,8 +197,11 @@
     "personalNotifications": [
       {
         "unread": true,
-        "updatedAt": "2026-09-01T12:00:00Z",
-        "url": "https://github.com/dotnet/aspnetcore/pull/203"
+        "updated_at": "2026-09-01T12:00:00Z",
+        "reason": "comment",
+        "subject": {
+          "url": "https://api.github.com/repos/dotnet/aspnetcore/issues/203"
+        }
       }
     ],
     "personalReviewThreads": [],
@@ -262,7 +274,16 @@
       }
     ],
     "personalReviewRequests": [],
-    "personalNotifications": [],
+    "personalNotifications": [
+      {
+        "unread": true,
+        "updated_at": "2026-09-02T12:00:00Z",
+        "reason": "mention",
+        "subject": {
+          "url": "https://api.github.com/repos/dotnet/aspnetcore/pulls/204"
+        }
+      }
+    ],
     "personalReviewThreads": [
       {
         "threadId": "discussion_r204",
@@ -313,6 +334,23 @@
     "latestReviews": [],
     "reviewRequests": [],
     "comments": [],
+    "personalReviews": [],
+    "personalReviewRequests": [],
+    "personalNotifications": [],
+    "personalReviewThreads": [],
+    "personalComments": [
+      {
+        "source": "commenter-search",
+        "url": "https://github.com/dotnet/aspnetcore/pull/205#issuecomment-205"
+      }
+    ],
+    "personalMentions": [],
+    "personalCoverage": {
+      "discovery": { "state": "assessed", "detail": "Fixture participation evidence." },
+      "notifications": { "state": "assessed", "detail": "Fixture notification evidence." },
+      "ownReview": { "state": "unassessed", "detail": "No submitted review baseline." },
+      "reviewThreads": { "state": "unassessed", "detail": "No thread hydration requested." }
+    },
     "discussionComments": [],
     "discussionCommentsComplete": true,
     "discussionCommentTotalCount": 0,

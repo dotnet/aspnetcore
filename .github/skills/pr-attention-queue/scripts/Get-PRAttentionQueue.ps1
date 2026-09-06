@@ -34,6 +34,7 @@ param(
     [string[]]$Author = @(),
     [string[]]$ExcludeDigestAuthor = @(),
     [string]$PersonalLogin,
+    [string]$PersonalCachePath,
     [switch]$DisablePersonalInbox,
     [switch]$AllRepo,
     [ValidateSet("Markdown", "Json")]
@@ -64,6 +65,7 @@ Invoke-PRAttentionQueue `
     -Author $Author `
     -ExcludeDigestAuthor $ExcludeDigestAuthor `
     -PersonalLogin $PersonalLogin `
+    -PersonalCachePath $PersonalCachePath `
     -DisablePersonalInbox:$DisablePersonalInbox `
     -AllRepo:$AllRepo `
     -OutputFormat $OutputFormat `
