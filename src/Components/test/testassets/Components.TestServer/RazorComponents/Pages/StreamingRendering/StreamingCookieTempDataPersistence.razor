@@ -1,0 +1,37 @@
+﻿@page "/streaming-cookie-tempdata-persistence"
+@attribute [StreamRendering]
+
+<h1>Streaming Cookie TempData Persistence Test</h1>
+
+@if (_done)
+{
+    <p id="streaming-complete">Done</p>
+}
+else
+{
+    <p id="streaming-status">Waiting for streaming...</p>
+}
+
+@code {
+    private bool _done;
+
+    [SupplyParameterFromTempData]
+    private string SupplyParameterFromTempDataValue { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    public ITempData? TempData { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EnterStreamingPhaseAsync();
+
+        SupplyParameterFromTempDataValue = "tempdata-set-during-streaming";
+        if (TempData is not null)
+        {
+            TempData["Message"] = "streaming-tempdata-message";
+        }
+        _done = true;
+    }
+
+    private static Task EnterStreamingPhaseAsync() => Task.Delay(100);
+}

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Connections.Features;
@@ -324,6 +325,128 @@ public class HttpsTests : LoggedTest
         }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetChannelBindingBytes_Endpoint_ReturnsValidToken()
+    {
+        Exception caught = null;
+        using (Utilities.CreateDynamicHttpsServer(
+            "/",
+            out _,
+            out var address,
+            options => { /* default: HttpAuthenticationHardeningLevel.Medium */ },
+            async httpContext =>
+            {
+                try
+                {
+                    var feature = httpContext.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(feature);
+
+                    Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes));
+                    Assert.False(bytes.IsEmpty);
+
+                    // The buffer is a SEC_CHANNEL_BINDINGS struct (32-byte header) followed by
+                    // the application data: ASCII "tls-server-end-point:" + SHA-256 of the server cert.
+                    var raw = bytes.Span;
+                    Assert.True(raw.Length >= 32, "Buffer should be at least the header size.");
+
+                    var appDataLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(24, 4));
+                    var appDataOffset = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(28, 4));
+                    Assert.True(appDataOffset + appDataLength <= raw.Length);
+
+                    var appData = raw.Slice((int)appDataOffset, (int)appDataLength);
+                    var prefix = "tls-server-end-point:"u8;
+                    Assert.True(appData.StartsWith(prefix));
+                    Assert.Equal(prefix.Length + 32 /* SHA-256 length */, appData.Length);
+                }
+                catch (Exception ex)
+                {
+                    caught = ex;
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            },
+            LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Null(caught);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetChannelBindingBytes_LegacyHardening_ReturnsFalse()
+    {
+        Exception caught = null;
+        using (Utilities.CreateDynamicHttpsServer(
+            "/",
+            out _,
+            out var address,
+            options => options.HttpAuthenticationHardeningLevel = HttpAuthenticationHardeningLevel.Legacy,
+            async httpContext =>
+            {
+                try
+                {
+                    var feature = httpContext.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(feature);
+
+                    // Legacy is the fast-path — the flag isn't set on the URL group so http.sys
+                    // does not deliver per-request CBT, and we short-circuit before asking.
+                    Assert.False(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes));
+                    Assert.True(bytes.IsEmpty);
+                }
+                catch (Exception ex)
+                {
+                    caught = ex;
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            },
+            LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Null(caught);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetChannelBindingBytes_UnsupportedKind_ReturnsFalse()
+    {
+        Exception caught = null;
+        using (Utilities.CreateDynamicHttpsServer(
+            "/",
+            out _,
+            out var address,
+            options => { },
+            async httpContext =>
+            {
+                try
+                {
+                    var feature = httpContext.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(feature);
+
+                    // http.sys only exposes tls-server-end-point (Endpoint); other kinds are rejected.
+                    Assert.False(feature.TryGetChannelBindingBytes(ChannelBindingKind.Unique, out var uniqueBytes));
+                    Assert.True(uniqueBytes.IsEmpty);
+
+                    Assert.False(feature.TryGetChannelBindingBytes(ChannelBindingKind.Unknown, out var unknownBytes));
+                    Assert.True(unknownBytes.IsEmpty);
+                }
+                catch (Exception ex)
+                {
+                    caught = ex;
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            },
+            LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Null(caught);
             Assert.Equal(string.Empty, response);
         }
     }

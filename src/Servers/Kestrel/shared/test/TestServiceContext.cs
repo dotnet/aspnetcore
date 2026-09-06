@@ -60,7 +60,8 @@ internal class TestServiceContext : ServiceContext
         HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
         {
-            AddServerHeader = false
+            AddServerHeader = false,
+            EnableChunkedExtensions = true,
         };
 
         DateHeaderValueManager.OnHeartbeat();

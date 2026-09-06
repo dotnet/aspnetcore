@@ -45,7 +45,7 @@ internal static class X509CertificateHelpers
 
                 // SubjectAlternativeNames might contain something other than a dNSName,
                 // so we have to parse through and only use the dNSNames
-                // <identifier><delimter><value><separator(s)>
+                // <identifier><delimiter><value><separator(s)>
 
                 string[] rawDnsEntries =
                     asnString.Split(new string[1] { X509SubjectAlternativeNameConstants.Separator }, StringSplitOptions.RemoveEmptyEntries);
@@ -142,7 +142,7 @@ internal static class X509CertificateHelpers
                 // e.g.,
                 // Windows: x509ExtensionFormattedString is: "DNS Name=not-real-subject-name, DNS Name=example.com"
                 // Linux:   x509ExtensionFormattedString is: "DNS:not-real-subject-name, DNS:example.com"
-                // Parse: <identifier><delimter><value><separator(s)>
+                // Parse: <identifier><delimiter><value><separator(s)>
 
                 int delimiterIndex = x509ExtensionFormattedString.IndexOf(subjectName1, StringComparison.Ordinal) - 1;
                 s_delimiter = x509ExtensionFormattedString[delimiterIndex];

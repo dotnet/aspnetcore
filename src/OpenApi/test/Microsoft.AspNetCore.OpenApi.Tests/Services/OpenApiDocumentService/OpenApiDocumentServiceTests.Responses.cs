@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.ServerSentEvents;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -58,6 +59,166 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("Bad Request", response.Value.Description);
             Assert.Equal("application/json+problem", response.Value.Content.Keys.Single());
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEvents()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/events"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("text/event-stream", content.Key);
+            Assert.Null(content.Value.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+            Assert.Equal(JsonSchemaType.Object, itemSchema.Type);
+            Assert.Equal(["data"], itemSchema.Required);
+            Assert.Collection(itemSchema.Properties.OrderBy(property => property.Key),
+                property =>
+                {
+                    Assert.Equal("data", property.Key);
+                    var dataSchema = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+                },
+                property =>
+                {
+                    Assert.Equal("event", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Null(property.Value.Enum);
+                },
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                });
+        });
+
+        static async IAsyncEnumerable<SseItem<Todo>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfDataItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/data-events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/todos/data-events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+
+        static async IAsyncEnumerable<Todo> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfStringItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/messages/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/messages/events");
+            var dataSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["data"]);
+            Assert.Equal(JsonSchemaType.String, dataSchema.Type);
+        });
+
+        static async IAsyncEnumerable<string> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesSchemaAndItemSchemaForSameDataSchemaInDifferentMediaTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/responses", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(SseItem<Todo>), ["text/event-stream"]));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/responses"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+
+            var jsonContent = response.Value.Content["application/json"];
+            var jsonSchema = Assert.IsType<OpenApiSchemaReference>(jsonContent.Schema);
+            Assert.Equal(nameof(Todo), jsonSchema.Reference.Id);
+            Assert.Null(jsonContent.ItemSchema);
+
+            var eventStreamContent = response.Value.Content["text/event-stream"];
+            Assert.Null(eventStreamContent.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(eventStreamContent.ItemSchema);
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDiscriminatedUnionCasesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/pets/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/pets/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(UnionPet), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, [nameof(Kitten), nameof(Puppy)]);
+        });
+
+        static async IAsyncEnumerable<SseItem<UnionPet>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesAbstractBaseDiscriminatorValuesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/vehicles/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/vehicles/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Vehicle), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, ["car", "truck", "plane"]);
+        });
+
+        static async IAsyncEnumerable<SseItem<Vehicle>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
     }
 
     [Fact]
@@ -604,5 +765,47 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("value", property.Key);
             Assert.Equal(100, property.Value.MaxLength);
         });
+    }
+
+    private static OpenApiSchema GetServerSentEventsItemSchema(OpenApiDocument document, string path)
+    {
+        var operation = Assert.Single(document.Paths[path].Operations.Values);
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        var content = Assert.Single(response.Value.Content);
+        Assert.Equal("text/event-stream", content.Key);
+        Assert.Null(content.Value.Schema);
+        return Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+    }
+
+    private static void AssertEventSchema(OpenApiSchema itemSchema, string[] expectedEvents)
+    {
+        var eventSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["event"]);
+        Assert.Equal(JsonSchemaType.String, eventSchema.Type);
+        Assert.NotNull(eventSchema.Enum);
+        Assert.Equal(expectedEvents.OrderBy(value => value), eventSchema.Enum.Select(value => value.GetValue<string>()).OrderBy(value => value));
+    }
+
+    [JsonDerivedType(typeof(Car), typeDiscriminator: "car")]
+    [JsonDerivedType(typeof(Truck), typeDiscriminator: "truck")]
+    [JsonDerivedType(typeof(Plane), typeDiscriminator: "plane")]
+    private abstract class Vehicle
+    {
+        public required string Make { get; set; }
+    }
+
+    private sealed class Car : Vehicle
+    {
+        public int Doors { get; set; }
+    }
+
+    private sealed class Truck : Vehicle
+    {
+        public double PayloadCapacity { get; set; }
+    }
+
+    private sealed class Plane : Vehicle
+    {
+        public double Wingspan { get; set; }
     }
 }

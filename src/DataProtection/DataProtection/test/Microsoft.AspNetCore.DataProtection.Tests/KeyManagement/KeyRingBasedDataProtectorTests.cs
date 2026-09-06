@@ -646,13 +646,13 @@ public class KeyRingBasedDataProtectorTests
     {
         byte[] plaintext = Encoding.UTF8.GetBytes(plaintextStr);
         var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
-        
+
         var configuration = new AuthenticatedEncryptorConfiguration
         {
             EncryptionAlgorithm = encryptionAlgorithm,
             ValidationAlgorithm = validationAlgorithm
         };
-        
+
         Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, configuration.CreateNewDescriptor(), new[] { encryptorFactory });
         var keyRing = new KeyRing(key, [ key ]);
         var mockKeyRingProvider = new Mock<IKeyRingProvider>();
@@ -669,7 +669,7 @@ public class KeyRingBasedDataProtectorTests
 
     [Theory]
     [InlineData(16)]     // 16 bytes
-    [InlineData(32)]     // 32 bytes  
+    [InlineData(32)]     // 32 bytes
     [InlineData(64)]     // 64 bytes
     [InlineData(128)]    // 128 bytes
     [InlineData(256)]    // 256 bytes
@@ -701,7 +701,7 @@ public class KeyRingBasedDataProtectorTests
 
     [Theory]
     [InlineData(16)]     // 16 bytes
-    [InlineData(32)]     // 32 bytes  
+    [InlineData(32)]     // 32 bytes
     [InlineData(64)]     // 64 bytes
     [InlineData(128)]    // 128 bytes
     [InlineData(256)]    // 256 bytes
@@ -730,7 +730,7 @@ public class KeyRingBasedDataProtectorTests
             originalPurposes: null,
             newPurpose: "purpose");
 
-        // Act - first protect the data  
+        // Act - first protect the data
         byte[] protectedData = protector.Protect(plaintext);
 
         var arrayBufferWriter = new ArrayBufferWriter<byte>(plaintextSize);
@@ -891,6 +891,28 @@ public class KeyRingBasedDataProtectorTests
         mockNonSpanEncryptor.Verify(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()), Times.Once);
     }
 #endif
+
+    [Fact]
+    public void CreateProtector_DoesNotResolveKeyRing()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/67447
+        // CreateProtector must NOT call IKeyRingProvider.GetCurrentKeyRing(). That would force
+        // a key-store round-trip during protector creation (e.g. during app startup), causing
+        // apps that persist keys to an unreachable external store to fail at boot instead of on first Protect/Unprotect.
+
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>(MockBehavior.Strict);
+        // No setup for GetCurrentKeyRing - any call will throw.
+
+        var provider = new KeyRingBasedDataProtectionProvider(mockKeyRingProvider.Object, NullLoggerFactory.Instance);
+
+        // Chaining .CreateProtector() should all have to be lazy.
+        var appProtector = provider.CreateProtector("app");
+        var purposeProtector = appProtector.CreateProtector("purpose");
+
+        Assert.NotNull(appProtector);
+        Assert.NotNull(purposeProtector);
+        mockKeyRingProvider.Verify(o => o.GetCurrentKeyRing(), Times.Never);
+    }
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {

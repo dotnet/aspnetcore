@@ -44,6 +44,7 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
@@ -86,21 +87,22 @@
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\TryGetReturnType.cs" LinkBase="BlazorPack" />
 
     <!-- MessagePack -->
-    <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)ExtensionHeader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)ExtensionResult.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackCode.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackReader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)T4\MessagePackReader.Integers.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackSerializationException.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)MessagePackWriter.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Nil.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)StringEncoding.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequencePool.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
-    <Compile Include="$(MessagePackRoot)Utilities.cs" LinkBase="BlazorPack\MessagePack" />
+    <_MessagePackSource Include="$(MessagePackRoot)BufferWriter.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)ExtensionHeader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)ExtensionResult.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackCode.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackReader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)T4\MessagePackReader.Integers.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackSerializationException.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)MessagePackWriter.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Nil.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)StringEncoding.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequencePool.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequenceReader.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)SequenceReaderExtensions.cs" />
+    <_MessagePackSource Include="$(MessagePackRoot)Utilities.cs" />
+    <Compile Include="@(_MessagePackSource)" LinkBase="BlazorPack\MessagePack" />
 
     <!-- Shared descriptor infrastructure with MVC -->
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentMarker.cs" />
@@ -120,4 +122,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
   </ItemGroup>
+
+  <Target Name="ValidateMessagePackSources" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_MissingMessagePackSource Include="@(_MessagePackSource)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <Error Condition="'@(_MissingMessagePackSource->Count())' != '0'"
+           Text="MessagePack-CSharp source files are missing. If the submodule is not initialized, run from the repository root: git submodule update --init src/submodules/MessagePack-CSharp" />
+  </Target>
 </Project>

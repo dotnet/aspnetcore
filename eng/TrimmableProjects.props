@@ -41,6 +41,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
@@ -48,6 +49,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Google" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
@@ -105,6 +107,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Media" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Server.AutoPause" />
     <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
     <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
@@ -119,7 +122,6 @@
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
     <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
-    <TrimmableProject Include="Microsoft.Extensions.Validation.Localization" />
     <TrimmableProject Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 </Project>

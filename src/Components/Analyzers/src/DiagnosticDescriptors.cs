@@ -138,4 +138,40 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
+
+    public static readonly DiagnosticDescriptor JSInvokableMethodShouldBePublic = new(
+        "BL0015",
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Title)),
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Description)));
+
+    public static readonly DiagnosticDescriptor UnguardedJSInteropCall = new(
+        "BL0016",
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeWithoutIDisposable = new(
+        "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeAsyncWithoutIAsyncDisposable = new(
+        "BL0018",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
 }

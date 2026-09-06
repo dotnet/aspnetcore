@@ -288,7 +288,6 @@ class MsalAuthorizeService implements AuthorizeService {
         } catch (e) {
             // If the user explicitly cancelled the pop-up, avoid performing a redirect.
             if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorCodes.userCancelled) {
-                this.debug('User canceled sign-in pop-up');
                 this.signInWithRedirect(request);
             } else {
                 this.debug(`Sign-in pop-up failed: '${(e as Error).message}'.`);

@@ -4,6 +4,7 @@
 @namespace Microsoft.AspNetCore.Components.QuickGrid
 @typeparam TGridItem
 @{
+    EnsureColumnMatchesGrid();
     InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
 }
 

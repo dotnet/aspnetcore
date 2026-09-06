@@ -127,7 +127,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
         {
             // Blindly check the cache to see if it contains a match.
-            // Only cachable parameter policies are in the cache, so a match will only be available if the parameter policy key is configured to a cachable parameter policy.
+            // Only cacheable parameter policies are in the cache, so a match will only be available if the parameter policy key is configured to a cacheable parameter policy.
             //
             // Note: Cache key is case sensitive. While the route prefix, e.g. "regex", is case-insensitive, the constraint could care about the case of the argument.
             if (_cachedParameters.TryGetValue(inlineText, out var parameterPolicy))
@@ -182,8 +182,8 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         }
 
         // Each time we process a level of the DFA we keep a list of work items consisting on the nodes we need to evaluate
-        // their precendence and their parent nodes. We sort nodes by precedence on each level, which means that nodes are
-        // evaluated in the following order: (literals, constrained parameters/complex segments, parameters, constrainted catch-alls and catch-alls)
+        // their precedence and their parent nodes. We sort nodes by precedence on each level, which means that nodes are
+        // evaluated in the following order: (literals, constrained parameters/complex segments, parameters, constrained catch-alls and catch-alls)
         // When we process a stage we build a list of the next set of workitems we need to evaluate. We also keep around the
         // list of workitems from the previous level so that we can reuse all the nested lists while we are evaluating the current level.
         internal void ProcessLevel(int depth)
@@ -709,26 +709,26 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
             return Array.Empty<Candidate>();
         }
 
-        var candiates = new Candidate[endpoints.Count];
+        var candidates = new Candidate[endpoints.Count];
 
         var score = 0;
-        var examplar = endpoints[0];
-        candiates[0] = CreateCandidate(examplar, score);
+        var exemplar = endpoints[0];
+        candidates[0] = CreateCandidate(exemplar, score);
 
         for (var i = 1; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
-            if (!_comparer.Equals(examplar, endpoint))
+            if (!_comparer.Equals(exemplar, endpoint))
             {
                 // This endpoint doesn't have the same priority.
-                examplar = endpoint;
+                exemplar = endpoint;
                 score++;
             }
 
-            candiates[i] = CreateCandidate(endpoint, score);
+            candidates[i] = CreateCandidate(endpoint, score);
         }
 
-        return candiates;
+        return candidates;
     }
 
     // internal for tests

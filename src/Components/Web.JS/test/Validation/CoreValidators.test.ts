@@ -684,9 +684,9 @@ describe('urlValidator', () => {
 
 // Matches .NET PhoneAttribute behavior:
 // - Null/empty passes
-// - Strips leading '+' and trailing extensions (ext./ext/x + digits)
+// - Removes every '+' and trailing whitespace, strips a trailing extension (ext./ext/x + digits)
 // - Must contain at least one digit
-// - Only digits, whitespace, and -.() allowed
+// - Only digits, whitespace, and -.() allowed (digits/whitespace per Unicode, like .NET)
 describe('phoneValidator', () => {
   const phone = getValidator('phone');
 
@@ -733,6 +733,15 @@ describe('phoneValidator', () => {
       expect(phone(makeContext({ value: '+44 20 7946 0958' }))).toBe(true);
     });
 
+    test('removes every plus sign, not only a leading one (matching .NET)', () => {
+      expect(phone(makeContext({ value: '+1 +555 1234' }))).toBe(true);
+    });
+
+    test('accepts Unicode decimal digits (matching .NET char.IsDigit)', () => {
+      // Arabic-Indic digits for "1234"; .NET's PhoneAttribute accepts these.
+      expect(phone(makeContext({ value: '\u0661\u0662\u0663\u0664' }))).toBe(true);
+    });
+
     test('accepts with ext. extension', () => {
       expect(phone(makeContext({ value: '555-1234 ext. 5678' }))).toBe(true);
     });
@@ -766,8 +775,7 @@ describe('phoneValidator', () => {
 });
 
 // Matches .NET CreditCardAttribute behavior (Luhn algorithm).
-// Empty values pass. Strips dashes and spaces before validation.
-// Length check: 13-19 digits.
+// Empty values pass. '-' and ' ' are skipped; any other non-digit fails.
 describe('creditcardValidator', () => {
   const creditcard = getValidator('creditcard');
 
@@ -806,14 +814,6 @@ describe('creditcardValidator', () => {
   describe('invalid card numbers', () => {
     test('rejects Luhn-invalid number', () => {
       expect(creditcard(makeContext({ value: '1234567890123456' }))).toBe(false);
-    });
-
-    test('rejects too short (12 digits)', () => {
-      expect(creditcard(makeContext({ value: '411111111111' }))).toBe(false);
-    });
-
-    test('rejects too long (20 digits)', () => {
-      expect(creditcard(makeContext({ value: '41111111111111111111' }))).toBe(false);
     });
 
     test('rejects letters', () => {

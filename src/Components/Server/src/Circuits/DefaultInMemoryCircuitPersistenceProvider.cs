@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-// Default implmentation of ICircuitPersistenceProvider that uses an in-memory cache
+// Default implementation of ICircuitPersistenceProvider that uses an in-memory cache
 internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircuitPersistenceProvider
 {
     private readonly Lock _lock = new();
