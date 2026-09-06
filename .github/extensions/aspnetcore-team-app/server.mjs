@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 
 import { buildAgentActionLog, buildAgentActionPrompt } from "./agent.mjs";
 import { loadQueue } from "./queue.mjs";
+import { normalizePersonalInbox } from "./personal.mjs";
 import { HTML } from "./render.mjs";
 import { createQueueController } from "./state.mjs";
 
@@ -25,7 +26,7 @@ export async function startInstance(instanceId, input, log) {
 
   const controller = createQueueController({
     initialOptions: buildLiveOptions(input, "blazor"),
-    load: loadQueue,
+    load: loadCanvasData,
   });
 
   const server = createServer((request, response) => {
@@ -80,6 +81,20 @@ export function buildLiveOptions(input = {}, defaultPreset) {
     ...(input.excludeDigestAuthor
       ? { excludeDigestAuthor: input.excludeDigestAuthor }
       : {}),
+    ...(input.identityScope
+      ? { identityScope: input.identityScope }
+      : {}),
+  };
+}
+
+export async function loadCanvasData(
+  options,
+  { loadQueueImpl = loadQueue } = {},
+) {
+  const loaded = await loadQueueImpl(options);
+  return {
+    ...loaded,
+    personalInbox: normalizePersonalInbox(loaded.queue.personal, loaded.queue),
   };
 }
 
@@ -190,7 +205,7 @@ async function handleRequest(instanceId, request, response, log) {
         return send(response, 404, { error: "queue instance not found" });
       }
 
-      const resolved = entry.controller.resolveAction(await readJsonBody(request));
+      const resolved = await entry.controller.resolveAction(await readJsonBody(request));
       return send(response, 200, await dispatchResolvedAction(resolved));
     }
 
@@ -213,19 +228,30 @@ export function parseRefreshRequest(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     throw actionError("invalid_refresh", "Refresh request must be an object.");
   }
+
+  const allowedKeys = new Set(["preset", "excludeDigestAuthor", "forceRefresh"]);
   const keys = Object.keys(body);
-  if (keys.some((key) => key !== "preset")) {
-    throw actionError("invalid_refresh", "Refresh request accepts only preset.");
+  if (keys.some((key) => !allowedKeys.has(key))) {
+    throw actionError("invalid_refresh", "Refresh request accepts only preset, excludeDigestAuthor, and forceRefresh.");
   }
   if (body.preset !== undefined
       && (typeof body.preset !== "string"
         || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(body.preset))) {
     throw actionError("invalid_refresh", "preset is invalid.");
   }
-
+  if (body.excludeDigestAuthor !== undefined
+      && (typeof body.excludeDigestAuthor !== "string"
+        || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(body.excludeDigestAuthor))) {
+    throw actionError("invalid_refresh", "excludeDigestAuthor is invalid.");
+  }
+  if (body.forceRefresh !== undefined && typeof body.forceRefresh !== "boolean") {
+    throw actionError("invalid_refresh", "forceRefresh must be a boolean.");
+  }
   return {
     source: "live",
     preset: body.preset,
+    ...(body.excludeDigestAuthor ? { excludeDigestAuthor: body.excludeDigestAuthor } : {}),
+    ...(body.forceRefresh !== undefined ? { forceRefresh: body.forceRefresh } : {}),
   };
 }
 

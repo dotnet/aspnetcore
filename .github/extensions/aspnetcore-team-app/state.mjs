@@ -6,12 +6,16 @@ import {
   normalizeOptions,
   validateQueue,
 } from "./queue.mjs";
+import { orderPersonalItems } from "./personal.mjs";
+
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function createQueueController({
   initialOptions = {},
   load,
   createId = randomUUID,
   now = () => new Date().toISOString(),
+  nowMs = () => Date.now(),
 } = {}) {
   if (typeof load !== "function") {
     throw new Error("load is required");
@@ -24,23 +28,81 @@ export function createQueueController({
   let refresh = {
     phase: "idle",
     stale: false,
+    cached: false,
     startedAt: null,
     completedAt: null,
     error: null,
   };
   const listeners = new Set();
+  const cache = new Map();
 
-  function initialize(input = {}) {
-    return refreshQueue(input);
+  function getCacheKey(requestedOptions) {
+    return JSON.stringify({
+      source: requestedOptions.source ?? "live",
+      preset: requestedOptions.preset ?? "blazor",
+      excludeDigestAuthor: requestedOptions.excludeDigestAuthor ?? null,
+      identityScope: requestedOptions.identityScope ?? null,
+    });
   }
 
-  function refreshQueue(input = {}) {
+  function getCachedSnapshot(requestedOptions) {
+    const key = getCacheKey(requestedOptions);
+    const candidate = cache.get(key);
+    if (!candidate) {
+      return null;
+    }
+    const ageMs = Math.max(0, nowMs() - candidate.loadedAt);
+    if (ageMs >= CACHE_TTL_MS) {
+      cache.delete(key);
+      return null;
+    }
+    return { ...candidate, ageMs };
+  }
+
+  function initialize(input = {}) {
+    return refreshQueue(input, { forceRefresh: false });
+  }
+
+  function refreshQueue(input = {}, { forceRefresh = false } = {}) {
     const requestedOptions = normalizeOptions(input, options);
+    if (!forceRefresh && !refreshPromise) {
+      const cached = getCachedSnapshot(requestedOptions);
+      if (cached) {
+        options = normalizeOptions(requestedOptions);
+        snapshot = cached.snapshot;
+        snapshot.cache = {
+          hit: true,
+          ageMs: cached.ageMs,
+          loadedAt: cached.loadedAt,
+        };
+        snapshot.public.cache = { ...snapshot.cache };
+        if (snapshot.public.personalInbox?.metrics) {
+          snapshot.public.personalInbox.metrics = {
+            ...snapshot.public.personalInbox.metrics,
+            cacheMode: "warm",
+            apiCalls: 0,
+            elapsedMs: 0,
+          };
+        }
+        refresh = {
+          phase: "ready",
+          stale: false,
+          cached: true,
+          startedAt: cached.loadedAt,
+          completedAt: now(),
+          error: null,
+        };
+        publish();
+        return getState();
+      }
+    }
+
     if (refreshPromise) {
       if (
         requestedOptions.source !== refreshOptions.source
         || requestedOptions.preset !== refreshOptions.preset
         || requestedOptions.excludeDigestAuthor !== refreshOptions.excludeDigestAuthor
+        || requestedOptions.identityScope !== refreshOptions.identityScope
       ) {
         throw stateError(
           "refresh_in_progress",
@@ -55,6 +117,7 @@ export function createQueueController({
       ...refresh,
       phase: "refreshing",
       stale: snapshot !== null,
+      cached: false,
       startedAt: now(),
       error: null,
     };
@@ -63,16 +126,33 @@ export function createQueueController({
     refreshPromise = Promise.resolve()
       .then(() => load(requestedOptions))
       .then((loaded) => {
+        const effectiveOptions = normalizeOptions({
+          ...requestedOptions,
+          ...(loaded.options ?? {}),
+        });
         const candidate = createSnapshot(
           validateQueue(loaded.queue),
-          loaded.options ?? requestedOptions,
+          effectiveOptions,
           createId,
+          loaded.personalInbox,
         );
-        options = normalizeOptions(loaded.options ?? requestedOptions);
+        const loadedAt = nowMs();
+        candidate.cache = {
+          hit: false,
+          ageMs: 0,
+          loadedAt,
+        };
+        candidate.public.cache = { ...candidate.cache };
+        cache.set(getCacheKey(effectiveOptions), {
+          snapshot: candidate,
+          loadedAt,
+        });
+        options = effectiveOptions;
         snapshot = candidate;
         refresh = {
           phase: "ready",
           stale: false,
+          cached: false,
           startedAt: refresh.startedAt,
           completedAt: now(),
           error: null,
@@ -84,6 +164,7 @@ export function createQueueController({
         refresh = {
           phase: "error",
           stale: snapshot !== null,
+          cached: false,
           startedAt: refresh.startedAt,
           completedAt: refresh.completedAt,
           error: error.message,
@@ -108,10 +189,20 @@ export function createQueueController({
       };
     }
 
+    const publicSnapshot = {
+      ...snapshot.public,
+      cache: {
+        ...(snapshot.cache ?? { hit: false, ageMs: 0, loadedAt: null }),
+        ageMs: Number.isFinite(snapshot.cache?.loadedAt)
+          ? Math.max(0, nowMs() - snapshot.cache.loadedAt)
+          : 0,
+      },
+    };
+
     return {
       options,
       refresh: { ...refresh },
-      snapshot: snapshot.public,
+      snapshot: publicSnapshot,
     };
   }
 
@@ -142,6 +233,46 @@ export function createQueueController({
       );
     }
 
+    if (options.source === "live" && (kind === "review" || kind === "investigate-rescue")) {
+      return (async () => {
+        const liveQueue = await load({
+          source: "live",
+          preset: options.preset,
+          ...(options.excludeDigestAuthor ? { excludeDigestAuthor: options.excludeDigestAuthor } : {}),
+          ...(options.identityScope ? { identityScope: options.identityScope } : {}),
+        });
+        const live = validateQueue(liveQueue.queue);
+        if (live.repository !== item.repository) {
+          throw stateError("action_revalidation_failed", "The pull request repository changed after the snapshot.");
+        }
+        const liveItem = live.items.find((candidate) => candidate.number === item.number);
+        if (!liveItem) {
+          throw stateError("action_revalidation_failed", "The pull request no longer matches the live scope.");
+        }
+        if (liveItem.url !== item.url) {
+          throw stateError("action_revalidation_failed", "The pull request changed URLs after the snapshot.");
+        }
+        if (liveItem.headSha !== item.headSha) {
+          throw stateError("action_revalidation_failed", "The pull request head changed after the snapshot.");
+        }
+        if (
+          kind === "review"
+          && (
+            liveItem.bucket !== "ReviewNow"
+            || liveItem.discussionAssessment?.state === "verification-needed"
+            || liveItem.discussionAssessment?.state === "not-assessed"
+          )
+        ) {
+          throw stateError("action_revalidation_failed", "The live queue no longer allows a review action.");
+        }
+        if (kind === "investigate-rescue" && liveItem.bucket !== "NeedsRescue") {
+          throw stateError("action_revalidation_failed", "The live queue no longer allows the rescue action.");
+        }
+
+        return { kind, item };
+      })();
+    }
+
     return { kind, item };
   }
 
@@ -160,13 +291,107 @@ export function createQueueController({
   return {
     getState,
     initialize,
-    refresh: refreshQueue,
+    refresh: (input = {}, request = {}) => refreshQueue(input, {
+      ...request,
+      forceRefresh: request.forceRefresh ?? true,
+    }),
     resolveAction,
     subscribe,
   };
 }
 
-export function createSnapshot(queue, options, createId = randomUUID) {
+function buildInbox(queue) {
+  if (queue.inbox) {
+    return queue.inbox;
+  }
+
+  return {
+    recentCommunityWindowDays: 7,
+    recentCommunityWindowStart: queue.generatedAt,
+    recentCommunityWindowEnd: queue.generatedAt,
+    recentCommunity: {
+      count: 0,
+      newest: null,
+      preview: [],
+      inventory: [],
+    },
+    community: {
+      count: 0,
+      preview: [],
+      inventory: [],
+    },
+    unclassified: {
+      count: 0,
+      preview: [],
+      inventory: [],
+    },
+    evidence: {
+      collection: "not-collected",
+      coverage: "not-collected",
+      recordedResponseCount: 0,
+      unknownResponseCount: 0,
+      noResponseCount: 0,
+    },
+  };
+}
+
+export function normalizePersonalInbox(personalInbox) {
+  if (!personalInbox || typeof personalInbox !== "object") {
+    return null;
+  }
+
+  if (
+    Array.isArray(personalInbox.items)
+    && personalInbox.coverage
+    && typeof personalInbox.coverage === "object"
+  ) {
+    return {
+      ...personalInbox,
+      items: orderPersonalItems(deduplicatePersonalItems(personalInbox.items)),
+    };
+  }
+
+  return {
+    schemaVersion: personalInbox.schemaVersion ?? "1.0.0",
+    scope: personalInbox.scope ?? {
+      name: "all-repo",
+      description: "All open dotnet/aspnetcore pull requests with a personal signal",
+      repository: "dotnet/aspnetcore",
+    },
+    identity: personalInbox.identity ?? null,
+    generatedAt: personalInbox.generatedAt ?? null,
+    coverage: personalInbox.coverage ?? { overall: "unassessed" },
+    metrics: personalInbox.metrics ?? {
+      cacheMode: "unknown",
+      apiCalls: 0,
+      elapsedMs: 0,
+      pullRequestsScanned: 0,
+    },
+    items: orderPersonalItems(deduplicatePersonalItems(personalInbox.items)),
+  };
+}
+
+function deduplicatePersonalItems(items) {
+  const uniqueItems = new Map();
+  for (const item of Array.isArray(items) ? items : []) {
+    if (
+      item
+      && Number.isInteger(item.number)
+      && item.number > 0
+      && !uniqueItems.has(item.number)
+    ) {
+      uniqueItems.set(item.number, item);
+    }
+  }
+  return [...uniqueItems.values()];
+}
+
+export function createSnapshot(
+  queue,
+  options,
+  createId = randomUUID,
+  personalInbox = null,
+) {
   validateQueue(queue);
   const actions = new Map();
   const groups = Object.fromEntries(BUCKETS.map((bucket) => [bucket, []]));
@@ -190,6 +415,7 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       idleDays: item.idleDays,
       changedFiles: item.changedFiles,
       scopeMatch: item.scopeMatch,
+      headSha: item.headSha ?? null,
       shownInDigest: item.shownInDigest,
       digestRank: item.digestRank ?? null,
       digestExclusions: (item.digestExclusionReasons ?? []).map((code) => ({
@@ -227,6 +453,7 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       bucket: item.bucket,
       discussionState: item.discussionAssessment?.state ?? null,
       url: `https://github.com/${queue.repository}/pull/${item.number}`,
+      headSha: item.headSha ?? null,
     });
   }
 
@@ -243,6 +470,8 @@ export function createSnapshot(queue, options, createId = randomUUID) {
       overflow: queue.overflow,
       caps: queue.caps,
       discussion: queue.discussion ?? null,
+      inbox: buildInbox(queue),
+      personalInbox: personalInbox ? normalizePersonalInbox(personalInbox) : null,
       warnings: [...queue.warnings],
       primary: {
         reviewNow: groups.ReviewNow
@@ -301,6 +530,7 @@ export function summarizeState(state) {
     overflow: state.snapshot.overflow,
     caps: state.snapshot.caps,
     discussion: state.snapshot.discussion,
+    personalInbox: state.snapshot.personalInbox,
     warnings: state.snapshot.warnings,
     visibleItems: [
       ...state.snapshot.primary.reviewNow,

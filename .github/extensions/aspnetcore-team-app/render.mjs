@@ -123,6 +123,85 @@ export const HTML = `<!doctype html>
       border-radius: 8px;
     }
 
+    .inbox {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .personal-inbox {
+      border: 2px solid var(--true-color-blue-muted, #54aeff);
+      border-radius: 8px;
+      margin-top: 16px;
+      padding: 12px;
+    }
+
+    .personal-inbox > .inbox-header {
+      margin-bottom: 10px;
+    }
+
+    .personal-item {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-left: 4px solid var(--true-color-blue, #0969da);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .personal-signals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .coverage {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .inbox-group {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .inbox-header {
+      align-items: baseline;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .inbox-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .inbox-item {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-left: 4px solid var(--border-color-default, #d0d7de);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .inbox-evidence {
+      background: var(--background-color-muted, #f6f8fa);
+      border-radius: 6px;
+      margin-top: 8px;
+      padding: 8px;
+    }
+
+    .evidence-link {
+      color: var(--color-link, #0969da);
+      font-weight: var(--font-weight-semibold, 600);
+      text-decoration: none;
+    }
+
+    .evidence-link:hover {
+      text-decoration: underline;
+    }
+
     .scope {
       margin-bottom: 14px;
       padding: 11px 13px;
@@ -368,6 +447,8 @@ export const HTML = `<!doctype html>
     <section id="scope" class="scope muted">Waiting for a complete snapshot.</section>
     <section id="warnings"></section>
     <section id="stats" class="stats" aria-label="Queue statistics"></section>
+    <section id="personal-inbox" class="personal-inbox" aria-live="polite"></section>
+    <section id="inbox" class="inbox" aria-live="polite"></section>
     <section id="lanes" class="lanes"></section>
     <section id="discussion-verification" class="discussion-verification"></section>
     <section id="ready" class="ready-strip"></section>
@@ -389,6 +470,8 @@ export const HTML = `<!doctype html>
       "Excluded",
     ];
     const elements = {
+      inbox: document.getElementById("inbox"),
+      personalInbox: document.getElementById("personal-inbox"),
       lanes: document.getElementById("lanes"),
       preset: document.getElementById("preset"),
       ready: document.getElementById("ready"),
@@ -416,13 +499,14 @@ export const HTML = `<!doctype html>
 
     function render(state) {
       const snapshot = state.snapshot;
-      renderStatus(state.refresh, Boolean(snapshot));
+      renderStatus(state.refresh, snapshot);
       elements.refresh.disabled = state.refresh.phase === "refreshing";
 
       if (!snapshot) {
         elements.subtitle.textContent = "Loading the live PR attention snapshot...";
         elements.scope.textContent = "Waiting for a complete snapshot.";
         elements.stats.replaceChildren();
+        elements.personalInbox.replaceChildren();
         elements.lanes.replaceChildren(element("div", "empty", "Loading live GitHub data..."));
         elements.ready.hidden = true;
         elements.discussionVerification.hidden = true;
@@ -431,6 +515,7 @@ export const HTML = `<!doctype html>
         return;
       }
 
+      const inboxAvailable = hasInboxData(snapshot);
       elements.preset.value = snapshot.options.preset;
       elements.subtitle.textContent =
         snapshot.repository + " | generated " + new Date(snapshot.generatedAt).toLocaleString();
@@ -447,17 +532,26 @@ export const HTML = `<!doctype html>
 
       renderWarnings(snapshot.warnings);
       renderStats(snapshot);
-      renderPrimaryLanes(snapshot);
+      renderPersonalInbox(snapshot);
+      if (inboxAvailable) {
+        renderInbox(snapshot);
+      } else {
+        elements.inbox.replaceChildren();
+      }
+      renderPrimaryLanes(snapshot, inboxAvailable);
       renderDiscussionVerification(snapshot);
       renderReady(snapshot);
       renderSecondary(snapshot);
     }
 
-    function renderStatus(refresh, hasSnapshot) {
+    function renderStatus(refresh, snapshot) {
+      const hasSnapshot = Boolean(snapshot);
       elements.status.classList.remove("error");
       if (refresh.phase === "refreshing") {
         elements.status.textContent = hasSnapshot
-          ? "Refreshing live data. Showing the previous complete snapshot."
+          ? "Refreshing live data. Showing the previous complete snapshot"
+            + freshnessSuffix(snapshot)
+            + "."
           : "Querying live GitHub data...";
         return;
       }
@@ -468,9 +562,38 @@ export const HTML = `<!doctype html>
           : "Unable to load the queue: " + refresh.error;
         return;
       }
-      elements.status.textContent = refresh.completedAt
-        ? "Updated " + new Date(refresh.completedAt).toLocaleTimeString()
-        : "";
+      if (!refresh.completedAt) {
+        elements.status.textContent = "";
+        return;
+      }
+      const source = snapshot?.options?.source === "fixture" ? "fixture" : "live";
+      elements.status.textContent = refresh.cached
+        ? "Showing cached " + source + " data" + freshnessSuffix(snapshot) + "."
+        : source[0].toUpperCase() + source.slice(1) + " data fetched"
+          + freshnessSuffix(snapshot) + ".";
+    }
+
+    function freshnessSuffix(snapshot) {
+      const cache = snapshot?.cache;
+      if (!cache?.loadedAt) {
+        return "";
+      }
+      const age = formatAge(cache.ageMs);
+      return " from " + new Date(cache.loadedAt).toLocaleString() + " (" + age + " old)";
+    }
+
+    function formatAge(ageMs) {
+      const age = Math.max(0, Number(ageMs) || 0);
+      if (age < 1000) {
+        return "just now";
+      }
+      if (age < 60 * 1000) {
+        return Math.floor(age / 1000) + "s";
+      }
+      if (age < 60 * 60 * 1000) {
+        return Math.floor(age / (60 * 1000)) + "m";
+      }
+      return Math.floor(age / (60 * 60 * 1000)) + "h";
     }
 
     function renderWarnings(warnings) {
@@ -478,6 +601,20 @@ export const HTML = `<!doctype html>
       for (const warning of warnings) {
         elements.warnings.append(element("div", "warning", warning));
       }
+    }
+
+    function hasInboxData(snapshot) {
+      const inbox = snapshot.inbox;
+      return Boolean(
+        inbox
+        && typeof inbox === "object"
+        && (
+          Object.prototype.hasOwnProperty.call(inbox, "recentCommunity")
+          || Object.prototype.hasOwnProperty.call(inbox, "community")
+          || Object.prototype.hasOwnProperty.call(inbox, "unclassified")
+          || Object.prototype.hasOwnProperty.call(inbox, "evidence")
+        ),
+      );
     }
 
     function renderStats(snapshot) {
@@ -499,19 +636,394 @@ export const HTML = `<!doctype html>
       }
     }
 
-    function renderPrimaryLanes(snapshot) {
+    function renderPersonalInbox(snapshot) {
+        const personal = snapshot.personalInbox;
+        elements.personalInbox.replaceChildren();
+        if (!personal) {
+          elements.personalInbox.hidden = true;
+          return;
+        }
+        elements.personalInbox.hidden = false;
+
+        const header = element("div", "inbox-header");
+        header.append(element("h2", "", "My PR inbox"));
+        const identity = personal.identity ? "@" + personal.identity : "authenticated user";
+        const repository = personal.scope?.repository || "dotnet/aspnetcore";
+        header.append(
+          element(
+            "span",
+            "muted",
+            identity + " | All " + repository
+              + " | " + (personal.activeCount ?? 0) + " active of "
+              + (personal.items?.length ?? 0) + " PRs",
+          ),
+        );
+        elements.personalInbox.append(header);
+
+        const coverage = personal.coverage ?? { overall: "unassessed" };
+        const metrics = personal.metrics ?? {};
+        const summary = element("p", "muted");
+        summary.textContent = "Coverage: " + coverage.overall
+          + " | pull requests: " + (coverage.pullRequests || "unassessed")
+          + " | notifications: " + (coverage.notifications || "unassessed")
+          + " | API: " + (metrics.cacheMode || "unknown")
+          + " (" + (metrics.apiCalls ?? "unknown") + " call(s), "
+          + (metrics.elapsedMs ?? "unknown") + " ms, "
+          + (metrics.pullRequestsScanned ?? "unknown") + " personal candidate(s)).";
+        elements.personalInbox.append(summary);
+        if (coverage.error) {
+          elements.personalInbox.append(element("div", "warning", "Personal inbox unavailable: " + coverage.error));
+        }
+
+        const items = Array.isArray(personal.items) ? personal.items : [];
+        const previewItems = Array.isArray(personal.previewItems)
+          ? personal.previewItems
+          : items.filter((item) => item.hasPersonalSignal).slice(0, 5);
+        if (previewItems.length) {
+          const preview = element("div", "inbox-list");
+          for (const item of previewItems) {
+            preview.append(renderPersonalItem(item));
+          }
+          elements.personalInbox.append(preview);
+        }
+        else {
+          elements.personalInbox.append(
+            element(
+              "div",
+              "empty",
+              coverage.overall === "unavailable"
+                ? "No personal cards could be assessed."
+                : "No active personal signals were found.",
+            ),
+          );
+        }
+
+        const inventory = element("details", "secondary");
+        inventory.append(
+          element(
+            "summary",
+            "",
+            "View full personal inventory (" + items.length + " total)",
+          ),
+        );
+        const list = element("div", "inbox-list");
+        for (const item of items) {
+          list.append(renderPersonalItem(item));
+        }
+        inventory.append(list);
+        elements.personalInbox.append(inventory);
+      }
+
+    function renderPersonalItem(item) {
+        const card = element("article", "personal-item");
+        card.append(element("h3", "", "#" + item.number + " " + item.title));
+        card.append(
+          element(
+            "div",
+            "muted",
+            "@" + item.author
+              + (item.authorIsBot ? " | bot-authored" : "")
+              + " | updated " + new Date(item.updatedAt).toLocaleString(),
+          ),
+        );
+
+        const signals = element("div", "personal-signals");
+        if (item.directRequests?.length) {
+          signals.append(element("span", "pill", "Direct review request"));
+        }
+        if (item.teamRequests?.length) {
+          signals.append(element("span", "pill", "Team request: " + item.teamRequests.map((request) => request.slug).join(", ")));
+        }
+        if (item.otherDirectRequests?.length) {
+          signals.append(element("span", "pill", "Other direct request: " + item.otherDirectRequests.map((request) => "@" + request.login).join(", ")));
+        }
+        if (item.notificationSignal?.present) {
+          signals.append(element("span", "pill", "Notification: " + item.notificationSignal.reasons.join(", ")));
+        }
+        if (item.changedSinceOwnReview?.status === "yes") {
+          signals.append(element("span", "pill", "Changed since own review"));
+        }
+        if (item.replyEvidence?.status === "evidenced") {
+          signals.append(element("span", "pill", "Reply in participated thread"));
+        }
+        if (item.participation?.mentions?.length) {
+          signals.append(element("span", "pill", "Mentioned (" + item.participation.mentions.length + ")"));
+        }
+        if (item.participation?.participatedOrMentioned) {
+          signals.append(element("span", "pill", "Participated or mentioned"));
+        }
+        card.append(signals);
+
+        const evidence = element("div", "inbox-evidence");
+        evidence.append(
+          element(
+            "div",
+            "muted",
+            "Coverage: " + (item.coverage?.overall || "unassessed")
+              + " | review requests: " + (item.coverage?.reviewRequests || "unassessed")
+              + " | review history: " + (item.coverage?.reviewHistory || "unassessed")
+              + " | threads: " + (item.coverage?.threads || "unassessed")
+              + " | notifications: " + (item.coverage?.notifications || "unassessed"),
+          ),
+        );
+        const changedStatus = item.changedSinceOwnReview?.status || "unassessed";
+        evidence.append(element("div", "muted", "Changed since own review: " + changedStatus + "."));
+        if (item.replyEvidence?.replies?.length) {
+          evidence.append(
+            element(
+              "div",
+              "muted",
+              "Evidenced replies: " + item.replyEvidence.replies
+                .map((reply) => "@" + reply.author)
+                .join(", "),
+            ),
+          );
+        }
+        if (item.eligibility && !item.eligibility.eligibleForCanvasAction) {
+          evidence.append(
+            element(
+              "div",
+              "muted",
+              "Personal signal only; no canvas action granted (" + item.eligibility.reason + ").",
+            ),
+          );
+        }
+        if (item.signals?.length) {
+          const evidenceLinks = element("div", "muted");
+          evidenceLinks.append(document.createTextNode("Evidence: "));
+          item.signals.forEach((signal, index) => {
+            if (index > 0) {
+              evidenceLinks.append(document.createTextNode(" | "));
+            }
+            const link = element("a", "evidence-link", signal.kind);
+            link.href = signal.evidenceUrl || item.url;
+            link.target = "_blank";
+            link.rel = "noreferrer noopener";
+            evidenceLinks.append(link);
+          });
+          card.append(evidenceLinks);
+        }
+        card.append(evidence);
+
+        const link = element("a", "evidence-link", "Open PR");
+        link.href = item.url;
+        link.target = "_blank";
+        link.rel = "noreferrer noopener";
+        card.append(link);
+        return card;
+    }
+
+    function renderInbox(snapshot) {
+      const inbox = snapshot.inbox ?? {};
+      const recent = inbox.recentCommunity ?? { count: 0, newest: null, inventory: [] };
+      const community = inbox.community ?? { count: 0, inventory: [] };
+      const unclassified = inbox.unclassified ?? { count: 0, inventory: [] };
+      const verificationIds = new Set(
+        (snapshot.discussionVerification ?? []).map((item) => item.id),
+      );
+      const worthItems = snapshot.primary.reviewNow
+        .filter((item) => !verificationIds.has(item.id))
+        .slice(0, 5);
+
+      elements.inbox.replaceChildren();
+
+      const worth = element("div", "inbox-group");
+      worth.append(
+        element(
+          "div",
+          "inbox-header",
+          ""),
+      );
+      worth.firstChild.append(element("h2", "", "Worth reviewing now"));
+      worth.firstChild.append(element("span", "muted", String(worthItems.length) + " visible"));
+      const worthList = element("div", "inbox-list");
+      if (!worthItems.length) {
+        worthList.append(element("div", "empty", "No reviewable candidates are currently visible."));
+      } else {
+        for (const item of worthItems) {
+          worthList.append(renderCard(snapshot, item));
+        }
+      }
+      worth.append(worthList);
+      elements.inbox.append(worth);
+
+      elements.inbox.append(
+        renderInboxDetails({
+          title: "Recently opened community PRs",
+          summary: recent.count
+            ? "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • " + recent.count + " total • newest #" + recent.newest
+            : "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • no recent community PRs",
+          items: recent.inventory ?? [],
+        }),
+      );
+      elements.inbox.append(
+        renderInboxDetails({
+          title: "Community attention",
+          summary: community.count
+            ? String(community.count) + " total community items"
+            : "No community items",
+          items: community.inventory ?? [],
+          previewNeedsRescueFirst: true,
+        }),
+      );
+      elements.inbox.append(
+        renderInboxDetails({
+          title: "Unclassified",
+          summary: unclassified.count
+            ? String(unclassified.count) + " scoped but unlabelled items"
+            : "No unclassified items",
+          items: unclassified.inventory ?? [],
+        }),
+      );
+
+      const evidence = inbox.evidence ?? {};
+      const coverage = element("p", "muted");
+      coverage.textContent = "Inbox evidence: "
+        + (evidence.coverage || "not-collected")
+        + " | recorded " + (evidence.recordedResponseCount ?? 0)
+        + " | unknown " + (evidence.unknownResponseCount ?? 0)
+        + " | no-response " + (evidence.noResponseCount ?? 0)
+        + ".";
+      elements.inbox.append(coverage);
+    }
+
+    function renderInboxDetails({
+      title,
+      summary,
+      items,
+      previewLimit = 5,
+      previewNeedsRescueFirst = false,
+    }) {
+      const group = element("div", "inbox-group");
+      const header = element("div", "inbox-header");
+      header.append(element("h2", "", title));
+      header.append(element("span", "muted", summary));
+      group.append(header);
+
+      const ordered = previewNeedsRescueFirst ? orderNeedsRescueFirst(items) : [...items];
+      const previewItems = ordered.slice(0, previewLimit);
+      const previewList = element("div", "inbox-list");
+      if (!previewItems.length) {
+        previewList.append(element("div", "muted", "None"));
+      } else {
+        for (const item of previewItems) {
+          previewList.append(renderInboxItem(item));
+        }
+      }
+      group.append(previewList);
+
+      if (items.length > previewLimit) {
+        const details = element("details", "secondary");
+        details.append(element("summary", "", "View the full inventory (" + items.length + " total)"));
+        const fullList = element("div", "inbox-list");
+        for (const item of ordered) {
+          fullList.append(renderInboxItem(item));
+        }
+        details.append(fullList);
+        group.append(details);
+      }
+
+      return group;
+    }
+
+    function orderNeedsRescueFirst(items) {
+      const rescue = [];
+      const others = [];
+      for (const item of items) {
+        if (item.bucket === "NeedsRescue") {
+          rescue.push(item);
+        } else {
+          others.push(item);
+        }
+      }
+      return rescue.concat(others);
+    }
+
+    function renderInboxItem(item) {
+      const card = element("article", "inbox-item");
+      card.append(element("h3", "", "#" + item.number + " " + item.title));
+      const metadata = [];
+      if (item.provenance) {
+        metadata.push(item.provenance === "community" ? "Community contribution" : "Unclassified contribution");
+      }
+      if (item.bucket) {
+        metadata.push(item.bucket);
+      }
+      if (item.nextActor) {
+        metadata.push("Next actor: " + item.nextActor);
+      }
+      if (item.createdAt) {
+        metadata.push("Opened " + new Date(item.createdAt).toLocaleDateString());
+      }
+      if (metadata.length) {
+        card.append(element("div", "muted", metadata.join(" | ")));
+      }
+
+      if (Array.isArray(item.reasonCodes) && item.reasonCodes.length) {
+        const pills = element("div", "pills");
+        for (const code of item.reasonCodes.slice(0, 5)) {
+          pills.append(element("span", "pill", code));
+        }
+        if (pills.children.length) {
+          card.append(pills);
+        }
+      }
+
+      card.append(renderInboxEvidence(item));
+
+      const actions = element("div", "actions");
+      const link = element("a", "evidence-link", "Open PR");
+      link.href = item.url || "#";
+      link.target = "_blank";
+      link.rel = "noreferrer noopener";
+      actions.append(link);
+      card.append(actions);
+      return card;
+    }
+
+    function renderInboxEvidence(item) {
+      const evidence = element("div", "inbox-evidence");
+      const responseEvidence = item.responseEvidence ?? {};
+      const status = responseEvidence.status ?? "unknown";
+      const note = responseEvidence.recordedNonAuthorHumanResponse
+        ? "Recorded non-author human response"
+        : responseEvidence.complete
+          ? "Complete evidence"
+          : "Bounded evidence";
+      evidence.append(element("div", "muted", "Evidence status: " + status + " | " + note));
+      const canonical = responseEvidence.canonicalEvidenceUrl || item.url || "#";
+      const link = element("a", "evidence-link", "Canonical evidence");
+      link.href = canonical;
+      link.target = "_blank";
+      link.rel = "noreferrer noopener";
+      evidence.append(link);
+      if (status === "unknown") {
+        evidence.append(
+          element(
+            "div",
+            "muted",
+            "Evidence is incomplete or ambiguous; no-response is not claimed.",
+          ),
+        );
+      }
+      return evidence;
+    }
+
+    function renderPrimaryLanes(snapshot, inboxAvailable = hasInboxData(snapshot)) {
       const lanes = [
-        {
-          bucket: "ReviewNow",
-          items: snapshot.primary.reviewNow,
-          overflow: snapshot.overflow.reviewNow,
-        },
         {
           bucket: "NeedsRescue",
           items: snapshot.primary.needsRescue,
           overflow: snapshot.overflow.needsRescue,
         },
       ];
+      if (!inboxAvailable) {
+        lanes.unshift({
+          bucket: "ReviewNow",
+          items: snapshot.primary.reviewNow,
+          overflow: snapshot.overflow.reviewNow,
+        });
+      }
       elements.lanes.replaceChildren();
       for (const lane of lanes) {
         const metadata = snapshot.display.buckets[lane.bucket];
@@ -691,7 +1203,11 @@ export const HTML = `<!doctype html>
         });
         const body = await response.json();
         if (!response.ok) {
-          throw new Error(body.error || "Action failed");
+          throw new Error(
+            body.code === "action_revalidation_failed"
+              ? "Action withheld: " + (body.error || "the pull request changed")
+              : body.error || "Action failed",
+          );
         }
         elements.status.textContent =
           kind === "open" ? "Pull request opened." : "Read-only session request queued.";

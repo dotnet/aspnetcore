@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { homedir } from "node:os";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -12,7 +13,11 @@ const scriptPath = resolve(
 );
 const fixturePath = resolve(
   repositoryRoot,
-  ".github/skills/pr-attention-queue/tests/fixtures/pull-requests.json",
+  ".github/skills/pr-attention-queue/tests/fixtures/inbox-pull-requests.json",
+);
+const personalCachePath = resolve(
+  process.env.COPILOT_HOME ?? join(homedir(), ".copilot"),
+  "extensions/aspnetcore-team-app/notification-cache.json",
 );
 
 export const SUPPORTED_SCHEMA_VERSION = "1.0.0";
@@ -37,6 +42,7 @@ export function normalizeOptions(input = {}, fallback = {}) {
   const source = input.source ?? fallback.source ?? "live";
   const preset = input.preset ?? fallback.preset ?? "blazor";
   const excludeDigestAuthor = input.excludeDigestAuthor ?? fallback.excludeDigestAuthor;
+  const identityScope = input.identityScope ?? fallback.identityScope;
 
   if (!["fixture", "live"].includes(source)) {
     throw queueError("invalid_source", "source must be fixture or live");
@@ -53,16 +59,32 @@ export function normalizeOptions(input = {}, fallback = {}) {
   ) {
     throw queueError("invalid_excluded_author", "excludeDigestAuthor must be a GitHub login");
   }
+  if (
+    identityScope !== undefined
+    && (
+      typeof identityScope !== "string"
+      || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(identityScope)
+    )
+  ) {
+    throw queueError("invalid_identity_scope", "identityScope must be a simple scoped identifier");
+  }
 
   return {
     source,
     preset,
     ...(excludeDigestAuthor ? { excludeDigestAuthor } : {}),
+    ...(identityScope ? { identityScope } : {}),
   };
 }
 
 export async function loadQueue(input = {}) {
-  const options = normalizeOptions(input);
+  let options = normalizeOptions(input);
+  if (options.source === "live" && !options.identityScope) {
+    options = normalizeOptions({
+      ...options,
+      identityScope: await getAuthenticatedIdentity(),
+    });
+  }
   const args = [
     "-NoProfile",
     "-File",
@@ -74,10 +96,18 @@ export async function loadQueue(input = {}) {
   ];
 
   if (options.source === "fixture") {
-    args.push("-InputPath", fixturePath);
+    args.push(
+      "-InputPath",
+      fixturePath,
+      "-Now",
+      "2026-09-05T12:00:00Z",
+    );
   }
   if (options.excludeDigestAuthor) {
     args.push("-ExcludeDigestAuthor", options.excludeDigestAuthor);
+  }
+  if (options.source === "live") {
+    args.push("-PersonalCachePath", personalCachePath);
   }
 
   let stdout;
@@ -97,6 +127,27 @@ export async function loadQueue(input = {}) {
     options,
     queue: parseQueueJson(stdout),
   };
+}
+
+async function getAuthenticatedIdentity() {
+  let stdout;
+  try {
+    ({ stdout } = await execFileAsync("gh", ["api", "user", "--jq", ".login"], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      maxBuffer: 64 * 1024,
+      timeout: 15_000,
+    }));
+  } catch (error) {
+    const detail = error.stderr?.trim() || error.message;
+    throw queueError("queue_identity_failed", `Unable to resolve the authenticated GitHub identity: ${detail}`);
+  }
+
+  const identity = stdout.trim();
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(identity)) {
+    throw queueError("queue_identity_invalid", "The authenticated GitHub identity was invalid.");
+  }
+  return identity;
 }
 
 export function parseQueueJson(stdout) {
@@ -180,6 +231,12 @@ export function validateQueue(queue) {
   }
   if (queue.discussion !== undefined) {
     validateDiscussionSummary(queue.discussion);
+  }
+  if (queue.inbox !== undefined) {
+    validateInbox(queue.inbox);
+  }
+  if (queue.personal !== undefined) {
+    validatePersonal(queue.personal);
   }
 
   requireStringArray(queue.warnings, "warnings");
@@ -288,6 +345,71 @@ function validateDiscussionSummary(discussion) {
     "unassessedReviewNowCount",
   ]) {
     requireNonNegativeInteger(discussion[field], `discussion.${field}`);
+  }
+}
+
+function validateInbox(inbox) {
+  requireRecord(inbox, "inbox");
+  const inventoryKeys = ["recentCommunity", "community", "unclassified"];
+  for (const key of inventoryKeys) {
+    if (inbox[key] !== undefined) {
+      requireRecord(inbox[key], `inbox.${key}`);
+      requireNonNegativeInteger(inbox[key].count, `inbox.${key}.count`);
+      if (
+        inbox[key].newest !== undefined
+        && inbox[key].newest !== null
+        && (!Number.isInteger(inbox[key].newest) || inbox[key].newest < 0)
+      ) {
+        throw queueError("queue_shape_invalid", `inbox.${key}.newest must be a non-negative integer when present`);
+      }
+
+      if (inbox[key].preview !== undefined && !Array.isArray(inbox[key].preview)) {
+        throw queueError("queue_shape_invalid", `inbox.${key}.preview must be an array`);
+      }
+      if (inbox[key].inventory !== undefined && !Array.isArray(inbox[key].inventory)) {
+        throw queueError("queue_shape_invalid", `inbox.${key}.inventory must be an array`);
+      }
+    }
+
+  }
+  if (inbox.evidence !== undefined) {
+    requireRecord(inbox.evidence, "inbox.evidence");
+    for (const field of [
+      "recordedResponseCount",
+      "unknownResponseCount",
+      "noResponseCount",
+    ]) {
+      requireNonNegativeInteger(inbox.evidence[field], `inbox.evidence.${field}`);
+    }
+    if (inbox.evidence.collection !== undefined) {
+      requireStringValue(inbox.evidence.collection, "inbox.evidence.collection");
+    }
+    if (inbox.evidence.coverage !== undefined) {
+      requireStringValue(inbox.evidence.coverage, "inbox.evidence.coverage");
+    }
+  }
+}
+
+function validatePersonal(personal) {
+  requireRecord(personal, "personal");
+  if (typeof personal.enabled !== "boolean") {
+    throw queueError("queue_shape_invalid", "personal.enabled must be a boolean");
+  }
+  if (personal.login !== null && personal.login !== undefined) {
+    requireStringValue(personal.login, "personal.login");
+  }
+  requireStringValue(personal.scope, "personal.scope");
+  if (personal.preview !== undefined && !Array.isArray(personal.preview)) {
+    throw queueError("queue_shape_invalid", "personal.preview must be an array");
+  }
+  if (personal.inventory !== undefined && !Array.isArray(personal.inventory)) {
+    throw queueError("queue_shape_invalid", "personal.inventory must be an array");
+  }
+  if (personal.coverage !== undefined) {
+    requireRecord(personal.coverage, "personal.coverage");
+    if (personal.coverage.state !== undefined) {
+      requireStringValue(personal.coverage.state, "personal.coverage.state");
+    }
   }
 }
 
