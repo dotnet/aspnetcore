@@ -3921,6 +3921,27 @@ function Invoke-PRAttentionQueue {
         -CollectionState $personalCollectionState `
         -NotificationMetrics $personalNotificationMetrics
     $personalStopwatch.Stop()
+    $personal | Add-Member -NotePropertyName "metrics" -NotePropertyValue ([pscustomobject]@{
+        cacheMode = if ([string]::IsNullOrWhiteSpace($PersonalCachePath)) {
+            "unavailable"
+        }
+        elseif ($personalNotificationMetrics.notModifiedPages -gt 0 -or $personalNotificationMetrics.cachedPages -gt 0) {
+            "warm"
+        }
+        else {
+            "cold"
+        }
+        apiCalls = [int](
+            $personalIdentityRequests +
+            $personalSearchMetrics.requestCount +
+            $personalNotificationMetrics.requestCount +
+            $personalEvidenceMetrics.requestCount
+        )
+        elapsedMs = [int]$personalStopwatch.ElapsedMilliseconds
+        personalMs = [int]$personalStopwatch.ElapsedMilliseconds
+        pullRequestsScanned = [int]$personalCandidates.Count
+        notification = $personalNotificationMetrics
+    }) -Force
     $totalStopwatch.Stop()
 
     $result = [pscustomobject]@{
