@@ -1183,6 +1183,7 @@ function Get-RepositoryNotifications {
     $cachedPages = 0
     $notModifiedPages = 0
     $backoffSeconds = 0
+    $errorMessage = $null
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     try {
         for ($page = 1; $page -le 10; $page++) {
@@ -1218,7 +1219,8 @@ function Get-RepositoryNotifications {
     }
     catch {
         $coverageState = "unavailable"
-        $coverageDetail = "Repository notification access failed: $($_.Exception.Message)"
+        $errorMessage = $_.Exception.Message
+        $coverageDetail = "Repository notification access failed: $errorMessage"
     }
     $stopwatch.Stop()
 
@@ -1234,6 +1236,7 @@ function Get-RepositoryNotifications {
             notModifiedPages = $notModifiedPages
             backoffSeconds = $backoffSeconds
             elapsedMs = [int]$stopwatch.ElapsedMilliseconds
+            error = $errorMessage
         }
     }
 }
