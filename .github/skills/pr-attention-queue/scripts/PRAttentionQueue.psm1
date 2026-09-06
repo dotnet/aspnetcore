@@ -354,6 +354,23 @@ function Invoke-GhConditionalJson {
                 throw "GitHub returned 304 without a cached notification representation."
             }
 
+            $etag = Get-ResponseHeader -Headers $headers -Name "etag"
+            $lastModified = Get-ResponseHeader -Headers $headers -Name "last-modified"
+            $pollIntervalHeader = Get-ResponseHeader -Headers $headers -Name "x-poll-interval"
+            $pollIntervalSeconds = [int]$cached.pollIntervalSeconds
+            $parsedPollInterval = 0
+            if ([int]::TryParse([string]$pollIntervalHeader, [ref]$parsedPollInterval) -and
+                $parsedPollInterval -ge 0) {
+                $pollIntervalSeconds = $parsedPollInterval
+            }
+            $cache[$key] = @{
+                body = $cached.body
+                etag = if ([string]::IsNullOrWhiteSpace($etag)) { $cached.etag } else { $etag }
+                lastModified = if ([string]::IsNullOrWhiteSpace($lastModified)) { $cached.lastModified } else { $lastModified }
+                fetchedAtUtc = [DateTimeOffset]::UtcNow.ToString("o")
+                pollIntervalSeconds = $pollIntervalSeconds
+            }
+            Write-NotificationCache -Path $CachePath -Entries $cache
             return [pscustomobject]@{
                 value = $cached.body | ConvertFrom-Json -Depth 20
                 requestCount = $requestCount
@@ -987,6 +1004,10 @@ function Get-PersonalInboxItem {
                 [string]::Equals(
                     [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue ""),
                     $PersonalLogin,
+                    [System.StringComparison]::OrdinalIgnoreCase) -and
+                [string]::Equals(
+                    [string](Get-PropertyValue -Object $_ -Name "publicationState" -DefaultValue "UNKNOWN"),
+                    "PUBLISHED",
                     [System.StringComparison]::OrdinalIgnoreCase)
             } |
             Select-Object -First 1
@@ -999,6 +1020,10 @@ function Get-PersonalInboxItem {
                 -not [string]::IsNullOrWhiteSpace(
                     [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue "")
                 ) -and
+                [string]::Equals(
+                    [string](Get-PropertyValue -Object $_ -Name "publicationState" -DefaultValue "UNKNOWN"),
+                    "PUBLISHED",
+                    [System.StringComparison]::OrdinalIgnoreCase) -and
                 $null -ne (ConvertTo-UtcDateTime -Value (Get-PropertyValue -Object $_ -Name "createdAt")) -and
                 -not [string]::Equals(
                     [string](Get-PropertyValue -Object $_ -Name "authorLogin" -DefaultValue ""),
@@ -1319,6 +1344,12 @@ pr$number`: pullRequest(number: $number) {
           author { login }
           createdAt
           url
+          pullRequestReview {
+            author { login }
+            state
+            submittedAt
+            url
+          }
         }
       }
     }
@@ -1367,6 +1398,13 @@ pr$number`: pullRequest(number: $number) {
                                     authorLogin = [string](Get-PropertyValue -Object $commentAuthor -Name "login" -DefaultValue "")
                                     createdAt = Get-PropertyValue -Object $comment -Name "createdAt"
                                     url = [string](Get-PropertyValue -Object $comment -Name "url" -DefaultValue $candidate.url)
+                                    publicationState = [string](Get-PropertyValue `
+                                        -Object (Get-PropertyValue -Object $comment -Name "pullRequestReview") `
+                                        -Name "state" `
+                                        -DefaultValue "UNKNOWN")
+                                    submittedAt = Get-PropertyValue `
+                                        -Object (Get-PropertyValue -Object $comment -Name "pullRequestReview") `
+                                        -Name "submittedAt"
                                 }
                             }
                         )
@@ -2973,6 +3011,19 @@ function Get-PersonalData {
     )
 
     $activeCards = @($cards | Where-Object { $_.signals.Count -gt 0 })
+    $notificationCoverageState = [string](Get-PropertyValue `
+        -Object $NotificationMetrics `
+        -Name "state" `
+        -DefaultValue "unavailable")
+    $hasUnavailableCardCoverage = @(
+        $cards |
+            Where-Object {
+                $_.coverage.discovery.state -eq "unavailable" -or
+                $_.coverage.notifications.state -eq "unavailable" -or
+                $_.coverage.ownReview.state -eq "unavailable" -or
+                $_.coverage.reviewThreads.state -eq "unavailable"
+            }
+    ).Count -gt 0
     return [pscustomobject]@{
         enabled = $true
         login = $PersonalLogin
@@ -2984,15 +3035,9 @@ function Get-PersonalData {
             state = if ($CollectionState -eq "unavailable") {
                 "unavailable"
             }
-            elseif ($CollectionState -eq "partial" -or @(
-                $cards |
-                    Where-Object {
-                        $_.coverage.discovery.state -eq "unavailable" -or
-                        $_.coverage.notifications.state -eq "unavailable" -or
-                        $_.coverage.ownReview.state -eq "unavailable" -or
-                        $_.coverage.reviewThreads.state -eq "unavailable"
-                    }
-            ).Count -gt 0) { "partial" } else { "assessed" }
+            elseif ($CollectionState -eq "partial" -or
+                $notificationCoverageState -eq "unavailable" -or
+                $hasUnavailableCardCoverage) { "partial" } else { "assessed" }
             discovery = if ($CollectionState -eq "unavailable") {
                 "Personal GitHub search or hydration was unavailable; no empty result is claimed."
             }
@@ -3002,7 +3047,11 @@ function Get-PersonalData {
             else {
                 "Four repository search qualifiers were unioned and deduplicated."
             }
-            notifications = if (@($cards | Where-Object { $_.coverage.notifications.state -eq "unavailable" }).Count -gt 0) { "partial" } else { "assessed" }
+            notifications = switch ($notificationCoverageState) {
+                "unavailable" { "unavailable"; break }
+                "partial" { "partial"; break }
+                default { if (@($cards | Where-Object { $_.coverage.notifications.state -eq "unavailable" }).Count -gt 0) { "partial" } else { "assessed" } }
+            }
             ownReview = "bounded"
             reviewThreads = "partial; only hydrated thread evidence is asserted"
         }

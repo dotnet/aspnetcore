@@ -268,6 +268,7 @@ Assert-True (($personalResult.personal.inventory | Where-Object number -eq 204).
 Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 203).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/203")) "REST subject.url must map the notification to the canonical PR URL for PR 203."
 Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 204).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/204")) "REST subject.url must map the notification to the canonical PR URL for PR 204."
 Assert-True (-not (($personalResult.personal.inventory | Where-Object number -eq 201).signals.kind -contains "follow-up-notification")) "Read notifications must not create follow-up signals."
+Assert-True (-not (($personalResult.personal.inventory | Where-Object number -eq 205).signals.kind -contains "review-thread-reply")) "Pending own comments and pending replies must not create thread signals."
 Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals[0].evidenceUrl.Contains("pullrequestreview-201")) "Personal signals must retain canonical evidence links."
 Assert-True (($personalResult.personal.coverage.reviewThreads -like "partial*") -or ($personalResult.personal.coverage.reviewThreads -eq "assessed")) "Personal coverage must disclose bounded thread evidence."
 Assert-True (($personalResult.personal.inventory | Select-Object -ExpandProperty number -Unique).Count -eq @($personalResult.personal.inventory).Count) "Multiple signals must remain one card per pull request."
@@ -320,6 +321,71 @@ Assert-True ($firstNotification.value[0].id -eq "one") "The mocked cold notifica
 Assert-True ($secondNotification.notModified) "The mocked warm notification response must use HTTP 304."
 Assert-True ($secondNotification.value[0].id -eq "one") "HTTP 304 must reuse the exact cached notification body."
 Assert-True ($transportCalls.Count -eq 2) "The conditional transport test must perform exactly one cold and one warm request."
+
+$revalidationCachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-revalidation-cache-$PID.json"
+if (Test-Path -LiteralPath $revalidationCachePath) {
+    Remove-Item -Force -LiteralPath $revalidationCachePath
+}
+$revalidationCalls = [System.Collections.Generic.List[object]]::new()
+$revalidationTransport = {
+    param([object[]]$Arguments)
+    $revalidationCalls.Add(@($Arguments))
+    if ($revalidationCalls.Count -eq 1) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-old`"`r`n`r`n[{`"id`":`"revalidate`"}]"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    if ($revalidationCalls.Count -eq 2) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 304 Not Modified`r`nETag: `"etag-new`"`r`nX-Poll-Interval: 120`r`n`r`n"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    throw "A revalidated cache entry must defer the immediate follow-up request."
+}
+$null = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+$revalidationCache = Get-Content -LiteralPath $revalidationCachePath -Raw | ConvertFrom-Json -Depth 20
+$revalidationEntry = $revalidationCache.entries.PSObject.Properties | Select-Object -First 1
+$revalidationEntry.Value.fetchedAtUtc = "2020-01-01T00:00:00.0000000+00:00"
+$revalidationEntry.Value.pollIntervalSeconds = 0
+$revalidationCache | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $revalidationCachePath
+$revalidatedNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+$deferredRevalidation = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+Assert-True ($revalidatedNotification.notModified) "An expired cache entry must revalidate with HTTP 304."
+Assert-True ($deferredRevalidation.retryLater) "A 304 response must refresh the poll interval for the next request."
+Assert-True ($revalidationCalls.Count -eq 2) "A revalidated cache entry must make only the cold and expired revalidation requests."
 
 $pollCachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-poll-cache-$PID.json"
 if (Test-Path -LiteralPath $pollCachePath) {
@@ -398,6 +464,16 @@ $emptyEvidence = & $module {
 }
 Assert-True ($emptyEvidence.requestCount -eq 0) "An empty personal candidate union must return zero evidence requests."
 Assert-True ($null -ne $emptyEvidence.elapsedMs) "An empty personal candidate union must still return evidence metrics."
+$emptyPersonal = & $module {
+    Get-PersonalData `
+        -GeneralItems @() `
+        -PersonalCandidates @() `
+        -PersonalLogin "reviewer" `
+        -CollectionState "assessed" `
+        -NotificationMetrics ([pscustomobject]@{ state = "unavailable" })
+}
+Assert-True ($emptyPersonal.coverage.state -eq "partial") "Unavailable notifications must keep top-level empty personal coverage partial."
+Assert-True ($emptyPersonal.coverage.notifications -eq "unavailable") "Unavailable notifications must not become assessed because there are no cards."
 
 $mockEvidence = & $module {
     function Invoke-GhJson {
@@ -467,7 +543,7 @@ Assert-True ($mockEvidence.metrics.threadCandidates -eq 1) "Thread hydration mus
 Assert-True (($mockEvidence.candidates | Where-Object number -eq 301).personalCoverage.reviewThreads.state -eq "assessed") "The selected candidate must receive thread coverage."
 Assert-True (($mockEvidence.candidates | Where-Object number -eq 302).personalCoverage.reviewThreads.state -eq "unassessed") "The unselected candidate must remain unassessed."
 
-foreach ($temporaryPath in @($cachePath, $pollCachePath)) {
+foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)) {
     if (Test-Path -LiteralPath $temporaryPath) {
         Remove-Item -Force -LiteralPath $temporaryPath
     }

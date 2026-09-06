@@ -292,12 +292,16 @@
           {
             "authorLogin": "reviewer",
             "createdAt": "2026-08-28T10:00:00Z",
-            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204"
+            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204",
+            "publicationState": "PUBLISHED",
+            "submittedAt": "2026-08-28T10:00:01Z"
           },
           {
             "authorLogin": "community-author-four",
             "createdAt": "2026-08-29T11:00:00Z",
-            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204-reply"
+            "url": "https://github.com/dotnet/aspnetcore/pull/204#discussion_r204-reply",
+            "publicationState": "PUBLISHED",
+            "submittedAt": "2026-08-29T11:00:01Z"
           }
         ]
       }
@@ -337,7 +341,41 @@
     "personalReviews": [],
     "personalReviewRequests": [],
     "personalNotifications": [],
-    "personalReviewThreads": [],
+    "personalReviewThreads": [
+      {
+        "threadId": "pending-own-comment-205",
+        "isResolved": false,
+        "participation": [
+          {
+            "authorLogin": "reviewer",
+            "createdAt": "2026-08-31T12:00:00Z",
+            "url": "https://github.com/dotnet/aspnetcore/pull/205#discussion_r205-pending-own",
+            "publicationState": "PENDING",
+            "submittedAt": null
+          }
+        ]
+      },
+      {
+        "threadId": "pending-reply-205",
+        "isResolved": false,
+        "participation": [
+          {
+            "authorLogin": "reviewer",
+            "createdAt": "2026-08-31T12:01:00Z",
+            "url": "https://github.com/dotnet/aspnetcore/pull/205#discussion_r205-pending-reply",
+            "publicationState": "PENDING",
+            "submittedAt": null
+          },
+          {
+            "authorLogin": "community-author",
+            "createdAt": "2026-08-31T12:02:00Z",
+            "url": "https://github.com/dotnet/aspnetcore/pull/205#discussion_r205-pending-reply-author",
+            "publicationState": "PENDING",
+            "submittedAt": null
+          }
+        ]
+      }
+    ],
     "personalComments": [
       {
         "source": "commenter-search",
