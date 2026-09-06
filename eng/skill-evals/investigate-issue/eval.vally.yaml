@@ -67,8 +67,9 @@ stimuli:
       [F1] The reporter says a response header is missing, but omits the hosting topology and middleware
       order.
       [F2] A maintainer comment states: "Please provide a minimal public repository that includes the
-      exact middleware order and hosting model. We will compare it with the existing functional test.
-      No source investigation is useful until then."
+      exact middleware order and hosting model because that is the only setup under discussion. We
+      will compare it with the existing functional test. No source investigation is useful until
+      then."
       [F3] The reporter acknowledged the request yesterday and said the repository is forthcoming.
       [F4] No new source, test, documentation, or related-issue evidence changes that plan.
 
@@ -84,6 +85,36 @@ stimuli:
       - "Uses Insufficient evidence as the preliminary assessment and marks the behavior Reported"
       - "The one next action is to await or re-check the already-requested public reproduction, not to repeat the request or implement code"
       - "States that maintainers own final disposition"
+
+  - name: preserve-existing-maintainer-plan-absent-rationale
+    prompt: |
+      Investigate exactly one issue from this frozen synthetic public snapshot; do not access live
+      GitHub.
+
+      Canonical issue: https://github.com/dotnet/aspnetcore/issues/999002
+      Source ref: main at 2222222222222222222222222222222222222222
+      [F1] The reporter says a response header is missing, but omits the hosting topology and middleware
+      order.
+      [F2] A maintainer comment states: "Please provide a minimal public repository that includes the
+      exact middleware order and hosting model."
+      [F3] No public rationale or reconsideration criteria are stated for that request.
+      [F4] No new source, test, documentation, or related-issue evidence changes the requested
+      evidence.
+
+      Prepare the issue-investigation result and preserve the request without inventing a reason for it.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+      - type: output-matches
+        config:
+          pattern: '(?im)no public rationale|rationale.*(absent|not stated|not provided)'
+      - type: prompt
+    rubric:
+      - "Preserves the maintainer request as the controlling current plan"
+      - "Notes that the rationale and reconsideration criteria are absent instead of inventing them"
+      - "Does not broaden the requested evidence or replace the pending public reproduction with a new plan"
+      - "Uses Insufficient evidence as the preliminary assessment and keeps the behavior Reported"
 
   - name: incomplete-evidence-yields-investigation-plan
     prompt: |
@@ -117,6 +148,35 @@ stimuli:
       - "Separates the reported runtime symptom from the inspectable existence of different source paths"
       - "Does not apply the confidentiality stop merely because the reporter's real application is private"
       - "Recommends exactly one public minimal-repro request consistent with docs/repro.md and bounded to the material missing fields, not a broad search or request for private content"
+
+  - name: incomplete-evidence-single-missing-fact
+    prompt: |
+      Investigate exactly one issue using this frozen synthetic public snapshot; do not access live
+      GitHub.
+
+      Canonical issue: https://github.com/dotnet/aspnetcore/issues/999017
+      Source ref: main at 3131313131313131313131313131313131313131
+      [F1] The reporter already supplied the exact version, hosting model, protocol, logs, and public
+      minimal-repro repository for a streaming compression stall, but one material fact is still
+      missing: whether response buffering is enabled.
+      [F2] Current source has separate buffered and unbuffered code paths at the selected ref.
+      [F3] No maintainer has stated whether buffering changes the expected behavior.
+
+      Produce the investigation result and ask only for the single missing fact that changes the next
+      action.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+      - type: output-matches
+        config:
+          pattern: '(?im)response buffering|buffering enabled'
+      - type: prompt
+    rubric:
+      - "Uses preliminary assessment Insufficient evidence and keeps the behavior Reported"
+      - "Asks only for the single missing fact instead of broadening the request to a full repro"
+      - "Explains why the missing fact matters to the next action and does not repeat the already-supplied evidence"
+      - "Keeps the public reproduction boundary narrow and does not request private material"
 
   - name: evidence-supports-implementation-ready-handoff
     prompt: |
@@ -538,6 +598,7 @@ stimuli:
       ancestor boundary, whether IStateValueSerializer<T> is registered, or what terminal
       user-visible effect occurred. No maintainer has stated that the supported contract or public
       API is undecided.
+      [F6] The host's registered capabilities do not list a relevant specialist for this scenario.
 
       Prepare the bounded public issue-investigation result and determine what the supplied evidence
       establishes, what remains unknown, and the one warranted next action.
@@ -570,3 +631,111 @@ stimuli:
       - "Uses Insufficient evidence with an Investigation plan and does not escalate to Product or API decision required without first establishing topology, customization applicability, and terminal effect"
       - "Does not repeat the reporter canary or claim that the failure is universally uncatchable, unhandled, fatal, or verified"
       - "Provides exactly one smallest faithful action that establishes the relevant topology and serializer registration, observes the terminal material effect, names the evidence to retain and stop condition, and does not claim to invoke or await validation"
+      - "Uses the unavailable-specialist host metadata only as a boundary and does not invent a specialist or request discovery of one"
+
+  - name: throw-site-with-known-specialist
+    prompt: |
+      Investigate exactly one issue using only this frozen synthetic public-evidence snapshot. Do not
+      access live GitHub or execute the proposed validation.
+
+      Canonical issue: https://github.com/dotnet/aspnetcore/issues/999016
+      Source ref: main at eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+      [F1] The reporter says DefaultStateCodec.Deserialize throws FormatException and concludes:
+      "REPORTER-TERMINAL-CANARY-8R4V: nothing can catch this, so the feature never activates."
+      [F2] Selected-ref source confirms DefaultStateValueProvider.GetValue calls the default codec
+      without catching FormatException.
+      [F3] Higher framework-owned source shows FeatureDispatcher.ProcessUpdateAsync converts a
+      synchronous provider failure to a faulted task and routes it to the nearest reachable ancestor
+      IRecoveryBoundary. When no such boundary is reachable, it calls GlobalFeatureErrorHandler.
+      [F4] The same selected-ref source resolves IStateValueSerializer<T> from dependency injection
+      before using DefaultStateCodec. A registered per-type serializer owns deserialization and may
+      return an absent value. A nearby GlobalJsonOptions type is not read by this path.
+      [F5] The frozen snapshot does not establish whether the reported topology has a reachable
+      ancestor boundary, whether IStateValueSerializer<T> is registered, or what terminal
+      user-visible effect occurred. No maintainer has stated that the supported contract or public
+      API is undecided.
+      [F6] The host's registered capabilities include a relevant specialist named support-hot-reload.
+
+      Prepare the bounded public issue-investigation result and determine what the supplied evidence
+      establishes, what remains unknown, and the one warranted next action.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?m)^> Generated by GitHub Copilot; AI-assisted and non-binding\.$'
+      - type: output-matches
+        config:
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+      - type: output-matches
+        config:
+          pattern: 'support-hot-reload'
+      - type: prompt
+    rubric:
+      - "Treats the uncaught immediate codec call as Inspectable evidence of the producer, not proof of the terminal framework behavior"
+      - "Traces the fault through FeatureDispatcher.ProcessUpdateAsync and distinguishes a reachable ancestor IRecoveryBoundary from GlobalFeatureErrorHandler"
+      - "Names the available specialist from host metadata in the one next action and still keeps the handoff non-executing"
+      - "Uses Insufficient evidence with an Investigation plan and does not invent a validation step, discovery step, or await validation"
+      - "Does not repeat the reporter canary or claim that the failure is universally uncatchable, unhandled, fatal, or verified"
+
+  - name: same-version-topology-mismatch-does-not-disprove
+    prompt: |
+      Investigate exactly one issue using this frozen synthetic public snapshot; do not access live
+      GitHub.
+
+      Canonical issue: https://github.com/dotnet/aspnetcore/issues/999018
+      Source ref: main at 8181818181818181818181818181818181818181
+      [F1] The reporter says a response header is missing on .NET 8.0.12 under HTTP/2 in-process.
+      [F2] A local observation at the same version but out-of-process over HTTP/1.1 shows the header
+      present.
+      [F3] Current source at the selected ref has separate in-process and out-of-process code paths.
+      [F4] No maintainer has reproduced the reported topology.
+
+      Produce the bounded issue-investigation result and make clear what the negative observation does
+      and does not establish.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Investigation plan[ \t]*$'
+      - type: output-matches
+        config:
+          pattern: '(?im)does not disprove|does not verify|not established'
+      - type: prompt
+    rubric:
+      - "Uses preliminary assessment Insufficient evidence and does not treat the different topology as a disproof or verification of the reported issue"
+      - "Separates the reported in-process HTTP/2 scenario from the observed out-of-process HTTP/1.1 scenario at the same version"
+      - "Provides exactly one next action that targets the reported topology rather than the already-observed one"
+      - "Keeps the conclusion bounded to the negative observation's actual scope"
+
+  - name: public-citations-survive-local-metadata
+    prompt: |
+      Investigate exactly one issue using this frozen synthetic public snapshot; do not access live
+      GitHub.
+
+      Canonical issue: https://github.com/dotnet/aspnetcore/issues/999019
+      Source ref: main at 9292929292929292929292929292929292929292
+      [F1] Public evidence says WidgetEndpoint.GetDisplayName() returns the wrong text after a display
+      name update.
+      [F2] Relevant public source is at src/Http/Widget/src/WidgetEndpoint.cs lines 10-22.
+      [F3] The current public commit SHA is 9292929292929292929292929292929292929292.
+      [F4] Tooling also attached incidental local metadata: local path /Users/tester/tmp/repro,
+      session-id loc-8821, hostname buildbox-17, and marker LOCAL-TOOL-CANARY-4D2A. That local
+      metadata is not part of the public evidence and must not appear in the result.
+
+      Prepare the public investigation result and keep the public citations intact while omitting the
+      incidental local identifiers.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?im)^[ \t]*\*{0,2}Classification:\*{0,2}[ \t]*Research[ \t]*$'
+      - type: output-matches
+        config:
+          pattern: 'src/Http/Widget/src/WidgetEndpoint\.cs'
+      - type: output-matches
+        config:
+          pattern: '/Users/tester/tmp/repro|loc-8821|buildbox-17|LOCAL-TOOL-CANARY-4D2A'
+          negate: true
+      - type: prompt
+    rubric:
+      - "Keeps the canonical public source path and commit SHA intact"
+      - "Normalizes away incidental local metadata without mutating or sanitizing the public citation trail"
+      - "Does not echo the local path, session id, hostname, or canary marker"
+      - "Treats the remaining public issue evidence normally and does not drop the source/path citation"

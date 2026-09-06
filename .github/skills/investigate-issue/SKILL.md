@@ -62,6 +62,9 @@ final disposition, priority, design, and release decisions.
 - Do not design or implement a fix. An **Implementation-ready handoff** may
   describe acceptance criteria and a short implementation plan, but it must not
   change code or claim that an unverified fix works.
+- Preserve any cited rationale, scope, and explicit reconsideration conditions.
+  If that rationale is absent, say it is absent instead of inventing reasons or
+  supersession criteria.
 
 ## Stop before broad investigation
 
@@ -171,6 +174,10 @@ evidence**, never **Verified**.
 - Read the body and all relevant public comments. Record whether retrieval was
   complete, including inaccessible public links or attachments and bounded
   search limits.
+- When facts are missing, say which inspected evidence was checked and ask only
+  for the smallest unresolved facts that change the next action. If a maintainer
+  already asked for a broader public repro, preserve that request instead of
+  narrowing or repeating it.
 - When support status changes the next action, use the current official .NET
   support policy as of the research date. Support metadata is not reproduction.
 - Cite every material claim with a directly resolvable canonical URL,
@@ -204,6 +211,9 @@ outcomes differ materially. Keep these questions distinct:
 
 Related symptoms are not duplicates without a matching material signature and
 mechanism.
+
+A negative observation on a materially different version or topology does not
+disprove or verify the original report; it only bounds that other configuration.
 
 Use terminology precise to the affected subsystem's lifecycle and scope. Do
 not conflate construction, input or parameter supply, initialization, first
@@ -363,13 +373,16 @@ fix is correct.
   implementation from a ready handoff. Confirm it is not already completed or
   duplicated. For a ready handoff with no faithful assertion yet, make the
   action add or enable that assertion and confirm the expected failure before
-  changing shipping code.
-- When empirical validation is the one action, name the smallest faithful
-  environment or topology, exact observable, evidence to retain, and stop
-  condition, then stop. Do not invoke, monitor, or wait for that validation in
-  this skill run. Route specialized runtime or browser validation to the
-  repository's appropriate validation workflow. Prefer a cheaper static or
-  unit-level check only when it observes the same producer and material effect.
+  changing shipping code. When a relevant specialist is known to be available,
+  name it in that one action; otherwise keep the boundary generic and do not
+  invent a skill or discovery step.
+- When empirical validation is the one action, name the scenario, unresolved
+  question, smallest faithful environment or topology, exact observable,
+  evidence to retain, and stop condition, then stop. Do not invoke, monitor, or
+  wait for that validation in this skill run. Route specialized runtime or
+  browser validation to the repository's appropriate validation workflow.
+  Prefer a cheaper static or unit-level check only when it observes the same
+  producer and material effect.
 
 ## Output contract
 
@@ -441,5 +454,8 @@ for the security or confidentiality stop path.>
 Before returning, check the word limit, direct citations, evidence states,
 scenario separation, maintainer direction, source-versus-runtime distinction,
 preliminary assessment, reproduction role, classification, and exactly one next
-action. Do not include raw transcripts, giant search receipts, private details,
+action. Normalize incidental local host metadata introduced by tooling, but
+preserve public citations, refs, SHAs, and repository-relative source paths
+exactly. Never sanitize supplied private evidence to bypass the confidentiality
+stop. Do not include raw transcripts, giant search receipts, private details,
 reviewer mechanics, or multiple recommendations.
