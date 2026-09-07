@@ -207,7 +207,7 @@ export function createQueueController({
   }
 
   function resolveAction(body) {
-    const { itemId, kind } = parseActionRequest(body);
+    const { itemId, kind, destination } = parseActionRequest(body);
     if (!snapshot) {
       throw stateError("snapshot_unavailable", "No complete queue snapshot is available.");
     }
@@ -269,11 +269,11 @@ export function createQueueController({
           throw stateError("action_revalidation_failed", "The live queue no longer allows the rescue action.");
         }
 
-        return { kind, item };
+        return { kind, item, destination };
       })();
     }
 
-    return { kind, item };
+    return { kind, item, destination };
   }
 
   function subscribe(listener) {
@@ -557,14 +557,34 @@ export function parseActionRequest(body) {
     throw stateError("invalid_action", "Action request must be an object.");
   }
   const keys = Object.keys(body).sort();
-  if (keys.length !== 2 || keys[0] !== "itemId" || keys[1] !== "kind") {
-    throw stateError("invalid_action", "Action request accepts only itemId and kind.");
+  const allowedKeys = new Set(["itemId", "kind", "destination"]);
+  const hasDestination = Object.prototype.hasOwnProperty.call(body, "destination");
+  if (keys.some((key) => !allowedKeys.has(key))) {
+    throw stateError("invalid_action", "Action request accepts only itemId, kind, and destination.");
   }
   if (typeof body.itemId !== "string" || !/^[A-Za-z0-9-]{16,64}$/.test(body.itemId)) {
     throw stateError("invalid_action", "itemId is invalid.");
   }
   if (!["open", "review", "investigate-rescue"].includes(body.kind)) {
     throw stateError("invalid_action", "Action kind is invalid.");
+  }
+
+  if (hasDestination && body.destination === null) {
+    throw stateError("invalid_action", "Review destination is invalid.");
+  }
+  const destination = hasDestination ? body.destination : undefined;
+  if (body.kind === "review") {
+    if (destination !== undefined && !["new-session", "this-session"].includes(destination)) {
+      throw stateError("invalid_action", "Review destination is invalid.");
+    }
+    return {
+      itemId: body.itemId,
+      kind: body.kind,
+      destination: destination ?? "new-session",
+    };
+  }
+  if (destination !== undefined) {
+    throw stateError("invalid_action", "Destination is only valid for review actions.");
   }
 
   return {

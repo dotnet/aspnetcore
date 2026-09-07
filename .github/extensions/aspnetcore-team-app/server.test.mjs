@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildLiveOptions,
+  dispatchResolvedAction,
   isAllowedPostRequest,
   loadCanvasData,
   parseRefreshRequest,
@@ -12,13 +13,45 @@ import { parseActionRequest } from "./state.mjs";
 test("action requests accept only opaque IDs and declared kinds", () => {
   assert.deepEqual(
     parseActionRequest({ itemId: "opaque-item-id-123", kind: "review" }),
-    { itemId: "opaque-item-id-123", kind: "review" },
+    { itemId: "opaque-item-id-123", kind: "review", destination: "new-session" },
+  );
+  assert.deepEqual(
+    parseActionRequest({
+      itemId: "opaque-item-id-123",
+      kind: "review",
+      destination: "this-session",
+    }),
+    { itemId: "opaque-item-id-123", kind: "review", destination: "this-session" },
   );
   assert.throws(
     () => parseActionRequest({
       itemId: "opaque-item-id-123",
       kind: "review",
       number: 69040,
+    }),
+    (error) => error.code === "invalid_action",
+  );
+  assert.throws(
+    () => parseActionRequest({
+      itemId: "opaque-item-id-123",
+      kind: "review",
+      destination: null,
+    }),
+    (error) => error.code === "invalid_action",
+  );
+  assert.throws(
+    () => parseActionRequest({
+      itemId: "opaque-item-id-123",
+      kind: "review",
+      destination: "child-session",
+    }),
+    (error) => error.code === "invalid_action",
+  );
+  assert.throws(
+    () => parseActionRequest({
+      itemId: "opaque-item-id-123",
+      kind: "open",
+      destination: "this-session",
     }),
     (error) => error.code === "invalid_action",
   );
@@ -129,4 +162,45 @@ test("canvas data consumes skill-owned personal coverage without hiding the queu
   });
   assert.equal(partial.personalInbox.coverage.overall, "partial");
   assert.equal(partial.personalInbox.metrics.elapsedMs, 10);
+});
+
+test("review dispatch routes new session and this session prompts distinctly", async () => {
+  const reviewItem = {
+    repository: "dotnet/aspnetcore",
+    number: 69063,
+    bucket: "ReviewNow",
+    url: "https://github.com/dotnet/aspnetcore/pull/69063",
+    headSha: "52d785e4885b4a320da7ceaa78672886aba868eb",
+  };
+
+  const sent = [];
+  const newSession = await dispatchResolvedAction(
+    { kind: "review", destination: "new-session", item: reviewItem },
+    {
+      agentSend: async (request) => {
+        sent.push({ destination: "new-session", request });
+        return { messageId: "message-new" };
+      },
+    },
+  );
+  const thisSession = await dispatchResolvedAction(
+    { kind: "review", destination: "this-session", item: reviewItem },
+    {
+      agentSend: async (request) => {
+        sent.push({ destination: "this-session", request });
+        return { messageId: "message-this" };
+      },
+    },
+  );
+
+  assert.equal(newSession.messageId, "message-new");
+  assert.equal(newSession.destination, "new-session");
+  assert.equal(thisSession.messageId, "message-this");
+  assert.equal(thisSession.destination, "this-session");
+  assert.equal(sent.length, 2);
+  assert.match(sent[0].request.prompt, /Open a NEW pull-request session/);
+  assert.match(sent[0].request.prompt, /The current PR head SHA is 52d785e4885b4a320da7ceaa78672886aba868eb\./);
+  assert.match(sent[1].request.prompt, /Review dotnet\/aspnetcore#69063 in this session \(https:\/\/github\.com\/dotnet\/aspnetcore\/pull\/69063\)\./);
+  assert.match(sent[1].request.prompt, /do not open a child PR session/i);
+  assert.doesNotMatch(sent[1].request.prompt, /open_pr_session/);
 });

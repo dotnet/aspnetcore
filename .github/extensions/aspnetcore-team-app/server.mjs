@@ -113,7 +113,7 @@ export async function stopInstance(instanceId) {
   await new Promise((resolve) => entry.server.close(resolve));
 }
 
-export async function dispatchResolvedAction({ kind, item }, handlers = {}) {
+export async function dispatchResolvedAction({ kind, item, destination }, handlers = {}) {
   const send = handlers.agentSend ?? agentSend;
   const open = handlers.browserOpen ?? browserOpen;
 
@@ -132,12 +132,13 @@ export async function dispatchResolvedAction({ kind, item }, handlers = {}) {
   if (!send) {
     throw actionError("agent_unavailable", "The Copilot session is not ready.");
   }
-  const prompt = buildAgentActionPrompt(kind, item);
-  const log = buildAgentActionLog(kind, item);
+  const prompt = buildAgentActionPrompt(kind, item, { destination });
+  const log = buildAgentActionLog(kind, item, { destination });
   const result = await send({ prompt, log });
   return {
     ok: true,
     kind,
+    destination: destination ?? null,
     messageId: typeof result === "string" ? result : result?.messageId ?? null,
   };
 }

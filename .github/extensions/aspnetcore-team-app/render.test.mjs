@@ -7,6 +7,10 @@ test("renderer exposes the focused read-only action set", () => {
   assert.match(HTML, /Open PR/);
   assert.match(HTML, /Investigate rescue/);
   assert.match(HTML, /item\.bucket === "ReviewNow"/);
+  assert.match(HTML, /Attention workspace/);
+  assert.match(HTML, /selected-card/);
+  assert.match(HTML, /row-button/);
+  assert.match(HTML, /aria-pressed/);
   assert.doesNotMatch(HTML, /Refresh fixture/);
   assert.doesNotMatch(HTML, />Merge</);
   assert.doesNotMatch(HTML, />Close PR</);
@@ -19,6 +23,7 @@ test("renderer presents two primary lanes and secondary classifications", () => 
   assert.match(HTML, /snapshot\.readyToMerge/);
   assert.match(HTML, /snapshot\.discussionVerification/);
   assert.match(HTML, /Verify discussion/);
+  assert.doesNotMatch(HTML, /review-menu/);
 });
 
 test("renderer exposes the inbox areas and evidence disclosure", () => {
@@ -30,12 +35,19 @@ test("renderer exposes the inbox areas and evidence disclosure", () => {
   assert.match(HTML, /responseEvidence\.status/);
 });
 
+test("renderer exposes the review destination menu with exact labels", () => {
+  assert.match(HTML, /Review in new session/);
+  assert.match(HTML, /Review in this session/);
+  assert.match(HTML, /Review in new session queued\./);
+  assert.match(HTML, /Review in this session queued\./);
+});
+
 test("renderer uses one ordinary-review shortlist when inbox data is available", () => {
   assert.match(HTML, /const inboxAvailable = hasInboxData\(snapshot\)/);
   assert.match(HTML, /renderPrimaryLanes\(snapshot, inboxAvailable\)/);
   assert.match(HTML, /if \(!inboxAvailable\) \{\s*lanes\.unshift\(/);
-  assert.match(HTML, /const verificationIds = new Set/);
-  assert.match(HTML, /\.filter\(\(item\) => !verificationIds\.has\(item\.id\)\)/);
+  assert.match(HTML, /const verificationNumbers = new Set/);
+  assert.match(HTML, /\.filter\(\(item\) => !verificationNumbers\.has\(item\.number\)\)/);
   assert.match(HTML, /elements\.inbox\.replaceChildren\(\)/);
 });
 
@@ -59,6 +71,8 @@ test("renderer exposes the personal PR inbox without creating a follow-up lane",
   assert.match(HTML, /View full personal inventory/);
   assert.match(HTML, /All " \+ repository/);
   assert.match(HTML, /previewItems/);
+  assert.match(HTML, /item\.number/);
+  assert.match(HTML, /selectionKeyForInboxItem/);
   assert.doesNotMatch(HTML, /inventory\.open\s*=\s*true/);
   assert.doesNotMatch(HTML, /My followups/);
 });
@@ -75,6 +89,8 @@ test("renderer keeps direct, team, notification, and coverage signals distinct",
 });
 
 test("browser actions send only opaque item IDs and action kinds", () => {
-  assert.match(HTML, /JSON\.stringify\(\{ itemId: itemId, kind: kind \}\)/);
+  assert.match(HTML, /const payload = \{ itemId: itemId, kind: kind \};/);
+  assert.match(HTML, /if \(destination\) \{\s*payload\.destination = destination;/);
+  assert.match(HTML, /body: JSON\.stringify\(payload\),/);
   assert.doesNotMatch(HTML, /JSON\.stringify\(\{[^}]*title/);
 });

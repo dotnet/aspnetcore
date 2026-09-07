@@ -24,6 +24,10 @@ merge without creating another notification feed.
 - Adds **My PR inbox** for the authenticated user across all open
   `dotnet/aspnetcore` pull requests, with one card per personally signaled PR
   and an expandable full inventory.
+- Uses a compact selectable workspace with list rows on the left and a focused
+  selected-item detail pane on the right, so the canonical pull request can be
+  inspected from the inbox, queue, or personal views without duplicating the
+  full card everywhere.
 - Separates direct review requests, team requests, notification reasons,
   participation, mentions, changed-since-own-review, and evidenced replies in
   participated review threads.
@@ -35,6 +39,10 @@ merge without creating another notification feed.
   blocker if the intended skill cannot be discovered or honored. These prompt
   instructions are not runtime enforcement, and review artifacts may be written
   only in the session-state files directory without editing repository files.
+- Exposes two explicit review destinations, **Review in new session** and
+  **Review in this session**. The selected item stays locked while a review is
+  queued, and the browser sends only the opaque item ID plus the validated
+  destination enum.
 - Displays assessed, partial, unavailable, and unassessed coverage plus cold or
   warm API metrics. Personal signals never grant queue eligibility or create a
   separate follow-up lane; bot-authored and out-of-scope items remain visible

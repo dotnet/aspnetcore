@@ -129,6 +129,29 @@ export const HTML = `<!doctype html>
       margin-top: 16px;
     }
 
+    .workspace {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+      align-items: start;
+      margin-top: 16px;
+    }
+
+    .main-column,
+    .detail-column {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .detail-column {
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
     .personal-inbox {
       border: 2px solid var(--true-color-blue-muted, #54aeff);
       border-radius: 8px;
@@ -183,6 +206,80 @@ export const HTML = `<!doctype html>
       border-left: 4px solid var(--border-color-default, #d0d7de);
       border-radius: 8px;
       padding: 12px;
+    }
+
+    .selected-card,
+    .list-row,
+    .personal-row,
+    .inbox-row {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .list-row,
+    .personal-row,
+    .inbox-row {
+      align-items: flex-start;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .list-row.selected,
+    .personal-row.selected,
+    .inbox-row.selected {
+      border-color: var(--true-color-blue, #0969da);
+      box-shadow: 0 0 0 1px var(--true-color-blue-muted, #54aeff);
+    }
+
+    .row-button {
+      align-items: flex-start;
+      background: transparent;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      display: grid;
+      gap: 4px;
+      justify-items: start;
+      padding: 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .row-button[aria-pressed="true"] {
+      color: var(--true-color-blue, #0969da);
+      font-weight: var(--font-weight-semibold, 600);
+    }
+
+    .row-button:focus-visible {
+      outline-offset: 3px;
+    }
+
+    .row-title {
+      font-size: 14px;
+      font-weight: var(--font-weight-semibold, 600);
+    }
+
+    .row-meta,
+    .row-summary,
+    .row-coverage {
+      color: var(--text-color-muted, #59636e);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .row-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .row-actions {
+      align-items: center;
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
     }
 
     .inbox-evidence {
@@ -319,6 +416,14 @@ export const HTML = `<!doctype html>
       margin-top: 10px;
     }
 
+    .review-actions {
+      align-items: flex-start;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
     .primary-action {
       background: var(--true-color-blue, #0969da);
       border-color: var(--true-color-blue, #0969da);
@@ -341,6 +446,13 @@ export const HTML = `<!doctype html>
     .ready-strip {
       margin-top: 16px;
       padding: 12px;
+    }
+
+    .selected-detail {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-radius: 8px;
+      padding: 12px;
+      scroll-margin-top: 16px;
     }
 
     .ready-item {
@@ -421,6 +533,16 @@ export const HTML = `<!doctype html>
       .lanes {
         grid-template-columns: 1fr;
       }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-column {
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
     }
   </style>
 </head>
@@ -441,21 +563,29 @@ export const HTML = `<!doctype html>
           <button id="refresh" type="button">Refresh live</button>
         </div>
         <div id="status" class="status muted" role="status" aria-live="polite"></div>
+        <div id="action-status" class="status muted" role="status" aria-live="polite"></div>
       </div>
     </header>
 
     <section id="scope" class="scope muted">Waiting for a complete snapshot.</section>
     <section id="warnings"></section>
     <section id="stats" class="stats" aria-label="Queue statistics"></section>
-    <section id="personal-inbox" class="personal-inbox" aria-live="polite"></section>
-    <section id="inbox" class="inbox" aria-live="polite"></section>
-    <section id="lanes" class="lanes"></section>
-    <section id="discussion-verification" class="discussion-verification"></section>
-    <section id="ready" class="ready-strip"></section>
-    <details id="secondary" class="secondary">
-      <summary>Secondary classifications</summary>
-      <div id="secondary-content" class="secondary-content"></div>
-    </details>
+    <section class="workspace" aria-label="Attention workspace">
+      <div class="main-column">
+        <section id="personal-inbox" class="personal-inbox" aria-live="polite"></section>
+        <section id="inbox" class="inbox" aria-live="polite"></section>
+        <section id="lanes" class="lanes"></section>
+        <section id="discussion-verification" class="discussion-verification"></section>
+        <section id="ready" class="ready-strip"></section>
+        <details id="secondary" class="secondary">
+          <summary>Secondary classifications</summary>
+          <div id="secondary-content" class="secondary-content"></div>
+        </details>
+      </div>
+      <div class="detail-column">
+        <section id="selected-detail" class="selected-detail" aria-live="polite"></section>
+      </div>
+    </section>
     <footer class="muted">
       The deterministic PR Attention skill owns scope, classification, ordering, caps, and next
       actor. This app does not add an AI score or mutate GitHub.
@@ -472,11 +602,13 @@ export const HTML = `<!doctype html>
     const elements = {
       inbox: document.getElementById("inbox"),
       personalInbox: document.getElementById("personal-inbox"),
+      selectedDetail: document.getElementById("selected-detail"),
       lanes: document.getElementById("lanes"),
       preset: document.getElementById("preset"),
       ready: document.getElementById("ready"),
       discussionVerification: document.getElementById("discussion-verification"),
       refresh: document.getElementById("refresh"),
+      actionStatus: document.getElementById("action-status"),
       scope: document.getElementById("scope"),
       secondary: document.getElementById("secondary"),
       secondaryContent: document.getElementById("secondary-content"),
@@ -485,6 +617,10 @@ export const HTML = `<!doctype html>
       subtitle: document.getElementById("subtitle"),
       warnings: document.getElementById("warnings"),
     };
+    let selectedItemKey = null;
+    let lastRenderedState = null;
+    let pendingReview = null;
+    let actionNotice = { phase: "idle", message: "" };
 
     function element(name, className, text) {
       const node = document.createElement(name);
@@ -505,9 +641,235 @@ export const HTML = `<!doctype html>
       return Number.isNaN(date.getTime()) ? "unknown" : formatter(date);
     }
 
+    function selectionKeyForItem(item) {
+      return Number.isInteger(item?.number) ? "item:" + item.number : null;
+    }
+
+    function selectionKeyForPersonalItem(item) {
+      return Number.isInteger(item?.number) ? "personal:" + item.number : null;
+    }
+
+    function selectionKeyForInboxItem(item) {
+      return Number.isInteger(item?.number) ? "inbox:" + item.number : null;
+    }
+
+    function selectItem(key) {
+      selectedItemKey = key;
+      render(lastRenderedState);
+      requestAnimationFrame(() => {
+        elements.selectedDetail?.scrollIntoView({ block: "start", inline: "nearest" });
+      });
+    }
+
+    function isSelectedKey(key) {
+      return key !== null && key === selectedItemKey;
+    }
+
+    function isReviewPending() {
+      return pendingReview !== null;
+    }
+
+    function findQueueItemByNumber(snapshot, number) {
+      const searchGroups = [
+        snapshot.primary?.reviewNow ?? [],
+        snapshot.primary?.needsRescue ?? [],
+        snapshot.readyToMerge ?? [],
+        snapshot.discussionVerification ?? [],
+        ...Object.values(snapshot.secondary ?? {}),
+        ...Object.values(snapshot.overflowItems ?? {}),
+      ];
+      for (const group of searchGroups) {
+        const found = group.find((item) => item.number === number);
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    }
+
+    function findInboxItemByNumber(snapshot, number) {
+      const inbox = snapshot.inbox ?? {};
+      const searchGroups = [
+        inbox.recentCommunity?.inventory ?? [],
+        inbox.community?.inventory ?? [],
+        inbox.unclassified?.inventory ?? [],
+      ];
+      for (const group of searchGroups) {
+        const found = group.find((item) => item.number === number);
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    }
+
+    function findPersonalItemByNumber(snapshot, number) {
+      return (snapshot.personalInbox?.items ?? []).find((item) => item.number === number) ?? null;
+    }
+
+    function renderSelectableRow({ key, title, meta = [], summary = [], pills = [], href = null, hrefLabel = "Open PR", selected = false, pending = false, onSelect }) {
+      const row = element("article", "list-row" + (selected ? " selected" : ""));
+      const main = element("button", "row-button", "");
+      main.type = "button";
+      main.setAttribute("aria-pressed", selected ? "true" : "false");
+      main.disabled = pending;
+      main.addEventListener("click", onSelect);
+      main.append(element("span", "row-title", title));
+      for (const line of meta) {
+        main.append(element("span", "row-meta", line));
+      }
+      for (const line of summary) {
+        main.append(element("span", "row-summary", line));
+      }
+      if (pills.length) {
+        const pillRow = element("div", "row-pills");
+        for (const pill of pills) {
+          pillRow.append(element("span", "pill", pill));
+        }
+        main.append(pillRow);
+      }
+      row.append(main);
+      const actions = element("div", "row-actions");
+      if (href) {
+        const open = element("a", "evidence-link", hrefLabel);
+        open.href = href;
+        open.target = "_blank";
+        open.rel = "noreferrer noopener";
+        actions.append(open);
+      }
+      row.append(actions);
+      if (selected) {
+        row.dataset.selected = "true";
+      }
+      return row;
+    }
+
+    function findQueueItem(snapshot, number) {
+      return findQueueItemByNumber(snapshot, number);
+    }
+
+    function findInboxItem(snapshot, number) {
+      return findInboxItemByNumber(snapshot, number);
+    }
+
+    function resolveSelectedItem(snapshot) {
+      const selectedNumber = typeof selectedItemKey === "string"
+        ? Number(selectedItemKey.split(":")[1])
+        : Number.NaN;
+      const queueItem = typeof selectedItemKey === "string" && selectedItemKey.startsWith("item:")
+        ? findQueueItem(snapshot, selectedNumber)
+        : null;
+      if (queueItem) {
+        return {
+          type: "queue",
+          item: queueItem,
+          personalItem: findPersonalItemByNumber(snapshot, selectedNumber),
+          inboxItem: findInboxItemByNumber(snapshot, selectedNumber),
+        };
+      }
+      const inboxItem = typeof selectedItemKey === "string" && selectedItemKey.startsWith("inbox:")
+        ? findInboxItem(snapshot, selectedNumber)
+        : null;
+      if (inboxItem) {
+        const canonicalQueueItem = findQueueItem(snapshot, selectedNumber);
+        if (canonicalQueueItem) {
+          return {
+            type: "queue",
+            item: canonicalQueueItem,
+            inboxItem,
+            personalItem: findPersonalItemByNumber(snapshot, selectedNumber),
+          };
+        }
+        return { type: "inbox", item: inboxItem };
+      }
+      const personalItem = typeof selectedItemKey === "string" && selectedItemKey.startsWith("personal:")
+        ? findPersonalItemByNumber(snapshot, selectedNumber)
+        : null;
+      if (personalItem) {
+        const canonicalQueueItem = findQueueItem(snapshot, selectedNumber);
+        if (canonicalQueueItem) {
+          return {
+            type: "queue",
+            item: canonicalQueueItem,
+            personalItem,
+            inboxItem: findInboxItemByNumber(snapshot, selectedNumber),
+          };
+        }
+        return { type: "personal", item: personalItem };
+      }
+
+      const fallbackQueue = snapshot.primary?.reviewNow?.[0]
+        ?? snapshot.primary?.needsRescue?.[0]
+        ?? snapshot.readyToMerge?.[0]
+        ?? snapshot.discussionVerification?.[0]
+        ?? Object.values(snapshot.secondary ?? {}).flat().find((item) => item?.number)
+        ?? Object.values(snapshot.overflowItems ?? {}).flat().find((item) => item?.number)
+        ?? null;
+      if (fallbackQueue) {
+        selectedItemKey = selectionKeyForItem(fallbackQueue);
+        return {
+          type: "queue",
+          item: fallbackQueue,
+          personalItem: findPersonalItemByNumber(snapshot, fallbackQueue.number),
+          inboxItem: findInboxItemByNumber(snapshot, fallbackQueue.number),
+        };
+      }
+
+      const fallbackPersonal = snapshot.personalInbox?.items?.[0] ?? null;
+      if (fallbackPersonal) {
+        selectedItemKey = selectionKeyForPersonalItem(fallbackPersonal);
+        const canonicalQueueItem = findQueueItem(snapshot, fallbackPersonal.number);
+        if (canonicalQueueItem) {
+          return {
+            type: "queue",
+            item: canonicalQueueItem,
+            personalItem: fallbackPersonal,
+            inboxItem: findInboxItemByNumber(snapshot, fallbackPersonal.number),
+          };
+        }
+        return { type: "personal", item: fallbackPersonal };
+      }
+
+      const fallbackInbox = snapshot.inbox?.recentCommunity?.inventory?.[0]
+        ?? snapshot.inbox?.community?.inventory?.[0]
+        ?? snapshot.inbox?.unclassified?.inventory?.[0]
+        ?? null;
+      if (fallbackInbox) {
+        selectedItemKey = selectionKeyForInboxItem(fallbackInbox);
+        const canonicalQueueItem = findQueueItem(snapshot, fallbackInbox.number);
+        if (canonicalQueueItem) {
+          return {
+            type: "queue",
+            item: canonicalQueueItem,
+            inboxItem: fallbackInbox,
+            personalItem: findPersonalItemByNumber(snapshot, fallbackInbox.number),
+          };
+        }
+        return { type: "inbox", item: fallbackInbox };
+      }
+
+      selectedItemKey = null;
+      return null;
+    }
+
+    function reviewWithheldText(item) {
+      if (!item || item.bucket !== "ReviewNow") {
+        return "Review is only available for Review now items.";
+      }
+      if (item.discussion?.state === "verification-needed") {
+        return "This PR is waiting for discussion verification before review.";
+      }
+      if (item.discussion?.state === "not-assessed") {
+        return "This PR still needs a discussion assessment before review.";
+      }
+      return null;
+    }
+
     function render(state) {
+      lastRenderedState = state;
       const snapshot = state.snapshot;
       renderStatus(state.refresh, snapshot);
+      renderActionStatus();
       elements.refresh.disabled = state.refresh.phase === "refreshing";
 
       if (!snapshot) {
@@ -516,6 +878,8 @@ export const HTML = `<!doctype html>
         elements.stats.replaceChildren();
         elements.personalInbox.replaceChildren();
         elements.lanes.replaceChildren(element("div", "empty", "Loading live GitHub data..."));
+        elements.selectedDetail.replaceChildren();
+        elements.selectedDetail.hidden = true;
         elements.ready.hidden = true;
         elements.discussionVerification.hidden = true;
         elements.secondary.hidden = true;
@@ -550,6 +914,7 @@ export const HTML = `<!doctype html>
       renderDiscussionVerification(snapshot);
       renderReady(snapshot);
       renderSecondary(snapshot);
+      renderSelectedDetail(snapshot);
     }
 
     function renderStatus(refresh, snapshot) {
@@ -579,6 +944,18 @@ export const HTML = `<!doctype html>
         ? "Showing cached " + source + " data" + freshnessSuffix(snapshot) + "."
         : source[0].toUpperCase() + source.slice(1) + " data fetched"
           + freshnessSuffix(snapshot) + ".";
+    }
+
+    function renderActionStatus() {
+      elements.actionStatus.classList.remove("error");
+      if (actionNotice.phase === "idle") {
+        elements.actionStatus.textContent = "";
+        return;
+      }
+      if (actionNotice.phase === "error") {
+        elements.actionStatus.classList.add("error");
+      }
+      elements.actionStatus.textContent = actionNotice.message;
     }
 
     function freshnessSuffix(snapshot) {
@@ -690,7 +1067,7 @@ export const HTML = `<!doctype html>
         if (previewItems.length) {
           const preview = element("div", "inbox-list");
           for (const item of previewItems) {
-            preview.append(renderPersonalItem(item));
+            preview.append(renderPersonalListRow(snapshot, item));
           }
           elements.personalInbox.append(preview);
         }
@@ -716,13 +1093,37 @@ export const HTML = `<!doctype html>
         );
         const list = element("div", "inbox-list");
         for (const item of items) {
-          list.append(renderPersonalItem(item));
+          list.append(renderPersonalListRow(snapshot, item));
         }
         inventory.append(list);
         elements.personalInbox.append(inventory);
       }
 
-    function renderPersonalItem(item) {
+    function renderPersonalListRow(snapshot, item) {
+      const queueItem = findQueueItem(snapshot, Number(item.number));
+      const key = queueItem ? selectionKeyForItem(queueItem) : selectionKeyForPersonalItem(item);
+      const selected = isSelectedKey(key);
+      const row = renderSelectableRow({
+        key,
+        title: "#" + item.number + " " + item.title,
+        meta: ["@" + item.author + (item.authorIsBot ? " | bot-authored" : "")],
+        pills: [
+          ...(item.directRequests?.length ? ["Direct review request"] : []),
+          ...(item.teamRequests?.length ? ["Team request"] : []),
+          ...(item.notificationSignal?.present ? ["Notification"] : []),
+          ...(item.replyEvidence?.status === "evidenced" ? ["Reply evidence"] : []),
+          ...(item.changedSinceOwnReview?.status === "yes" ? ["Changed since own review"] : []),
+        ],
+        href: item.url,
+        selected,
+        pending: false,
+        onSelect: () => selectItem(key),
+      });
+      row.className = "personal-row" + (selected ? " selected" : "");
+      return row;
+    }
+
+    function renderPersonalItem(item, selectionKey = null) {
         const card = element("article", "personal-item");
         card.append(element("h3", "", "#" + item.number + " " + item.title));
         card.append(
@@ -821,132 +1222,6 @@ export const HTML = `<!doctype html>
         return card;
     }
 
-    function renderInbox(snapshot) {
-      const inbox = snapshot.inbox ?? {};
-      const recent = inbox.recentCommunity ?? { count: 0, newest: null, inventory: [] };
-      const community = inbox.community ?? { count: 0, inventory: [] };
-      const unclassified = inbox.unclassified ?? { count: 0, inventory: [] };
-      const verificationIds = new Set(
-        (snapshot.discussionVerification ?? []).map((item) => item.id),
-      );
-      const worthItems = snapshot.primary.reviewNow
-        .filter((item) => !verificationIds.has(item.id))
-        .slice(0, 5);
-
-      elements.inbox.replaceChildren();
-
-      const worth = element("div", "inbox-group");
-      worth.append(
-        element(
-          "div",
-          "inbox-header",
-          ""),
-      );
-      worth.firstChild.append(element("h2", "", "Worth reviewing now"));
-      worth.firstChild.append(element("span", "muted", String(worthItems.length) + " visible"));
-      const worthList = element("div", "inbox-list");
-      if (!worthItems.length) {
-        worthList.append(element("div", "empty", "No reviewable candidates are currently visible."));
-      } else {
-        for (const item of worthItems) {
-          worthList.append(renderCard(snapshot, item));
-        }
-      }
-      worth.append(worthList);
-      elements.inbox.append(worth);
-
-      elements.inbox.append(
-        renderInboxDetails({
-          title: "Recently opened community PRs",
-          summary: recent.count
-            ? "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • " + recent.count + " total • newest #" + recent.newest
-            : "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • no recent community PRs",
-          items: recent.inventory ?? [],
-        }),
-      );
-      elements.inbox.append(
-        renderInboxDetails({
-          title: "Community attention",
-          summary: community.count
-            ? String(community.count) + " total community items"
-            : "No community items",
-          items: community.inventory ?? [],
-          previewNeedsRescueFirst: true,
-        }),
-      );
-      elements.inbox.append(
-        renderInboxDetails({
-          title: "Unclassified",
-          summary: unclassified.count
-            ? String(unclassified.count) + " scoped but unlabelled items"
-            : "No unclassified items",
-          items: unclassified.inventory ?? [],
-        }),
-      );
-
-      const evidence = inbox.evidence ?? {};
-      const coverage = element("p", "muted");
-      coverage.textContent = "Inbox evidence: "
-        + (evidence.coverage || "not-collected")
-        + " | recorded " + (evidence.recordedResponseCount ?? 0)
-        + " | unknown " + (evidence.unknownResponseCount ?? 0)
-        + " | no-response " + (evidence.noResponseCount ?? 0)
-        + ".";
-      elements.inbox.append(coverage);
-    }
-
-    function renderInboxDetails({
-      title,
-      summary,
-      items,
-      previewLimit = 5,
-      previewNeedsRescueFirst = false,
-    }) {
-      const group = element("div", "inbox-group");
-      const header = element("div", "inbox-header");
-      header.append(element("h2", "", title));
-      header.append(element("span", "muted", summary));
-      group.append(header);
-
-      const ordered = previewNeedsRescueFirst ? orderNeedsRescueFirst(items) : [...items];
-      const previewItems = ordered.slice(0, previewLimit);
-      const previewList = element("div", "inbox-list");
-      if (!previewItems.length) {
-        previewList.append(element("div", "muted", "None"));
-      } else {
-        for (const item of previewItems) {
-          previewList.append(renderInboxItem(item));
-        }
-      }
-      group.append(previewList);
-
-      if (items.length > previewLimit) {
-        const details = element("details", "secondary");
-        details.append(element("summary", "", "View the full inventory (" + items.length + " total)"));
-        const fullList = element("div", "inbox-list");
-        for (const item of ordered) {
-          fullList.append(renderInboxItem(item));
-        }
-        details.append(fullList);
-        group.append(details);
-      }
-
-      return group;
-    }
-
-    function orderNeedsRescueFirst(items) {
-      const rescue = [];
-      const others = [];
-      for (const item of items) {
-        if (item.bucket === "NeedsRescue") {
-          rescue.push(item);
-        } else {
-          others.push(item);
-        }
-      }
-      return rescue.concat(others);
-    }
-
     function renderInboxItem(item) {
       const card = element("article", "inbox-item");
       card.append(element("h3", "", "#" + item.number + " " + item.title));
@@ -987,6 +1262,168 @@ export const HTML = `<!doctype html>
       actions.append(link);
       card.append(actions);
       return card;
+    }
+
+    function renderInbox(snapshot) {
+      const inbox = snapshot.inbox ?? {};
+      const recent = inbox.recentCommunity ?? { count: 0, newest: null, inventory: [] };
+      const community = inbox.community ?? { count: 0, inventory: [] };
+      const unclassified = inbox.unclassified ?? { count: 0, inventory: [] };
+      const verificationNumbers = new Set(
+        (snapshot.discussionVerification ?? []).map((item) => item.number),
+      );
+      const worthItems = snapshot.primary.reviewNow
+        .filter((item) => !verificationNumbers.has(item.number))
+        .slice(0, 5);
+
+      elements.inbox.replaceChildren();
+
+      const worth = element("div", "inbox-group");
+      worth.append(
+        element(
+          "div",
+          "inbox-header",
+          ""),
+      );
+      worth.firstChild.append(element("h2", "", "Worth reviewing now"));
+      worth.firstChild.append(element("span", "muted", String(worthItems.length) + " visible"));
+      const worthList = element("div", "inbox-list");
+      if (!worthItems.length) {
+        worthList.append(element("div", "empty", "No reviewable candidates are currently visible."));
+      } else {
+        for (const item of worthItems) {
+          worthList.append(renderQueueListRow(snapshot, item, "Review now"));
+        }
+      }
+      worth.append(worthList);
+      elements.inbox.append(worth);
+
+      elements.inbox.append(
+        renderInboxDetails({
+          snapshot,
+          title: "Recently opened community PRs",
+          summary: recent.count
+            ? "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • " + recent.count + " total • newest #" + recent.newest
+            : "Within the last " + (inbox.recentCommunityWindowDays ?? 7) + " days • no recent community PRs",
+          items: recent.inventory ?? [],
+        }),
+      );
+      elements.inbox.append(
+        renderInboxDetails({
+          snapshot,
+          title: "Community attention",
+          summary: community.count
+            ? String(community.count) + " total community items"
+            : "No community items",
+          items: community.inventory ?? [],
+          previewNeedsRescueFirst: true,
+        }),
+      );
+      elements.inbox.append(
+        renderInboxDetails({
+          snapshot,
+          title: "Unclassified",
+          summary: unclassified.count
+            ? String(unclassified.count) + " scoped but unlabelled items"
+            : "No unclassified items",
+          items: unclassified.inventory ?? [],
+        }),
+      );
+
+      const evidence = inbox.evidence ?? {};
+      const coverage = element("p", "muted");
+      coverage.textContent = "Inbox evidence: "
+        + (evidence.coverage || "not-collected")
+        + " | recorded " + (evidence.recordedResponseCount ?? 0)
+        + " | unknown " + (evidence.unknownResponseCount ?? 0)
+        + " | no-response " + (evidence.noResponseCount ?? 0)
+        + ".";
+      elements.inbox.append(coverage);
+    }
+
+    function renderInboxDetails({
+      snapshot,
+      title,
+      summary,
+      items,
+      previewLimit = 5,
+      previewNeedsRescueFirst = false,
+    }) {
+      const group = element("div", "inbox-group");
+      const header = element("div", "inbox-header");
+      header.append(element("h2", "", title));
+      header.append(element("span", "muted", summary));
+      group.append(header);
+
+      const ordered = previewNeedsRescueFirst ? orderNeedsRescueFirst(items) : [...items];
+      const previewItems = ordered.slice(0, previewLimit);
+      const previewList = element("div", "inbox-list");
+      if (!previewItems.length) {
+        previewList.append(element("div", "muted", "None"));
+      } else {
+        for (const item of previewItems) {
+          previewList.append(renderInboxListRow(snapshot, item));
+        }
+      }
+      group.append(previewList);
+
+      if (items.length > previewLimit) {
+        const details = element("details", "secondary");
+        details.append(element("summary", "", "View the full inventory (" + items.length + " total)"));
+        const fullList = element("div", "inbox-list");
+        for (const item of ordered) {
+          fullList.append(renderInboxListRow(snapshot, item));
+        }
+        details.append(fullList);
+        group.append(details);
+      }
+
+      return group;
+    }
+
+    function orderNeedsRescueFirst(items) {
+      const rescue = [];
+      const others = [];
+      for (const item of items) {
+        if (item.bucket === "NeedsRescue") {
+          rescue.push(item);
+        } else {
+          others.push(item);
+        }
+      }
+      return rescue.concat(others);
+    }
+
+    function renderInboxListRow(snapshot, item) {
+      const queueItem = findQueueItem(snapshot, Number(item.number));
+      const key = selectionKeyForInboxItem(item);
+      const title = "#" + item.number + " " + item.title;
+      const meta = [
+        item.provenance === "community" ? "Community contribution" : "Unclassified contribution",
+        item.bucket || "Inbox",
+        item.nextActor ? "Next actor: " + item.nextActor : null,
+      ].filter(Boolean);
+      const summary = [];
+      if (item.createdAt) {
+        summary.push("Opened " + formatOptionalDate(item.createdAt, (date) => date.toLocaleDateString()));
+      }
+      if (Array.isArray(item.reasonCodes) && item.reasonCodes.length) {
+        summary.push("Reasons: " + item.reasonCodes.slice(0, 3).join(", "));
+      }
+      const selected = isSelectedKey(key);
+      const row = renderSelectableRow({
+        key,
+        title,
+        meta,
+        summary: summary.slice(0, 1),
+        pills: queueItem?.reasons?.map((reason) => reason.label).slice(0, 3) ?? [],
+        href: item.url || "#",
+        selected,
+        pending: false,
+        onSelect: () => selectItem(key),
+      });
+      row.className = "inbox-row" + (selected ? " selected" : "");
+      return row;
     }
 
     function renderInboxEvidence(item) {
@@ -1047,15 +1484,33 @@ export const HTML = `<!doctype html>
           section.append(element("div", "empty", "No pull requests in this lane."));
         } else {
           for (const item of lane.items) {
-            section.append(renderCard(snapshot, item));
+            section.append(renderQueueListRow(snapshot, item, metadata.label));
           }
         }
         elements.lanes.append(section);
       }
     }
 
-    function renderCard(snapshot, item, suppressReviewAction) {
-      const card = element("article", "card " + item.bucket);
+    function renderQueueListRow(snapshot, item, labelPrefix) {
+      const key = selectionKeyForItem(item);
+      const selected = isSelectedKey(key);
+      const row = renderSelectableRow({
+        key,
+        title: "#" + item.number + " " + item.title,
+        meta: ["@" + item.author, labelPrefix, "Next actor: " + item.nextActor],
+        summary: ["Open " + item.ageDays + "d | idle " + item.idleDays + "d"],
+        pills: item.reasons.slice(0, 2).map((metadata) => metadata.label),
+        href: item.url,
+        selected,
+        pending: false,
+        onSelect: () => selectItem(key),
+      });
+      row.className = "list-row " + item.bucket + (selected ? " selected" : "");
+      return row;
+    }
+
+    function renderQueueDetailCard(snapshot, item, supplemental = {}) {
+      const card = element("article", "selected-card " + item.bucket);
       card.append(element("h3", "", "#" + item.number + " " + item.title));
       card.append(
         element(
@@ -1111,13 +1566,42 @@ export const HTML = `<!doctype html>
 
       const actions = element("div", "actions");
       actions.append(actionButton(item, "open", "Open PR", false));
-      if (item.bucket === "ReviewNow" && !suppressReviewAction) {
-        actions.append(actionButton(item, "review", "Review", true));
+      if (item.bucket === "ReviewNow") {
+        const note = reviewWithheldText(item);
+        if (note) {
+          actions.append(element("div", "warning", note));
+        } else {
+          actions.append(renderReviewActions(item, selectionKeyForItem(item)));
+        }
       } else if (item.bucket === "NeedsRescue") {
         actions.append(actionButton(item, "investigate-rescue", "Investigate rescue", true));
       }
       card.append(actions);
+      const supplementalSections = renderSupplementalEvidenceSections(supplemental);
+      if (supplementalSections) {
+        card.append(supplementalSections);
+      }
       return card;
+    }
+
+    function renderSupplementalEvidenceSections({ personalItem = null, inboxItem = null } = {}) {
+      if (!personalItem && !inboxItem) {
+        return null;
+      }
+      const group = element("div", "supplemental-evidence");
+      if (personalItem) {
+        const personal = element("details", "discussion-evidence");
+        personal.append(element("summary", "", "Personal evidence"));
+        personal.append(renderPersonalItem(personalItem));
+        group.append(personal);
+      }
+      if (inboxItem) {
+        const inbox = element("details", "discussion-evidence");
+        inbox.append(element("summary", "", "Inbox evidence"));
+        inbox.append(renderInboxItem(inboxItem));
+        group.append(inbox);
+      }
+      return group;
     }
 
     function renderDiscussionVerification(snapshot) {
@@ -1140,7 +1624,7 @@ export const HTML = `<!doctype html>
         return;
       }
       for (const item of items) {
-        elements.discussionVerification.append(renderCard(snapshot, item, true));
+        elements.discussionVerification.append(renderQueueListRow(snapshot, item, "Verify discussion"));
       }
     }
 
@@ -1154,10 +1638,7 @@ export const HTML = `<!doctype html>
         items.append(element("span", "muted", "No pull requests are ready to merge."));
       } else {
         for (const item of snapshot.readyToMerge) {
-          const row = element("div", "ready-item ReadyToMerge");
-          row.append(element("span", "", "#" + item.number + " " + item.title));
-          row.append(actionButton(item, "open", "Open PR", false));
-          items.append(row);
+          items.append(renderQueueListRow(snapshot, item, "Ready to merge"));
         }
       }
       elements.ready.append(items);
@@ -1176,10 +1657,19 @@ export const HTML = `<!doctype html>
           section.append(element("div", "muted", "None"));
         } else {
           for (const item of shownItems) {
-            const row = element("div", "secondary-item");
-            row.append(element("span", "", "#" + item.number + " " + item.title));
-            row.append(actionButton(item, "open", "Open", false));
-            section.append(row);
+            const key = selectionKeyForItem(item);
+            section.append(
+              renderSelectableRow({
+                key,
+                title: "#" + item.number + " " + item.title,
+                meta: [metadata.label],
+                summary: ["Open " + item.ageDays + "d | idle " + item.idleDays + "d"],
+                href: item.url,
+                selected: isSelectedKey(key),
+                pending: false,
+                onSelect: () => selectItem(key),
+              }),
+            );
           }
           if (allItems.length > shownItems.length) {
             section.append(
@@ -1191,23 +1681,70 @@ export const HTML = `<!doctype html>
       }
     }
 
-    function actionButton(item, kind, label, primary) {
+    function renderSelectedDetail(snapshot) {
+      elements.selectedDetail.replaceChildren();
+      const selected = resolveSelectedItem(snapshot);
+      if (!selected) {
+        elements.selectedDetail.hidden = true;
+        return;
+      }
+      elements.selectedDetail.hidden = false;
+
+      elements.selectedDetail.append(element("h2", "", "Selected item"));
+      if (selected.type === "queue") {
+        elements.selectedDetail.append(renderQueueDetailCard(snapshot, selected.item, {
+          personalItem: selected.personalItem ?? null,
+          inboxItem: selected.inboxItem ?? null,
+        }));
+        return;
+      }
+
+      if (selected.type === "inbox") {
+        elements.selectedDetail.append(renderInboxItem(selected.item));
+        return;
+      }
+
+      elements.selectedDetail.append(renderPersonalItem(selected.item));
+    }
+
+    function renderReviewActions(item, selectionKey) {
+      const group = element("div", "review-actions");
+      group.append(actionButton(item, "review", "Review in new session", true, "new-session", selectionKey));
+      group.append(actionButton(item, "review", "Review in this session", false, "this-session", selectionKey));
+      return group;
+    }
+
+    function actionButton(item, kind, label, primary, destination, selectionKey = null) {
       const button = element("button", primary ? "primary-action" : "", label);
       button.type = "button";
-      button.addEventListener("click", () => runAction(button, item.id, kind));
+      button.disabled = kind === "review" && isReviewPending();
+      button.addEventListener("click", () => runAction(button, item.id, kind, destination, selectionKey));
       return button;
     }
 
-    async function runAction(button, itemId, kind) {
+    async function runAction(button, itemId, kind, destination, selectionKey = null) {
+      if (kind === "review" && pendingReview) {
+        return;
+      }
+      const token = crypto.randomUUID();
+      if (kind === "review") {
+        pendingReview = { token, selectionKey, kind, destination, itemId };
+        actionNotice = {
+          phase: "pending",
+          message: actionPendingText(kind, destination),
+        };
+        render(lastRenderedState);
+      }
       button.disabled = true;
-      elements.status.classList.remove("error");
-      elements.status.textContent =
-        kind === "open" ? "Opening pull request..." : "Sending read-only work to a new session...";
       try {
+        const payload = { itemId: itemId, kind: kind };
+        if (destination) {
+          payload.destination = destination;
+        }
         const response = await fetch("/api/action", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemId: itemId, kind: kind }),
+          body: JSON.stringify(payload),
         });
         const body = await response.json();
         if (!response.ok) {
@@ -1217,14 +1754,42 @@ export const HTML = `<!doctype html>
               : body.error || "Action failed",
           );
         }
-        elements.status.textContent =
-          kind === "open" ? "Pull request opened." : "Read-only session request queued.";
+        actionNotice = {
+          phase: "success",
+          message: actionQueuedText(kind, destination),
+        };
+        render(lastRenderedState);
       } catch (error) {
-        elements.status.classList.add("error");
-        elements.status.textContent = error.message;
+        actionNotice = {
+          phase: "error",
+          message: error.message,
+        };
+        render(lastRenderedState);
       } finally {
+        if (!pendingReview || pendingReview.token === token) {
+          pendingReview = null;
+          render(lastRenderedState);
+        }
         button.disabled = false;
       }
+    }
+
+    function actionPendingText(kind, destination) {
+      if (kind === "review") {
+        return destination === "this-session"
+          ? "Queuing review in this session..."
+          : "Queuing review in a new session...";
+      }
+      return kind === "open" ? "Opening pull request..." : "Sending read-only work to a new session...";
+    }
+
+    function actionQueuedText(kind, destination) {
+      if (kind === "review") {
+        return destination === "this-session"
+          ? "Review in this session queued."
+          : "Review in new session queued.";
+      }
+      return kind === "open" ? "Pull request opened." : "Read-only session request queued.";
     }
 
     async function refresh() {
