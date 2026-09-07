@@ -194,25 +194,41 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     }
 
     /// <summary>
-    /// Fails all pending asynchronous JavaScript calls with the specified exception.
+    /// Captures all pending asynchronous JavaScript calls so they can be failed with the specified exception.
     /// </summary>
     /// <param name="exception">The exception used to complete the pending calls.</param>
-    protected void FailPendingTasks(Exception exception)
+    /// <returns>An action that fails the captured calls.</returns>
+    protected Action CapturePendingTasks(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
+        var pendingCalls = new List<IPendingAsyncCall>();
+        var cancellationRegistrations = new List<CancellationTokenRegistration>();
         foreach (var taskId in _pendingTasks.Keys)
         {
             if (_pendingTasks.TryRemove(taskId, out var pendingCall))
             {
-                pendingCall.Fail(exception);
+                pendingCalls.Add(pendingCall);
             }
 
             if (_cancellationRegistrations.TryRemove(taskId, out var registration))
             {
-                registration.Dispose();
+                cancellationRegistrations.Add(registration);
             }
         }
+
+        return () =>
+        {
+            foreach (var pendingCall in pendingCalls)
+            {
+                pendingCall.Fail(exception);
+            }
+
+            foreach (var registration in cancellationRegistrations)
+            {
+                registration.Dispose();
+            }
+        };
     }
 
     /// <summary>

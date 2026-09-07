@@ -232,14 +232,21 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     public void MarkPermanentlyDisconnected()
     {
-        MarkDisconnected();
         _permanentlyDisconnected = true;
         _clientProxy = null;
+        var completePendingTasks = CapturePendingTasksForDisconnect();
+        completePendingTasks();
     }
 
     public void MarkDisconnected()
     {
-        FailPendingTasks(new JSDisconnectedException(
+        var completePendingTasks = CapturePendingTasksForDisconnect();
+        completePendingTasks();
+    }
+
+    public Action CapturePendingTasksForDisconnect()
+    {
+        return CapturePendingTasks(new JSDisconnectedException(
             "JavaScript interop calls cannot complete because the circuit disconnected."));
     }
 

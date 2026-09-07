@@ -1,2 +1,2 @@
 #nullable enable
-Microsoft.JSInterop.JSRuntime.FailPendingTasks(System.Exception! exception) -> void
+Microsoft.JSInterop.JSRuntime.CapturePendingTasks(System.Exception! exception) -> System.Action!
