@@ -110,19 +110,20 @@ $headers = @{
 
 Write-Host "Looking up installation for '$InstallationOwner'..."
 try {
-    $installations = @()
+    $installations = [System.Collections.Generic.List[object]]::new()
     $page = 1
     do {
-        # Assign the response before wrapping it in @(). PowerShell otherwise
-        # preserves a top-level JSON array as one nested pipeline object.
         $pageResponse = Invoke-RestMethod `
             -Uri "https://api.github.com/app/installations?per_page=100&page=$page" `
             -Headers $headers `
             -Method Get
-        $pageInstallations = @($pageResponse)
-        $installations += $pageInstallations
+        $pageInstallationCount = 0
+        foreach ($installation in $pageResponse) {
+            $installations.Add($installation)
+            $pageInstallationCount++
+        }
         $page++
-    } while ($pageInstallations.Count -eq 100)
+    } while ($pageInstallationCount -eq 100)
 }
 catch {
     Write-PipelineTelemetryError -Category 'Build' -Message "Failed to list GitHub App installations: $_. The signed JWT may be invalid or the App's Client ID ('$AppClientId') may be incorrect."
