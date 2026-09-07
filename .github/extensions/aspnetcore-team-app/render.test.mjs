@@ -35,6 +35,16 @@ test("renderer exposes the inbox areas and evidence disclosure", () => {
   assert.match(HTML, /responseEvidence\.status/);
 });
 
+test("renderer keeps inbox headers and row titles within their grid tracks", () => {
+  assert.match(HTML, /\.main-column,\s*\.detail-column \{[\s\S]*grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(HTML, /\.inbox-header \{[\s\S]*flex-wrap: wrap;/);
+  assert.match(HTML, /\.inbox-header > span \{[\s\S]*overflow-wrap: anywhere;/);
+  assert.match(HTML, /\.personal-inbox > \.muted \{[\s\S]*overflow-wrap: anywhere;/);
+  assert.match(HTML, /\.selected-card,\s*\.personal-inbox,\s*\.inbox,\s*\.lane,\s*\.ready-strip,\s*\.secondary,\s*\.discussion-verification,\s*\.list-row,\s*\.personal-row,\s*\.inbox-row \{[\s\S]*min-width: 0;/);
+  assert.match(HTML, /\.row-title \{[\s\S]*overflow-wrap: anywhere;[\s\S]*word-break: break-word;/);
+  assert.match(HTML, /\.row-meta,\s*\.row-summary,\s*\.row-coverage \{[\s\S]*overflow-wrap: anywhere;/);
+});
+
 test("renderer exposes the review destination menu with exact labels", () => {
   assert.match(HTML, /Review in new session/);
   assert.match(HTML, /Review in this session/);

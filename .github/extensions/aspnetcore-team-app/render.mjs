@@ -142,6 +142,7 @@ export const HTML = `<!doctype html>
       display: grid;
       gap: 16px;
       min-width: 0;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .detail-column {
@@ -161,6 +162,10 @@ export const HTML = `<!doctype html>
 
     .personal-inbox > .inbox-header {
       margin-bottom: 10px;
+    }
+
+    .personal-inbox > .muted {
+      overflow-wrap: anywhere;
     }
 
     .personal-item {
@@ -185,15 +190,28 @@ export const HTML = `<!doctype html>
     .inbox-group {
       border: 1px solid var(--border-color-default, #d0d7de);
       border-radius: 8px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
       padding: 12px;
     }
 
     .inbox-header {
       align-items: baseline;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 10px;
+    }
+
+    .inbox-header > h2,
+    .inbox-header > span {
+      min-width: 0;
+    }
+
+    .inbox-header > span {
+      overflow-wrap: anywhere;
     }
 
     .inbox-list {
@@ -215,6 +233,31 @@ export const HTML = `<!doctype html>
       border: 1px solid var(--border-color-default, #d0d7de);
       border-radius: 8px;
       padding: 10px 12px;
+    }
+
+    .selected-card,
+    .personal-inbox,
+    .inbox,
+    .lane,
+    .ready-strip,
+    .secondary,
+    .discussion-verification,
+    .list-row,
+    .personal-row,
+    .inbox-row {
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    .personal-inbox,
+    .inbox,
+    .lane,
+    .ready-strip,
+    .secondary,
+    .discussion-verification,
+    .selected-detail {
+      max-width: 100%;
+      width: 100%;
     }
 
     .list-row,
@@ -244,6 +287,7 @@ export const HTML = `<!doctype html>
       justify-items: start;
       padding: 0;
       text-align: left;
+      min-width: 0;
       width: 100%;
     }
 
@@ -259,6 +303,8 @@ export const HTML = `<!doctype html>
     .row-title {
       font-size: 14px;
       font-weight: var(--font-weight-semibold, 600);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .row-meta,
@@ -267,6 +313,7 @@ export const HTML = `<!doctype html>
       color: var(--text-color-muted, #59636e);
       font-size: 12px;
       line-height: 18px;
+      overflow-wrap: anywhere;
     }
 
     .row-pills {
@@ -346,6 +393,11 @@ export const HTML = `<!doctype html>
       border: 1px solid var(--border-color-default, #d0d7de);
       border-radius: 8px;
       padding: 10px 12px;
+    }
+
+    .selected-card h3 {
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .stat strong {
