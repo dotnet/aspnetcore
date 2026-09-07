@@ -103,7 +103,13 @@ execute from that staged tree, so candidate changes to `run.ps1`,
 `assert_results.ps1`, central experiments, or the workflow cannot gain code
 execution in the PAT-backed step. Both baseline and skilled variants must
 produce the exact planned result count, successful trial statuses, and grader
-scores; only the skilled score is threshold-gated. The final status and PR
+scores; only the skilled score is threshold-gated. The assertion also requires
+the skilled variant to cover every named stimulus for the planned trial count,
+with unique trial identities. For each skilled stimulus declaring
+`output-matches`, the result's grader-type multiset must match its plan, and
+every `output-matches` result must contain Boolean `passed: true`. A high mean
+cannot compensate for a failed deterministic contract. Baseline grader failures
+remain permitted. The final status and PR
 comment link to the retained artifacts. Smoke results validate execution and
 the skilled threshold, but Full runs remain the quality-evidence path.
 
@@ -166,6 +172,28 @@ Defaults in each standard spec identify its model and judge. CLI overrides are
 allowed for an intentional run, but the override and resulting identities must
 remain in the saved provenance. Do not compare runs whose relevant identities
 or inputs differ without calling out that difference.
+
+The deterministic gate trusts pinned Vally's structured plan and results. It
+does not parse judge explanations, depend on grader ordering or display names,
+or reimplement regex matching. It detects missing, extra, or mismatched grader
+types, not forged substitutions between same-type graders. Passing output
+checks is not proof that tool-use or every safety boundary was respected.
+Candidate assertion changes are not hosted enforcement until the trusted
+default-branch control plane includes them; apply a candidate assertion locally
+to downloaded artifacts when assessing such a change.
+
+For `investigate-issue`, preserve the original 21-stimulus cohort when comparing
+the two appended contrast cases (substantive private evidence and verified
+behavior awaiting source ownership). Report legacy and new-case scores
+separately so the changed denominator cannot disguise regressions. Inspect
+each legacy skilled response and its rubric evidence, not just the mean or
+judge narrative, and investigate material regressions. Every skilled
+deterministic requirement must pass regardless of cohort. Do not impose
+per-row score monotonicity on stochastic one-trial smoke runs or baseline
+responses that never loaded the skill. The synthetic snapshots, formatting
+checks, and same-model judge limit what aggregate A/B lift establishes;
+held-out public histories, tool-trace coverage, and judge calibration remain
+separate follow-ups.
 
 ## Validation boundaries
 

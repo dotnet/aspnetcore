@@ -99,6 +99,13 @@ publish**, use preliminary assessment **Insufficient evidence**, and make the
 one next action either repeating the investigation from public evidence only or
 awaiting a public maintainer statement.
 
+Incidental host or tool metadata, such as a local path, hostname, or session ID
+attached to otherwise public retrieval, is not substantive issue evidence.
+Omit it and continue using only the independent public evidence; its presence
+alone does not trigger this stop. This exception never permits sanitizing
+supplied or linked private customer or internal evidence into a public result,
+even when public evidence is also available.
+
 A reporter merely saying that the real application or repository is private
 does not trigger this stop when no private artifact, content, or link was
 supplied for inspection. Treat the absent public evidence normally:
@@ -301,6 +308,11 @@ Choose the narrowest applicable role:
 
 Never describe static evidence as runtime verification, and never require a
 reproduction by reflex when the maintainer question is already answered.
+In particular, an exact public maintainer-verified result and stated intended
+behavior can answer the current product-bug assessment even when the owning
+source path or regression-test boundary still needs to be located. Use
+**Not required for the current assessment** in that case; do not substitute a
+request to reproduce the already-verified result.
 
 ### 7. Choose the publication classification
 
@@ -325,6 +337,14 @@ even if reproduction remains **Needed only to confirm user-visible impact or
 regression boundaries**. A plausible source mechanism or hypothesis without
 that direct contradiction and test boundary is not ready merely because it
 looks suspicious.
+
+When the exact behavior and intent are already established by public maintainer
+evidence, an unresolved source or test owner alone does not turn the result into
+an **Investigation plan**. Preserve the verified finding as **Research**, with
+one bounded next action to trace the owning public source and faithful test
+boundary. Do not claim an **Implementation-ready handoff** before those are
+known. Material unknown behavior, preconditions, or conflicting evidence still
+warrant an **Investigation plan**.
 
 An **Implementation-ready handoff** is allowed only when public evidence
 establishes the relevant contract or maintainer intent, the likely owning
