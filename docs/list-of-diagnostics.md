@@ -87,7 +87,7 @@
 |  __`BL0014`__ | For loop iterator used inside a closure. |
 |  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
-|  __`BL0017`__ | Virtualize uses an invalid spacer element |
+|  __`BL0019`__ | Virtualize uses an invalid spacer element |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
