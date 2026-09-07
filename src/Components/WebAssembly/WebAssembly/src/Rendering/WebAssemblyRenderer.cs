@@ -71,18 +71,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = webRootComponentManager.AddRootComponentAsync(
+                    ObserveActivationFault(webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
                         operation.Descriptor!.ComponentType,
                         operation.Marker!.Value.Key!,
-                        operation.Descriptor!.Parameters);
+                        operation.Descriptor!.Parameters));
                     break;
                 case RootComponentOperationType.Update:
-                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                    ObserveActivationFault(webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
                         operation.Descriptor!.ComponentType,
                         operation.Marker?.Key,
-                        operation.Descriptor!.Parameters);
+                        operation.Descriptor!.Parameters));
                     break;
                 case RootComponentOperationType.Remove:
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
@@ -103,6 +103,17 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         await task;
         await componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
     }
+
+    // Root component activation is otherwise fire-and-forget, so a fault would be silently discarded
+    // instead of being logged and surfacing the error UI like other unhandled rendering exceptions.
+    // Use a fault-only continuation to avoid allocating an async state machine on the success path.
+    private void ObserveActivationFault(Task activationTask)
+        => activationTask.ContinueWith(
+            static (task, state) => ((WebAssemblyRenderer)state!).HandleException(task.Exception!),
+            this,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Current);
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
 

@@ -447,6 +447,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
         }
 
+        if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
+        {
+            await VerifyNavMenuCollapsesAfterNavigationAsync(page);
+        }
+
         static async Task IncrementCounterAsync(IPage page)
         {
             // Allow multiple click attempts because some interactive render modes
@@ -553,6 +558,30 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 Assert.NotNull(credentialId);
                 return Base64Url.EncodeToString(Convert.FromBase64String(credentialId));
             })];
+        }
+    }
+
+    private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
+    {
+        var originalViewportSize = page.ViewportSize;
+
+        // The nav menu only collapses behind the toggler on viewports narrower than 641px.
+        await page.SetViewportSizeAsync(400, 800);
+
+        try
+        {
+            var navMenu = page.Locator(".nav-scrollable");
+
+            await page.ClickAsync(".navbar-toggler");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+            await page.ClickAsync("nav a[href='']");
+            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        }
+        finally
+        {
+            await page.SetViewportSizeAsync(originalViewportSize.Width, originalViewportSize.Height);
         }
     }
 
