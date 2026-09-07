@@ -3,19 +3,30 @@ import { createServer } from "node:http";
 
 import { HTML } from "./render.mjs";
 import { createTriageController, summarizeState } from "./state.mjs";
-import { DEFAULT_AREA, normalizeArea } from "./taxonomy.mjs";
+import { DEFAULT_AREA, normalizeArea, REPOSITORY } from "./taxonomy.mjs";
 
 const instances = new Map();
 const lifecycleTails = new Map();
+const discussionTails = new Map();
 const INITIALIZATION_STOP_TIMEOUT_MS = 2_000;
 let queueLoader = null;
 let reportStore = null;
 let investigationScheduler = null;
+let discussionRunner = null;
+let publisher = null;
 
-export function configureServer({ load, store, scheduleInvestigation }) {
+export function configureServer({
+  load,
+  store,
+  scheduleInvestigation,
+  discuss = null,
+  publish = null,
+}) {
   queueLoader = load;
   reportStore = store;
   investigationScheduler = scheduleInvestigation;
+  discussionRunner = discuss;
+  publisher = publish;
 }
 
 export function startInstance(instanceId, input, log) {
@@ -93,6 +104,46 @@ export function selectInstanceIssue(instanceId, input) {
   return requireInstance(instanceId).controller.select(parseItemRequest(input));
 }
 
+export async function listSavedIssues(instanceId) {
+  const workspaces = await reportStore.listWorkspaces();
+  return workspaces.map((workspace) => ({
+    id: `saved-${workspace.issueNumber}`,
+    saved: true,
+    repository: workspace.repository,
+    number: workspace.issueNumber,
+    title: `Saved ASP.NET Core issue #${workspace.issueNumber}`,
+    url: workspace.issueUrl,
+    author: null,
+    createdAt: workspace.originalReport.createdAt,
+    updatedAt: workspace.draft.updatedAt,
+    labels: [],
+    area: workspace.area,
+    whyIncluded: ["Saved local investigation workspace; queue membership is not asserted."],
+  }));
+}
+
+export async function selectSavedInstanceIssue(instanceId, input) {
+  const issueNumber = parseSavedIssueNumber(input);
+  const workspace = await reportStore.readWorkspace(issueNumber);
+  if (!workspace || workspace.repository !== "dotnet/aspnetcore"
+    || workspace.issueUrl !== `https://github.com/dotnet/aspnetcore/issues/${issueNumber}`) {
+    throw serverError("saved_issue_invalid", "The saved issue is not a canonical public ASP.NET Core issue.");
+  }
+  return requireInstance(instanceId).controller.selectSaved({
+    id: `saved-${issueNumber}`,
+    saved: true,
+    repository: workspace.repository,
+    number: issueNumber,
+    title: `Saved ASP.NET Core issue #${issueNumber}`,
+    url: workspace.issueUrl,
+    author: null,
+    createdAt: workspace.originalReport.createdAt,
+    updatedAt: workspace.draft.updatedAt,
+    labels: [],
+    area: workspace.area,
+  });
+}
+
 export function queueInstanceInvestigation(instanceId, input) {
   const entry = requireInstance(instanceId);
   const queued = entry.controller.queueInvestigation(parseItemRequest(input));
@@ -112,6 +163,205 @@ export async function performInstanceInvestigation(instanceId, job, run) {
   } catch (error) {
     return entry.controller.failInvestigation(job, error);
   }
+}
+
+export async function discussInstance(instanceId, input) {
+  const entry = requireInstance(instanceId);
+  if (typeof discussionRunner !== "function") {
+    throw serverError("discussion_unavailable", "Issue discussion is not configured.");
+  }
+  const request = parseDiscussionRequest(input);
+  const state = entry.controller.getState();
+  const issue = state.snapshot?.selectedIssue;
+  const workspace = state.snapshot?.selectedWorkspace;
+  if (!issue || issue.number !== request.issueNumber || !workspace) {
+    throw serverError("issue_not_selected", "Select an issue with an investigation before discussing it.");
+  }
+  if (workspace.draft.revision !== request.revision) {
+    throw serverError("stale_revision", "The issue draft changed before discussion started.");
+  }
+  const discussionKey = `${issue.repository}#${issue.number}`;
+  if (discussionTails.has(discussionKey)) {
+    throw serverError("discussion_in_progress", "A discussion for this issue is already in progress.");
+  }
+  const discussionPromise = Promise.resolve();
+  discussionTails.set(discussionKey, discussionPromise);
+  try {
+    const result = await discussionRunner({
+      issue,
+      workspace,
+      question: request.question,
+    });
+    if (
+      result?.replacement?.content
+      && result.replacement.baseRevision === request.revision
+    ) {
+      try {
+        const next = await entry.controller.saveDraft({
+          issueNumber: issue.number,
+          content: result.replacement.content,
+          revision: request.revision,
+          provenance: "copilot",
+        });
+        await recordDiscussionTurn(entry, issue, {
+          ...result,
+          question: request.question,
+          baseRevision: request.revision,
+          applied: true,
+        });
+        return { ...result, question: request.question, state: next, applied: true };
+      } catch (error) {
+        if (!["stale_revision", "stale_selection"].includes(error.code)) {
+          throw error;
+        }
+        await recordDiscussionTurn(entry, issue, {
+          ...result,
+          question: request.question,
+          baseRevision: request.revision,
+          applied: false,
+          conflict: "The proposed update was not applied because the draft changed while Copilot was responding.",
+        });
+        return {
+          ...result,
+          state: entry.controller.getState(),
+          applied: false,
+          conflict: "The proposed update was not applied because the draft changed while Copilot was responding.",
+        };
+      }
+    }
+    await recordDiscussionTurn(entry, issue, {
+      ...result,
+      question: request.question,
+      baseRevision: request.revision,
+      applied: false,
+    });
+    return { ...result, question: request.question, state: entry.controller.getState(), applied: false };
+  } finally {
+    if (discussionTails.get(discussionKey) === discussionPromise) {
+      discussionTails.delete(discussionKey);
+    }
+  }
+}
+
+async function recordDiscussionTurn(entry, issue, result) {
+  const answer = typeof result?.answer === "string" ? result.answer : "";
+  const question = typeof result?.question === "string" ? result.question : "";
+  const workspace = await reportStore.readWorkspace?.(issue.number)
+    ?? (entry.controller.getState().snapshot?.selectedIssue?.id === issue.id
+      ? entry.controller.getState().snapshot.selectedWorkspace
+      : null);
+  if (!workspace) {
+    throw serverError("workspace_not_found", "The originating issue workspace disappeared before the discussion was recorded.");
+  }
+  const next = {
+    ...workspace,
+    discussion: [
+      ...workspace.discussion,
+      {
+        repository: issue.repository,
+        issueNumber: issue.number,
+        kind: "turn",
+        createdAt: new Date().toISOString(),
+        question,
+        answer,
+        baseRevision: result.baseRevision ?? workspace.draft.revision,
+        applied: result.applied === true,
+        conflict: result.conflict ?? null,
+        evidence: result.evidence ?? [],
+        hostEvidence: result.hostEvidence ?? [],
+        replacement: result.replacement
+          ? {
+            content: result.replacement.content,
+            baseRevision: result.replacement.baseRevision,
+          }
+          : null,
+      },
+    ],
+  };
+  if (typeof reportStore.appendDiscussionTurn === "function") {
+    await reportStore.appendDiscussionTurn(issue.number, workspace.draft.revision, next.discussion.at(-1));
+  } else {
+    await reportStore.saveWorkspace(next, workspace.draft.revision);
+  }
+  await refreshSelectedIssue(entry, issue);
+}
+
+export async function previewInstancePublication(instanceId, input) {
+  const entry = requireInstance(instanceId);
+  if (typeof publisher?.preview !== "function") {
+    throw serverError("publication_unavailable", "Issue publication is not configured.");
+  }
+  const request = parseRevisionRequest(input, "invalid_preview");
+  const state = entry.controller.getState();
+  const issue = state.snapshot?.selectedIssue;
+  const workspace = state.snapshot?.selectedWorkspace;
+  if (!issue || !workspace || workspace.draft.revision !== request.revision) {
+    throw serverError("stale_revision", "The issue draft changed before preview was prepared.");
+  }
+  return publisher.preview({
+    issue,
+    workspace,
+    revision: request.revision,
+  });
+}
+
+export async function publishInstanceComment(instanceId, input) {
+  const entry = requireInstance(instanceId);
+  if (typeof publisher?.publish !== "function") {
+    throw serverError("publication_unavailable", "Issue publication is not configured.");
+  }
+  const request = parsePublicationRequest(input);
+  const state = entry.controller.getState();
+  const issue = state.snapshot?.selectedIssue;
+  const workspace = state.snapshot?.selectedWorkspace;
+  if (!issue || !workspace || workspace.draft.revision !== request.revision) {
+    throw serverError("stale_revision", "The issue draft changed before publication.");
+  }
+  const result = await publisher.publish({
+    issue,
+    workspace,
+    revision: request.revision,
+    confirmation: request.confirmation,
+  });
+  if (result.workspace) {
+    if (result.workspacePersisted !== true) {
+      await reportStore.saveWorkspace(result.workspace, request.revision);
+    }
+    await refreshSelectedIssue(entry, issue);
+  }
+  return { ...result, state: entry.controller.getState() };
+}
+
+export async function resolveInstancePublication(instanceId) {
+  const entry = requireInstance(instanceId);
+  if (typeof publisher?.resolvePending !== "function") {
+    throw serverError("publication_recovery_unavailable", "Publication recovery is not configured.");
+  }
+  const state = entry.controller.getState();
+  const issue = state.snapshot?.selectedIssue;
+  const workspace = state.snapshot?.selectedWorkspace;
+  if (!issue || !workspace || !workspace.publication?.pending) {
+    throw serverError("publication_not_pending", "No publication attempt is pending reconciliation.");
+  }
+  const result = await publisher.resolvePending({ issue, workspace });
+  if (result.workspace) {
+    if (result.workspacePersisted !== true) {
+      await reportStore.saveWorkspace(result.workspace, workspace.draft.revision);
+    }
+    await refreshSelectedIssue(entry, issue);
+  }
+  return { ...result, state: entry.controller.getState() };
+}
+
+async function refreshSelectedIssue(entry, issue) {
+  if (entry.controller.getState().snapshot?.selectedIssue?.id !== issue.id) {
+    return;
+  }
+  if (issue.saved === true || /^saved-[1-9][0-9]*$/.test(issue.id)) {
+    await entry.controller.selectSaved({ ...issue, repository: REPOSITORY, saved: true });
+    return;
+  }
+  await entry.controller.select({ itemId: issue.id });
 }
 
 export function stopInstance(instanceId) {
@@ -226,6 +476,9 @@ async function handleRequest(instanceId, request, response, log) {
     if (request.method === "GET" && url.pathname === "/api/issues") {
       return send(response, 200, getInstancePage(instanceId, parsePageRequest(url.searchParams)));
     }
+    if (request.method === "GET" && url.pathname === "/api/saved") {
+      return send(response, 200, { items: await listSavedIssues(instanceId) });
+    }
     if (request.method === "GET" && url.pathname === "/events") {
       const entry = instances.get(instanceId);
       if (!entry) {
@@ -248,8 +501,42 @@ async function handleRequest(instanceId, request, response, log) {
     if (request.method === "POST" && url.pathname === "/api/select") {
       return send(response, 200, await selectInstanceIssue(instanceId, await readJsonBody(request)));
     }
+    if (request.method === "POST" && url.pathname === "/api/select-saved") {
+      return send(response, 200, await selectSavedInstanceIssue(instanceId, await readJsonBody(request)));
+    }
     if (request.method === "POST" && url.pathname === "/api/investigate") {
       return send(response, 202, queueInstanceInvestigation(instanceId, await readJsonBody(request)));
+    }
+    if (request.method === "POST" && url.pathname === "/api/draft") {
+      return send(response, 200, await requireInstance(instanceId).controller.saveDraft(
+        parseDraftRequest(await readJsonBody(request, 128 * 1024)),
+      ));
+    }
+    if (request.method === "POST" && url.pathname === "/api/undo") {
+      return send(response, 200, await requireInstance(instanceId).controller.undoDraft(
+        parseRevisionRequest(await readJsonBody(request), "invalid_undo"),
+      ));
+    }
+    if (request.method === "POST" && url.pathname === "/api/discuss") {
+      return send(response, 200, await discussInstance(
+        instanceId,
+        await readJsonBody(request, 16 * 1024),
+      ));
+    }
+    if (request.method === "POST" && url.pathname === "/api/preview") {
+      return send(response, 200, await previewInstancePublication(
+        instanceId,
+        await readJsonBody(request),
+      ));
+    }
+    if (request.method === "POST" && url.pathname === "/api/publish") {
+      return send(response, 200, await publishInstanceComment(
+        instanceId,
+        await readJsonBody(request),
+      ));
+    }
+    if (request.method === "POST" && url.pathname === "/api/resolve-publication") {
+      return send(response, 200, await resolveInstancePublication(instanceId));
     }
     return send(response, 404, { code: "not_found", error: "Not found." });
   } catch (error) {
@@ -267,6 +554,14 @@ export function parseRefreshRequest(body) {
   return { area: normalizeArea(body.area) };
 }
 
+function parseSavedIssueNumber(body) {
+  requireObjectWithKeys(body, ["issueNumber"], "invalid_saved_issue");
+  if (!Number.isSafeInteger(body.issueNumber) || body.issueNumber < 1) {
+    throw serverError("invalid_saved_issue", "issueNumber must be a positive integer.");
+  }
+  return body.issueNumber;
+}
+
 export function parseItemRequest(body) {
   requireObjectWithKeys(body, ["itemId"], "invalid_selection");
   if (typeof body.itemId !== "string" || !/^[A-Za-z0-9-]{16,64}$/.test(body.itemId)) {
@@ -275,8 +570,57 @@ export function parseItemRequest(body) {
   return { itemId: body.itemId };
 }
 
+export function parseDraftRequest(body) {
+  requireObjectWithKeys(body, ["content", "issueNumber", "provenance", "revision"], "invalid_draft");
+  if (
+    !Number.isSafeInteger(body.issueNumber)
+    || body.issueNumber < 1
+    || !Number.isSafeInteger(body.revision)
+    || !["human", "copilot"].includes(body.provenance)
+    || typeof body.content !== "string"
+  ) {
+    throw serverError("invalid_draft", "Draft request is invalid.");
+  }
+  return body;
+}
+
+export function parseDiscussionRequest(body) {
+  requireObjectWithKeys(body, ["issueNumber", "question", "revision"], "invalid_discussion");
+  if (
+    !Number.isSafeInteger(body.issueNumber)
+    || body.issueNumber < 1
+    || !Number.isSafeInteger(body.revision)
+    || typeof body.question !== "string"
+    || !body.question.trim()
+    || body.question.length > 4_000
+  ) {
+    throw serverError("invalid_discussion", "Discussion request is invalid.");
+  }
+  return body;
+}
+
+export function parseRevisionRequest(body, code = "invalid_revision") {
+  requireObjectWithKeys(body, ["revision"], code);
+  if (!Number.isSafeInteger(body.revision) || body.revision < 1) {
+    throw serverError(code, "revision must be a positive integer.");
+  }
+  return body;
+}
+
+export function parsePublicationRequest(body) {
+  requireObjectWithKeys(body, ["confirmation", "revision"], "invalid_publication");
+  if (
+    typeof body.confirmation !== "string"
+    || !body.confirmation
+    || !Number.isSafeInteger(body.revision)
+  ) {
+    throw serverError("invalid_publication", "Publication request is invalid.");
+  }
+  return body;
+}
+
 export function parsePageRequest(searchParams) {
-  const allowed = new Set(["offset", "limit"]);
+  const allowed = new Set(["offset", "limit", "token"]);
   for (const key of searchParams.keys()) {
     if (!allowed.has(key)) {
       throw serverError("invalid_page", "Page request accepts only offset and limit.");
@@ -327,7 +671,7 @@ export function hasInstanceToken(url, expectedToken) {
     && actualToken === expectedToken;
 }
 
-export function readJsonBody(request) {
+export function readJsonBody(request, maxBytes = 4_096) {
   return new Promise((resolve, reject) => {
     let body = "";
     let settled = false;
@@ -337,7 +681,7 @@ export function readJsonBody(request) {
         return;
       }
       body += chunk;
-      if (body.length > 4_096) {
+      if (Buffer.byteLength(body, "utf8") > maxBytes) {
         settled = true;
         reject(serverError("request_too_large", "Request body is too large."));
         request.destroy();

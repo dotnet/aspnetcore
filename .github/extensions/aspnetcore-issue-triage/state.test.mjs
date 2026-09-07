@@ -110,6 +110,66 @@ test("scope switching reloads server data and rejects stale selections", async (
   );
 });
 
+test("issue-bound draft saves reject a changed selection", async () => {
+  const reports = new Map();
+  const workspaces = new Map();
+  for (const number of [1, 2]) {
+    reports.set(number, {
+      schemaVersion: "1.0.0",
+      repository: "dotnet/aspnetcore",
+      issueNumber: number,
+      issueUrl: `https://github.com/dotnet/aspnetcore/issues/${number}`,
+      area: "area-blazor",
+      createdAt: "2026-01-01T00:00:00Z",
+      model: TEST_MODEL,
+      messageId: `message-${number}`,
+      skill: ".github/skills/investigate-issue/SKILL.md",
+      skillDigest: "a".repeat(64),
+      content: `report-${number}`,
+    });
+    workspaces.set(number, {
+      issueNumber: number,
+      draft: { content: `draft-${number}`, revision: 1 },
+    });
+  }
+  const reportStore = {
+    ...store(),
+    read: async (number) => reports.get(number) ?? null,
+    seedWorkspace: async (report) => workspaces.get(report.issueNumber),
+    saveDraft: async (number, content, revision) => {
+      const current = workspaces.get(number);
+      assert.equal(current.draft.revision, revision);
+      const next = {
+        ...current,
+        draft: { content, revision: revision + 1 },
+      };
+      workspaces.set(number, next);
+      return next;
+    },
+  };
+  let id = 0;
+  const controller = createTriageController({
+    load: async ({ area }) => queue(area, [1, 2]),
+    reportStore,
+    createId: () => `opaque-item-id-${String(++id).padStart(4, "0")}`,
+  });
+  await controller.initialize();
+  const items = controller.getPage({ offset: 0, limit: 25 }).items;
+  await controller.select({ itemId: items[0].id });
+  await controller.select({ itemId: items[1].id });
+
+  await assert.rejects(
+    controller.saveDraft({
+      issueNumber: 1,
+      content: "draft-1-edited",
+      provenance: "human",
+      revision: 1,
+    }),
+    (error) => error.code === "stale_selection",
+  );
+  assert.equal(workspaces.get(2).draft.content, "draft-2");
+});
+
 test("queued investigations preserve durable reports by issue identity", async () => {
   let id = 0;
   const reports = store();
