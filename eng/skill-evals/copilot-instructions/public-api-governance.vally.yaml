@@ -7,8 +7,8 @@ type: capability
 defaults:
   runs: 5
   timeout: 420s
-  model: claude-opus-4.6
-  judge_model: claude-opus-4.6
+  model: gpt-5.4
+  judge_model: gpt-5.4
 
 environment:
   files:
