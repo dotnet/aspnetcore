@@ -845,12 +845,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _renderQueueDeferralDepth++;
     }
 
-    internal void EndRenderQueueDeferral()
+    internal void EndRenderQueueDeferral(bool processPendingRender)
     {
         Dispatcher.AssertAccess();
         Debug.Assert(_renderQueueDeferralDepth > 0);
 
-        if (--_renderQueueDeferralDepth == 0 && !_isBatchInProgress)
+        if (--_renderQueueDeferralDepth == 0 && processPendingRender && !_isBatchInProgress)
         {
             ProcessPendingRender();
         }

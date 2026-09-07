@@ -37,14 +37,16 @@ public partial class StaticHtmlRenderer
         Dispatcher.AssertAccess();
 
         BeginRenderQueueDeferral();
+        var writeCompletedSuccessfully = false;
         try
         {
             var frames = GetCurrentRenderTreeFrames(componentId);
             RenderFrames(componentId, output, frames, 0, frames.Count);
+            writeCompletedSuccessfully = true;
         }
         finally
         {
-            EndRenderQueueDeferral();
+            EndRenderQueueDeferral(writeCompletedSuccessfully);
         }
     }
 

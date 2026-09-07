@@ -73,6 +73,33 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task ProcessesRenderQueuedWhileWritingStreamingUpdate()
+    {
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+        var streamingCompleted = new TaskCompletionSource();
+        var component = new StreamingUpdatingComponent();
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var result = renderer.BeginRenderingComponent(component, ParameterView.Empty);
+            await result.QuiescenceTask;
+            renderer.InitializeStreamingRenderingFraming(httpContext, isErrorHandler: false, isReExecuted: false);
+
+            var streamingTask = renderer.SendStreamingUpdatesAsync(httpContext, streamingCompleted.Task, writer);
+            renderer.BeforeWritingComponentHtml = component.RenderSecondUpdate;
+
+            component.RenderFirstUpdate();
+            streamingCompleted.SetResult();
+            await streamingTask;
+        });
+
+        var output = writer.ToString();
+        Assert.Matches("<template blazor-component-id=\"[0-9]+\">.*First update.*</template>", output);
+        Assert.Matches("<template blazor-component-id=\"[0-9]+\">.*Second update.*</template>", output);
+    }
+
+    [Fact]
     public async Task CanRender_ParameterlessComponent_ClientMode()
     {
         // Arrange
@@ -1983,6 +2010,16 @@ public class EndpointHtmlRendererTest
 
         public int RenderCount => _renderCount;
 
+        public Action BeforeWritingComponentHtml { get; set; }
+
+        protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+        {
+            var callback = BeforeWritingComponentHtml;
+            BeforeWritingComponentHtml = null;
+            callback?.Invoke();
+            base.RenderChildComponent(output, ref componentFrame);
+        }
+
         public new void SignalRendererToFinishRendering()
         {
             _rendererIsStopped = true;
@@ -1994,6 +2031,55 @@ public class EndpointHtmlRendererTest
             SetHttpContext(httpContext);
             await SetNotFoundWhenResponseHasStarted();
         }
+    }
+
+    [StreamRendering]
+    private sealed class StreamingUpdatingComponent : IComponent
+    {
+        private RenderHandle _renderHandle;
+        private string _content = "Initial";
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            Render();
+            return Task.CompletedTask;
+        }
+
+        public void RenderFirstUpdate()
+        {
+            _content = "First update";
+            Render();
+        }
+
+        public void RenderSecondUpdate()
+        {
+            _content = "Second update";
+            Render();
+        }
+
+        private void Render()
+        {
+            _renderHandle.Render(builder =>
+            {
+                builder.OpenComponent<StreamingContent>(0);
+                builder.AddComponentParameter(1, nameof(StreamingContent.Content), _content);
+                builder.CloseComponent();
+            });
+        }
+    }
+
+    private sealed class StreamingContent : ComponentBase
+    {
+        [Parameter]
+        public string Content { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, Content);
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)

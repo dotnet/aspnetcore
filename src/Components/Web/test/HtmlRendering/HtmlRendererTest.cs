@@ -862,6 +862,37 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task WriteHtmlTo_PreservesWritingExceptionAndRetainsDeferredRender()
+    {
+        var services = GetServiceProvider();
+        await using var htmlRenderer = new SectionUpdatingStaticHtmlRenderer(services, NullLoggerFactory.Instance);
+
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var outlet = htmlRenderer.BeginRenderingComponent(
+                new SectionOutlet(),
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { nameof(SectionOutlet.SectionId), "testsection" }
+                }));
+            await outlet.QuiescenceTask;
+
+            var content = new UpdatingSectionContent();
+            var contentRoot = htmlRenderer.BeginRenderingComponent(content, ParameterView.Empty);
+            await contentRoot.QuiescenceTask;
+
+            htmlRenderer.BeforeRenderingSectionContent = content.UpdateWithException;
+            using var writer = new ThrowingTextWriter();
+
+            var exception = Assert.Throws<IOException>(() => outlet.WriteHtmlTo(writer));
+            Assert.Equal("Writing failed.", exception.Message);
+
+            var renderException = Assert.Throws<InvalidOperationException>(() => outlet.ToHtmlString());
+            Assert.Equal("Rendering failed.", renderException.Message);
+        });
+    }
+
+    [Fact]
     public async Task RenderComponentAsync_CanOutputToTextWriter()
     {
         // Arrange
@@ -1381,6 +1412,12 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             Render();
         }
 
+        public void UpdateWithException()
+        {
+            _content = _ => throw new InvalidOperationException("Rendering failed.");
+            Render();
+        }
+
         private void Render()
         {
             _renderHandle.Render(builder =>
@@ -1391,6 +1428,18 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
                 builder.CloseComponent();
             });
         }
+    }
+
+    private sealed class ThrowingTextWriter : StringWriter
+    {
+        public override void Write(char value)
+            => throw new IOException("Writing failed.");
+
+        public override void Write(string value)
+            => throw new IOException("Writing failed.");
+
+        public override void Write(ReadOnlySpan<char> buffer)
+            => throw new IOException("Writing failed.");
     }
 
     private class AsyncLoadingComponent : ComponentBase
