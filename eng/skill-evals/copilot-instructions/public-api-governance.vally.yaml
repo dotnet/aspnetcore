@@ -11,19 +11,16 @@ defaults:
   judge_model: gpt-5.6-luna
 
 environment:
+  skills:
+    - "../../../.github/skills/api-review"
   files:
     - src: "../../../.github/copilot-instructions.md"
       dest: ".github/copilot-instructions.md"
-    - src: "../../../.github/skills/api-review/SKILL.md"
-      dest: ".github/skills/api-review/SKILL.md"
-    - src: "../../../.github/skills/api-review/assets/issue-template.md"
-      dest: ".github/skills/api-review/assets/issue-template.md"
-    - src: "../../../.github/skills/api-review/references/section-guidelines.md"
-      dest: ".github/skills/api-review/references/section-guidelines.md"
 
 scoring:
   weights:
-    output-matches: 0.3
+    output-matches: 0.2
+    skill-invocation: 0.1
     prompt: 0.7
   threshold: 0.6
 
@@ -56,15 +53,23 @@ stimuli:
       interface and am opening the implementation pull request. The originating
       issue and implementation changes are available, but there is no separate API
       proposal issue and the API is not approved. Do not file anything or look up
-      external issues; describe the exact repository workflow I should follow now
-      and whether the pull request must wait for approval.
+      external issues. Describe the complete repository workflow I should follow
+      now, including the relevant repository skill, proposal format, required issue
+      labels and links, and whether the pull request must wait for approval.
     graders:
+      - type: skill-invocation
+        config:
+          required:
+            - api-review
       - type: output-matches
         config:
           pattern: (?i)(api-review.{0,30}skill|skill.{0,30}api-review)
       - type: output-matches
         config:
-          pattern: (?i)(api-suggestion.{0,80}api-proposal|api-proposal.{0,80}api-suggestion)
+          pattern: (?i)api-suggestion
+      - type: output-matches
+        config:
+          pattern: (?i)api-proposal
       - type: output-matches
         config:
           pattern: (?i)(originating issue|implementation (PR|pull request))
@@ -82,8 +87,9 @@ stimuli:
       We are preparing an RTM release that includes a shipped ASP.NET Core option
       default changing from 14 days to 7 days. The separate API proposal issue
       exists but does not have the `api-approved` label. Can this API change be
-      included in the RTM release? Do not look up an external issue; all relevant
-      approval status is stated here.
+      included in the RTM release? Do not look up an external issue; explain the
+      complete path to approval and distinguish compatibility tracking from API
+      approval.
     graders:
       - type: output-matches
         config:
@@ -108,7 +114,8 @@ stimuli:
       but the final implementation changed it to `TimeSpan MaxRetryDelay`. We are
       preparing the implementation for inclusion in an RTM release. Does the
       earlier `api-approved` label cover this final shape? Do not look up an
-      external issue; all relevant approval status is stated here.
+      external issue; explain what must happen to the separate proposal, how the
+      revised API should be represented, and what blocks RTM inclusion.
     graders:
       - type: output-matches
         config:
@@ -118,7 +125,10 @@ stimuli:
           pattern: (?i)(return|update|re-review|review again|API review)
       - type: output-matches
         config:
-          pattern: (?i)(proposal.{0,80}(ref-assembly|reference assembly)|(ref-assembly|reference assembly).{0,80}proposal)
+          pattern: (?i)proposal
+      - type: output-matches
+        config:
+          pattern: (?i)(ref-assembly|reference assembly)
       - type: prompt
     rubric:
       - Identifies that the approved proposal and final implementation have materially different API shapes
