@@ -1,8 +1,12 @@
 # ASP.NET Core issue triage canvas
 
 This project-scoped canvas displays complete public ASP.NET Core issue queues
-with local investigation drafts, bounded read-only discussion, and explicit
-human-confirmed issue comments. It defaults to `area-blazor`.
+and requests research in a normal foreground-created issue session. It defaults
+to `area-blazor`. Its handoff follows the small queue-to-session pattern used
+by the [Aspire issue triage canvas](https://github.com/dotnet/aspire/blob/1dd4584e3df56f5544a3e7f5fda8aa767f92318e/.github/extensions/issue-triage-canvas/extension.mjs#L970-L1035)
+and [Team App foreground dispatch](https://github.com/dotnet/aspire/blob/1dd4584e3df56f5544a3e7f5fda8aa767f92318e/.github/extensions/aspire-team-app/extension.mjs#L236-L278)
+(MIT-licensed source). The prompt uses the installed host's nested `kickoff`
+tool arguments rather than the older issue-board argument spelling.
 
 Queue membership is mechanical:
 
@@ -22,55 +26,47 @@ Issues whose label membership cannot be established are omitted from the
 qualifying queue and counted as unknown rather than receiving an affirmative
 membership explanation.
 
-Configure the isolated non-Anthropic model with the
-`ASPNETCORE_ISSUE_TRIAGE_MODEL` environment variable, or with the
-session-private `files/aspnetcore-issue-triage/model-settings.json` artifact.
-The artifact uses this schema, with a locally chosen supported model identifier:
+Clicking **Investigate in issue session** revalidates the selected issue's
+canonical public identity and current queue membership, then sends a fixed
+request to the foreground session. That request
+asks the foreground agent to use `open_issue_session` with a research-only,
+interactive `investigate-issue` kickoff. Issue title, body, and comments never
+become prompt instructions. The receipt means only **Request sent to chat**;
+the canvas does not claim that a child session was created or research finished.
 
-```json
-{
-  "schemaVersion": "1.0.0",
-  "model": "<non-Anthropic model identifier>"
-}
-```
+The child session uses its ordinary host model settings, not necessarily the
+foreground session's selected model. No model override is supplied. Before researching, it
+must confirm that `investigate-issue` is available in that session and stop if
+the prerequisite is missing. This normally requires the skill to have landed
+on the repository default branch. The canvas has no model setting, report
+storage, editor, discussion, preview, publishing, or GitHub-write surface.
+Area preference is the sole durable canvas artifact.
 
-The environment variable takes precedence over the session-local artifact.
-Missing or invalid configuration fails closed.
+## Dispatch and permissions
 
-Selecting one issue can queue the exact project `investigate-issue` skill. The
-extension revalidates the server-owned issue identity and live queue membership
-before dispatch, passes no issue-authored text as instructions, and runs a
-short-lived isolated session using a locally configured non-Anthropic model with
-only bounded public read-only evidence tools. Missing or invalid model
-configuration fails closed with no default or fallback. Repository source and
-history tools resolve refs through public GitHub before reading tracked content.
-The advisory report and editable draft are stored under the current Copilot
-session's private artifacts outside the repository checkout. Saving, editing,
-discussion, and preview do not write to GitHub. A person may edit the Markdown
-draft, ask a bounded read-only follow-up question, and use one-step Undo to
-restore the previous saved draft. Saved issues can be reopened after they leave
-the current queue.
+A busy foreground agent processes the request after its current work. The
+canvas does not poll the child, parse chat answers, or synchronize research
+results back into the queue. Closing or refreshing the canvas cannot cancel a
+request already delivered to chat. A failed or missing send receipt is reported
+as unconfirmed when delivery may have occurred; inspect chat before deliberately
+using **Send request again**. Refresh/reload never resends automatically.
 
-Preview shows the exact current Markdown and requires an explicit confirmation
-before publishing. The first publication creates one issue comment; later
-publication updates only that canvas-created comment. Unknown create or update
-outcomes remain pending and Reconcile performs a read-only recovery instead of
-retrying the write. The extension does not label, assign, close, edit projects,
-run reporter code, or perform any other GitHub mutation.
+The loopback endpoints retain capability-token authentication, same-origin POST
+checks, bounded request bodies and text-only rendering of issue-authored data.
+Queue snapshots include partial-retrieval limitations and unknown membership.
+The extension has no GitHub mutation endpoint. Research in the normal issue
+session uses that session's tools and permissions: the skill's public/read-only
+instructions are not an isolated runtime enforcement boundary.
 
-Create recovery only adopts a comment when the bounded public evidence uniquely
-identifies it as newer than the recorded attempt, with the expected body and
-authenticated account. GitHub timestamps have one-second precision, so a
-same-second candidate is indistinguishable from an older comment and remains
-unknown rather than being adopted.
+## Development
 
-Publication is guarded by the canonical public issue, authenticated human
-account, exact draft revision and body, bounded public Markdown checks, and
-remote-comment comparison. GitHub does not provide an atomic compare-and-swap
-for comment updates, so the remote read-before-write comparison cannot eliminate
-every external write race. Unknown network outcomes remain pending for manual
-reconciliation rather than being retried automatically.
+Run `node --test .github/extensions/aspnetcore-issue-triage/*.test.mjs`.
+The suite covers queue paging, canonical validation, real HTTP/SSE lifecycle,
+foreground-dispatch recording seams, stale completion handling, and retired-route
+rejection. Recording a send does not establish that the foreground agent opened
+an issue session or that a child produced research; observe those separately in
+the app with the required skill available in the child's checkout.
 
-Private investigation diagnostics are disabled by default. If explicitly
-enabled, captures remain in the session's private artifact root, are never
-rendered as the advisory report, and are not published.
+The former saved-report/editor/discussion/publishing workflow has been removed.
+Existing private report, workspace, diagnostic and model-setting files are not
+read, migrated, or deleted by this extension.

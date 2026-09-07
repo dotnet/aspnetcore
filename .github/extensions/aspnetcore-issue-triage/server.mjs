@@ -2,94 +2,92 @@ import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 
 import { HTML } from "./render.mjs";
-import { createTriageController, summarizeState } from "./state.mjs";
-import { DEFAULT_AREA, normalizeArea, REPOSITORY } from "./taxonomy.mjs";
+import { createTriageController } from "./state.mjs";
+import { DEFAULT_AREA, normalizeArea } from "./taxonomy.mjs";
 
 const instances = new Map();
 const lifecycleTails = new Map();
-const discussionTails = new Map();
-const INITIALIZATION_STOP_TIMEOUT_MS = 2_000;
-let queueLoader = null;
-let reportStore = null;
-let investigationScheduler = null;
-let discussionRunner = null;
-let publisher = null;
+let queueLoader;
+let areaStore;
+let handoff;
 
-export function configureServer({
-  load,
-  store,
-  scheduleInvestigation,
-  discuss = null,
-  publish = null,
-}) {
+export function configureServer({ load, store, launch }) {
   queueLoader = load;
-  reportStore = store;
-  investigationScheduler = scheduleInvestigation;
-  discussionRunner = discuss;
-  publisher = publish;
+  areaStore = store;
+  handoff = launch;
 }
 
 export function startInstance(instanceId, input, log) {
   return enqueueLifecycle(instanceId, async () => {
-    const entry = instances.get(instanceId);
-    if (entry) {
-      return entry;
+    if (instances.has(instanceId)) {
+      return instances.get(instanceId);
     }
-    if (!queueLoader || !reportStore || !investigationScheduler) {
+    if (!queueLoader || !areaStore || !handoff) {
       throw serverError("server_unconfigured", "Issue triage server is not configured.");
     }
-    return createInstance(instanceId, input, log);
-  });
-}
-
-async function createInstance(instanceId, input, log) {
-  let server = null;
-  let entry = null;
-  try {
-    const storedArea = await reportStore.readArea?.();
+    const storedArea = await areaStore.readArea();
     const controller = createTriageController({
       initialArea: storedArea ?? normalizeArea(input?.area, DEFAULT_AREA),
       load: queueLoader,
-      reportStore,
+      areaStore,
     });
     const token = randomBytes(32).toString("base64url");
-    server = createServer((request, response) => {
-      void handleRequest(instanceId, request, response, log);
+    const entry = { controller, token, clients: new Set(), log, server: null, url: null };
+    const server = createServer((request, response) => {
+      void handleRequest(entry, request, response);
     });
-    await listenLoopback(server);
-    const address = server.address();
-    const port = typeof address === "object" && address ? address.port : 0;
-    entry = {
-      controller,
-      server,
-      token,
-      url: `http://127.0.0.1:${port}/?token=${token}`,
-      clients: new Set(),
-      unsubscribe: null,
-      initialization: null,
-      log,
-    };
-    entry.unsubscribe = controller.subscribe((state) => broadcast(entry, state));
-    instances.set(instanceId, entry);
-    entry.initialization = Promise.resolve().then(() => controller.initialize()).catch((error) => {
-      if (error.code === "controller_disposed") {
-        return;
-      }
-      void log?.(`ASP.NET Core issue triage initial load failed: ${error.message}`);
-    });
-    return entry;
-  } catch (error) {
-    entry?.unsubscribe?.();
-    if (instances.get(instanceId) === entry) {
-      instances.delete(instanceId);
+    entry.server = server;
+    try {
+      await new Promise((resolve, reject) => {
+        const onError = (error) => reject(error);
+        server.once("error", onError);
+        server.listen(0, "127.0.0.1", () => {
+          server.off("error", onError);
+          resolve();
+        });
+      });
+      entry.url = `http://127.0.0.1:${server.address().port}/?token=${token}`;
+      entry.unsubscribe = controller.subscribe((state) => {
+        for (const client of entry.clients) {
+          client.write(`data: ${JSON.stringify(state)}\n\n`);
+        }
+      });
+      instances.set(instanceId, entry);
+      entry.initialization = controller.initialize().catch((error) => {
+        if (error.code !== "controller_disposed" && error.code !== "artifact_write_cancelled") {
+          reportError(log, `Initial queue retrieval failed: ${error.message}`);
+        }
+      });
+      return entry;
+    } catch (error) {
+      controller.dispose();
+      server.close();
+      throw error;
     }
-    await closeServer(server);
-    throw error;
-  }
+  });
+}
+
+export function stopInstance(instanceId) {
+  return enqueueLifecycle(instanceId, async () => {
+    const entry = instances.get(instanceId);
+    if (!entry) {
+      return;
+    }
+    instances.delete(instanceId);
+    entry.controller.dispose();
+    entry.unsubscribe();
+    for (const client of entry.clients) {
+      client.end();
+    }
+    await new Promise((resolve) => {
+      entry.server.close(resolve);
+      entry.server.closeAllConnections();
+    });
+  });
 }
 
 export function getInstanceState(instanceId) {
-  return instances.get(instanceId)?.controller.getState() ?? null;
+  return requireInstance(instanceId).controller.getState();
 }
 
 export function getInstancePage(instanceId, input) {
@@ -104,644 +102,161 @@ export function selectInstanceIssue(instanceId, input) {
   return requireInstance(instanceId).controller.select(parseItemRequest(input));
 }
 
-export async function listSavedIssues(instanceId) {
-  const workspaces = await reportStore.listWorkspaces();
-  return workspaces.map((workspace) => ({
-    id: `saved-${workspace.issueNumber}`,
-    saved: true,
-    repository: workspace.repository,
-    number: workspace.issueNumber,
-    title: `Saved ASP.NET Core issue #${workspace.issueNumber}`,
-    url: workspace.issueUrl,
-    author: null,
-    createdAt: workspace.originalReport.createdAt,
-    updatedAt: workspace.draft.updatedAt,
-    labels: [],
-    area: workspace.area,
-    whyIncluded: ["Saved local investigation workspace; queue membership is not asserted."],
-  }));
+export function investigateInstanceIssue(instanceId, input) {
+  return requireInstance(instanceId).controller.investigate(parseItemRequest(input), handoff.dispatch);
 }
 
-export async function selectSavedInstanceIssue(instanceId, input) {
-  const issueNumber = parseSavedIssueNumber(input);
-  const workspace = await reportStore.readWorkspace(issueNumber);
-  if (!workspace || workspace.repository !== "dotnet/aspnetcore"
-    || workspace.issueUrl !== `https://github.com/dotnet/aspnetcore/issues/${issueNumber}`) {
-    throw serverError("saved_issue_invalid", "The saved issue is not a canonical public ASP.NET Core issue.");
-  }
-  return requireInstance(instanceId).controller.selectSaved({
-    id: `saved-${issueNumber}`,
-    saved: true,
-    repository: workspace.repository,
-    number: issueNumber,
-    title: `Saved ASP.NET Core issue #${issueNumber}`,
-    url: workspace.issueUrl,
-    author: null,
-    createdAt: workspace.originalReport.createdAt,
-    updatedAt: workspace.draft.updatedAt,
-    labels: [],
-    area: workspace.area,
-  });
-}
-
-export function queueInstanceInvestigation(instanceId, input) {
-  const entry = requireInstance(instanceId);
-  const queued = entry.controller.queueInvestigation(parseItemRequest(input));
-  investigationScheduler({ instanceId, job: queued.job });
-  return queued.state;
-}
-
-export async function performInstanceInvestigation(instanceId, job, run) {
-  const entry = instances.get(instanceId);
-  if (!entry) {
-    return null;
-  }
+async function handleRequest(entry, request, response) {
   try {
-    const item = entry.controller.beginInvestigation(job);
-    const report = await run(item);
-    return await entry.controller.completeInvestigation(job, report);
-  } catch (error) {
-    return entry.controller.failInvestigation(job, error);
-  }
-}
-
-export async function discussInstance(instanceId, input) {
-  const entry = requireInstance(instanceId);
-  if (typeof discussionRunner !== "function") {
-    throw serverError("discussion_unavailable", "Issue discussion is not configured.");
-  }
-  const request = parseDiscussionRequest(input);
-  const state = entry.controller.getState();
-  const issue = state.snapshot?.selectedIssue;
-  const workspace = state.snapshot?.selectedWorkspace;
-  if (!issue || issue.number !== request.issueNumber || !workspace) {
-    throw serverError("issue_not_selected", "Select an issue with an investigation before discussing it.");
-  }
-  if (workspace.draft.revision !== request.revision) {
-    throw serverError("stale_revision", "The issue draft changed before discussion started.");
-  }
-  const discussionKey = `${issue.repository}#${issue.number}`;
-  if (discussionTails.has(discussionKey)) {
-    throw serverError("discussion_in_progress", "A discussion for this issue is already in progress.");
-  }
-  const discussionPromise = Promise.resolve();
-  discussionTails.set(discussionKey, discussionPromise);
-  try {
-    const result = await discussionRunner({
-      issue,
-      workspace,
-      question: request.question,
-    });
-    if (
-      result?.replacement?.content
-      && result.replacement.baseRevision === request.revision
-    ) {
-      try {
-        const next = await entry.controller.saveDraft({
-          issueNumber: issue.number,
-          content: result.replacement.content,
-          revision: request.revision,
-          provenance: "copilot",
-        });
-        await recordDiscussionTurn(entry, issue, {
-          ...result,
-          question: request.question,
-          baseRevision: request.revision,
-          applied: true,
-        });
-        return { ...result, question: request.question, state: next, applied: true };
-      } catch (error) {
-        if (!["stale_revision", "stale_selection"].includes(error.code)) {
-          throw error;
-        }
-        await recordDiscussionTurn(entry, issue, {
-          ...result,
-          question: request.question,
-          baseRevision: request.revision,
-          applied: false,
-          conflict: "The proposed update was not applied because the draft changed while Copilot was responding.",
-        });
-        return {
-          ...result,
-          state: entry.controller.getState(),
-          applied: false,
-          conflict: "The proposed update was not applied because the draft changed while Copilot was responding.",
-        };
-      }
-    }
-    await recordDiscussionTurn(entry, issue, {
-      ...result,
-      question: request.question,
-      baseRevision: request.revision,
-      applied: false,
-    });
-    return { ...result, question: request.question, state: entry.controller.getState(), applied: false };
-  } finally {
-    if (discussionTails.get(discussionKey) === discussionPromise) {
-      discussionTails.delete(discussionKey);
-    }
-  }
-}
-
-async function recordDiscussionTurn(entry, issue, result) {
-  const answer = typeof result?.answer === "string" ? result.answer : "";
-  const question = typeof result?.question === "string" ? result.question : "";
-  const workspace = await reportStore.readWorkspace?.(issue.number)
-    ?? (entry.controller.getState().snapshot?.selectedIssue?.id === issue.id
-      ? entry.controller.getState().snapshot.selectedWorkspace
-      : null);
-  if (!workspace) {
-    throw serverError("workspace_not_found", "The originating issue workspace disappeared before the discussion was recorded.");
-  }
-  const next = {
-    ...workspace,
-    discussion: [
-      ...workspace.discussion,
-      {
-        repository: issue.repository,
-        issueNumber: issue.number,
-        kind: "turn",
-        createdAt: new Date().toISOString(),
-        question,
-        answer,
-        baseRevision: result.baseRevision ?? workspace.draft.revision,
-        applied: result.applied === true,
-        conflict: result.conflict ?? null,
-        evidence: result.evidence ?? [],
-        hostEvidence: result.hostEvidence ?? [],
-        replacement: result.replacement
-          ? {
-            content: result.replacement.content,
-            baseRevision: result.replacement.baseRevision,
-          }
-          : null,
-      },
-    ],
-  };
-  if (typeof reportStore.appendDiscussionTurn === "function") {
-    await reportStore.appendDiscussionTurn(issue.number, workspace.draft.revision, next.discussion.at(-1));
-  } else {
-    await reportStore.saveWorkspace(next, workspace.draft.revision);
-  }
-  await refreshSelectedIssue(entry, issue);
-}
-
-export async function previewInstancePublication(instanceId, input) {
-  const entry = requireInstance(instanceId);
-  if (typeof publisher?.preview !== "function") {
-    throw serverError("publication_unavailable", "Issue publication is not configured.");
-  }
-  const request = parseRevisionRequest(input, "invalid_preview");
-  const state = entry.controller.getState();
-  const issue = state.snapshot?.selectedIssue;
-  const workspace = state.snapshot?.selectedWorkspace;
-  if (!issue || !workspace || workspace.draft.revision !== request.revision) {
-    throw serverError("stale_revision", "The issue draft changed before preview was prepared.");
-  }
-  return publisher.preview({
-    issue,
-    workspace,
-    revision: request.revision,
-  });
-}
-
-export async function publishInstanceComment(instanceId, input) {
-  const entry = requireInstance(instanceId);
-  if (typeof publisher?.publish !== "function") {
-    throw serverError("publication_unavailable", "Issue publication is not configured.");
-  }
-  const request = parsePublicationRequest(input);
-  const state = entry.controller.getState();
-  const issue = state.snapshot?.selectedIssue;
-  const workspace = state.snapshot?.selectedWorkspace;
-  if (!issue || !workspace || workspace.draft.revision !== request.revision) {
-    throw serverError("stale_revision", "The issue draft changed before publication.");
-  }
-  const result = await publisher.publish({
-    issue,
-    workspace,
-    revision: request.revision,
-    confirmation: request.confirmation,
-  });
-  if (result.workspace) {
-    if (result.workspacePersisted !== true) {
-      await reportStore.saveWorkspace(result.workspace, request.revision);
-    }
-    await refreshSelectedIssue(entry, issue);
-  }
-  return { ...result, state: entry.controller.getState() };
-}
-
-export async function resolveInstancePublication(instanceId) {
-  const entry = requireInstance(instanceId);
-  if (typeof publisher?.resolvePending !== "function") {
-    throw serverError("publication_recovery_unavailable", "Publication recovery is not configured.");
-  }
-  const state = entry.controller.getState();
-  const issue = state.snapshot?.selectedIssue;
-  const workspace = state.snapshot?.selectedWorkspace;
-  if (!issue || !workspace || !workspace.publication?.pending) {
-    throw serverError("publication_not_pending", "No publication attempt is pending reconciliation.");
-  }
-  const result = await publisher.resolvePending({ issue, workspace });
-  if (result.workspace) {
-    if (result.workspacePersisted !== true) {
-      await reportStore.saveWorkspace(result.workspace, workspace.draft.revision);
-    }
-    await refreshSelectedIssue(entry, issue);
-  }
-  return { ...result, state: entry.controller.getState() };
-}
-
-async function refreshSelectedIssue(entry, issue) {
-  if (entry.controller.getState().snapshot?.selectedIssue?.id !== issue.id) {
-    return;
-  }
-  if (issue.saved === true || /^saved-[1-9][0-9]*$/.test(issue.id)) {
-    await entry.controller.selectSaved({ ...issue, repository: REPOSITORY, saved: true });
-    return;
-  }
-  await entry.controller.select({ itemId: issue.id });
-}
-
-export function stopInstance(instanceId) {
-  return enqueueLifecycle(instanceId, () => stopInstanceCore(instanceId));
-}
-
-async function stopInstanceCore(instanceId) {
-  const entry = instances.get(instanceId);
-  if (!entry) {
-    return;
-  }
-  instances.delete(instanceId);
-  entry.controller.dispose();
-  entry.unsubscribe?.();
-  for (const client of entry.clients) {
-    client.end();
-  }
-  entry.clients.clear();
-  const initializationSettled = await settleWithin(
-    entry.initialization,
-    INITIALIZATION_STOP_TIMEOUT_MS,
-  );
-  if (!initializationSettled) {
-    void entry.log?.("ASP.NET Core issue triage initial load did not stop before the cleanup deadline.");
-  }
-  await closeServer(entry.server);
-}
-
-function settleWithin(promise, timeoutMs) {
-  if (!promise) {
-    return Promise.resolve(true);
-  }
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(false), timeoutMs);
-    Promise.resolve(promise).then(
-      () => {
-        clearTimeout(timer);
-        resolve(true);
-      },
-      () => {
-        clearTimeout(timer);
-        resolve(true);
-      },
-    );
-  });
-}
-
-function enqueueLifecycle(instanceId, operation) {
-  const previous = lifecycleTails.get(instanceId) ?? Promise.resolve();
-  const result = previous.catch(() => {}).then(operation);
-  const tail = result.then(
-    () => undefined,
-    () => undefined,
-  );
-  lifecycleTails.set(instanceId, tail);
-  void tail.finally(() => {
-    if (lifecycleTails.get(instanceId) === tail) {
-      lifecycleTails.delete(instanceId);
-    }
-  });
-  return result;
-}
-
-function listenLoopback(server) {
-  return new Promise((resolve, reject) => {
-    const onError = (error) => {
-      server.off("listening", onListening);
-      reject(error);
-    };
-    const onListening = () => {
-      server.off("error", onError);
-      resolve();
-    };
-    server.once("error", onError);
-    server.once("listening", onListening);
-    server.listen(0, "127.0.0.1");
-  });
-}
-
-function closeServer(server) {
-  if (!server?.listening) {
-    return Promise.resolve();
-  }
-  return new Promise((resolve) => server.close(resolve));
-}
-
-async function handleRequest(instanceId, request, response, log) {
-  const url = new URL(request.url ?? "/", "http://127.0.0.1");
-  try {
-    const entry = instances.get(instanceId);
-    if (!entry || !hasInstanceToken(url, entry.token)) {
-      return send(response, 403, {
-        code: "request_forbidden",
-        error: "A valid canvas capability token is required.",
-      });
+    const url = new URL(request.url ?? "/", "http://127.0.0.1");
+    if (!hasInstanceToken(url, entry.token)) {
+      throw serverError("request_forbidden", "A valid canvas capability token is required.");
     }
     if (request.method === "POST" && !isAllowedPostRequest(request)) {
-      return send(response, 403, {
-        code: "request_forbidden",
-        error: "Cross-origin requests are not allowed.",
-      });
+      throw serverError("request_forbidden", "Cross-origin requests are not allowed.");
     }
     if (request.method === "GET" && ["/", "/index.html"].includes(url.pathname)) {
       return send(response, 200, HTML, "text/html; charset=utf-8");
     }
     if (request.method === "GET" && url.pathname === "/api/state") {
-      const state = getInstanceState(instanceId);
-      return state
-        ? send(response, 200, state)
-        : send(response, 404, { code: "queue_not_open", error: "Queue instance not found." });
+      return send(response, 200, entry.controller.getState());
     }
     if (request.method === "GET" && url.pathname === "/api/issues") {
-      return send(response, 200, getInstancePage(instanceId, parsePageRequest(url.searchParams)));
-    }
-    if (request.method === "GET" && url.pathname === "/api/saved") {
-      return send(response, 200, { items: await listSavedIssues(instanceId) });
+      return send(response, 200, entry.controller.getPage(parsePageRequest(url.searchParams)));
     }
     if (request.method === "GET" && url.pathname === "/events") {
-      const entry = instances.get(instanceId);
-      if (!entry) {
-        return send(response, 404, { code: "queue_not_open", error: "Queue instance not found." });
-      }
       response.writeHead(200, {
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+        "Cache-Control": "no-store",
         "Content-Type": "text/event-stream",
-        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
       });
-      response.write(": connected\n\n");
       entry.clients.add(response);
-      request.on("close", () => entry.clients.delete(response));
+      response.on("close", () => entry.clients.delete(response));
+      // Subscribe before reading state so a late subscriber cannot miss initialization.
+      response.write(`data: ${JSON.stringify(entry.controller.getState())}\n\n`);
       return;
     }
     if (request.method === "POST" && url.pathname === "/api/refresh") {
-      return send(response, 200, await refreshInstance(instanceId, await readJsonBody(request)));
+      const state = await entry.controller.refresh(parseRefreshRequest(await readJsonBody(request)));
+      return send(response, 200, state);
     }
     if (request.method === "POST" && url.pathname === "/api/select") {
-      return send(response, 200, await selectInstanceIssue(instanceId, await readJsonBody(request)));
-    }
-    if (request.method === "POST" && url.pathname === "/api/select-saved") {
-      return send(response, 200, await selectSavedInstanceIssue(instanceId, await readJsonBody(request)));
+      const state = entry.controller.select(parseItemRequest(await readJsonBody(request)));
+      return send(response, 200, state);
     }
     if (request.method === "POST" && url.pathname === "/api/investigate") {
-      return send(response, 202, queueInstanceInvestigation(instanceId, await readJsonBody(request)));
-    }
-    if (request.method === "POST" && url.pathname === "/api/draft") {
-      return send(response, 200, await requireInstance(instanceId).controller.saveDraft(
-        parseDraftRequest(await readJsonBody(request, 128 * 1024)),
-      ));
-    }
-    if (request.method === "POST" && url.pathname === "/api/undo") {
-      return send(response, 200, await requireInstance(instanceId).controller.undoDraft(
-        parseRevisionRequest(await readJsonBody(request), "invalid_undo"),
-      ));
-    }
-    if (request.method === "POST" && url.pathname === "/api/discuss") {
-      return send(response, 200, await discussInstance(
-        instanceId,
-        await readJsonBody(request, 16 * 1024),
-      ));
-    }
-    if (request.method === "POST" && url.pathname === "/api/preview") {
-      return send(response, 200, await previewInstancePublication(
-        instanceId,
-        await readJsonBody(request),
-      ));
-    }
-    if (request.method === "POST" && url.pathname === "/api/publish") {
-      return send(response, 200, await publishInstanceComment(
-        instanceId,
-        await readJsonBody(request),
-      ));
-    }
-    if (request.method === "POST" && url.pathname === "/api/resolve-publication") {
-      return send(response, 200, await resolveInstancePublication(instanceId));
+      const state = await entry.controller.investigate(parseItemRequest(await readJsonBody(request)), handoff.dispatch);
+      return send(response, 202, state);
     }
     return send(response, 404, { code: "not_found", error: "Not found." });
   } catch (error) {
-    void log?.(`ASP.NET Core issue triage request failed: ${error.message}`);
-    return send(response, errorStatus(error), {
+    reportError(entry.log, `Issue triage request failed: ${error.message}`);
+    const status = error.code === "request_forbidden" ? 403
+      : error.code === "request_too_large" ? 413
+        : error.code === "github_rate_limited" ? 429
+          : error.code === "queue_not_open" ? 404 : 400;
+    return send(response, status, {
       code: error.code ?? "queue_request_failed",
       error: error.message,
-      state: getInstanceState(instanceId),
+      state: entry.controller.getState(),
     });
   }
 }
 
 export function parseRefreshRequest(body) {
-  requireObjectWithKeys(body, ["area"], "invalid_refresh");
+  requireKeys(body, ["area"], "invalid_refresh");
+  if (typeof body.area !== "string") {
+    throw serverError("invalid_refresh", "area must be a supported area label.");
+  }
   return { area: normalizeArea(body.area) };
 }
 
-function parseSavedIssueNumber(body) {
-  requireObjectWithKeys(body, ["issueNumber"], "invalid_saved_issue");
-  if (!Number.isSafeInteger(body.issueNumber) || body.issueNumber < 1) {
-    throw serverError("invalid_saved_issue", "issueNumber must be a positive integer.");
-  }
-  return body.issueNumber;
-}
-
 export function parseItemRequest(body) {
-  requireObjectWithKeys(body, ["itemId"], "invalid_selection");
+  requireKeys(body, ["itemId"], "invalid_selection");
   if (typeof body.itemId !== "string" || !/^[A-Za-z0-9-]{16,64}$/.test(body.itemId)) {
     throw serverError("invalid_selection", "itemId is invalid.");
   }
   return { itemId: body.itemId };
 }
 
-export function parseDraftRequest(body) {
-  requireObjectWithKeys(body, ["content", "issueNumber", "provenance", "revision"], "invalid_draft");
-  if (
-    !Number.isSafeInteger(body.issueNumber)
-    || body.issueNumber < 1
-    || !Number.isSafeInteger(body.revision)
-    || !["human", "copilot"].includes(body.provenance)
-    || typeof body.content !== "string"
-  ) {
-    throw serverError("invalid_draft", "Draft request is invalid.");
-  }
-  return body;
-}
-
-export function parseDiscussionRequest(body) {
-  requireObjectWithKeys(body, ["issueNumber", "question", "revision"], "invalid_discussion");
-  if (
-    !Number.isSafeInteger(body.issueNumber)
-    || body.issueNumber < 1
-    || !Number.isSafeInteger(body.revision)
-    || typeof body.question !== "string"
-    || !body.question.trim()
-    || body.question.length > 4_000
-  ) {
-    throw serverError("invalid_discussion", "Discussion request is invalid.");
-  }
-  return body;
-}
-
-export function parseRevisionRequest(body, code = "invalid_revision") {
-  requireObjectWithKeys(body, ["revision"], code);
-  if (!Number.isSafeInteger(body.revision) || body.revision < 1) {
-    throw serverError(code, "revision must be a positive integer.");
-  }
-  return body;
-}
-
-export function parsePublicationRequest(body) {
-  requireObjectWithKeys(body, ["confirmation", "revision"], "invalid_publication");
-  if (
-    typeof body.confirmation !== "string"
-    || !body.confirmation
-    || !Number.isSafeInteger(body.revision)
-  ) {
-    throw serverError("invalid_publication", "Publication request is invalid.");
-  }
-  return body;
-}
-
-export function parsePageRequest(searchParams) {
-  const allowed = new Set(["offset", "limit", "token"]);
-  for (const key of searchParams.keys()) {
-    if (!allowed.has(key)) {
-      throw serverError("invalid_page", "Page request accepts only offset and limit.");
+export function parsePageRequest(params) {
+  for (const key of params.keys()) {
+    if (!["offset", "limit", "token"].includes(key) || params.getAll(key).length !== 1) {
+      throw serverError("invalid_page", "Page request contains an unexpected or repeated parameter.");
     }
   }
-  const offset = parseIntegerParameter(searchParams.get("offset"), 0, "offset");
-  const limit = parseIntegerParameter(searchParams.get("limit"), 50, "limit");
+  const offset = parseInteger(params.get("offset"), 0);
+  const limit = parseInteger(params.get("limit"), 50);
   if (![25, 50, 100].includes(limit)) {
-    throw serverError("invalid_page", "limit must be 25, 50, or 100.");
+    throw serverError("invalid_page", "Page limit must be 25, 50, or 100.");
   }
   return { offset, limit };
 }
 
+function parseInteger(value, fallback) {
+  if (value === null) {
+    return fallback;
+  }
+  if (!/^(0|[1-9][0-9]*)$/.test(value) || !Number.isSafeInteger(Number(value))) {
+    throw serverError("invalid_page", "Page parameters must be non-negative integers.");
+  }
+  return Number(value);
+}
+
+export function hasInstanceToken(url, expectedToken) {
+  return typeof expectedToken === "string" && expectedToken.length >= 32
+    && url.searchParams.getAll("token").length === 1
+    && url.searchParams.get("token") === expectedToken;
+}
+
 export function isAllowedPostRequest(request) {
   const host = request.headers.host;
-  if (!host) {
+  if (!host || !/^127\.0\.0\.1:\d+$/.test(host)) {
     return false;
   }
-  let expectedOrigin;
-  try {
-    const parsed = new URL(`http://${host}`);
-    if (parsed.hostname !== "127.0.0.1") {
-      return false;
-    }
-    expectedOrigin = parsed.origin;
-  } catch {
-    return false;
-  }
-
   const origin = request.headers.origin;
-  if (origin) {
-    try {
-      if (new URL(origin).origin !== expectedOrigin) {
-        return false;
-      }
-    } catch {
-      return false;
-    }
+  if (origin && origin !== `http://${host}`) {
+    return false;
   }
   const fetchSite = request.headers["sec-fetch-site"];
   return !fetchSite || fetchSite === "same-origin" || fetchSite === "none";
 }
 
-export function hasInstanceToken(url, expectedToken) {
-  const actualToken = url.searchParams.get("token");
-  return typeof expectedToken === "string"
-    && expectedToken.length >= 32
-    && actualToken === expectedToken;
+export async function readJsonBody(request, maxBytes = 4_096) {
+  request.setEncoding("utf8");
+  let body = "";
+  for await (const chunk of request) {
+    body += chunk;
+    if (Buffer.byteLength(body, "utf8") > maxBytes) {
+      throw serverError("request_too_large", "Request body is too large.");
+    }
+  }
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw serverError("invalid_json", "Request body must be valid JSON.");
+  }
 }
 
-export function readJsonBody(request, maxBytes = 4_096) {
-  return new Promise((resolve, reject) => {
-    let body = "";
-    let settled = false;
-    request.setEncoding("utf8");
-    request.on("data", (chunk) => {
-      if (settled) {
-        return;
-      }
-      body += chunk;
-      if (Buffer.byteLength(body, "utf8") > maxBytes) {
-        settled = true;
-        reject(serverError("request_too_large", "Request body is too large."));
-        request.destroy();
-      }
-    });
-    request.on("end", () => {
-      if (settled) {
-        return;
-      }
-      try {
-        settled = true;
-        resolve(body ? JSON.parse(body) : {});
-      } catch {
-        settled = true;
-        reject(serverError("invalid_json", "Request body must be valid JSON."));
-      }
-    });
-    request.on("error", (error) => {
-      if (!settled) {
-        settled = true;
-        reject(error);
-      }
-    });
-  });
+function requireKeys(value, keys, code) {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || Object.keys(value).length !== keys.length || keys.some((key) => !Object.hasOwn(value, key))) {
+    throw serverError(code, "Request has an invalid shape.");
+  }
 }
 
 function requireInstance(instanceId) {
   const entry = instances.get(instanceId);
   if (!entry) {
-    throw serverError("queue_not_open", "Open the ASP.NET Core Issue Triage canvas first.");
+    throw serverError("queue_not_open", "Open the issue triage canvas first.");
   }
   return entry;
 }
 
-function requireObjectWithKeys(body, keys, code) {
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    throw serverError(code, "Request body must be an object.");
-  }
-  const actual = Object.keys(body).sort();
-  const expected = [...keys].sort();
-  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
-    throw serverError(code, `Request accepts only ${expected.join(", ")}.`);
-  }
-}
-
-function parseIntegerParameter(value, fallback, name) {
-  if (value === null) {
-    return fallback;
-  }
-  if (!/^(0|[1-9][0-9]*)$/.test(value)) {
-    throw serverError("invalid_page", `${name} must be a non-negative integer.`);
-  }
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed)) {
-    throw serverError("invalid_page", `${name} is too large.`);
-  }
-  return parsed;
-}
-
 function send(response, status, body, contentType = "application/json; charset=utf-8") {
+  if (response.destroyed || response.writableEnded) {
+    return;
+  }
   response.writeHead(status, {
     "Cache-Control": "no-store",
     "Content-Security-Policy": "default-src 'none'; connect-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
@@ -752,36 +267,25 @@ function send(response, status, body, contentType = "application/json; charset=u
   response.end(typeof body === "string" ? body : JSON.stringify(body));
 }
 
-function broadcast(entry, state) {
-  const data = `event: state\ndata: ${JSON.stringify(state)}\n\n`;
-  for (const client of entry.clients) {
-    client.write(data);
-  }
-}
-
-function errorStatus(error) {
-  if (["queue_not_open"].includes(error.code)) {
-    return 404;
-  }
-  if (["github_rate_limited"].includes(error.code)) {
-    return 429;
-  }
-  if (
-    typeof error.code === "string"
-    && (
-      error.code.startsWith("invalid_")
-      || error.code.startsWith("stale_")
-      || error.code === "request_too_large"
-      || error.code === "investigation_in_progress"
-    )
-  ) {
-    return 400;
-  }
-  return 500;
+function reportError(log, message) {
+  void Promise.resolve().then(() => log?.(message)).catch((error) => {
+    process.stderr.write(`Issue triage logging failed: ${error.message}\n`);
+  });
 }
 
 function serverError(code, message) {
-  const error = new Error(message);
-  error.code = code;
-  return error;
+  return Object.assign(new Error(message), { code });
+}
+
+function enqueueLifecycle(instanceId, operation) {
+  const previous = lifecycleTails.get(instanceId) ?? Promise.resolve();
+  const result = previous.then(operation);
+  const tail = result.then(() => undefined, () => undefined);
+  lifecycleTails.set(instanceId, tail);
+  void tail.then(() => {
+    if (lifecycleTails.get(instanceId) === tail) {
+      lifecycleTails.delete(instanceId);
+    }
+  });
+  return result;
 }

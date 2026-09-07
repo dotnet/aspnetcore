@@ -1,407 +1,36 @@
 import { randomUUID } from "node:crypto";
-
 import { AREA_OPTIONS, DEFAULT_AREA, REPOSITORY, normalizeArea } from "./taxonomy.mjs";
-
-const PAGE_SIZES = [25, 50, 100];
 
 export function createTriageController({
   initialArea = DEFAULT_AREA,
   load,
-  reportStore,
+  areaStore,
   createId = randomUUID,
   now = () => new Date().toISOString(),
 } = {}) {
-  if (typeof load !== "function") {
-    throw new Error("load is required");
+  if (typeof load !== "function" || !areaStore) {
+    throw new Error("load and areaStore are required");
   }
-  if (!reportStore || typeof reportStore.read !== "function" || typeof reportStore.write !== "function") {
-    throw new Error("reportStore is required");
-  }
-
   let requestedArea = normalizeArea(initialArea);
   let snapshot = null;
   let actions = new Map();
+  let selectedItemId = null;
   let refreshPromise = null;
   let refreshArea = null;
-  let selectedItemId = null;
-  let selectedSavedItem = null;
-  let selectedReport = null;
-  let selectedWorkspace = null;
-  let selectionGeneration = 0;
-  let lifecycleGeneration = 0;
   let active = true;
-  let investigation = idleInvestigation();
-  let refresh = {
-    phase: "idle",
-    stale: false,
-    startedAt: null,
-    completedAt: null,
-    error: null,
-  };
+  let generation = 0;
+  let revision = 0;
+  let handoff = idleHandoff();
+  let refresh = { phase: "idle", stale: false, startedAt: null, completedAt: null, error: null };
   const listeners = new Set();
 
-  function initialize() {
-    return refreshQueue({ area: requestedArea });
-  }
-
-  function refreshQueue(input = {}) {
-    requireActive();
-    const area = normalizeArea(input.area, requestedArea);
-    if (["queued", "running"].includes(investigation.phase)) {
-      throw stateError(
-        "investigation_in_progress",
-        `Investigation for ${REPOSITORY}#${investigation.issueNumber} is already in progress.`,
-      );
-    }
-    if (refreshPromise) {
-      if (area !== refreshArea) {
-        throw stateError(
-          "refresh_in_progress",
-          `A ${refreshArea} refresh is already in progress.`,
-        );
-      }
-      return refreshPromise;
-    }
-
-    refreshArea = area;
-    const generation = ++lifecycleGeneration;
-    refresh = {
-      phase: "refreshing",
-      stale: snapshot !== null,
-      startedAt: now(),
-      completedAt: refresh.completedAt,
-      error: null,
-    };
-    publish();
-
-    refreshPromise = Promise.resolve()
-      .then(() => load({ area }))
-      .then((loaded) => {
-        requireCurrent(generation);
-        const built = createSnapshot(loaded, createId);
-        return Promise.resolve(reportStore.writeArea?.(
-          area,
-          () => active && lifecycleGeneration === generation,
-        ))
-          .then(() => {
-            requireCurrent(generation);
-            requestedArea = area;
-            snapshot = built.public;
-            actions = built.actions;
-            selectedItemId = null;
-            selectedSavedItem = null;
-            selectedReport = null;
-            selectedWorkspace = null;
-            selectionGeneration += 1;
-            investigation = idleInvestigation();
-            refresh = {
-              phase: "ready",
-              stale: false,
-              startedAt: refresh.startedAt,
-              completedAt: now(),
-              error: null,
-            };
-            publish();
-            return getState();
-          });
-      })
-      .catch((error) => {
-        if (!active || lifecycleGeneration !== generation) {
-          throw error;
-        }
-        refresh = {
-          phase: "error",
-          stale: snapshot !== null,
-          startedAt: refresh.startedAt,
-          completedAt: now(),
-          error: error.message,
-        };
-        publish();
-        throw error;
-      })
-      .finally(() => {
-        if (lifecycleGeneration === generation) {
-          refreshPromise = null;
-          refreshArea = null;
-        }
-      });
-
-    return refreshPromise;
-  }
-
-  function getState() {
-    return {
-      requestedArea,
-      areaOptions: AREA_OPTIONS,
-      refresh: { ...refresh },
-      snapshot: snapshot
-        ? {
-          schemaVersion: snapshot.schemaVersion,
-          repository: snapshot.repository,
-          area: snapshot.area,
-          areaOptions: snapshot.areaOptions,
-          generatedAt: snapshot.generatedAt,
-          predicate: snapshot.predicate,
-          coverage: snapshot.coverage,
-          totalCount: snapshot.totalCount,
-          selectedIssue: selectedSavedItem
-            ? publicItem(selectedSavedItem)
-            : selectedItemId
-              ? publicItem(actions.get(selectedItemId))
-              : null,
-          selectedReport,
-          selectedWorkspace,
-          investigation: { ...investigation },
-        }
-        : null,
-    };
-  }
-
-  function getPage(input = {}) {
-    if (!snapshot) {
-      throw stateError("queue_unavailable", "No issue queue snapshot is available.");
-    }
-    const offset = normalizeInteger(input.offset, 0, 0, snapshot.totalCount);
-    const limit = normalizePageSize(input.limit);
-    const items = snapshot.items.slice(offset, offset + limit);
-    return {
-      area: snapshot.area,
-      generatedAt: snapshot.generatedAt,
-      complete: snapshot.coverage.complete,
-      total: snapshot.totalCount,
-      offset,
-      limit,
-      nextOffset: offset + items.length < snapshot.totalCount
-        ? offset + items.length
-        : null,
-      items,
-    };
-  }
-
-  async function select(input) {
-    requireActive();
-    const item = resolveItem(input?.itemId);
-    const generation = ++selectionGeneration;
-    selectedItemId = item.id;
-    selectedSavedItem = null;
-    selectedReport = null;
-    selectedWorkspace = null;
-    const report = await reportStore.read(item.number);
-    const workspace = report
-      ? await (reportStore.seedWorkspace
-        ? reportStore.seedWorkspace(report)
-        : reportStore.readWorkspace?.(item.number))
-      : await reportStore.readWorkspace?.(item.number);
-    if (active && selectedItemId === item.id && selectionGeneration === generation) {
-      selectedReport = report;
-      selectedWorkspace = workspace ?? null;
-      publish();
-    }
-    return getState();
-  }
-
-  async function selectSaved(input) {
-    requireActive();
-    const item = validateSavedItem(input);
-    const generation = ++selectionGeneration;
-    selectedItemId = item.id;
-    selectedSavedItem = item;
-    selectedReport = null;
-    selectedWorkspace = null;
-    const report = await reportStore.read(item.number);
-    const workspace = await reportStore.readWorkspace?.(item.number);
-    if (!workspace) {
-      throw stateError("workspace_not_found", "No saved investigation workspace exists for this issue.");
-    }
-    if (active && selectedItemId === item.id && selectionGeneration === generation) {
-      selectedReport = report;
-      selectedWorkspace = workspace;
-      publish();
-    }
-    return getState();
-  }
-
-  function queueInvestigation(input) {
-    requireActive();
-    if (refreshPromise) {
-      throw stateError(
-        "refresh_in_progress",
-        `A ${refreshArea} refresh is already in progress.`,
-      );
-    }
-    const item = resolveItem(input?.itemId);
-    if (["queued", "running"].includes(investigation.phase)) {
-      throw stateError(
-        "investigation_in_progress",
-        `Investigation for ${REPOSITORY}#${investigation.issueNumber} is already in progress.`,
-      );
-    }
-    selectionGeneration += 1;
-    selectedItemId = item.id;
-    selectedReport = null;
-    investigation = {
-      phase: "queued",
-      issueNumber: item.number,
-      itemId: item.id,
-      area: item.area,
-      queuedAt: now(),
-      startedAt: null,
-      completedAt: null,
-      error: null,
-    };
-    publish();
-    return {
-      job: {
-        itemId: item.id,
-        issueNumber: item.number,
-        area: item.area,
-        queuedAt: investigation.queuedAt,
-      },
-      state: getState(),
-    };
-  }
-
-  function beginInvestigation(job) {
-    requireActive();
-    const item = resolveJob(job);
-    investigation = {
-      ...investigation,
-      phase: "running",
-      startedAt: now(),
-      error: null,
-    };
-    publish();
-    return item;
-  }
-
-  async function completeInvestigation(job, report) {
-    requireActive();
-    resolveJob(job);
-    const generation = lifecycleGeneration;
-    const storedReport = await reportStore.write(
-      report,
-      () => active && lifecycleGeneration === generation,
-    );
-    requireCurrent(generation);
-    const workspace = reportStore.seedWorkspace
-      ? await reportStore.seedWorkspace(storedReport)
-      : await reportStore.readWorkspace?.(storedReport.issueNumber);
-    if (selectedItemId === job.itemId) {
-      selectionGeneration += 1;
-      selectedReport = storedReport;
-      selectedWorkspace = workspace ?? null;
-    }
-    investigation = {
-      ...investigation,
-      phase: "complete",
-      completedAt: now(),
-      error: null,
-    };
-    publish();
-    return getState();
-  }
-
-  function failInvestigation(job, error) {
-    if (!active) {
-      return getState();
-    }
-    if (
-      investigation.itemId !== job.itemId
-      || investigation.issueNumber !== job.issueNumber
-      || investigation.area !== job.area
-    ) {
-      return getState();
-    }
-    investigation = {
-      ...investigation,
-      phase: "error",
-      completedAt: now(),
-      error: error.message,
-    };
-    publish();
-    return getState();
-  }
-
-  async function saveDraft(input = {}) {
-    requireActive();
-    const item = resolveSelectedItem();
-    if (input.issueNumber !== undefined && input.issueNumber !== item.number) {
-      throw stateError("stale_selection", "The selected issue changed before the draft was saved.");
-    }
-    const workspace = await reportStore.saveDraft(
-      item.number,
-      input.content,
-      input.revision,
-      input.provenance ?? "human",
-    );
-    if (selectedItemId === item.id) {
-      selectedWorkspace = workspace;
-      publish();
-    }
-    return getState();
-  }
-
-  async function undoDraft(input = {}) {
-    requireActive();
-    const item = resolveSelectedItem();
-    if (input.issueNumber !== undefined && input.issueNumber !== item.number) {
-      throw stateError("stale_selection", "The selected issue changed before the draft was undone.");
-    }
-    const workspace = await reportStore.undoDraft(item.number, input.revision);
-    if (selectedItemId === item.id) {
-      selectedWorkspace = workspace;
-      publish();
-    }
-    return getState();
-  }
-
-  function resolveJob(job) {
-    if (
-      !job
-      || investigation.itemId !== job.itemId
-      || investigation.issueNumber !== job.issueNumber
-      || investigation.area !== job.area
-    ) {
-      throw stateError("stale_selection", "The queued issue selection is stale.");
-    }
-    return resolveItem(job.itemId);
-  }
-
-  function resolveItem(itemId) {
-    if (typeof itemId !== "string" || !/^[A-Za-z0-9-]{16,64}$/.test(itemId)) {
-      throw stateError("invalid_selection", "itemId is invalid.");
-    }
-    const item = actions.get(itemId);
-    if (!item) {
-      throw stateError("stale_selection", "The selected issue is stale. Refresh and try again.");
-    }
-    return item;
-  }
-
-  function subscribe(listener) {
-    requireActive();
-    listeners.add(listener);
-    return () => listeners.delete(listener);
-  }
-
   function publish() {
-    if (!active) {
-      return;
+    if (active) {
+      revision++;
+      for (const listener of listeners) {
+        listener(getState());
+      }
     }
-    const state = getState();
-    for (const listener of listeners) {
-      listener(state);
-    }
-  }
-
-  function dispose() {
-    if (!active) {
-      return;
-    }
-    active = false;
-    lifecycleGeneration += 1;
-    selectionGeneration += 1;
-    listeners.clear();
   }
 
   function requireActive() {
@@ -410,87 +39,191 @@ export function createTriageController({
     }
   }
 
-  function requireCurrent(generation) {
-    if (!active || lifecycleGeneration !== generation) {
-      throw stateError("controller_disposed", "The issue triage instance is closed.");
+  function requireNotRefreshing() {
+    requireActive();
+    if (refreshPromise) {
+      throw stateError("refresh_in_progress", `A ${refreshArea} refresh is already in progress.`);
     }
+  }
+
+  function refreshQueue({ area = requestedArea } = {}) {
+    requireActive();
+    area = normalizeArea(area);
+    if (refreshPromise) {
+      if (refreshArea !== area) {
+        throw stateError("refresh_in_progress", `A ${refreshArea} refresh is already in progress.`);
+      }
+      return refreshPromise;
+    }
+    const requestGeneration = ++generation;
+    const isCurrent = () => active && generation === requestGeneration;
+    refreshArea = area;
+    handoff = idleHandoff();
+    refresh = { ...refresh, phase: "refreshing", stale: snapshot !== null, startedAt: now(), error: null };
+    // Defer the loader until the promise is assigned, including synchronous failures.
+    const pending = Promise.resolve().then(() => load({ area })).then(async (queue) => {
+      if (!isCurrent()) {
+        throw stateError("controller_disposed", "The issue triage refresh is no longer active.");
+      }
+      if (queue.area !== area) {
+        throw stateError("queue_invalid", "The loaded queue does not match the requested area.");
+      }
+      const built = createSnapshot(queue, createId);
+      await areaStore.writeArea(area, isCurrent);
+      if (!isCurrent()) {
+        throw stateError("controller_disposed", "The issue triage refresh is no longer active.");
+      }
+      requestedArea = area;
+      snapshot = built.public;
+      actions = built.actions;
+      selectedItemId = null;
+      refresh = { ...refresh, phase: "ready", stale: false, completedAt: now(), error: null };
+      publish();
+      return getState();
+    }).catch((error) => {
+      if (isCurrent()) {
+        refresh = { ...refresh, phase: "error", stale: snapshot !== null, completedAt: now(), error: error.message };
+        publish();
+      }
+      throw error;
+    }).finally(() => {
+      if (refreshPromise === pending) {
+        refreshPromise = null;
+        refreshArea = null;
+      }
+    });
+    refreshPromise = pending;
+    publish();
+    return pending;
+  }
+
+  function select({ itemId } = {}) {
+    requireNotRefreshing();
+    const item = resolve(itemId);
+    generation++;
+    selectedItemId = item.id;
+    handoff = idleHandoff();
+    publish();
+    return getState();
+  }
+
+  async function investigate({ itemId } = {}, dispatch) {
+    requireNotRefreshing();
+    if (handoff.phase === "sending") {
+      throw stateError("handoff_in_progress", "An issue-session request is already being sent.");
+    }
+    const item = resolve(itemId);
+    selectedItemId = item.id;
+    const requestGeneration = ++generation;
+    const isCurrent = () => active && generation === requestGeneration && selectedItemId === item.id;
+    handoff = { phase: "sending", issueNumber: item.number, itemId: item.id, queued: null, messageId: null, error: null };
+    publish();
+    try {
+      const result = await dispatch(item, isCurrent);
+      if (isCurrent()) {
+        handoff = { ...handoff, phase: result.status, queued: result.queued, messageId: result.messageId, error: result.error ?? null };
+        publish();
+      }
+    } catch (error) {
+      if (isCurrent()) {
+        handoff = { ...handoff, phase: "failed", error: error.message };
+        publish();
+      }
+      throw error;
+    }
+    return getState();
+  }
+
+  function getPage({ offset = 0, limit = 50 } = {}) {
+    requireActive();
+    if (!snapshot) {
+      throw stateError("queue_unavailable", "No issue queue snapshot is available.");
+    }
+    if (!Number.isSafeInteger(offset) || offset < 0 || ![25, 50, 100].includes(limit)) {
+      throw stateError("invalid_page", "Page offset or limit is invalid.");
+    }
+    offset = Math.min(offset, snapshot.items.length);
+    const items = snapshot.items.slice(offset, offset + limit).map(publicItem);
+    return {
+      snapshotId: snapshot.id,
+      area: snapshot.area,
+      total: snapshot.items.length,
+      offset,
+      limit,
+      nextOffset: offset + items.length < snapshot.items.length ? offset + items.length : null,
+      items,
+    };
+  }
+
+  function getState() {
+    const { items, ...metadata } = snapshot ?? {};
+    return {
+      revision,
+      requestedArea,
+      areaOptions: AREA_OPTIONS,
+      refresh: { ...refresh },
+      snapshot: snapshot && {
+        ...metadata,
+        selectedIssue: selectedItemId ? publicItem(actions.get(selectedItemId)) : null,
+        handoff: { ...handoff },
+      },
+    };
+  }
+
+  function resolve(itemId) {
+    requireActive();
+    const item = actions.get(itemId);
+    if (!item) {
+      throw stateError("stale_selection", "The selected issue is stale. Refresh and try again.");
+    }
+    return item;
   }
 
   return {
-    beginInvestigation,
-    completeInvestigation,
-    dispose,
-    failInvestigation,
+    initialize: refreshQueue,
+    refresh: refreshQueue,
+    select,
+    investigate,
     getPage,
     getState,
-    initialize,
-    queueInvestigation,
-    refresh: refreshQueue,
-    saveDraft,
-    select,
-    selectSaved,
-    subscribe,
-    undoDraft,
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    dispose() {
+      active = false;
+      generation++;
+      listeners.clear();
+    },
   };
-
-  function resolveSelectedItem() {
-    if (!selectedItemId) {
-      throw stateError("issue_not_selected", "Select an issue before editing its investigation.");
-    }
-    return selectedSavedItem?.id === selectedItemId
-      ? selectedSavedItem
-      : resolveItem(selectedItemId);
-  }
-
-  function validateSavedItem(item) {
-    if (
-      !item
-      || item.repository !== REPOSITORY
-      || typeof item.id !== "string"
-      || !/^saved-[1-9][0-9]*$/.test(item.id)
-      || !Number.isSafeInteger(item.number)
-      || item.number < 1
-      || item.url !== `https://github.com/${REPOSITORY}/issues/${item.number}`
-      || item.saved !== true
-    ) {
-      throw stateError("saved_issue_invalid", "The saved issue identity is invalid.");
-    }
-    return {
-      ...item,
-      labels: Array.isArray(item.labels) ? [...item.labels] : [],
-      whyIncluded: ["Saved local investigation workspace; queue membership is not asserted."],
-    };
-  }
 }
 
 export function createSnapshot(queue, createId = randomUUID) {
-  validateQueue(queue);
+  if (!queue || queue.schemaVersion !== "1.0.0" || queue.repository !== REPOSITORY
+    || !Array.isArray(queue.issues) || !queue.coverage) {
+    throw stateError("queue_invalid", "Issue queue has an invalid shape.");
+  }
+  const area = normalizeArea(queue.area);
   const actions = new Map();
   const items = queue.issues.map((issue) => {
-    const id = createId();
-    const item = {
-      id,
-      repository: REPOSITORY,
-      number: issue.number,
-      title: issue.title,
-      url: issue.url,
-      author: issue.author,
-      createdAt: issue.createdAt,
-      updatedAt: issue.updatedAt,
-      labels: [...issue.labels],
-      area: queue.area,
-      whyIncluded: [...issue.whyIncluded],
-    };
-    actions.set(id, item);
+    if (!Number.isSafeInteger(issue.number) || issue.number < 1
+      || issue.url !== `https://github.com/${REPOSITORY}/issues/${issue.number}`
+      || !Array.isArray(issue.labels) || !Array.isArray(issue.whyIncluded)) {
+      throw stateError("queue_invalid", "Issue queue contains an invalid issue.");
+    }
+    const item = { ...issue, id: createId(), repository: REPOSITORY, area };
+    if (actions.has(item.id)) {
+      throw stateError("queue_invalid", "Issue identifiers must be unique.");
+    }
+    actions.set(item.id, item);
     return publicItem(item);
   });
   return {
     actions,
     public: {
-      schemaVersion: queue.schemaVersion,
-      repository: queue.repository,
-      area: queue.area,
-      areaOptions: queue.areaOptions,
+      id: randomUUID(),
+      repository: REPOSITORY,
+      area,
       generatedAt: queue.generatedAt,
       predicate: queue.predicate,
       coverage: queue.coverage,
@@ -501,93 +234,17 @@ export function createSnapshot(queue, createId = randomUUID) {
 }
 
 export function summarizeState(state) {
-  if (!state?.snapshot) {
-    return {
-      requestedArea: state?.requestedArea ?? DEFAULT_AREA,
-      areaOptions: state?.areaOptions ?? AREA_OPTIONS,
-      refresh: state?.refresh ?? null,
-      snapshot: null,
-    };
-  }
-  return {
-    requestedArea: state.requestedArea,
-    areaOptions: state.areaOptions,
-    refresh: state.refresh,
-    snapshot: {
-      repository: state.snapshot.repository,
-      area: state.snapshot.area,
-      generatedAt: state.snapshot.generatedAt,
-      predicate: state.snapshot.predicate,
-      coverage: state.snapshot.coverage,
-      totalCount: state.snapshot.totalCount,
-      selectedIssue: state.snapshot.selectedIssue,
-      selectedReport: state.snapshot.selectedReport,
-      selectedWorkspace: state.snapshot.selectedWorkspace,
-      investigation: state.snapshot.investigation,
-    },
-  };
-}
-
-function validateQueue(queue) {
-  if (
-    !queue
-    || queue.schemaVersion !== "1.0.0"
-    || queue.repository !== REPOSITORY
-    || typeof queue.generatedAt !== "string"
-    || !Array.isArray(queue.issues)
-    || !queue.coverage
-  ) {
-    throw stateError("queue_invalid", "Issue queue has an invalid shape.");
-  }
-  normalizeArea(queue.area);
+  return state;
 }
 
 function publicItem(item) {
-  if (!item) {
-    return null;
-  }
-  return {
-    id: item.id,
-    number: item.number,
-    title: item.title,
-    url: item.url,
-    author: item.author,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-    labels: [...item.labels],
-    area: item.area,
-    whyIncluded: [...item.whyIncluded],
-  };
+  return item && { ...item, labels: [...item.labels], whyIncluded: [...item.whyIncluded] };
 }
 
-function idleInvestigation() {
-  return {
-    phase: "idle",
-    issueNumber: null,
-    itemId: null,
-    area: null,
-    queuedAt: null,
-    startedAt: null,
-    completedAt: null,
-    error: null,
-  };
-}
-
-function normalizeInteger(value, fallback, min, max) {
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed)) {
-    return fallback;
-  }
-  return Math.max(min, Math.min(max, parsed));
-}
-
-function normalizePageSize(value) {
-  const parsed = Number(value);
-  return PAGE_SIZES.includes(parsed) ? parsed : 50;
+function idleHandoff() {
+  return { phase: "idle", issueNumber: null, itemId: null, queued: null, messageId: null, error: null };
 }
 
 function stateError(code, message) {
-  const error = new Error(message);
-  error.code = code;
-  return error;
+  return Object.assign(new Error(message), { code });
 }
