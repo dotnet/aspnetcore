@@ -437,50 +437,7 @@ public class ComponentBaseTest
     }
 
     [Fact]
-    public void ErrorBoundaryStaysInErrorStateAfterChildRenderException()
-    {
-        var renderer = new TestRenderer();
-        TestErrorBoundary capturedBoundary = null;
-        var shouldThrow = true;
-
-        var rootComponent = new TestComponent();
-        rootComponent.ChildContent = builder =>
-        {
-            builder.OpenComponent<TestErrorBoundary>(0);
-            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
-            {
-                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
-                builder2.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), shouldThrow);
-                builder2.CloseComponent();
-            }));
-            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
-            builder.CloseComponent();
-        };
-
-        var rootId = renderer.AssignRootComponentId(rootComponent);
-        renderer.RenderRootComponent(rootId);
-
-        Assert.NotNull(capturedBoundary);
-        Assert.NotNull(capturedBoundary!.ReceivedException);
-
-        var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
-        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
-        Assert.True(frames.Count > 0);
-        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
-        Assert.Equal("div", frames.Array[0].ElementName);
-
-        shouldThrow = false;
-        renderer.RenderRootComponent(rootId);
-
-        Assert.NotNull(capturedBoundary!.ReceivedException);
-        frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
-        Assert.True(frames.Count > 0);
-        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
-        Assert.Equal("div", frames.Array[0].ElementName);
-    }
-
-    [Fact]
-    public void ErrorBoundaryStaysInErrorStateWhenMultipleChildrenThrowInSameBatch()
+    public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowDuringInitialization()
     {
         var renderer = new TestRenderer();
         TestErrorBoundary capturedBoundary = null;
@@ -489,86 +446,31 @@ public class ComponentBaseTest
         rootComponent.ChildContent = builder =>
         {
             builder.OpenComponent<TestErrorBoundary>(0);
-            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
             {
-                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
-                builder2.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                builder2.CloseComponent();
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowOnInitialized), true);
+                childBuilder.CloseComponent();
 
-                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(3);
-                builder2.AddComponentParameter(4, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                builder2.CloseComponent();
-
-                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(5);
-                builder2.AddComponentParameter(6, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                builder2.CloseComponent();
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(2);
+                childBuilder.AddComponentParameter(3, nameof(TestComponentErrorBuildRenderTree.ThrowOnInitialized), true);
+                childBuilder.CloseComponent();
             }));
-            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
+            builder.AddComponentReferenceCapture(2, instance => capturedBoundary = (TestErrorBoundary)instance);
             builder.CloseComponent();
         };
 
-        var rootId = renderer.AssignRootComponentId(rootComponent);
-        renderer.RenderRootComponent(rootId);
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
 
         Assert.NotNull(capturedBoundary);
-        Assert.NotNull(capturedBoundary!.ReceivedException);
+        Assert.Equal(2, capturedBoundary!.ExceptionCount);
 
         var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
         var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
         Assert.True(frames.Count > 0);
         Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
         Assert.Equal("div", frames.Array[0].ElementName);
-    }
-
-    [Fact]
-    public void NestedErrorBoundaryDoesNotPreventOuterBoundaryFromRenderingErrorContent()
-    {
-        var renderer = new TestRenderer();
-        TestErrorBoundary capturedOuterBoundary = null;
-        TestErrorBoundary capturedInnerBoundary = null;
-
-        var rootComponent = new TestComponent();
-        rootComponent.ChildContent = builder =>
-        {
-            builder.OpenComponent<TestErrorBoundary>(0);
-            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(outerChildBuilder =>
-            {
-                outerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
-                outerChildBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                outerChildBuilder.CloseComponent();
-
-                outerChildBuilder.OpenComponent<TestErrorBoundary>(2);
-                outerChildBuilder.AddComponentParameter(3, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(innerChildBuilder =>
-                {
-                    innerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
-                    innerChildBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                    innerChildBuilder.CloseComponent();
-                }));
-                outerChildBuilder.AddComponentReferenceCapture(4, obj => capturedInnerBoundary = (TestErrorBoundary)obj);
-                outerChildBuilder.CloseComponent();
-
-                outerChildBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(5);
-                outerChildBuilder.AddComponentParameter(6, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
-                outerChildBuilder.CloseComponent();
-            }));
-            builder.AddComponentReferenceCapture(2, obj => capturedOuterBoundary = (TestErrorBoundary)obj);
-            builder.CloseComponent();
-        };
-
-        var rootId = renderer.AssignRootComponentId(rootComponent);
-        renderer.RenderRootComponent(rootId);
-
-        Assert.NotNull(capturedOuterBoundary);
-        Assert.NotNull(capturedInnerBoundary);
-        Assert.NotNull(capturedOuterBoundary!.ReceivedException);
-
-        var outerBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>()
-            .Single(frame => ReferenceEquals(frame.Component, capturedOuterBoundary))
-            .ComponentId;
-        var outerFrames = renderer.GetCurrentRenderTreeFrames(outerBoundaryId);
-        Assert.True(outerFrames.Count > 0);
-        Assert.Equal(RenderTree.RenderTreeFrameType.Element, outerFrames.Array[0].FrameType);
-        Assert.Equal("div", outerFrames.Array[0].ElementName);
     }
 
     [Fact]
@@ -838,9 +740,11 @@ public class ComponentBaseTest
     private class TestErrorBoundary : ErrorBoundaryBase
     {
         public Exception ReceivedException => CurrentException;
+        public int ExceptionCount { get; private set; }
 
         protected override Task OnErrorAsync(Exception exception)
         {
+            ExceptionCount++;
             return Task.CompletedTask;
         }
 
@@ -861,9 +765,9 @@ public class ComponentBaseTest
 
     private class TestComponentErrorBuildRenderTree : ComponentBase
     {
+        [Parameter] public bool ThrowOnInitialized { get; set; } = false;
         [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
         [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
-        [Parameter] public bool ThrowDuringRender { get; set; } = false;
 
         public int StateHasChangedCalled { get; set; } = 0;
 
@@ -873,11 +777,11 @@ public class ComponentBaseTest
             base.StateHasChanged();
         }
 
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        protected override void OnInitialized()
         {
-            if (ThrowDuringRender)
+            if (ThrowOnInitialized)
             {
-                throw new InvalidOperationException("Error in BuildRenderTree");
+                throw new InvalidOperationException("Error in OnInitialized");
             }
         }
 

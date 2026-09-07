@@ -143,10 +143,9 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         }
     }
 
-    // Called by the renderer when it queues a render for this component on the component's behalf
-    // (currently only the empty render that discards a failed ErrorBoundary subtree). That render
-    // supersedes whatever this component had queued, so the coalescing guard has to be released or
-    // the component's own next StateHasChanged would be silently dropped.
+    /// <summary>
+    /// Notifies the component that its pending render has been superseded, allowing another render to be queued.
+    /// </summary>
     internal void NotifyQueuedRenderSuperseded()
         => _hasPendingQueuedRender = false;
 
