@@ -7,7 +7,11 @@ test("selection and handoff use server-owned queue items", async () => {
   const controller = createTriageController({ load: async () => queue, areaStore: { writeArea: async () => {} }, createId: () => "01234567-0123-4012-8012-0123456789ab" });
   await controller.initialize();
   const id = controller.getPage({ offset: 0, limit: 25 }).items[0].id;
-  await controller.investigate({ itemId: id }, async () => ({ status: "sent", queued: false, messageId: "message" }));
+  await controller.investigate({ itemId: id, destination: "current" }, async (item, destination) => {
+    assert.equal(item.number, 123);
+    assert.equal(destination, "current");
+    return { status: "sent", queued: false, messageId: "message" };
+  });
   assert.equal(controller.getState().snapshot.handoff.phase, "sent");
   assert.throws(() => controller.select({ itemId: "attacker-controlled" }), { code: "stale_selection" });
 });

@@ -24,6 +24,15 @@ const selectionSchema = {
   required: ["itemId"],
   additionalProperties: false,
 };
+const investigationSchema = {
+  type: "object",
+  properties: {
+    itemId: { type: "string", pattern: "^[A-Za-z0-9-]{16,64}$" },
+    destination: { type: "string", enum: ["current", "new-child"] },
+  },
+  required: ["itemId", "destination"],
+  additionalProperties: false,
+};
 
 function actionHandler(operation) {
   return async (ctx) => {
@@ -40,7 +49,7 @@ const session = await joinSession({
     createCanvas({
       id: "aspnetcore-issue-triage",
       displayName: "ASP.NET Core Issue Triage",
-      description: "Browse public ASP.NET Core area queues and request issue-session research.",
+      description: "Browse public ASP.NET Core area queues and request research here or in a new child session.",
       inputSchema: {
         type: "object",
         properties: { area: areaSchema },
@@ -86,8 +95,8 @@ const session = await joinSession({
         },
         {
           name: "investigate",
-          description: "Send a request to the foreground agent to open a research-only issue session.",
-          inputSchema: selectionSchema,
+          description: "Request read-only research in the current session or a fresh nested child session.",
+          inputSchema: investigationSchema,
           handler: actionHandler(investigateInstanceIssue),
         },
       ],

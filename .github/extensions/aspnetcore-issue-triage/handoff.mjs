@@ -5,22 +5,36 @@ import { EXCLUDED_LABELS, REPOSITORY } from "./taxonomy.mjs";
 
 const execFileAsync = promisify(execFile);
 
-export function buildIssueSessionPrompt(issueNumber) {
+export function buildIssueSessionPrompt(issueNumber, destination) {
   if (!Number.isSafeInteger(issueNumber) || issueNumber < 1) {
     throw handoffError("invalid_issue", "issueNumber must be a positive integer.");
   }
 
   const issueUrl = `https://github.com/${REPOSITORY}/issues/${issueNumber}`;
-  return `Open an issue session for the canonical public issue ${REPOSITORY}#${issueNumber}.
+  const research = `Use the repository's \`investigate-issue\` skill to research exactly ${REPOSITORY}#${issueNumber} (${issueUrl}). First confirm that the skill is available in this session. If it is unavailable, stop and explain that prerequisite in chat; do not substitute a generic investigation. Otherwise follow that skill using live public evidence only. Do not implement changes, execute reporter projects, build reproductions, launch browsers, retrieve private material, publish findings, or mutate GitHub issue state. Leave advisory findings and follow-up in this conversation, not the canvas.`;
+  if (destination === "current") {
+    return `Research the canonical public issue ${REPOSITORY}#${issueNumber} here in this foreground session. Do not open or create another session for this request.
 
-Use the open_issue_session tool with exactly:
-- repo_full_name: "${REPOSITORY}"
-- issue_number: ${issueNumber}
+${research}`;
+  }
+  if (destination !== "new-child") {
+    throw handoffError("invalid_destination", "Investigation destination is invalid.");
+  }
+  return `Create a fresh nested project session for the canonical public issue ${REPOSITORY}#${issueNumber}.
+
+Use the create_session tool with exactly:
+- no project_id
+- workspace_type: "worktree"
+- detached: false
 - coordinate_with_creator: false
 - kickoff: { mode: "interactive", prompt: <the kickoff text below> }
 
+Use the current ${REPOSITORY} project. Omit base-branch and model overrides.
+Create a new child nested under this session; do not reuse or fork an existing session.
+If session creation is unavailable, explain that in chat rather than researching here.
+
 Kickoff text:
-Use the repository's \`investigate-issue\` skill to research exactly ${REPOSITORY}#${issueNumber} (${issueUrl}). First confirm that the skill is available in this issue session. If it is unavailable, stop and explain that prerequisite in chat; do not substitute a generic investigation. Otherwise follow that skill using live public evidence only. Do not implement changes, execute reporter projects, build reproductions, launch browsers, retrieve private material, publish findings, or mutate GitHub issue state. Leave the advisory findings and any follow-up in this issue session.`;
+${research}`;
 }
 
 export function createForegroundHandoff({ send, log = null, isBusy = () => null, readIssue = readCanonicalIssue } = {}) {
@@ -31,9 +45,12 @@ export function createForegroundHandoff({ send, log = null, isBusy = () => null,
   let inFlight = 0;
 
   return {
-    async dispatch(item, isCurrent = () => true) {
+    async dispatch(item, destination, isCurrent = () => true) {
+      if (!["current", "new-child"].includes(destination)) {
+        throw handoffError("invalid_destination", "Investigation destination is invalid.");
+      }
       if (inFlight !== 0) {
-        throw handoffError("handoff_in_progress", "An issue-session request is already being sent.");
+        throw handoffError("handoff_in_progress", "An investigation request is already being sent.");
       }
       inFlight += 1;
       let queued = null;
@@ -44,16 +61,17 @@ export function createForegroundHandoff({ send, log = null, isBusy = () => null,
         }
         queued = isBusy();
         try {
-          await log?.(`Requested issue session for ${REPOSITORY}#${item.number}${queued ? " (queued behind the current task)" : ""}.`);
+          await log?.(`Requested ${destination} investigation for ${REPOSITORY}#${item.number}${queued ? " (queued behind the current task)" : ""}.`);
         } catch {
           // The timeline breadcrumb is cosmetic; dispatch remains authoritative.
         }
         if (!isCurrent()) {
           return { status: "cancelled", queued, messageId: null };
         }
+        const prompt = buildIssueSessionPrompt(item.number, destination);
         let messageId;
         try {
-          messageId = await send({ prompt: buildIssueSessionPrompt(item.number) });
+          messageId = await send({ prompt });
         } catch (error) {
           return { status: "unknown", queued, messageId: null, error: error?.message ?? "Issue-session delivery could not be confirmed." };
         }

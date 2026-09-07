@@ -103,7 +103,7 @@ export function selectInstanceIssue(instanceId, input) {
 }
 
 export function investigateInstanceIssue(instanceId, input) {
-  return requireInstance(instanceId).controller.investigate(parseItemRequest(input), handoff.dispatch);
+  return requireInstance(instanceId).controller.investigate(parseItemRequest(input, true), handoff.dispatch);
 }
 
 async function handleRequest(entry, request, response) {
@@ -145,7 +145,7 @@ async function handleRequest(entry, request, response) {
       return send(response, 200, state);
     }
     if (request.method === "POST" && url.pathname === "/api/investigate") {
-      const state = await entry.controller.investigate(parseItemRequest(await readJsonBody(request)), handoff.dispatch);
+      const state = await entry.controller.investigate(parseItemRequest(await readJsonBody(request), true), handoff.dispatch);
       return send(response, 202, state);
     }
     return send(response, 404, { code: "not_found", error: "Not found." });
@@ -171,12 +171,15 @@ export function parseRefreshRequest(body) {
   return { area: normalizeArea(body.area) };
 }
 
-export function parseItemRequest(body) {
-  requireKeys(body, ["itemId"], "invalid_selection");
+export function parseItemRequest(body, withDestination = false) {
+  requireKeys(body, withDestination ? ["destination", "itemId"] : ["itemId"], "invalid_selection");
   if (typeof body.itemId !== "string" || !/^[A-Za-z0-9-]{16,64}$/.test(body.itemId)) {
     throw serverError("invalid_selection", "itemId is invalid.");
   }
-  return { itemId: body.itemId };
+  if (withDestination && !["current", "new-child"].includes(body.destination)) {
+    throw serverError("invalid_destination", "Investigation destination is invalid.");
+  }
+  return withDestination ? { itemId: body.itemId, destination: body.destination } : { itemId: body.itemId };
 }
 
 export function parsePageRequest(params) {

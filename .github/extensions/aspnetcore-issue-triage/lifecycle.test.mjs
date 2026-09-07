@@ -87,8 +87,9 @@ test("unknown send outcome remains unknown in controller state", async () => {
   });
   const controller = createTriageController({ load: async () => queue(), areaStore: store() });
   await controller.initialize();
-  await controller.investigate({ itemId: controller.getPage().items[0].id }, launch.dispatch);
+  await controller.investigate({ itemId: controller.getPage().items[0].id, destination: "current" }, launch.dispatch);
   assert.equal(controller.getState().snapshot.handoff.phase, "unknown");
+  assert.equal(controller.getState().snapshot.handoff.destination, "current");
 });
 
 test("selection change cancels a pending canonical read without sending", async () => {
@@ -110,7 +111,7 @@ test("selection change cancels a pending canonical read without sending", async 
   const controller = createTriageController({ load: async () => queue("area-blazor", 2), areaStore: store() });
   await controller.initialize();
   const [first, second] = controller.getPage().items;
-  const pending = controller.investigate({ itemId: first.id }, launch.dispatch);
+  const pending = controller.investigate({ itemId: first.id, destination: "new-child" }, launch.dispatch);
   await entered.promise;
   controller.select({ itemId: second.id });
   release.resolve();
@@ -126,17 +127,19 @@ test("late sent receipt cannot attach to a different selected issue", async () =
   const controller = createTriageController({ load: async () => queue("area-blazor", 2), areaStore: store() });
   await controller.initialize();
   const [first, second] = controller.getPage().items;
-  const pending = controller.investigate({ itemId: first.id }, async () => {
+  const pending = controller.investigate({ itemId: first.id, destination: "new-child" }, async () => {
     entered.resolve();
     await release.promise;
     return { status: "sent", messageId: "receipt", queued: null };
   });
   await entered.promise;
+  assert.equal(controller.getState().snapshot.handoff.destination, "new-child");
   controller.select({ itemId: second.id });
   release.resolve();
   await pending;
   assert.equal(controller.getState().snapshot.selectedIssue.number, 2);
   assert.equal(controller.getState().snapshot.handoff.phase, "idle");
+  assert.equal(controller.getState().snapshot.handoff.destination, null);
 });
 
 test("stopping during initialization cannot resurrect a closed panel", async () => {
@@ -221,17 +224,30 @@ test("real HTTP handoff, retired routes, SSE, and repeated lifecycle", { timeout
     const page = await (await fetch(pageUrl)).json();
     assert.equal(page.snapshotId, state.snapshot.id);
     const itemId = page.items[0].id;
-    const receipt = await request("/api/investigate", { itemId });
-    assert.equal(receipt.status, 202);
-    assert.equal((await receipt.json()).snapshot.handoff.phase, "sent");
-    assert.equal(prompts.length, 1);
-    assert.match(prompts[0], /open_issue_session/);
-    assert.doesNotMatch(prompts[0], /Untrusted issue|model:/);
+    for (const body of [{ itemId }, { itemId, destination: "reuse" }, { itemId, destination: "current", issueNumber: 9 }]) {
+      assert.equal((await request("/api/investigate", body)).status, 400);
+    }
+    assert.equal(prompts.length, 0);
+    for (const destination of ["current", "new-child"]) {
+      const receipt = await request("/api/investigate", { itemId, destination });
+      assert.equal(receipt.status, 202);
+      const handoff = (await receipt.json()).snapshot.handoff;
+      assert.equal(handoff.phase, "sent");
+      assert.equal(handoff.destination, destination);
+    }
+    assert.equal(prompts.length, 2);
+    assert.match(prompts[0], /here in this foreground session/);
+    assert.doesNotMatch(prompts[0], /create_session|open_issue_session/);
+    assert.match(prompts[1], /create_session/);
+    assert.match(prompts[1], /detached: false/);
+    for (const prompt of prompts) {
+      assert.doesNotMatch(prompt, /Untrusted issue|model:|open_issue_session/);
+    }
     for (const path of ["draft", "undo", "discuss", "preview", "publish", "resolve-publication", "select-saved"]) {
       assert.equal((await request(`/api/${path}`, {})).status, 404, path);
     }
     assert.equal((await request("/api/saved")).status, 404);
-    assert.equal(prompts.length, 1);
+    assert.equal(prompts.length, 2);
     assert.equal((await fetch(new URL("/api/state", entry.url))).status, 403);
   } finally {
     await stopInstance("http-test");

@@ -177,7 +177,8 @@ function initializeCanvas() {
     const handoff = state.meta?.snapshot?.handoff;
     const link = element("issue-link");
     link.hidden = !issue;
-    element("investigate").hidden = !issue;
+    element("investigate-current").hidden = !issue;
+    element("investigate-child").hidden = !issue;
     if (!issue) {
       text("why", "Select one issue to request research.");
       text("labels", "");
@@ -188,28 +189,37 @@ function initializeCanvas() {
     link.textContent = "#" + issue.number + " - " + issue.title;
     text("why", "Why included: " + issue.whyIncluded.join("; "));
     text("labels", issue.labels.join(", "));
-    element("investigate").disabled = state.pendingLaunch !== null
+    element("investigate-current").disabled = state.pendingLaunch !== null
       || state.pendingAction !== null || state.meta.refresh.phase === "refreshing"
       || handoff.phase === "sending";
-    element("investigate").textContent = ["sent", "unknown"].includes(handoff.phase)
-      ? "Send request again" : "Investigate in issue session";
+    element("investigate-child").disabled = element("investigate-current").disabled;
+    const repeat = ["sent", "unknown"].includes(handoff.phase);
+    text("investigate-current", repeat && handoff.destination === "current"
+      ? "Investigate here again" : "Investigate here");
+    text("investigate-child", repeat && handoff.destination === "new-child"
+      ? "Investigate in new child session again" : "Investigate in new child session");
+    const destination = handoff.destination === "current" ? "this session" : "a new child session";
     text("handoff", handoff.phase === "sent"
-      ? "Request sent to chat." + (handoff.queued === true ? " Queued behind the current task." : "")
-        + " Open the issue session from chat; results stay there."
+      ? "Request sent to chat for " + destination + "."
+        + (handoff.queued === true ? " Queued behind the current task." : "")
+        + (handoff.destination === "current" ? " Findings stay in this conversation."
+          : " Open the new child session from chat; findings stay there.")
       : handoff.phase === "unknown"
-        ? "Delivery unconfirmed. Inspect chat before deliberately resending."
+        ? "Delivery to " + destination + " unconfirmed. Inspect chat before deliberately resending."
           + (handoff.error ? " " + handoff.error : "")
-        : handoff.phase === "failed" ? "Request failed: " + handoff.error
-          : handoff.phase === "sending" ? "Sending request to chat..."
+        : handoff.phase === "failed" ? "Request for " + destination + " failed: " + handoff.error
+          : handoff.phase === "sending" ? "Sending request to chat for " + destination + "..."
             : handoff.phase === "cancelled" ? "Request cancelled before dispatch." : "");
   }
 
-  element("investigate").onclick = () => {
+  function investigate(destination) {
     const issue = state.meta?.snapshot?.selectedIssue;
     if (issue) {
-      void action("/api/investigate", { itemId: issue.id }, true);
+      void action("/api/investigate", { itemId: issue.id, destination }, true);
     }
-  };
+  }
+  element("investigate-current").onclick = () => investigate("current");
+  element("investigate-child").onclick = () => investigate("new-child");
   const refresh = () => { void action("/api/refresh", { area: element("area").value }); };
   element("area").onchange = refresh;
   element("refresh").onclick = refresh;
@@ -262,7 +272,7 @@ export const HTML = `<!doctype html>
 </head>
 <body>
   <h1>ASP.NET Core Issue Triage</h1>
-  <p class="muted">Public issue queues. Research opens in a normal issue session, using its settings and permissions.</p>
+  <p class="muted">Public issue queues. Research here or in a new child session, using that session's settings and permissions.</p>
   <label>Area <select id="area"></select></label><button id="refresh">Refresh</button>
   <p id="status" role="status"></p><p id="connection" role="status"></p>
   <p id="error" role="alert"></p><p id="stale"></p>
@@ -279,9 +289,10 @@ export const HTML = `<!doctype html>
       <h2>Issue</h2>
       <a id="issue-link" target="_blank" rel="noopener noreferrer" hidden></a>
       <p id="labels" class="muted"></p><p id="why">Select one issue to request research.</p>
-      <button id="investigate" hidden>Investigate in issue session</button>
+      <button id="investigate-current" hidden>Investigate here</button>
+      <button id="investigate-child" hidden>Investigate in new child session</button>
       <p id="handoff" role="status"></p>
-      <p class="muted">Queue membership is not a severity or disposition decision. Research requires the investigate-issue skill in the issue session. Findings and follow-up stay in that session, not this canvas.</p>
+      <p class="muted">Queue membership is not a severity or disposition decision. Research requires the investigate-issue skill in the destination session. Findings and follow-up stay in that session, not this canvas.</p>
     </aside>
   </div>
   <script>${initializeCanvas.toString()}; initializeCanvas();</script>

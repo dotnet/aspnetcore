@@ -107,19 +107,22 @@ export function createTriageController({
     return getState();
   }
 
-  async function investigate({ itemId } = {}, dispatch) {
+  async function investigate({ itemId, destination } = {}, dispatch) {
     requireNotRefreshing();
     if (handoff.phase === "sending") {
-      throw stateError("handoff_in_progress", "An issue-session request is already being sent.");
+      throw stateError("handoff_in_progress", "An investigation request is already being sent.");
+    }
+    if (!["current", "new-child"].includes(destination)) {
+      throw stateError("invalid_destination", "Investigation destination is invalid.");
     }
     const item = resolve(itemId);
     selectedItemId = item.id;
     const requestGeneration = ++generation;
     const isCurrent = () => active && generation === requestGeneration && selectedItemId === item.id;
-    handoff = { phase: "sending", issueNumber: item.number, itemId: item.id, queued: null, messageId: null, error: null };
+    handoff = { phase: "sending", issueNumber: item.number, itemId: item.id, destination, queued: null, messageId: null, error: null };
     publish();
     try {
-      const result = await dispatch(item, isCurrent);
+      const result = await dispatch(item, destination, isCurrent);
       if (isCurrent()) {
         handoff = { ...handoff, phase: result.status, queued: result.queued, messageId: result.messageId, error: result.error ?? null };
         publish();
@@ -242,7 +245,7 @@ function publicItem(item) {
 }
 
 function idleHandoff() {
-  return { phase: "idle", issueNumber: null, itemId: null, queued: null, messageId: null, error: null };
+  return { phase: "idle", issueNumber: null, itemId: null, destination: null, queued: null, messageId: null, error: null };
 }
 
 function stateError(code, message) {
