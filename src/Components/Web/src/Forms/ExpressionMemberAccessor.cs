@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -31,24 +32,35 @@ internal static class ExpressionMemberAccessor
         return _memberInfoCache.GetOrAdd(accessor, static expr =>
         {
             var lambdaExpression = (LambdaExpression)expr;
-            var accessorBody = lambdaExpression.Body;
-
-            if (accessorBody is UnaryExpression unaryExpression
-                && unaryExpression.NodeType == ExpressionType.Convert
-                && unaryExpression.Type == typeof(object))
-            {
-                accessorBody = unaryExpression.Operand;
-            }
-
-            if (accessorBody is not MemberExpression memberExpression)
+            var member = GetMemberInfo(lambdaExpression.Body, out var accessorBody);
+            if (member is null)
             {
                 throw new ArgumentException(
                     $"The provided expression contains a {accessorBody.GetType().Name} which is not supported. " +
                     $"Only simple member accessors (fields, properties) of an object are supported.");
             }
 
-            return memberExpression.Member;
+            return member;
         });
+    }
+
+    private static MemberInfo? GetMemberInfo(Expression accessorBody, out Expression normalizedAccessorBody)
+    {
+        normalizedAccessorBody = accessorBody;
+
+        if (normalizedAccessorBody is UnaryExpression
+            {
+                NodeType: ExpressionType.Convert,
+                Type: var type
+            } unaryExpression &&
+            type == typeof(object))
+        {
+            normalizedAccessorBody = unaryExpression.Operand;
+        }
+
+        return normalizedAccessorBody is MemberExpression memberExpression
+            ? memberExpression.Member
+            : null;
     }
 
     public static string GetDisplayName(MemberInfo member)
@@ -82,6 +94,23 @@ internal static class ExpressionMemberAccessor
         ArgumentNullException.ThrowIfNull(accessor);
         var member = GetMemberInfo(accessor);
         return GetDisplayName(member);
+    }
+
+    public static bool TryGetDisplayName<TValue>(
+        Expression<Func<TValue>> accessor,
+        [NotNullWhen(true)] out string? displayName)
+    {
+        ArgumentNullException.ThrowIfNull(accessor);
+
+        var member = GetMemberInfo(accessor.Body, out _);
+        if (member is null)
+        {
+            displayName = null;
+            return false;
+        }
+
+        displayName = GetDisplayName(member);
+        return true;
     }
 
     private static void ClearCache()

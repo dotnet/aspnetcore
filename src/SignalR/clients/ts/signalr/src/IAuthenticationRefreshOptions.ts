@@ -10,15 +10,9 @@ export interface IAuthenticationRefreshOptions {
 
     /** How far before the server-reported token expiration the client should refresh. The default is 300,000 milliseconds. */
     refreshBeforeExpirationInMilliseconds?: number;
-
-    /** A callback invoked after authentication refresh completes successfully. */
-    onAuthenticationRefreshed?(context: AuthenticationRefreshedContext): void | Promise<void>;
-
-    /** A callback invoked when an authentication refresh attempt fails. */
-    onAuthenticationRefreshFailed?(context: AuthenticationRefreshFailedContext): void | Promise<void>;
 }
 
-/** Context passed to {@link @microsoft/signalr.IAuthenticationRefreshOptions.onAuthenticationRefreshed}. */
+/** Context passed to {@link @microsoft/signalr.HubConnection.onAuthenticationRefreshed}. */
 export interface AuthenticationRefreshedContext {
     /** The connection whose authentication was refreshed. */
     connection: HubConnection;
@@ -30,7 +24,7 @@ export interface AuthenticationRefreshedContext {
     refreshedAt: Date;
 }
 
-/** Context passed to {@link @microsoft/signalr.IAuthenticationRefreshOptions.onAuthenticationRefreshFailed}. */
+/** Context passed to {@link @microsoft/signalr.HubConnection.onAuthenticationRefreshFailed}. */
 export interface AuthenticationRefreshFailedContext {
     /** The connection on which the refresh attempt failed. */
     connection: HubConnection;

@@ -13,6 +13,7 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.UserCallbacks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// TLS event pump that handles accept, handshake, and I/O events on a dedicated thread.
 /// Uses EPOLLEXCLUSIVE on the listen socket to distribute accept load across workers.
 /// </summary>
-internal class TlsEventPump : IDisposable
+internal partial class TlsEventPump : IDisposable
 {
     private readonly ILogger _logger;
     private readonly int _id;
@@ -62,9 +63,9 @@ internal class TlsEventPump : IDisposable
     // (constructed by tests) can be detected and short-circuited.
     private readonly TaskCompletionSource _exitSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _threadStarted;
-    // Guards the one-time epoll fd close, which happens either in the pump thread's finally (started pump) or
-    // in StopAndJoinAsync (never-started pump) - never both. Interlocked so a double close can't hit an
-    // unrelated fd whose number was recycled.
+    // Guards the one-time close of the fds this pump owns (epoll + wakeup), which happens either once the pump
+    // thread and its dispatched user callbacks have finished (started pump) or in StopAndJoinAsync (never-started
+    // pump) - never both. Interlocked so a double close can't hit an unrelated fd whose number was recycled.
     private int _epollClosed;
     // Memoizes StopAndJoinAsync so repeated/concurrent stop calls observe one shutdown, not a re-run.
     private readonly object _stopLock = new();
@@ -73,8 +74,15 @@ internal class TlsEventPump : IDisposable
     // Listen socket (added with EPOLLEXCLUSIVE). Volatile: written by StopAccepting() (on the disposing
     // thread) and read by the pump thread in PumpLoop/AcceptConnections.
     private volatile int _listenFd = -1;
+
+    // Cross-thread wakeup for handshakes suspended on user code. A thread pool thread that finished a user
+    // callback enqueues its result on _completedCallbacks and writes to this eventfd, which is registered in
+    // this pump's epoll set, so the pump wakes immediately and resumes the handshake on its own thread.
+    private readonly int _wakeupFd;
+
     private TlsContext? _tlsContext;
     private Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? _contextResolver;
+
     private ChannelWriter<DirectTlsConnection>? _readyConnections;
     private MemoryPool<byte>? _memoryPool;
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
@@ -108,6 +116,13 @@ internal class TlsEventPump : IDisposable
     // Cached listen endpoint to avoid getsockname syscall per connection
     private EndPoint? _listenEndPoint;
 
+    // Set by the pump thread as it leaves the loop. Not redundant with _outstandingUserCallbacks: shutdown is
+    // also reconsidered every time a user callback reports back, which happens throughout normal operation, so
+    // without this flag the first callback to complete on a healthy pump would observe zero in-flight callbacks
+    // and close the epoll and wakeup fds underneath the still-running loop.
+    private volatile bool _loopExited;
+    private int _shutdownCompleted;
+
     /// <summary>
     /// Lightweight struct to track TLS connections during handshake.
     /// Uses less memory than ConnectionIoState since we don't need full read/write machinery.
@@ -139,6 +154,13 @@ internal class TlsEventPump : IDisposable
         /// The fd's current epoll interest set, mirrored from the last epoll_ctl issued for this handshaking socket.
         /// </summary>
         public uint CurrentEpollInterest;
+        /// <summary>
+        /// Non-null while this handshake is suspended waiting on user code running on the thread pool. The fd is
+        /// de-registered from epoll for that whole window, so the connection generates no pump work, and the
+        /// instance doubles as the resume token: a completion whose work item is not reference-equal to this one
+        /// (fd recycled, connection already torn down) is discarded instead of resuming a stale handshake.
+        /// </summary>
+        public HandshakeUserCallback? PendingUserCallback;
     }
 
     public TlsEventPump(ILogger tlsPumpLogger, int id, TimeSpan handshakeTimeout)
@@ -154,6 +176,8 @@ internal class TlsEventPump : IDisposable
         {
             throw new InvalidOperationException($"epoll_create1 failed: {Marshal.GetLastWin32Error()}");
         }
+
+        _wakeupFd = CreateWakeupFd();
 
         _pumpThread = new Thread(PumpLoop)
         {
@@ -179,7 +203,8 @@ internal class TlsEventPump : IDisposable
         long maxWriteBufferSize,
         Action<Exception> onFatalError,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
-        ConnectionTracker? connectionTracker = null)
+        ConnectionTracker? connectionTracker = null,
+        bool serverCertificateSelectorConfigured = true)
     {
         _listenFd = listenFd;
         ArgumentNullException.ThrowIfNull(tlsContext);
@@ -193,6 +218,7 @@ internal class TlsEventPump : IDisposable
         _maxReadBufferSize = maxReadBufferSize;
         _maxWriteBufferSize = maxWriteBufferSize;
         _clientHelloCallback = clientHelloCallback;
+
         _connectionTracker = connectionTracker ?? ConnectionTracker.Unlimited;
         _onFatalError = onFatalError;
         _listenEndPoint = listenEndPoint;
@@ -200,6 +226,9 @@ internal class TlsEventPump : IDisposable
         // Cache loggers for connection creation
         _connectionIoStateLogger = loggerFactory.CreateLogger<ConnectionIoState>();
         _directTlsConnectionLogger = loggerFactory.CreateLogger<DirectTlsConnection>();
+
+        // Either of these makes context resolution run user code, so the handshake must leave the event loop before resolving.
+        _contextResolverRunsUserCode = serverCertificateSelectorConfigured || clientHelloCallback is not null;
 
         // Add listen socket with EPOLLEXCLUSIVE - only one worker wakes per connection
         var ev = new EpollEvent
@@ -404,16 +433,36 @@ internal class TlsEventPump : IDisposable
                             continue;
                         }
 
+                        // Cross-thread wakeup: a user callback finished on the thread pool. Consume the eventfd
+                        // counter here; the queue itself is drained once below, after the whole batch.
+                        if (fd == _wakeupFd)
+                        {
+                            DrainWakeup();
+                            continue;
+                        }
+
                         // Check if this is a handshaking connection
                         if (_handshaking.TryGetValue(fd, out var handshakingConn))
                         {
-                            TryAdvanceHandshake(fd, handshakingConn);
+                            // A handshake suspended on user code has its fd de-registered from epoll, but an
+                            // event for it may already be sitting in this batch (it was suspended earlier in
+                            // the same iteration). Ignore it: only the resume path may touch the session.
+                            if (handshakingConn.PendingUserCallback is null)
+                            {
+                                TryAdvanceHandshake(fd, handshakingConn);
+                            }
+
                             continue;
                         }
 
                         // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
                         HandleConnectionEvent(fd, mask);
                     }
+
+                    // Resume handshakes whose user callback completed. Done after the event batch so a resumed
+                    // handshake is driven with the freshest state, and unconditionally (not only on a wakeup
+                    // event) so a result that raced the eventfd read is never left parked.
+                    DrainCompletedUserCallbacks();
 
                     // Drop connections whose handshake has taken too long. While a finite handshake timeout is
                     // configured and any handshake is in flight the epoll_wait timeout above is short (see
@@ -424,6 +473,16 @@ internal class TlsEventPump : IDisposable
                         SweepExpiredHandshakes(Environment.TickCount64);
                     }
                 }
+                catch (UnreachableException ex)
+                {
+                    _logger.LogCritical(ex, "Pump {Id} reached an unreachable state in PumpLoop", _id);
+
+                    if (_running)
+                    {
+                        _onFatalError.Invoke(ex);
+                    }
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Pump {Id} encountered an exception in PumpLoop", _id);
@@ -432,14 +491,16 @@ internal class TlsEventPump : IDisposable
         }
         finally
         {
-            // The thread owns its own teardown: release half-open handshakes, then close the epoll fd it created
-            // in the constructor, and only then signal exit. Ordering matters - _exitSignal is the proof
-            // StopAndJoinAsync waits on before the listener frees the TLS contexts and memory pool, so it must be
-            // the last thing this thread does after every resource access here. In a finally so a stray escape
-            // (or a break above) still signals, otherwise the awaiter would hang until its timeout and leak.
+            // The thread owns its own teardown: release half-open handshakes, then hand the remaining teardown
+            // (closing the fds it created in the constructor and signalling exit) to CompletePumpShutdownIfDrained.
+            // Ordering matters - _exitSignal is the proof StopAndJoinAsync waits on before the listener frees the
+            // TLS contexts and memory pool, so it must only fire once this thread is done AND no user callback is
+            // still running on the thread pool (that callback would otherwise keep running against freed
+            // resources, and could write to a wakeup fd whose number the OS had already recycled). In a finally so
+            // a stray escape (or a break above) still signals, otherwise the awaiter would hang until its timeout.
             ReleasePendingHandshakes();
-            CloseEpollFd();
-            _exitSignal.TrySetResult();
+            _loopExited = true;
+            CompletePumpShutdownIfDrained();
         }
     }
 
@@ -447,9 +508,19 @@ internal class TlsEventPump : IDisposable
     // ordinary handshake failures so a DirectTlsConnection allocated at NeedsTlsContext is aborted as well.
     internal void ReleasePendingHandshakes()
     {
-        foreach (var connection in _handshaking.Values)
+        foreach (var kvp in _handshaking)
         {
-            ReleaseHandshakeResources(connection);
+            // A handshake parked on user code must not be torn down yet: its work item may still be running,
+            // and the certificate and validation sender it was handed belong to this session. Hold it aside and
+            // release it once every dispatched callback has reported back (see CompletePumpShutdownIfDrained),
+            // at which point nothing else can observe it.
+            if (kvp.Value.PendingUserCallback is not null)
+            {
+                _handshakesAwaitingCallback.Add(kvp.Value);
+                continue;
+            }
+
+            ReleaseHandshakeResources(kvp.Value);
         }
 
         _handshaking.Clear();
@@ -660,17 +731,8 @@ internal class TlsEventPump : IDisposable
         }
 
         // Register client socket with epoll for handshake events
-        var ev = new EpollEvent
+        if (!TryArmHandshakeInterest(clientFd, DefaultEpollInterest))
         {
-            Events = DefaultEpollInterest,
-            Data = new EpollData { Fd = clientFd }
-        };
-
-        int result = NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_ADD, clientFd, ref ev);
-        if (result < 0)
-        {
-            int errno = Marshal.GetLastWin32Error();
-            _logger.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
             session.Dispose();
             _connectionTracker.ReleaseHandshake();
             return;
@@ -736,133 +798,37 @@ internal class TlsEventPump : IDisposable
 
         if (status == TlsOperationStatus.Complete)
         {
-            // Handshake complete: validate any client certificate, build the connection, and promote the fd from handshaking to established.
-            X509Certificate2? clientCertificate = null;
-            var earlyConnection = conn.Connection;
-            ConnectionIoState connectionState;
-            DirectTlsConnection directConnection;
-
-            try
+            // Mutual TLS (client certificate) handling. The endpoint opts in via
+            // HttpsConnectionAdapterOptions.ClientCertificateMode (Allow/Require), which makes
+            // CreateStreamTransportOptions set ClientCertificateRequired and install a
+            // RemoteCertificateValidationCallback; conn.ClientCertificateValidation carries that callback
+            // (null for server-auth-only endpoints, which skip this block entirely).
+            //
+            // The certificates are read from the session here (pump thread only), but the chain build and the
+            // endpoint's callback are user-controlled work, so they are suspended onto the thread pool and the
+            // handshake resumes in ResumeSuspendedHandshake.
+            if (conn.ClientCertificateValidation is { } validateClientCertificate)
             {
-                // Mutual TLS (client certificate) handling. The endpoint opts in via
-                // HttpsConnectionAdapterOptions.ClientCertificateMode (Allow/Require), which makes
-                // CreateStreamTransportOptions set ClientCertificateRequired and install a
-                // RemoteCertificateValidationCallback; conn.ClientCertificateValidation carries that callback
-                // (null for server-auth-only endpoints, which skip this block entirely). The Linux fd fast
-                // handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
-                // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
-                // fd read/write fast paths bypass the runtime's pending-validation fault. So the runtime cannot
-                // enforce the accept/reject decision on this path. The transport runs the endpoint's validation
-                // callback here, records the verdict on the session, and tears down rejected connections before
-                // they are ever surfaced to Kestrel.
-                if (conn.ClientCertificateValidation is { } validateClientCertificate)
-                {
-                    // The peer's leaf certificate, or null when the client presented none. On the fd fast path
-                    // this is the runtime's pending external-validation certificate. Intermediates are only
-                    // fetched when a leaf is present (they feed the chain's ExtraStore). The chain build,
-                    // policy, and callback invocation live in ClientCertificateValidator so they can be unit
-                    // tested without epoll or a live session - see its remarks for why AIA downloads are
-                    // disabled on this pump thread.
-                    var presentedCertificate = conn.Session.GetRemoteCertificate();
-                    var intermediates = presentedCertificate is null ? null : conn.Session.GetRemoteCertificates();
+                // The peer's leaf certificate, or null when the client presented none. On the fd fast path
+                // this is the runtime's pending external-validation certificate. Intermediates are only
+                // fetched when a leaf is present (they feed the chain's ExtraStore).
+                var presentedCertificate = conn.Session.GetRemoteCertificate();
+                var intermediates = presentedCertificate is null ? null : conn.Session.GetRemoteCertificates();
 
-                    var accepted = ClientCertificateValidator.Validate(conn.Session, presentedCertificate, intermediates, validateClientCertificate);
+                var validationCallback = new ValidateClientCertificateCallback(
+                    this,
+                    fd,
+                    conn.Connection,
+                    conn.Session,
+                    presentedCertificate,
+                    intermediates,
+                    validateClientCertificate);
 
-                    if (!accepted)
-                    {
-                        _logger.LogDebug("Client certificate rejected for fd={Fd} (presented={Presented}).", fd, presentedCertificate is not null);
-                        DropHandshake(fd, conn);
-                        return;
-                    }
-
-                    // Record the accepted result so the runtime promotes the leaf into its canonical remote-cert
-                    // slot and clears its pending-validation state.
-                    try
-                    {
-                        conn.Session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // Validation was already resolved (e.g. a buffered PAL that surfaced
-                        // NeedsCertificateValidation before reaching Complete).
-                    }
-
-                    // Surface the accepted certificate to Kestrel via ITlsConnectionFeature. This is the same
-                    // instance the runtime just promoted into its canonical remote-cert slot (on the accept path
-                    // SetRemoteCertificateValidationResult moves _externalPendingCert into _remoteCertificate
-                    // without reallocating), and null when the client presented none on an AllowCertificate
-                    // endpoint - so we reuse presentedCertificate instead of re-reading it from the session.
-                    clientCertificate = presentedCertificate;
-                }
-
-                // Both are set before the pump thread starts and never cleared, so this is unreachable.
-                if (_readyConnections is null || _memoryPool is null)
-                {
-                    Debug.Assert(false, "Handshake completed before the pump was initialized.");
-                    _logger.LogWarning("fd={Fd}: handshake completed before the pump was initialized; dropping.", fd);
-                    DropHandshake(fd, conn);
-                    return;
-                }
-
-                // Reuse the DirectTlsConnection allocated early for the ClientHello listener (at
-                // NeedsTlsContext), if any, so the connection surfaced to Kestrel keeps the same
-                // ConnectionId the listener already observed. Otherwise create both now. Its ConnectionIoState
-                // has Pump already set (early path) or set here (default path).
-                connectionState = earlyConnection?.ConnectionState
-                    ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
-                connectionState.SetHandshakeComplete();
-
-                // Create DirectTlsConnection using fd directly (no Socket wrapper).
-                // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
-                if (earlyConnection is not null)
-                {
-                    // Promote the early connection: publish the ALPN protocol and validated client cert
-                    // that were unknown when it was allocated (the ClientHello listener has already run).
-                    directConnection = earlyConnection;
-                    directConnection.CompleteHandshake(conn.Session.NegotiatedApplicationProtocol, clientCertificate);
-                }
-                else
-                {
-                    directConnection = new DirectTlsConnection(
-                        connectionState,
-                        this,
-                        _listenEndPoint,              // Cached - avoids getsockname syscall
-                        conn.RemoteEndPoint,          // Captured from Socket.RemoteEndPoint at accept time
-                        _memoryPool,
-                        _maxReadBufferSize,
-                        _maxWriteBufferSize,
-                        _directTlsConnectionLogger!,
-                        negotiatedApplicationProtocol: conn.Session.NegotiatedApplicationProtocol,
-                        clientCertificate: clientCertificate);  // Non-null only when the peer presented a client cert (mTLS)
-                }
-            }
-            catch (Exception ex)
-            {
-                // Post-handshake activities failed (like cert validation). De-register fd here
-                _logger.LogDebug(ex, "Completing handshake threw for fd={Fd}", fd);
-                DropHandshake(fd, conn);
+                SuspendHandshake(fd, ref conn, validationCallback);
                 return;
             }
 
-            if (!PromoteHandshakeToConnection(fd, connectionState))
-            {
-                // The socket could not be re-armed to the established interest set, so don't surface a
-                // connection whose epoll interest is wrong (it would spin the pump on a stuck EPOLLOUT). It was
-                // built but never Started and the fd is still registered as handshaking, so tear it down on
-                // that path.
-                DropCompletedHandshake(fd, directConnection);
-                return;
-            }
-
-            directConnection.Start();
-
-            if (!_readyConnections.TryWrite(directConnection))
-            {
-                // Channel closed (shutting down) - dispose connection
-                _connectionTracker.ReleaseHandshake();
-                _ = DisposeAbandonedConnectionAsync(directConnection);
-            }
-
+            CompleteHandshake(fd, conn, clientCertificate: null);
             return;
         }
 
@@ -879,34 +845,20 @@ internal class TlsEventPump : IDisposable
 
         if (status == TlsOperationStatus.NeedsCertificateValidation)
         {
-            // Buffered / non-fd PALs surface this suspension so the caller runs client-certificate
-            // validation mid-handshake. (The Linux fd fast path our transport uses does not: it reports
-            // Complete directly and we validate + surface the certificate in the Complete branch above.)
-            // Resolve validation here so the re-driven handshake can finish (accept) or fail (reject); the
-            // Complete branch then observes it as already-validated. AcceptWithDefaultValidation runs the
-            // default chain build plus the RemoteCertificateValidationCallback configured in
-            // HttpsConnectionMiddleware.CreateStreamTransportOptions.
-            try
-            {
-                conn.Session.AcceptWithDefaultValidation();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Client certificate validation failed for fd={Fd}", fd);
-                DropHandshake(fd, conn);
-                return;
-            }
-
-            // Re-drive so the handshake completes (accept) or fails (reject).
-            TryAdvanceHandshake(fd, conn);
-            return;
+            // The Linux fd fast handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
+            // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
+            // fd read/write fast paths bypass the runtime's pending-validation fault.
+            throw new UnreachableException($"The DirectTls handshake path reported {nameof(TlsOperationStatus.NeedsCertificateValidation)} for fd={fd}.");
         }
 
         if (status == TlsOperationStatus.NeedsTlsContext)
         {
-            // Deferred SNI flow: the session parsed the ClientHello and needs the real
-            // per-host TLS context before it can continue. Resolve it from the SNI host
-            // name and hand it back via SetContext, then re-drive the handshake.
+            // Deferred SNI flow: the session parsed the ClientHello and needs the real per-host TLS context
+            // before it can continue. Both the ClientHello listener and the certificate selector are user code
+            // that can block for an unbounded time, so the pump copies everything they need off the session
+            // here and then suspends the handshake: the fd leaves this pump's epoll set and the callbacks run
+            // on the thread pool. ResumeSuspendedHandshake installs the resolved context and re-drives the
+            // handshake back on the pump thread.
             if (_contextResolver is null)
             {
                 // No selector configured but the session still deferred — misconfiguration.
@@ -915,14 +867,25 @@ internal class TlsEventPump : IDisposable
                 return;
             }
 
+            if (!_contextResolverRunsUserCode)
+            {
+                // Neither a certificate selector nor a ClientHello listener is configured, so resolution cannot
+                // reach user code and there is nothing to move off the event loop. Resolve inline: this keeps
+                // the fd armed and skips the suspension, the thread-pool hop and the early DirectTlsConnection
+                // allocation the suspending path needs to give user code a stable ConnectionContext.
+                ResolveTlsContextInline(fd, conn);
+                return;
+            }
+
             // Allocate the DirectTlsConnection now (its handshake is not yet complete) so both the
-            // certificate selector below and the optional ClientHello listener see the same
+            // certificate selector and the optional ClientHello listener see the same
             // ConnectionContext / ConnectionId that will later serve the request; it is reused in the
             // Complete branch. The Connection-is-null guard makes this run exactly once even if the
             // handshake needs several more epoll round-trips. Because the bootstrap context carries no
             // credentials, every connection reaches NeedsTlsContext, so this early allocation is net-neutral
             // (moved from Complete, not added).
-            if (conn.Connection is null && _memoryPool is not null)
+            bool firstSuspension = conn.Connection is null;
+            if (firstSuspension && _memoryPool is not null)
             {
                 var earlyState = new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
                 var earlyConnection = new DirectTlsConnection(
@@ -936,48 +899,183 @@ internal class TlsEventPump : IDisposable
                     _directTlsConnectionLogger!);
                 conn.Connection = earlyConnection;
                 _handshaking[fd] = conn;
-
-                // Fire the optional ClientHello listener as early as possible - the session has parsed the
-                // ClientHello (which is what produced this NeedsTlsContext suspension), but the real context
-                // has not been installed yet and OpenSSL has not run the expensive key exchange / certificate
-                // signing. The listener is observable-only today; it does not decide whether the handshake
-                // proceeds - but a throwing callback fails the connection (matching the socket-transport
-                // TlsListener) rather than being swallowed.
-                if (_clientHelloCallback is not null && !InvokeClientHelloListener(earlyConnection, conn.Session))
-                {
-                    DropHandshake(fd, conn);
-                    return;
-                }
             }
 
-            try
+            // Copy the parsed ClientHello record out of the session while we are still on the pump thread; the
+            // listener itself runs on the thread pool against this copy. Only on the first suspension, so a
+            // handshake that needs several context round-trips still fires the listener exactly once.
+            byte[]? clientHelloBuffer = null;
+            int clientHelloLength = 0;
+            if (firstSuspension && _clientHelloCallback is not null && conn.Connection is not null &&
+                !TryCaptureClientHello(conn.Session, out clientHelloBuffer, out clientHelloLength))
             {
-                var (resolvedContext, clientCertificateValidation) = _contextResolver(conn.Connection, conn.Session.TargetHostName);
-                conn.Session.SetContext(resolvedContext);
-
-                // The endpoint's client-certificate validation callback is resolved with the context. Persist
-                // it on the handshaking entry so the Complete branch can drive mTLS validation, even if the
-                // handshake needs several more epoll round-trips (each re-reads _handshaking[fd]).
-                conn.ClientCertificateValidation = clientCertificateValidation;
-                _handshaking[fd] = conn;
-            }
-            catch (Exception ex)
-            {
-                // A bad SNI host, a selector that returned no certificate, or a credential
-                // acquisition failure must drop only this connection, not the pump.
-                _logger.LogDebug(ex, "SNI certificate resolution failed for fd={Fd}", fd);
+                _logger.LogDebug("Capturing the ClientHello record failed for fd={Fd}; dropping connection.", fd);
                 DropHandshake(fd, conn);
                 return;
             }
 
-            // Real context is now set; continue the handshake immediately.
-            TryAdvanceHandshake(fd, conn);
+            var contextCallback = new ResolveTlsContextCallback(
+                this,
+                fd,
+                conn.Connection,
+                conn.Session.TargetHostName,
+                _contextResolver,
+                clientHelloBuffer is null ? null : _clientHelloCallback,
+                clientHelloBuffer,
+                clientHelloLength);
+
+            SuspendHandshake(fd, ref conn, contextCallback);
             return;
         }
 
         // Handshake failed or connection closed - cleanup.
         _logger.LogDebug("Handshake failed for fd={Fd}: status={Status}", fd, status);
         DropHandshake(fd, conn);
+    }
+
+    // Resolves the TLS context on the pump thread and drives the handshake straight on. Only valid when the
+    // resolver provably runs no user code (see _contextResolverRunsUserCode): it is the transport's own lambda
+    // over a static certificate and a per-certificate TlsContext cache, so the only unbounded work is creating
+    // the context on the first connection. Mirrors the ResolveTlsContextCallback arm of ResumeSuspendedHandshake,
+    // minus the re-arm (the fd was never de-armed because the handshake never suspended).
+    private void ResolveTlsContextInline(int fd, HandshakingConnection conn)
+    {
+        Debug.Assert(_contextResolver is not null, "ResolveTlsContextInline ran without a certificate resolver.");
+
+        TlsContext context;
+        RemoteCertificateValidationCallback? clientCertificateValidation;
+        try
+        {
+            // conn.Connection is null here and stays null: with no selector the resolver ignores it, and with no
+            // ClientHello listener nothing else needs a ConnectionContext this early. CompleteHandshake
+            // allocates the DirectTlsConnection once the handshake is done.
+            (context, clientCertificateValidation) = _contextResolver(conn.Connection, conn.Session.TargetHostName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Resolving the TLS context failed for fd={Fd}; dropping connection.", fd);
+            DropHandshake(fd, conn);
+            return;
+        }
+
+        try
+        {
+            conn.Session.SetContext(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Installing the resolved TLS context failed for fd={Fd}", fd);
+            DropHandshake(fd, conn);
+            return;
+        }
+
+        // Persist the validation callback that came back with the context so the Complete branch can drive mTLS
+        // validation even if the handshake needs several more epoll round-trips (each re-reads _handshaking[fd]).
+        conn.ClientCertificateValidation = clientCertificateValidation;
+        _handshaking[fd] = conn;
+
+        TryAdvanceHandshake(fd, conn);
+    }
+
+    // Completes a handshake that has passed every user-code gate: builds (or promotes) the DirectTlsConnection,
+    // moves the fd from handshaking to established, and hands the connection to Kestrel. Split out of
+    // TryAdvanceHandshake so the client-certificate resume path can reach it directly without re-driving the
+    // native handshake. Runs on the pump thread only.
+    private void CompleteHandshake(int fd, HandshakingConnection conn, X509Certificate2? clientCertificate)
+    {
+        var earlyConnection = conn.Connection;
+        ConnectionIoState connectionState;
+        DirectTlsConnection directConnection;
+
+        try
+        {
+            // Both are set before the pump thread starts and never cleared, so this is unreachable.
+            if (_readyConnections is null || _memoryPool is null)
+            {
+                Debug.Assert(false, "Handshake completed before the pump was initialized.");
+                _logger.LogWarning("fd={Fd}: handshake completed before the pump was initialized; dropping.", fd);
+                DropHandshake(fd, conn);
+                return;
+            }
+
+            // Reuse the DirectTlsConnection allocated early for the ClientHello listener (at
+            // NeedsTlsContext), if any, so the connection surfaced to Kestrel keeps the same
+            // ConnectionId the listener already observed. Otherwise create both now. Its ConnectionIoState
+            // has Pump already set (early path) or set here (default path).
+            connectionState = earlyConnection?.ConnectionState
+                ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
+            connectionState.SetHandshakeComplete();
+
+            // Create DirectTlsConnection using fd directly (no Socket wrapper).
+            // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
+            if (earlyConnection is not null)
+            {
+                // Promote the early connection: publish the ALPN protocol and validated client cert
+                // that were unknown when it was allocated (the ClientHello listener has already run).
+                directConnection = earlyConnection;
+                directConnection.CompleteHandshake(conn.Session.NegotiatedApplicationProtocol, clientCertificate);
+            }
+            else
+            {
+                directConnection = new DirectTlsConnection(
+                    connectionState,
+                    this,
+                    _listenEndPoint,              // Cached - avoids getsockname syscall
+                    conn.RemoteEndPoint,          // Captured from Socket.RemoteEndPoint at accept time
+                    _memoryPool,
+                    _maxReadBufferSize,
+                    _maxWriteBufferSize,
+                    _directTlsConnectionLogger!,
+                    negotiatedApplicationProtocol: conn.Session.NegotiatedApplicationProtocol,
+                    clientCertificate: clientCertificate);  // Non-null only when the peer presented a client cert (mTLS)
+            }
+        }
+        catch (Exception ex)
+        {
+            // Post-handshake activities failed. De-register fd here
+            _logger.LogDebug(ex, "Completing handshake threw for fd={Fd}", fd);
+            DropHandshake(fd, conn);
+            return;
+        }
+
+        if (!PromoteHandshakeToConnection(fd, connectionState))
+        {
+            // The socket could not be re-armed to the established interest set, so don't surface a
+            // connection whose epoll interest is wrong (it would spin the pump on a stuck EPOLLOUT). It was
+            // built but never Started and the fd is still registered as handshaking, so tear it down on
+            // that path.
+            DropCompletedHandshake(fd, directConnection);
+            return;
+        }
+
+        directConnection.Start();
+
+        if (!_readyConnections.TryWrite(directConnection))
+        {
+            // Channel closed (shutting down) - dispose connection
+            _connectionTracker.ReleaseHandshake();
+            _ = DisposeAbandonedConnectionAsync(directConnection);
+        }
+    }
+
+    // Registers a handshaking fd in this pump's epoll set (EPOLL_CTL_ADD). Used when a connection is first
+    // accepted and when a suspended handshake is resumed. internal virtual so tests can observe/reject the
+    // registration without a live epoll instance.
+    internal virtual bool TryArmHandshakeInterest(int fd, uint events)
+    {
+        var ev = new EpollEvent
+        {
+            Events = events,
+            Data = new EpollData { Fd = fd }
+        };
+
+        if (NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_ADD, fd, ref ev) < 0)
+        {
+            _logger.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", fd, Marshal.GetLastWin32Error());
+            return false;
+        }
+
+        return true;
     }
 
     // Adjusts an in-progress handshake's epoll interest set for a NeedMoreData / DestinationTooSmall step.
@@ -1038,16 +1136,35 @@ internal class TlsEventPump : IDisposable
         connection.AbortBeforeStart();
     }
 
-    // Fire-and-forget teardown for a connection
-    private async Task DisposeAbandonedConnectionAsync(DirectTlsConnection connection)
+    // Disposes the abandoned connection itself. internal virtual so tests can hold the disposal open and observe
+    // that shutdown waits for it, without needing a live TLS session behind the connection.
+    internal virtual ValueTask DisposeConnectionAsync(DirectTlsConnection connection) => connection.DisposeAsync();
+
+    // Disposes a connection that finished its handshake just as the listener stopped accepting. It never reached
+    // the ready channel, so nothing else will ever dispose it - and DisposeAsync is not quick: it awaits the
+    // send/receive loops (which hold pooled buffers) and then sends close_notify through the TLS session, so the
+    // work keeps touching the memory pool and the OpenSSL contexts after this method has yielded to its caller.
+    // The listener frees both as soon as this pump reports that it has exited, so the disposal has to be part of
+    // that report. The count is taken in the synchronous part of the method, which runs before the first await:
+    // keeping it here rather than at the call site means a future caller cannot start a disposal without it
+    // being counted. The returned task is deliberately not retained; the counter is what shutdown waits on.
+    // internal so tests can drive this path without completing a real handshake.
+    internal async Task DisposeAbandonedConnectionAsync(DirectTlsConnection connection)
     {
+        Interlocked.Increment(ref _outstandingConnectionDisposals);
+
         try
         {
-            await connection.DisposeAsync().ConfigureAwait(false);
+            await DisposeConnectionAsync(connection).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Disposing a connection abandoned during shutdown threw.");
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _outstandingConnectionDisposals);
+            CompletePumpShutdownIfDrained();
         }
     }
 
@@ -1110,6 +1227,15 @@ internal class TlsEventPump : IDisposable
         int count = 0;
         foreach (var kvp in _handshaking)
         {
+            // A handshake parked on user code is not stalled on the peer, and its work item may still be
+            // running on the thread pool - dropping it here would release the connection underneath live user
+            // code. It is swept on a later pass once it has resumed (its deadline is not extended, so an
+            // over-long callback still costs the connection its handshake budget).
+            if (kvp.Value.PendingUserCallback is not null)
+            {
+                continue;
+            }
+
             long deadline = kvp.Value.HandshakeDeadlineTimestamp;
             if (deadline != long.MaxValue && deadline <= nowTimestamp)
             {
@@ -1134,52 +1260,55 @@ internal class TlsEventPump : IDisposable
         return count;
     }
 
-    // Copies the raw parsed ClientHello record from the session and hands it to the
-    // UseTlsClientHelloListener callback. Runs synchronously on the pump (epoll) thread at
-    // NeedsTlsContext (before the handshake's key exchange), so the callback must not block.
+    // Copies the raw parsed ClientHello record out of the session so the UseTlsClientHelloListener callback can
+    // run off the pump thread. Must be called on the pump thread (it touches the session); the copy is then
+    // handed to a HandshakeUserCallback, which invokes the listener on the thread pool and returns the buffer
+    // to the pool afterwards - so the callback still only sees a transient buffer, matching the
+    // socket-transport TlsListener contract.
     //
-    // Returns true when the handshake should continue, false when the caller must drop the connection.
-    // Any failure - the session being unable to produce the ClientHello record, or the user callback throwing -
-    // fails the connection, matching the socket-transport TlsListener where the ClientHello callback is not
-    // guarded and an exception fails the connection rather than being swallowed. A session that simply has no
-    // ClientHello bytes to hand over (a non-exceptional empty result) is not a failure and continues.
-    private bool InvokeClientHelloListener(DirectTlsConnection connection, TlsSocketSession session)
+    // Returns true when the handshake should continue - including when the session simply has no ClientHello
+    // bytes to hand over, a non-exceptional empty result, in which case <paramref name="buffer"/> is null.
+    // Returns false when the session could not produce the record, so the caller drops the connection (the
+    // socket-transport TlsListener also fails the connection rather than swallowing this).
+    private static bool TryCaptureClientHello(TlsSocketSession session, out byte[]? buffer, out int length)
     {
-        byte[]? buffer = null;
+        buffer = null;
+        length = 0;
+
+        // Tracked outside the try so the catch returns the array even when the throw happened between renting it
+        // and publishing it to buffer.
+        byte[]? rented = null;
         try
         {
-            var length = session.GetClientHelloLength();
-            if (length <= 0)
-            {
-                // Nothing was captured; the observe-only listener has nothing to hand over. Not a failure.
-                return true;
-            }
-
-            buffer = ArrayPool<byte>.Shared.Rent(length);
-            if (!session.TryGetClientHelloBytes(buffer.AsSpan(0, length), out var written) || written <= 0)
+            var helloLength = session.GetClientHelloLength();
+            if (helloLength <= 0)
             {
                 return true;
             }
 
-            // The buffer is only valid for the duration of this synchronous call; it is returned to
-            // the pool immediately afterwards. This matches the transient-buffer contract of the
-            // socket-transport TlsListener middleware.
-            _clientHelloCallback!(connection, new ReadOnlySequence<byte>(buffer, 0, written));
+            rented = ArrayPool<byte>.Shared.Rent(helloLength);
+            if (!session.TryGetClientHelloBytes(rented.AsSpan(0, helloLength), out var written) || written <= 0)
+            {
+                // The session reported a record but then could not hand it over, so the listener would silently
+                // miss a ClientHello it was configured to see. Treat it as a capture failure, not as "no bytes".
+                ArrayPool<byte>.Shared.Return(rented);
+                return false;
+            }
+
+            buffer = rented;
+            length = written;
             return true;
         }
-        catch (Exception ex)
+        catch
         {
-            // Either the session invocation failed (unable to read the ClientHello) or the user callback threw.
-            // Both fail the connection, matching the socket-transport TlsListener.
-            _logger.LogDebug(ex, "TLS ClientHello listener failed for fd={Fd}; dropping connection.", connection.ConnectionState.Fd);
-            return false;
-        }
-        finally
-        {
-            if (buffer is not null)
+            if (rented is not null)
             {
-                ArrayPool<byte>.Shared.Return(buffer);
+                ArrayPool<byte>.Shared.Return(rented);
             }
+
+            buffer = null;
+            length = 0;
+            return false;
         }
     }
 
@@ -1197,11 +1326,13 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     /// <param name="cancellationToken">Bounds the wait; on cancellation the method reports the thread as still running.</param>
     /// <returns>
-    /// <see langword="true"/> if the pump thread has exited (or was never started), meaning it can no longer
-    /// touch the epoll fd, the TLS contexts, or the memory pool, so the owner may safely release them.
-    /// <see langword="false"/> if the thread is still running when the wait is canceled - for example stuck in a
-    /// blocking user callback (certificate selector, certificate validation, or ClientHello listener). In that
-    /// case the caller MUST NOT release any resource the pump can still reach, or it risks a use-after-free.
+    /// <see langword="true"/> if the pump thread has exited (or was never started) and no user callback it
+    /// dispatched is still running, meaning nothing can touch the epoll fd, the TLS contexts, or the memory
+    /// pool any more, so the owner may safely release them.
+    /// <see langword="false"/> if the thread is still running, or a user callback (certificate selector,
+    /// certificate validation, or ClientHello listener) it queued to the thread pool is still blocked, when the
+    /// wait is canceled. In that case the caller MUST NOT release any resource the pump can still reach, or it
+    /// risks a use-after-free.
     /// </returns>
     public Task<bool> StopAndJoinAsync(CancellationToken cancellationToken)
     {
@@ -1220,34 +1351,37 @@ internal class TlsEventPump : IDisposable
 
         if (!_threadStarted)
         {
-            // The thread never ran, so PumpLoop's finally will never fire: close the epoll fd here instead.
-            // Nothing else (contexts, pool) was ever handed to the loop, so this is all the cleanup needed.
-            CloseEpollFd();
+            // The thread never ran, so PumpLoop's finally will never fire: close the pump's fds here instead.
+            // Nothing else (contexts, pool) was ever handed to the loop, and no user callback can be in flight,
+            // so this is all the cleanup needed.
+            CloseOwnedFds();
             return true;
         }
 
         try
         {
-            // The pump thread completes _exitSignal only after it has released its handshakes and closed its
-            // own epoll fd, so returning here proves it can no longer reach any owner-shared resource.
+            // The pump thread completes _exitSignal only after it has released its handshakes, every user
+            // callback it dispatched has reported back, and its fds are closed - so returning here proves
+            // nothing can reach an owner-shared resource any more.
             await _exitSignal.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (OperationCanceledException)
         {
-            // The wait was canceled - a user callback on the pump thread is blocking. It still owns its
-            // epoll fd and may still reach the TLS contexts and the memory pool, so leave every resource intact
-            // (the thread closes its own epoll fd if the callback ever returns; the listener leaks the
-            // contexts/pool). The OS reclaims all of it at process exit; freeing it now would be a use-after-free.
-            _logger.LogWarning("Pump {Id} thread did not exit (a TLS certificate, validation, or ClientHello callback may be blocking); deferring resource release to avoid a use-after-free.", _id);
+            // The wait was canceled - the pump thread, or a user callback it dispatched to the thread pool, is
+            // still running. It may still reach the TLS contexts and the memory pool, so leave every resource
+            // intact (the fds are closed once everything has finished; the listener leaks the contexts/pool). The OS
+            // reclaims all of it at process exit; freeing it now would be a use-after-free.
+            _logger.LogWarning("Pump {Id} did not finish (a TLS certificate, validation, or ClientHello callback may be blocking); deferring resource release to avoid a use-after-free.", _id);
             return false;
         }
     }
 
-    // Closes the pump-owned epoll fd exactly once. Called by the pump thread in PumpLoop's finally for a started
-    // pump, or by StopAndJoinCoreAsync for a never-started one - the Interlocked guard makes a stray double call
-    // a no-op so it can never close an unrelated fd whose number was recycled.
-    private void CloseEpollFd()
+    // Closes the epoll and wakeup fds this pump created in its constructor, exactly once. Reached from the
+    // drained-shutdown path for a started pump, or from StopAndJoinCoreAsync for a never-started one - the
+    // Interlocked guard makes a stray double call a no-op so it can never close an unrelated fd whose number
+    // was recycled.
+    private void CloseOwnedFds()
     {
         if (Interlocked.Exchange(ref _epollClosed, 1) != 0)
         {
@@ -1257,6 +1391,11 @@ internal class TlsEventPump : IDisposable
         // close() is intentionally not retried: on Linux the fd is released even when close returns EINTR, so a
         // retry could close an unrelated fd. A failure here (realistically only EBADF) signals a lifecycle bug
         // rather than a leak, so log it for diagnostics but don't act on it.
+        if (NativeTls.close(_wakeupFd) < 0)
+        {
+            _logger.LogDebug("close(wakeupFd={WakeupFd}) failed: errno={Errno}", _wakeupFd, Marshal.GetLastWin32Error());
+        }
+
         if (NativeTls.close(_epollFd) < 0)
         {
             _logger.LogDebug("close(epollFd={EpollFd}) failed: errno={Errno}", _epollFd, Marshal.GetLastWin32Error());

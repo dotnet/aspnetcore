@@ -1,0 +1,170 @@
+# Labels PRs with `area-*` labels based on the paths of changed files.
+#
+# Matching rules:
+#   * The LONGEST matching path prefix wins, so more specific folders
+#     (e.g. src/Middleware/WebSockets/ -> area-networking) take precedence over
+#     broader ones (e.g. src/Middleware/ -> area-middleware).
+#   * A file that matches no prefix but ends in .props/.targets falls back to
+#     area-infrastructure.
+#   * All distinct areas across the changed files are applied. Labels already on
+#     the PR are left untouched; no labels are ever removed.
+name: "Labeler: Area paths (deterministic)"
+
+on:
+  # pull_request_target is safe here. We are not checking out untrusted code.
+  pull_request_target:
+    types: [opened, reopened]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# Never let two runs label the same PR concurrently.
+concurrency:
+  group: area-path-labeler-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  label:
+    # Do not run on forks outside the 'dotnet' org.
+    if: ${{ github.repository_owner == 'dotnet' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: "Apply area labels from changed paths"
+        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+        with:
+          script: |
+            // Path prefix -> area label. Sourced from the `Code:` entries in
+            // .github/workflows/issue-triage-agent.md (Step 1: Area Classification).
+            const RULES = {
+              // area-networking
+              "src/Servers/": "area-networking",
+              "src/Http/Http/": "area-networking",
+              "src/Http/Http.Abstractions/": "area-networking",
+              "src/Http/Http.Extensions/": "area-networking",
+              "src/Http/Http.Features/": "area-networking",
+              "src/Http/Headers/": "area-networking",
+              "src/Http/WebUtilities/": "area-networking",
+              "src/Middleware/WebSockets/": "area-networking",
+              "src/Hosting/Server.Abstractions/": "area-networking",
+              "src/HttpClientFactory/": "area-networking",
+              // area-blazor
+              "src/Components/": "area-blazor",
+              "src/JSInterop/": "area-blazor",
+              // area-auth (more specific than area-blazor / area-networking above)
+              "src/Components/Authorization/": "area-auth",
+              "src/Security/Authentication/": "area-auth",
+              "src/Security/Authorization/": "area-auth",
+              "src/Http/Authentication.Abstractions/": "area-auth",
+              "src/Http/Authentication.Core/": "area-auth",
+              // area-identity
+              "src/Identity/": "area-identity",
+              // area-mvc
+              "src/Mvc/": "area-mvc",
+              "src/Html.Abstractions/": "area-mvc",
+              // area-minimal
+              "src/Http/Http.Results/": "area-minimal",
+              "src/OpenApi/": "area-minimal",
+              // area-middleware
+              "src/Middleware/": "area-middleware",
+              "src/StaticAssets/": "area-middleware",
+              "src/Caching/": "area-middleware",
+              // area-signalr
+              "src/SignalR/": "area-signalr",
+              // area-routing
+              "src/Http/Routing/": "area-routing",
+              "src/Http/Routing.Abstractions/": "area-routing",
+              "src/Http/Metadata/": "area-routing",
+              // area-dataprotection
+              "src/DataProtection/": "area-dataprotection",
+              // area-hosting
+              "src/Hosting/": "area-hosting",
+              "src/DefaultBuilder/": "area-hosting",
+              "src/Azure/": "area-hosting",
+              // area-commandlinetools (more specific than area-minimal for the OpenApi tool)
+              "src/Tools/": "area-commandlinetools",
+              "src/OpenApi/Microsoft.dotnet-openapi/": "area-commandlinetools",
+              "src/ProjectTemplates/": "area-commandlinetools",
+              // area-grpc
+              "src/Grpc/": "area-grpc",
+              // area-healthchecks (more specific than area-middleware for the middleware folder)
+              "src/HealthChecks/": "area-healthchecks",
+              "src/Middleware/HealthChecks/": "area-healthchecks",
+              // area-security
+              "src/Antiforgery/": "area-security",
+              "src/Security/CookiePolicy/": "area-security",
+              // area-ui-rendering
+              "src/Razor/": "area-ui-rendering",
+              // area-infrastructure
+              "eng/": "area-infrastructure",
+              "src/Framework/": "area-infrastructure",
+              "src/BuildAfterTargetingPack/": "area-infrastructure",
+              "src/Testing/": "area-infrastructure",
+              "src/Installers/": "area-infrastructure",
+              // area-unified-build
+              "src/SiteExtensions/": "area-unified-build",
+            };
+
+            // Longest prefix first so the most specific folder wins.
+            const sorted = Object.entries(RULES).sort((a, b) => b[0].length - a[0].length);
+
+            function classify(path) {
+              const p = path.replace(/\\/g, "/");
+              for (const [prefix, area] of sorted) {
+                if (p.startsWith(prefix)) {
+                  return area;
+                }
+              }
+              if (p.endsWith(".props") || p.endsWith(".targets")) {
+                return "area-infrastructure";
+              }
+              return null;
+            }
+
+            const { owner, repo } = context.repo;
+
+            const pull_number = context.payload.pull_request.number;
+
+            try {
+              const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+              if (pr.state !== "open") {
+                core.info(`PR #${pull_number}: skipping (state is '${pr.state}').`);
+                return;
+              }
+
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number,
+                per_page: 100,
+              });
+
+              const areas = new Set();
+              for (const file of files) {
+                const area = classify(file.filename);
+                if (area) {
+                  areas.add(area);
+                }
+              }
+
+              if (areas.size === 0) {
+                core.info(`PR #${pull_number}: no area labels to add.`);
+                return;
+              }
+
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pull_number,
+                labels: [...areas],
+              });
+              core.info(`PR #${pull_number}: added ${[...areas].join(", ")}.`);
+            } catch (error) {
+              // Never fail the run: labeling must not block PR workflows.
+              core.warning(`PR #${pull_number}: failed to label - ${error.message}`);
+            }

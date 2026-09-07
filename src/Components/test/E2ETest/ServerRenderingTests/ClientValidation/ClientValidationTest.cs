@@ -187,13 +187,14 @@ public class ClientValidationTest : ClientValidationTestBase
     [Fact]
     public void EnhancedNavigation_NoFormToForm_RegistersValidation()
     {
-        // Start on a page with no carrier (the service is not created on this page).
         Navigate("subdir/forms/client-validation/enhanced-nav-noform");
         Browser.Exists(By.Id("blazor-started"));
         Browser.Equal("Enhanced navigation no-form page", () => Browser.Exists(By.Id("page-title")).Text);
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return typeof window.Blazor?.formValidation?.addValidator === 'function';"));
         MarkEnhancedNavProbe();
 
-        // no-form -> form A: the service is created on first carrier sighting and registers A.
+        // no-form -> form A: the carrier registers A with the already-existing service.
         Browser.Exists(By.Id("go-to-a")).Click();
         Browser.Equal("Enhanced navigation form A", () => Browser.Exists(By.Id("page-title")).Text);
         AssertWasEnhancedNavigation();
@@ -240,8 +241,9 @@ public class ClientValidationTest : ClientValidationTestBase
     {
         NavigateToClientValidationPage("custom-validator");
 
-        // Wait until the page has registered the 'startswith' JS validator.
-        Browser.Exists(By.Id("custom-validator-ready"));
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return typeof window.registerCustomValidator === 'function';"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("registerCustomValidator();");
 
         Browser.Exists(By.Id("code")).SendKeys("XYZ-123");
         Browser.Exists(By.Id("submit")).Click();

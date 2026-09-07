@@ -77,7 +77,7 @@ internal sealed partial class ComponentHub : Hub
     {
         // ComponentHub owns authentication state at the circuit layer and does not use SignalR
         // groups or user routing, so it can accept an identity change without rekeying those.
-        Context.Features.Get<IConnectionUserRefreshFeature>()?.OnUserRefreshing = static _ => true;
+        Context.Features.Get<IConnectionAuthenticationRefreshFeature>()?.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
         return Task.CompletedTask;
     }

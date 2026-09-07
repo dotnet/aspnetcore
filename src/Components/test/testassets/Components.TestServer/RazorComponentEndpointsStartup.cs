@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -53,6 +54,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
+        services.AddSingleton<ExternalNavigationTarget>();
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 
@@ -396,10 +398,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }

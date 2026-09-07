@@ -190,8 +190,7 @@ public static class SecurityStampValidator
     /// </summary>
     /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
     /// and <see cref="AuthenticationProperties"/> to validate.</param>
-    /// <returns></returns>
-
+    /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
     public static Task ValidateAsync<TValidator>(CookieValidatePrincipalContext context) where TValidator : ISecurityStampValidator
     {
         if (context.HttpContext.RequestServices == null)

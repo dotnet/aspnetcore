@@ -23,6 +23,16 @@ public class UIAgentOptions
     /// </summary>
     public ChatOptions? ChatOptions { get; set; }
 
+    /// <summary>
+    /// Gets or sets a callback that maps model updates into typed agent state.
+    /// </summary>
+    public Action<StateMapperContext>? StateMapper { get; set; }
+
+    /// <summary>
+    /// Gets or sets the persistent conversation thread that receives completed turns.
+    /// </summary>
+    public IConversationThread? Thread { get; set; }
+
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
     internal Dictionary<string, AIFunction> UIActions { get; } =
@@ -74,4 +84,21 @@ public class UIAgentOptions
 
         public IHandlerEntry CreateEntry() => new HandlerEntry<TState>(_handler);
     }
+}
+
+/// <summary>
+/// Configures a <see cref="UIAgent{TState}"/>.
+/// </summary>
+/// <typeparam name="TState">The type of state associated with the agent.</typeparam>
+public sealed class UIAgentOptions<TState> : UIAgentOptions where TState : class, new()
+{
+    internal UIAgentOptions(TState? initialState)
+    {
+        State = new AgentState<TState>(initialState);
+    }
+
+    /// <summary>
+    /// Gets the observable state associated with the agent.
+    /// </summary>
+    public AgentState<TState> State { get; }
 }
