@@ -195,6 +195,15 @@ checks, and same-model judge limit what aggregate A/B lift establishes;
 held-out public histories, tool-trace coverage, and judge calibration remain
 separate follow-ups.
 
+The security-stop, confidentiality-stop, and known-specialist prompt graders
+explicitly distinguish assistant-authored disclosures from user input in
+Vally's session timeline, while retaining tool-call evidence for prohibited
+actions. The invalid-input matcher accepts plain or bold `one` in the same
+required phrase. Validate such grader corrections against preserved
+trajectories and label the results as regrades, not new agent trials. Include
+a clean-output versus actual-echo control when correcting disclosure grading;
+removing a false positive must not permit a real leak.
+
 ## Validation boundaries
 
 Pinned Vally owns YAML parsing, duplicate-key rejection, and eval/grader schema
