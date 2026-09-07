@@ -27,6 +27,14 @@ merge without creating another notification feed.
 - Separates direct review requests, team requests, notification reasons,
   participation, mentions, changed-since-own-review, and evidenced replies in
   participated review threads.
+- Makes the Review handoff explicitly ask the foreground caller to copy any
+  applicable model/provider restrictions into the actual kickoff prompt before
+  opening the child session, then asks the child session to locate and use the
+  intended `review-pull-request` skill from already-available sources, carry
+  those restrictions forward when selecting workers, and stop with a setup
+  blocker if the intended skill cannot be discovered or honored. These prompt
+  instructions are not runtime enforcement, and review artifacts may be written
+  only in the session-state files directory without editing repository files.
 - Displays assessed, partial, unavailable, and unassessed coverage plus cold or
   warm API metrics. Personal signals never grant queue eligibility or create a
   separate follow-up lane; bot-authored and out-of-scope items remain visible
@@ -49,6 +57,17 @@ session. **Verify discussion** items can be opened but must be interpreted by a 
 items can start a new read-only investigation session. The browser sends only
 an opaque item ID and action kind; the extension resolves repository, pull
 request number, bucket, and URL from the current server-owned snapshot.
+
+The Review handoff is source-only and read-only: the foreground caller must
+copy applicable model/provider restrictions into the actual kickoff prompt
+before opening the child session, and the child session must preserve those
+restrictions in its worker selection. The intended review skill may be absent
+from the PR checkout yet still available through installed session, user,
+plugin, project, or target-checkout sources; if no available source can satisfy
+it, the blocker is deliberate. It still stops with a setup blocker instead of
+silently falling back to a generic review workflow, and it does not install,
+copy, or fetch a hardcoded remote skill. Review artifacts remain confined to
+the session-state files directory.
 
 The extension has no action that comments, labels, assigns, closes, merges,
 rebases, edits files, commits, or pushes.
