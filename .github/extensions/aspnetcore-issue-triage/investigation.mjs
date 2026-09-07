@@ -173,6 +173,7 @@ export function createStoredReport(
     skill: ".github/skills/investigate-issue/SKILL.md",
     skillDigest: execution.skillDigest,
     content,
+    stopPath: /^\*\*Classification:\*\*[ \t]*Do not publish[ \t]*$/m.test(content),
   };
 }
 

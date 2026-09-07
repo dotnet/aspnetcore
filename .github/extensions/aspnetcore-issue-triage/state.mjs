@@ -24,7 +24,9 @@ export function createTriageController({
   let refreshPromise = null;
   let refreshArea = null;
   let selectedItemId = null;
+  let selectedSavedItem = null;
   let selectedReport = null;
+  let selectedWorkspace = null;
   let selectionGeneration = 0;
   let lifecycleGeneration = 0;
   let active = true;
@@ -87,7 +89,9 @@ export function createTriageController({
             snapshot = built.public;
             actions = built.actions;
             selectedItemId = null;
+            selectedSavedItem = null;
             selectedReport = null;
+            selectedWorkspace = null;
             selectionGeneration += 1;
             investigation = idleInvestigation();
             refresh = {
@@ -140,8 +144,13 @@ export function createTriageController({
           predicate: snapshot.predicate,
           coverage: snapshot.coverage,
           totalCount: snapshot.totalCount,
-          selectedIssue: selectedItemId ? publicItem(actions.get(selectedItemId)) : null,
+          selectedIssue: selectedSavedItem
+            ? publicItem(selectedSavedItem)
+            : selectedItemId
+              ? publicItem(actions.get(selectedItemId))
+              : null,
           selectedReport,
+          selectedWorkspace,
           investigation: { ...investigation },
         }
         : null,
@@ -174,10 +183,39 @@ export function createTriageController({
     const item = resolveItem(input?.itemId);
     const generation = ++selectionGeneration;
     selectedItemId = item.id;
+    selectedSavedItem = null;
     selectedReport = null;
+    selectedWorkspace = null;
     const report = await reportStore.read(item.number);
+    const workspace = report
+      ? await (reportStore.seedWorkspace
+        ? reportStore.seedWorkspace(report)
+        : reportStore.readWorkspace?.(item.number))
+      : await reportStore.readWorkspace?.(item.number);
     if (active && selectedItemId === item.id && selectionGeneration === generation) {
       selectedReport = report;
+      selectedWorkspace = workspace ?? null;
+      publish();
+    }
+    return getState();
+  }
+
+  async function selectSaved(input) {
+    requireActive();
+    const item = validateSavedItem(input);
+    const generation = ++selectionGeneration;
+    selectedItemId = item.id;
+    selectedSavedItem = item;
+    selectedReport = null;
+    selectedWorkspace = null;
+    const report = await reportStore.read(item.number);
+    const workspace = await reportStore.readWorkspace?.(item.number);
+    if (!workspace) {
+      throw stateError("workspace_not_found", "No saved investigation workspace exists for this issue.");
+    }
+    if (active && selectedItemId === item.id && selectionGeneration === generation) {
+      selectedReport = report;
+      selectedWorkspace = workspace;
       publish();
     }
     return getState();
@@ -245,9 +283,13 @@ export function createTriageController({
       () => active && lifecycleGeneration === generation,
     );
     requireCurrent(generation);
+    const workspace = reportStore.seedWorkspace
+      ? await reportStore.seedWorkspace(storedReport)
+      : await reportStore.readWorkspace?.(storedReport.issueNumber);
     if (selectedItemId === job.itemId) {
       selectionGeneration += 1;
       selectedReport = storedReport;
+      selectedWorkspace = workspace ?? null;
     }
     investigation = {
       ...investigation,
@@ -277,6 +319,39 @@ export function createTriageController({
       error: error.message,
     };
     publish();
+    return getState();
+  }
+
+  async function saveDraft(input = {}) {
+    requireActive();
+    const item = resolveSelectedItem();
+    if (input.issueNumber !== undefined && input.issueNumber !== item.number) {
+      throw stateError("stale_selection", "The selected issue changed before the draft was saved.");
+    }
+    const workspace = await reportStore.saveDraft(
+      item.number,
+      input.content,
+      input.revision,
+      input.provenance ?? "human",
+    );
+    if (selectedItemId === item.id) {
+      selectedWorkspace = workspace;
+      publish();
+    }
+    return getState();
+  }
+
+  async function undoDraft(input = {}) {
+    requireActive();
+    const item = resolveSelectedItem();
+    if (input.issueNumber !== undefined && input.issueNumber !== item.number) {
+      throw stateError("stale_selection", "The selected issue changed before the draft was undone.");
+    }
+    const workspace = await reportStore.undoDraft(item.number, input.revision);
+    if (selectedItemId === item.id) {
+      selectedWorkspace = workspace;
+      publish();
+    }
     return getState();
   }
 
@@ -351,9 +426,41 @@ export function createTriageController({
     initialize,
     queueInvestigation,
     refresh: refreshQueue,
+    saveDraft,
     select,
+    selectSaved,
     subscribe,
+    undoDraft,
   };
+
+  function resolveSelectedItem() {
+    if (!selectedItemId) {
+      throw stateError("issue_not_selected", "Select an issue before editing its investigation.");
+    }
+    return selectedSavedItem?.id === selectedItemId
+      ? selectedSavedItem
+      : resolveItem(selectedItemId);
+  }
+
+  function validateSavedItem(item) {
+    if (
+      !item
+      || item.repository !== REPOSITORY
+      || typeof item.id !== "string"
+      || !/^saved-[1-9][0-9]*$/.test(item.id)
+      || !Number.isSafeInteger(item.number)
+      || item.number < 1
+      || item.url !== `https://github.com/${REPOSITORY}/issues/${item.number}`
+      || item.saved !== true
+    ) {
+      throw stateError("saved_issue_invalid", "The saved issue identity is invalid.");
+    }
+    return {
+      ...item,
+      labels: Array.isArray(item.labels) ? [...item.labels] : [],
+      whyIncluded: ["Saved local investigation workspace; queue membership is not asserted."],
+    };
+  }
 }
 
 export function createSnapshot(queue, createId = randomUUID) {
@@ -415,6 +522,7 @@ export function summarizeState(state) {
       totalCount: state.snapshot.totalCount,
       selectedIssue: state.snapshot.selectedIssue,
       selectedReport: state.snapshot.selectedReport,
+      selectedWorkspace: state.snapshot.selectedWorkspace,
       investigation: state.snapshot.investigation,
     },
   };

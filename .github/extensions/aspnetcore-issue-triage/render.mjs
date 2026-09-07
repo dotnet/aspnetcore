@@ -151,6 +151,38 @@ export const HTML = `<!doctype html>
       white-space: pre-wrap;
       word-break: break-word;
     }
+    textarea {
+      border: 1px solid var(--border-color-default, #d0d7de);
+      border-radius: 6px;
+      background: var(--background-color-default, #fff);
+      color: var(--text-color-default, #1f2328);
+      display: block;
+      font: inherit;
+      line-height: 1.45;
+      min-height: 260px;
+      padding: 8px;
+      resize: vertical;
+      width: 100%;
+    }
+    textarea:focus-visible {
+      outline: 2px solid var(--color-focus-outline, #0969da);
+      outline-offset: 2px;
+    }
+    .editor-actions, .discussion-actions, .publication-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .answer, .preview {
+      background: var(--background-color-muted, #f6f8fa);
+      border-radius: 8px;
+      margin-top: 8px;
+      padding: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .success { color: var(--true-color-green, #1a7f37); font-weight: 600; }
     .footer { margin-top: 14px; }
     @media (max-width: 920px) {
       .layout { grid-template-columns: 1fr; }
@@ -162,12 +194,15 @@ export const HTML = `<!doctype html>
     <header class="header">
       <div>
         <h1>ASP.NET Core Issue Triage</h1>
-        <p class="muted">Complete, read-only area queues with one-issue advisory investigation.</p>
+        <p class="muted">Public issue queues with local investigation drafts and human-confirmed comments.</p>
       </div>
       <div class="toolbar">
         <label for="area">Area</label>
         <select id="area"></select>
         <button id="refresh" type="button">Refresh</button>
+        <label for="saved-issue">Saved issue #</label>
+        <input id="saved-issue" type="number" min="1" inputmode="numeric">
+        <button id="open-saved" type="button">Open saved draft</button>
       </div>
     </header>
     <div id="status" class="muted" role="status"></div>
@@ -200,7 +235,7 @@ export const HTML = `<!doctype html>
         <div id="detail" class="detail-empty muted">Select one issue to inspect it.</div>
       </aside>
     </div>
-    <p class="footer muted">Human judgment remains authoritative. This canvas never labels, assigns, comments, closes, milestones, or changes projects.</p>
+    <p class="footer muted">Human judgment remains authoritative. Saving and discussion stay local; commenting requires an explicit preview and confirmation.</p>
   </main>
   <script>
     const state = {
@@ -208,11 +243,21 @@ export const HTML = `<!doctype html>
       page: null,
       offset: 0,
       limit: 50,
+      localDraft: null,
+      localQuestion: null,
+      discussion: null,
+      preview: null,
+      previewPending: null,
+      draftSavePromise: null,
+      pendingSelection: null,
+      selectionGeneration: 0,
     };
     const token = new URLSearchParams(location.search).get("token") || "";
 
     const areaSelect = document.getElementById("area");
     const refreshButton = document.getElementById("refresh");
+    const savedIssueNumber = document.getElementById("saved-issue");
+    const openSavedButton = document.getElementById("open-saved");
     const pageSize = document.getElementById("page-size");
     const previousButton = document.getElementById("previous");
     const nextButton = document.getElementById("next");
@@ -245,6 +290,154 @@ export const HTML = `<!doctype html>
       text(document.getElementById("status"), "Error: " + (error?.message || String(error)));
     }
 
+    function currentIssue() {
+      return state.metadata?.snapshot?.selectedIssue ?? null;
+    }
+
+    function currentDraftRevision() {
+      return state.metadata?.snapshot?.selectedWorkspace?.draft?.revision ?? null;
+    }
+
+    function captureEditorState() {
+      const element = document.activeElement;
+      const issue = currentIssue();
+      if (
+        !element
+        || !issue
+        || !["draft", "question"].includes(element.id)
+        || Number(element.dataset.issueNumber) !== issue.number
+        || element.dataset.itemId !== issue.id
+      ) {
+        return null;
+      }
+      return {
+        id: element.id,
+        itemId: issue.id,
+        issueNumber: issue.number,
+        selectionStart: element.selectionStart,
+        selectionEnd: element.selectionEnd,
+        selectionDirection: element.selectionDirection,
+      };
+    }
+
+    function restoreEditorState(editorState) {
+      if (
+        !editorState
+        || currentIssue()?.id !== editorState.itemId
+        || currentIssue()?.number !== editorState.issueNumber
+      ) {
+        return;
+      }
+      const element = document.getElementById(editorState.id);
+      if (!element) {
+        return;
+      }
+      element.focus({ preventScroll: true });
+      const valueLength = element.value.length;
+      element.setSelectionRange(
+        Math.min(editorState.selectionStart ?? valueLength, valueLength),
+        Math.min(editorState.selectionEnd ?? valueLength, valueLength),
+        editorState.selectionDirection ?? "none",
+      );
+    }
+
+    function cancelPendingDraftSave() {
+      if (state.localDraft?.timer) {
+        clearTimeout(state.localDraft.timer);
+        state.localDraft.timer = null;
+      }
+    }
+
+    function isCurrentIssueContext(context) {
+      const issue = currentIssue();
+      return state.selectionGeneration === context.generation
+        && !state.pendingSelection
+        && issue?.id === context.itemId
+        && issue.number === context.issueNumber
+        && currentDraftRevision() === context.revision;
+    }
+
+    function isCurrentIssueIdentity(context) {
+      const issue = currentIssue();
+      return state.selectionGeneration === context.generation
+        && !state.pendingSelection
+        && issue?.id === context.itemId
+        && issue.number === context.issueNumber;
+    }
+
+    function isResponseForContext(responseState, context, revisions) {
+      const issue = responseState?.snapshot?.selectedIssue;
+      const revision = responseState?.snapshot?.selectedWorkspace?.draft?.revision;
+      return isCurrentIssueContext(context)
+        && issue?.id === context.itemId
+        && issue.number === context.issueNumber
+        && revisions.includes(revision);
+    }
+
+    function trackDraftSave(promise) {
+      state.draftSavePromise = promise;
+      promise.then(
+        () => {
+          if (state.draftSavePromise === promise) state.draftSavePromise = null;
+        },
+        () => {
+          if (state.draftSavePromise === promise) state.draftSavePromise = null;
+        },
+      );
+      return promise;
+    }
+
+    async function saveDraftContext(draftContext, editorStatus = null, reloadPage = true) {
+      if (
+        state.localDraft !== draftContext
+        || !isCurrentIssueContext(draftContext)
+      ) {
+        return false;
+      }
+      try {
+        const response = await request("/api/draft", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: draftContext.content,
+            provenance: "human",
+            issueNumber: draftContext.issueNumber,
+            revision: draftContext.revision,
+          }),
+        });
+        const responseIssue = response?.snapshot?.selectedIssue;
+        const responseDraft = response?.snapshot?.selectedWorkspace?.draft;
+        if (
+          state.localDraft !== draftContext
+          || !isCurrentIssueIdentity(draftContext)
+          || responseIssue?.id !== draftContext.itemId
+          || responseIssue.number !== draftContext.issueNumber
+          || responseDraft?.revision !== draftContext.revision + 1
+          || responseDraft.content !== draftContext.content
+        ) {
+          return false;
+        }
+        state.localDraft = null;
+        state.metadata = response;
+        renderMetadata();
+        if (reloadPage && state.metadata.snapshot) await loadPage();
+        return true;
+      } catch (error) {
+        if (state.localDraft === draftContext && editorStatus) {
+          text(editorStatus, "Draft conflict: " + (error?.message || String(error)));
+        }
+        throw error;
+      }
+    }
+
+    function draftElementFor(issue) {
+      const draft = document.getElementById("draft");
+      return draft?.dataset.itemId === issue.id
+        && Number(draft.dataset.issueNumber) === issue.number
+        ? draft
+        : null;
+    }
+
     async function loadState() {
       state.metadata = await request("/api/state");
       renderMetadata();
@@ -261,6 +454,7 @@ export const HTML = `<!doctype html>
     }
 
     function renderMetadata() {
+      const editorState = captureEditorState();
       const metadata = state.metadata;
       const snapshot = metadata.snapshot;
       refreshButton.disabled = metadata.refresh.phase === "refreshing";
@@ -287,6 +481,7 @@ export const HTML = `<!doctype html>
         document.getElementById("issues").replaceChildren();
         document.getElementById("predicate").replaceChildren();
         renderWarnings({ coverage: { complete: false, limitation: metadata.refresh.error, warnings: [] } });
+        restoreEditorState(editorState);
         return;
       }
 
@@ -294,6 +489,7 @@ export const HTML = `<!doctype html>
       renderStats(snapshot);
       text(document.getElementById("predicate"), snapshot.predicate);
       renderDetail(snapshot);
+      restoreEditorState(editorState);
     }
 
     async function refreshQueue() {
@@ -419,7 +615,258 @@ export const HTML = `<!doctype html>
         container.append(node("p", snapshot.investigation.error ? "error" : "muted", status));
       }
 
-      if (snapshot.selectedReport) {
+      if (snapshot.selectedWorkspace) {
+        const meta = node("div", "report-meta");
+        meta.append(
+          node("h3", "", "Investigation"),
+          node("p", "muted", "Original generated report is preserved separately. Edit the local Markdown draft below."),
+        );
+        const publication = snapshot.selectedWorkspace.publication;
+        if (publication?.pending) {
+          meta.append(
+            node("p", "warning", "A GitHub comment write has an unknown outcome. Reconcile it before trying another publication."),
+          );
+        } else if (publication?.commentId) {
+          const draftMatchesPublication = publication.publishedRevision === snapshot.selectedWorkspace.draft.revision
+            && (!publication.publishedHash || publication.publishedHash === snapshot.selectedWorkspace.draft.hash);
+          const receipt = node(
+            "p",
+            draftMatchesPublication ? "success" : "warning",
+            draftMatchesPublication
+              ? "Published by explicit confirmation."
+              : "Published comment reflects an earlier draft; local changes are not published.",
+          );
+          if (publication.commentUrl) {
+            const link = node("a", "", " Open comment");
+            link.href = publication.commentUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            receipt.append(link);
+          }
+          meta.append(receipt);
+        }
+        const draft = document.createElement("textarea");
+        draft.id = "draft";
+        draft.dataset.itemId = issue.id;
+        draft.dataset.issueNumber = String(issue.number);
+        draft.value = state.localDraft?.issueNumber === issue.number
+          && state.localDraft.generation === state.selectionGeneration
+          ? state.localDraft.content
+          : snapshot.selectedWorkspace.draft.content;
+        draft.setAttribute("aria-label", "Investigation Markdown draft");
+        const editorStatus = node(
+          "div",
+          "muted",
+          state.localDraft?.issueNumber === issue.number ? "Unsaved local changes" : "Draft saved",
+        );
+        const editorActions = node("div", "editor-actions");
+        const undo = node("button", "", "Undo last change");
+        undo.type = "button";
+        undo.disabled = snapshot.selectedWorkspace.draft.revision < 2;
+        undo.addEventListener("click", () => undoDraft(issue.number));
+        const previewButton = node("button", "primary", "Preview comment");
+        previewButton.type = "button";
+        previewButton.disabled = state.previewPending?.itemId === issue.id
+          && state.previewPending.generation === state.selectionGeneration;
+        previewButton.addEventListener("click", () => previewPublication(issue.number, previewButton));
+        editorActions.append(undo, previewButton);
+        draft.addEventListener("input", () => {
+          cancelPendingDraftSave();
+          state.preview = null;
+          const draftContext = {
+            itemId: issue.id,
+            issueNumber: issue.number,
+            generation: state.selectionGeneration,
+            revision: snapshot.selectedWorkspace.draft.revision,
+            content: draft.value,
+            timer: null,
+          };
+          state.localDraft = draftContext;
+          text(editorStatus, "Saving...");
+          draftContext.timer = setTimeout(() => {
+            const save = trackDraftSave(saveDraftContext(draftContext, editorStatus));
+            void save.catch(() => {});
+          }, 400);
+        });
+        meta.append(draft, editorStatus, editorActions);
+        const discussionHeading = node("h3", "", "Discuss");
+        const question = document.createElement("textarea");
+        question.id = "question";
+        question.dataset.itemId = issue.id;
+        question.dataset.issueNumber = String(issue.number);
+        question.rows = 3;
+        question.style.minHeight = "90px";
+        question.value = state.localQuestion?.issueNumber === issue.number
+          && state.localQuestion.generation === state.selectionGeneration
+          ? state.localQuestion.content
+          : "";
+        question.setAttribute("aria-label", "Discussion question");
+        question.addEventListener("input", () => {
+          state.localQuestion = {
+            itemId: issue.id,
+            issueNumber: issue.number,
+            generation: state.selectionGeneration,
+            content: question.value,
+          };
+        });
+        const discussionActions = node("div", "discussion-actions");
+        const ask = node("button", "primary", "Ask Copilot");
+        ask.type = "button";
+        ask.addEventListener("click", async () => {
+          const discussionContext = {
+            itemId: issue.id,
+            issueNumber: issue.number,
+            generation: state.selectionGeneration,
+            revision: snapshot.selectedWorkspace.draft.revision,
+          };
+          try {
+            ask.disabled = true;
+            const response = await request("/api/discuss", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                issueNumber: discussionContext.issueNumber,
+                question: question.value,
+                revision: discussionContext.revision,
+              }),
+            });
+            if (!isCurrentIssueIdentity(discussionContext)) {
+              return;
+            }
+            const draftBeforeResponse = draftElementFor(issue);
+            const savedContent = state.metadata?.snapshot?.selectedWorkspace?.draft.content;
+            const humanContent = draftBeforeResponse?.value;
+            const hasUnsavedHumanEdit = Boolean(
+              draftBeforeResponse
+              && typeof humanContent === "string"
+              && (state.localDraft?.itemId === issue.id || humanContent !== savedContent),
+            );
+            state.metadata = response.state;
+            state.discussion = { ...response, issueNumber: discussionContext.issueNumber };
+            if (response.applied && hasUnsavedHumanEdit) {
+              const responseWorkspace = response.state?.snapshot?.selectedWorkspace;
+              const humanDraft = {
+                itemId: issue.id,
+                issueNumber: issue.number,
+                generation: state.selectionGeneration,
+                revision: responseWorkspace?.draft.revision,
+                content: humanContent,
+                timer: null,
+              };
+              state.localDraft = humanDraft;
+              state.discussion = {
+                ...state.discussion,
+                applied: false,
+                conflict: "Copilot's proposed replacement was not applied because a newer human edit was in progress.",
+              };
+              renderMetadata();
+              const saved = await request("/api/draft", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  content: humanDraft.content,
+                  provenance: "human",
+                  issueNumber: humanDraft.issueNumber,
+                  revision: humanDraft.revision,
+                }),
+              });
+              const savedWorkspace = saved?.snapshot?.selectedWorkspace?.draft;
+              if (
+                !isCurrentIssueIdentity(discussionContext)
+                || savedWorkspace?.content === undefined
+                || savedWorkspace.content !== humanDraft.content
+                || savedWorkspace.revision !== humanDraft.revision + 1
+              ) {
+                return;
+              }
+              state.metadata = saved;
+              if (state.localDraft === humanDraft) {
+                state.localDraft = null;
+              } else {
+                const newerHumanDraft = state.localDraft;
+                const currentDraft = draftElementFor(issue);
+                if (
+                  !newerHumanDraft
+                  || !isCurrentIssueIdentity(discussionContext)
+                  || currentDraft?.value !== newerHumanDraft.content
+                ) {
+                  return;
+                }
+                cancelPendingDraftSave();
+                const followupDraft = {
+                  ...newerHumanDraft,
+                  revision: savedWorkspace.revision,
+                  timer: null,
+                };
+                state.localDraft = followupDraft;
+                renderMetadata();
+                const followupSave = trackDraftSave(
+                  saveDraftContext(followupDraft, null, false),
+                );
+                void followupSave.catch(() => {});
+              }
+            }
+            if (!response.applied || hasUnsavedHumanEdit) state.preview = null;
+            state.localQuestion = null;
+            renderMetadata();
+          } catch (error) {
+            if (isCurrentIssueContext(discussionContext)) {
+              showError(error);
+            }
+          } finally {
+            ask.disabled = false;
+          }
+        });
+        discussionActions.append(ask);
+        meta.append(discussionHeading, question, discussionActions);
+        const discussionHistory = snapshot.selectedWorkspace.discussion ?? [];
+        if (discussionHistory.length > 0) {
+          meta.append(node("h3", "", "Discussion history"));
+          for (const turn of discussionHistory) {
+            const historyText = turn.kind === "turn"
+              ? "Question: " + turn.question + "\\n\\nAnswer: " + turn.answer
+              : (turn.content || turn.answer || turn.question || "");
+            meta.append(node("div", "answer", historyText));
+          }
+        }
+        if (state.discussion?.answer) {
+          meta.append(node("div", "answer", state.discussion.answer));
+          if (state.discussion.conflict) {
+            meta.append(node("p", "warning", state.discussion.conflict));
+          } else if (state.discussion.applied) {
+            meta.append(node("p", "success", "Copilot updated the draft."));
+          }
+        }
+        if (snapshot.selectedWorkspace.publication?.pending) {
+          const pending = node("div", "warning");
+          pending.append(
+            node("h3", "", "Publication needs reconciliation"),
+            node("p", "", "The previous GitHub write had an unknown outcome. Read GitHub before taking another action."),
+          );
+          const resolve = node("button", "primary", "Reconcile publication");
+          resolve.type = "button";
+          resolve.addEventListener("click", () => resolvePublication(issue.number, resolve));
+          pending.append(resolve);
+          meta.append(pending);
+        }
+        if (state.preview?.issueNumber === issue.number) {
+          const preview = node("div", "preview");
+          preview.append(
+            node("h3", "", "Publish preview"),
+            node("p", "", "Issue: " + state.preview.issueUrl),
+            node("p", "", "GitHub account: " + state.preview.accountLogin),
+            node("pre", "report", state.preview.body),
+          );
+          const publicationActions = node("div", "publication-actions");
+          const publish = node("button", "primary", "Publish this exact comment");
+          publish.type = "button";
+          publish.addEventListener("click", () => publishComment(issue.number));
+          publicationActions.append(publish);
+          preview.append(publicationActions);
+          meta.append(preview);
+        }
+        container.append(meta);
+      } else if (snapshot.selectedReport) {
         const meta = node("div", "report-meta");
         meta.append(
           node("h3", "", "Advisory investigation"),
@@ -428,7 +875,234 @@ export const HTML = `<!doctype html>
         );
         container.append(meta);
       } else {
-        container.append(node("p", "muted", "No durable investigation report is stored for this issue."));
+        container.append(node("p", "muted", "No durable investigation report is stored for this issue. Investigate the issue first."));
+      }
+    }
+
+    async function undoDraft(issueNumber) {
+      const issue = currentIssue();
+      const workspace = state.metadata?.snapshot?.selectedWorkspace;
+      if (!issue || issue.number !== issueNumber || !workspace) {
+        showError(new Error("The selected issue changed before undo could start."));
+        return;
+      }
+      const operation = {
+        itemId: issue.id,
+        issueNumber,
+        generation: state.selectionGeneration,
+      };
+      try {
+        cancelPendingDraftSave();
+        const draft = draftElementFor(issue);
+        const pendingSave = state.draftSavePromise;
+        if (
+          pendingSave
+          && state.localDraft?.itemId === operation.itemId
+          && draft?.value === state.localDraft.content
+        ) {
+          if (!(await pendingSave)) {
+            throw new Error("The draft changed before it could be saved; undo was blocked.");
+          }
+        } else if (draft && draft.value !== workspace.draft.content) {
+          const draftContext = {
+            ...operation,
+            revision: workspace.draft.revision,
+            content: draft.value,
+            timer: null,
+          };
+          state.localDraft = draftContext;
+          const save = trackDraftSave(saveDraftContext(draftContext));
+          if (!(await save)) {
+            throw new Error("The draft changed before it could be saved; undo was blocked.");
+          }
+        } else {
+          state.localDraft = null;
+        }
+        const context = {
+          ...operation,
+          revision: currentDraftRevision(),
+        };
+        if (!isCurrentIssueContext(context)) {
+          throw new Error("The selected issue or draft changed; undo was blocked.");
+        }
+        const response = await request("/api/undo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ revision: context.revision }),
+        });
+        if (!isResponseForContext(response, context, [context.revision + 1])) {
+          throw new Error("The selected issue or draft changed while undoing.");
+        }
+        state.localDraft = null;
+        state.metadata = response;
+        state.preview = null;
+        renderMetadata();
+        if (state.metadata.snapshot) await loadPage();
+      } catch (error) {
+        if (state.selectionGeneration === operation.generation) {
+          showError(error);
+        }
+      }
+    }
+
+    async function previewPublication(issueNumber, button) {
+      const issue = currentIssue();
+      const workspace = state.metadata?.snapshot?.selectedWorkspace;
+      if (!issue || issue.number !== issueNumber || !workspace) {
+        showError(new Error("The selected issue changed before preview could start."));
+        return;
+      }
+      const operation = {
+        itemId: issue.id,
+        issueNumber,
+        generation: state.selectionGeneration,
+      };
+      state.previewPending = operation;
+      if (button) button.disabled = true;
+      let previewError = null;
+      try {
+        const draft = draftElementFor(issue);
+        if (!draft) {
+          throw new Error("The investigation draft is unavailable; preview is blocked.");
+        }
+        const previewContent = draft.value;
+        const pendingSave = state.draftSavePromise;
+        if (
+          pendingSave
+          && state.localDraft?.itemId === operation.itemId
+          && state.localDraft.content === draft.value
+        ) {
+          if (!(await pendingSave)) {
+            throw new Error("The draft changed before it could be saved; preview was blocked.");
+          }
+        } else if (draft.value !== workspace.draft.content) {
+          text(document.getElementById("status"), "Saving the newest draft before preparing preview...");
+          cancelPendingDraftSave();
+          const draftContext = {
+            ...operation,
+            revision: workspace.draft.revision,
+            content: draft.value,
+            timer: null,
+          };
+          state.localDraft = draftContext;
+          const save = trackDraftSave(saveDraftContext(draftContext, null, false));
+          if (!(await save)) {
+            throw new Error("The draft changed before it could be saved; preview was blocked.");
+          }
+        } else {
+          cancelPendingDraftSave();
+          state.localDraft = null;
+        }
+        const previewContext = {
+          ...operation,
+          revision: currentDraftRevision(),
+        };
+        if (!isCurrentIssueContext(previewContext)) {
+          throw new Error("The selected issue or draft changed; preview was blocked.");
+        }
+        const preview = await request("/api/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ revision: previewContext.revision }),
+        });
+        if (
+          !isCurrentIssueContext(previewContext)
+          || preview.issueNumber !== previewContext.issueNumber
+          || draftElementFor(issue)?.value !== previewContent
+          || state.localDraft
+        ) {
+          throw new Error("The selected issue or draft changed while preparing preview.");
+        }
+        state.preview = {
+          ...preview,
+          itemId: previewContext.itemId,
+          generation: previewContext.generation,
+          revision: previewContext.revision,
+        };
+        renderMetadata();
+      } catch (error) {
+        previewError = error;
+      } finally {
+        if (state.previewPending === operation) state.previewPending = null;
+        if (button?.isConnected) {
+          button.disabled = false;
+        } else if (currentIssue()?.id === operation.itemId) {
+          renderMetadata();
+        }
+        if (previewError && state.selectionGeneration === operation.generation) {
+          showError(previewError);
+        }
+      }
+    }
+
+    async function publishComment(issueNumber) {
+      const preview = state.preview;
+      const issue = currentIssue();
+      const workspace = state.metadata?.snapshot?.selectedWorkspace;
+      const draft = issue ? draftElementFor(issue) : null;
+      if (
+        !preview
+        || !issue
+        || !workspace
+        || preview.itemId !== issue.id
+        || preview.issueNumber !== issueNumber
+        || preview.generation !== state.selectionGeneration
+        || preview.revision !== currentDraftRevision()
+        || !draft
+        || draft.value !== workspace.draft.content
+      ) {
+        showError(new Error("The draft changed after preview; publish was blocked. Prepare a new preview."));
+        return;
+      }
+      const context = {
+        itemId: issue.id,
+        issueNumber,
+        generation: state.selectionGeneration,
+        revision: preview.revision,
+      };
+      try {
+        const response = await request("/api/publish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            revision: context.revision,
+            confirmation: preview.confirmationToken,
+          }),
+        });
+        if (!isResponseForContext(response.state, context, [context.revision])) {
+          throw new Error("The selected issue or draft changed while publishing.");
+        }
+        state.metadata = response.state;
+        state.preview = null;
+        renderMetadata();
+      } catch (error) {
+        if (isCurrentIssueContext(context)) {
+          showError(error);
+        }
+      }
+
+      async function resolvePublication(issueNumber, button) {
+        const issue = currentIssue();
+        if (!issue || issue.number !== issueNumber) {
+          showError(new Error("The selected issue changed before recovery could start."));
+          return;
+        }
+        button.disabled = true;
+        try {
+          const response = await request("/api/resolve-publication", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}",
+          });
+          if (currentIssue()?.number !== issueNumber) {
+            return;
+          }
+          state.metadata = response.state;
+          renderMetadata();
+        } catch (error) {
+          showError(error);
+          button.disabled = false;
+        }
       }
     }
 
@@ -440,16 +1114,35 @@ export const HTML = `<!doctype html>
     }
 
     async function selectIssue(itemId) {
+      const generation = ++state.selectionGeneration;
+      cancelPendingDraftSave();
+      state.localDraft = null;
+      state.localQuestion = null;
+      state.discussion = null;
+      state.preview = null;
+      state.pendingSelection = { generation, itemId };
       try {
-        state.metadata = await request("/api/select", {
+        const metadata = await request("/api/select", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ itemId }),
         });
+        if (
+          state.selectionGeneration !== generation
+          || state.pendingSelection?.itemId !== itemId
+          || metadata.snapshot?.selectedIssue?.id !== itemId
+        ) {
+          return;
+        }
+        state.pendingSelection = null;
+        state.metadata = metadata;
         renderMetadata();
         renderPage();
       } catch (error) {
-        showError(error);
+        if (state.selectionGeneration === generation) {
+          state.pendingSelection = null;
+          showError(error);
+        }
       }
     }
 
@@ -478,6 +1171,30 @@ export const HTML = `<!doctype html>
       try {
         await refreshQueue();
       } catch (error) {
+        showError(error);
+      }
+    });
+    openSavedButton.addEventListener("click", async () => {
+      const issueNumber = Number(savedIssueNumber.value);
+      if (!Number.isSafeInteger(issueNumber) || issueNumber < 1) {
+        showError(new Error("Enter a positive saved issue number."));
+        return;
+      }
+      try {
+        state.pendingSelection = { itemId: "saved-" + issueNumber };
+        const metadata = await request("/api/select-saved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ issueNumber }),
+        });
+        state.selectionGeneration += 1;
+        state.pendingSelection = null;
+        state.metadata = metadata;
+        state.page = await request("/api/issues?offset=" + state.offset + "&limit=" + state.limit);
+        renderMetadata();
+        renderPage();
+      } catch (error) {
+        state.pendingSelection = null;
         showError(error);
       }
     });
@@ -513,7 +1230,24 @@ export const HTML = `<!doctype html>
     const events = new EventSource("/events?token=" + encodeURIComponent(token));
     events.addEventListener("state", async (event) => {
       try {
-        state.metadata = JSON.parse(event.data);
+        const metadata = JSON.parse(event.data);
+        const incomingIssueId = metadata.snapshot?.selectedIssue?.id ?? null;
+        const incomingRevision = metadata.snapshot?.selectedWorkspace?.draft?.revision ?? null;
+        const currentRevision = currentDraftRevision();
+        if (
+          (state.pendingSelection && incomingIssueId !== state.pendingSelection.itemId)
+          || (!state.pendingSelection
+            && currentIssue()
+            && incomingIssueId !== currentIssue().id)
+          || (!state.pendingSelection
+            && currentIssue()?.id === incomingIssueId
+            && currentRevision !== null
+            && incomingRevision !== null
+            && incomingRevision < currentRevision)
+        ) {
+          return;
+        }
+        state.metadata = metadata;
         renderMetadata();
         if (state.metadata.snapshot) {
           const total = state.metadata.snapshot.totalCount;
