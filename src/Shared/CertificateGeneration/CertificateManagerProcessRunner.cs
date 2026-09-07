@@ -21,12 +21,11 @@ internal static class CertificateManagerProcessRunner
             : Task.FromResult(string.Empty);
 
         process.WaitForExit();
-        Task.WaitAll(standardOutputTask, standardErrorTask);
 
-        return new ProcessExecutionResult(
-            process.ExitCode,
-            standardOutputTask.GetAwaiter().GetResult(),
-            standardErrorTask.GetAwaiter().GetResult());
+        var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+        var standardError = standardErrorTask.GetAwaiter().GetResult();
+
+        return new ProcessExecutionResult(process.ExitCode, standardOutput, standardError);
     }
 }
 
