@@ -5,8 +5,8 @@ type: capability
 defaults:
   runs: 5
   timeout: 600s
-  model: gpt-5.4
-  judge_model: gpt-5.4
+  model: gpt-5.6-terra
+  judge_model: gpt-5.6-terra
 
 scoring:
   weights:
