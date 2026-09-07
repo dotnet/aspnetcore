@@ -29,7 +29,13 @@ final disposition, priority, design, and release decisions.
   request has no issue, multiple issues, or a noncanonical identifier, ask for
   exactly one canonical issue instead of searching arbitrarily. Return only
   that plain request: do not emit the investigation template, classification,
-  preliminary assessment, or any issue analysis. Related issues and pull
+  preliminary assessment, or any issue analysis. Before any issue or source
+  retrieval, count the subjects the user explicitly requested, not just the
+  URLs that pass canonical validation. If several subjects were requested,
+  ask the user to select exactly one even when only one is a canonical issue.
+  Do not silently choose that issue and reinterpret the other requested
+  subjects as supporting references. A request for one canonical issue with
+  supporting references remains valid. Related issues and pull
   requests may be evidence after a valid subject is established, but never
   become additional subjects.
 - Use only public, read-only evidence: public GitHub GET/search, the current
