@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using AGUI.Abstractions;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Extensions.AI;
 
@@ -15,6 +17,8 @@ namespace DojoClient.E2E.Tests.ServiceOverrides;
 // partially streamed UI before letting the response finish.
 internal sealed class RecordedChatClient : IChatClient
 {
+    private const string PredictiveStateMediaType =
+        "application/vnd.aspnetcore.ai.predictive-state+json";
     private readonly RecordedScript _script;
     private readonly TestLockProvider _locks;
 
@@ -43,6 +47,21 @@ internal sealed class RecordedChatClient : IChatClient
         for (var frameIndex = 0; frameIndex < call.Frames.Count; frameIndex++)
         {
             var frame = call.Frames[frameIndex];
+            if (frame.State is { } state)
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = messageId,
+                    Contents =
+                    [
+                        new DataContent(
+                            JsonSerializer.SerializeToUtf8Bytes(state),
+                            PredictiveStateMediaType),
+                    ],
+                };
+            }
+
             if (frame.FunctionCall is not null)
             {
                 yield return new ChatResponseUpdate
@@ -81,7 +100,7 @@ internal sealed class RecordedChatClient : IChatClient
     internal static string GetLockKey(string lastUserMessage, string frameName)
         => $"replay:{lastUserMessage}:{frameName}";
 
-    private static void AssertRequest(
+    private void AssertRequest(
         RecordedCall call,
         IReadOnlyList<ChatMessage> messages,
         ChatOptions? options)
@@ -135,6 +154,28 @@ internal sealed class RecordedChatClient : IChatClient
                         $"[{string.Join(", ", call.ToolResults.Select(result => $"{result.CallId}: {result.Result}"))}], " +
                         $"received [{string.Join(", ", actualResults.Select(result => $"{result.CallId}: {result.Result}"))}].");
                 }
+            }
+        }
+
+        if (call.State is { } || call.RequireStableThread)
+        {
+            var input = options?.AdditionalProperties?.Values
+                .OfType<RunAgentInput>()
+                .SingleOrDefault()
+                ?? throw new InvalidOperationException("Expected an AG-UI RunAgentInput.");
+
+            if (call.State is { } expectedState &&
+                (input.State is not { } actualState ||
+                    !JsonElement.DeepEquals(expectedState, actualState)))
+            {
+                throw new InvalidOperationException(
+                    $"Expected state {expectedState.GetRawText()}, received " +
+                    $"{input.State?.GetRawText() ?? "<null>"}.");
+            }
+
+            if (call.RequireStableThread)
+            {
+                _script.AssertStableThread(input.ThreadId);
             }
         }
     }

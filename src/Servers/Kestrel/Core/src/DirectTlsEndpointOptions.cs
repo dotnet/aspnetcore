@@ -143,7 +143,7 @@ public sealed class DirectTlsEndpointOptions
 
     /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint,
-    /// sourced from <see cref="ListenOptions.Protocols"/> after the endpoint has been configured.
+    /// sourced from <see cref="ListenOptions.Protocols"/> after the endpoint has been configured. 
     /// </summary>
     internal HttpProtocols HttpProtocols { get; set; } = HttpProtocols.Http1AndHttp2;
 }

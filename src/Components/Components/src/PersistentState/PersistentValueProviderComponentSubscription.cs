@@ -116,6 +116,13 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         return _lastValue;
     }
 
+    internal void PreserveCurrentValue()
+    {
+        _hasPendingInitialValue = false;
+        _lastValue = _propertyGetter.GetValue(_subscriber.Component);
+        _ignoreComponentPropertyValue = false;
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]

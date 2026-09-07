@@ -2065,6 +2065,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 Browser.Exists(By.Id("qg-toggle-delay")).Click();
                 Browser.Contains("Provider delay for QuickGrid on", () => Browser.Exists(By.Id("qg-status")).Text);
             }
+
+            WaitForRenderToSettle(container, (IJavaScriptExecutor)Browser);
         }
 
         var select = new SelectElement(Browser.Exists(By.Id("qg-anchor-mode-select")));

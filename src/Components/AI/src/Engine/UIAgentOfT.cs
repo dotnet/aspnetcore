@@ -18,9 +18,8 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// <param name="chatClient">The chat client that produces model responses.</param>
     /// <param name="initialState">The initial state value.</param>
     public UIAgent(IChatClient chatClient, TState? initialState = null)
-        : base(chatClient)
+        : this(chatClient, new UIAgentOptions<TState>(initialState), configure: null, loggerFactory: null)
     {
-        State = new AgentState<TState>(initialState);
     }
 
     /// <summary>
@@ -30,9 +29,12 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// <param name="chatOptions">The options passed to the chat client.</param>
     /// <param name="initialState">The initial state value.</param>
     public UIAgent(IChatClient chatClient, ChatOptions chatOptions, TState? initialState = null)
-        : base(chatClient, chatOptions)
+        : this(
+            chatClient,
+            new UIAgentOptions<TState>(initialState),
+            options => options.ChatOptions = chatOptions,
+            loggerFactory: null)
     {
-        State = new AgentState<TState>(initialState);
     }
 
     /// <summary>
@@ -43,11 +45,10 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// <param name="initialState">The initial state value.</param>
     public UIAgent(
         IChatClient chatClient,
-        Action<UIAgentOptions> configure,
+        Action<UIAgentOptions<TState>> configure,
         TState? initialState = null)
-        : base(chatClient, configure)
+        : this(chatClient, new UIAgentOptions<TState>(initialState), configure, loggerFactory: null)
     {
-        State = new AgentState<TState>(initialState);
     }
 
     /// <summary>
@@ -59,12 +60,22 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// <param name="initialState">The initial state value.</param>
     public UIAgent(
         IChatClient chatClient,
-        Action<UIAgentOptions> configure,
+        Action<UIAgentOptions<TState>> configure,
         ILoggerFactory? loggerFactory,
         TState? initialState = null)
-        : base(chatClient, configure, loggerFactory)
+        : this(chatClient, new UIAgentOptions<TState>(initialState), configure, loggerFactory)
     {
-        State = new AgentState<TState>(initialState);
+    }
+
+    private UIAgent(
+        IChatClient chatClient,
+        UIAgentOptions<TState> options,
+        Action<UIAgentOptions<TState>>? configure,
+        ILoggerFactory? loggerFactory)
+        : base(chatClient, options, loggerFactory)
+    {
+        State = options.State;
+        configure?.Invoke(options);
     }
 
     /// <summary>
@@ -91,9 +102,21 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
                     $"but this agent requires state of type '{typeof(TState)}'.");
             }
 
-            State.Value = typedState;
+            if (context.IsPredictiveState)
+            {
+                State.SetPredictiveValue(typedState);
+            }
+            else
+            {
+                State.Value = typedState;
+            }
         }
 
         return context.HasHandledContent ? context.GetFilteredUpdate() : update;
+    }
+
+    internal override void RejectPendingPredictiveState()
+    {
+        State.RejectPredictiveState();
     }
 }

@@ -35,6 +35,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
+    public bool SupportsPasskeySignalOptions => _userManager.SupportsUserPasskey;
+
+    /// <inheritdoc />
     public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(userEntity);
@@ -155,6 +158,104 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
                 });
             return [.. allowCredentials];
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<AllAcceptedCredentialsSignalOptionsResult> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
+        var options = new AllAcceptedCredentialsSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userId),
+            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.AllAcceptedCredentialsSignalOptions);
+
+        return new AllAcceptedCredentialsSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<CurrentUserDetailsSignalOptionsResult> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.",
+                nameof(userEntity));
+        }
+
+        var options = new CurrentUserDetailsSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userEntity.Id),
+            Name = userEntity.Name,
+            DisplayName = userEntity.DisplayName,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.CurrentUserDetailsSignalOptions);
+
+        return new CurrentUserDetailsSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<UnknownCredentialSignalOptionsResult?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson, HttpContext httpContext)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (!_userManager.SupportsUserPasskey)
+        {
+            return null;
+        }
+
+        PublicKeyCredentialId? credential;
+        try
+        {
+            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialId);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        // Credential IDs are at most 1023 bytes: https://w3c.github.io/webauthn/#credential-id
+        if (credential?.Id is not { Length: > 0 and <= 1023 })
+        {
+            return null;
+        }
+
+        var user = await _userManager.FindByPasskeyIdAsync(credential.Id.ToArray()).ConfigureAwait(false);
+        if (user is not null)
+        {
+            return null;
+        }
+
+        var options = new UnknownCredentialSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            CredentialId = credential.Id,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.UnknownCredentialSignalOptions);
+
+        return new UnknownCredentialSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
     }
 
     /// <inheritdoc/>

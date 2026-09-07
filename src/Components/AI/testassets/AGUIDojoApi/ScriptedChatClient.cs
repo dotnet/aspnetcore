@@ -3,6 +3,9 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using AGUI.Server;
+using AGUIDojoApi.PredictiveStateUpdates;
+using AGUIDojoApi.SharedState;
 using Microsoft.Extensions.AI;
 
 namespace AGUIDojoApi;
@@ -12,6 +15,7 @@ namespace AGUIDojoApi;
 // rendering) without any credentials.
 internal sealed class ScriptedChatClient : IChatClient
 {
+    private static readonly TimeSpan ModelDelay = TimeSpan.FromMilliseconds(750);
     private static readonly TimeSpan TokenDelay = TimeSpan.FromMilliseconds(60);
     private static readonly string[] MarsPlanSteps =
     [
@@ -53,6 +57,12 @@ internal sealed class ScriptedChatClient : IChatClient
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
                 .FirstOrDefault();
+            var functionCall = functionResult is null
+                ? null
+                : messageList
+                    .SelectMany(message => message.Contents)
+                    .OfType<FunctionCallContent>()
+                    .LastOrDefault(call => call.CallId == functionResult.CallId);
             if (functionResult is { CallId: "agentic-plan-create-1" })
             {
                 yield return CreatePlanStepUpdate(messageId: Guid.NewGuid().ToString("N"), stepIndex: 0);
@@ -87,8 +97,45 @@ internal sealed class ScriptedChatClient : IChatClient
                     when callId == $"agentic-plan-step-{planSteps.Length}" =>
                     $"All {planSteps.Length} steps in the " +
                     $"{(planSteps.Length == PizzaPlanSteps.Length ? "pizza" : "Mars mission")} plan are complete.",
+                { CallId: "shared-state-recipe-1" }
+                    when prompt.Contains("Italian", StringComparison.OrdinalIgnoreCase) =>
+                    "The state now includes a detailed recipe for Classic Italian Carbonara, " +
+                    "with specific ingredients, cooking instructions, and customization options " +
+                    "for preferences like vegetarian alternatives. It also outlines the skill " +
+                    "level, cooking time, and key steps for preparation.",
+                { CallId: "shared-state-recipe-1" } =>
+                    "I updated the shared recipe.",
+                _ when functionCall?.Name == "confirm_changes" &&
+                    functionResult?.Result?.ToString()?.Contains(
+                        "rejected",
+                        StringComparison.OrdinalIgnoreCase) == true =>
+                    "I left the document unchanged.",
+                _ when functionCall?.Name == "confirm_changes" =>
+                    "The document changes are ready.",
                 _ => "Background changed to a sunset gradient.",
             };
+            if (functionResult is { CallId: "shared-state-recipe-1" })
+            {
+                var responseMessageId = Guid.NewGuid().ToString("N");
+                var tokens = response.Split(' ');
+
+                for (var i = 0; i < tokens.Length; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Task.Delay(TokenDelay, cancellationToken);
+
+                    yield return new ChatResponseUpdate
+                    {
+                        Role = ChatRole.Assistant,
+                        MessageId = responseMessageId,
+                        Contents = [new TextContent(tokens[i] + " ")],
+                        FinishReason = i == tokens.Length - 1 ? ChatFinishReason.Stop : null,
+                    };
+                }
+
+                yield break;
+            }
+
             yield return new ChatResponseUpdate
             {
                 Role = ChatRole.Assistant,
@@ -100,6 +147,111 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
+        if (options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "write_document_local") == true)
+        {
+            options.TryGetRunAgentInput(out var input);
+            var current = input?.State?.Deserialize<DocumentState>(
+                AIJsonUtilities.DefaultOptions)?.Document ?? "";
+            var document = prompt.Contains("Courage", StringComparison.OrdinalIgnoreCase)
+                ? current +
+                    "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon."
+                : """
+                    # Candy Beard's Voyage
+
+                    Candy Beard sailed from Gumdrop Harbor in search of the Sugar Star.
+
+                    When dark clouds gathered, the crew shared their courage and found the way home.
+                    """;
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        $"predictive-document-{Guid.NewGuid():N}",
+                        "write_document_local",
+                        new Dictionary<string, object?> { ["document"] = document }),
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
+        if (options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "generate_recipe") == true)
+        {
+            await Task.Delay(ModelDelay, cancellationToken);
+
+            if (prompt.Contains("Italian", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = messageId,
+                    Contents =
+                    [
+                        new FunctionCallContent(
+                            "shared-state-recipe-1",
+                            "generate_recipe",
+                            new Dictionary<string, object?>
+                            {
+                                ["recipe"] = CreateItalianCarbonara(),
+                            })
+                    ],
+                    FinishReason = ChatFinishReason.ToolCalls,
+                };
+                yield break;
+            }
+
+            options.TryGetRunAgentInput(out var input);
+            var current = input?.State?.Deserialize<RecipeResponse>(
+                AIJsonUtilities.DefaultOptions)?.Recipe ?? new Recipe();
+            var ingredients = current.Ingredients.ToList();
+            if (!ingredients.Any(ingredient =>
+                ingredient.Name.Equals("Fresh Basil", StringComparison.OrdinalIgnoreCase)))
+            {
+                ingredients.Add(new Ingredient
+                {
+                    Icon = "\U0001F33F",
+                    Name = "Fresh Basil",
+                    Amount = "1 handful",
+                });
+            }
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "shared-state-recipe-1",
+                        "generate_recipe",
+                        new Dictionary<string, object?>
+                        {
+                            ["recipe"] = new Recipe
+                            {
+                                Title = $"Italian {current.Title}",
+                                SkillLevel = current.SkillLevel,
+                                CookingTime = current.CookingTime,
+                                SpecialPreferences = current.SpecialPreferences,
+                                Ingredients = ingredients,
+                                Instructions =
+                                [
+                                    .. current.Instructions,
+                                    "Finish with fresh basil",
+                                ],
+                            },
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         if (prompt.Contains("plan", StringComparison.OrdinalIgnoreCase) &&
             options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "create_plan") == true)
@@ -262,6 +414,32 @@ internal sealed class ScriptedChatClient : IChatClient
     public void Dispose()
     {
     }
+
+    private static Recipe CreateItalianCarbonara() => new()
+    {
+        Title = "Classic Italian Carbonara",
+        SkillLevel = "Intermediate",
+        CookingTime = "45 min",
+        Ingredients =
+        [
+            new() { Icon = "\U0001F35D", Name = "Spaghetti", Amount = "400g" },
+            new() { Icon = "\U0001F953", Name = "Guanciale (Pork Jowl)", Amount = "150g" },
+            new() { Icon = "\U0001F95A", Name = "Egg Yolks", Amount = "4 yolks" },
+            new() { Icon = "\U0001F9C0", Name = "Pecorino Romano Cheese", Amount = "100g, grated" },
+            new() { Icon = "\U0001F9C2", Name = "Salt", Amount = "to taste" },
+            new() { Icon = "\u26AB", Name = "Black Pepper", Amount = "Freshly ground, to taste" },
+        ],
+        Instructions =
+        [
+            "Start cooking your spaghetti in a large pot of lightly salted water until it's al dente.",
+            "Meanwhile, dice the guanciale into small cubes and cook it in a skillet over medium heat until crispy.",
+            "In a bowl, whisk together the egg yolks and grated cheese until smooth.",
+            "Once the pasta is cooked, drain it, reserving half a cup of the cooking water.",
+            "Combine the hot pasta with the guanciale, then remove the pan from the heat.",
+            "Stir in the egg and cheese mixture, adding reserved pasta water until creamy.",
+            "Season with freshly ground black pepper and serve immediately.",
+        ],
+    };
 
     private static ChatResponseUpdate CreatePlanStepUpdate(string messageId, int stepIndex)
     {
