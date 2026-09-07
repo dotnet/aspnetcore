@@ -365,7 +365,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rootComponentsLatestParameters?.Remove(componentId);
         }
 
-        ProcessRenderQueue();
+        ProcessRenderQueueIfNotDeferred();
     }
 
     /// <summary>
@@ -831,12 +831,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
-        if (_renderQueueDeferralDepth > 0)
-        {
-            return;
-        }
+        ProcessRenderQueueIfNotDeferred();
+    }
 
-        ProcessRenderQueue();
+    private void ProcessRenderQueueIfNotDeferred()
+    {
+        if (_renderQueueDeferralDepth == 0)
+        {
+            ProcessRenderQueue();
+        }
     }
 
     internal void BeginRenderQueueDeferral()

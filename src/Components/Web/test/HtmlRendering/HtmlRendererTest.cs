@@ -862,6 +862,33 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task WriteHtmlTo_CanRemoveSectionContentWhileRenderingOutlet()
+    {
+        var services = GetServiceProvider();
+        await using var htmlRenderer = new SectionUpdatingStaticHtmlRenderer(services, NullLoggerFactory.Instance);
+
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var outlet = htmlRenderer.BeginRenderingComponent(
+                new SectionOutlet(),
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { nameof(SectionOutlet.SectionId), "testsection" }
+                }));
+            await outlet.QuiescenceTask;
+
+            var content = new UpdatingSectionContent();
+            var contentRoot = htmlRenderer.BeginRenderingComponent(content, ParameterView.Empty);
+            await contentRoot.QuiescenceTask;
+
+            htmlRenderer.BeforeRenderingSectionContent = () => htmlRenderer.RemoveRootComponent(content);
+
+            Assert.Equal("initial", outlet.ToHtmlString());
+            Assert.Empty(outlet.ToHtmlString());
+        });
+    }
+
+    [Fact]
     public async Task WriteHtmlTo_PreservesWritingExceptionAndRetainsDeferredRender()
     {
         var services = GetServiceProvider();
@@ -1376,6 +1403,9 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
         : StaticHtmlRenderer(services, loggerFactory)
     {
         public Action BeforeRenderingSectionContent { get; set; }
+
+        public void RemoveRootComponent(IComponent component)
+            => RemoveRootComponent(GetComponentState(component).ComponentId);
 
         protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
         {

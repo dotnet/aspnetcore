@@ -34,6 +34,7 @@ public partial class StaticHtmlRenderer
     {
         // The frame buffers must remain stable for the whole synchronous walk. Dispatcher access prevents
         // concurrent execution, and render queue deferral prevents reentrant rendering from mutating them.
+        // Updates queued during the walk are reflected the next time the component is written.
         Dispatcher.AssertAccess();
 
         BeginRenderQueueDeferral();
@@ -46,6 +47,7 @@ public partial class StaticHtmlRenderer
         }
         finally
         {
+            // If writing failed, leave queued work unprocessed so its failure cannot mask the writer exception.
             EndRenderQueueDeferral(writeCompletedSuccessfully);
         }
     }
