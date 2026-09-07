@@ -462,7 +462,6 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
         }
 
         _callbackReference?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private sealed class SpeechCallbacks(LiveSpeechButton owner)

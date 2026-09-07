@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// stream in.
 /// </summary>
 [StreamRendering]
-public class MessageList : IComponent, IDisposable
+public sealed class MessageList : IComponent, IDisposable
 {
     private RenderHandle _renderHandle;
     private AgentContext _agentContext = default!;
@@ -239,6 +239,5 @@ public class MessageList : IComponent, IDisposable
     public void Dispose()
     {
         ResetRegistrations();
-        GC.SuppressFinalize(this);
     }
 }

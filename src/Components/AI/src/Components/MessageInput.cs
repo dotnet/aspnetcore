@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// Composes text and binary content and sends messages to the cascaded
 /// <see cref="AgentContext"/>.
 /// </summary>
-public class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
+public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
 {
     private const string ModulePath =
         "./_content/Microsoft.AspNetCore.Components.AI/ai-chat.js";
@@ -520,7 +520,6 @@ public class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
     public void Dispose()
     {
         _statusSubscription?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>

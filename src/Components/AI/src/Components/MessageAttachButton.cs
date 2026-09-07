@@ -342,7 +342,6 @@ public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisp
         _changeSubscription?.Dispose();
         _readCancellation?.Cancel();
         _readCancellation?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>

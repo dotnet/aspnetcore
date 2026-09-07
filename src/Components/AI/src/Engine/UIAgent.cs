@@ -363,7 +363,18 @@ public class UIAgent : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _disposed = true;
+        Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the resources used by this agent.
+    /// </summary>
+    /// <param name="disposing">
+    /// <see langword="true"/> to release managed resources.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        _disposed = true;
     }
 }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// await context.SendMessageAsync("Hello");
 /// </code>
 /// </example>
-public class AgentContext : IDisposable
+public sealed class AgentContext : IDisposable
 {
     private readonly UIAgent _agent;
     private readonly List<ConversationTurn> _turns = new();
@@ -89,25 +89,13 @@ public class AgentContext : IDisposable
         _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var streamingTask = StreamIntoTurnAsync(
+        await RunStreamingTaskAsync(StreamIntoTurnAsync(
             [message],
             turn,
             renderRequestBlocks: true,
             suppressInputBlocks: false,
             _streamingCts.Token,
-            cancellationToken);
-        _streamingTask = streamingTask;
-        try
-        {
-            await streamingTask;
-        }
-        finally
-        {
-            if (ReferenceEquals(_streamingTask, streamingTask))
-            {
-                _streamingTask = null;
-            }
-        }
+            cancellationToken));
     }
 
     /// <summary>
@@ -168,25 +156,13 @@ public class AgentContext : IDisposable
         _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var streamingTask = StreamIntoTurnAsync(
+        await RunStreamingTaskAsync(StreamIntoTurnAsync(
             retryMessages,
             turn,
             renderRequestBlocks: false,
             suppressInputBlocks: _suppressRetryInputBlocks,
             _streamingCts.Token,
-            cancellationToken);
-        _streamingTask = streamingTask;
-        try
-        {
-            await streamingTask;
-        }
-        finally
-        {
-            if (ReferenceEquals(_streamingTask, streamingTask))
-            {
-                _streamingTask = null;
-            }
-        }
+            cancellationToken));
     }
 
     /// <summary>
@@ -261,7 +237,22 @@ public class AgentContext : IDisposable
         _turnAddedCallbacks.Clear();
         _statusChangedCallbacks.Clear();
         _blockAddedCallbacks.Clear();
-        GC.SuppressFinalize(this);
+    }
+
+    private async Task RunStreamingTaskAsync(Task streamingTask)
+    {
+        _streamingTask = streamingTask;
+        try
+        {
+            await streamingTask;
+        }
+        finally
+        {
+            if (ReferenceEquals(_streamingTask, streamingTask))
+            {
+                _streamingTask = null;
+            }
+        }
     }
 
     private async Task StreamIntoTurnAsync(

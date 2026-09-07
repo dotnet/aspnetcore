@@ -315,6 +315,7 @@ Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.AI.ToolResultAttribute.ToolResultAttribute() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent
 Microsoft.AspNetCore.Components.AI.UIAgent.Dispose() -> void
+virtual Microsoft.AspNetCore.Components.AI.UIAgent.Dispose(bool disposing) -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.RestoreAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ContentBlock!>!>!
 Microsoft.AspNetCore.Components.AI.UIAgent.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
 Microsoft.AspNetCore.Components.AI.UIAgent.UIAgent(Microsoft.Extensions.AI.IChatClient! chatClient) -> void
@@ -519,12 +520,6 @@ abstract Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>.Handle(M
 abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryCreateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state) -> bool
 abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryUpdateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state, out bool isCompleted) -> bool
 override sealed Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TBlock!>
-override Microsoft.AspNetCore.Components.AI.AgentBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnInitialized() -> void
-override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnParametersSet() -> void
-override Microsoft.AspNetCore.Components.AI.MessageInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.AI.MessageInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.AI.MessageInput.OnParametersSet() -> void
 virtual Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.OnContentUpdated(TBlock! state) -> void
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Complete() -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Emit(Microsoft.AspNetCore.Components.AI.ContentBlock! block, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>

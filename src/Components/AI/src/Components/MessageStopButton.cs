@@ -90,6 +90,5 @@ public sealed class MessageStopButton : ComponentBase, IDisposable
     public void Dispose()
     {
         _changeSubscription?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

@@ -131,6 +131,5 @@ public sealed class MessageAttachmentList : ComponentBase, IDisposable
     public void Dispose()
     {
         _changeSubscription?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

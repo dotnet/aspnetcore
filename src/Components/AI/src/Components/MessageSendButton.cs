@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class MessageSendButton : ComponentBase, IDisposable
 {
-    private MessageInputContext? _subscribedContext;
     private IDisposable? _changeSubscription;
 
     /// <summary>
@@ -38,15 +37,8 @@ public sealed class MessageSendButton : ComponentBase, IDisposable
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
+    protected override void OnInitialized()
     {
-        if (ReferenceEquals(_subscribedContext, Context))
-        {
-            return;
-        }
-
-        _changeSubscription?.Dispose();
-        _subscribedContext = Context;
         _changeSubscription = Context.RegisterOnChanged(
             () => _ = InvokeAsync(StateHasChanged));
     }
@@ -97,6 +89,5 @@ public sealed class MessageSendButton : ComponentBase, IDisposable
     public void Dispose()
     {
         _changeSubscription?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

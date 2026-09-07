@@ -597,7 +597,6 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
 
         _speechCallbackReference?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private sealed class SpeechCallbacks(AudioCaptureButton owner)
