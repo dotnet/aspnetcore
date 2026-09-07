@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Xunit;
@@ -14,7 +15,7 @@ public class HttpUpgradeStreamTests
     [Fact]
     public void FlushThrowsIfSynchronousIOIsDisallowed()
     {
-        var bodyControl = new TestHttpBodyControlFeature { AllowSynchronousIO = false };
+        var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = false };
         var responseStream = new HttpResponseStream(bodyControl, context: null!);
         var stream = new HttpUpgradeStream(Stream.Null, responseStream);
 

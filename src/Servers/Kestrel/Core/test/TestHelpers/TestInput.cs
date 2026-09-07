@@ -101,11 +101,6 @@ class TestInput : IDisposable
     }
 }
 
-internal sealed class TestBodyControlFeature : IHttpBodyControlFeature
-{
-    public bool AllowSynchronousIO { get; set; }
-}
-
 internal static class TestDuplexPipe
 {
     public static IDuplexPipe Create() => new DuplexPipe(PipeReader.Create(Stream.Null), PipeWriter.Create(Stream.Null));

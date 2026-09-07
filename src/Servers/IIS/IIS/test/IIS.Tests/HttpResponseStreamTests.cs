@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Xunit;
@@ -13,7 +14,7 @@ public class HttpResponseStreamTests
     [Fact]
     public void FlushThrowsIfSynchronousIOIsDisallowed()
     {
-        var bodyControl = new TestHttpBodyControlFeature { AllowSynchronousIO = false };
+        var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = false };
         var stream = new HttpResponseStream(bodyControl, context: null!);
 
         var exception = Assert.Throws<InvalidOperationException>(stream.Flush);

@@ -85,7 +85,10 @@ internal class WebTransportTestUtilities
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input));
         features.Set<IConnectionItemsFeature>(new ConnectionItemsFeature());
         features.Set<IProtocolErrorCodeFeature>(new ProtocolErrorCodeFeature());
-        features.Set<IConnectionMetricsContextFeature>(new ConnectionMetricsContextFeature());
+        features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature
+        {
+            MetricsContext = new ConnectionMetricsContext { ConnectionContext = new DefaultConnectionContext() }
+        });
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
@@ -112,14 +115,6 @@ internal class WebTransportTestUtilities
     private sealed class ProtocolErrorCodeFeature : IProtocolErrorCodeFeature
     {
         public long Error { get; set; } = -1;
-    }
-
-    private sealed class ConnectionMetricsContextFeature : IConnectionMetricsContextFeature
-    {
-        public ConnectionMetricsContext MetricsContext { get; } = new()
-        {
-            ConnectionContext = new DefaultConnectionContext()
-        };
     }
 
     class StreamWriterControl : IHttpResponseControl

@@ -3,9 +3,9 @@
 
 using Microsoft.AspNetCore.Http.Features;
 
-namespace IIS.Tests;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-internal sealed class TestHttpBodyControlFeature : IHttpBodyControlFeature
+internal sealed class TestBodyControlFeature : IHttpBodyControlFeature
 {
     public bool AllowSynchronousIO { get; set; }
 }
