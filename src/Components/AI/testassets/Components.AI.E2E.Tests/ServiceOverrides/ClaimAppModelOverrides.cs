@@ -19,7 +19,7 @@ internal class ClaimAppModelOverrides
         services.AddOptions<ClaimAgentOptions>()
             .Configure<IConfiguration>((options, configuration) =>
             {
-                options.BaseAddress = configuration["E2E_TEST_APP_URL"]
+                options.BaseAddress = configuration["ASPNETCORE_URLS"]
                     ?? throw new InvalidOperationException(
                         "The ClaimApp test server did not provide its direct application URL.");
             });

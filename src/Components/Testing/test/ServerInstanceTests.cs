@@ -132,7 +132,6 @@ public class ServerInstanceTests
             "http://localhost:6001/_ready/token");
 
         Assert.Equal("http://localhost:5001", environment["ASPNETCORE_URLS"]);
-        Assert.Equal("http://localhost:5001", environment["E2E_TEST_APP_URL"]);
         Assert.Equal("http://localhost:6001/_ready/token", environment["E2E_READY_URL"]);
         Assert.Equal("TestAssembly", environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"]);
         Assert.Equal("C:/tests/TestAssembly.dll", environment["DOTNET_STARTUP_HOOKS"]);
@@ -165,7 +164,6 @@ public class ServerInstanceTests
             "http://localhost:6002/_ready/token");
 
         Assert.Equal("http://localhost:5002", environment["ASPNETCORE_URLS"]);
-        Assert.Equal("http://localhost:5002", environment["E2E_TEST_APP_URL"]);
         Assert.Equal("http://localhost:6002/_ready/token", environment["E2E_READY_URL"]);
         Assert.Equal(
             Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture),

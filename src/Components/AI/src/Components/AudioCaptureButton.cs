@@ -14,14 +14,9 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath =
-        "./_content/Microsoft.AspNetCore.Components.AI/ai-chat.js";
-
     private readonly SpeechCallbacks _speechCallbacks;
     private DotNetObjectReference<SpeechCallbacks>? _speechCallbackReference;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _recorder;
-    private IJSObjectReference? _speechRecognizer;
+    private AudioCaptureButtonInterop? _interop;
     private MessageInputContext? _subscribedContext;
     private IDisposable? _changeSubscription;
     private CancellationTokenSource? _operationCts;
@@ -181,8 +176,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
-            _isSupported = await _module.InvokeAsync<bool>("isAudioCaptureSupported");
+            _interop = new AudioCaptureButtonInterop(JSRuntime);
+            _isSupported = await _interop.IsAudioCaptureSupportedAsync();
             if (!_isSupported)
             {
                 Context.SetErrorMessage("Audio recording is not supported by this browser.");
@@ -217,11 +212,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
-            _recorder ??= await _module.InvokeAsync<IJSObjectReference>(
-                "createAudioRecorder",
-                MaximumBytes);
-            await _recorder.InvokeVoidAsync("start");
+            _interop ??= new AudioCaptureButtonInterop(JSRuntime);
+            await _interop.StartRecordingAsync(MaximumBytes);
             if (!ReferenceEquals(_operationCts, operationCts) ||
                 operationCts.IsCancellationRequested)
             {
@@ -263,7 +255,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         {
             var hadInterimTranscript = _isDictating;
             await StopInterimTranscriptionAsync();
-            var recording = await _recorder!.InvokeAsync<AudioCaptureResult>("stop");
+            var recording = await _interop!.StopRecordingAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             if (recording.TooLarge || recording.Size > MaximumBytes)
@@ -406,28 +398,25 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
     private async Task StartInterimTranscriptionAsync()
     {
-        if (!ShowInterimTranscript || _module is null)
+        if (!ShowInterimTranscript || _interop is null)
         {
             return;
         }
 
         try
         {
-            if (!await _module.InvokeAsync<bool>(
-                "isLiveSpeechRecognitionSupported"))
+            if (!await _interop.IsSpeechRecognitionSupportedAsync())
             {
                 return;
             }
 
             _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
-            _speechRecognizer ??= await _module.InvokeAsync<IJSObjectReference>(
-                "createLiveSpeechRecognizer",
+            await _interop.StartSpeechRecognitionAsync(
                 _speechCallbackReference,
                 SpeechRecognitionLanguage);
             _dictationPrefix = Context.Text.Trim();
             _committedTranscript = string.Empty;
             _isDictating = true;
-            await _speechRecognizer.InvokeVoidAsync("start");
             Context.SetStatusMessage("Recording and transcribing.");
         }
         catch (JSException)
@@ -439,7 +428,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
     private async Task StopInterimTranscriptionAsync()
     {
-        if (!_isDictating || _speechRecognizer is null)
+        if (!_isDictating || _interop is null)
         {
             return;
         }
@@ -447,7 +436,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         _isDictating = false;
         try
         {
-            await _speechRecognizer.InvokeVoidAsync("stop");
+            await _interop.StopSpeechRecognitionAsync();
         }
         catch (JSException)
         {
@@ -561,39 +550,9 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
         Context.SetComposing(false);
 
-        if (_recorder is not null)
+        if (_interop is not null)
         {
-            try
-            {
-                await _recorder.InvokeVoidAsync("dispose");
-                await _recorder.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-
-        if (_speechRecognizer is not null)
-        {
-            try
-            {
-                await _speechRecognizer.InvokeVoidAsync("dispose");
-                await _speechRecognizer.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
+            await _interop.DisposeAsync();
         }
 
         _speechCallbackReference?.Dispose();
@@ -614,14 +573,4 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
     }
 
-    private sealed class AudioCaptureResult
-    {
-        public IJSStreamReference? StreamReference { get; set; }
-
-        public string MimeType { get; set; } = string.Empty;
-
-        public long Size { get; set; }
-
-        public bool TooLarge { get; set; }
-    }
 }

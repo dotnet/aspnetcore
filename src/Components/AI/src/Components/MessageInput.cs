@@ -14,17 +14,13 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
 {
-    private const string ModulePath =
-        "./_content/Microsoft.AspNetCore.Components.AI/ai-chat.js";
-
     private readonly MessageInputContext _context;
     private readonly List<DataContent> _attachments = [];
     private readonly string _statusId = $"sc-ai-input-status-{Guid.NewGuid():N}";
     private readonly string _errorId = $"sc-ai-input-error-{Guid.NewGuid():N}";
     private AgentContext? _subscribedContext;
     private IDisposable? _statusSubscription;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _keyboardRegistration;
+    private MessageInputInterop? _interop;
     private DotNetObjectReference<KeyboardCallbacks>? _keyboardCallbacksReference;
     private ElementReference _textArea;
     private string _text = string.Empty;
@@ -342,11 +338,10 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
         {
             try
             {
-                _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
                 _keyboardCallbacksReference = DotNetObjectReference.Create(
                     new KeyboardCallbacks(this));
-                _keyboardRegistration = await _module.InvokeAsync<IJSObjectReference>(
-                    "registerMessageInput",
+                _interop = new MessageInputInterop(JSRuntime);
+                await _interop.InitializeAsync(
                     _textArea,
                     _keyboardCallbacksReference);
             }
@@ -359,10 +354,10 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
             }
         }
 
-        if (_keyboardRegistration is not null && _keyboardBusy != CanCancel)
+        if (_interop is not null && _keyboardBusy != CanCancel)
         {
             _keyboardBusy = CanCancel;
-            await _keyboardRegistration.InvokeVoidAsync("setBusy", CanCancel);
+            await _interop.SetBusyAsync(CanCancel);
         }
     }
 
@@ -535,30 +530,12 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
         _isDisposed = true;
         Dispose();
 
-        if (_keyboardRegistration is not null)
+        if (_interop is not null)
         {
-            try
-            {
-                await _keyboardRegistration.InvokeVoidAsync("dispose");
-                await _keyboardRegistration.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
+            await _interop.DisposeAsync();
         }
 
         _keyboardCallbacksReference?.Dispose();
-
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
     }
 
     private sealed class KeyboardCallbacks(MessageInput owner)

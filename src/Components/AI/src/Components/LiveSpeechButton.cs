@@ -12,13 +12,9 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath =
-        "./_content/Microsoft.AspNetCore.Components.AI/ai-chat.js";
-
     private readonly SpeechCallbacks _callbacks;
     private DotNetObjectReference<SpeechCallbacks>? _callbackReference;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _recognizer;
+    private LiveSpeechButtonInterop? _interop;
     private MessageInputContext? _subscribedContext;
     private IDisposable? _changeSubscription;
     private string _prefix = string.Empty;
@@ -158,9 +154,8 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
-            _isSupported = await _module.InvokeAsync<bool>(
-                "isLiveSpeechRecognitionSupported");
+            _interop = new LiveSpeechButtonInterop(JSRuntime);
+            _isSupported = await _interop.IsSupportedAsync();
             if (!_isSupported)
             {
                 Context.SetStatusMessage(
@@ -187,10 +182,9 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            _interop ??= new LiveSpeechButtonInterop(JSRuntime);
             _callbackReference ??= DotNetObjectReference.Create(_callbacks);
-            _recognizer ??= await _module.InvokeAsync<IJSObjectReference>(
-                "createLiveSpeechRecognizer",
+            await _interop.InitializeAsync(
                 _callbackReference,
                 Language);
             _prefix = Context.Text.Trim();
@@ -218,7 +212,7 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
         _isStarting = true;
         try
         {
-            await _recognizer!.InvokeVoidAsync("start");
+            await _interop!.StartAsync();
             _isListening = true;
             Context.SetComposing(true);
             Context.SetStatusMessage("Listening for your next instruction.");
@@ -243,9 +237,9 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
         _isEnabled = false;
         _isListening = false;
         Context.SetComposing(false);
-        if (_recognizer is not null)
+        if (_interop is not null)
         {
-            await _recognizer.InvokeVoidAsync("stop");
+            await _interop.StopAsync();
         }
         await OnInterimTranscript.InvokeAsync(string.Empty);
         Context.SetStatusMessage("Live voice stopped.");
@@ -290,7 +284,7 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
             _isListening = false;
             try
             {
-                await _recognizer!.InvokeVoidAsync("stop");
+                await _interop!.StopAsync();
                 Context.SetComposing(false);
                 Context.SetStatusMessage("Sending voice instruction.");
                 if (!ShowInterimInComposer)
@@ -438,27 +432,9 @@ public sealed class LiveSpeechButton : ComponentBase, IAsyncDisposable
         _changeSubscription?.Dispose();
         Context.SetComposing(false);
 
-        if (_recognizer is not null)
+        if (_interop is not null)
         {
-            try
-            {
-                await _recognizer.InvokeVoidAsync("dispose");
-                await _recognizer.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
+            await _interop.DisposeAsync();
         }
 
         _callbackReference?.Dispose();

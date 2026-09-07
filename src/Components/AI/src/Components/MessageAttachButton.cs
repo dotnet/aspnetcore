@@ -14,14 +14,10 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisposable
 {
-    private const string ModulePath =
-        "./_content/Microsoft.AspNetCore.Components.AI/ai-chat.js";
-
     private CancellationTokenSource? _readCancellation;
     private MessageInputContext? _subscribedContext;
     private IDisposable? _changeSubscription;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _dropRegistration;
+    private MessageAttachButtonInterop? _interop;
     private ElementReference _container;
     private bool _isDisposed;
 
@@ -167,9 +163,8 @@ public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisp
 
         try
         {
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
-            _dropRegistration = await _module.InvokeAsync<IJSObjectReference>(
-                "registerFileDropZone",
+            _interop = new MessageAttachButtonInterop(JSRuntime);
+            await _interop.InitializeAsync(
                 _container,
                 DropZoneSelector);
         }
@@ -357,27 +352,9 @@ public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisp
         _isDisposed = true;
         Dispose();
 
-        if (_dropRegistration is not null)
+        if (_interop is not null)
         {
-            try
-            {
-                await _dropRegistration.InvokeVoidAsync("dispose");
-                await _dropRegistration.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
+            await _interop.DisposeAsync();
         }
     }
 }
