@@ -241,6 +241,10 @@ export const HTML = `<!doctype html>
       return body;
     }
 
+    function showError(error) {
+      text(document.getElementById("status"), "Error: " + (error?.message || String(error)));
+    }
+
     async function loadState() {
       state.metadata = await request("/api/state");
       renderMetadata();
@@ -290,6 +294,17 @@ export const HTML = `<!doctype html>
       renderStats(snapshot);
       text(document.getElementById("predicate"), snapshot.predicate);
       renderDetail(snapshot);
+    }
+
+    async function refreshQueue() {
+      state.offset = 0;
+      state.metadata = await request("/api/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area: areaSelect.value }),
+      });
+      renderMetadata();
+      if (state.metadata.snapshot) await loadPage();
     }
 
     function renderWarnings(snapshot) {
@@ -434,7 +449,7 @@ export const HTML = `<!doctype html>
         renderMetadata();
         renderPage();
       } catch (error) {
-        text(document.getElementById("status"), error.message);
+        showError(error);
       }
     }
 
@@ -447,56 +462,73 @@ export const HTML = `<!doctype html>
         });
         renderMetadata();
       } catch (error) {
-        text(document.getElementById("status"), error.message);
+        showError(error);
       }
     }
 
     refreshButton.addEventListener("click", async () => {
       try {
-        state.offset = 0;
-        state.metadata = await request("/api/refresh", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ area: areaSelect.value }),
-        });
-        renderMetadata();
-        if (state.metadata.snapshot) await loadPage();
+        await refreshQueue();
       } catch (error) {
-        text(document.getElementById("status"), error.message);
+        showError(error);
+      }
+    });
+
+    areaSelect.addEventListener("change", async () => {
+      try {
+        await refreshQueue();
+      } catch (error) {
+        showError(error);
       }
     });
 
     pageSize.addEventListener("change", async () => {
-      state.limit = Number(pageSize.value);
-      state.offset = 0;
-      await loadPage();
+      try {
+        state.limit = Number(pageSize.value);
+        state.offset = 0;
+        await loadPage();
+      } catch (error) {
+        showError(error);
+      }
     });
     previousButton.addEventListener("click", async () => {
-      state.offset = Math.max(0, state.offset - state.limit);
-      await loadPage();
+      try {
+        state.offset = Math.max(0, state.offset - state.limit);
+        await loadPage();
+      } catch (error) {
+        showError(error);
+      }
     });
     nextButton.addEventListener("click", async () => {
-      if (state.page.nextOffset !== null) {
-        state.offset = state.page.nextOffset;
-        await loadPage();
+      try {
+        if (state.page.nextOffset !== null) {
+          state.offset = state.page.nextOffset;
+          await loadPage();
+        }
+      } catch (error) {
+        showError(error);
       }
     });
 
     const events = new EventSource("/events?token=" + encodeURIComponent(token));
     events.addEventListener("state", async (event) => {
-      state.metadata = JSON.parse(event.data);
-      renderMetadata();
-      if (state.metadata.snapshot) {
-        const total = state.metadata.snapshot.totalCount;
-        const maximumOffset = total === 0
-          ? 0
-          : Math.floor((total - 1) / state.limit) * state.limit;
-        state.offset = Math.min(state.offset, maximumOffset);
-        await loadPage();
+      try {
+        state.metadata = JSON.parse(event.data);
+        renderMetadata();
+        if (state.metadata.snapshot) {
+          const total = state.metadata.snapshot.totalCount;
+          const maximumOffset = total === 0
+            ? 0
+            : Math.floor((total - 1) / state.limit) * state.limit;
+          state.offset = Math.min(state.offset, maximumOffset);
+          await loadPage();
+        }
+      } catch (error) {
+        showError(error);
       }
     });
 
-    loadState().catch((error) => text(document.getElementById("status"), error.message));
+    loadState().catch(showError);
   </script>
 </body>
 </html>`;
