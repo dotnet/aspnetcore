@@ -1,6 +1,6 @@
 ### Cross-cutting reviewer
 
-Apply this reviewer to every change. Additionally route `src/Components` and `src/JSInterop` changes to the included Blazor Components reference; report missing specialist coverage for other domains while continuing cross-cutting review.
+These dimensions apply to **every** ASP.NET Core change. The routing policy is explicit: this reviewer runs on **every** review, in addition to every routed domain reviewer, and it is **also** the primary reviewer for any `src` area that has no dedicated reference. It is never a fallback used only when no domain reviewer matched.
 
 This file is reference material. The `review-pull-request` skill gives each dimension below an
 independent, single-dimension pass.
@@ -18,7 +18,7 @@ independent, single-dimension pass.
 
 ##### Cross-cutting scope and change shape
 
-- CHECK: Use this reviewer only for `src` areas without a more specific agent; route Components, gRPC, Minimal API/OpenAPI, MVC/Razor/routing, servers/networking, hosting/DI, SignalR, native interop, auth/security, WebTransport, project-file-only, and public API baseline work to their dedicated instructions.
+- CHECK: Apply this reviewer to every change. Additionally route `src/Components` and `src/JSInterop` changes to the included Blazor Components reference; report missing specialist coverage for other domains while continuing cross-cutting review.
 - CHECK: Keep changes narrowly scoped to the affected product, tool, template, analyzer, or test utility; avoid unrelated file moves, generated-file churn, version churn, and broad refactors not required for the fix.
 - CHECK: Preserve ownership boundaries between product code, shared source, templates, test infrastructure, and build infrastructure; do not expose shared implementation details through public namespaces or packages.
 - CHECK: Prefer established shared helpers for process handling, retries, cancellation, file enumeration, CLI parsing, package metadata, and test hosting before adding one-off infrastructure.
