@@ -4,13 +4,6 @@ const DEFAULT_SCOPE = {
   repository: "dotnet/aspnetcore",
 };
 
-const SIGNAL_ORDER = new Map([
-  ["direct-request", 0],
-  ["follow-up-notification", 1],
-  ["changed-since-own-review", 2],
-  ["review-thread-reply", 3],
-]);
-
 export function normalizePersonalInbox(personal, queue, {
   cacheMode = "cold",
 } = {}) {
@@ -29,15 +22,15 @@ export function normalizePersonalInbox(personal, queue, {
   const items = orderPersonalItems(
     deduplicate(rawItems.map((item) => normalizePersonalItem(item))),
   );
-  const activeItems = items.filter((item) => item.hasPersonalSignal);
+  const activeItems = items.filter((item) => item.hasActionablePersonalSignal);
   const previewItems = orderPersonalItems(
     deduplicate(
       (Array.isArray(personal.preview) && personal.preview.length > 0
         ? personal.preview
         : activeItems
-      ).map((item) => normalizePersonalItem(item)),
+      ).map((item) => item.actionStatus ? item : normalizePersonalItem(item)),
     ),
-  ).slice(0, 5);
+  ).filter((item) => item.hasActionablePersonalSignal).slice(0, 5);
   const coverage = personal.coverage ?? {};
   const discovery = normalizeCoverage(coverage.discovery);
   const notifications = normalizeCoverage(coverage.notifications);
@@ -55,9 +48,7 @@ export function normalizePersonalInbox(personal, queue, {
       repository: queue?.repository ?? DEFAULT_SCOPE.repository,
     },
     identity: personal.login ?? null,
-    activeCount: Number.isInteger(personal.activeCount)
-      ? personal.activeCount
-      : activeItems.length,
+    activeCount: activeItems.length,
     generatedAt: queue?.generatedAt ?? null,
     previewItems,
     coverage: {
@@ -123,9 +114,9 @@ export function createUnavailablePersonalInbox(repository = DEFAULT_SCOPE.reposi
 
 export function orderPersonalItems(items) {
   return [...items].sort((left, right) => {
-    const signalRank = firstSignalRank(left) - firstSignalRank(right);
-    if (signalRank !== 0) {
-      return signalRank;
+    const actionRank = personalActionRank(left) - personalActionRank(right);
+    if (actionRank !== 0) {
+      return actionRank;
     }
 
     const eventRank = compareDates(firstSignalDate(right), firstSignalDate(left));
@@ -137,7 +128,7 @@ export function getPersonalDisplayModel(personalInbox) {
   const items = Array.isArray(personalInbox?.items) ? personalInbox.items : [];
   const previewItems = Array.isArray(personalInbox?.previewItems)
     ? personalInbox.previewItems
-    : items.filter((item) => item.hasPersonalSignal).slice(0, 5);
+    : items.filter((item) => item.hasActionablePersonalSignal ?? item.hasPersonalSignal).slice(0, 5);
   const repository = personalInbox?.scope?.repository ?? DEFAULT_SCOPE.repository;
   return {
     scopeLabel: `All ${repository}`,
@@ -234,6 +225,17 @@ function normalizePersonalItem(item) {
       resolved: signal.resolved ?? null,
     })),
   };
+  const actionStatus = classifyPersonalAction({
+    directRequest,
+    notificationSignals,
+    replyEvidence,
+    changedSinceOwnReview,
+    participatedOrMentioned: item.participatedOrMentioned === true,
+    queue: {
+      bucket: item.bucket ?? "Unknown",
+      nextActor: item.nextActor ?? "unknown",
+    },
+  });
 
   return {
     number: item.number,
@@ -290,9 +292,11 @@ function normalizePersonalItem(item) {
       shownInDigest: item.digestVisible === true,
       digestRank: item.digestRank ?? null,
     },
+    actionStatus,
     blockers: Array.isArray(item.blockers) ? item.blockers : [],
     signals,
     hasPersonalSignal: signals.length > 0,
+    hasActionablePersonalSignal: actionStatus.priority < 4,
   };
 }
 
@@ -344,9 +348,81 @@ function normalizeCoverageState(state) {
     : "unassessed";
 }
 
-function firstSignalRank(item) {
-  const signal = item.signals?.[0];
-  return SIGNAL_ORDER.get(signal?.kind) ?? 4;
+function classifyPersonalAction(item) {
+  const isReviewReady = item.queue?.bucket === "ReviewNow"
+    && item.queue?.nextActor === "human reviewer";
+  if (!isReviewReady) {
+    const queueDetail = `Current queue: ${item.queue?.bucket ?? "Unknown"}`
+      + ` | next actor: ${item.queue?.nextActor ?? "unknown"}.`;
+    if (item.directRequest) {
+      return {
+        priority: 4,
+        label: "Review request present — PR not ready",
+        detail: queueDetail,
+      };
+    }
+    if (item.notificationSignals?.some((notification) => notification.unread)
+      || item.replyEvidence?.replies?.length
+      || item.changedSinceOwnReview?.status === "yes") {
+      return {
+        priority: 4,
+        label: "Follow-up present — no action now",
+        detail: queueDetail,
+      };
+    }
+  }
+
+  if (item.directRequest) {
+    return {
+      priority: 0,
+      label: "Needs your review",
+      detail: "Explicit review request.",
+    };
+  }
+
+  const hasReplyEvidence = item.replyEvidence?.replies?.some((reply) => reply.resolved !== true) === true;
+  const hasUnreadNotification = item.notificationSignals?.some((notification) => notification.unread) === true;
+  const hasParticipationSignal = item.participatedOrMentioned === true;
+
+  if (hasReplyEvidence || (hasUnreadNotification && hasParticipationSignal)) {
+    return {
+      priority: 1,
+      label: "Reply or inspect discussion",
+      detail: hasReplyEvidence
+        ? "Unresolved discussion needs a response."
+        : "Unread activity is tied to your participation or mention.",
+    };
+  }
+
+  if (hasUnreadNotification) {
+    return {
+      priority: 2,
+      label: "Needs attention",
+      detail: "Unread follow-up notification.",
+    };
+  }
+
+  if (item.changedSinceOwnReview?.status === "yes") {
+    return {
+      priority: 3,
+      label: "New changes since your review",
+      detail: "The current head differs from your last submitted review.",
+    };
+  }
+
+  return {
+    priority: 4,
+    label: "No action currently needed",
+    detail: item.queue?.bucket === "ReviewNow"
+      ? `Broader queue next actor: ${item.queue.nextActor}.`
+      : "Informational personal feed item.",
+  };
+}
+
+function personalActionRank(item) {
+  return Number.isInteger(item?.actionStatus?.priority)
+    ? item.actionStatus.priority
+    : 4;
 }
 
 function firstSignalDate(item) {

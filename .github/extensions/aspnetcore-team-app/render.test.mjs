@@ -87,6 +87,14 @@ test("renderer exposes the personal PR inbox without creating a follow-up lane",
   assert.doesNotMatch(HTML, /My followups/);
 });
 
+test("renderer surfaces compact personal action statuses for ranking and no-action items", () => {
+  assert.match(HTML, /row-status/);
+  assert.match(HTML, /status: item\.actionStatus/);
+  assert.match(HTML, /item\.actionStatus\.label \+ " \| " \+ item\.actionStatus\.detail/);
+  assert.match(HTML, /hasActionablePersonalSignal/);
+  assert.match(HTML, /actionable now of/);
+});
+
 test("renderer keeps direct, team, notification, and coverage signals distinct", () => {
   assert.match(HTML, /Team request:/);
   assert.match(HTML, /Notification:/);

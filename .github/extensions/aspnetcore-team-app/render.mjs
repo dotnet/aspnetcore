@@ -307,6 +307,14 @@ export const HTML = `<!doctype html>
       word-break: break-word;
     }
 
+    .row-status {
+      color: var(--text-color-default, #1f2328);
+      font-size: 12px;
+      font-weight: var(--font-weight-semibold, 600);
+      line-height: 18px;
+      overflow-wrap: anywhere;
+    }
+
     .row-meta,
     .row-summary,
     .row-coverage {
@@ -759,7 +767,7 @@ export const HTML = `<!doctype html>
       return (snapshot.personalInbox?.items ?? []).find((item) => item.number === number) ?? null;
     }
 
-    function renderSelectableRow({ key, title, meta = [], summary = [], pills = [], href = null, hrefLabel = "Open PR", selected = false, pending = false, onSelect }) {
+    function renderSelectableRow({ key, title, meta = [], status = null, summary = [], pills = [], href = null, hrefLabel = "Open PR", selected = false, pending = false, onSelect }) {
       const row = element("article", "list-row" + (selected ? " selected" : ""));
       const main = element("button", "row-button", "");
       main.type = "button";
@@ -767,6 +775,15 @@ export const HTML = `<!doctype html>
       main.disabled = pending;
       main.addEventListener("click", onSelect);
       main.append(element("span", "row-title", title));
+      if (status) {
+        main.append(
+          element(
+            "span",
+            "row-status",
+            status.detail ? status.label + " · " + status.detail : status.label,
+          ),
+        );
+      }
       for (const line of meta) {
         main.append(element("span", "row-meta", line));
       }
@@ -1091,7 +1108,7 @@ export const HTML = `<!doctype html>
             "span",
             "muted",
             identity + " | All " + repository
-              + " | " + (personal.activeCount ?? 0) + " active of "
+              + " | " + (personal.activeCount ?? 0) + " actionable now of "
               + (personal.items?.length ?? 0) + " PRs",
           ),
         );
@@ -1115,7 +1132,7 @@ export const HTML = `<!doctype html>
         const items = Array.isArray(personal.items) ? personal.items : [];
         const previewItems = Array.isArray(personal.previewItems)
           ? personal.previewItems
-          : items.filter((item) => item.hasPersonalSignal).slice(0, 5);
+          : items.filter((item) => item.hasActionablePersonalSignal).slice(0, 5);
         if (previewItems.length) {
           const preview = element("div", "inbox-list");
           for (const item of previewItems) {
@@ -1158,6 +1175,7 @@ export const HTML = `<!doctype html>
       const row = renderSelectableRow({
         key,
         title: "#" + item.number + " " + item.title,
+        status: item.actionStatus,
         meta: ["@" + item.author + (item.authorIsBot ? " | bot-authored" : "")],
         pills: [
           ...(item.directRequests?.length ? ["Direct review request"] : []),
@@ -1187,6 +1205,24 @@ export const HTML = `<!doctype html>
               + " | updated " + formatOptionalDate(item.updatedAt),
           ),
         );
+        if (item.actionStatus) {
+          card.append(
+            element(
+              "div",
+              "muted",
+              item.actionStatus.label + " | " + item.actionStatus.detail,
+            ),
+          );
+        }
+        if (item.queue) {
+          card.append(
+            element(
+              "div",
+              "muted",
+              "Queue: " + item.queue.bucket + " | next actor: " + item.queue.nextActor,
+            ),
+          );
+        }
 
         const signals = element("div", "personal-signals");
         if (item.directRequests?.length) {

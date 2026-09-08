@@ -112,9 +112,107 @@ test("normalization preserves distinct personal signals and changed-head OIDs", 
   assert.equal(inbox.items[0].changedSinceOwnReview.reviewCommitOid, "review-101");
   assert.equal(inbox.items[0].replyEvidence.status, "evidenced");
   assert.equal(inbox.items[0].replyEvidence.replies[0].author, "author");
+  assert.equal(inbox.items[0].actionStatus.label, "Needs your review");
+  assert.equal(inbox.items[1].actionStatus.label, "Needs attention");
+  assert.equal(inbox.items[2].actionStatus.label, "No action currently needed");
   assert.equal(inbox.activeCount, 2);
   assert.deepEqual(inbox.previewItems.map((item) => item.number), [101, 102]);
   assert.equal(inbox.metrics.elapsedMs, 42);
+});
+
+test("personal action status ordering prioritizes review work above no-action items", () => {
+  const inbox = normalizePersonalInbox({
+    enabled: true,
+    login: "PureWeen",
+    scope: "all-repo",
+    inventory: [
+      card(101, [{
+        kind: "direct-request",
+        eventAt: "2026-09-06T10:00:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/101#review-requested",
+      }]),
+      card(102, [{
+        kind: "review-thread-reply",
+        eventAt: "2026-09-06T09:30:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/102#discussion_r102",
+        responder: "reviewer",
+        threadId: "thread-102",
+      }], {
+        participatedOrMentioned: true,
+      }),
+      card(103, [{
+        kind: "follow-up-notification",
+        eventAt: "2026-09-06T09:00:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/103#issuecomment-1",
+        reason: "comment",
+        unread: true,
+      }]),
+      card(104, [{
+        kind: "changed-since-own-review",
+        eventAt: "2026-09-05T10:00:00Z",
+        baselineCommit: "review-104",
+        currentHead: "head-104",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/104#pullrequestreview-104",
+      }], {
+        latestOwnReview: {
+          state: "COMMENTED",
+          submittedAt: "2026-09-04T10:00:00Z",
+          commitOid: "review-104",
+          url: "https://github.com/dotnet/aspnetcore/pull/104#pullrequestreview-104",
+        },
+      }),
+      card(105, [], {
+        participatedOrMentioned: true,
+        bucket: "ReviewNow",
+      }),
+      card(106, [{
+        kind: "direct-request",
+        eventAt: "2026-09-06T08:00:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/106#review-requested",
+      }], {
+        bucket: "Draft",
+        nextActor: "author",
+      }),
+      card(107, [{
+        kind: "follow-up-notification",
+        eventAt: "2026-09-06T07:00:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/107#issuecomment-1",
+        reason: "comment",
+        unread: true,
+      }], {
+        bucket: "WaitingOnCI",
+        nextActor: "author/CI investigation",
+      }),
+    ],
+    coverage: {
+      state: "assessed",
+      discovery: { state: "assessed", detail: "bounded search" },
+      notifications: { state: "assessed", detail: "notification feed" },
+      ownReview: { state: "assessed", detail: "latest review" },
+      reviewThreads: { state: "assessed", detail: "hydrated thread" },
+    },
+  }, {
+    repository: "dotnet/aspnetcore",
+    generatedAt: "2026-09-06T10:00:00Z",
+  });
+  const display = getPersonalDisplayModel(inbox);
+
+  assert.deepEqual(inbox.items.map((item) => item.number), [101, 102, 103, 104, 106, 107, 105]);
+  assert.deepEqual(inbox.items.map((item) => item.actionStatus.label), [
+    "Needs your review",
+    "Reply or inspect discussion",
+    "Needs attention",
+    "New changes since your review",
+    "Review request present — PR not ready",
+    "Follow-up present — no action now",
+    "No action currently needed",
+  ]);
+  assert.equal(inbox.activeCount, 4);
+  assert.deepEqual(display.previewItems.map((item) => item.number), [101, 102, 103, 104]);
+  assert.equal(display.inventoryItems.length, 7);
+  assert.equal(display.inventoryItems[4].hasActionablePersonalSignal, false);
+  assert.equal(display.inventoryItems[5].hasActionablePersonalSignal, false);
+  assert.equal(display.inventoryItems[6].actionStatus.label, "No action currently needed");
 });
 
 test("ordering is deterministic and deduplicates one card per PR", () => {
@@ -246,6 +344,18 @@ test("fixture personal display keeps active preview separate from collapsed inve
   assert.ok(display.inventoryItems.length > display.previewItems.length);
   assert.deepEqual(display.previewItems.map((item) => item.number), [204, 203, 201]);
   assert.deepEqual(display.inventoryItems.map((item) => item.number), [204, 203, 201, 205]);
+  assert.deepEqual(display.previewItems.map((item) => item.actionStatus.label), [
+    "Reply or inspect discussion",
+    "Needs attention",
+    "New changes since your review",
+  ]);
+  assert.deepEqual(display.inventoryItems.map((item) => item.actionStatus.label), [
+    "Reply or inspect discussion",
+    "Needs attention",
+    "New changes since your review",
+    "No action currently needed",
+  ]);
+  assert.equal(display.inventoryItems[3].actionStatus.detail.includes("human reviewer"), true);
   assert.ok(display.previewItems.every((item) => item.hasPersonalSignal));
   assert.equal(inbox.metrics.pullRequestsScanned, 5);
   assert.equal(fs.existsSync(fixturePath), true);
