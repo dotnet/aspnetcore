@@ -47,8 +47,6 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
     [InlineData("tfoot", "tr")]
     [InlineData("ul", "li")]
     [InlineData("ol", "li")]
-    [InlineData("tr", "td", "th")]
-    [InlineData("select", "option")]
     public void RestrictedParentWithoutSpacerElement_ReportsDiagnostic(string parentElement, params string[] allowedSpacerElements)
     {
         var allowedSpacerElementsMessage = string.Join(" or ", allowedSpacerElements.Select(element => $"SpacerElement=\"{element}\""));
@@ -89,9 +87,6 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
     [InlineData("tfoot", "tr")]
     [InlineData("ul", "li")]
     [InlineData("ol", "li")]
-    [InlineData("tr", "td")]
-    [InlineData("tr", "th")]
-    [InlineData("select", "option")]
     public void RestrictedParentWithCompatibleSpacerElement_NoDiagnostic(string parentElement, string spacerElement)
     {
         var test = @"
@@ -122,8 +117,6 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
     [InlineData("tfoot", "div", "SpacerElement=\"tr\"")]
     [InlineData("ul", "div", "SpacerElement=\"li\"")]
     [InlineData("ol", "span", "SpacerElement=\"li\"")]
-    [InlineData("tr", "div", "SpacerElement=\"td\" or SpacerElement=\"th\"")]
-    [InlineData("select", "div", "SpacerElement=\"option\"")]
     public void RestrictedParentWithIncompatibleSpacerElement_ReportsDiagnostic(
         string parentElement,
         string spacerElement,

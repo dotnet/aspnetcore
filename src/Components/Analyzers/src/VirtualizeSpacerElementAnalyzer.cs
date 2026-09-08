@@ -31,8 +31,6 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
             ["tfoot"] = ImmutableArray.Create("tr"),
             ["ul"] = ImmutableArray.Create("li"),
             ["ol"] = ImmutableArray.Create("li"),
-            ["tr"] = ImmutableArray.Create("td", "th"),
-            ["select"] = ImmutableArray.Create("option"),
         }.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
