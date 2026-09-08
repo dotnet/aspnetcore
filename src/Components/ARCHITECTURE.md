@@ -329,9 +329,11 @@ Focused architecture documents live at the root of the runtime subsystem they de
 | Subsystem | Responsibility | Architecture |
 |---|---|---|
 | Endpoints | ASP.NET Core endpoints, static SSR, prerendering, streaming rendering, forms, and render-mode activation | `Endpoints/ARCHITECTURE.md` |
-| Server | Interactive Server circuits, server renderers, reconnection, and browser transport | `Server/ARCHITECTURE.md` |
-| WebAssembly | Browser-hosted .NET startup, rendering, and application execution | `WebAssembly/WebAssembly/ARCHITECTURE.md` |
+| Server | Interactive Server circuits, server renderers, reconnection, circuit persistence, pause and resume, and browser transport, including the opt-in AutoPause extension | `Server/ARCHITECTURE.md` |
+| WebAssembly | Browser-hosted .NET startup, rendering, application execution, and WebAssembly-specific JavaScript interop | `WebAssembly/WebAssembly/ARCHITECTURE.md` |
+| WebAssembly Server | Server delivery of WebAssembly resources, endpoint integration, authentication-state serialization, and debugging support | `WebAssembly/Server/ARCHITECTURE.md` |
 | WebView | Native-process component execution and embedded web-view rendering | `WebView/WebView/ARCHITECTURE.md` |
+| Gateway | Reverse-proxy hosting, service discovery, and telemetry for deployed Blazor applications | `Gateway/ARCHITECTURE.md` |
 
 ### Runtime Features
 
@@ -341,8 +343,10 @@ Runtime feature projects receive focused architecture documents when their desig
 |---|---|---|
 | Authorization | Authentication-state propagation and authorization components | `Authorization/ARCHITECTURE.md` |
 | Forms | Form coordination, editing state, validation, and input components | `Forms/ARCHITECTURE.md` |
-| QuickGrid | Data-grid composition, virtualization, sorting, and data-provider integration | `QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/ARCHITECTURE.md` |
+| QuickGrid | Data-grid composition, virtualization, sorting, and data-provider integration, including the Entity Framework adapter | `QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/ARCHITECTURE.md` |
 | Custom Elements | Exposing components through the browser custom-elements model | `CustomElements/ARCHITECTURE.md` |
+| WebAssembly Authentication | Client-side authentication state, navigation, access tokens, and JavaScript integration, including the MSAL specialization | `WebAssembly/WebAssembly.Authentication/ARCHITECTURE.md` |
+| AI | Conversational UI state, content-block mapping, rendering, and extensibility | `AI/ARCHITECTURE.md` |
 
 Samples, test assets, benchmarks, analyzers, generators, and testing infrastructure are outside the runtime architecture map. They are documented by their own contributor guidance where necessary.
 
@@ -358,11 +362,15 @@ Start with the subsystem that owns the concept being changed, then follow the do
 | HTTP routing, static SSR, prerendering, streaming rendering, form posts, or render-mode markers | Endpoints | Web.JS and the selected interactive hosts |
 | Circuits, reconnection, server-side component state, or SignalR transport | Server | Endpoints and Web.JS |
 | Browser-hosted .NET startup, WebAssembly rendering, or client application services | WebAssembly | Web.JS and Endpoints for Blazor Web Apps |
+| WebAssembly resource delivery, endpoint options, authentication-state serialization, or debugging support | WebAssembly Server | Endpoints and WebAssembly |
 | Embedded web views or native-to-web-view communication | WebView | Web and Web.JS |
+| Reverse-proxy hosting or service discovery for deployed Blazor applications | Gateway | The hosting subsystem used by the proxied application |
 | Authentication state or authorization components | Authorization | The hosts that provide authentication state |
+| Client-side remote authentication, access tokens, or authentication navigation | WebAssembly Authentication | Authorization, WebAssembly, and its JavaScript integration |
 | Form state, validation, field tracking, or input components | Forms | Web and Endpoints for browser and form-post integration |
 | Grid rendering, data providers, sorting, or virtualization | QuickGrid | Components and Web |
 | Browser custom elements backed by components | Custom Elements | Web and Web.JS |
+| Conversational UI state, content-block mapping, or AI component rendering | AI | Components, Web, and Microsoft.Extensions.AI |
 
 A cross-subsystem change should identify the producer, consumer, data contract, owner, and lifetime at each boundary. Do not select a subsystem merely because it contains the current call site; place the behavior with the subsystem that owns its semantics and keep environment-specific adaptation at the hosting boundary.
 
