@@ -171,16 +171,22 @@ public class VirtualizeTest
                 SpacerVisibilityReason.RenderedContentMeasurement));
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        var spacerHeights = testRenderer.Batches
+        var virtualizeComponentId = testRenderer.Batches
             .SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component
+                && ReferenceEquals(frame.Component, virtualize))
+            .ComponentId;
+        var spacerHeights = testRenderer.GetCurrentRenderTreeFrames(virtualizeComponentId)
+            .AsEnumerable()
             .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute
-                && frame.AttributeName == "data-blazor-virtualize-reserved-height")
-            .Select(frame => (string)frame.AttributeValue)
-            .ToList();
+                && frame.AttributeName == "data-blazor-virtualize-reserved-height");
 
         Assert.Equal(1253f, virtualize._totalMeasuredHeight);
         Assert.Equal(7, virtualize._measuredItemCount);
-        Assert.Equal("47350", spacerHeights[^2]);
+        Assert.Collection(
+            spacerHeights,
+            spacerBefore => Assert.Equal("47350", spacerBefore.AttributeValue),
+            spacerAfter => Assert.Equal("2300", spacerAfter.AttributeValue));
     }
 
     [Fact]
