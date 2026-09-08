@@ -13,7 +13,6 @@
     <GeneratedContentProperties>
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
-      MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
       MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
@@ -43,7 +42,6 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
-    <PackageVersionVariableReference Include="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
