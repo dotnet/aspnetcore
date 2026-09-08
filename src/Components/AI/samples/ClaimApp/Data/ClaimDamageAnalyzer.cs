@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Azure.Core;
 using Microsoft.Extensions.AI;
 
 namespace ComponentsAIClaimApp.Data;
@@ -15,6 +16,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
 {
     private const string ChatApiVersion = "2025-01-01-preview";
     private const string TranscriptionApiVersion = "2025-03-01-preview";
+    private const string AzureOpenAIScope = "https://cognitiveservices.azure.com/.default";
 
     private static readonly HttpClient s_httpClient = new()
     {
@@ -22,16 +24,18 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
     };
 
     private readonly ClaimFoundryOptions _options;
+    private readonly TokenCredential _credential;
     private readonly ConditionalWeakTable<DataContent, CachedTranscript> _transcripts = new();
 
-    public ClaimDamageAnalyzer(ClaimFoundryOptions options)
+    public ClaimDamageAnalyzer(
+        ClaimFoundryOptions options,
+        TokenCredential credential)
     {
         _options = options;
+        _credential = credential;
     }
 
-    public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(_options.Endpoint) &&
-        !string.IsNullOrWhiteSpace(_options.ApiKey);
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(_options.Endpoint);
 
     public string ModelName => IsConfigured
         ? _options.ChatDeployment
@@ -133,7 +137,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
             CreateFoundryEndpoint(
                 $"openai/deployments/{Uri.EscapeDataString(_options.ChatDeployment)}/chat/completions" +
                 $"?api-version={ChatApiVersion}"));
-        ApplyAuthentication(request);
+        await ApplyAuthenticationAsync(request, cancellationToken);
 
         var userContent = new List<object>
         {
@@ -290,7 +294,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             CreateFoundryEndpoint("openai/v1/responses"));
-        ApplyAuthentication(request);
+        await ApplyAuthenticationAsync(request, cancellationToken);
         request.Content = JsonContent.Create(new
         {
             model = _options.ChatDeployment,
@@ -410,7 +414,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
                 CreateFoundryEndpoint(
                     $"openai/deployments/{Uri.EscapeDataString(_options.TranscriptionDeployment)}" +
                     $"/audio/transcriptions?api-version={TranscriptionApiVersion}"));
-            ApplyAuthentication(request);
+            await ApplyAuthenticationAsync(request, cancellationToken);
             using var form = new MultipartFormDataContent();
             using var audioContent = new ByteArrayContent(recording.Data.ToArray());
             audioContent.Headers.ContentType = recordingMediaType;
@@ -509,7 +513,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
             CreateFoundryEndpoint(
                 $"openai/deployments/{Uri.EscapeDataString(_options.ChatDeployment)}/chat/completions" +
                 $"?api-version={ChatApiVersion}"));
-        ApplyAuthentication(request);
+        await ApplyAuthenticationAsync(request, cancellationToken);
 
         var foundryMessages = new List<object>
         {
@@ -607,7 +611,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         if (!IsConfigured)
         {
             throw new InvalidOperationException(
-                "Configure AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY before using the claim assistant.");
+                "Configure AZURE_OPENAI_ENDPOINT before using the claim assistant.");
         }
     }
 
@@ -629,17 +633,30 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
     private static string ToFoundryRole(ChatRole role)
         => role == ChatRole.Assistant ? "assistant" : "user";
 
-    private void ApplyAuthentication(HttpRequestMessage request)
+    private async Task ApplyAuthenticationAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
-        if (request.RequestUri?.Host.EndsWith(".azure.com", StringComparison.OrdinalIgnoreCase) is true)
+        if (!string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            request.Headers.Add("api-key", _options.ApiKey);
+            if (request.RequestUri?.Host.EndsWith(".azure.com", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                request.Headers.Add("api-key", _options.ApiKey);
+            }
+            else
+            {
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", _options.ApiKey);
+            }
+
+            return;
         }
-        else
-        {
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", _options.ApiKey);
-        }
+
+        var accessToken = await _credential.GetTokenAsync(
+            new TokenRequestContext([AzureOpenAIScope]),
+            cancellationToken);
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", accessToken.Token);
     }
 
     private sealed class CachedTranscript

@@ -6,6 +6,8 @@ using AGUI.Abstractions;
 using AGUI.Client;
 using AGUI.Formatting;
 using AGUI.Server;
+using Azure.Core;
+using Azure.Identity;
 using ComponentsAIClaimApp.Components;
 using ComponentsAIClaimApp.Data;
 using Microsoft.AspNetCore.Components;
@@ -43,6 +45,7 @@ builder.Services.Configure<JsonOptions>(options =>
     AGUIJsonUtilities.RegisterInterruptContentTypes(options.SerializerOptions);
 });
 builder.Services.AddSingleton(foundryOptions);
+builder.Services.AddSingleton<TokenCredential, DefaultAzureCredential>();
 builder.Services.AddSingleton<ClaimDamageAnalyzer>();
 builder.Services.AddSingleton<IClaimAssistantBackend>(services =>
     services.GetRequiredService<ClaimDamageAnalyzer>());
