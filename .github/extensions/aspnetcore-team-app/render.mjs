@@ -681,6 +681,7 @@ export const HTML = `<!doctype html>
     let lastRenderedState = null;
     let pendingReview = null;
     let actionNotice = { phase: "idle", message: "" };
+    let personalInventoryOpen = false;
 
     function element(name, className, text) {
       const node = document.createElement(name);
@@ -1140,6 +1141,10 @@ export const HTML = `<!doctype html>
         }
 
         const inventory = element("details", "secondary");
+        inventory.open = personalInventoryOpen;
+        inventory.addEventListener("toggle", () => {
+          personalInventoryOpen = inventory.open;
+        });
         inventory.append(
           element(
             "summary",

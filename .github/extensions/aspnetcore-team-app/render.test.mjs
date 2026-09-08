@@ -88,7 +88,9 @@ test("renderer exposes the personal PR inbox without creating a follow-up lane",
   assert.match(HTML, /previewItems/);
   assert.match(HTML, /item\.number/);
   assert.match(HTML, /selectionKeyForInboxItem/);
-  assert.doesNotMatch(HTML, /inventory\.open\s*=\s*true/);
+  assert.match(HTML, /let personalInventoryOpen = false/);
+  assert.match(HTML, /inventory\.open = personalInventoryOpen/);
+  assert.match(HTML, /personalInventoryOpen = inventory\.open/);
   assert.doesNotMatch(HTML, /My followups/);
 });
 
