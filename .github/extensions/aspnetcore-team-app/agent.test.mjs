@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { buildAgentActionPrompt } from "./agent.mjs";
@@ -34,10 +35,17 @@ test("review prompt splits foreground policy transfer from child kickoff", () =>
   const prompt = buildAgentActionPrompt("review", reviewItem, { destination: "new-session" });
   const { outer, child } = splitReviewPrompt(prompt);
 
-  assert.match(outer, /Open a NEW pull-request session for dotnet\/aspnetcore#123 \(https:\/\/github\.com\/dotnet\/aspnetcore\/pull\/123\)\./);
-  assert.match(outer, /Before calling open_pr_session, copy any applicable explicit model\/provider restrictions already available in your instructions into the actual kickoff\.prompt you pass\./);
+  assert.match(outer, /Open or reuse a dedicated pull-request review session for dotnet\/aspnetcore#123/);
+  assert.match(outer, /First call list_sessions_and_chats/);
+  assert.match(outer, /reuse it with send_session_message using immediate delivery and autopilot mode/);
+  assert.match(outer, /If no exact session exists, use open_pr_session/);
+  assert.match(outer, /upstream project origin cannot be verified/);
+  assert.match(outer, /use list_projects to find an already-configured fork/);
+  assert.match(outer, /Do not clone or add a project/);
+  assert.match(outer, /copy any applicable explicit model\/provider restrictions already available in your instructions into the actual message or kickoff\.prompt you pass/);
   assert.match(outer, /If a known restriction cannot be carried forward or honored, stop and report a setup blocker\./);
   assert.match(outer, /Do not invent restrictions or hardcode model names\./);
+  assert.match(outer, /Do not report success merely because a request was queued/);
   assert.doesNotMatch(outer, /review-pull-request skill/);
   assert.doesNotMatch(outer, /worker selection/);
 
@@ -61,6 +69,13 @@ test("review prompt splits foreground policy transfer from child kickoff", () =>
   assert.doesNotMatch(prompt, /\b(?:gpt-\d+(?:\.\d+)?|claude|anthropic)\b/i);
 });
 
+test("extension waits for foreground routing completion before reporting action success", () => {
+  const source = readFileSync(new URL("./extension.mjs", import.meta.url), "utf8");
+  assert.match(source, /session\.sendAndWait\(\{ prompt \}, 180_000\)/);
+  assert.match(source, /foreground agent did not report a completed routing result/);
+  assert.doesNotMatch(source, /messageId: await session\.send\(\{ prompt \}\)/);
+});
+
 test("review prompt supports in-session review without opening a child session", () => {
   const prompt = buildAgentActionPrompt("review", reviewItem, { destination: "this-session" });
   assert.match(prompt, /Review dotnet\/aspnetcore#123 in this session \(https:\/\/github\.com\/dotnet\/aspnetcore\/pull\/123\)\./);
@@ -71,6 +86,12 @@ test("review prompt supports in-session review without opening a child session",
   assert.match(prompt, /You may write review artifacts only in the session-state files directory; do not edit repository files\./);
   assert.doesNotMatch(prompt, /open_pr_session/);
   assert.doesNotMatch(prompt, /Open a NEW pull-request session/);
+});
+
+test("review prompt accepts a selected pull request regardless of queue bucket", () => {
+  const prompt = buildAgentActionPrompt("review", rescueItem, { destination: "new-session" });
+  assert.match(prompt, /Open or reuse a dedicated pull-request review session/);
+  assert.match(prompt, /dotnet\/aspnetcore#456/);
 });
 
 test("rescue prompt requests evidence and forbids repository mutation", () => {
@@ -87,7 +108,7 @@ test("fixed routing sends work to Copilot and opens only the trusted URL", async
   const handlers = {
     agentSend: async (request) => {
       sent.push(request);
-      return { messageId: "message-1" };
+      return { messageId: "message-1", message: "Reused existing PR session." };
     },
     browserOpen: async (item) => {
       opened.push(item.url);
@@ -109,6 +130,7 @@ test("fixed routing sends work to Copilot and opens only the trusted URL", async
   );
 
   assert.equal(reviewResult.messageId, "message-1");
+  assert.equal(reviewResult.message, "Reused existing PR session.");
   assert.equal(rescueResult.messageId, "message-1");
   assert.equal(openResult.instanceId, "browser-1");
   assert.equal(sent.length, 2);

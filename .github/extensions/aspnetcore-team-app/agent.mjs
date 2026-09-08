@@ -2,9 +2,6 @@ export function buildAgentActionPrompt(kind, item, { destination } = {}) {
   validateOperationalItem(item);
 
   if (kind === "review") {
-    if (item.bucket !== "ReviewNow") {
-      throw actionError("action_not_allowed", "Review requires a Review now item.");
-    }
     return buildReviewPrompt(item, destination ?? "new-session");
   }
 
@@ -61,9 +58,12 @@ export function buildReviewPrompt(item, destination = "new-session") {
   }
 
   return [
-    `Open a NEW pull-request session for ${scope} (${item.url}).`,
+    `Open or reuse a dedicated pull-request review session for ${scope} (${item.url}).`,
     "",
-    `Before calling open_pr_session, copy any applicable explicit model/provider restrictions already available in your instructions into the actual kickoff.prompt you pass. If a known restriction cannot be carried forward or honored, stop and report a setup blocker. Do not invent restrictions or hardcode model names.`,
+    `First call list_sessions_and_chats and look for a non-archived project session already linked to exactly ${scope}. If one exists, reuse it with send_session_message using immediate delivery and autopilot mode; send the complete review instructions below and do not create a duplicate session.`,
+    `If no exact session exists, use open_pr_session as described below. If that fails only because the upstream project origin cannot be verified, use list_projects to find an already-configured fork of the same repository and create_session there with the complete source-only review instructions below. Do not clone or add a project. If no suitable existing project is available, report the setup blocker.`,
+    `Before reusing or opening a session, copy any applicable explicit model/provider restrictions already available in your instructions into the actual message or kickoff.prompt you pass. If a known restriction cannot be carried forward or honored, stop and report a setup blocker. Do not invent restrictions or hardcode model names.`,
+    `After routing, report whether you reused a session, created a session, or encountered a blocker. Do not report success merely because a request was queued.`,
     "",
     `Use the open_pr_session tool with repo_full_name "${item.repository}", pr_number ${item.number}, and an autopilot kickoff containing these instructions:`,
     "",

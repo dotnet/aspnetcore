@@ -216,16 +216,6 @@ export function createQueueController({
     if (!item) {
       throw stateError("stale_item", "This queue item is stale. Refresh and try again.");
     }
-    if (
-      kind === "review"
-      && (
-        item.bucket !== "ReviewNow"
-        || item.discussionState === "verification-needed"
-        || item.discussionState === "not-assessed"
-      )
-    ) {
-      throw stateError("action_not_allowed", "Review is only available for Review now items.");
-    }
     if (kind === "investigate-rescue" && item.bucket !== "NeedsRescue") {
       throw stateError(
         "action_not_allowed",
@@ -254,16 +244,6 @@ export function createQueueController({
         }
         if (liveItem.headSha !== item.headSha) {
           throw stateError("action_revalidation_failed", "The pull request head changed after the snapshot.");
-        }
-        if (
-          kind === "review"
-          && (
-            liveItem.bucket !== "ReviewNow"
-            || liveItem.discussionAssessment?.state === "verification-needed"
-            || liveItem.discussionAssessment?.state === "not-assessed"
-          )
-        ) {
-          throw stateError("action_revalidation_failed", "The live queue no longer allows a review action.");
         }
         if (kind === "investigate-rescue" && liveItem.bucket !== "NeedsRescue") {
           throw stateError("action_revalidation_failed", "The live queue no longer allows the rescue action.");

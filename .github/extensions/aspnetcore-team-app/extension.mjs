@@ -117,8 +117,13 @@ setAgentSend(async ({ prompt, log }) => {
     }
   }
   try {
+    const response = await session.sendAndWait({ prompt }, 180_000);
+    if (!response?.data?.content) {
+      throw new Error("The foreground agent did not report a completed routing result.");
+    }
     return {
-      messageId: await session.send({ prompt }),
+      messageId: response.data.messageId ?? null,
+      message: response.data.content,
     };
   } finally {
     pendingAgentSends -= 1;

@@ -40,13 +40,14 @@ merge without creating another notification feed.
   instructions are not runtime enforcement, and review artifacts may be written
   only in the session-state files directory without editing repository files.
 - Exposes two explicit review destinations, **Review in new session** and
-  **Review in this session**. The selected item stays locked while a review is
-  queued, and the browser sends only the opaque item ID plus the validated
+  **Review in this session**, for every selected pull request regardless of its
+  queue classification. The selected item stays locked while a review is
+  routed, and the browser sends only the opaque item ID plus the validated
   destination enum.
 - Displays assessed, partial, unavailable, and unassessed coverage plus cold or
   warm API metrics. Personal signals never grant queue eligibility or create a
-  separate follow-up lane; bot-authored and out-of-scope items remain visible
-  but are action-withheld.
+  separate follow-up lane; bot-authored and out-of-scope classifications remain
+  visible without suppressing an explicitly requested review.
 
 The canvas does not classify or rank pull requests in JavaScript. It invokes
 `Get-PRAttentionQueue.ps1` and validates the skill's versioned JSON contract.

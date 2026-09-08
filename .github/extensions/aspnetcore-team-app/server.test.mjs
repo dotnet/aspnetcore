@@ -198,7 +198,7 @@ test("review dispatch routes new session and this session prompts distinctly", a
   assert.equal(thisSession.messageId, "message-this");
   assert.equal(thisSession.destination, "this-session");
   assert.equal(sent.length, 2);
-  assert.match(sent[0].request.prompt, /Open a NEW pull-request session/);
+  assert.match(sent[0].request.prompt, /Open or reuse a dedicated pull-request review session/);
   assert.match(sent[0].request.prompt, /The current PR head SHA is 52d785e4885b4a320da7ceaa78672886aba868eb\./);
   assert.match(sent[1].request.prompt, /Review dotnet\/aspnetcore#69063 in this session \(https:\/\/github\.com\/dotnet\/aspnetcore\/pull\/69063\)\./);
   assert.match(sent[1].request.prompt, /do not open a child PR session/i);

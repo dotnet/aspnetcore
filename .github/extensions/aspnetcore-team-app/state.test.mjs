@@ -213,10 +213,8 @@ test("controller separates discussion verification from ordinary review actions"
     state.snapshot.primary.reviewNow.some((item) => item.number === candidate.number),
     false,
   );
-  assert.throws(
-    () => controller.resolveAction({ itemId: verificationItem.id, kind: "review" }),
-    (error) => error.code === "action_not_allowed",
-  );
+  const action = controller.resolveAction({ itemId: verificationItem.id, kind: "review" });
+  assert.equal(action.item.number, candidate.number);
 });
 
 test("refresh coalesces callers and atomically replaces the snapshot", async () => {
@@ -432,7 +430,7 @@ test("failed refresh retains the previous snapshot and invalidates stale action 
   );
 });
 
-test("controller rejects actions that do not match the current bucket", async () => {
+test("controller allows review across buckets while rescue remains bucket-gated", async () => {
   const controller = createQueueController({
     initialOptions: fixture.options,
     load: async () => fixture,
@@ -440,10 +438,8 @@ test("controller rejects actions that do not match the current bucket", async ()
   await controller.initialize();
 
   const rescueItem = controller.getState().snapshot.primary.needsRescue[0];
-  assert.throws(
-    () => controller.resolveAction({ itemId: rescueItem.id, kind: "review" }),
-    (error) => error.code === "action_not_allowed",
-  );
+  const reviewAction = controller.resolveAction({ itemId: rescueItem.id, kind: "review" });
+  assert.equal(reviewAction.item.number, rescueItem.number);
 
   const reviewItem = controller.getState().snapshot.primary.reviewNow[0];
   assert.throws(

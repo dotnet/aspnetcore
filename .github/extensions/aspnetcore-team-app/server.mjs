@@ -140,6 +140,7 @@ export async function dispatchResolvedAction({ kind, item, destination }, handle
     kind,
     destination: destination ?? null,
     messageId: typeof result === "string" ? result : result?.messageId ?? null,
+    message: typeof result === "object" ? result?.message ?? null : null,
   };
 }
 

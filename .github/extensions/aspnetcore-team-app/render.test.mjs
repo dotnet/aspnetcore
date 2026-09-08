@@ -6,7 +6,8 @@ import { HTML } from "./render.mjs";
 test("renderer exposes the focused read-only action set", () => {
   assert.match(HTML, /Open PR/);
   assert.match(HTML, /Investigate rescue/);
-  assert.match(HTML, /item\.bucket === "ReviewNow"/);
+  assert.doesNotMatch(HTML, /item\.bucket === "ReviewNow"/);
+  assert.match(HTML, /actions\.append\(renderReviewActions\(item, selectionKeyForItem\(item\)\)\)/);
   assert.match(HTML, /Attention workspace/);
   assert.match(HTML, /selected-card/);
   assert.match(HTML, /row-button/);
@@ -50,6 +51,10 @@ test("renderer exposes the review destination menu with exact labels", () => {
   assert.match(HTML, /Review in this session/);
   assert.match(HTML, /Review in new session queued\./);
   assert.match(HTML, /Review in this session queued\./);
+});
+
+test("renderer shows the completed foreground routing result", () => {
+  assert.match(HTML, /body\.message \|\| actionQueuedText\(kind, destination\)/);
 });
 
 test("renderer uses one ordinary-review shortlist when inbox data is available", () => {

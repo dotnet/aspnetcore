@@ -921,19 +921,6 @@ export const HTML = `<!doctype html>
       return null;
     }
 
-    function reviewWithheldText(item) {
-      if (!item || item.bucket !== "ReviewNow") {
-        return "Review is only available for Review now items.";
-      }
-      if (item.discussion?.state === "verification-needed") {
-        return "This PR is waiting for discussion verification before review.";
-      }
-      if (item.discussion?.state === "not-assessed") {
-        return "This PR still needs a discussion assessment before review.";
-      }
-      return null;
-    }
-
     function render(state) {
       lastRenderedState = state;
       const snapshot = state.snapshot;
@@ -1654,14 +1641,8 @@ export const HTML = `<!doctype html>
 
       const actions = element("div", "actions");
       actions.append(actionButton(item, "open", "Open PR", false));
-      if (item.bucket === "ReviewNow") {
-        const note = reviewWithheldText(item);
-        if (note) {
-          actions.append(element("div", "warning", note));
-        } else {
-          actions.append(renderReviewActions(item, selectionKeyForItem(item)));
-        }
-      } else if (item.bucket === "NeedsRescue") {
+      actions.append(renderReviewActions(item, selectionKeyForItem(item)));
+      if (item.bucket === "NeedsRescue") {
         actions.append(actionButton(item, "investigate-rescue", "Investigate rescue", true));
       }
       card.append(actions);
@@ -1844,7 +1825,7 @@ export const HTML = `<!doctype html>
         }
         actionNotice = {
           phase: "success",
-          message: actionQueuedText(kind, destination),
+          message: body.message || actionQueuedText(kind, destination),
         };
         render(lastRenderedState);
       } catch (error) {
