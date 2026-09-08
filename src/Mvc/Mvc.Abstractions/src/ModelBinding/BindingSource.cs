@@ -46,7 +46,7 @@ public class BindingSource : IEquatable<BindingSource?>
     public static readonly BindingSource Header = new BindingSource(
         "Header",
         Resources.BindingSource_Header,
-        isGreedy: true,
+        isGreedy: false,
         isFromRequest: true);
 
     /// <summary>
