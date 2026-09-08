@@ -529,14 +529,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && _initialIndex.IsPositioning)
         {
             var fillDirection = await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
-            if (fillDirection is null && _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry)
+            var finalAlignmentUnavailable = fillDirection is null
+                && _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry;
+            if (finalAlignmentUnavailable)
             {
-                _initialIndex.Complete();
+                _initialIndex.Abort();
+                return;
             }
-            else
-            {
-                UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
-            }
+
+            UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
         }
     }
 
