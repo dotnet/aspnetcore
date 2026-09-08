@@ -37,4 +37,8 @@ public class ApiExplorerParametersController : Controller
     public void IsRequiredParameters([BindRequired] string requiredParam, string notRequiredParam, Product product)
     {
     }
+
+    public void ComplexModelFromHeader([FromHeader] HeaderParamsDTO headerParams)
+    {
+    }
 }
