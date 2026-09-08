@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -97,6 +98,9 @@ public class RazorComponentEndpointInvokerTest
         // The HTTP server (Kestrel) handles suppressing the response body for HEAD requests.
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+        var startupValues = services.GetRequiredService<IHostStartupValues>();
+        Assert.Equal("https://localhost/", startupValues.GetRequired("document.baseURI"));
+        Assert.Equal("https://localhost/", startupValues.GetRequired("location.href"));
     }
 
     [Fact]

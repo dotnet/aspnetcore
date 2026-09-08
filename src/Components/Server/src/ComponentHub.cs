@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
@@ -46,6 +47,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitRegistry _circuitRegistry;
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
+    private readonly IEnumerable<IBrowserStartupValueProvider> _browserStartupValueProviders;
     private readonly ILogger _logger;
 
     public ComponentHub(
@@ -56,6 +58,7 @@ internal sealed partial class ComponentHub : Hub
         CircuitRegistry circuitRegistry,
         CircuitPersistenceManager circuitPersistenceProvider,
         ICircuitHandleRegistry circuitHandleRegistry,
+        IEnumerable<IBrowserStartupValueProvider> browserStartupValueProviders,
         ILogger<ComponentHub> logger)
     {
         _serverComponentSerializer = serializer;
@@ -65,6 +68,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitRegistry = circuitRegistry;
         _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
+        _browserStartupValueProviders = browserStartupValueProviders;
         _logger = logger;
     }
 
@@ -103,7 +107,14 @@ internal sealed partial class ComponentHub : Hub
         return Task.CompletedTask;
     }
 
-    public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
+    public string GetStartupValueKeys()
+        => HostStartupValuesJson.SerializeKeys(
+            BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders));
+
+    public async ValueTask<string> StartCircuit(
+        string startupValuesJson,
+        string serializedComponentRecords,
+        string applicationState)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
         if (circuitHost != null)
@@ -116,18 +127,12 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (baseUri == null ||
-            uri == null ||
-            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
-            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
         {
-            // We do some really minimal validation here to prevent obviously wrong data from getting in
-            // without duplicating too much logic.
-            //
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
             Log.InvalidInputData(_logger);
-            await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
+            await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
             Context.Abort();
             return null;
         }
@@ -152,9 +157,11 @@ internal sealed partial class ComponentHub : Hub
                 circuitClient,
                 baseUri,
                 uri,
+                startupValues,
                 Context.User,
                 store,
-                resourceCollection);
+                resourceCollection,
+                cancellationToken: Context.ConnectionAborted);
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
@@ -163,8 +170,8 @@ internal sealed partial class ComponentHub : Hub
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
             _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
-            // It's safe to *publish* the circuit now because nothing will be able
-            // to run inside it until after InitializeAsync completes.
+            // Publish before initialization completes so JS interop responses can flow.
+            // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 
@@ -183,6 +190,49 @@ internal sealed partial class ComponentHub : Hub
             Context.Abort();
             return null;
         }
+    }
+
+    private static bool ContainsExactly(
+        IReadOnlyDictionary<string, string> values,
+        IReadOnlyList<string> expectedKeys)
+    {
+        if (values.Count != expectedKeys.Count)
+        {
+            return false;
+        }
+
+        foreach (var key in expectedKeys)
+        {
+            if (!values.ContainsKey(key))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryGetStartupValues(
+        string? startupValuesJson,
+        out Dictionary<string, string> startupValues,
+        out string baseUri,
+        out string uri)
+    {
+        if (!HostStartupValuesJson.TryDeserialize(startupValuesJson, out startupValues) ||
+            !ContainsExactly(
+                startupValues,
+                BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders)) ||
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.BaseUriKey, out baseUri) ||
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.LocationHrefKey, out uri) ||
+            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
+            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        {
+            baseUri = null;
+            uri = null;
+            return false;
+        }
+
+        return true;
     }
 
     public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
@@ -299,8 +349,7 @@ internal sealed partial class ComponentHub : Hub
     // Those can be then passed to this method for resuming the circuit.
     public async ValueTask<string> ResumeCircuit(
         string circuitIdSecret,
-        string baseUri,
-        string uri,
+        string startupValuesJson,
         string rootComponents,
         string applicationState)
     {
@@ -323,18 +372,12 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (baseUri == null ||
-            uri == null ||
-            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
-            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
         {
-            // We do some really minimal validation here to prevent obviously wrong data from getting in
-            // without duplicating too much logic.
-            //
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
             Log.InvalidInputData(_logger);
-            await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
+            await NotifyClientError(Clients.Caller, "The startup values provided are invalid.");
             Context.Abort();
             return null;
         }
@@ -404,9 +447,11 @@ internal sealed partial class ComponentHub : Hub
                 circuitClient,
                 baseUri,
                 uri,
+                startupValues,
                 Context.User,
                 store: null,
-                resourceCollection);
+                resourceCollection,
+                cancellationToken: Context.ConnectionAborted);
 
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
 
@@ -418,8 +463,8 @@ internal sealed partial class ComponentHub : Hub
 
             circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
-            // It's safe to *publish* the circuit now because nothing will be able
-            // to run inside it until after InitializeAsync completes.
+            // Publish before initialization completes so JS interop responses can flow.
+            // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
 

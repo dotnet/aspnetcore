@@ -13,6 +13,7 @@ using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
@@ -127,6 +128,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
+        services.AddScoped<HostInitializationState>();
+        services.AddSingleton<IBrowserStartupValueProvider, TestBrowserStartupValueProvider>();
+        services.AddSingleton<IHostInitializer, StartupValuesHostInitializer>();
+        services.AddSingleton<IHostInitializer, JSReadyHostInitializer>();
 
         // Register custom serializer for E2E testing of persistent component state serialization extensibility
         services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();

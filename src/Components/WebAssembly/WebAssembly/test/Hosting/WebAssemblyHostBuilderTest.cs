@@ -133,7 +133,7 @@ public class WebAssemblyHostBuilderTest
     }
 
     [Fact]
-    public void Builder_CreatesNavigationManager()
+    public void Builder_CreatesNavigationManagerThatIsUsableBeforeRunAsync()
     {
         // Arrange
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(environment: "Development"));
@@ -143,8 +143,8 @@ public class WebAssemblyHostBuilderTest
 
         // Assert
         var navigationManager = host.Services.GetRequiredService<NavigationManager>();
-        Assert.NotNull(navigationManager);
         Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
+        Assert.Equal(navigationManager.BaseUri, builder.HostEnvironment.BaseAddress);
         Assert.Equal("https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool", navigationManager.Uri);
     }
 

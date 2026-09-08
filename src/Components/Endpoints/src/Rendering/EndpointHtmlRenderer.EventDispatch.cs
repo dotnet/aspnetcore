@@ -124,6 +124,9 @@ internal partial class EndpointHtmlRenderer
         return $"{baseUri}{path.TrimStart('/')}";
     }
 
+    internal Task HandleNavigationAsync(string uri)
+        => GetErrorHandledTask(OnNavigateTo(uri));
+
     private async Task OnNavigateTo(string uri)
     {
         if (_httpContext.Response.HasStarted)

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -44,11 +45,14 @@ public class EndpointHtmlRendererTest
 
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
-    private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
+    private readonly IServiceProvider _services;
     private readonly TestEndpointHtmlRenderer renderer;
 
     public EndpointHtmlRendererTest()
     {
+        var services = CreateDefaultServiceCollection();
+        services.AddSingleton<EndpointHtmlRenderer>(_ => renderer);
+        _services = services.BuildServiceProvider();
         renderer = GetEndpointHtmlRenderer();
     }
 
@@ -998,8 +1002,11 @@ public class EndpointHtmlRendererTest
         using var remoteHandle = RemoteExecutor.Invoke(static async (allowExceptionStr) =>
         {
             var allowException = bool.Parse(allowExceptionStr);
-            var services = CreateDefaultServiceCollection().BuildServiceProvider();
-            var renderer = new TestEndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+            TestEndpointHtmlRenderer renderer = null;
+            var serviceCollection = CreateDefaultServiceCollection();
+            serviceCollection.AddSingleton<EndpointHtmlRenderer>(_ => renderer);
+            var services = serviceCollection.BuildServiceProvider();
+            renderer = new TestEndpointHtmlRenderer(services, NullLoggerFactory.Instance);
 
             var ctx = new DefaultHttpContext();
             ctx.Request.Scheme = "http";
@@ -2029,6 +2036,15 @@ public class EndpointHtmlRendererTest
         services.AddScoped<ResourceCollectionProvider>();
         services.AddScoped<ResourcePreloadService>();
         services.AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development));
+        services.AddKeyedSingleton<HttpContextHostStartupValues>(HostInitializerKey.Static);
+        services.AddKeyedSingleton<IHostStartupValues>(
+            HostInitializerKey.Static,
+            static (services, key) => services.GetRequiredKeyedService<HttpContextHostStartupValues>(key));
+        services.AddSingleton<IHostStartupValues>(
+            static services => services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Static));
+        services.AddKeyedSingleton<IHostInitializer, NavigationManagerInitializer>(HostInitializerKey.Static);
+        services.AddSingleton<IHttpContextStartupValueProvider, NavigationHttpContextStartupValueProvider>();
+        services.AddSingleton<HostInitializerCollection>();
         return services;
     }
 

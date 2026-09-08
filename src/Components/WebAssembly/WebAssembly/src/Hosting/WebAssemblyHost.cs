@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -25,6 +27,11 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private readonly IConfiguration _configuration;
     private readonly RootComponentMappingCollection _rootComponents;
     private readonly string? _persistedState;
+    private readonly CancellationTokenSource _hostCancellationTokenSource;
+    private readonly Task _browserInitializationTask;
+    private readonly object _lifecycleLock = new();
+    private CancellationTokenRegistration _externalCancellationRegistration;
+    private Task? _runTask;
 
     // NOTE: the host is disposable because it OWNs references to disposable things.
     //
@@ -44,7 +51,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         WebAssemblyHostBuilder builder,
         IServiceProvider services,
         AsyncServiceScope scope,
-        string? persistedState)
+        string? persistedState,
+        CancellationTokenSource hostCancellationTokenSource)
     {
         // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
         GC.KeepAlive(typeof(JSInteropMethods));
@@ -54,6 +62,18 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         _configuration = builder.Configuration;
         _rootComponents = builder.RootComponents;
         _persistedState = persistedState;
+        _hostCancellationTokenSource = hostCancellationTokenSource;
+
+        InitializeHostStartupValues();
+        var hostInitializerInvoker = Services
+            .GetRequiredService<HostInitializerCollection>()
+            .GetInitializerInvoker(Services);
+        _browserInitializationTask = hostInitializerInvoker.InitializeBrowserAsync(
+            _hostCancellationTokenSource.Token);
+        if (_browserInitializationTask.IsCompleted)
+        {
+            _browserInitializationTask.GetAwaiter().GetResult();
+        }
     }
 
     /// <summary>
@@ -72,40 +92,82 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     /// <returns>A <see cref="ValueTask"/> which represents the completion of disposal.</returns>
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
+        Task taskToAwait;
+        CancellationToken hostCancellationToken;
+        Exception? runException = null;
+        lock (_lifecycleLock)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _externalCancellationRegistration.Dispose();
+            _externalCancellationRegistration = default;
+            taskToAwait = _runTask ?? _browserInitializationTask;
+            hostCancellationToken = _hostCancellationTokenSource.Token;
+            try
+            {
+                _hostCancellationTokenSource.Cancel();
+            }
+            catch (Exception exception)
+            {
+                runException = exception;
+            }
         }
 
-        _disposed = true;
-
-        // Stop hosted services first
-        if (_hostedServiceExecutor is not null)
+        try
         {
             try
             {
-                await _hostedServiceExecutor.StopAsync(CancellationToken.None);
+                await taskToAwait;
             }
-            catch
+            catch (OperationCanceledException exception) when (exception.CancellationToken == hostCancellationToken)
             {
-                // Ignore errors when stopping hosted services during disposal
+            }
+            catch (Exception exception)
+            {
+                runException ??= exception;
+            }
+
+            // Stop hosted services first
+            if (_hostedServiceExecutor is not null)
+            {
+                try
+                {
+                    await _hostedServiceExecutor.StopAsync(CancellationToken.None);
+                }
+                catch
+                {
+                    // Ignore errors when stopping hosted services during disposal
+                }
+            }
+
+            if (_renderer is not null)
+            {
+                await _renderer.DisposeAsync();
+            }
+
+            await _scope.DisposeAsync();
+
+            if (_services is IAsyncDisposable asyncDisposableServices)
+            {
+                await asyncDisposableServices.DisposeAsync();
+            }
+            else if (_services is IDisposable disposableServices)
+            {
+                disposableServices.Dispose();
             }
         }
-
-        if (_renderer is not null)
+        finally
         {
-            await _renderer.DisposeAsync();
+            _hostCancellationTokenSource.Dispose();
         }
 
-        await _scope.DisposeAsync();
-
-        if (_services is IAsyncDisposable asyncDisposableServices)
+        if (runException is not null)
         {
-            await asyncDisposableServices.DisposeAsync();
-        }
-        else if (_services is IDisposable disposableServices)
-        {
-            disposableServices.Dispose();
+            ExceptionDispatchInfo.Capture(runException).Throw();
         }
     }
 
@@ -126,106 +188,169 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     }
 
     // Internal for testing.
-    internal async Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
+    internal Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
     {
-        if (_started)
+        lock (_lifecycleLock)
         {
-            throw new InvalidOperationException("The host has already started.");
-        }
-
-        _started = true;
-
-        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
-        var store = !string.IsNullOrEmpty(_persistedState) ?
-            new PrerenderComponentApplicationStore(_persistedState) :
-            new PrerenderComponentApplicationStore();
-
-        manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
-        await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
-
-        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
-        cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
-        {
-            cultureStateProvider.ApplyStoredCulture();
-        }
-
-        // Application developers might have configured the culture based on some ambient state
-        // such as local storage, url etc as part of their Program.Main(Async).
-        // This is the earliest opportunity to fetch satellite assemblies for this selection.
-        await cultureProvider.LoadCurrentCultureResourcesAsync();
-
-        // Start hosted services after culture is fully applied,
-        // so services that depend on culture see the correct values.
-        _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
-        await _hostedServiceExecutor.StartAsync(cancellationToken);
-
-        var tcs = new TaskCompletionSource();
-        using (cancellationToken.Register(() => tcs.TrySetResult()))
-        {
-            var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-            var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
-            var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
-            var collection = await collectionProvider.GetResourceCollection();
-            var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
-            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
-
-            WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
-
-            RootComponentOperationBatch? initialOperationBatch = null;
-            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+            if (_started)
             {
-                // In Blazor web, we wait for the JS side to tell us about the components available
-                // before we render the initial set of components. Any additional update goes through
-                // UpdateRootComponents.
-                // We do it this way to ensure that the persistent component state is only used the first time
-                // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
-                // web.
-                initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
+                throw new InvalidOperationException("The host has already started.");
             }
 
-            var initializationTcs = new TaskCompletionSource();
-            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), async state =>
-            {
-                var (rootComponents, renderer, initializationTcs) = state;
-                try
-                {
-                    // Here, we add each root component but don't await the returned tasks so that the
-                    // components can be processed in parallel.
-                    var count = rootComponents.Count;
-                    var initialOperationCount = initialOperationBatch?.Operations.Length ?? 0;
-                    var pendingRenders = new List<Task>(count + initialOperationCount);
-                    for (var i = 0; i < count; i++)
-                    {
-                        var rootComponent = rootComponents[i];
-                        pendingRenders.Add(renderer.AddComponentAsync(
-                            rootComponent.ComponentType,
-                            rootComponent.Parameters,
-                            rootComponent.Selector));
-                    }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
-                    if (initialOperationBatch is not null)
-                    {
-                        AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
-                    }
+            _started = true;
+            _externalCancellationRegistration = cancellationToken.Register(
+                static state => ((CancellationTokenSource)state!).Cancel(),
+                _hostCancellationTokenSource);
+            _runTask = RunAsyncCoreInternal(_hostCancellationTokenSource.Token, cultureProvider);
 
-                    // Now we wait for all components to finish rendering.
-                    await Task.WhenAll(pendingRenders);
-
-                    initializationTcs.SetResult();
-                }
-                catch (Exception ex)
-                {
-                    initializationTcs.SetException(ex);
-                }
-            });
-
-            await initializationTcs.Task;
-            store.ExistingState.Clear();
-
-            await tcs.Task;
+            return _runTask;
         }
+    }
+
+    private async Task RunAsyncCoreInternal(
+        CancellationToken hostCancellationToken,
+        WebAssemblyCultureProvider? cultureProvider)
+    {
+        try
+        {
+            await _browserInitializationTask;
+            hostCancellationToken.ThrowIfCancellationRequested();
+
+            var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
+            var store = !string.IsNullOrEmpty(_persistedState) ?
+                new PrerenderComponentApplicationStore(_persistedState) :
+                new PrerenderComponentApplicationStore();
+
+            manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
+            await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
+            cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+            cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+            if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+            {
+                cultureStateProvider.ApplyStoredCulture();
+            }
+
+            // Application developers might have configured the culture based on some ambient state
+            // such as local storage, url etc as part of their Program.Main(Async).
+            // This is the earliest opportunity to fetch satellite assemblies for this selection.
+            await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+            // Start hosted services after culture is fully applied,
+            // so services that depend on culture see the correct values.
+            _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
+            await _hostedServiceExecutor.StartAsync(hostCancellationToken);
+
+            var tcs = new TaskCompletionSource();
+            using (hostCancellationToken.Register(() => tcs.TrySetResult()))
+            {
+                var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
+                var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
+                var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
+                var collection = await collectionProvider.GetResourceCollection();
+                var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
+                _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
+
+                WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
+
+                RootComponentOperationBatch? initialOperationBatch = null;
+                if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+                {
+                    // In Blazor web, we wait for the JS side to tell us about the components available
+                    // before we render the initial set of components. Any additional update goes through
+                    // UpdateRootComponents.
+                    // We do it this way to ensure that the persistent component state is only used the first time
+                    // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
+                    // web.
+                    initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
+                }
+
+                var initializationTcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), async state =>
+                {
+                    var (rootComponents, renderer, initializationTcs) = state;
+                    try
+                    {
+                        // Here, we add each root component but don't await the returned tasks so that the
+                        // components can be processed in parallel.
+                        var count = rootComponents.Count;
+                        var initialOperationCount = initialOperationBatch?.Operations.Length ?? 0;
+                        var pendingRenders = new List<Task>(count + initialOperationCount);
+                        for (var i = 0; i < count; i++)
+                        {
+                            var rootComponent = rootComponents[i];
+                            pendingRenders.Add(renderer.AddComponentAsync(
+                                rootComponent.ComponentType,
+                                rootComponent.Parameters,
+                                rootComponent.Selector));
+                        }
+
+                        if (initialOperationBatch is not null)
+                        {
+                            AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
+                        }
+
+                        // Now we wait for all components to finish rendering.
+                        await Task.WhenAll(pendingRenders);
+
+                        initializationTcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        initializationTcs.SetException(ex);
+                    }
+                });
+
+                await initializationTcs.Task;
+                store.ExistingState.Clear();
+
+                await tcs.Task;
+            }
+        }
+        finally
+        {
+            lock (_lifecycleLock)
+            {
+                _externalCancellationRegistration.Dispose();
+                _externalCancellationRegistration = default;
+            }
+        }
+    }
+
+    private void InitializeHostStartupValues()
+    {
+        var keys = BrowserStartupValueProviderUtilities.GetKeys(
+            Services.GetServices<IBrowserStartupValueProvider>());
+        var keysJson = HostStartupValuesJson.SerializeKeys(keys);
+        var valuesJson = Services.GetRequiredService<IInternalJSImportMethods>().GetHostStartupValues(keysJson);
+        if (!HostStartupValuesJson.TryDeserialize(valuesJson, out var values) ||
+            !ContainsExactly(values, keys))
+        {
+            throw new InvalidOperationException("The browser returned invalid host startup values.");
+        }
+
+        Services.GetRequiredService<InteractiveHostStartupValues>().Initialize(values);
+    }
+
+    private static bool ContainsExactly(IReadOnlyDictionary<string, string> values, IReadOnlyList<string> keys)
+    {
+        if (values.Count != keys.Count)
+        {
+            return false;
+        }
+
+        foreach (var key in keys)
+        {
+            if (!values.ContainsKey(key))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]

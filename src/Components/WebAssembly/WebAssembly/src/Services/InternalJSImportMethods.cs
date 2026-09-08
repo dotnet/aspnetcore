@@ -30,6 +30,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationCulture()
         => GetApplicationCultureCore();
 
+    public string GetHostStartupValues(string keysJson)
+        => GetHostStartupValuesCore(keysJson);
+
     public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId)
         => AttachRootComponentToElementCore(domElementSelector, componentId, rendererId);
 
@@ -77,6 +80,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getApplicationCulture", "blazor-internal")]
     private static partial string GetApplicationCultureCore();
+
+    [JSImport("Blazor._internal.getHostStartupValues", "blazor-internal")]
+    private static partial string GetHostStartupValuesCore(string keysJson);
 
     [JSImport("Blazor._internal.attachRootComponentToElement", "blazor-internal")]
     private static partial void AttachRootComponentToElementCore(string domElementSelector, int componentId, int rendererId);

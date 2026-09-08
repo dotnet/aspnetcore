@@ -11,6 +11,8 @@ internal interface IInternalJSImportMethods
     
     string GetApplicationCulture();
 
+    string GetHostStartupValues(string keysJson);
+
     void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId);
 
     void EndUpdateRootComponents(long batchId);
