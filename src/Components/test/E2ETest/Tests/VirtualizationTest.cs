@@ -4280,7 +4280,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68728")]
     public void AnchorMode_Start_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider, delay: useItemsProvider);
@@ -4288,17 +4287,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+        AssertScrollTop(js, container, st => st < 2, "Beginning mode should start at the top");
 
         Browser.Exists(By.Id("prepend-many-items")).Click();
         Browser.Contains("Prepended 100 items", () => Browser.Exists(By.Id("status")).Text);
 
         WaitForRenderToSettle(container, js);
-        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        Assert.True(scrollTopAfter < 50,
-            $"Beginning mode: large prepend should still pin to top, but scrollTop was {scrollTopAfter}");
-
-        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-100']")).Count > 0);
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var hasPrependedTopItem = container.FindElements(By.CssSelector("[data-index='-100']")).Count > 0;
+            return scrollTop < 50 && hasPrependedTopItem;
+        }, TimeSpan.FromSeconds(10),
+        "Beginning mode: large prepend should remain near top and show the prepended top item");
     }
 
     [Theory]
