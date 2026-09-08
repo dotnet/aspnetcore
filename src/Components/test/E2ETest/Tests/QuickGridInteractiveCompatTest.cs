@@ -5,7 +5,6 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -109,20 +108,17 @@ public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68680")]
     public void PaginatorCorrectItemsPerPage()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        var grid = Browser.FindElement(By.ClassName("quickgrid"));
-        var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
 
         Browser.Click(By.CssSelector(".first-paginator .go-next"));
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal(10, () => Browser.FindElement(By.CssSelector("#grid .quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
 
         // URL updates in both modes
         Assert.Contains("page=2", Browser.Url);
