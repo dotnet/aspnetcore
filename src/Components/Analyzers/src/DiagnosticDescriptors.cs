@@ -176,7 +176,7 @@ internal static class DiagnosticDescriptors
         description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
 
     public static readonly DiagnosticDescriptor JsInteropUsageWithoutIsInteractiveCheck = new(
-        "BL0017",
+        "BL0019",
         CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Title)),
         CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Format)),
         Usage,

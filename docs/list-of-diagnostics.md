@@ -87,7 +87,9 @@
 |  __`BL0014`__ | For loop iterator used inside a closure. |
 |  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
-|  __`BL0017`__ | JS interop used without checking RendererInfo.IsInteractive |
+|  __`BL0017`__ | Component has 'Dispose()' but does not implement 'IDisposable' |
+|  __`BL0018`__ | Component has 'DisposeAsync()' but does not implement 'IAsyncDisposable' |
+|  __`BL0019`__ | JS interop used without checking RendererInfo.IsInteractive |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
