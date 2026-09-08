@@ -1,6 +1,6 @@
 ### Cross-cutting reviewer
 
-These dimensions apply to **every** ASP.NET Core change. The routing policy is explicit: this reviewer runs on **every** review, in addition to every routed domain reviewer, and it is **also** the primary reviewer for any `src` area that has no dedicated reference. It is never a fallback used only when no domain reviewer matched.
+Apply this reviewer to every change. Additionally route `src/Components` and `src/JSInterop` changes to the included Blazor Components reference; report missing specialist coverage for other domains while continuing cross-cutting review.
 
 This file is reference material. The `review-pull-request` skill gives each dimension below an
 independent, single-dimension pass.

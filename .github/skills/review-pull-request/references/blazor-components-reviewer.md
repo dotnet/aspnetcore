@@ -1,6 +1,6 @@
 ### Blazor Components reviewer
 
-Review only ASP.NET Core Blazor and Razor Components runtime work under `src/Components/**` and `src/JSInterop/**` — rendering, lifecycle, render modes, JS interop, navigation, forms, and interactive Server circuits. The Scope wave lists the full change taxonomy.
+Review only ASP.NET Core Blazor and Razor Components runtime work under `src/Components/**` and `src/JSInterop/**` — rendering, lifecycle, render modes, JS interop, navigation, forms, and interactive Server circuits. The review dimensions below describe the covered areas.
 
 This file is reference material. The `review-pull-request` skill gives each dimension below an
 independent, single-dimension pass.
@@ -101,7 +101,7 @@ independent, single-dimension pass.
 
 - CHECK: Treat interactive Server circuits as authenticated, stateful connections whose authentication changes, reconnects, JS callbacks, and persisted state require explicit synchronization or reload behavior.
 - CHECK: Do not override protocol-critical authentication settings at runtime; OIDC and remote-auth flows must honor configured security semantics.
-- CHECK: Defer OIDC, antiforgery, and Data Protection primitive changes to [auth-security-reviewer.md](auth-security-reviewer.md); keep interactive Server circuit and component-state security review here.
+- CHECK: For changes to OIDC, antiforgery, or Data Protection primitives themselves, report missing auth/security specialist coverage; cross-cutting review still applies. Continue reviewing Components integration, interactive Server circuits, and component-state security here.
 - CHECK: Use `MarkupString` only for trusted content and ensure browser-deserialized event or form data cannot cross into privileged .NET code without intentional validation.
 - CHECK: Server-consumed component-state payloads embedded in HTML or transport data should be encrypted and integrity-protected; WebAssembly or Auto client-readable payloads must contain no secrets, and all modes should avoid exposing full type names or internal structure unless required for correctness.
 - CHECK: Browser features with security headers, such as multithreaded WebAssembly or `SharedArrayBuffer`, must set the required cross-origin policies when enabled.
