@@ -679,7 +679,7 @@ export const HTML = `<!doctype html>
     };
     let selectedItemKey = null;
     let lastRenderedState = null;
-    let pendingReview = null;
+    const pendingReviews = new Map();
     let actionNotice = { phase: "idle", message: "" };
     let personalInventoryOpen = false;
 
@@ -724,10 +724,6 @@ export const HTML = `<!doctype html>
 
     function isSelectedKey(key) {
       return key !== null && key === selectedItemKey;
-    }
-
-    function isReviewPending() {
-      return pendingReview !== null;
     }
 
     function findQueueItemByNumber(snapshot, number) {
@@ -1791,18 +1787,19 @@ export const HTML = `<!doctype html>
     function actionButton(item, kind, label, primary, destination, selectionKey = null) {
       const button = element("button", primary ? "primary-action" : "", label);
       button.type = "button";
-      button.disabled = kind === "review" && isReviewPending();
+      button.disabled = kind === "review" && pendingReviews.has(selectionKey ?? item.id);
       button.addEventListener("click", () => runAction(button, item.id, kind, destination, selectionKey));
       return button;
     }
 
     async function runAction(button, itemId, kind, destination, selectionKey = null) {
-      if (kind === "review" && pendingReview) {
+      const pendingKey = selectionKey ?? itemId;
+      if (kind === "review" && pendingReviews.has(pendingKey)) {
         return;
       }
       const token = crypto.randomUUID();
       if (kind === "review") {
-        pendingReview = { token, selectionKey, kind, destination, itemId };
+        pendingReviews.set(pendingKey, { token, selectionKey, kind, destination, itemId });
         actionNotice = {
           phase: "pending",
           message: actionPendingText(kind, destination),
@@ -1840,8 +1837,8 @@ export const HTML = `<!doctype html>
         };
         render(lastRenderedState);
       } finally {
-        if (!pendingReview || pendingReview.token === token) {
-          pendingReview = null;
+        if (pendingReviews.get(pendingKey)?.token === token) {
+          pendingReviews.delete(pendingKey);
           render(lastRenderedState);
         }
         button.disabled = false;

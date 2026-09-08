@@ -51,6 +51,10 @@ test("renderer exposes the review destination menu with exact labels", () => {
   assert.match(HTML, /Review in this session/);
   assert.match(HTML, /Review in new session queued\./);
   assert.match(HTML, /Review in this session queued\./);
+  assert.match(HTML, /const pendingReviews = new Map\(\)/);
+  assert.match(HTML, /pendingReviews\.has\(selectionKey \?\? item\.id\)/);
+  assert.match(HTML, /pendingReviews\.set\(pendingKey/);
+  assert.match(HTML, /pendingReviews\.delete\(pendingKey\)/);
 });
 
 test("renderer shows the completed foreground routing result", () => {
