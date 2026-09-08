@@ -20,7 +20,7 @@ export function normalizePersonalInbox(personal, queue, {
       ? personal.preview
       : [];
   const items = orderPersonalItems(
-    deduplicate(rawItems.map((item) => normalizePersonalItem(item))),
+    deduplicate(rawItems.map((item) => normalizePersonalItem(item, personal.login))),
   );
   const activeItems = items.filter((item) => item.hasActionablePersonalSignal);
   const previewItems = activeItems.slice(0, 5);
@@ -166,7 +166,7 @@ export function reuseConditionalNotificationRepresentation({
   return cache[key];
 }
 
-function normalizePersonalItem(item) {
+function normalizePersonalItem(item, identity = null) {
   const signals = Array.isArray(item?.signals) ? item.signals : [];
   const directRequest = item?.directRequest === true
     || signals.some((signal) => signal.kind === "direct-request");
@@ -224,6 +224,9 @@ function normalizePersonalItem(item) {
     replyEvidence,
     changedSinceOwnReview,
     participatedOrMentioned: item.participatedOrMentioned === true,
+    authoredByIdentity: typeof identity === "string"
+      && typeof item.author === "string"
+      && item.author.toLowerCase() === identity.toLowerCase(),
     queue: {
       bucket: item.bucket ?? "Unknown",
       nextActor: item.nextActor ?? "unknown",
@@ -396,6 +399,13 @@ function classifyPersonalAction(item) {
   }
 
   if (item.changedSinceOwnReview?.status === "yes") {
+    if (item.authoredByIdentity) {
+      return {
+        priority: 4,
+        label: "Your PR changed — no review action for you",
+        detail: "The broader queue is waiting for a human reviewer.",
+      };
+    }
     return {
       priority: 3,
       label: "New changes since your review",

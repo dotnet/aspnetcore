@@ -183,6 +183,21 @@ test("personal action status ordering prioritizes review work above no-action it
         bucket: "WaitingOnCI",
         nextActor: "author/CI investigation",
       }),
+      card(108, [{
+        kind: "changed-since-own-review",
+        eventAt: "2026-09-06T06:00:00Z",
+        baselineCommit: "review-108",
+        currentHead: "head-108",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/108#review",
+      }], {
+        author: "PureWeen",
+        latestOwnReview: {
+          state: "COMMENTED",
+          submittedAt: "2026-09-05T10:00:00Z",
+          commitOid: "review-108",
+          url: "https://github.com/dotnet/aspnetcore/pull/108#review",
+        },
+      }),
     ],
     coverage: {
       state: "assessed",
@@ -197,7 +212,7 @@ test("personal action status ordering prioritizes review work above no-action it
   });
   const display = getPersonalDisplayModel(inbox);
 
-  assert.deepEqual(inbox.items.map((item) => item.number), [101, 102, 103, 104, 106, 107, 105]);
+  assert.deepEqual(inbox.items.map((item) => item.number), [101, 102, 103, 104, 106, 107, 108, 105]);
   assert.deepEqual(inbox.items.map((item) => item.actionStatus.label), [
     "Needs your review",
     "Reply or inspect discussion",
@@ -205,14 +220,16 @@ test("personal action status ordering prioritizes review work above no-action it
     "New changes since your review",
     "Review request present — PR not ready",
     "Follow-up present — no action now",
+    "Your PR changed — no review action for you",
     "No action currently needed",
   ]);
   assert.equal(inbox.activeCount, 4);
   assert.deepEqual(display.previewItems.map((item) => item.number), [101, 102, 103, 104]);
-  assert.equal(display.inventoryItems.length, 7);
+  assert.equal(display.inventoryItems.length, 8);
   assert.equal(display.inventoryItems[4].hasActionablePersonalSignal, false);
   assert.equal(display.inventoryItems[5].hasActionablePersonalSignal, false);
-  assert.equal(display.inventoryItems[6].actionStatus.label, "No action currently needed");
+  assert.equal(display.inventoryItems[6].hasActionablePersonalSignal, false);
+  assert.equal(display.inventoryItems[7].actionStatus.label, "No action currently needed");
 });
 
 test("personal action preview uses every actionable inventory item instead of a stale source preview", () => {
