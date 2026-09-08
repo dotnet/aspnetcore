@@ -215,6 +215,40 @@ test("personal action status ordering prioritizes review work above no-action it
   assert.equal(display.inventoryItems[6].actionStatus.label, "No action currently needed");
 });
 
+test("personal action preview uses every actionable inventory item instead of a stale source preview", () => {
+  const inbox = normalizePersonalInbox(personal({
+    preview: [card(101, [{
+      kind: "direct-request",
+      eventAt: "2026-09-06T10:00:00Z",
+      evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/101#review-requested",
+    }])],
+    inventory: [
+      card(101, [{
+        kind: "direct-request",
+        eventAt: "2026-09-06T10:00:00Z",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/101#review-requested",
+      }]),
+      card(102, [{
+        kind: "changed-since-own-review",
+        eventAt: "2026-09-06T11:00:00Z",
+        baselineCommit: "review-102",
+        currentHead: "head-102",
+        evidenceUrl: "https://github.com/dotnet/aspnetcore/pull/102#review",
+      }], {
+        latestOwnReview: {
+          state: "COMMENTED",
+          submittedAt: "2026-09-05T10:00:00Z",
+          commitOid: "review-102",
+          url: "https://github.com/dotnet/aspnetcore/pull/102#review",
+        },
+      }),
+    ],
+  }), { repository: "dotnet/aspnetcore" });
+
+  assert.deepEqual(inbox.previewItems.map((item) => item.number), [101, 102]);
+  assert.equal(inbox.activeCount, inbox.previewItems.length);
+});
+
 test("ordering is deterministic and deduplicates one card per PR", () => {
   const inbox = normalizePersonalInbox(personal(), { repository: "dotnet/aspnetcore" });
   const reordered = orderPersonalItems([...inbox.items].reverse());

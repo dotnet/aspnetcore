@@ -23,14 +23,7 @@ export function normalizePersonalInbox(personal, queue, {
     deduplicate(rawItems.map((item) => normalizePersonalItem(item))),
   );
   const activeItems = items.filter((item) => item.hasActionablePersonalSignal);
-  const previewItems = orderPersonalItems(
-    deduplicate(
-      (Array.isArray(personal.preview) && personal.preview.length > 0
-        ? personal.preview
-        : activeItems
-      ).map((item) => item.actionStatus ? item : normalizePersonalItem(item)),
-    ),
-  ).filter((item) => item.hasActionablePersonalSignal).slice(0, 5);
+  const previewItems = activeItems.slice(0, 5);
   const coverage = personal.coverage ?? {};
   const discovery = normalizeCoverage(coverage.discovery);
   const notifications = normalizeCoverage(coverage.notifications);
