@@ -107,11 +107,28 @@ customElements.define('passkey-submit', class extends HTMLElement {
         if (!options) {
             return;
         }
+        let timeoutId;
         try {
             // Not all browsers support this, and it is best-effort, so failures are not surfaced.
-            await window.PublicKeyCredential?.signalUnknownCredential?.(JSON.parse(options));
+            const signalPromise = window.PublicKeyCredential?.signalUnknownCredential?.(JSON.parse(options));
+            if (this.attrs.operation === 'Upgrade') {
+                // The Signal API cannot be aborted, but it must not hold up a completed sign-in.
+                await Promise.race([
+                    signalPromise,
+                    new Promise(resolve => {
+                        timeoutId = setTimeout(() => {
+                            console.debug('Timed out while signaling an unregistered passkey.');
+                            resolve();
+                        }, upgradeTimeoutMs);
+                    }),
+                ]);
+            } else {
+                await signalPromise;
+            }
         } catch (error) {
             console.error(error);
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
@@ -194,7 +211,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
         // The form is only a fallback for browsers without scripting, which can't upgrade anyway.
         this.internals.form.hidden = true;
 
-        if (!browserSupportsPasskeys || !await browserSupportsConditionalCreate()) {
+        if (!this.attrs.creationOptions || !browserSupportsPasskeys || !await browserSupportsConditionalCreate()) {
             this.internals.form.submit();
             return;
         }
