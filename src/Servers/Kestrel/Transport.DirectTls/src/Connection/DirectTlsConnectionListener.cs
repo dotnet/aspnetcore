@@ -31,9 +31,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly TlsEventPumpPool _pumpPool;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
-    // Whether the endpoint supplied a ServerCertificateSelector, i.e. whether resolving the TLS context can run user code
-    private readonly bool _serverCertificateSelectorConfigured;
-
     // Native OpenSSL server credentials (bootstrap + per-SNI contexts) owned by this listener. Disposed once,
     // at the end of DisposeAsync, after the pump threads are joined. Null only in tests that don't wire them.
     private readonly IDisposable? _ownedServerContexts;
@@ -51,6 +48,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly IHostApplicationLifetime _appLifetime;
 
     private int _fatalErrorReported;
+    private Exception? _fatalError;
 
     public EndPoint EndPoint { get; private set; }
 
@@ -64,8 +62,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         MemoryPool<byte> memoryPool,
         IHostApplicationLifetime applicationLifetime,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
-        IDisposable? ownedServerContexts = null,
-        bool serverCertificateSelectorConfigured = true)
+        IDisposable? ownedServerContexts = null)
     {
         ArgumentNullException.ThrowIfNull(tlsContext);
         ArgumentNullException.ThrowIfNull(applicationLifetime);
@@ -78,7 +75,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         _tlsContext = tlsContext;
         _contextResolver = contextResolver;
         _clientHelloCallback = clientHelloCallback;
-        _serverCertificateSelectorConfigured = serverCertificateSelectorConfigured;
         _ownedServerContexts = ownedServerContexts;
         _appLifetime = applicationLifetime;
         EndPoint = endpoint;
@@ -137,8 +133,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _options.MaxWriteBufferSize ?? 0,
             OnPumpFatalError,
             _clientHelloCallback,
-            _connectionTracker,
-            _serverCertificateSelectorConfigured);
+            _connectionTracker);
 
         _logger.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
     }
@@ -154,6 +149,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             return;
         }
 
+        // Publish the error before completing the channel so AcceptAsync observes it when it wakes.
+        _fatalError = error;
         _logger.LogCritical(error, "A DirectTls pump thread failed unrecoverably; stopping the application.");
 
         _readyConnections.Writer.TryComplete(error);
@@ -162,16 +159,26 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
-        while (await _readyConnections.Reader.WaitToReadAsync(cancellationToken))
+        try
         {
-            if (_readyConnections.Reader.TryRead(out var connection))
-            {
-                _connectionTracker.ReleaseHandshake();
-                return connection;
-            }
+            // Wait for a connection that has completed handshake
+            var connection = await _readyConnections.Reader.ReadAsync(cancellationToken);
+            _connectionTracker.ReleaseHandshake();
+            return connection;
         }
+        catch (ChannelClosedException)
+        {
+            if (_fatalError is not null)
+            {
+                throw _fatalError;
+            }
 
-        return null;
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -194,7 +201,14 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         // Drain any remaining connections from the channel
         while (_readyConnections.Reader.TryRead(out var connection))
         {
-            await connection.DisposeAsync();
+            try
+            {
+                await connection.DisposeAsync();
+            }
+            catch
+            {
+                // Ignore errors during cleanup
+            }
         }
 
         // This listener owns its pump pool; stop the pump threads and release their epoll fds. Bound the wait so

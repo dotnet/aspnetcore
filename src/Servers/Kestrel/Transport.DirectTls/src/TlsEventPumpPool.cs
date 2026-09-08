@@ -57,8 +57,7 @@ internal sealed class TlsEventPumpPool : IDisposable
         long maxWriteBufferSize,
         Action<Exception> onFatalError,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
-        ConnectionTracker? connectionTracker = null,
-        bool serverCertificateSelectorConfigured = true)
+        ConnectionTracker? connectionTracker = null)
     {
         foreach (var pump in _pumps)
         {
@@ -75,8 +74,7 @@ internal sealed class TlsEventPumpPool : IDisposable
                 maxWriteBufferSize,
                 onFatalError,
                 clientHelloCallback,
-                connectionTracker,
-                serverCertificateSelectorConfigured);
+                connectionTracker);
         }
     }
 

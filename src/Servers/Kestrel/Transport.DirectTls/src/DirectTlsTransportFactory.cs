@@ -118,11 +118,11 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                         $"No server certificate was resolved for SNI host name '{hostName}'.");
                 }
 
-                if (!contextCache.TryGetValue(certificate, out var context))
+                var context = contextCache.GetOrAdd(certificate, cert =>
                 {
                     var authenticationOptions = new SslServerAuthenticationOptions
                     {
-                        ServerCertificate = certificate,
+                        ServerCertificate = cert,
                         EnabledSslProtocols = endpointOptions.SslProtocols,
                         ApplicationProtocols = applicationProtocols,
                         ClientCertificateRequired = requireClientCertificate,
@@ -133,16 +133,8 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                         authenticationOptions.RemoteCertificateValidationCallback = clientCertificateValidation;
                     }
 
-                    var candidate = TlsContext.CreateServer(authenticationOptions);
-                    context = contextCache.GetOrAdd(certificate, candidate);
-
-                    // Multiple threads racing to add the same certificate can create multiple candidates,
-                    // so make sure we dont leak TlsContext (with cert/key handles) by disposing the non-cached candidate.
-                    if (!ReferenceEquals(context, candidate))
-                    {
-                        candidate.Dispose();
-                    }
-                }
+                    return TlsContext.CreateServer(authenticationOptions);
+                });
 
                 return (context, clientCertificateValidation);
             };
@@ -171,8 +163,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
             memoryPool,
             _applicationLifetime,
             clientHelloCallback,
-            ownedServerContexts,
-            serverCertificateSelectorConfigured: endpointOptions.ServerCertificateSelector is not null);
+            ownedServerContexts);
 
         _logger.LogInformation("DirectTls listener bound for endpoint {Endpoint}.", endpoint);
 

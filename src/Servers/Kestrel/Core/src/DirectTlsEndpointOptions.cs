@@ -38,10 +38,8 @@ public sealed class DirectTlsEndpointOptions
     /// allocated so it carries the same connection id that will later serve the request); the second is the
     /// requested SNI host name, or <see langword="null"/> when the client did not send one.
     /// <para>
-    /// The callback is invoked on the <see cref="ThreadPool"/>, so a slow one does not hold up the handshakes or
-    /// I/O of other connections. It does still delay this connection, and the time spent in it counts against
-    /// <see cref="HandshakeTimeout"/> - a callback that overruns that budget costs this connection its handshake.
-    /// Prefer fast, non-blocking work regardless: each concurrent invocation occupies a thread-pool thread.
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
     /// </para>
     /// </remarks>
     public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
@@ -67,10 +65,8 @@ public sealed class DirectTlsEndpointOptions
     /// when it produced no <see cref="SslPolicyErrors"/>.
     /// </summary>
     /// <remarks>
-    /// The callback is invoked on the <see cref="ThreadPool"/>, so a slow one does not hold up the handshakes or
-    /// I/O of other connections. It does still delay this connection, and the time spent in it counts against
-    /// <see cref="HandshakeTimeout"/> - a callback that overruns that budget costs this connection its handshake.
-    /// Prefer fast, non-blocking work regardless: each concurrent invocation occupies a thread-pool thread.
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
     /// </remarks>
     public Func<X509Certificate2, X509Chain?, SslPolicyErrors, bool>? ClientCertificateValidation { get; set; }
 
@@ -83,10 +79,8 @@ public sealed class DirectTlsEndpointOptions
     /// (for example with <c>ToArray()</c>) if they must outlive the call. The first argument is the
     /// <see cref="ConnectionContext"/> for the connection being negotiated.
     /// <para>
-    /// The callback is invoked on the <see cref="ThreadPool"/>, so a slow one does not hold up the handshakes or
-    /// I/O of other connections. It does still delay this connection, and the time spent in it counts against
-    /// <see cref="HandshakeTimeout"/> - a callback that overruns that budget costs this connection its handshake.
-    /// Prefer fast, non-blocking work regardless: each concurrent invocation occupies a thread-pool thread.
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
     /// </para>
     /// </remarks>
     public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
@@ -143,7 +137,7 @@ public sealed class DirectTlsEndpointOptions
 
     /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint,
-    /// sourced from <see cref="ListenOptions.Protocols"/> after the endpoint has been configured.
+    /// sourced from <see cref="ListenOptions.Protocols"/> after the endpoint has been configured. 
     /// </summary>
     internal HttpProtocols HttpProtocols { get; set; } = HttpProtocols.Http1AndHttp2;
 }

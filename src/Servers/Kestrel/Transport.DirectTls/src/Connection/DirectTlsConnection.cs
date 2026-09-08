@@ -199,7 +199,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             _logger.LogDebug(ex, "Failed to dispose half-open connection backend for fd={Fd}", _connectionState.Fd);
         }
 
-        CancelConnectionClosedToken();
+        _connectionClosedTokenSource.Cancel();
 
         // A half-open handshake never reached mTLS validation, so _ownedClientCertificate is normally null
         // here; dispose defensively (no-op when null) to keep both teardown paths symmetric.
@@ -404,19 +404,6 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         Abort(new ConnectionAbortedException("TLS connection error", ex));
     }
 
-    private void CancelConnectionClosedToken()
-    {
-        try
-        {
-            _connectionClosedTokenSource.Cancel();
-        }
-        catch (Exception ex)
-        {
-            // a throwing callback must not escape and abandon the rest of the teardown
-            _logger.LogError(0, ex, $"Unexpected exception in {nameof(DirectTlsConnection)}.{nameof(CancelConnectionClosedToken)}.");
-        }
-    }
-
     public override async ValueTask DisposeAsync()
     {
         // Thread-safe check: only one call to DisposeAsync proceeds
@@ -465,7 +452,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         }
 
         // 7. Signal connection closed
-        CancelConnectionClosedToken();
+        _connectionClosedTokenSource.Cancel();
         _connectionClosedTokenSource.Dispose();
 
         // 8. Dispose the accepted client certificate. The runtime's TlsSession transferred ownership of the
