@@ -190,6 +190,51 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task InitialIndex_ApplyingMeasuredGeometry_PreservesRunningAverage()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 7).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 5);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(2506f, virtualize._totalMeasuredHeight);
+        Assert.Equal(14, virtualize._measuredItemCount);
+    }
+
+    [Fact]
     public async Task Virtualize_ZeroSpacerSeparationDoesNotCorruptAverage()
     {
         // BuildVirtualizeWithContent provides Items + ChildContent so the test renderer

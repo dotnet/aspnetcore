@@ -826,9 +826,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 return;
             }
 
-            var committedItemSize = _itemSize > 0 ? _itemSize : ItemSize;
-            _totalMeasuredHeight = committedItemSize * _lastRenderedItemCount;
-            _measuredItemCount = _lastRenderedItemCount;
+            var committedItemSize = GetMeasuredItemHeight();
             _initialIndex.BeginApplyingMeasuredGeometry(committedItemSize);
             StateHasChanged();
         }
