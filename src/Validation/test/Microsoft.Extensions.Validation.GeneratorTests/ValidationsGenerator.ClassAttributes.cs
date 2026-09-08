@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -20,8 +18,6 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanValidateValidationAttributesOnClasses(bool useAsync)
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -111,7 +107,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var propertyAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal("X", propertyAttributeError.Key);
-                Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.Single());
+                Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.Select(e => e.ErrorMessage).Single());
             }
 
             async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
@@ -146,7 +142,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal(string.Empty, classAttributeError.Key);
-                Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+                Assert.Equal("Sum is too high", classAttributeError.Value.Select(e => e.ErrorMessage).Single());
             }
 
             async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
@@ -167,7 +163,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal("ObjectProperty", classAttributeError.Key);
-                Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+                Assert.Equal("Sum is too high", classAttributeError.Value.Select(e => e.ErrorMessage).Single());
             }
         });
     }

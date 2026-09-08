@@ -142,6 +142,23 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Equal(json1, json2);
     }
 
+    [Fact]
+    public void RuntimeProvidesConverterBackedTypeInfo()
+    {
+        var typeInfo = JsonSerializerOptions.GetTypeInfo(typeof(DotNetObjectReference<TestModel>));
+
+        Assert.Same(typeof(DotNetObjectReference<TestModel>), typeInfo.Type);
+        Assert.IsType<DotNetObjectReferenceJsonConverter<TestModel>>(typeInfo.Converter);
+    }
+
+    [Fact]
+    public void RuntimeProvidesVoidResultTypeInfo()
+    {
+        var typeInfo = JsonSerializerOptions.GetTypeInfo(typeof(IJSVoidResult));
+
+        Assert.Null(JsonSerializer.Deserialize("null", typeInfo));
+    }
+
     private class TestModel
     {
 

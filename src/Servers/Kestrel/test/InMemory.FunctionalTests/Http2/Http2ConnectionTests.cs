@@ -163,7 +163,6 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65915")]
     [Fact]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {

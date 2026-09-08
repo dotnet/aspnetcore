@@ -443,20 +443,20 @@ internal partial class EndpointHtmlRenderer
 
         _browserConfigurationEmitted = true;
 
-        var config = _httpContext.GetBrowserOptions();
+        var config = BrowserOptions.GetBrowserOptions(_httpContext);
 
         // Apply framework defaults: environment name and tooling env vars
         var hostEnvironment = _httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
-        config.WebAssembly.EnvironmentName ??= hostEnvironment.EnvironmentName;
+        config.InteractiveWebAssembly.EnvironmentName ??= hostEnvironment.EnvironmentName;
 
         if (s_dotnetModifiableAssemblies != null)
         {
-            config.WebAssembly.EnvironmentVariables.TryAdd("DOTNET_MODIFIABLE_ASSEMBLIES", s_dotnetModifiableAssemblies);
+            config.InteractiveWebAssembly.EnvironmentVariables.TryAdd("DOTNET_MODIFIABLE_ASSEMBLIES", s_dotnetModifiableAssemblies);
         }
 
         if (s_aspnetcoreBrowserTools != null)
         {
-            config.WebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
+            config.InteractiveWebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
         }
 
         var configJson = JsonSerializer.Serialize(config, BrowserOptionsJsonContext.Default.BrowserOptions);

@@ -21,11 +21,8 @@ public sealed class ConfigureBrowser : IComponent
     [Parameter, EditorRequired]
     public BrowserOptions Options { get; set; } = default!;
 
-    /// <summary>
-    /// Gets or sets the <see cref="HttpContext"/> for the current request.
-    /// </summary>
     [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+    internal HttpContext? HttpContext { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -38,7 +35,7 @@ public sealed class ConfigureBrowser : IComponent
 
         if (HttpContext is not null)
         {
-            var existing = HttpContext.GetBrowserOptions();
+            var existing = BrowserOptions.GetBrowserOptions(HttpContext);
             MergeInto(existing, Options);
         }
 
@@ -49,25 +46,25 @@ public sealed class ConfigureBrowser : IComponent
     {
         target.LogLevel = source.LogLevel ?? target.LogLevel;
 
-        // WebAssembly
-        target.WebAssembly.EnvironmentName = source.WebAssembly.EnvironmentName ?? target.WebAssembly.EnvironmentName;
-        target.WebAssembly.ApplicationCulture = source.WebAssembly.ApplicationCulture ?? target.WebAssembly.ApplicationCulture;
-        foreach (var kvp in source.WebAssembly.EnvironmentVariables)
+        // Interactive WebAssembly
+        target.InteractiveWebAssembly.EnvironmentName = source.InteractiveWebAssembly.EnvironmentName ?? target.InteractiveWebAssembly.EnvironmentName;
+        target.InteractiveWebAssembly.ApplicationCulture = source.InteractiveWebAssembly.ApplicationCulture ?? target.InteractiveWebAssembly.ApplicationCulture;
+        foreach (var kvp in source.InteractiveWebAssembly.EnvironmentVariables)
         {
-            target.WebAssembly.EnvironmentVariables[kvp.Key] = kvp.Value;
+            target.InteractiveWebAssembly.EnvironmentVariables[kvp.Key] = kvp.Value;
         }
 
-        // Server
-        target.Server.ReconnectionMaxRetries = source.Server.ReconnectionMaxRetries ?? target.Server.ReconnectionMaxRetries;
-        target.Server.ReconnectionRetryInterval = source.Server.ReconnectionRetryInterval ?? target.Server.ReconnectionRetryInterval;
-        target.Server.ReconnectionDialogId = source.Server.ReconnectionDialogId ?? target.Server.ReconnectionDialogId;
-        foreach (var kvp in source.Server.Extensions)
+        // Interactive server
+        target.InteractiveServer.ReconnectionMaxRetries = source.InteractiveServer.ReconnectionMaxRetries ?? target.InteractiveServer.ReconnectionMaxRetries;
+        target.InteractiveServer.ReconnectionRetryInterval = source.InteractiveServer.ReconnectionRetryInterval ?? target.InteractiveServer.ReconnectionRetryInterval;
+        target.InteractiveServer.ReconnectionDialogId = source.InteractiveServer.ReconnectionDialogId ?? target.InteractiveServer.ReconnectionDialogId;
+        foreach (var kvp in source.InteractiveServer.Extensions)
         {
-            target.Server.Extensions[kvp.Key] = kvp.Value;
+            target.InteractiveServer.Extensions[kvp.Key] = kvp.Value;
         }
 
-        // SSR
-        target.Ssr.PreserveDom = source.Ssr.PreserveDom ?? target.Ssr.PreserveDom;
-        target.Ssr.CircuitInactivityTimeout = source.Ssr.CircuitInactivityTimeout ?? target.Ssr.CircuitInactivityTimeout;
+        // Static server (SSR)
+        target.StaticServer.PreserveDom = source.StaticServer.PreserveDom ?? target.StaticServer.PreserveDom;
+        target.StaticServer.CircuitInactivityTimeout = source.StaticServer.CircuitInactivityTimeout ?? target.StaticServer.CircuitInactivityTimeout;
     }
 }

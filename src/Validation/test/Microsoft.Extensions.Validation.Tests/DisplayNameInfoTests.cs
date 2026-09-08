@@ -1,296 +1,125 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-/// <summary>
-/// Direct contract tests for <see cref="DisplayNameInfo"/> integration with the validation
-/// pipeline. Verifies that custom <see cref="DisplayNameInfo"/> subclasses are invoked with
-/// the right arguments, and that null returns fall back to the CLR member name.
-/// </summary>
 public class DisplayNameInfoTests : ValidationTestBase
 {
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Property_DisplayNameInfo_InvokedWithMemberNameAndDeclaringType(bool useAsync)
+    public async Task Property_NoDisplayNameInfo_UsesMemberNameDirectly(bool useAsync)
     {
-        var captured = new List<(string MemberName, Type? DeclaringType)>();
-        var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized");
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DisplayDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var model = new Person { Name = null };
-        var typeInfo = new TestValidatableTypeInfo(typeof(Person),
-        [
-            new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo, [new RequiredAttribute()])
-        ]);
-        var context = CreateContext(model);
+        await ValidateAsync(typeInfo, new DisplayDefaultModel(), context, useAsync, default);
 
-        await ValidateAsync(typeInfo, model, context, useAsync, default);
-
-        var call = Assert.Single(captured);
-        Assert.Equal("Name", call.MemberName);
-        Assert.Equal(typeof(Person), call.DeclaringType);
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Parameter_DisplayNameInfo_InvokedWithNullDeclaringType(bool useAsync)
+    public async Task Property_DisplayAttributeName_UsedInErrorMessage(bool useAsync)
     {
-        var captured = new List<(string MemberName, Type? DeclaringType)>();
-        var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized");
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DisplayAttributeModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var paramInfo = new CapturingParameterInfo(typeof(string), "myParam", displayNameInfo, [new RequiredAttribute()]);
-        var context = CreateContext(model: new object());
+        await ValidateAsync(typeInfo, new DisplayAttributeModel(), context, useAsync, default);
+
+        Assert.Equal("The Custom Display Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_DisplayNameAttribute_UsedInErrorMessage(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DisplayNameAttributeModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new DisplayNameAttributeModel(), context, useAsync, default);
+
+        Assert.Equal("The Component Display Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TypeLevelAttribute_DisplayAttributeName_UsedInErrorMessage(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DisplayTypeLevelModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new DisplayTypeLevelModel { Start = 10, End = 5 }, context, useAsync, default);
+
+        Assert.Equal("Display Range is invalid.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_DisplayAttribute_UsedInErrorMessage(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = typeof(DisplayParameterActions).GetMethod(nameof(DisplayParameterActions.Action))!.GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
-        var call = Assert.Single(captured);
-        Assert.Equal("myParam", call.MemberName);
-        Assert.Null(call.DeclaringType);
+        Assert.Equal("The Parameter Display field is required.", context.ValidationErrors!["value"].Select(e => e.ErrorMessage).Single());
     }
+}
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task TypeLevelAttribute_DisplayNameInfo_InvokedWithTypeNameAndType(bool useAsync)
-    {
-        var captured = new List<(string MemberName, Type? DeclaringType)>();
-        var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized Range");
+[ValidatableType]
+public class DisplayDefaultModel
+{
+    [Required]
+    public string? Name { get; set; }
+}
 
-        var model = new RangeModel { Start = 10, End = 5 };
-        var typeInfo = new CapturingTypeInfo(
-            typeof(RangeModel),
-            [],
-            displayNameInfo,
-            [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
-        var context = CreateContext(model);
+[ValidatableType]
+public class DisplayAttributeModel
+{
+    [Display(Name = "Custom Display Name")]
+    [Required]
+    public string? Name { get; set; }
+}
 
-        await ValidateAsync(typeInfo, model, context, useAsync, default);
+[ValidatableType]
+public class DisplayNameAttributeModel
+{
+    [DisplayName("Component Display Name")]
+    [Required]
+    public string? Name { get; set; }
+}
 
-        var call = Assert.Single(captured);
-        Assert.Equal(nameof(RangeModel), call.MemberName);
-        Assert.Equal(typeof(RangeModel), call.DeclaringType);
-    }
+[Display(Name = "Display Range")]
+[DisplayTypeLevel]
+[ValidatableType]
+public class DisplayTypeLevelModel
+{
+    public int Start { get; set; }
+    public int End { get; set; }
+}
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Property_DisplayNameInfo_ReturnsNull_FallsBackToMemberNameInErrorMessage(bool useAsync)
-    {
-        var displayNameInfo = new ConstantDisplayNameInfo(null);
-        var model = new Person { Name = null };
-        var typeInfo = new TestValidatableTypeInfo(typeof(Person),
-        [
-            new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo, [new RequiredAttribute()])
-        ]);
-        var context = CreateContext(model);
+public sealed class DisplayTypeLevelAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => new($"{validationContext.DisplayName} is invalid.");
+}
 
-        await ValidateAsync(typeInfo, model, context, useAsync, default);
-
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Property_NoDisplayNameInfo_UsesMemberNameDirectly(bool useAsync)
-    {
-        var model = new Person { Name = null };
-        var typeInfo = new TestValidatableTypeInfo(typeof(Person),
-        [
-            new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo: null, [new RequiredAttribute()])
-        ]);
-        var context = CreateContext(model);
-
-        await ValidateAsync(typeInfo, model, context, useAsync, default);
-
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Property_DisplayNameInfo_ReturnsValue_UsedInErrorMessage(bool useAsync)
-    {
-        var displayNameInfo = new ConstantDisplayNameInfo("Custom Resolved Name");
-        var model = new Person { Name = null };
-        var typeInfo = new TestValidatableTypeInfo(typeof(Person),
-        [
-            new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo, [new RequiredAttribute()])
-        ]);
-        var context = CreateContext(model);
-
-        await ValidateAsync(typeInfo, model, context, useAsync, default);
-
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Custom Resolved Name field is required.", context.ValidationErrors["Name"].Single());
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Property_DisplayNameInfo_Throws_PropagatesException(bool useAsync)
-    {
-        var thrown = new InvalidOperationException("Custom strategy failure");
-        var displayNameInfo = new ThrowingDisplayNameInfo(thrown);
-        var model = new Person { Name = null };
-        var typeInfo = new TestValidatableTypeInfo(typeof(Person),
-        [
-            new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo, [new RequiredAttribute()])
-        ]);
-        var context = CreateContext(model);
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => ValidateAsync(typeInfo, model, context, useAsync, default));
-        Assert.Same(thrown, ex);
-    }
-
-    [Fact]
-    public void Constructor_StoresDisplayNameInfoOnPropertyInfo()
-    {
-        var info = new ConstantDisplayNameInfo("X");
-        var sut = new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", info, []);
-
-        Assert.Same(info, sut.DisplayNameInfo);
-    }
-
-    [Fact]
-    public void Constructor_StoresDisplayNameInfoOnParameterInfo()
-    {
-        var info = new ConstantDisplayNameInfo("X");
-        var sut = new CapturingParameterInfo(typeof(string), "p", info, []);
-
-        Assert.Same(info, sut.DisplayNameInfo);
-    }
-
-    [Fact]
-    public void Constructor_StoresDisplayNameInfoOnTypeInfo()
-    {
-        var info = new ConstantDisplayNameInfo("X");
-        var sut = new CapturingTypeInfo(typeof(Person), [], info, []);
-
-        Assert.Same(info, sut.DisplayNameInfo);
-    }
-
-    [Fact]
-    public void Constructor_DefaultDisplayNameInfoIsNullOnPropertyInfo()
-    {
-        var sut = new CapturingPropertyInfo(typeof(Person), typeof(string), "Name", displayNameInfo: null, []);
-
-        Assert.Null(sut.DisplayNameInfo);
-    }
-
-    private static ValidateContext CreateContext(object model)
-    {
-        return new ValidateContext
-        {
-            ValidationOptions = new ValidationOptions(),
-            ServiceProvider = null,
-        };
-    }
-
-    private sealed class CapturingPropertyInfo : ValidatablePropertyInfo
-    {
-        private readonly ValidationAttribute[] _attributes;
-
-        public CapturingPropertyInfo(
-            Type declaringType,
-            Type propertyType,
-            string name,
-            DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] attributes)
-            : base(declaringType, propertyType, name, displayNameInfo)
-        {
-            _attributes = attributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
-    }
-
-    private sealed class CapturingParameterInfo : ValidatableParameterInfo
-    {
-        private readonly ValidationAttribute[] _attributes;
-
-        public CapturingParameterInfo(
-            Type parameterType,
-            string name,
-            DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] attributes)
-            : base(parameterType, name, displayNameInfo)
-        {
-            _attributes = attributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
-    }
-
-    private sealed class CapturingTypeInfo : ValidatableTypeInfo
-    {
-        private readonly ValidationAttribute[] _attributes;
-
-        public CapturingTypeInfo(
-            Type type,
-            ValidatablePropertyInfo[] members,
-            DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] attributes)
-            : base(type, members, displayNameInfo)
-        {
-            _attributes = attributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
-    }
-
-    private sealed class CapturingDisplayNameInfo(List<(string MemberName, Type? DeclaringType)> log, string? returnValue) : DisplayNameInfo
-    {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
-        {
-            log.Add((memberName, declaringType));
-            return returnValue;
-        }
-    }
-
-    private sealed class ConstantDisplayNameInfo(string? value) : DisplayNameInfo
-    {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
-            => value;
-    }
-
-    private sealed class ThrowingDisplayNameInfo(Exception exception) : DisplayNameInfo
-    {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
-            => throw exception;
-    }
-
-    private sealed class Person
-    {
-        public string? Name { get; set; }
-    }
-
-    private sealed class RangeModel
-    {
-        public int Start { get; set; }
-        public int End { get; set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Class)]
-    private sealed class StartLessThanEndAttribute : ValidationAttribute
-    {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            if (value is RangeModel model && model.Start >= model.End)
-            {
-                return new ValidationResult(ErrorMessage);
-            }
-
-            return ValidationResult.Success;
-        }
-    }
+public static class DisplayParameterActions
+{
+    public static void Action([Display(Name = "Parameter Display")][Required] string? value) { }
 }

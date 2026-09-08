@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Web.AssetPathAttributes
 Microsoft.AspNetCore.Components.Web.EnvironmentView
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.set -> void

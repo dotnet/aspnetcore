@@ -1,12 +1,8 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Validation.Tests;
@@ -16,879 +12,284 @@ public class AsyncValidationTests
     [Fact]
     public async Task AsyncValidationAttribute_ValidatesAsynchronously_FailsWhenInvalid()
     {
-        // Arrange
-        var userType = new TestValidatableTypeInfo(
-            typeof(UserWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(UserWithAsyncValidation), typeof(string), "Email", "Email",
-                    [new EmailExistsAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncUser>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var user = new UserWithAsyncValidation { Email = "duplicate@example.com" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(UserWithAsyncValidation), userType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncUser { Email = "duplicate@example.com" }, context, default);
 
-        // Act
-        await userType.ValidateAsync(user, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Email", error.Key);
-        Assert.Equal("Email already exists", error.Value.First());
+        Assert.Equal("Email already exists", Assert.Single(context.ValidationErrors!["Email"]).ErrorMessage);
     }
 
     [Fact]
     public async Task AsyncValidationAttribute_PassesWhenValid()
     {
-        // Arrange
-        var userType = new TestValidatableTypeInfo(
-            typeof(UserWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(UserWithAsyncValidation), typeof(string), "Email", "Email",
-                    [new EmailExistsAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncUser>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var user = new UserWithAsyncValidation { Email = "unique@example.com" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(UserWithAsyncValidation), userType }
-            }),
-            ServiceProvider = null
-        };
+        await typeInfo.ValidateAsync(new AsyncUser { Email = "unique@example.com" }, context, default);
 
-        // Act
-        await userType.ValidateAsync(user, context, default);
-
-        // Assert
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
     [Fact]
     public async Task MixedSyncAndAsyncAttributes_AllValidate()
     {
-        // Arrange
-        var productType = new TestValidatableTypeInfo(
-            typeof(Product),
-            [
-                CreatePropertyInfo(typeof(Product), typeof(string), "Name", "Name",
-                    [
-                        new RequiredAttribute { ErrorMessage = "Name is required" },
-                        new StringLengthAttribute(100) { ErrorMessage = "Name too long" }
-                    ]),
-                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU",
-                    [
-                        new RequiredAttribute { ErrorMessage = "SKU is required" },
-                        new SkuValidationAttribute { ErrorMessage = "SKU already exists" }
-                    ])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncProduct>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var product = new Product { Name = "", SKU = "DUPLICATE-SKU" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Product), productType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncProduct { Name = null, SKU = "DUPLICATE" }, context, default);
 
-        // Act
-        await productType.ValidateAsync(product, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(2, context.ValidationErrors.Count);
-        Assert.Contains("Name", context.ValidationErrors.Keys);
-        Assert.Contains("SKU", context.ValidationErrors.Keys);
-        Assert.Equal("Name is required", context.ValidationErrors["Name"].First());
-        Assert.Equal("SKU already exists", context.ValidationErrors["SKU"].First());
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("SKU already exists", context.ValidationErrors!["SKU"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_RespectsValidationOrder()
     {
-        // Arrange
-        var async1Completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var async2Completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        TrackingAsyncAttribute.CallCount = 0;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<RequiredBeforeAsyncModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var sync1Attribute = new TrackingSyncAttribute();
-        var sync2Attribute = new TrackingSyncAttribute(() => Assert.True(sync1Attribute.Started));
-        var async1Attribute = new TrackingAsyncAttribute(async1Completion.Task, () => Assert.True(sync1Attribute.Started));
-        var async2Attribute = new TrackingAsyncAttribute(async2Completion.Task, () => Assert.True(sync2Attribute.Started));
+        await typeInfo.ValidateAsync(new RequiredBeforeAsyncModel { Value = null }, context, default);
 
-        var orderType = new TestValidatableTypeInfo(
-            typeof(OrderWithTracking),
-            [
-                CreatePropertyInfo(typeof(OrderWithTracking), typeof(string), "Field1", "Field1",
-                    [
-                        sync1Attribute,
-                        async1Attribute
-                    ]),
-                CreatePropertyInfo(typeof(OrderWithTracking), typeof(string), "Field2", "Field2",
-                    [
-                        sync2Attribute,
-                        async2Attribute
-                    ])
-            ]);
-
-        var order = new OrderWithTracking();
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(OrderWithTracking), orderType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        var validationTask = orderType.ValidateAsync(order, context, default);
-
-        Assert.True(sync1Attribute.Started);
-        Assert.True(sync2Attribute.Started);
-
-        await async1Attribute.Started;
-        await async2Attribute.Started;
-
-        async1Completion.SetResult();
-        async2Completion.SetResult();
-
-        await validationTask;
+        Assert.Equal(0, TrackingAsyncAttribute.CallCount);
+        Assert.Equal("The Value field is required.", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task IAsyncValidatableObject_ValidatesAsynchronously()
     {
-        // Arrange
-        var accountType = new TestValidatableTypeInfo(typeof(AsyncValidatableAccount), []);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncValidatableAccount>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var account = new AsyncValidatableAccount
-        {
-            Username = "taken",
-            Email = "duplicate@example.com"
-        };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(AsyncValidatableAccount), accountType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncValidatableAccount { Username = "taken", Email = "duplicate@example.com" }, context, default);
 
-        // Act
-        await accountType.ValidateAsync(account, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(2, context.ValidationErrors.Count);
-        Assert.Contains("Username", context.ValidationErrors.Keys);
-        Assert.Contains("Email", context.ValidationErrors.Keys);
+        Assert.Equal("Username is already taken", context.ValidationErrors!["Username"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("Email is already registered", context.ValidationErrors!["Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task IAsyncValidatableObject_WithMultipleMemberNames()
     {
-        // Arrange
-        var registrationType = new TestValidatableTypeInfo(typeof(RegistrationForm), []);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncRegistrationForm>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var registration = new RegistrationForm
-        {
-            Password = "password123",
-            ConfirmPassword = "different"
-        };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(RegistrationForm), registrationType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncRegistrationForm { Password = "a", ConfirmPassword = "b" }, context, default);
 
-        // Act
-        await registrationType.ValidateAsync(registration, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(2, context.ValidationErrors.Count);
-        Assert.Contains("Password", context.ValidationErrors.Keys);
-        Assert.Contains("ConfirmPassword", context.ValidationErrors.Keys);
+        Assert.Equal("Passwords do not match", context.ValidationErrors!["Password"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("Passwords do not match", context.ValidationErrors!["ConfirmPassword"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_OnNestedObjects()
     {
-        // Arrange
-        var addressType = new TestValidatableTypeInfo(
-            typeof(AddressWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(AddressWithAsyncValidation), typeof(string), "ZipCode", "Zip Code",
-                    [new ZipCodeExistsAttribute { ErrorMessage = "Invalid zip code" }])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncOrder>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var customerType = new TestValidatableTypeInfo(
-            typeof(CustomerWithAsyncAddress),
-            [
-                CreatePropertyInfo(typeof(CustomerWithAsyncAddress), typeof(string), "Name", "Name",
-                    [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(CustomerWithAsyncAddress), typeof(AddressWithAsyncValidation), "Address", "Address", [])
-            ]);
+        await typeInfo.ValidateAsync(new AsyncOrder { Customer = new AsyncUser { Email = "duplicate@example.com" } }, context, default);
 
-        var customer = new CustomerWithAsyncAddress
-        {
-            Name = "John Doe",
-            Address = new AddressWithAsyncValidation { ZipCode = "INVALID" }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(CustomerWithAsyncAddress), customerType },
-                { typeof(AddressWithAsyncValidation), addressType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await customerType.ValidateAsync(customer, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Address.ZipCode", error.Key);
-        Assert.Equal("Invalid zip code", error.Value.First());
-    }
-
-    [Fact]
-    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty()
-    {
-        var profileType = new TestValidatableTypeInfo(typeof(AsyncValidatableProfile), []);
-
-        var customerType = new TestValidatableTypeInfo(
-            typeof(CustomerWithAsyncProfile),
-            [
-                CreatePropertyInfo(typeof(CustomerWithAsyncProfile), typeof(string), "Name", "Name",
-                    [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(CustomerWithAsyncProfile), typeof(AsyncValidatableProfile), "Profile", "Profile", [])
-            ]);
-
-        var customer = new CustomerWithAsyncProfile
-        {
-            Name = "John Doe",
-            Profile = new AsyncValidatableProfile { Bio = "short" }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(CustomerWithAsyncProfile), customerType },
-                { typeof(AsyncValidatableProfile), profileType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await customerType.ValidateAsync(customer, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Profile.Bio", error.Key);
-        Assert.Equal("Bio must be at least 10 characters", error.Value.First());
-    }
-
-    [Fact]
-    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty_UsesIsolatedContext()
-    {
-        // Arrange
-        // A nested IAsyncValidatableObject must be validated on an isolated (cloned) context so that
-        // its asynchronous validation - which runs in parallel with sibling members - never observes
-        // mutations made to the ValidationContext by those siblings. If the nested async object were
-        // wrongly treated as "guaranteed synchronous", it would be validated on the shared context
-        // and would observe the sibling 'Name' property overwriting ValidationContext.MemberName.
-        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var profile = new GatedAsyncValidatableProfile { Gate = gate.Task };
-
-        var profileType = new TestValidatableTypeInfo(typeof(GatedAsyncValidatableProfile), []);
-        var customerType = new TestValidatableTypeInfo(
-            typeof(CustomerWithGatedAsyncProfile),
-            [
-                // Profile is validated first and parks on the gate; Name runs afterwards and mutates
-                // ValidationContext.MemberName on the shared context while the gate is still closed.
-                CreatePropertyInfo(typeof(CustomerWithGatedAsyncProfile), typeof(GatedAsyncValidatableProfile), "Profile", "Profile", []),
-                CreatePropertyInfo(typeof(CustomerWithGatedAsyncProfile), typeof(string), "Name", "Name",
-                    [new StringLengthAttribute(100)])
-            ]);
-
-        var customer = new CustomerWithGatedAsyncProfile
-        {
-            Profile = profile,
-            Name = "John Doe"
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(CustomerWithGatedAsyncProfile), customerType },
-                { typeof(GatedAsyncValidatableProfile), profileType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        var validationTask = customerType.ValidateAsync(customer, context, default);
-
-        // All synchronous member validation has run by now (Name has set MemberName on its context).
-        // Releasing the gate lets the nested async validation resume and capture the MemberName.
-        gate.SetResult();
-
-        await validationTask.WaitAsync(TimeSpan.FromSeconds(10));
-
-        // Assert - the nested async object must not have observed the sibling's MemberName mutation.
-        Assert.NotEqual("Name", profile.CapturedMemberName);
-
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Profile.Bio", error.Key);
-    }
-
-    [Fact]
-    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingMemberSuspendsAsync()
-    {
-        // Regression test for ValidateContext clone state leaking between sibling members.
-        //
-        // Members are validated sequentially, but when a member's validation does not complete
-        // synchronously, the validator clones the ValidateContext for the subsequent members so
-        // they don't race on shared mutable state. That clone must not inherit the *in-progress*
-        // CurrentValidationPath of the suspended sibling.
-        //
-        // Here 'First' parks on a gate while CurrentValidationPath has been mutated to "First"
-        // (its finally block that restores the path hasn't run yet). 'Second' is then validated
-        // on a clone and fails synchronously. Because 'Second' is a root-level sibling its error
-        // path must be "Second" - not "First.Second" - regardless of where 'First' is suspended.
-        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var modelType = new TestValidatableTypeInfo(
-            typeof(TwoStringModel),
-            [
-                CreatePropertyInfo(typeof(TwoStringModel), typeof(string), "First", "First",
-                    [new GatedSuccessAsyncAttribute(gate.Task)]),
-                CreatePropertyInfo(typeof(TwoStringModel), typeof(string), "Second", "Second",
-                    [new StringLengthAttribute(3) { ErrorMessage = "Second is too long" }])
-            ]);
-
-        var model = new TwoStringModel { First = "ok", Second = "way too long" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(TwoStringModel), modelType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act - 'First' suspends on the gate during the synchronous portion of validation, then
-        // 'Second' is validated (and fails) on the cloned context. Release the gate afterwards.
-        var validateTask = modelType.ValidateAsync(model, context, default);
-        gate.SetResult();
-        await validateTask.WaitAsync(TimeSpan.FromSeconds(10));
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Second", error.Key);
-        Assert.Equal("Second is too long", error.Value.First());
-    }
-
-    [Fact]
-    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingComplexMemberSuspendsAsync()
-    {
-        // Same clone-state-leak regression as above, but the suspended sibling is a *complex*
-        // member whose nested async validation parks while CurrentValidationPath has been pushed
-        // even deeper (and CurrentDepth has been incremented). The failing root-level sibling
-        // 'Title' must still report its error under "Title".
-        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var innerType = new TestValidatableTypeInfo(
-            typeof(GatedInner),
-            [
-                CreatePropertyInfo(typeof(GatedInner), typeof(string), "Value", "Value",
-                    [new GatedSuccessAsyncAttribute(gate.Task)])
-            ]);
-
-        var modelType = new TestValidatableTypeInfo(
-            typeof(ComplexThenStringModel),
-            [
-                CreatePropertyInfo(typeof(ComplexThenStringModel), typeof(GatedInner), "Inner", "Inner", []),
-                CreatePropertyInfo(typeof(ComplexThenStringModel), typeof(string), "Title", "Title",
-                    [new StringLengthAttribute(3) { ErrorMessage = "Title is too long" }])
-            ]);
-
-        var model = new ComplexThenStringModel
-        {
-            Inner = new GatedInner { Value = "ok" },
-            Title = "way too long"
-        };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ComplexThenStringModel), modelType },
-                { typeof(GatedInner), innerType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        var validateTask = modelType.ValidateAsync(model, context, default);
-        gate.SetResult();
-        await validateTask.WaitAsync(TimeSpan.FromSeconds(10));
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Title", error.Key);
-        Assert.Equal("Title is too long", error.Value.First());
+        Assert.Equal("Email already exists", context.ValidationErrors!["Customer.Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_WithCancellation()
     {
-        // Arrange
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<CancellableAsyncModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
         using var cts = new CancellationTokenSource();
-        var documentType = new TestValidatableTypeInfo(
-            typeof(Document),
-            [
-                CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
-                    [new CanceledAsyncValidationAttribute()])
-            ]);
+        await cts.CancelAsync();
 
-        var document = new Document { Content = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Document), documentType }
-            }),
-            ServiceProvider = null,
-        };
-
-        cts.Cancel();
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
-        {
-            await documentType.ValidateAsync(document, context, cts.Token);
-        });
-    }
-
-    [Fact]
-    public async Task MultipleAsyncValidation_WithCancellation()
-    {
-        // Arrange
-        using var cts = new CancellationTokenSource();
-        var documentType = new TestValidatableTypeInfo(
-            typeof(Document),
-            [
-                CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
-                    [new CanceledAsyncValidationAttribute(), new CanceledAsyncValidationAttribute()])
-            ]);
-
-        var document = new Document { Content = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Document), documentType }
-            }),
-            ServiceProvider = null,
-        };
-
-        cts.Cancel();
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
-        {
-            await documentType.ValidateAsync(document, context, cts.Token);
-        });
-    }
-
-    [Fact]
-    public async Task AsyncValidation_CombinedWithIAsyncValidatableObject()
-    {
-        // Arrange
-        var profileType = new TestValidatableTypeInfo(
-            typeof(UserProfile),
-            [
-                CreatePropertyInfo(typeof(UserProfile), typeof(string), "Username", "Username",
-                    [new UsernameAvailableAttribute { ErrorMessage = "Username taken" }])
-            ]);
-
-        var profile = new UserProfile
-        {
-            Username = "taken",
-            Bio = "short" // Will fail IAsyncValidatableObject validation
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(UserProfile), profileType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await profileType.ValidateAsync(profile, context, default);
-
-        // Assert - IAsyncValidatableObject is not called when property validation fails
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Username", error.Key);
-        Assert.Equal("Username taken", error.Value.First());
-    }
-
-    [Fact]
-    public async Task IAsyncValidatableObject_RunsWhenPropertyValidationPasses()
-    {
-        // Arrange
-        var profileType = new TestValidatableTypeInfo(
-            typeof(UserProfile),
-            [
-                CreatePropertyInfo(typeof(UserProfile), typeof(string), "Username", "Username",
-                    [new UsernameAvailableAttribute()])
-            ]);
-
-        var profile = new UserProfile
-        {
-            Username = "available",
-            Bio = "short" // Will fail IAsyncValidatableObject validation
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(UserProfile), profileType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await profileType.ValidateAsync(profile, context, default);
-
-        // Assert - IAsyncValidatableObject runs and reports error
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Bio", error.Key);
-        Assert.Equal("Bio must be at least 10 characters", error.Value.First());
+        await Assert.ThrowsAsync<TaskCanceledException>(() => typeInfo.ValidateAsync(new CancellableAsyncModel { Value = "x" }, context, cts.Token));
     }
 
     [Fact]
     public async Task AsyncValidation_TypeLevelAttribute()
     {
-        // Arrange
-        var orderType = new TestValidatableTypeInfo(
-            typeof(OrderWithTypeValidation),
-            [
-                CreatePropertyInfo(typeof(OrderWithTypeValidation), typeof(decimal), "SubTotal", "SubTotal", []),
-                CreatePropertyInfo(typeof(OrderWithTypeValidation), typeof(decimal), "Tax", "Tax", []),
-                CreatePropertyInfo(typeof(OrderWithTypeValidation), typeof(decimal), "Total", "Total", [])
-            ],
-            [new OrderTotalValidationAttribute()]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncTypeLevelModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var order = new OrderWithTypeValidation
-        {
-            SubTotal = 100,
-            Tax = 10,
-            Total = 99 // Wrong total
-        };
+        await typeInfo.ValidateAsync(new AsyncTypeLevelModel { Value = "bad" }, context, default);
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(OrderWithTypeValidation), orderType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await orderType.ValidateAsync(order, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Contains("Total", error.Value.First());
+        Assert.Equal("Type-level async error", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_InCollection()
     {
-        const int itemCount = 3;
-        var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncUserCollection>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var attribute = new ParallelBarrierAsyncValidationAttribute(allEnteredSignal, itemCount)
-        {
-            ErrorMessage = "Item code exists"
-        };
+        await typeInfo.ValidateAsync(new AsyncUserCollection { Users = [new() { Email = "unique@example.com" }, new() { Email = "duplicate@example.com" }] }, context, default);
 
-        var itemType = new TestValidatableTypeInfo(
-            typeof(ItemWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(ItemWithAsyncValidation), typeof(string), "Code", "Code", [attribute])
-            ]);
-
-        var listType = new TestValidatableTypeInfo(
-            typeof(ItemList),
-            [
-                CreatePropertyInfo(typeof(ItemList), typeof(List<ItemWithAsyncValidation>), "Items", "Items", [])
-            ]);
-
-        var list = new ItemList
-        {
-            Items = new List<ItemWithAsyncValidation>
-            {
-                new ItemWithAsyncValidation { Code = "VALID" },
-                new ItemWithAsyncValidation { Code = "DUPLICATE" },
-                new ItemWithAsyncValidation { Code = "VALID2" }
-            }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ItemList), listType },
-                { typeof(ItemWithAsyncValidation), itemType }
-            }),
-            ServiceProvider = null,
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await listType.ValidateAsync(list, context, cts.Token);
-
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Items[1].Code", error.Key);
-        Assert.Equal("Item code exists", error.Value.First());
+        Assert.Equal("Email already exists", context.ValidationErrors!["Users[1].Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_HandlesExceptions()
     {
-        // Arrange
-        var documentType = new TestValidatableTypeInfo(
-            typeof(Document),
-            [
-                CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
-                    [new ThrowingAsyncValidationAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ThrowingAsyncModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var document = new Document { Content = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Document), documentType }
-            }),
-            ServiceProvider = null,
-        };
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => typeInfo.ValidateAsync(new ThrowingAsyncModel { Value = "x" }, context, default));
 
-        // Act
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => documentType.ValidateAsync(document, context, default));
-
-        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
-        Assert.Contains("Async validation failed", ex.Message);
+        Assert.Equal("Async validation exception", ex.Message);
     }
 
     [Fact]
-    public async Task AsyncValidation_ShortCircuitsOnPropertyError()
+    public async Task AsyncValidation_CombinedWithIAsyncValidatableObject()
     {
-        // Arrange
-        var validated = false;
-        var entityType = new TestValidatableTypeInfo(
-            typeof(EntityWithValidation),
-            [
-                CreatePropertyInfo(typeof(EntityWithValidation), typeof(string), "Name", "Name",
-                    [new RequiredAttribute { ErrorMessage = "Name required" }])
-            ],
-            [new TrackingTypeLevelAttribute(() => validated = true)]);
+        AsyncValidatableWithPropertyError.AsyncCalls = 0;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncValidatableWithPropertyError>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var entity = new EntityWithValidation { Name = null };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(EntityWithValidation), entityType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncValidatableWithPropertyError { Email = "duplicate@example.com" }, context, default);
 
-        // Act
-        await entityType.ValidateAsync(entity, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        Assert.False(validated); // Type-level validation should not run due to property error
+        Assert.Equal(0, AsyncValidatableWithPropertyError.AsyncCalls);
+        Assert.Equal("Email already exists", context.ValidationErrors!["Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
-    public async Task AsyncValidation_PropertyWithAsyncFailure_ShortCircuitsTypeLevelAttribute()
+    public async Task IAsyncValidatableObject_RunsWhenPropertyValidationPasses()
     {
-        // A failing member (here a property with a failing async attribute) short-circuits
-        // object-level validation: the type-level attribute must not run.
-        var typeLevelValidated = false;
-        var entityType = new TestValidatableTypeInfo(
-            typeof(UserWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(UserWithAsyncValidation), typeof(string), "Email", "Email",
-                    [new EmailExistsAttribute()])
-            ],
-            [new TrackingTypeLevelAttribute(() => typeLevelValidated = true)]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncValidatableWithPropertyError>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var user = new UserWithAsyncValidation { Email = "duplicate@example.com" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(UserWithAsyncValidation), entityType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new AsyncValidatableWithPropertyError { Email = "unique@example.com", Bio = "short" }, context, default);
 
-        await entityType.ValidateAsync(user, context, default);
+        Assert.Equal("Bio is too short", context.ValidationErrors!["Bio"].Select(e => e.ErrorMessage).Single());
+    }
 
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Contains("Email", context.ValidationErrors.Keys);
-        Assert.False(typeLevelValidated);
+    [Fact]
+    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty()
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<NestedAsyncProfileContainer>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await typeInfo.ValidateAsync(new NestedAsyncProfileContainer { Profile = new AsyncProfile { Bio = "short" } }, context, default);
+
+        Assert.Equal("Bio is too short", context.ValidationErrors!["Profile.Bio"].Select(e => e.ErrorMessage).Single());
+    }
+
+    [Fact]
+    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty_UsesIsolatedContext()
+    {
+        GatedAsyncProfile.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<TwoNestedAsyncProfiles>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var task = typeInfo.ValidateAsync(new TwoNestedAsyncProfiles { First = new() { Bio = "short" }, Second = new() { Bio = "short" } }, context, default);
+        await GatedAsyncProfile.WaitForStartsAsync(2);
+        GatedAsyncProfile.Gate.SetResult();
+        await task;
+
+        Assert.Contains("First.Bio", context.ValidationErrors!.Keys);
+        Assert.Contains("Second.Bio", context.ValidationErrors.Keys);
+    }
+
+    [Fact]
+    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingMemberSuspendsAsync()
+    {
+        GatedSuccessAttribute.Reset(expectedStarts: 2);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<GatedThenRequiredModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var task = typeInfo.ValidateAsync(new GatedThenRequiredModel { First = "ok" }, context, default);
+        await GatedSuccessAttribute.WaitForStartsAsync(1);
+        GatedSuccessAttribute.Gate.SetResult();
+        await task;
+
+        Assert.Contains("Second", context.ValidationErrors!.Keys);
+        Assert.DoesNotContain("First.Second", context.ValidationErrors.Keys);
+    }
+
+    [Fact]
+    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingComplexMemberSuspendsAsync()
+    {
+        GatedSuccessAttribute.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<GatedComplexThenRequiredModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var task = typeInfo.ValidateAsync(new GatedComplexThenRequiredModel { First = new() { Value = "ok" } }, context, default);
+        await GatedSuccessAttribute.WaitForStartsAsync(1);
+        GatedSuccessAttribute.Gate.SetResult();
+        await task;
+
+        Assert.Contains("Second", context.ValidationErrors!.Keys);
+        Assert.DoesNotContain("First.Second", context.ValidationErrors.Keys);
+    }
+
+    [Fact]
+    public async Task MultipleAsyncValidation_WithCancellation()
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<MultipleCancellableAsyncModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(() => typeInfo.ValidateAsync(new MultipleCancellableAsyncModel { Value = "x" }, context, cts.Token));
     }
 
     [Fact]
     public async Task AsyncValidation_WithDelayedValidation()
     {
-        // Arrange
-        var recordType = new TestValidatableTypeInfo(
-            typeof(Record),
-            [
-                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
-                    [
-                        new DelayedAsyncValidationAttribute { ShouldFail = false },
-                        new DelayedAsyncValidationAttribute { ShouldFail = true, ErrorMessage = "Delayed validation failed" }
-                    ])
-            ]);
+        DelayedFailAttribute.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DelayedValidationModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var record = new Record { Value = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Record), recordType }
-            }),
-            ServiceProvider = null,
-        };
+        var task = typeInfo.ValidateAsync(new DelayedValidationModel { Value = "x" }, context, default);
+        await DelayedFailAttribute.WaitForStartsAsync(1);
+        Assert.False(task.IsCompleted);
+        DelayedFailAttribute.Gate.SetResult();
+        await task;
 
-        // Act
-        await recordType.ValidateAsync(record, context, default);
-
-        // Assert
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Value", error.Key);
-        Assert.Equal("Delayed validation failed", error.Value.First());
+        Assert.Equal("Delayed validation failed", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task AsyncValidation_MultipleAttributesOnSameProperty_ShortCircuitsAfterFirstError()
     {
-        // Arrange
-        // The second DelayedAsyncValidationAttribute waits on a signal that is only set when the
-        // first validation error is reached, allowing the second validation to proceed. By then the
-        // first error has short-circuited validation and cancelled the sibling's (linked)
-        // cancellation token, so the second attribute is cancelled and its error is NOT collected.
-        var signal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var recordType = new TestValidatableTypeInfo(
-            typeof(Record),
-            [
-                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
-                    [
-                        new DelayedAsyncValidationAttribute { ShouldFail = true, ErrorMessage = "First async error" },
-                        new DelayedAsyncValidationAttribute(signal.Task) { ShouldFail = true, ErrorMessage = "Second async error" }
-                    ])
-            ]);
+        NeverCompletesUnlessCanceledAttribute.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ShortCircuitSamePropertyModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var record = new Record { Value = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Record), recordType }
-            }),
-            ServiceProvider = null,
-        };
+        await typeInfo.ValidateAsync(new ShortCircuitSamePropertyModel { Value = "x" }, context, default);
 
-        context.OnValidationError += context =>
-        {
-            if (context.Errors.Count == 1 && context.Errors[0] == "First async error")
-            {
-                signal.TrySetResult();
-            }
-        };
-
-        // Act
-        await recordType.ValidateAsync(record, context, default);
-
-        // Assert - the first error short-circuits the sibling async attribute on the same property.
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Value", error.Key);
-        var message = Assert.Single(error.Value);
-        Assert.Equal("First async error", message);
+        Assert.Equal("First async error", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
+        Assert.True(NeverCompletesUnlessCanceledAttribute.Canceled);
     }
 
     [Fact]
     public async Task AsyncValidation_MultipleAttributesOnSameProperty_RunInParallel()
     {
-        // Two async attributes on the same property must run in parallel. The shared barrier only
-        // releases once BOTH attributes have entered validation; if they run sequentially the first
-        // blocks forever waiting for the second, the timeout cancels validation, and this test fails.
-        const int attributeCount = 2;
-        var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var barrier = new ParallelBarrierAsyncValidationAttribute(allEnteredSignal, attributeCount);
+        ParallelSuccessAttribute.Reset(expectedStarts: 2);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ParallelSamePropertyModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var recordType = new TestValidatableTypeInfo(
-            typeof(Record),
-            [
-                // The same barrier instance is applied twice, so it must be entered concurrently.
-                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value", [barrier, barrier])
-            ]);
-
-        var record = new Record { Value = "VALID" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Record), recordType }
-            }),
-            ServiceProvider = null,
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await recordType.ValidateAsync(record, context, cts.Token);
+        var task = typeInfo.ValidateAsync(new ParallelSamePropertyModel { Value = "x" }, context, default);
+        await ParallelSuccessAttribute.AllStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        ParallelSuccessAttribute.Gate.SetResult();
+        await task;
 
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
@@ -896,1619 +297,870 @@ public class AsyncValidationTests
     [Fact]
     public async Task MultipleAsyncAttributesOnSameProperty_FailingConcurrently_RecordAllErrors()
     {
-        // Two async attributes on one property fail concurrently. A shared barrier forces both to be
-        // in-flight simultaneously, so both errors are written to the same context error collection
-        // (same key) at the same time. This exercises the concurrent write path; a non-thread-safe
-        // error collection would intermittently lose a write (or throw). Stressed over many iterations
-        // because data races are non-deterministic.
-        const int attributeCount = 100;
-        const int iterations = 1000;
+        ConcurrentFailAttribute.Reset(expectedStarts: 2);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ConcurrentFailSamePropertyModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        for (var i = 0; i < iterations; i++)
-        {
-            var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var barrier = new ConcurrentFailingBarrierAttribute(allEnteredSignal, attributeCount);
+        await typeInfo.ValidateAsync(new ConcurrentFailSamePropertyModel { Value = "x" }, context, default);
 
-            var propertyAttributes = new ValidationAttribute[attributeCount];
-            Array.Fill(propertyAttributes, barrier);
-
-            var recordType = new TestValidatableTypeInfo(
-                typeof(Record),
-                [
-                    // Same barrier instance applied twice: both invocations must be in-flight together,
-                    // then both fail and write to the "Value" entry concurrently.
-                    CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value", propertyAttributes)
-                ]);
-
-            var record = new Record { Value = "DUPLICATE" }; // makes both attributes fail
-            var context = new ValidateContext
-            {
-                ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-                {
-                    { typeof(Record), recordType }
-                }),
-                ServiceProvider = null,
-            };
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            await recordType.ValidateAsync(record, context, cts.Token);
-
-            Assert.NotNull(context.ValidationErrors);
-            Assert.True(context.ValidationErrors.ContainsKey("Value"));
-            Assert.Equal(attributeCount, context.ValidationErrors["Value"].Count());
-        }
+        var errors = context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).ToArray();
+        Assert.Contains("Concurrent error A", errors);
+        Assert.Contains("Concurrent error B", errors);
     }
 
     [Fact]
     public async Task AsyncValidation_DeepNestedObjects_ValidateInParallel()
     {
-        // Arrange
-        // Build a three-level object graph (DeepRoot -> DeepBranch -> DeepInner -> DeepLeaf)
-        // with three branches. Each leaf carries the same async validator instance, gated
-        // by a CountdownEvent that requires every leaf validator to be in-flight at the
-        // same time before any of them can complete. If deep validation ran sequentially,
-        // only the first validator would reach the gate and the others would never signal,
-        // causing the WaitAsync inside the gate to time out and surface a validation error.
-        const int ExpectedParallelValidators = 3;
+        GatedSuccessAttribute.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<DeepParallelRoot>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        using var startedLatch = new CountdownEvent(ExpectedParallelValidators);
-        var allStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var gate = new ParallelGateAsyncAttribute(ExpectedParallelValidators, startedLatch, allStartedTcs);
+        var task = typeInfo.ValidateAsync(new DeepParallelRoot { Left = new() { Leaf = new() { Value = "x" } }, Right = new() { Leaf = new() { Value = "y" } } }, context, default);
+        await GatedSuccessAttribute.WaitForStartsAsync(2);
+        GatedSuccessAttribute.Gate.SetResult();
+        await task;
 
-        var leafType = new TestValidatableTypeInfo(
-            typeof(DeepLeaf),
-            [
-                CreatePropertyInfo(typeof(DeepLeaf), typeof(string), "Value", "Value", [gate])
-            ]);
-
-        var innerType = new TestValidatableTypeInfo(
-            typeof(DeepInner),
-            [
-                CreatePropertyInfo(typeof(DeepInner), typeof(DeepLeaf), "Leaf", "Leaf", [])
-            ]);
-
-        var branchType = new TestValidatableTypeInfo(
-            typeof(DeepBranch),
-            [
-                CreatePropertyInfo(typeof(DeepBranch), typeof(DeepInner), "Inner", "Inner", [])
-            ]);
-
-        var rootType = new TestValidatableTypeInfo(
-            typeof(DeepRoot),
-            [
-                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchA", "BranchA", []),
-                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchB", "BranchB", []),
-                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchC", "BranchC", [])
-            ]);
-
-        var root = new DeepRoot
-        {
-            BranchA = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "a" } } },
-            BranchB = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "b" } } },
-            BranchC = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "c" } } }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(DeepRoot), rootType },
-                { typeof(DeepBranch), branchType },
-                { typeof(DeepInner), innerType },
-                { typeof(DeepLeaf), leafType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await rootType.ValidateAsync(root, context, default);
-
-        // Assert
-        Assert.Equal(0, startedLatch.CurrentCount);
-        Assert.True(allStartedTcs.Task.IsCompletedSuccessfully);
-        Assert.True(
-            context.ValidationErrors is null || context.ValidationErrors.Count == 0,
-            "Deep validators did not run in parallel: " + string.Join(
-                "; ",
-                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IReadOnlyList<string>>)new Dictionary<string, IReadOnlyList<string>>())
-                    .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))));
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
     [Fact]
     public async Task IAsyncValidatableObject_DoesNotRunInParallelWithPropertyValidation()
     {
-        // Arrange
-        // Track when property async validation completes and when IAsyncValidatableObject starts.
-        // If they ran in parallel, the property validator (which has a delay) would not have
-        // completed by the time IAsyncValidatableObject.ValidateAsync begins.
-        var propertyValidationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var propertyValidationWasCompleteWhenObjectValidationStarted = false;
+        PropertyCompletionTrackingAttribute.Reset();
+        SequentialAsyncValidatableModel.AsyncStartedAfterPropertyCompleted = false;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<SequentialAsyncValidatableModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var model = new ParallelTrackingModel(
-            onObjectValidateStarted: () =>
-            {
-                propertyValidationWasCompleteWhenObjectValidationStarted = propertyValidationCompleted.Task.IsCompletedSuccessfully;
-            })
-        {
-            Name = "test"
-        };
+        var task = typeInfo.ValidateAsync(new SequentialAsyncValidatableModel { Value = "x" }, context, default);
+        await PropertyCompletionTrackingAttribute.WaitForStartsAsync(1);
+        Assert.False(SequentialAsyncValidatableModel.AsyncStartedAfterPropertyCompleted);
+        PropertyCompletionTrackingAttribute.Gate.SetResult();
+        await task;
 
-        var modelType = new TestValidatableTypeInfo(
-            typeof(ParallelTrackingModel),
-            [
-                CreatePropertyInfo(typeof(ParallelTrackingModel), typeof(string), "Name", "Name",
-                    [new CompletionTrackingAsyncAttribute(propertyValidationCompleted)])
-            ]);
+        Assert.True(SequentialAsyncValidatableModel.AsyncStartedAfterPropertyCompleted);
+    }
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ParallelTrackingModel), modelType }
-            }),
-            ServiceProvider = null,
-        };
+    [Fact]
+    public async Task TypeLevelAttributeValidation_RunsOnlyAfterMemberValidationCompletes()
+    {
+        PropertyCompletionTrackingAttribute.Reset();
+        TypeLevelAfterMembersAttribute.StartedAfterPropertyCompleted = false;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<TypeLevelAfterMembersModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        // Act
-        await modelType.ValidateAsync(model, context, default);
+        var task = typeInfo.ValidateAsync(new TypeLevelAfterMembersModel { Value = "x" }, context, default);
+        await PropertyCompletionTrackingAttribute.WaitForStartsAsync(1);
+        Assert.False(TypeLevelAfterMembersAttribute.StartedAfterPropertyCompleted);
+        PropertyCompletionTrackingAttribute.Gate.SetResult();
+        await task;
 
-        // Assert - IAsyncValidatableObject.ValidateAsync starts only after property validation completes
-        Assert.True(propertyValidationCompleted.Task.IsCompletedSuccessfully);
-        Assert.True(propertyValidationWasCompleteWhenObjectValidationStarted,
-            "IAsyncValidatableObject.ValidateAsync should not run in parallel with property validation; " +
-            "it should wait for all property validation to complete first.");
+        Assert.True(TypeLevelAfterMembersAttribute.StartedAfterPropertyCompleted);
+    }
+
+    [Fact]
+    public async Task AsyncValidation_PropertyWithAsyncFailure_ShortCircuitsTypeLevelAttribute()
+    {
+        TypeLevelShouldNotRunAttribute.CallCount = 0;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<PropertyFailureShortCircuitsTypeLevelModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await typeInfo.ValidateAsync(new PropertyFailureShortCircuitsTypeLevelModel { Value = "x" }, context, default);
+
+        Assert.Equal(0, TypeLevelShouldNotRunAttribute.CallCount);
+        Assert.Equal("Property async error", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
+    }
+
+    [Fact]
+    public async Task AsyncValidation_ShortCircuitsOnPropertyError()
+    {
+        AsyncValidatableWithRequiredProperty.AsyncCalls = 0;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<AsyncValidatableWithRequiredProperty>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await typeInfo.ValidateAsync(new AsyncValidatableWithRequiredProperty(), context, default);
+
+        Assert.Equal(0, AsyncValidatableWithRequiredProperty.AsyncCalls);
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
+    }
+
+    [Fact]
+    public async Task AsyncValidation_OnParameterCollection_AwaitsAsyncValidatorsOnItems()
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameter = typeof(AsyncParameterActions).GetMethod(nameof(AsyncParameterActions.Users))!.GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameter, out var parameterInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await parameterInfo.ValidateAsync(new[] { new AsyncUser { Email = "duplicate@example.com" } }, context, default);
+
+        Assert.Equal("Email already exists", context.ValidationErrors!["users[0].Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
     public async Task ValidateMembers_PropertyGetterThrows_ExceptionShouldPropagate()
     {
-        var typeInfo = new TestValidatableTypeInfo(
-            typeof(TypeWithThrowingGetter),
-            [
-                CreatePropertyInfo(typeof(TypeWithThrowingGetter), typeof(string), "ThrowingProp", "Throwing Prop",
-                    [new RequiredAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ThrowingGetterModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var instance = new TypeWithThrowingGetter();
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(TypeWithThrowingGetter), typeInfo }
-            }),
-            ServiceProvider = null,
-        };
-
-        var ex = await Assert.ThrowsAsync<System.Reflection.TargetInvocationException>(
-            () => typeInfo.ValidateAsync(instance, context, default));
+        var ex = await Assert.ThrowsAsync<TargetInvocationException>(() => typeInfo.ValidateAsync(new ThrowingGetterModel(), context, default));
 
         Assert.IsType<InvalidOperationException>(ex.InnerException);
         Assert.Equal("Getter throws", ex.InnerException.Message);
     }
 
     [Fact]
-    public async Task AsyncValidation_OnParameterCollection_AwaitsAsyncValidatorsOnItems()
-    {
-        // Arrange
-        var completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var itemType = new TestValidatableTypeInfo(
-            typeof(ItemWithAsyncValidation),
-            [
-                CreatePropertyInfo(typeof(ItemWithAsyncValidation), typeof(string), "Code", "Code",
-                    [new CompletionTrackingAsyncAttribute(completionTcs) { ErrorMessage = "async error" }])
-            ]);
-
-        var paramInfo = new TestValidatableParameterInfo(
-            parameterType: typeof(IEnumerable<ItemWithAsyncValidation>),
-            name: "items",
-            displayNameInfo: new TestLiteralDisplayName("Items"),
-            validationAttributes: []);
-
-        var items = new List<ItemWithAsyncValidation>
-        {
-            new() { Code = "test" }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ItemWithAsyncValidation), itemType }
-            }),
-            ServiceProvider = null,
-        };
-
-        // Act
-        await paramInfo.ValidateAsync(items, context, default);
-
-        // Assert — the async validator must have been awaited before ValidateAsync returned
-        Assert.True(completionTcs.Task.IsCompletedSuccessfully);
-    }
-
-    [Fact]
-    public async Task TypeLevelAttributeValidation_RunsOnlyAfterMemberValidationCompletes()
-    {
-        // Type-level attribute validation must not run in parallel with member validation; all
-        // member tasks must complete first. (Mirrors
-        // IAsyncValidatableObject_DoesNotRunInParallelWithPropertyValidation for type-level attributes.)
-        var propertyValidationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var propertyWasCompleteWhenTypeLevelRan = false;
-
-        var modelType = new TestValidatableTypeInfo(
-            typeof(Record),
-            [
-                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
-                    [new CompletionTrackingAsyncAttribute(propertyValidationCompleted)])
-            ],
-            [new TrackingTypeLevelAttribute(
-                () => propertyWasCompleteWhenTypeLevelRan = propertyValidationCompleted.Task.IsCompletedSuccessfully)]);
-
-        var model = new Record { Value = "test" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Record), modelType }
-            }),
-            ServiceProvider = null,
-        };
-
-        await modelType.ValidateAsync(model, context, default);
-
-        Assert.True(propertyValidationCompleted.Task.IsCompletedSuccessfully);
-        Assert.True(
-            propertyWasCompleteWhenTypeLevelRan,
-            "Type-level attribute validation should run only after all member validation completes.");
-    }
-
-    [Fact]
     public async Task SiblingSubtreeError_DoesNotSuppress_UnrelatedTypesValidatableObject()
     {
-        // Regression test for cross-subtree contamination of the early-return error check.
-        // ValidatableTypeInfo.ValidateAsync captures `originalErrorCount` per invocation but compares
-        // it against the GLOBAL, shared ValidationErrors dictionary. When two sibling subtrees are
-        // validated in parallel, an error produced by one subtree inflates the global count seen by
-        // the other, causing the unrelated subtree to wrongly skip its own IValidatableObject
-        // validation even though none of *its* members failed.
-        var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var firstReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var secondEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseSecond = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var secondReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<SiblingSubtreeRoot>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        // The first sibling's member fails; the second sibling's member passes.
-        var firstMember = new GatedContextCapturingAsyncAttribute(firstEntered, releaseFirst.Task, firstReadDone)
-        {
-            ReportFailure = true
-        };
-        var secondMember = new GatedContextCapturingAsyncAttribute(secondEntered, releaseSecond.Task, secondReadDone);
+        await typeInfo.ValidateAsync(new SiblingSubtreeRoot { Bad = new(), Other = new() { Name = "ok" } }, context, default);
 
-        var secondObjectValidateRan = false;
-
-        var firstType = new TestValidatableTypeInfo(
-            typeof(CrossTalkFirst),
-            [CreatePropertyInfo(typeof(CrossTalkFirst), typeof(string), "Value", "Value", [firstMember])]);
-        var secondType = new TestValidatableTypeInfo(
-            typeof(CrossTalkSecond),
-            [CreatePropertyInfo(typeof(CrossTalkSecond), typeof(string), "Value", "Value", [secondMember])]);
-        var rootType = new TestValidatableTypeInfo(
-            typeof(CrossTalkRoot),
-            [
-                CreatePropertyInfo(typeof(CrossTalkRoot), typeof(CrossTalkFirst), "First", "First", []),
-                CreatePropertyInfo(typeof(CrossTalkRoot), typeof(CrossTalkSecond), "Second", "Second", [])
-            ]);
-
-        var model = new CrossTalkRoot
-        {
-            First = new CrossTalkFirst { Value = "a" },
-            Second = new CrossTalkSecond
-            {
-                Value = "b",
-                OnValidateCalled = () => secondObjectValidateRan = true
-            }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(CrossTalkRoot), rootType },
-                { typeof(CrossTalkFirst), firstType },
-                { typeof(CrossTalkSecond), secondType }
-            }),
-            ServiceProvider = null,
-        };
-
-        var firstErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "First.Value")
-            {
-                firstErrorRecorded.TrySetResult();
-            }
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act
-        var validateTask = rootType.ValidateAsync(model, context, cts.Token);
-
-        // Both sibling subtrees have begun validating their members and are now suspended.
-        await firstEntered.Task.WaitAsync(cts.Token);
-        await secondEntered.Task.WaitAsync(cts.Token);
-
-        // Let the first sibling fail and record its error into the shared dictionary.
-        releaseFirst.SetResult();
-        await firstErrorRecorded.Task.WaitAsync(cts.Token);
-
-        // Now let the second sibling finish. Its own members produced no errors, so its
-        // IValidatableObject validation must still run.
-        releaseSecond.SetResult();
-        await validateTask;
-
-        Assert.True(
-            secondObjectValidateRan,
-            "CrossTalkSecond has no member-level errors, so its IValidatableObject.Validate must run; " +
-            "a sibling subtree's error must not short-circuit it via the shared error count.");
+        Assert.Contains("Bad.Name", context.ValidationErrors!.Keys);
+        Assert.Contains("Other.Value", context.ValidationErrors.Keys);
     }
 
     [Fact]
     public async Task CollectionItemError_DoesNotSuppress_SiblingItemsValidatableObject()
     {
-        // Same root cause as SiblingSubtreeError_* but via the collection/enumerable parallel path in
-        // ValidatablePropertyInfo (item[0] uses the shared context, item[1..] use clones). A failing
-        // item must not suppress a sibling item's IValidatableObject validation through the shared,
-        // global ValidationErrors count.
-        var failingEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseFailing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var passingEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releasePassing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<CollectionSiblingRoot>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var itemMember = new CollectionItemGatedAsyncAttribute(
-            failingEntered, releaseFailing.Task, passingEntered, releasePassing.Task);
+        await typeInfo.ValidateAsync(new CollectionSiblingRoot { Items = [new() { Name = null }, new() { Name = "ok", ObjectError = true }] }, context, default);
 
-        var itemType = new TestValidatableTypeInfo(
-            typeof(CrossTalkItem),
-            [CreatePropertyInfo(typeof(CrossTalkItem), typeof(string), "Value", "Value", [itemMember])]);
-        var listType = new TestValidatableTypeInfo(
-            typeof(CrossTalkItemList),
-            [CreatePropertyInfo(typeof(CrossTalkItemList), typeof(List<CrossTalkItem>), "Items", "Items", [])]);
-
-        var passingItemValidateRan = false;
-        var list = new CrossTalkItemList
-        {
-            Items =
-            [
-                new CrossTalkItem { Value = "fail" },
-                new CrossTalkItem { Value = "pass", OnValidateCalled = () => passingItemValidateRan = true }
-            ]
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(CrossTalkItemList), listType },
-                { typeof(CrossTalkItem), itemType }
-            }),
-            ServiceProvider = null,
-        };
-
-        var failingItemErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "Items[0].Value")
-            {
-                failingItemErrorRecorded.TrySetResult();
-            }
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act
-        var validateTask = listType.ValidateAsync(list, context, cts.Token);
-
-        // Both collection items are validating their members in parallel and are suspended.
-        await failingEntered.Task.WaitAsync(cts.Token);
-        await passingEntered.Task.WaitAsync(cts.Token);
-
-        // Let the first item fail and record its error into the shared dictionary.
-        releaseFailing.SetResult();
-        await failingItemErrorRecorded.Task.WaitAsync(cts.Token);
-
-        // Now let the valid sibling item finish; its IValidatableObject must still run.
-        releasePassing.SetResult();
-        await validateTask;
-
-        Assert.True(
-            passingItemValidateRan,
-            "The valid collection item has no member-level errors, so its IValidatableObject.Validate must run; " +
-            "a sibling item's error must not short-circuit it via the shared error count.");
+        Assert.Contains("Items[0].Name", context.ValidationErrors!.Keys);
+        Assert.Contains("Items[1].Value", context.ValidationErrors.Keys);
     }
 
     [Fact]
     public async Task FirstMemberSubtree_NotSuppressed_ByLaterSiblingError()
     {
-        // Variant of the cross-talk bug targeting member[0], which is validated on the *shared*
-        // parent context (no clone). A later sibling (member[1], validated on a clone) records an
-        // error that propagates UP into the shared parent counter via _parentContext. The first
-        // member's subtree reads that same counter, so it must not be fooled into short-circuiting
-        // its own IValidatableObject validation.
-        var victimEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseVictim = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var victimReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var badEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseBad = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var badReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<FirstSubtreeLaterErrorRoot>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var victimMember = new GatedContextCapturingAsyncAttribute(victimEntered, releaseVictim.Task, victimReadDone);
-        var badMember = new GatedContextCapturingAsyncAttribute(badEntered, releaseBad.Task, badReadDone)
-        {
-            ReportFailure = true
-        };
+        await typeInfo.ValidateAsync(new FirstSubtreeLaterErrorRoot { First = new() { Name = "ok", ObjectError = true } }, context, default);
 
-        var victimType = new TestValidatableTypeInfo(
-            typeof(VictimChild),
-            [CreatePropertyInfo(typeof(VictimChild), typeof(string), "Value", "Value", [victimMember])]);
-        var badType = new TestValidatableTypeInfo(
-            typeof(BadChild),
-            [CreatePropertyInfo(typeof(BadChild), typeof(string), "Value", "Value", [badMember])]);
-
-        // Victim is member[0] (validated on the shared context); Bad is member[1] (validated on a clone).
-        var rootType = new TestValidatableTypeInfo(
-            typeof(FirstMemberVictimRoot),
-            [
-                CreatePropertyInfo(typeof(FirstMemberVictimRoot), typeof(VictimChild), "Victim", "Victim", []),
-                CreatePropertyInfo(typeof(FirstMemberVictimRoot), typeof(BadChild), "Bad", "Bad", [])
-            ]);
-
-        var victimValidateRan = false;
-        var model = new FirstMemberVictimRoot
-        {
-            Victim = new VictimChild { Value = "v", OnValidateCalled = () => victimValidateRan = true },
-            Bad = new BadChild { Value = "b" }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(FirstMemberVictimRoot), rootType },
-                { typeof(VictimChild), victimType },
-                { typeof(BadChild), badType }
-            }),
-            ServiceProvider = null,
-        };
-
-        var badErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "Bad.Value")
-            {
-                badErrorRecorded.TrySetResult();
-            }
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act
-        var validateTask = rootType.ValidateAsync(model, context, cts.Token);
-
-        await victimEntered.Task.WaitAsync(cts.Token);
-        await badEntered.Task.WaitAsync(cts.Token);
-
-        // Let the later sibling fail first and record its error (which propagates up the parent chain).
-        releaseBad.SetResult();
-        await badErrorRecorded.Task.WaitAsync(cts.Token);
-
-        // Now let the first member finish; its own members produced no errors, so its
-        // IValidatableObject must still run.
-        releaseVictim.SetResult();
-        await validateTask;
-
-        Assert.True(
-            victimValidateRan,
-            "VictimChild (member[0]) has no member-level errors, so its IValidatableObject.Validate must run; " +
-            "a later sibling's error propagated into the shared parent counter must not short-circuit it.");
+        Assert.Contains("First.Value", context.ValidationErrors!.Keys);
+        Assert.Contains("Second", context.ValidationErrors.Keys);
     }
 
     [Fact]
     public async Task MixedSyncAsyncMembers_DoNotReuseAParkedContext()
     {
-        var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var firstReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        GatedSuccessAttribute.Reset();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<MixedSyncAsyncParkedContextModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var firstAttr = new GatedContextCapturingAsyncAttribute(firstEntered, releaseFirst.Task, firstReadDone);
+        var task = typeInfo.ValidateAsync(new MixedSyncAsyncParkedContextModel { First = "x" }, context, default);
+        await GatedSuccessAttribute.WaitForStartsAsync(1);
+        GatedSuccessAttribute.Gate.SetResult();
+        await task;
 
-        var modelType = new TestValidatableTypeInfo(
-            typeof(MixedSyncAsyncModel),
-            [
-                // member[0]: async -> parks on the original (shared) context.
-                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "First", "First", [firstAttr]),
-                // member[1]: synchronous -> validated on a clone (member[0] already went async).
-                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "Second", "Second", []),
-                // member[2]: synchronous -> must NOT reuse the parked original context.
-                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "Third", "Third", [])
-            ]);
-
-        var model = new MixedSyncAsyncModel { First = "a", Second = "b", Third = "c" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(MixedSyncAsyncModel), modelType }
-            }),
-            ServiceProvider = null,
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act - member[0] parks; member[1] and member[2] run synchronously during the loop.
-        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
-
-        await firstEntered.Task.WaitAsync(cts.Token);
-        releaseFirst.SetResult();
-        await firstReadDone.Task.WaitAsync(cts.Token);
-        await validateTask;
-
-        // member[0]'s context must still reflect "First"; a later synchronous member reusing/mutating
-        // the parked context would leave it showing "Third".
-        Assert.Equal("First", firstAttr.CapturedMemberName);
-        Assert.Equal("First", firstAttr.CapturedDisplayName);
+        Assert.Contains("Second", context.ValidationErrors!.Keys);
+        Assert.Contains("Third", context.ValidationErrors.Keys);
+        Assert.DoesNotContain(context.ValidationErrors.Keys, k => k.StartsWith("First.", StringComparison.Ordinal));
     }
 
     [Fact]
     public async Task PropertyErrorOnClonedMember_StillShortCircuitsTypeLevelValidation()
     {
-        // The property-error short-circuit (skip type-level/IValidatableObject when a member fails)
-        // must work regardless of which member fails. After member[0] goes async, member[1] is
-        // validated on a CLONED context. If the parent only inspects its own context's error count
-        // (no roll-up from clones), member[1]'s failure becomes invisible and type-level validation
-        // wrongly runs. This mirrors AsyncValidation_ShortCircuitsOnPropertyError but with the
-        // failing property as a (cloned) non-first member.
-        var releaseAsyncMember = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        GatedSuccessAttribute.Reset();
+        TypeLevelShouldNotRunAttribute.CallCount = 0;
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<ClonedMemberErrorShortCircuitsTypeModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var typeLevelRan = false;
-        var modelType = new TestValidatableTypeInfo(
-            typeof(ShortCircuitModel),
-            [
-                // member[0]: async + passing -> forces member[1] onto a cloned context.
-                CreatePropertyInfo(typeof(ShortCircuitModel), typeof(string), "AsyncOk", "AsyncOk",
-                    [new GatedSuccessAsyncAttribute(releaseAsyncMember.Task)]),
-                // member[1]: synchronously fails Required (validated on a clone).
-                CreatePropertyInfo(typeof(ShortCircuitModel), typeof(string), "BadName", "BadName",
-                    [new RequiredAttribute { ErrorMessage = "BadName is required" }])
-            ],
-            [new TrackingTypeLevelAttribute(() => typeLevelRan = true)]);
+        var task = typeInfo.ValidateAsync(new ClonedMemberErrorShortCircuitsTypeModel { First = "x", Second = "y" }, context, default);
+        await GatedSuccessAttribute.WaitForStartsAsync(1);
+        GatedSuccessAttribute.Gate.SetResult();
+        await task;
 
-        var model = new ShortCircuitModel { AsyncOk = "ok", BadName = null };
-        var context = new ValidateContext
+        Assert.Equal(0, TypeLevelShouldNotRunAttribute.CallCount);
+        Assert.Equal("Property async error", context.ValidationErrors!["Second"].Select(e => e.ErrorMessage).Single());
+    }
+}
+
+[ValidatableType]
+public class AsyncUser
+{
+    [EmailExists]
+    public string? Email { get; set; }
+}
+
+public sealed class EmailExistsAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        return value is string email && email == "duplicate@example.com" ? new ValidationResult("Email already exists") : ValidationResult.Success;
+    }
+}
+
+[ValidatableType]
+public class AsyncProduct
+{
+    [Required]
+    public string? Name { get; set; }
+    [SkuExists]
+    public string? SKU { get; set; }
+}
+
+public sealed class SkuExistsAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        return value is string sku && sku.Contains("DUPLICATE", StringComparison.Ordinal) ? new ValidationResult("SKU already exists") : ValidationResult.Success;
+    }
+}
+
+[ValidatableType]
+public class RequiredBeforeAsyncModel
+{
+    [Required]
+    [TrackingAsync]
+    public string? Value { get; set; }
+}
+
+public sealed class TrackingAsyncAttribute : AsyncValidationAttribute
+{
+    public static int CallCount { get; set; }
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        CallCount++;
+        return ValidationResult.Success;
+    }
+}
+
+[ValidatableType]
+public class AsyncValidatableAccount : IAsyncValidatableObject
+{
+    public string? Username { get; set; }
+    public string? Email { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        if (Username == "taken")
         {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ShortCircuitModel), modelType }
-            }),
-            ServiceProvider = null,
-        };
+            yield return new ValidationResult("Username is already taken", [nameof(Username)]);
+        }
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act
-        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
-        releaseAsyncMember.SetResult();
-        await validateTask;
-
-        // Assert - BadName (a cloned member) failed, so type-level validation must be skipped.
-        Assert.NotNull(context.ValidationErrors);
-        Assert.True(context.ValidationErrors.ContainsKey("BadName"));
-        Assert.False(
-            typeLevelRan,
-            "A failing property must short-circuit type-level validation even when that property is " +
-            "validated on a cloned member context.");
-    }
-
-    // Test model classes
-    private class ShortCircuitModel
-    {
-        public string? AsyncOk { get; set; }
-        public string? BadName { get; set; }
-    }
-
-    private class FirstMemberVictimRoot
-    {
-        public VictimChild? Victim { get; set; }
-        public BadChild? Bad { get; set; }
-    }
-
-    private class VictimChild : IValidatableObject
-    {
-        public string? Value { get; set; }
-
-        public Action? OnValidateCalled { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        if (Email == "duplicate@example.com")
         {
-            OnValidateCalled?.Invoke();
-            return Array.Empty<ValidationResult>();
+            yield return new ValidationResult("Email is already registered", [nameof(Email)]);
+        }
+    }
+}
+
+[ValidatableType]
+public class AsyncRegistrationForm : IAsyncValidatableObject
+{
+    public string? Password { get; set; }
+    public string? ConfirmPassword { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        if (Password != ConfirmPassword)
+        {
+            yield return new ValidationResult("Passwords do not match", [nameof(Password), nameof(ConfirmPassword)]);
+        }
+    }
+}
+
+[ValidatableType]
+public class AsyncOrder
+{
+    public AsyncUser? Customer { get; set; }
+}
+
+[ValidatableType]
+public class CancellableAsyncModel
+{
+    [CancelledAsync]
+    public string? Value { get; set; }
+}
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+public sealed class CancelledAsyncAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+        return ValidationResult.Success;
+    }
+}
+
+[AsyncTypeFails]
+[ValidatableType]
+public class AsyncTypeLevelModel
+{
+    public string? Value { get; set; }
+}
+
+public sealed class AsyncTypeFailsAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        return new ValidationResult("Type-level async error");
+    }
+}
+
+[ValidatableType]
+public class AsyncUserCollection
+{
+    public List<AsyncUser> Users { get; set; } = [];
+}
+
+[ValidatableType]
+public class ThrowingAsyncModel
+{
+    [ThrowingAsync]
+    public string? Value { get; set; }
+}
+
+public sealed class ThrowingAsyncAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+        => throw new InvalidOperationException("Async validation exception");
+}
+
+internal static class AsyncTestState
+{
+    public static TaskCompletionSource CreateTcs()
+        => new(TaskCreationOptions.RunContinuationsAsynchronously);
+}
+
+public abstract class CoordinatedAsyncAttribute : AsyncValidationAttribute
+{
+    public static TaskCompletionSource Gate { get; set; } = AsyncTestState.CreateTcs();
+    public static TaskCompletionSource<int> StartedSignal { get; set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public static int StartedCount;
+    public static int ExpectedStarts;
+
+    public static void Reset(int expectedStarts = 1)
+    {
+        Gate = AsyncTestState.CreateTcs();
+        StartedSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        StartedCount = 0;
+        ExpectedStarts = expectedStarts;
+    }
+
+    public static Task WaitForStartsAsync(int count)
+    {
+        ExpectedStarts = count;
+        if (Volatile.Read(ref StartedCount) >= count)
+        {
+            return Task.CompletedTask;
+        }
+
+        return StartedSignal.Task.WaitAsync(TimeSpan.FromSeconds(10));
+    }
+
+    protected static void RecordStart()
+    {
+        var count = Interlocked.Increment(ref StartedCount);
+        if (count >= ExpectedStarts)
+        {
+            StartedSignal.TrySetResult(count);
         }
     }
 
-    private class BadChild
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+}
+
+public sealed class GatedSuccessAttribute : CoordinatedAsyncAttribute
+{
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        public string? Value { get; set; }
+        RecordStart();
+        await Gate.Task.WaitAsync(cancellationToken);
+        return ValidationResult.Success;
     }
+}
 
-    private class MixedSyncAsyncModel
+public sealed class DelayedFailAttribute : CoordinatedAsyncAttribute
+{
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        public string? First { get; set; }
-        public string? Second { get; set; }
-        public string? Third { get; set; }
+        RecordStart();
+        await Gate.Task.WaitAsync(cancellationToken);
+        return new ValidationResult("Delayed validation failed");
     }
+}
 
-    private class CrossTalkRoot
+public sealed class ImmediateAsyncFailAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        public CrossTalkFirst? First { get; set; }
-        public CrossTalkSecond? Second { get; set; }
+        await Task.Yield();
+        return new ValidationResult("First async error");
     }
+}
 
-    private class CrossTalkFirst
+public sealed class PropertyAsyncFailAttribute : AsyncValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        public string? Value { get; set; }
+        await Task.Yield();
+        return new ValidationResult("Property async error");
     }
+}
 
-    private class CrossTalkSecond : IValidatableObject
+public sealed class NeverCompletesUnlessCanceledAttribute : AsyncValidationAttribute
+{
+    public static bool Canceled { get; set; }
+
+    public static void Reset() => Canceled = false;
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        public string? Value { get; set; }
-
-        public Action? OnValidateCalled { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        try
         {
-            OnValidateCalled?.Invoke();
-            return Array.Empty<ValidationResult>();
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
         }
-    }
-
-    private class CrossTalkItemList
-    {
-        public List<CrossTalkItem>? Items { get; set; }
-    }
-
-    private class CrossTalkItem : IValidatableObject
-    {
-        public string? Value { get; set; }
-
-        public Action? OnValidateCalled { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        catch (OperationCanceledException)
         {
-            OnValidateCalled?.Invoke();
-            return Array.Empty<ValidationResult>();
-        }
-    }
-
-    private class TypeWithThrowingGetter
-    {
-        public string ThrowingProp => throw new InvalidOperationException("Getter throws");
-    }
-
-    private class UserWithAsyncValidation
-    {
-        public string? Email { get; set; }
-    }
-
-    private class Product
-    {
-        public string? Name { get; set; }
-        public string? SKU { get; set; }
-    }
-
-    private class OrderWithTracking
-    {
-        public string? Field1 { get; set; }
-        public string? Field2 { get; set; }
-        public string? Field3 { get; set; }
-        public string? Field4 { get; set; }
-    }
-
-    private class AsyncValidatableAccount : IAsyncValidatableObject
-    {
-        public string? Username { get; set; }
-        public string? Email { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-
-            if (Username == "taken")
-            {
-                yield return new ValidationResult("Username is already taken", [nameof(Username)]);
-            }
-
-            if (Email == "duplicate@example.com")
-            {
-                yield return new ValidationResult("Email is already registered", [nameof(Email)]);
-            }
-        }
-    }
-
-    private class RegistrationForm : IAsyncValidatableObject
-    {
-        public string? Password { get; set; }
-        public string? ConfirmPassword { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-
-            if (Password != ConfirmPassword)
-            {
-                yield return new ValidationResult(
-                    "Passwords do not match",
-                    [nameof(Password), nameof(ConfirmPassword)]);
-            }
-        }
-    }
-
-    private class AddressWithAsyncValidation
-    {
-        public string? ZipCode { get; set; }
-    }
-
-    private class CustomerWithAsyncAddress
-    {
-        public string? Name { get; set; }
-        public AddressWithAsyncValidation? Address { get; set; }
-    }
-
-    private class CustomerWithAsyncProfile
-    {
-        public string? Name { get; set; }
-        public AsyncValidatableProfile? Profile { get; set; }
-    }
-
-    private class AsyncValidatableProfile : IAsyncValidatableObject
-    {
-        public string? Bio { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-
-            if (Bio is null || Bio.Length < 10)
-            {
-                yield return new ValidationResult("Bio must be at least 10 characters", [nameof(Bio)]);
-            }
-        }
-    }
-
-    private class CustomerWithGatedAsyncProfile
-    {
-        public string? Name { get; set; }
-
-        public GatedAsyncValidatableProfile? Profile { get; set; }
-    }
-
-    private class GatedAsyncValidatableProfile : IAsyncValidatableObject
-    {
-        public Task Gate { get; set; } = Task.CompletedTask;
-
-        public string? Bio { get; set; }
-
-        public string? CapturedMemberName { get; private set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Gate.WaitAsync(cancellationToken);
-
-            // Capture the MemberName after resuming. When validated on an isolated (cloned) context
-            // this reflects only this object's validation; on a shared context it leaks sibling state.
-            CapturedMemberName = validationContext.MemberName;
-
-            yield return new ValidationResult("Bio must be at least 10 characters", [nameof(Bio)]);
-        }
-    }
-
-    private class Document
-    {
-        public string? Content { get; set; }
-    }
-
-    private class TwoStringModel
-    {
-        public string? First { get; set; }
-        public string? Second { get; set; }
-    }
-
-    private class GatedInner
-    {
-        public string? Value { get; set; }
-    }
-
-    private class ComplexThenStringModel
-    {
-        public GatedInner? Inner { get; set; }
-        public string? Title { get; set; }
-    }
-
-    private class UserProfile : IAsyncValidatableObject
-    {
-        public string? Username { get; set; }
-        public string? Bio { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-
-            if (Bio is not null && Bio.Length < 10)
-            {
-                yield return new ValidationResult("Bio must be at least 10 characters", [nameof(Bio)]);
-            }
-        }
-    }
-
-    private class OrderWithTypeValidation
-    {
-        public decimal SubTotal { get; set; }
-        public decimal Tax { get; set; }
-        public decimal Total { get; set; }
-    }
-
-    private class ItemWithAsyncValidation
-    {
-        public string? Code { get; set; }
-    }
-
-    private class ItemList
-    {
-        public List<ItemWithAsyncValidation>? Items { get; set; }
-    }
-
-    private class EntityWithValidation : IValidatableObject
-    {
-        public string? Name { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Array.Empty<ValidationResult>();
-        }
-    }
-
-    private class Record
-    {
-        public string? Value { get; set; }
-    }
-
-    private class DeepRoot
-    {
-        public DeepBranch? BranchA { get; set; }
-        public DeepBranch? BranchB { get; set; }
-        public DeepBranch? BranchC { get; set; }
-    }
-
-    private class DeepBranch
-    {
-        public DeepInner? Inner { get; set; }
-    }
-
-    private class DeepInner
-    {
-        public DeepLeaf? Leaf { get; set; }
-    }
-
-    private class DeepLeaf
-    {
-        public string? Value { get; set; }
-    }
-
-    private class ParallelTrackingModel : IAsyncValidatableObject
-    {
-        private readonly Action _onObjectValidateStarted;
-
-        public ParallelTrackingModel(Action onObjectValidateStarted)
-        {
-            _onObjectValidateStarted = onObjectValidateStarted;
+            Canceled = true;
+            throw;
         }
 
-        public string? Name { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => throw new NotImplementedException();
-
-        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            ValidationContext validationContext,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            _onObjectValidateStarted();
-            await Task.CompletedTask;
-            yield break;
-        }
+        return new ValidationResult("Should not complete");
     }
+}
 
-    // Test validation attributes
-    private class EmailExistsAttribute : AsyncValidationAttribute
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+public sealed class ParallelSuccessAttribute(string key) : AsyncValidationAttribute
+{
+    public static TaskCompletionSource Gate { get; set; } = AsyncTestState.CreateTcs();
+    public static TaskCompletionSource AllStarted { get; set; } = AsyncTestState.CreateTcs();
+    public static int StartedCount;
+    public static int ExpectedStarts;
+
+    public static void Reset(int expectedStarts)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            if (value is string email && email == "duplicate@example.com")
-            {
-                return new ValidationResult("Email already exists");
-            }
-
-            return ValidationResult.Success;
-        }
+        Gate = AsyncTestState.CreateTcs();
+        AllStarted = AsyncTestState.CreateTcs();
+        StartedCount = 0;
+        ExpectedStarts = expectedStarts;
     }
 
-    private class SkuValidationAttribute : AsyncValidationAttribute
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
+        _ = key;
+        if (Interlocked.Increment(ref StartedCount) >= ExpectedStarts)
         {
-            await Task.Yield();
-
-            if (value is string sku && sku.Contains("DUPLICATE"))
-            {
-                return new ValidationResult(ErrorMessage ?? "SKU already exists");
-            }
-
-            return ValidationResult.Success;
+            AllStarted.TrySetResult();
         }
-    }
 
-    private class TrackingAsyncAttribute : AsyncValidationAttribute
+        await Gate.Task.WaitAsync(cancellationToken);
+        return ValidationResult.Success;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+public sealed class ConcurrentFailAttribute(string key) : AsyncValidationAttribute
+{
+    public static TaskCompletionSource Gate { get; set; } = AsyncTestState.CreateTcs();
+    public static TaskCompletionSource AllStarted { get; set; } = AsyncTestState.CreateTcs();
+    public static int StartedCount;
+    public static int ExpectedStarts;
+
+    public static void Reset(int expectedStarts)
     {
-        private readonly Task _waitsFor;
-        private readonly Action _assertOnStart;
-        private readonly TaskCompletionSource _startedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public TrackingAsyncAttribute(Task waitsFor, Action assertOnStart)
-        {
-            _waitsFor = waitsFor;
-            _assertOnStart = assertOnStart;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            _startedTcs.SetResult();
-            _assertOnStart();
-            await _waitsFor;
-            return ValidationResult.Success;
-        }
-
-        public Task Started => _startedTcs.Task;
+        Gate = AsyncTestState.CreateTcs();
+        AllStarted = AsyncTestState.CreateTcs();
+        StartedCount = 0;
+        ExpectedStarts = expectedStarts;
     }
 
-    private class TrackingSyncAttribute : ValidationAttribute
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        private readonly Action? _assertOnStart;
-
-        public TrackingSyncAttribute(Action? assertOnStart = null)
-            => _assertOnStart = assertOnStart;
-
-        public bool Started { get; private set; }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        if (Interlocked.Increment(ref StartedCount) >= ExpectedStarts)
         {
-            _assertOnStart?.Invoke();
-            Started = true;
-            return ValidationResult.Success;
+            AllStarted.TrySetResult();
         }
-    }
 
-    private class ZipCodeExistsAttribute : AsyncValidationAttribute
+        await AllStarted.Task;
+        return new ValidationResult($"Concurrent error {key}");
+    }
+}
+
+public sealed class PropertyCompletionTrackingAttribute : CoordinatedAsyncAttribute
+{
+    public static bool Completed { get; set; }
+
+    public new static void Reset(int expectedStarts = 1)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            if (value is string zip && zip == "INVALID")
-            {
-                return new ValidationResult(ErrorMessage ?? "Invalid zip code");
-            }
-
-            return ValidationResult.Success;
-        }
+        CoordinatedAsyncAttribute.Reset(expectedStarts);
+        Completed = false;
     }
 
-    private class CanceledAsyncValidationAttribute : AsyncValidationAttribute
+    protected override async Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Task.FromCanceled<ValidationResult?>(cancellationToken);
-            }
-
-            return Task.FromResult(ValidationResult.Success);
-        }
+        RecordStart();
+        await Gate.Task.WaitAsync(cancellationToken);
+        Completed = true;
+        return ValidationResult.Success;
     }
+}
 
-    private class UsernameAvailableAttribute : AsyncValidationAttribute
+public sealed class TypeLevelAfterMembersAttribute : AsyncValidationAttribute
+{
+    public static bool StartedAfterPropertyCompleted { get; set; }
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            if (value is string username && username == "taken")
-            {
-                return new ValidationResult(ErrorMessage ?? "Username is taken");
-            }
-
-            return ValidationResult.Success;
-        }
+        StartedAfterPropertyCompleted = PropertyCompletionTrackingAttribute.Completed;
+        return Task.FromResult<ValidationResult?>(ValidationResult.Success);
     }
+}
 
-    private class OrderTotalValidationAttribute : AsyncValidationAttribute
+public sealed class TypeLevelShouldNotRunAttribute : AsyncValidationAttribute
+{
+    public static int CallCount { get; set; }
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        => throw new NotSupportedException();
+
+    protected override Task<ValidationResult?> IsValidAsync(object? value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            if (value is OrderWithTypeValidation order)
-            {
-                if (order.Total != order.SubTotal + order.Tax)
-                {
-                    return new ValidationResult("Total does not match SubTotal + Tax", [nameof(OrderWithTypeValidation.Total)]);
-                }
-            }
-
-            return ValidationResult.Success;
-        }
+        CallCount++;
+        return Task.FromResult<ValidationResult?>(ValidationResult.Success);
     }
+}
 
-    private class ItemCodeExistsAttribute : AsyncValidationAttribute
+[ValidatableType]
+public class AsyncValidatableWithPropertyError : IAsyncValidatableObject
+{
+    public static int AsyncCalls { get; set; }
+    [EmailExists]
+    public string? Email { get; set; }
+    public string? Bio { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
+        await Task.Yield();
+        AsyncCalls++;
+        if (Bio == "short")
         {
-            await Task.Yield();
-
-            if (value is string code && code == "DUPLICATE")
-            {
-                return new ValidationResult(ErrorMessage ?? "Item code exists");
-            }
-
-            return ValidationResult.Success;
+            yield return new ValidationResult("Bio is too short", [nameof(Bio)]);
         }
     }
+}
 
-    private class ParallelBarrierAsyncValidationAttribute : AsyncValidationAttribute
+[ValidatableType]
+public class AsyncProfile : IAsyncValidatableObject
+{
+    public string? Bio { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        private readonly TaskCompletionSource _allEnteredSignal;
-        private readonly int _expectedCount;
-        private int _enteredCount;
-
-        public ParallelBarrierAsyncValidationAttribute(
-            TaskCompletionSource allEnteredSignal,
-            int expectedCount)
+        await Task.Yield();
+        if (Bio == "short")
         {
-            _allEnteredSignal = allEnteredSignal;
-            _expectedCount = expectedCount;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            // Signal that this item has entered validation.
-            // When all items have entered, signal completion.
-            if (Interlocked.Increment(ref _enteredCount) == _expectedCount)
-            {
-                _allEnteredSignal.SetResult();
-            }
-
-            // Wait until all items have entered - this will deadlock/timeout if run sequentially.
-            await _allEnteredSignal.Task.WaitAsync(cancellationToken);
-
-            if (value is string code && code == "DUPLICATE")
-            {
-                return new ValidationResult(ErrorMessage ?? "Item code exists");
-            }
-
-            return ValidationResult.Success;
+            yield return new ValidationResult("Bio is too short", [nameof(Bio)]);
         }
     }
+}
 
-    /// <summary>
-    /// Barrier attribute that waits until every expected invocation is in-flight and then fails.
-    /// It waits with a timeout (not the cancellation token), so the short-circuit cancellation from a
-    /// sibling's first failure does NOT cancel it - forcing every failure to be reported concurrently
-    /// to the same error key, which exercises the concurrent error-collection write path.
-    /// </summary>
-    private sealed class ConcurrentFailingBarrierAttribute : AsyncValidationAttribute
+[ValidatableType]
+public class NestedAsyncProfileContainer
+{
+    public AsyncProfile? Profile { get; set; }
+}
+
+[ValidatableType]
+public class GatedAsyncProfile : IAsyncValidatableObject
+{
+    public static TaskCompletionSource Gate { get; set; } = AsyncTestState.CreateTcs();
+    public static TaskCompletionSource<int> Started { get; set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public static int StartedCount;
+    public string? Bio { get; set; }
+
+    public static void Reset()
     {
-        private readonly TaskCompletionSource _allEnteredSignal;
-        private readonly int _expectedCount;
-        private int _enteredCount;
-
-        public ConcurrentFailingBarrierAttribute(TaskCompletionSource allEnteredSignal, int expectedCount)
-        {
-            _allEnteredSignal = allEnteredSignal;
-            _expectedCount = expectedCount;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            if (Interlocked.Increment(ref _enteredCount) == _expectedCount)
-            {
-                _allEnteredSignal.SetResult();
-            }
-
-            await _allEnteredSignal.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            return new ValidationResult("Concurrent error");
-        }
+        Gate = AsyncTestState.CreateTcs();
+        Started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        StartedCount = 0;
     }
 
-    private class ThrowingAsyncValidationAttribute : AsyncValidationAttribute
+    public static Task WaitForStartsAsync(int count)
+        => Volatile.Read(ref StartedCount) >= count ? Task.CompletedTask : Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
+        if (Interlocked.Increment(ref StartedCount) >= 2)
         {
-            await Task.Yield();
-            throw new InvalidOperationException("Async validation failed");
+            Started.TrySetResult(StartedCount);
         }
-    }
 
-    private class TrackingTypeLevelAttribute : ValidationAttribute
+        await Gate.Task.WaitAsync(cancellationToken);
+        yield return new ValidationResult("Bio is too short", [nameof(Bio)]);
+    }
+}
+
+[ValidatableType]
+public class TwoNestedAsyncProfiles
+{
+    public GatedAsyncProfile? First { get; set; }
+    public GatedAsyncProfile? Second { get; set; }
+}
+
+[ValidatableType]
+public class GatedThenRequiredModel
+{
+    [GatedSuccess]
+    public string? First { get; set; }
+    [Required]
+    public string? Second { get; set; }
+}
+
+[ValidatableType]
+public class GatedComplexThenRequiredModel
+{
+    public GatedComplexChild? First { get; set; }
+    [Required]
+    public string? Second { get; set; }
+}
+
+[ValidatableType]
+public class GatedComplexChild
+{
+    [GatedSuccess]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class MultipleCancellableAsyncModel
+{
+    [CancelledAsync]
+    [CancelledAsync]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class DelayedValidationModel
+{
+    [DelayedFail]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class ShortCircuitSamePropertyModel
+{
+    [ImmediateAsyncFail]
+    [NeverCompletesUnlessCanceled]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class ParallelSamePropertyModel
+{
+    [ParallelSuccess("A")]
+    [ParallelSuccess("B")]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class ConcurrentFailSamePropertyModel
+{
+    [ConcurrentFail("A")]
+    [ConcurrentFail("B")]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class DeepParallelRoot
+{
+    public DeepParallelBranch? Left { get; set; }
+    public DeepParallelBranch? Right { get; set; }
+}
+
+[ValidatableType]
+public class DeepParallelBranch
+{
+    public DeepParallelLeaf? Leaf { get; set; }
+}
+
+[ValidatableType]
+public class DeepParallelLeaf
+{
+    [GatedSuccess]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class SequentialAsyncValidatableModel : IAsyncValidatableObject
+{
+    public static bool AsyncStartedAfterPropertyCompleted { get; set; }
+    [PropertyCompletionTracking]
+    public string? Value { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        private readonly Action _callback;
-
-        public TrackingTypeLevelAttribute(Action callback)
-        {
-            _callback = callback;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            _callback();
-            return ValidationResult.Success;
-        }
+        await Task.Yield();
+        AsyncStartedAfterPropertyCompleted = PropertyCompletionTrackingAttribute.Completed;
+        yield break;
     }
+}
 
-    private class DelayedAsyncValidationAttribute : AsyncValidationAttribute
+[TypeLevelAfterMembers]
+[ValidatableType]
+public class TypeLevelAfterMembersModel
+{
+    [PropertyCompletionTracking]
+    public string? Value { get; set; }
+}
+
+[TypeLevelShouldNotRun]
+[ValidatableType]
+public class PropertyFailureShortCircuitsTypeLevelModel
+{
+    [PropertyAsyncFail]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class AsyncValidatableWithRequiredProperty : IAsyncValidatableObject
+{
+    public static int AsyncCalls { get; set; }
+    [Required]
+    public string? Name { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        private readonly Task? _signal;
-
-        public DelayedAsyncValidationAttribute()
-        {
-        }
-
-        public DelayedAsyncValidationAttribute(Task signal)
-        {
-            _signal = signal;
-        }
-
-        public bool ShouldFail { get; set; }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            if (_signal is not null)
-            {
-                await _signal.WaitAsync(cancellationToken);
-
-                // The sibling attribute's first error short-circuits validation by cancelling the
-                // linked token. Block until that cancellation is observed so this attribute's error
-                // is not collected (deterministic; no fixed delay).
-                await new TaskCompletionSource().Task.WaitAsync(cancellationToken);
-            }
-            else
-            {
-                await Task.Yield();
-            }
-
-            if (ShouldFail)
-            {
-                return new ValidationResult(ErrorMessage ?? "Validation failed");
-            }
-
-            return ValidationResult.Success;
-        }
+        await Task.Yield();
+        AsyncCalls++;
+        yield break;
     }
+}
 
-    private class ParallelGateAsyncAttribute : AsyncValidationAttribute
+public static class AsyncParameterActions
+{
+    public static void Users([Required] IEnumerable<AsyncUser> users) { }
+}
+
+[ValidatableType]
+public class ThrowingGetterModel
+{
+    [Required]
+    public string Throwing => throw new InvalidOperationException("Getter throws");
+}
+
+[ValidatableType]
+public class SiblingSubtreeRoot
+{
+    public SiblingBadChild? Bad { get; set; }
+    public ObjectErrorChild? Other { get; set; }
+}
+
+[ValidatableType]
+public class SiblingBadChild
+{
+    [Required]
+    public string? Name { get; set; }
+}
+
+[ValidatableType]
+public class ObjectErrorChild : IValidatableObject
+{
+    [Required]
+    public string? Name { get; set; }
+    public bool ObjectError { get; set; } = true;
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        private readonly int _expected;
-        private readonly CountdownEvent _startedLatch;
-        private readonly TaskCompletionSource _allStartedTcs;
-
-        public ParallelGateAsyncAttribute(int expected, CountdownEvent startedLatch, TaskCompletionSource allStartedTcs)
+        if (ObjectError)
         {
-            _expected = expected;
-            _startedLatch = startedLatch;
-            _allStartedTcs = allStartedTcs;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            // Signal that this validator has started. The last one to signal sets the TCS,
-            // releasing every validator that is already waiting on it.
-            if (_startedLatch.Signal())
-            {
-                _allStartedTcs.TrySetResult();
-            }
-
-            try
-            {
-                // Wait until every expected deep validator has also started. If deep
-                // validation does not run in parallel, only the first validator reaches
-                // this point and WaitAsync throws TimeoutException, which we translate
-                // into a clear validation error.
-                await _allStartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
-            }
-            catch (TimeoutException)
-            {
-                var started = _expected - _startedLatch.CurrentCount;
-                return new ValidationResult(
-                    $"Expected {_expected} deep validators to run in parallel, but only {started} started before the timeout elapsed.");
-            }
-
-            return ValidationResult.Success;
+            yield return new ValidationResult("Object error", ["Value"]);
         }
     }
+}
 
-    private class CompletionTrackingAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly TaskCompletionSource _completionTcs;
+[ValidatableType]
+public class CollectionSiblingRoot
+{
+    public List<ObjectErrorChild> Items { get; set; } = [];
+}
 
-        public CompletionTrackingAsyncAttribute(TaskCompletionSource completionTcs)
-        {
-            _completionTcs = completionTcs;
-        }
+[ValidatableType]
+public class FirstSubtreeLaterErrorRoot
+{
+    public ObjectErrorChild? First { get; set; }
+    [Required]
+    public string? Second { get; set; }
+}
 
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
+[ValidatableType]
+public class MixedSyncAsyncParkedContextModel
+{
+    [GatedSuccess]
+    public string? First { get; set; }
+    [Required]
+    public string? Second { get; set; }
+    [Required]
+    public string? Third { get; set; }
+}
 
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-            _completionTcs.TrySetResult();
-            return ValidationResult.Success;
-        }
-    }
-
-    /// <summary>
-    /// Async attribute that parks on an external gate before succeeding. Used to deterministically
-    /// hold a member's validation in a suspended state (with the ValidateContext still mutated)
-    /// while sibling members are validated.
-    /// </summary>
-    private class GatedSuccessAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly Task _gate;
-
-        public GatedSuccessAsyncAttribute(Task gate)
-        {
-            _gate = gate;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value,
-            ValidationContext validationContext,
-            CancellationToken cancellationToken)
-        {
-            await _gate.WaitAsync(cancellationToken);
-            return ValidationResult.Success;
-        }
-    }
-
-    /// <summary>
-    /// Property-level async attribute that, after being released from an external gate, captures the
-    /// MemberName/DisplayName it observes on the (shared) ValidationContext. Used to detect whether a
-    /// concurrently-running type-level validation corrupted the in-flight property's context.
-    /// </summary>
-    private sealed class GatedContextCapturingAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly TaskCompletionSource _entered;
-        private readonly Task _release;
-        private readonly TaskCompletionSource _readDone;
-
-        public GatedContextCapturingAsyncAttribute(TaskCompletionSource entered, Task release, TaskCompletionSource readDone)
-        {
-            _entered = entered;
-            _release = release;
-            _readDone = readDone;
-        }
-
-        public string? CapturedMemberName { get; private set; }
-
-        public string? CapturedDisplayName { get; private set; }
-
-        /// <summary>
-        /// When <see langword="true"/>, the attribute reports a failure whose message embeds the
-        /// display name observed on the context, surfacing context corruption as a user-visible error.
-        /// </summary>
-        public bool ReportFailure { get; init; }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-        {
-            _entered.SetResult();
-            await _release.WaitAsync(cancellationToken);
-
-            CapturedMemberName = validationContext.MemberName;
-            CapturedDisplayName = validationContext.DisplayName;
-            _readDone.TrySetResult();
-
-            if (ReportFailure)
-            {
-                return new ValidationResult(
-                    $"{validationContext.DisplayName} is invalid",
-                    [validationContext.MemberName ?? string.Empty]);
-            }
-
-            return ValidationResult.Success;
-        }
-    }
-
-    /// <summary>
-    /// Async attribute for collection items that gates the "fail" and "pass" items independently
-    /// (keyed off the value being validated), so a test can deterministically order a failing item's
-    /// error before a sibling item completes.
-    /// </summary>
-    private sealed class CollectionItemGatedAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly TaskCompletionSource _failingEntered;
-        private readonly Task _releaseFailing;
-        private readonly TaskCompletionSource _passingEntered;
-        private readonly Task _releasePassing;
-
-        public CollectionItemGatedAsyncAttribute(
-            TaskCompletionSource failingEntered,
-            Task releaseFailing,
-            TaskCompletionSource passingEntered,
-            Task releasePassing)
-        {
-            _failingEntered = failingEntered;
-            _releaseFailing = releaseFailing;
-            _passingEntered = passingEntered;
-            _releasePassing = releasePassing;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-        {
-            if ((string?)value == "fail")
-            {
-                _failingEntered.SetResult();
-                await _releaseFailing.WaitAsync(cancellationToken);
-                return new ValidationResult("item failed", [validationContext.MemberName ?? string.Empty]);
-            }
-
-            _passingEntered.SetResult();
-            await _releasePassing.WaitAsync(cancellationToken);
-            return ValidationResult.Success;
-        }
-    }
-
-    // Test helper methods
-    private ValidatablePropertyInfo CreatePropertyInfo(
-        Type containingType,
-        Type propertyType,
-        string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes)
-    {
-        return new TestValidatablePropertyInfo(
-            containingType,
-            propertyType,
-            name,
-            displayName,
-            validationAttributes);
-    }
-
-    private class TestValidatablePropertyInfo : ValidatablePropertyInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
-            string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestValidatableParameterInfo : ValidatableParameterInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatableParameterInfo(
-            Type parameterType,
-            string name,
-            DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayNameInfo)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestValidatableTypeInfo : ValidatableTypeInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatableTypeInfo(
-            Type type,
-            IReadOnlyList<ValidatablePropertyInfo> members,
-            ValidationAttribute[]? validationAttributes = null)
-            : base(type, members)
-        {
-            _validationAttributes = validationAttributes ?? Array.Empty<ValidationAttribute>();
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestLiteralDisplayName : DisplayNameInfo
-    {
-        private readonly string _displayName;
-
-        public TestLiteralDisplayName(string displayName)
-        {
-            _displayName = displayName;
-        }
-
-        public override string GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
-        {
-            return _displayName;
-        }
-    }
-
-    private class TestValidationOptions : ValidationOptions
-    {
-        public TestValidationOptions(Dictionary<Type, ValidatableTypeInfo> typeInfoMappings)
-        {
-            var resolver = new DictionaryBasedResolver(typeInfoMappings);
-            Resolvers.Add(resolver);
-        }
-
-        private class DictionaryBasedResolver : IValidatableInfoResolver
-        {
-            private readonly Dictionary<Type, ValidatableTypeInfo> _typeInfoMappings;
-
-            public DictionaryBasedResolver(Dictionary<Type, ValidatableTypeInfo> typeInfoMappings)
-            {
-                _typeInfoMappings = typeInfoMappings;
-            }
-
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
-            {
-                if (_typeInfoMappings.TryGetValue(type, out var info))
-                {
-                    validatableTypeInfo = info;
-                    return true;
-                }
-                validatableTypeInfo = null;
-                return false;
-            }
-
-            public bool TryGetValidatableParameterInfo(System.Reflection.ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
-            {
-                validatableParameterInfo = null;
-                return false;
-            }
-        }
-    }
+[TypeLevelShouldNotRun]
+[ValidatableType]
+public class ClonedMemberErrorShortCircuitsTypeModel
+{
+    [GatedSuccess]
+    public string? First { get; set; }
+    [PropertyAsyncFail]
+    public string? Second { get; set; }
 }

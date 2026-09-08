@@ -68,7 +68,10 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
         {
             Disposed = true;
 
-            DisposeJSObjectReferenceById(Id);
+            if (OperatingSystem.IsBrowser())
+            {
+                DisposeJSObjectReferenceById(Id);
+            }
         }
     }
 
