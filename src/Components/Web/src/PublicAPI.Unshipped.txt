@@ -43,6 +43,8 @@ Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!>
 *REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.TouchEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.TouchEventArgs!>
 *REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.WheelEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.WheelEventArgs!>
+Microsoft.AspNetCore.Components.Web.BasePath
+Microsoft.AspNetCore.Components.Web.BasePath.BasePath() -> void
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.set -> void
