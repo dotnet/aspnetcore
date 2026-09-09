@@ -17,14 +17,14 @@ public partial class FunctionInvocationTests : DojoTestBase
     [DataRow("Direct")]
     public async Task BuiltInMapping_RendersLoadingThenMatchingResult(string backend)
     {
-        var (ui, model) = await StartDojoAsync(backend);
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(ui));
+        var dojo = await GetDojoAsync(backend);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
-        await page.GotoAsync($"{ui.TestUrl}/function-invocation");
+        await page.GotoAsync(dojo.GetScenarioUrl("/function-invocation"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
         var threadId = await page.Locator(".function-invocation-scenario").GetAttributeAsync("data-thread-id");
         Assert.IsNotNull(threadId);
-        await using var control = new FunctionScenarioClient(model, threadId);
+        await using var control = new FunctionScenarioClient(dojo.Model, threadId);
 
         await page.FillAsync("textarea.sc-ai-input__textarea", "Show the weather");
         await page.ClickAsync("button.sc-ai-input__send");

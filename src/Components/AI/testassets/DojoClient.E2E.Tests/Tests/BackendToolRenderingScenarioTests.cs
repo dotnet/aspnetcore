@@ -13,16 +13,14 @@ namespace DojoClient.E2E.Tests.Tests;
 [UITest]
 public partial class BackendToolRenderingScenarioTests : DojoTestBase
 {
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private IPage _page = null!;
 
     private async Task InitializeScenarioAsync(string backend)
     {
-        (_ui, _) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.BackendToolRendering)));
+        _dojo = await GetDojoAsync(backend, DojoRecording.BackendToolRendering);
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
     }
 
@@ -32,7 +30,7 @@ public partial class BackendToolRenderingScenarioTests : DojoTestBase
     public async Task BackendToolRendering_RendersServerWeatherResult(string backend)
     {
         await InitializeScenarioAsync(backend);
-        await _page.GotoAsync($"{_ui.TestUrl}/backend_tool_rendering");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/backend_tool_rendering"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
         await _page.FillAsync(

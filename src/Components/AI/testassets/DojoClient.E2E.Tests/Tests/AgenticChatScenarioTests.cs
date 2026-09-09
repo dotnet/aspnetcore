@@ -19,34 +19,21 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     private const string Background =
         "linear-gradient(135deg, #ff9a9e, #fad0c4)";
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _runId = null!;
 
     private async Task InitializeScenarioAsync(string backend, bool usesClientToolRecording = false)
     {
-        // Every test types a message that carries a unique run id, so the recorded script is
-        // shared while the checkpoint gates stay isolated per test and per run.
         _runId = Guid.NewGuid().ToString("N")[..8];
 
-        var (ui, model) = await StartDojoAsync(backend, options =>
-        {
-            if (usesClientToolRecording)
-            {
-                options.ConfigureServices<DojoModelOverrides>(
-                    nameof(DojoModelOverrides.AgenticChatClientTool));
-            }
-            else
-            {
-                options.ConfigureServices<DojoModelOverrides>(
-                    nameof(DojoModelOverrides.AgenticChat));
-            }
-        });
-        _ui = ui;
-        _checkpoints = new ApiCheckpointClient(model);
+        _dojo = await GetDojoAsync(backend, usesClientToolRecording
+            ? DojoRecording.AgenticChatClientTool
+            : DojoRecording.AgenticChat);
+        _checkpoints = _dojo.Checkpoints;
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
     }
 
@@ -139,9 +126,9 @@ public partial class AgenticChatScenarioTests : DojoTestBase
         await GoToScenarioAsync();
 
         var secondContext = await NewContext(
-            new BrowserNewContextOptions().WithServerRouting(_ui));
+            new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         var secondPage = await secondContext.NewPageAsync();
-        await secondPage.GotoAsync($"{_ui.TestUrl}/agentic_chat");
+        await secondPage.GotoAsync(_dojo.GetScenarioUrl("/agentic_chat"));
         await secondPage.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
         await SendAsync(Prompt(BackgroundPrompt));
@@ -162,7 +149,7 @@ public partial class AgenticChatScenarioTests : DojoTestBase
 
     private async Task GoToScenarioAsync()
     {
-        await _page.GotoAsync($"{_ui.TestUrl}/agentic_chat");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/agentic_chat"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 

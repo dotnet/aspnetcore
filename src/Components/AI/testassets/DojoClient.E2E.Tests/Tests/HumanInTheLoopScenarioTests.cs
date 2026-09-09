@@ -16,20 +16,18 @@ public partial class HumanInTheLoopScenarioTests : DojoTestBase
     private const string ApprovalPrompt = "Please plan a trip to mars in 5 steps.";
     private const string RejectionPrompt = "Please create a simple Mars mission plan.";
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private IPage _page = null!;
     private string _runId = null!;
 
     private async Task InitializeScenarioAsync(string backend)
     {
         _runId = Guid.NewGuid().ToString("N")[..8];
-        (_ui, _) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.HumanInTheLoop)));
+        _dojo = await GetDojoAsync(backend, DojoRecording.HumanInTheLoop);
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/human_in_the_loop");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/human_in_the_loop"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 

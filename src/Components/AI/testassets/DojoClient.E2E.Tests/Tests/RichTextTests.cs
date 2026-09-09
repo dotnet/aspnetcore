@@ -17,10 +17,10 @@ public partial class RichTextTests : DojoTestBase
     [DataRow("Direct")]
     public async Task RichText_RendersTheStructuredContentMatrix(string backend)
     {
-        var (server, _) = await StartDojoAsync(backend);
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
+        var dojo = await GetDojoAsync(backend);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
-        await page.GotoAsync($"{server.TestUrl}/rich-text");
+        await page.GotoAsync(dojo.GetScenarioUrl("/rich-text"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
         await page.FillAsync("textarea.sc-ai-input__textarea", "Render rich text");

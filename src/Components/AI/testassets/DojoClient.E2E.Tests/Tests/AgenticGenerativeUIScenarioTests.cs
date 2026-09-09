@@ -24,7 +24,7 @@ public partial class AgenticGenerativeUIScenarioTests : DojoTestBase
         "Launch the spacecraft and execute the mission to Mars.",
     ];
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _prompt = null!;
@@ -32,15 +32,12 @@ public partial class AgenticGenerativeUIScenarioTests : DojoTestBase
     private async Task InitializeScenarioAsync(string backend)
     {
         _prompt = SimplePlanPrompt;
-        var (ui, model) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.AgenticGenerativeUI)));
-        _ui = ui;
-        _checkpoints = new ApiCheckpointClient(model);
+        _dojo = await GetDojoAsync(backend, DojoRecording.AgenticGenerativeUI);
+        _checkpoints = _dojo.Checkpoints;
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/agentic_generative_ui");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/agentic_generative_ui"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 
@@ -134,16 +131,16 @@ public partial class AgenticGenerativeUISuggestionTests : DojoTestBase
 {
     private const string ComplexPlanPrompt = "Please build a plan to go to make pizza in 10 steps.";
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private IPage _page = null!;
 
     private async Task InitializeScenarioAsync(string backend)
     {
-        (_ui, _) = await StartDojoAsync(backend);
+        _dojo = await GetDojoAsync(backend);
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/agentic_generative_ui");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/agentic_generative_ui"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 

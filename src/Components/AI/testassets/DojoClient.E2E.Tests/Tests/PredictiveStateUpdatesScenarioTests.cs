@@ -26,21 +26,18 @@ public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
         EditedPirateDocument +
         "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon.";
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
 
     private async Task InitializeScenarioAsync(string backend)
     {
-        var (ui, model) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.PredictiveStateUpdates)));
-        _ui = ui;
-        _checkpoints = new ApiCheckpointClient(model);
+        _dojo = await GetDojoAsync(backend, DojoRecording.PredictiveStateUpdates);
+        _checkpoints = _dojo.Checkpoints;
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/predictive_state_updates");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/predictive_state_updates"));
         await _page.WaitForInteractiveAsync("[aria-label='Document editor']");
     }
 

@@ -15,6 +15,35 @@ configured with `OPENAI_BASE_URL` or `OPENAI_API_KEY` in the model host.
 The sibling `DojoAgent` library owns the shared models, tools, and prompts; neither
 web app references the other.
 
+## Suite-wide hosts and per-test sessions
+
+The suite lazily starts at most three application processes: one AGUIDojoApi
+host, one AG-UI-configured DojoClient host, and one Direct-configured DojoClient
+host. `TestRoot.Servers` caches these fixed configurations until assembly cleanup.
+Filtered runs start only the hosts they need.
+
+`GetDojoAsync` acquires those hosts and creates a `DojoTestSession`, not another
+process. The session selects a `DojoRecording` or the offline scripted model.
+Recordings no longer participate in process environment or service-override
+cache keys.
+
+Each session has a unique ID, its own recorded-script expectations, checkpoint
+gates, model pipeline, and cancellation lifetime. `GetScenarioUrl` places the ID
+in the scenario URL. A test-only UI client decorator reads it through the
+circuit's `NavigationManager` and forwards it as native chat-option metadata or
+AG-UI `ForwardedProperties`. This does not rely on `HttpContext` being available
+during interactive rendering, and does not add test parameters to scenario pages.
+
+The model host routes each request to that session's model. Missing or expired
+IDs fail rather than falling back to another recording. Checkpoint releases are
+session-scoped, so identical prompts in different sessions cannot unblock each
+other. Test cleanup cancels and drains pending requests, disposes the model, and
+removes its state without stopping shared hosts.
+
+Tests still create fresh browser contexts. `WithServerRouting` selects the
+appropriate shared UI instance through the proxy's `X-Test-Backend` header.
+Server configuration never changes between rows.
+
 ## Consolidated scenarios
 
 DojoClient is the UI test app for both backends. The suite includes the original
@@ -53,24 +82,25 @@ test with `[DataRow("AGUI")]` and `[DataRow("Direct")]`:
 [DataRow("Direct")]
 public async Task Scenario_ExercisesComponentBehavior(string backend)
 {
-    var (ui, model) = await StartDojoAsync(
-        backend, options => options.ConfigureServices<DojoModelOverrides>(
-            nameof(DojoModelOverrides.AgenticChat)));
-    var checkpoints = new ApiCheckpointClient(model);
-    var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(ui));
+    var dojo = await GetDojoAsync(backend, DojoRecording.AgenticChat);
+    var checkpoints = dojo.Checkpoints;
+    var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
     var page = await context.NewPageAsync();
-    // Navigate to the shared page, interact, and assert component behavior.
+    await page.GotoAsync(dojo.GetScenarioUrl("/agentic_chat"));
+    await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
+    // Interact and assert component behavior.
 }
 ```
 
-Keep backend selection out of page markup and test assertions. `StartDojoAsync`
-starts the API only for AG-UI rows and applies the same recorded-model override
-to whichever host owns the model. Checkpoints target that host too. Direct rows
+Keep backend selection out of page markup and test assertions. `GetDojoAsync`
+acquires the API only for AG-UI rows. Always navigate with the session's
+`GetScenarioUrl`, including additional pages or browser contexts in the test.
+Omit the recording argument for scripted or dedicated fixed scenarios. Direct rows
 use an unreachable AG-UI URL so accidental transport use fails rather than
 silently reaching another server.
 
-Model overrides must replace the model registration, not the UI's scenario
-client. `DojoModelOverrides` handles the unkeyed API model and keyed direct model.
+`DojoModelOverrides` installs the same model router once in each host, leaving
+the scenario client and transport intact. `DojoRunStore` owns per-session models.
 The recordings and their request assertions are shared across both runs.
 Native tool results are compared in the recording's JSON representation, so
 transport encoding differences do not require separate recordings.

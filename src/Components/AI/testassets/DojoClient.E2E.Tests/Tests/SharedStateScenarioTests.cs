@@ -13,7 +13,7 @@ namespace DojoClient.E2E.Tests.Tests;
 [UITest]
 public partial class SharedStateScenarioTests : DojoTestBase
 {
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _firstPrompt = null!;
@@ -22,15 +22,12 @@ public partial class SharedStateScenarioTests : DojoTestBase
     {
         var runId = Guid.NewGuid().ToString("N");
         _firstPrompt = $"Create a delicious Italian pasta recipe. ({runId})";
-        var (ui, model) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.SharedState)));
-        _ui = ui;
-        _checkpoints = new ApiCheckpointClient(model);
+        _dojo = await GetDojoAsync(backend, DojoRecording.SharedState);
+        _checkpoints = _dojo.Checkpoints;
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/shared_state");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/shared_state"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 

@@ -20,7 +20,8 @@
          explicit one so the version is pinned to MSTest.TestFramework. -->
     <!-- MSTEST0001: Parallelism analyzer requires an explicit assembly-level declaration.
          This project intentionally retains MSTest's sequential default for now. -->
-    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
+    <!-- The test hooks intentionally use in-tree projects that share framework assembly names. -->
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +36,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.AI" />
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <!-- AG-UI rows launch both apps; direct IChatClient rows launch only DojoClient. -->
     <ProjectReference Include="../AGUIDojoApi/AGUIDojoApi.csproj">
       <E2EApp>true</E2EApp>

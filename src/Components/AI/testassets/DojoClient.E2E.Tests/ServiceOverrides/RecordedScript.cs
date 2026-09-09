@@ -7,8 +7,8 @@ namespace DojoClient.E2E.Tests.ServiceOverrides;
 
 // A recorded model response, replayed by either backend so browser tests are deterministic.
 //
-// A call is selected by the text of the last user message, so a test can pick its own script
-// and give every run a unique lock namespace by appending a run id to the message it types.
+// The latest prompt and message count select a call. Mutable thread expectations belong
+// to this script instance, which is created separately for each test session.
 internal sealed class RecordedScript
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);

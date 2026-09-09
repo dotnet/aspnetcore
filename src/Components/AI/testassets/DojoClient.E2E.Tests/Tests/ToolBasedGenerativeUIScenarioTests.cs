@@ -15,7 +15,7 @@ public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
 {
     private const string HaikuPrompt = "Write me a haiku about nature";
 
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _runId = null!;
@@ -23,15 +23,12 @@ public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
     private async Task InitializeScenarioAsync(string backend)
     {
         _runId = Guid.NewGuid().ToString("N")[..8];
-        var (ui, model) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.ToolBasedGenerativeUI)));
-        _ui = ui;
-        _checkpoints = new ApiCheckpointClient(model);
+        _dojo = await GetDojoAsync(backend, DojoRecording.ToolBasedGenerativeUI);
+        _checkpoints = _dojo.Checkpoints;
 
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/tool_based_generative_ui");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/tool_based_generative_ui"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 

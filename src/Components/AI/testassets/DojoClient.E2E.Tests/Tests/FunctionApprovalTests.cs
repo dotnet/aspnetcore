@@ -69,15 +69,15 @@ public partial class FunctionApprovalTests : DojoTestBase
 
     private async Task<(IPage Page, FunctionScenarioClient Control)> OpenScenarioAsync(string backend)
     {
-        var (ui, model) = await StartDojoAsync(backend);
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(ui));
+        var dojo = await GetDojoAsync(backend);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
-        await page.GotoAsync($"{ui.TestUrl}/function-approval");
+        await page.GotoAsync(dojo.GetScenarioUrl("/function-approval"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
         var threadId = await page.Locator(".function-approval-scenario").GetAttributeAsync("data-thread-id");
         Assert.IsNotNull(threadId);
 
-        return (page, new FunctionScenarioClient(model, threadId));
+        return (page, new FunctionScenarioClient(dojo.Model, threadId));
     }
 
     private static async Task SendAsync(IPage page)

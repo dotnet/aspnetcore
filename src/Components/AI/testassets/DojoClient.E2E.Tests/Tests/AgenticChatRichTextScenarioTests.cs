@@ -20,13 +20,11 @@ public partial class AgenticChatRichTextScenarioTests : DojoTestBase
     [DataRow("Direct")]
     public async Task AgenticChat_RendersFormattedAssistantResponse(string backend)
     {
-        var (ui, model) = await StartDojoAsync(
-            backend, options => options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.AgenticChatRichText)));
-        var checkpoints = new ApiCheckpointClient(model);
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(ui));
+        var dojo = await GetDojoAsync(backend, DojoRecording.AgenticChatRichText);
+        var checkpoints = dojo.Checkpoints;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
-        await page.GotoAsync($"{ui.TestUrl}/agentic_chat");
+        await page.GotoAsync(dojo.GetScenarioUrl("/agentic_chat"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
         var prompt = $"{PromptText} ({Guid.NewGuid():N})";
