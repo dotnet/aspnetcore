@@ -3,10 +3,10 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.SharedState;
+namespace DojoAgent.AgenticGenerativeUI;
 
-internal sealed class RecipeResponse
+internal sealed class Plan
 {
-    [JsonPropertyName("recipe")]
-    public Recipe Recipe { get; set; } = new();
+    [JsonPropertyName("steps")]
+    public List<PlanStep> Steps { get; set; } = [];
 }

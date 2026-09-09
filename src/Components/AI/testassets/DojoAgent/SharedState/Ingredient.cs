@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.SharedState;
+namespace DojoAgent.SharedState;
 
 internal sealed class Ingredient
 {

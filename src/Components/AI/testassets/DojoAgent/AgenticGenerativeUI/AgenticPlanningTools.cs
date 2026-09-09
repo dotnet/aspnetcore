@@ -3,7 +3,7 @@
 
 using System.ComponentModel;
 
-namespace AGUIDojoApi.AgenticGenerativeUI;
+namespace DojoAgent.AgenticGenerativeUI;
 
 internal static class AgenticPlanningTools
 {

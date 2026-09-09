@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 using AGUIDojoApi;
+using DojoAgent;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 

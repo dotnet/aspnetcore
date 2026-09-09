@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,34 +10,24 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// The browser reaches AGUIDojoApi through DojoClient's real AGUIChatClient. Only the API model
-// is recorded, so tool declaration, streamed SSE events, invocation, and continuation stay real.
 [UITest]
-public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
+public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
 {
     private const string HaikuPrompt = "Write me a haiku about nature";
 
-    private ServerInstance _api = null!;
     private ServerInstance _ui = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _runId = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(string backend)
     {
-        await base.InitializeCoreAsync();
-
         _runId = Guid.NewGuid().ToString("N")[..8];
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.ToolBasedGenerativeUI));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-        _checkpoints = new ApiCheckpointClient(_api);
+        var (ui, model) = await StartDojoAsync(
+            backend, options => options.ConfigureServices<DojoModelOverrides>(
+                nameof(DojoModelOverrides.ToolBasedGenerativeUI)));
+        _ui = ui;
+        _checkpoints = new ApiCheckpointClient(model);
 
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
         _page = await context.NewPageAsync();
@@ -47,8 +36,11 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task GenerateHaiku_RendersWhileStreamingAndNavigatesCarousel()
+    [DataRow("AGUI")]
+    [DataRow("Direct")]
+    public async Task GenerateHaiku_RendersWhileStreamingAndNavigatesCarousel(string backend)
     {
+        await InitializeScenarioAsync(backend);
         Assert.AreEqual(
             "linear-gradient(135deg, #667eea, #764ba2)",
             global::DojoClient.Components.Scenarios.ToolBasedGenerativeUI

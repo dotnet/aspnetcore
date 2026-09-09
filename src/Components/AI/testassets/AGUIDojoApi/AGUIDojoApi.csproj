@@ -28,11 +28,11 @@
     <Reference Include="AGUI.Formatting" />
     <Reference Include="AGUI.Server" />
     <Reference Include="Microsoft.Extensions.AI" />
-    <Reference Include="Microsoft.Extensions.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+    <ProjectReference Include="..\DojoAgent\DojoAgent.csproj" />
   </ItemGroup>
 
 </Project>

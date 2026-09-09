@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// A recorded model response, replayed by AGUIDojoApi so browser tests are deterministic.
+// A recorded model response, replayed by either backend so browser tests are deterministic.
 //
 // A call is selected by the text of the last user message, so a test can pick its own script
 // and give every run a unique lock namespace by appending a run id to the message it types.
@@ -60,7 +60,7 @@ internal sealed class RecordedScript
             if (_threadId != threadId)
             {
                 throw new InvalidOperationException(
-                    $"Expected AG-UI thread '{_threadId}', received '{threadId}'.");
+                    $"Expected dojo thread '{_threadId}', received '{threadId}'.");
             }
         }
     }
@@ -83,10 +83,10 @@ internal sealed class RecordedCall
     /// <summary>The function results expected on this model request.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
 
-    /// <summary>The AG-UI state expected on this model request.</summary>
+    /// <summary>The UI state expected on this model request.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>Whether this call must use the same non-empty AG-UI thread as prior calls.</summary>
+    /// <summary>Whether this call must use the same non-empty thread as prior calls.</summary>
     public bool RequireStableThread { get; init; }
 
     /// <summary>The response, split into the checkpoints a test can stop at.</summary>

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,9 +10,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// Only the API model is recorded. DojoClient still crosses HTTP/SSE through AGUIChatClient.
 [UITest]
-public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
+public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
 {
     private const string InitialDocument =
         "# Harbor Notes\n\nThe crew is preparing for a quiet voyage.";
@@ -28,25 +26,17 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         EditedPirateDocument +
         "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon.";
 
-    private ServerInstance _api = null!;
     private ServerInstance _ui = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(string backend)
     {
-        await base.InitializeCoreAsync();
-
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.PredictiveStateUpdates));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-        _checkpoints = new ApiCheckpointClient(_api);
+        var (ui, model) = await StartDojoAsync(
+            backend, options => options.ConfigureServices<DojoModelOverrides>(
+                nameof(DojoModelOverrides.PredictiveStateUpdates)));
+        _ui = ui;
+        _checkpoints = new ApiCheckpointClient(model);
 
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
         _page = await context.NewPageAsync();
@@ -55,8 +45,11 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject()
+    [DataRow("AGUI")]
+    [DataRow("Direct")]
+    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject(string backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='predictive_state_updates']");
         var editor = scenario.GetByRole(
             AriaRole.Textbox,

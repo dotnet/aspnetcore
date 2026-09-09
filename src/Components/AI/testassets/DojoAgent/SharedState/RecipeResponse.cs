@@ -3,10 +3,10 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.PredictiveStateUpdates;
+namespace DojoAgent.SharedState;
 
-internal sealed class DocumentState
+internal sealed class RecipeResponse
 {
-    [JsonPropertyName("document")]
-    public string Document { get; set; } = "";
+    [JsonPropertyName("recipe")]
+    public Recipe Recipe { get; set; } = new();
 }

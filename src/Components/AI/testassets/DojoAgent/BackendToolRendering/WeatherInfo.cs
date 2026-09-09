@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.BackendToolRendering;
+namespace DojoAgent.BackendToolRendering;
 
 internal sealed class WeatherInfo
 {

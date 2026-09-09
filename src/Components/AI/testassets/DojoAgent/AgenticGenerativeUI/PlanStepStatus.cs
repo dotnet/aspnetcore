@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.AgenticGenerativeUI;
+namespace DojoAgent.AgenticGenerativeUI;
 
 [JsonConverter(typeof(JsonStringEnumConverter<PlanStepStatus>))]
 internal enum PlanStepStatus

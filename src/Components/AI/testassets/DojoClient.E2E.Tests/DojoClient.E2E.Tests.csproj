@@ -36,8 +36,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Testing" />
     <Reference Include="Microsoft.Extensions.AI" />
-    <!-- Both dojo applications are launched by the tests: the browser drives DojoClient, which
-         reaches AGUIDojoApi over HTTP + SSE. -->
+    <!-- AG-UI rows launch both apps; direct IChatClient rows launch only DojoClient. -->
     <ProjectReference Include="../AGUIDojoApi/AGUIDojoApi.csproj">
       <E2EApp>true</E2EApp>
     </ProjectReference>

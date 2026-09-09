@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using AGUI.Client;
+using DojoAgent;
 using DojoClient;
 using DojoClient.Components;
 using DojoClient.Formatting;
@@ -13,15 +14,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// The dojo UI never talks to a model directly: every scenario goes through AGUIDojoApi over
-// HTTP + SSE, which is the boundary these test assets exist to exercise.
-var apiBaseUrl = builder.Configuration["AGUI_DOJO_API_URL"] ?? "http://localhost:5018";
-builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
+var backend = new DojoBackend(builder.Configuration["DOJO_BACKEND"]);
+builder.Services.AddSingleton(backend);
+if (backend.IsDirect)
 {
-    client.BaseAddress = new Uri(apiBaseUrl);
-    // Streamed AG-UI responses have no meaningful overall duration limit.
-    client.Timeout = Timeout.InfiniteTimeSpan;
-});
+    builder.Services.AddKeyedScoped<IChatClient>(
+        ChatClientAgentFactory.ModelServiceKey,
+        (sp, _) => ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
+    builder.Services.AddKeyedScoped<IChatClient>(
+        ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+        (sp, _) => ChatClientAgentFactory.CreatePredictiveStateUpdates(sp.GetRequiredService<IConfiguration>()));
+}
+else
+{
+    var apiBaseUrl = builder.Configuration["AGUI_DOJO_API_URL"] ?? "http://localhost:5018";
+    builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
+    {
+        client.BaseAddress = new Uri(apiBaseUrl);
+        // Streamed AG-UI responses have no meaningful overall duration limit.
+        client.Timeout = Timeout.InfiniteTimeSpan;
+    });
+}
 
 builder.Services.AddScoped<IChatClient>(sp =>
     CreateChatClient(sp, DojoScenarios.AgenticChatEndpoint));
@@ -56,6 +69,15 @@ app.Run();
 
 static IChatClient CreateChatClient(IServiceProvider services, string endpoint)
 {
+    if (services.GetRequiredService<DojoBackend>().IsDirect)
+    {
+        var key = endpoint == DojoScenarios.PredictiveStateUpdatesEndpoint
+            ? ChatClientAgentFactory.PredictiveStateUpdatesServiceKey
+            : ChatClientAgentFactory.ModelServiceKey;
+        var model = services.GetRequiredKeyedService<IChatClient>(key);
+        return new FormattedChatClient(ChatClientAgentFactory.CreateDirect(model, endpoint));
+    }
+
     var httpClient = services.GetRequiredService<IHttpClientFactory>()
         .CreateClient(DojoScenarios.ApiHttpClientName);
     var aguiClient = new AGUIChatClient(new AGUIChatClientOptions(httpClient, endpoint));

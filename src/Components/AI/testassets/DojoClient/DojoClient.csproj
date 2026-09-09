@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The dojo UI talks to AGUIDojoApi over the AG-UI protocol. AGUI.Client brings
+    <!-- The default dojo backend uses AG-UI. AGUI.Client brings
          AGUI.Abstractions and AGUI.Formatting transitively. -->
     <Reference Include="AGUI.Client" />
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+    <ProjectReference Include="..\DojoAgent\DojoAgent.csproj" />
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
                      OutputItemType="Analyzer"
                      ReferenceOutputAssembly="false" />

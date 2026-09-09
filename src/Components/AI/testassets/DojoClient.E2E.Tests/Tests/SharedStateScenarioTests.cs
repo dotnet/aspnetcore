@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,33 +10,23 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// The browser edits typed state in DojoClient, which serializes it through AGUIChatClient.
-// Only the API's model is recorded; thread identity, state, HTTP, and SSE remain real.
 [UITest]
-public partial class SharedStateScenarioTests : BrowserTest
+public partial class SharedStateScenarioTests : DojoTestBase
 {
-    private ServerInstance _api = null!;
     private ServerInstance _ui = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
     private string _firstPrompt = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(string backend)
     {
-        await base.InitializeCoreAsync();
-
         var runId = Guid.NewGuid().ToString("N");
         _firstPrompt = $"Create a delicious Italian pasta recipe. ({runId})";
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.SharedState));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-        _checkpoints = new ApiCheckpointClient(_api);
+        var (ui, model) = await StartDojoAsync(
+            backend, options => options.ConfigureServices<DojoModelOverrides>(
+                nameof(DojoModelOverrides.SharedState)));
+        _ui = ui;
+        _checkpoints = new ApiCheckpointClient(model);
 
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
         _page = await context.NewPageAsync();
@@ -46,8 +35,11 @@ public partial class SharedStateScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task RecipeEditor_ReplacesLocalStateWithItalianRecipeSnapshot()
+    [DataRow("AGUI")]
+    [DataRow("Direct")]
+    public async Task RecipeEditor_ReplacesLocalStateWithItalianRecipeSnapshot(string backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='shared_state']");
         var editor = scenario.Locator(".recipe-editor");
         var input = scenario.Locator("textarea.sc-ai-input__textarea");
@@ -98,8 +90,11 @@ public partial class SharedStateScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task RecipeEditor_MatchesDojoChatAndResponsiveControls()
+    [DataRow("AGUI")]
+    [DataRow("Direct")]
+    public async Task RecipeEditor_MatchesDojoChatAndResponsiveControls(string backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='shared_state']");
         var editor = scenario.Locator(".recipe-editor");
         var chat = scenario.GetByRole(

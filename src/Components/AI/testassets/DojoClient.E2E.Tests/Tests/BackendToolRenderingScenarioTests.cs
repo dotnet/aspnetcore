@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,36 +10,28 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// The browser and DojoClient use the real AG-UI HTTP/SSE transport. Only the model inside
-// AGUIDojoApi is replaced so the server still executes get_weather through function invocation.
 [UITest]
-public partial class BackendToolRenderingScenarioTests : BrowserTest
+public partial class BackendToolRenderingScenarioTests : DojoTestBase
 {
-    private ServerInstance _api = null!;
     private ServerInstance _ui = null!;
     private IPage _page = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(string backend)
     {
-        await base.InitializeCoreAsync();
-
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.BackendToolRendering));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
+        (_ui, _) = await StartDojoAsync(
+            backend, options => options.ConfigureServices<DojoModelOverrides>(
+                nameof(DojoModelOverrides.BackendToolRendering)));
 
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
         _page = await context.NewPageAsync();
     }
 
     [TestMethod]
-    public async Task BackendToolRendering_RendersServerWeatherResult()
+    [DataRow("AGUI")]
+    [DataRow("Direct")]
+    public async Task BackendToolRendering_RendersServerWeatherResult(string backend)
     {
+        await InitializeScenarioAsync(backend);
         await _page.GotoAsync($"{_ui.TestUrl}/backend_tool_rendering");
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 

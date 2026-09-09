@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Service override methods applied to AGUIDojoApi (never to DojoClient: replacing the UI's
-// AGUIChatClient would remove the AG-UI transport from the test).
+// Replace only the model in its owning host, leaving both backend pipelines intact.
 // Registered via options.ConfigureServices<DojoModelOverrides>(nameof(...)).
 internal class DojoModelOverrides
 {
@@ -21,12 +21,7 @@ internal class DojoModelOverrides
         => AddRecordedModel(services, "AgenticChatClientTool.recording.json");
 
     public static void BackendToolRendering(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("BackendToolRendering.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
+        => AddRecordedModel(services, "BackendToolRendering.recording.json", invokeFunctions: true);
 
     public static void HumanInTheLoop(IServiceCollection services)
         => AddRecordedModel(services, "HumanInTheLoop.recording.json");
@@ -35,33 +30,49 @@ internal class DojoModelOverrides
         => AddRecordedModel(services, "ToolBasedGenerativeUI.recording.json");
 
     public static void AgenticGenerativeUI(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("AgenticGenerativeUI.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
+        => AddRecordedModel(services, "AgenticGenerativeUI.recording.json", invokeFunctions: true);
 
     public static void SharedState(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("SharedState.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
+        => AddRecordedModel(services, "SharedState.recording.json", invokeFunctions: true);
 
     public static void PredictiveStateUpdates(IServiceCollection services)
     {
         services.AddSingleton(_ => RecordedScript.Load("PredictiveStateUpdates.recording.json"));
         services.AddScoped<RecordedChatClient>();
         services.AddKeyedScoped<IChatClient>(
-            "predictive-state-updates-model",
+            ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
             (sp, _) => sp.GetRequiredService<RecordedChatClient>());
     }
 
-    private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
+    private static void AddRecordedModel(
+        IServiceCollection services,
+        string recordingFileName,
+        bool invokeFunctions = false)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
-        services.AddScoped<IChatClient, RecordedChatClient>();
+        services.AddScoped<RecordedChatClient>();
+        if (Environment.GetEnvironmentVariable("DOJO_BACKEND") == "Direct")
+        {
+            if (!services.Any(service =>
+                service.ServiceType == typeof(IChatClient) &&
+                Equals(service.ServiceKey, ChatClientAgentFactory.ModelServiceKey)))
+            {
+                throw new InvalidOperationException("The direct dojo model registration is missing.");
+            }
+
+            services.AddKeyedScoped<IChatClient>(
+                ChatClientAgentFactory.ModelServiceKey, (sp, _) => CreateModel(sp));
+        }
+        else
+        {
+            services.AddScoped<IChatClient>(CreateModel);
+        }
+
+        IChatClient CreateModel(IServiceProvider services)
+        {
+            var model = services.GetRequiredService<RecordedChatClient>();
+
+            return invokeFunctions ? new FunctionInvokingChatClient(model) : model;
+        }
     }
 }

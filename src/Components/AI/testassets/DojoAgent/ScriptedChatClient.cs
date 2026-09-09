@@ -4,17 +4,30 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AGUI.Server;
-using AGUIDojoApi.PredictiveStateUpdates;
-using AGUIDojoApi.SharedState;
+using DojoAgent.PredictiveStateUpdates;
+using DojoAgent.SharedState;
 using Microsoft.Extensions.AI;
 
-namespace AGUIDojoApi;
+namespace DojoAgent;
 
 // Local stand-in for a model, used when no live model is configured. It streams a canned
 // answer one word at a time so the dojo can be exercised end to end (including incremental
 // rendering) without any credentials.
 internal sealed class ScriptedChatClient : IChatClient
 {
+    private static JsonElement? GetState(ChatOptions? options)
+    {
+        if (options?.AdditionalProperties?.TryGetValue(DojoRequestContext.PropertyName, out var value) == true &&
+            value is DojoRequestContext context)
+        {
+            return context.State;
+        }
+
+        return options is not null && options.TryGetRunAgentInput(out var input)
+            ? input?.State
+            : null;
+    }
+
     private static readonly TimeSpan ModelDelay = TimeSpan.FromMilliseconds(750);
     private static readonly TimeSpan TokenDelay = TimeSpan.FromMilliseconds(60);
     private static readonly string[] MarsPlanSteps =
@@ -150,8 +163,7 @@ internal sealed class ScriptedChatClient : IChatClient
         if (options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "write_document_local") == true)
         {
-            options.TryGetRunAgentInput(out var input);
-            var current = input?.State?.Deserialize<DocumentState>(
+            var current = GetState(options)?.Deserialize<DocumentState>(
                 AIJsonUtilities.DefaultOptions)?.Document ?? "";
             var document = prompt.Contains("Courage", StringComparison.OrdinalIgnoreCase)
                 ? current +
@@ -206,8 +218,7 @@ internal sealed class ScriptedChatClient : IChatClient
                 yield break;
             }
 
-            options.TryGetRunAgentInput(out var input);
-            var current = input?.State?.Deserialize<RecipeResponse>(
+            var current = GetState(options)?.Deserialize<RecipeResponse>(
                 AIJsonUtilities.DefaultOptions)?.Recipe ?? new Recipe();
             var ingredients = current.Ingredients.ToList();
             if (!ingredients.Any(ingredient =>
@@ -383,7 +394,7 @@ internal sealed class ScriptedChatClient : IChatClient
 
             You said: **{prompt}**.
 
-            - Streams over AG-UI SSE
+            - Streams incremental responses
             - Renders `structured` assistant content
             """;
 

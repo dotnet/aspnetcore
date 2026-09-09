@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.AgenticGenerativeUI;
+namespace DojoAgent.AgenticGenerativeUI;
 
 internal sealed class PlanStep
 {

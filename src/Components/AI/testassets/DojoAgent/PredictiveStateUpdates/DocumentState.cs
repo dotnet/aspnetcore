@@ -3,10 +3,10 @@
 
 using System.Text.Json.Serialization;
 
-namespace AGUIDojoApi.AgenticGenerativeUI;
+namespace DojoAgent.PredictiveStateUpdates;
 
-internal sealed class Plan
+internal sealed class DocumentState
 {
-    [JsonPropertyName("steps")]
-    public List<PlanStep> Steps { get; set; } = [];
+    [JsonPropertyName("document")]
+    public string Document { get; set; } = "";
 }

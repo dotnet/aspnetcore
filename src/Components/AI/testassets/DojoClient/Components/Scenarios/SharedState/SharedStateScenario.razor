@@ -3,6 +3,7 @@
 @implements IDisposable
 @using System.Text.Json
 @inject ILoggerFactory LoggerFactory
+@inject DojoBackend Backend
 
 <PageTitle>Shared State</PageTitle>
 
@@ -87,32 +88,26 @@
     private UIAgent<RecipeState> CreateAgent(RecipeState initialState)
     {
         _thread = new DojoConversationThread(Guid.NewGuid().ToString("N"));
+        var stateUpdates = new DojoStateUpdates(Backend.IsDirect);
 
         return new UIAgent<RecipeState>(ChatClient, options =>
         {
             options.Thread = _thread;
-            options.ChatOptions = new ChatOptions
+            options.ChatOptions = Backend.CreateStateOptions(() => new DojoRequestContext
             {
-                RawRepresentationFactory = _ => new RunAgentInput
-                {
-                    ThreadId = _thread.ThreadId,
-                    State = JsonSerializer.SerializeToElement(options.State.Value, _jsonOptions),
-                },
-            };
+                ThreadId = _thread.ThreadId,
+                State = JsonSerializer.SerializeToElement(options.State.Value, _jsonOptions),
+            });
             options.StateMapper = context =>
             {
-                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
+                foreach (var (value, _) in stateUpdates.Read(context, snapshotTool: "generate_recipe"))
                 {
-                    return;
+                    var state = value.Deserialize<RecipeState>(_jsonOptions);
+                    if (state?.Recipe is not null)
+                    {
+                        context.SetState(state);
+                    }
                 }
-
-                var state = snapshot.Snapshot.Deserialize<RecipeState>(_jsonOptions);
-                if (state?.Recipe is null)
-                {
-                    return;
-                }
-
-                context.SetState(state);
             };
         }, LoggerFactory, initialState);
     }

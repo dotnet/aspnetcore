@@ -6,14 +6,15 @@ using System.ComponentModel;
 using System.Text.Json;
 using AGUI.Abstractions;
 using AGUI.Server;
-using AGUIDojoApi.AgenticGenerativeUI;
-using AGUIDojoApi.BackendToolRendering;
-using AGUIDojoApi.PredictiveStateUpdates;
-using AGUIDojoApi.SharedState;
+using DojoAgent.AgenticGenerativeUI;
+using DojoAgent.BackendToolRendering;
+using DojoAgent.PredictiveStateUpdates;
+using DojoAgent.SharedState;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using OpenAI;
 
-namespace AGUIDojoApi;
+namespace DojoAgent;
 
 // Resolves the model client each dojo endpoint runs against.
 //
@@ -21,13 +22,31 @@ namespace AGUIDojoApi;
 // answers with a local scripted client, so running the dojo never reaches a paid service (or
 // picks up ambient credentials) by accident. Browser tests replace this registration with a
 // recorded client through a service override.
-internal static class ChatClientAgentFactory
+/// <summary>
+/// Creates the model clients and scenario adapters shared by the dojo test assets.
+/// </summary>
+public static class ChatClientAgentFactory
 {
-    private const string PredictiveStateMediaType =
+    /// <summary>
+    /// The media type of native predictive document state updates.
+    /// </summary>
+    public const string PredictiveStateMediaType =
         "application/vnd.aspnetcore.ai.predictive-state+json";
-    internal const string PredictiveStateUpdatesServiceKey = "predictive-state-updates-model";
 
-    internal const string HumanInTheLoopSystemPrompt = """
+    /// <summary>
+    /// The keyed model registration used by direct dojo scenarios.
+    /// </summary>
+    public const string ModelServiceKey = "dojo-model";
+
+    /// <summary>
+    /// The keyed raw model registration used by the predictive document scenario.
+    /// </summary>
+    public const string PredictiveStateUpdatesServiceKey = "predictive-state-updates-model";
+
+    /// <summary>
+    /// The instructions for generating a plan that the user reviews before execution.
+    /// </summary>
+    public const string HumanInTheLoopSystemPrompt = """
         You are a planning assistant.
         When asked to create a plan, call generate_task_steps so the user can review the steps.
         A request for a simple plan must contain exactly 5 sensible steps.
@@ -37,7 +56,10 @@ internal static class ChatClientAgentFactory
         If the user rejected every step, acknowledge that no steps will be performed.
         """;
 
-    internal const string ToolBasedGenerativeUISystemPrompt = """
+    /// <summary>
+    /// The instructions for generating a haiku through the UI tool.
+    /// </summary>
+    public const string ToolBasedGenerativeUISystemPrompt = """
         You are a Japanese haiku assistant.
         For every haiku request, call generate_haiku with exactly three Japanese lines, exactly
         three English translation lines, image_name set to ancient-pond.svg, and a two-color CSS
@@ -45,7 +67,10 @@ internal static class ChatClientAgentFactory
         Do not print the haiku as ordinary chat text before calling the tool.
         """;
 
-    internal const string AgenticGenerativeUISystemPrompt = """
+    /// <summary>
+    /// The instructions for creating and completing a shared plan through server tools.
+    /// </summary>
+    public const string AgenticGenerativeUISystemPrompt = """
         When planning use tools only, without any other messages.
         IMPORTANT:
         - Use the `create_plan` tool to set the initial state of the steps
@@ -60,7 +85,10 @@ internal static class ChatClientAgentFactory
         again until all the steps in current plan are completed.
         """;
 
-    internal const string SharedStateSystemPrompt = """
+    /// <summary>
+    /// The instructions for maintaining a recipe shared with the UI.
+    /// </summary>
+    public const string SharedStateSystemPrompt = """
         You are a helpful recipe assistant that maintains a shared recipe state with the user.
 
         IMPORTANT:
@@ -73,7 +101,10 @@ internal static class ChatClientAgentFactory
           NOT call the tool.
         """;
 
-    internal const string PredictiveStateUpdatesSystemPrompt = """
+    /// <summary>
+    /// The instructions for proposing document edits for user confirmation.
+    /// </summary>
+    public const string PredictiveStateUpdatesSystemPrompt = """
         You are a document editor assistant. When asked to write or edit content:
 
         IMPORTANT:
@@ -88,14 +119,33 @@ internal static class ChatClientAgentFactory
         After writing the document, briefly summarize the changes you made in at most two sentences.
         """;
 
-    internal static IChatClient CreateAgenticChat(IConfiguration configuration)
+    /// <summary>
+    /// Creates the configured model with server-side function invocation enabled.
+    /// </summary>
+    /// <param name="configuration">The explicit model configuration, or empty configuration for offline use.</param>
+    /// <returns>The model pipeline.</returns>
+    public static IChatClient CreateAgenticChat(IConfiguration configuration)
         => CreateModelClient(configuration)
             .AsBuilder()
             .UseFunctionInvocation()
             .Build();
 
-    internal static IChatClient CreatePredictiveStateUpdates(IConfiguration configuration)
+    /// <summary>
+    /// Creates the configured raw model for predictive document updates.
+    /// </summary>
+    /// <param name="configuration">The explicit model configuration, or empty configuration for offline use.</param>
+    /// <returns>The raw model client.</returns>
+    public static IChatClient CreatePredictiveStateUpdates(IConfiguration configuration)
         => CreateModelClient(configuration);
+
+    /// <summary>
+    /// Adapts a model to a dojo scenario without using the AG-UI transport.
+    /// </summary>
+    /// <param name="model">The model pipeline owned by the service provider.</param>
+    /// <param name="endpoint">The scenario's endpoint name.</param>
+    /// <returns>A scoped scenario client that streams native AI content.</returns>
+    public static IChatClient CreateDirect(IChatClient model, string endpoint)
+        => new DirectDojoChatClient(model, endpoint);
 
     private static IChatClient CreateModelClient(IConfiguration configuration)
     {
@@ -128,7 +178,12 @@ internal static class ChatClientAgentFactory
         return modelClient;
     }
 
-    internal static IList<AITool> CreateBackendToolRenderingTools(JsonSerializerOptions options)
+    /// <summary>
+    /// Creates the server-owned weather tool.
+    /// </summary>
+    /// <param name="options">The tool argument and result serialization options.</param>
+    /// <returns>The weather scenario's tools.</returns>
+    public static IList<AITool> CreateBackendToolRenderingTools(JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -142,7 +197,12 @@ internal static class ChatClientAgentFactory
         ];
     }
 
-    internal static IList<AITool> CreateAgenticGenerativeUITools(JsonSerializerOptions options)
+    /// <summary>
+    /// Creates the server-owned tools for creating and updating a plan.
+    /// </summary>
+    /// <param name="options">The tool argument and result serialization options.</param>
+    /// <returns>The planning scenario's tools.</returns>
+    public static IList<AITool> CreateAgenticGenerativeUITools(JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -161,7 +221,11 @@ internal static class ChatClientAgentFactory
         ];
     }
 
-    internal static AGUIStreamOptions CreateAgenticGenerativeUIStreamOptions()
+    /// <summary>
+    /// Maps planning tool results to AG-UI state snapshots and deltas.
+    /// </summary>
+    /// <returns>The planning scenario's AG-UI stream options.</returns>
+    public static AGUIStreamOptions CreateAgenticGenerativeUIStreamOptions()
     {
         var options = new AGUIStreamOptions();
         options.MapResultAsStateSnapshot("create_plan");
@@ -170,7 +234,12 @@ internal static class ChatClientAgentFactory
         return options;
     }
 
-    internal static IList<AITool> CreateSharedStateTools(JsonSerializerOptions options)
+    /// <summary>
+    /// Creates the server-owned recipe generation tool.
+    /// </summary>
+    /// <param name="options">The tool argument and result serialization options.</param>
+    /// <returns>The shared recipe scenario's tools.</returns>
+    public static IList<AITool> CreateSharedStateTools(JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -184,7 +253,11 @@ internal static class ChatClientAgentFactory
         ];
     }
 
-    internal static AGUIStreamOptions CreateSharedStateStreamOptions()
+    /// <summary>
+    /// Maps recipe tool results to AG-UI state snapshots.
+    /// </summary>
+    /// <returns>The shared recipe scenario's AG-UI stream options.</returns>
+    public static AGUIStreamOptions CreateSharedStateStreamOptions()
     {
         var options = new AGUIStreamOptions();
         options.MapResultAsStateSnapshot("generate_recipe");
@@ -192,7 +265,12 @@ internal static class ChatClientAgentFactory
         return options;
     }
 
-    internal static IList<AITool> CreatePredictiveStateUpdatesTools(
+    /// <summary>
+    /// Creates the server-owned document writing tool.
+    /// </summary>
+    /// <param name="options">The tool argument and result serialization options.</param>
+    /// <returns>The predictive document scenario's tools.</returns>
+    public static IList<AITool> CreatePredictiveStateUpdatesTools(
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -207,7 +285,12 @@ internal static class ChatClientAgentFactory
         ];
     }
 
-    internal static AGUIStreamOptions CreatePredictiveStateUpdatesStreamOptions(
+    /// <summary>
+    /// Maps document content and tool calls to predictive AG-UI state and confirmation events.
+    /// </summary>
+    /// <param name="options">The state serialization options.</param>
+    /// <returns>The predictive document scenario's AG-UI stream options.</returns>
+    public static AGUIStreamOptions CreatePredictiveStateUpdatesStreamOptions(
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
