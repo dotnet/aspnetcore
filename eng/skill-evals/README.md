@@ -82,6 +82,15 @@ saved bytes, collision/failure behavior, and absence of writes for sensitive
 stops and private no-useful-result outcomes. Manually saving a sample report or
 matching output text does not establish persistence.
 
+`run.ps1 Run` invokes `vally experiment run --compare`. The automatic Vally
+0.13 comparison does not inherit the eval's `judge_model` and falls back to its
+own default comparison model. When a private run restricts allowed model
+families, invoke the pinned Vally executable directly with `experiment run`
+and omit `--compare`. If a pairwise comparison is required, run it separately
+with `vally compare <output-directory> --judge-model <permitted-model>`. Record
+that separate model identity and result; a failed or omitted comparison does
+not change the completed trial and grader evidence.
+
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
