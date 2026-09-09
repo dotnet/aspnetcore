@@ -166,7 +166,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 RedirectStandardError = true,
             };
 
-            return CertificateManagerProcessRunner.Run(checkTrustProcessStartInfo).ExitCode == 0 ? TrustLevel.Full : TrustLevel.None;
+            return CertificateManagerProcessRunner.RunAndDiscardOutput(checkTrustProcessStartInfo) == 0 ? TrustLevel.Full : TrustLevel.None;
         }
         finally
         {

@@ -691,7 +691,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             RedirectStandardError = true,
         };
 
-        return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
+        return CertificateManagerProcessRunner.RunAndDiscardOutput(startInfo) == 0;
     }
 
     /// <remarks>
@@ -739,7 +739,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
+            return CertificateManagerProcessRunner.RunAndDiscardOutput(startInfo) == 0;
         }
         catch (Exception ex)
         {
@@ -761,7 +761,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            if (CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0)
+            if (CertificateManagerProcessRunner.RunAndDiscardOutput(startInfo) == 0)
             {
                 return true;
             }
