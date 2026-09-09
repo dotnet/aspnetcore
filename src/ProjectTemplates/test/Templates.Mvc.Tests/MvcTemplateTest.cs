@@ -72,6 +72,13 @@ public class MvcTemplateTest : LoggedTest
         Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
         Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
+        Assert.DoesNotContain("Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation", projectFileContents);
+
+        if (languageOverride == "F#")
+        {
+            var programFileContents = project.ReadFile("Program.fs");
+            Assert.DoesNotContain("AddRazorRuntimeCompilation", programFileContents);
+        }
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
         if (languageOverride != null)
