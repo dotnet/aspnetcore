@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Renders a &lt;base&gt; element whose <c>href</c> value matches the current request path base.

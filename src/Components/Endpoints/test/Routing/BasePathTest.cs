@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components;
 
 public class BasePathTest
 {
