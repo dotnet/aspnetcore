@@ -195,7 +195,7 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-    public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesAreSorted()
+    public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesPreserveOriginalOrder()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
@@ -203,7 +203,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
         context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
 
-        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageKey(context));
     }
 
@@ -277,7 +277,7 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-    public void OutputCachingKeyProvider_CreateStorageKey_QueryKeysValuesAreSorted()
+    public void OutputCachingKeyProvider_CreateStorageKey_QueryKeysValuesPreserveOriginalOrder()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
@@ -287,8 +287,48 @@ public class OutputCacheKeyProviderTests
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
-        Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB",
+        Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA",
             cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_SelectedHeaderValues_DoesNotMutateRequestHeaderValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueB";
+        context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+
+        _ = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Headers["HeaderA"].ToArray());
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_ExplicitQueryValues_DoesNotMutateRequestQueryValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueB&QueryA=ValueA");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+
+        _ = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Query["QueryA"].ToArray());
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_WildcardQueryValues_DoesNotMutateRequestQueryValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueB&QueryA=ValueA");
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
+
+        _ = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Query["QueryA"].ToArray());
     }
 
     [Fact]
