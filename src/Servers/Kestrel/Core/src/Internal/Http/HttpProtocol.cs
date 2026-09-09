@@ -544,7 +544,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IncrementRequestHeadersCount();
 
         string key = name.GetHeaderName();
-        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: false);
+        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
         RequestTrailers.Append(key, valueStr);
     }
 
