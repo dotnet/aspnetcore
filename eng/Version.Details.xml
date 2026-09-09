@@ -382,6 +382,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>ca41e13ce06fb6824f92553fe2cb5c99bb792ef1</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="10.0.0-beta.26456.2">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>5775f1b7dc82d7df18971532b137df5beb66a164</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.26452.115">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>ca41e13ce06fb6824f92553fe2cb5c99bb792ef1</Sha>
