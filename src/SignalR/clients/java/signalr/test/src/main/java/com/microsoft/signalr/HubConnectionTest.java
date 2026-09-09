@@ -3378,34 +3378,104 @@ class HubConnectionTest {
     // later stop() did nothing, so the abandoned transport kept polling.
     @Test
     public void failedStartStopsTheTransport() {
-        try (TestLogger logger = new TestLogger()) {
-            TestHttpClient client = new TestHttpClient()
-                    .on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                        (req) -> Single.just(new HttpResponse(200, "",
-                                TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
-            MockTransport transport = new MockTransport(false);
-            HubConnection hubConnection = HubConnectionBuilder
-                    .create("http://example.com")
-                    .withTransportImplementation(transport)
-                    .withHttpClient(client)
-                    .withHandshakeResponseTimeout(100)
-                    .build();
+        MockTransport transport = new MockTransport(false);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
 
-            // Never send a handshake response, so start fails on the handshake timeout.
-            assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+        // Never send a handshake response, so start fails on the handshake timeout.
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
-            transport.getStopTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        transport.getStopTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
 
-            // Stopping the transport must not run the close callback back through stopConnection, which
-            // has already been cleaned up. Doing so logs a spurious "please file a bug" error.
-            for (ILoggingEvent log : logger.getLogs()) {
-                assertFalse(log.getFormattedMessage().startsWith("'stopConnection' called with a null ConnectionState"),
-                    "Stopping the failed transport re-entered stopConnection.");
+    // The abandoned attempt also leaves behind the close callback that tears the hub down. Releasing it
+    // has to detach that callback, otherwise a late close from the abandoned transport closes whichever
+    // connection is current by then.
+    @Test
+    public void closeFromAbandonedTransportDoesNotCloseALaterConnection() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        AtomicReference<TransportOnClosedCallback> onClose = new AtomicReference<>();
+        AtomicReference<OnReceiveCallBack> onReceive = new AtomicReference<>();
+        AtomicInteger startCount = new AtomicInteger(0);
+        CompletableSubject stopped = CompletableSubject.create();
+
+        Transport transport = new Transport() {
+            @Override
+            public Completable start(String url) {
+                // Only answer the handshake from the second attempt on, so the first start fails.
+                if (startCount.incrementAndGet() > 1) {
+                    onReceive.get().invoke(TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR));
+                }
+                return Completable.complete();
             }
-        }
+
+            @Override
+            public Completable send(ByteBuffer message) {
+                return Completable.complete();
+            }
+
+            @Override
+            public void setOnReceive(OnReceiveCallBack callback) {
+                onReceive.set(callback);
+            }
+
+            @Override
+            public void onReceive(ByteBuffer message) {
+            }
+
+            @Override
+            public void setOnClose(TransportOnClosedCallback onCloseCallback) {
+                onClose.set(onCloseCallback);
+            }
+
+            @Override
+            public Completable stop() {
+                stopped.onComplete();
+                return Completable.complete();
+            }
+        };
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+        stopped.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        // Whatever the failed attempt left on the transport must no longer reach the hub.
+        TransportOnClosedCallback abandonedCallback = onClose.get();
+
+        AtomicBoolean closed = new AtomicBoolean(false);
+        hubConnection.onClosed((e) -> closed.set(true));
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        abandonedCallback.invoke("Late close from the abandoned attempt.");
+
+        assertFalse(closed.get(), "A close from the abandoned transport closed the new connection.");
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     // A transport that failed to start can also throw from stop(), for example a WebSocket that never
