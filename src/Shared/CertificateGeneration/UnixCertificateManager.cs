@@ -712,7 +712,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         try
         {
-            return CertificateManagerProcessRunner.Run(startInfo).ExitCode == 0;
+            return CertificateManagerProcessRunner.RunAndDiscardOutput(startInfo) == 0;
         }
         catch (Exception ex)
         {
