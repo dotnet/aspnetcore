@@ -213,9 +213,13 @@
 }
 
 .claim-composer ::deep button:disabled,
-.claim-composer ::deep .claim-composer__file-input:disabled {
+.claim-composer ::deep .claim-composer__media-button[aria-disabled="true"] {
     cursor: not-allowed;
     opacity: 0.45;
+}
+
+.claim-composer ::deep .claim-composer__file-input:disabled {
+    cursor: not-allowed;
 }
 
 .claim-composer ::deep .claim-composer__attachments {
