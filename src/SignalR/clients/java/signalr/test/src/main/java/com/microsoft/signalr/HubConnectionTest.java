@@ -3399,10 +3399,10 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
-    // stop() used to short circuit on the DISCONNECTED state that a failed start had already published,
-    // so it reported the connection stopped while the abandoned transport was still shutting down.
+    // A start that fails must not report failure while the transport it brought up is still shutting
+    // down, which is what the .NET and TypeScript clients do. stop() then has nothing left to wait for.
     @Test
-    public void stopAfterFailedStartWaitsForTheTransportToStop() {
+    public void failedStartWaitsForTheTransportToStop() {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                     (req) -> Single.just(new HttpResponse(200, "",
@@ -3410,6 +3410,7 @@ class HubConnectionTest {
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         CompletableSubject releaseTransportStop = CompletableSubject.create();
+        CompletableSubject transportStopCalled = CompletableSubject.create();
         AtomicBoolean transportStopped = new AtomicBoolean(false);
 
         Transport transport = new Transport() {
@@ -3438,6 +3439,7 @@ class HubConnectionTest {
             @Override
             public Completable stop() {
                 // Take as long to shut down as a transport whose peer never answers the close.
+                transportStopCalled.onComplete();
                 return releaseTransportStop.doOnComplete(() -> transportStopped.set(true));
             }
         };
@@ -3450,17 +3452,21 @@ class HubConnectionTest {
                 .build();
 
         // Never send a handshake response, so start fails on the handshake timeout.
-        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
-        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        TestObserver<Void> start = hubConnection.start().test();
 
-        TestObserver<Void> stop = hubConnection.stop().test();
-        stop.assertNotComplete();
+        // The handshake has failed and teardown is under way, but it has not finished.
+        assertTrue(transportStopCalled.blockingAwait(30, TimeUnit.SECONDS));
+        start.assertNoErrors().assertNotComplete();
         assertFalse(transportStopped.get());
 
         releaseTransportStop.onComplete();
 
-        stop.awaitDone(30, TimeUnit.SECONDS).assertComplete();
+        start.awaitDone(30, TimeUnit.SECONDS).assertError(TimeoutException.class);
         assertTrue(transportStopped.get());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        // Nothing is left running, so stopping is immediate.
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     // The abandoned attempt also leaves behind the close callback that tears the hub down. Releasing it

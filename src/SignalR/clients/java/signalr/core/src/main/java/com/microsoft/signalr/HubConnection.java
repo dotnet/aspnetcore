@@ -355,9 +355,10 @@ public class HubConnection implements AutoCloseable {
                         // DISCONNECTED state, so nothing ever cleaned them up.
                         releaseConnection = true;
                         this.state.setConnectionState(null);
-                        // stop() and close() have to be able to wait for this teardown, otherwise they
-                        // report the connection stopped while its transport is still shutting down.
-                        this.pendingTeardown = connectionState.getTransportStopped();
+                        // A stop() racing this narrow window still has to wait for the teardown started
+                        // below rather than reporting the connection stopped while it is running. A
+                        // teardown failure is not the caller's to handle, the start error already is.
+                        this.pendingTeardown = connectionState.getTransportStopped().onErrorComplete();
                         connectionState.close();
                         this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
                     }
@@ -367,19 +368,28 @@ public class HubConnection implements AutoCloseable {
                     this.state.unlock();
                 }
 
-                if (releaseConnection) {
-                    try {
-                        // The transport's callbacks are scoped to this attempt, so they no-op from here on
-                        // and stopping it cannot disturb whatever connection comes next.
-                        connectionState.stopTransport().onErrorComplete().subscribe();
-                    } catch (Exception ex) {
-                        // Cleaning up must never keep the start task from terminating below, since that
-                        // leaves the caller waiting forever on a connection that already failed.
-                        logger.warn("Failed to clean up after the connection failed to start.", ex);
-                    }
+                if (!releaseConnection) {
+                    localStart.onError(error);
+                    return;
                 }
 
-                localStart.onError(error);
+                // Like the .NET and TypeScript clients, a start that failed does not complete until the
+                // transport it brought up has finished shutting down. Waiting here rather than in stop()
+                // keeps the wait with the caller that is already failing, and leaves nothing running
+                // behind a start that has already reported failure.
+                Completable teardown;
+                try {
+                    // The transport's callbacks are scoped to this attempt, so they no-op from here on
+                    // and stopping it cannot disturb whatever connection comes next.
+                    teardown = connectionState.stopTransport().onErrorComplete();
+                } catch (Exception ex) {
+                    // Cleaning up must never keep the start task from terminating, since that leaves the
+                    // caller waiting forever on a connection that already failed.
+                    logger.warn("Failed to clean up after the connection failed to start.", ex);
+                    teardown = Completable.complete();
+                }
+
+                teardown.subscribe(() -> localStart.onError(error), e -> localStart.onError(error));
             });
         } finally {
             this.state.lock.unlock();
