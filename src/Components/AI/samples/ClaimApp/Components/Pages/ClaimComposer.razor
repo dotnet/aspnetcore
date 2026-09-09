@@ -56,15 +56,15 @@
             <AudioCaptureButton class="claim-composer__media-button"
                                 AttachRecording="false"
                                 MaximumBytes="@MaxAudioBytes"
-                                RecognitionMode="SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription"
-                                StartLabel="Record voice"
-                                StopLabel="Stop recording"
+                                RecognitionMode="SpeechRecognitionMode.BackendTranscription"
+                                StartLabel="Record and transcribe"
+                                StopLabel="Stop and transcribe"
                                 Transcribe="TranscribeRecordingAsync">
                 <ChildContent Context="isRecording">
                     @if (isRecording)
                     {
                         <span class="claim-composer__recording-dot" aria-hidden="true"></span>
-                        <span>Stop recording</span>
+                        <span>Stop and transcribe</span>
                     }
                     else
                     {
@@ -72,7 +72,31 @@
                             <rect x="9" y="3" width="6" height="11" rx="3" />
                             <path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v4M9 21h6" />
                         </svg>
-                        <span>Record voice</span>
+                        <span>Record and transcribe</span>
+                    }
+                </ChildContent>
+            </AudioCaptureButton>
+
+            <AudioCaptureButton class="claim-composer__media-button"
+                                AttachRecording="false"
+                                MaximumBytes="@MaxAudioBytes"
+                                RecognitionMode="SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription"
+                                StartLabel="Live preview and transcribe"
+                                StopLabel="Stop and transcribe"
+                                Transcribe="TranscribeRecordingAsync">
+                <ChildContent Context="isRecording">
+                    @if (isRecording)
+                    {
+                        <span class="claim-composer__recording-dot" aria-hidden="true"></span>
+                        <span>Stop and transcribe</span>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="9" y="3" width="6" height="11" rx="3" />
+                            <path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v4M9 21h6" />
+                        </svg>
+                        <span>Live preview and transcribe</span>
                     }
                 </ChildContent>
             </AudioCaptureButton>
@@ -82,21 +106,21 @@
                                 AttachRecording="false"
                                 AutoSubmit
                                 ContinuousListening
-                                StartLabel="Start live voice"
-                                StopLabel="Stop live voice"
+                                StartLabel="Start live dictation"
+                                StopLabel="Stop live dictation"
                                 OnInterimTranscript="OnLiveTranscriptChanged">
                 <ChildContent Context="isActive">
                     @if (isActive)
                     {
                         <span class="claim-composer__live-dot" aria-hidden="true"></span>
-                        <span>Stop live voice</span>
+                        <span>Stop live dictation</span>
                     }
                     else
                     {
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h-2" />
                         </svg>
-                        <span>Live voice</span>
+                        <span>Live dictation</span>
                     }
                 </ChildContent>
             </AudioCaptureButton>
