@@ -15,6 +15,32 @@ configured with `OPENAI_BASE_URL` or `OPENAI_API_KEY` in the model host.
 The sibling `DojoAgent` library owns the shared models, tools, and prompts; neither
 web app references the other.
 
+## Consolidated scenarios
+
+DojoClient is the UI test app for both backends. The suite includes the original
+dojo scenarios and the focused component scenarios previously hosted in AIApp:
+
+- `/function-approval` exercises `ApprovalRequiredAIFunction` with the built-in
+  approval UI. Tests inspect the model host's per-conversation invocation count
+  to distinguish approval from rejection.
+- `/function-invocation` exercises the generic `FunctionInvocationContentBlock`,
+  including its informational flag and loading-to-result transition. The release
+  button unblocks the real server tool, regardless of which host executes it.
+- `/rich-text` renders native `RichTextContent` snapshots, including tables,
+  images, footnotes, task lists, and encoded HTML, rather than parsing Markdown.
+
+Function scenario controls use the page's conversation ID, so concurrent pages
+do not share invocation counters or result gates. The tests remove their control
+state when they finish.
+
+The structured-rich-text and informational-invocation scenarios use a dojo
+custom AG-UI event containing the serialized native chat update. This preserves
+typed rich-text trees and renders informational calls before their results;
+the standard AG-UI client buffers tool calls until a result or interrupt arrives.
+The payload crosses the real HTTP/SSE transport and is decoded by the UI adapter.
+Direct mode consumes the native update without that encoding. Approval scenarios
+continue to use the standard AG-UI approval protocol.
+
 ## Adding a scenario
 
 Create one page in DojoClient and one test in this project. Derive the test class
