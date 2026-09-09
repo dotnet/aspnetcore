@@ -5950,4 +5950,31 @@ public class Http2StreamTests : Http2TestBase
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
+
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task OnDynamicIndexedHeader_NewlineCharactersInValue_ThrowsConnectionError(string newlineCharacters)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        // Start a request header block without END_HEADERS so the connection has an active stream receiving headers.
+        await SendHeadersAsync(streamId: 1, flags: Http2HeadersFrameFlags.END_STREAM, headers: _browserRequestHeaders);
+
+        var value = Encoding.ASCII.GetBytes(newlineCharacters);
+
+        // Simulate HPackDecoder resolving a fully indexed dynamic-table entry.
+        var exception = Assert.Throws<Http2ConnectionErrorException>(() =>
+            _connection.OnDynamicIndexedHeader(index: null, name: "contains-newline"u8, value));
+
+        Assert.Equal(Http2ErrorCode.PROTOCOL_ERROR, exception.ErrorCode);
+        Assert.Equal(ConnectionEndReason.InvalidRequestHeaders, exception.Reason);
+        Assert.Contains(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, exception.Message);
+
+        // Finish the intentionally incomplete header block and shut down normally.
+        await SendEmptyContinuationFrameAsync(streamId: 1, flags: Http2ContinuationFrameFlags.END_HEADERS);
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+        AssertConnectionNoError();
+    }
 }
