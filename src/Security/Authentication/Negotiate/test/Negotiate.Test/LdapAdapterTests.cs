@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Binary;
+using System.Globalization;
+using System.Runtime.Versioning;
 using System.Security.Claims;
+using System.Security.Principal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -190,6 +195,111 @@ public class LdapAdapterTests
     public void EscapeLdapFilterValue_EmptyString_ReturnsEmpty()
     {
         Assert.Equal(string.Empty, LdapAdapter.EscapeLdapFilterValue(string.Empty));
+    }
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_NoIdentitySid_ReturnsTrue()
+        => Assert.True(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: SidToBytes("S-1-5-21-111-222-333-500"),
+            identitySid: null,
+            user: "Administrator@CONTOSO.COM",
+            logger: NullLogger.Instance));
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_NoIdentitySid_RequirePrimarySidClaim_ReturnsFalse()
+        => Assert.False(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: SidToBytes("S-1-5-21-111-222-333-500"),
+            identitySid: null,
+            user: "Administrator@CONTOSO.COM",
+            logger: NullLogger.Instance,
+            requirePrimarySidClaim: true));
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_NoLdapObjectSid_ReturnsFalse()
+        => Assert.False(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: null,
+            identitySid: "S-1-5-21-111-222-333-1105",
+            user: "Administrator@CONTOSO.COM",
+            logger: NullLogger.Instance));
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_MatchingSids_ReturnsTrue()
+    {
+        // Normal case: the Kerberos-authenticated account and the LDAP entry are the same object.
+        const string sid = "S-1-5-21-111-222-333-1105";
+
+        Assert.True(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: SidToBytes(sid),
+            identitySid: sid,
+            user: "alice@CONTOSO.COM",
+            logger: NullLogger.Instance));
+    }
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_MatchingSids_CaseInsensitive_ReturnsTrue()
+    {
+        // SID strings are case-insensitive (S-1-5-... vs s-1-5-...).
+        const string sid = "S-1-5-21-111-222-333-1105";
+
+        Assert.True(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: SidToBytes(sid),
+            identitySid: sid.ToLowerInvariant(),
+            user: "alice@CONTOSO.COM",
+            logger: NullLogger.Instance));
+    }
+
+    [Fact]
+    public void VerifyLdapSidMatchesKerberosPrincipal_MismatchedSids_ReturnsFalse()
+        => Assert.False(LdapAdapter.VerifyLdapSidMatchesKerberosPrincipal(
+            ldapObjectSidBytes: SidToBytes("S-1-5-21-111-222-333-500"),  // Administrator
+            identitySid: "S-1-5-21-111-222-333-1105",                    // non-matching identity sid
+            user: "Administrator@CONTOSO.COM",
+            logger: NullLogger.Instance));
+
+    [ConditionalTheory]
+    [InlineData("S-1-5-21-111-222-333-500")]    // well-known Administrator RID
+    [InlineData("S-1-5-21-111-222-333-1105")]   // typical domain user RID
+    [InlineData("S-1-5-32-544")]                // BUILTIN\Administrators (short SID)
+    [InlineData("S-1-5-18")]                    // NT AUTHORITY\SYSTEM (no sub-domain component)
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "SecurityIdentifier is Windows-only.")]
+    public void ParseSidBytesToString_MatchesSecurityIdentifierOnWindows(string sidString)
+    {
+        // SecurityIdentifier is the authoritative Windows implementation of MS-DTYP §2.4.2.
+        var bytes = SidToBytes(sidString);
+        var expected = new SecurityIdentifier(bytes, 0).Value;
+
+        Assert.Equal(expected, LdapAdapter.ParseSidBytesToString(bytes), StringComparer.OrdinalIgnoreCase);
+    }
+
+    // Builds a binary SID from a canonical string (e.g. "S-1-5-21-111-222-333-500")
+    // without relying on the Windows-only SecurityIdentifier class.
+    // Format: S-{rev}-{auth}-{sa0}-…-{saN}
+    private static byte[] SidToBytes(string sidString)
+    {
+        var parts = sidString.Split('-');
+        // parts: ["S", "{rev}", "{auth}", "{sa0}", ...]
+        var revision = byte.Parse(parts[1], CultureInfo.InvariantCulture);
+        var authority = long.Parse(parts[2], CultureInfo.InvariantCulture);
+        var subAuthorities = parts[3..].Select(p => uint.Parse(p, CultureInfo.InvariantCulture)).ToArray();
+
+        var bytes = new byte[8 + (subAuthorities.Length * 4)];
+        bytes[0] = revision;
+        bytes[1] = (byte)subAuthorities.Length;
+
+        // Authority as 6-byte big-endian
+        var authCopy = authority;
+        for (var i = 5; i >= 0; i--)
+        {
+            bytes[2 + i] = (byte)(authCopy & 0xFF);
+            authCopy >>= 8;
+        }
+
+        for (var i = 0; i < subAuthorities.Length; i++)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(8 + (i * 4)), subAuthorities[i]);
+        }
+
+        return bytes;
     }
 
     [Theory]
