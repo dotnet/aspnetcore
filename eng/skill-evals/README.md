@@ -20,6 +20,11 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+`investigate-issue` is intentionally excluded from hosted model-bearing runs.
+Its standard spec remains available for model-free lint, experiment resolution,
+and reviewed private operator runs. Do not run its model-bearing cases in a
+host that publishes replies, logs, artifacts, or status links.
+
 The experiment deliberately does not override `runs`. A standard spec owns its
 trial count through `defaults.runs`. The existing specs retain five runs and 25
 trials each. The dotnet/skills quality gate uses five trials as the minimum at
@@ -47,12 +52,51 @@ Run these commands from any directory:
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/<skill>/<specialized>.vally.yaml
 ```
 
+### Private operator runs for `investigate-issue`
+
+The canonical eval file contains synthetic issue evidence, but it does not
+establish that the executor host is private or provide a real session artifact
+destination. Before a model-bearing run, prepare a reviewed temporary eval
+input outside the candidate checkout that:
+
+- prepends the actual non-public, non-publishing host setup identically to the
+  baseline and skilled arms of each private-host case;
+- supplies exact current-session storage paths and real writer/read-back
+  capabilities only to the persistence cases that exercise them;
+- supplies only its explicit public/unknown-host setup to the negative host
+  case, never a contradictory private declaration; and
+- preserves the original stimulus text, graders, model/judge identities, and
+  effective input hashes for provenance.
+
+Use `stage_run.ps1` to create a private one-skill tree with the canonical
+`eng/skill-evals/investigate-issue/eval.vally.yaml` layout. Run `run.ps1` with
+matching absolute `-Root`, `-Eval`, `-Experiment`, and private
+`-OutputDirectory` paths. A renamed eval file selects the runner's standalone
+eval path and is not equivalent to the A/B smoke experiment. The staged tree
+does not need to be a git checkout, so use Vally lint/dry-run plus the trusted
+staging tests rather than claiming the git-layout validator covered that copy.
+
+Persistence evidence must come from the revised skill's own writer and
+read-back tool calls. Inspect attempted tools, final chat output, destination,
+saved bytes, collision/failure behavior, and absence of writes for sensitive
+stops and private no-useful-result outcomes. Manually saving a sample report or
+matching output text does not establish persistence.
+
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
 requests or pushes to `main` change runtime skills, eval assets, or the workflow
 itself. Validation parses and dry-runs both the standard and smoke experiments
 without invoking a model or judge.
+
+Hosted automatic selection removes the `investigate-issue` lane only after
+affected-skill and central-change classification, preserving every other
+eligible lane. An empty eligible set skips before status claiming or model
+scheduling. Explicit or bypassed attempts to supply the excluded lane fail with
+a clear eligibility diagnostic at the request or common staging boundary. This
+does not affect private operator runs or model-free validation. The exclusion
+becomes active only after the trusted default-branch workflow contains it;
+candidate code does not disable already-deployed hosted entry points.
 
 Maintainers can also dispatch `Validate`, `Test`, or `Lint` manually. The
 model-bearing `Run` action requires selecting one standard skill and defaults to
@@ -182,20 +226,19 @@ Candidate assertion changes are not hosted enforcement until the trusted
 default-branch control plane includes them; apply a candidate assertion locally
 to downloaded artifacts when assessing such a change.
 
-For `investigate-issue`, preserve the original 21-stimulus cohort when comparing
-the two appended contrast cases (substantive private evidence and verified
-behavior awaiting source ownership). Report legacy and new-case scores
-separately so the changed denominator cannot disguise regressions. Inspect
-each legacy skilled response and its rubric evidence, not just the mean or
-judge narrative, and investigate material regressions. Every skilled
-deterministic requirement must pass regardless of cohort. Do not impose
-per-row score monotonicity on stochastic one-trial smoke runs or baseline
-responses that never loaded the skill. The synthetic snapshots, formatting
-checks, and same-model judge limit what aggregate A/B lift establishes;
-held-out public histories, tool-trace coverage, and judge calibration remain
-separate follow-ups.
+For `investigate-issue`, preserve the original 21-stimulus cohort, report the
+two previously appended contrast cases separately, and report the newer
+host/persistence cohort separately again. A changed denominator must not
+disguise regressions. Inspect each legacy skilled response and its rubric
+evidence, not just the mean or judge narrative, and investigate material
+regressions. Every skilled deterministic requirement must pass regardless of
+cohort. Do not impose per-row score monotonicity on stochastic one-trial smoke
+runs or baseline responses that never loaded the skill. The synthetic
+snapshots, formatting checks, same-model judge, and checked-in host descriptions
+do not establish real storage effects or arbitrary host privacy; retain
+separate writer/read-back and tool-trace evidence.
 
-The security-stop, confidentiality-stop, and known-specialist prompt graders
+The sensitive-stop and known-specialist prompt graders
 explicitly distinguish assistant-authored disclosures from user input in
 Vally's session timeline, while retaining tool-call evidence for prohibited
 actions. The invalid-input matcher accepts plain or bold `one` in the same

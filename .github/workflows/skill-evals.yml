@@ -150,6 +150,28 @@ jobs:
         run: |
           set -euo pipefail
 
+          # BEGIN HOSTED EVAL POLICY
+          EXCLUDED_HOSTED_EVAL='investigate-issue'
+
+          filter_hosted_evals() {
+            local eval_name
+            ELIGIBLE_EVALS=()
+            for eval_name in "$@"; do
+              if [[ "$eval_name" != "$EXCLUDED_HOSTED_EVAL" ]]; then
+                ELIGIBLE_EVALS+=("$eval_name")
+              fi
+            done
+          }
+
+          reject_explicit_hosted_eval() {
+            local eval_name="$1"
+            if [[ "$eval_name" == "$EXCLUDED_HOSTED_EVAL" ]]; then
+              echo "::error::'$eval_name' is not eligible for hosted model evaluation. Run it only in an operator-controlled non-public environment."
+              return 1
+            fi
+          }
+          # END HOSTED EVAL POLICY
+
           {
             echo 'evals=[]'
             echo 'head_sha='
@@ -244,6 +266,7 @@ jobs:
 
           AFFECTED=()
           if [[ "$EVENT_NAME" == 'workflow_dispatch' ]]; then
+            reject_explicit_hosted_eval "$DISPATCH_EVAL"
             if ! printf '%s\n' "${ALL_EVALS[@]}" | grep -Fxq "$DISPATCH_EVAL"; then
               echo "::error::'$DISPATCH_EVAL' is not a standard skill evaluation at $FULL_SHA."
               exit 1
@@ -272,9 +295,11 @@ jobs:
           fi
 
           mapfile -t AFFECTED < <(printf '%s\n' "${AFFECTED[@]}" | sed '/^$/d' | sort -u)
+          filter_hosted_evals "${AFFECTED[@]}"
+          AFFECTED=("${ELIGIBLE_EVALS[@]}")
           if [[ "${#AFFECTED[@]}" -eq 0 ]]; then
             gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" \
-              --body "ℹ️ Commit \`${FULL_SHA:0:7}\` does not change a skill with a standard evaluation."
+              --body "ℹ️ Commit \`${FULL_SHA:0:7}\` does not change a skill eligible for hosted model evaluation."
             exit 0
           fi
 
@@ -342,9 +367,24 @@ jobs:
           fi
           echo 'trusted=true' >> "$GITHUB_OUTPUT"
 
+      - name: Reject ineligible explicit evaluation
+        if: >-
+          steps.control-plane.outputs.trusted == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.action == 'Run' &&
+          inputs.eval == 'investigate-issue'
+        shell: bash
+        run: |
+          echo "::error::'investigate-issue' is not eligible for hosted model evaluation. Run it only in an operator-controlled non-public environment."
+          exit 1
+
       - name: Claim serialized evaluation
         id: claim
-        if: steps.control-plane.outputs.trusted == 'true'
+        if: >-
+          steps.control-plane.outputs.trusted == 'true' &&
+          (github.event_name != 'workflow_dispatch' ||
+           inputs.action != 'Run' ||
+           inputs.eval != 'investigate-issue')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -426,6 +466,17 @@ jobs:
           New-Item -ItemType Directory -Path $env:STAGING_ROOT | Out-Null
 
           $evalNames = @($env:EVALS_JSON | ConvertFrom-Json)
+          # BEGIN HOSTED EVAL STAGING POLICY
+          function Assert-HostedEvalEligibility {
+              param([string[]] $EvalNames)
+
+              if ($EvalNames -contains 'investigate-issue') {
+                  throw "'investigate-issue' is not eligible for hosted model evaluation. Run it only in an operator-controlled non-public environment."
+              }
+          }
+          Assert-HostedEvalEligibility $evalNames
+          # END HOSTED EVAL STAGING POLICY
+
           foreach ($evalName in $evalNames) {
               & "$env:TRUSTED_ROOT/eng/skill-evals/stage_run.ps1" `
                   -TrustedRoot $env:TRUSTED_ROOT `
