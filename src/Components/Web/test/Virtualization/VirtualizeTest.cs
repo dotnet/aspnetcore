@@ -1156,8 +1156,8 @@ public class VirtualizeTest
     public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
     {
         var blockProvider = false;
-        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var requestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cts = new CancellationTokenSource();
+        CancellationToken? providerCancellationToken = null;
 
         async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
         {
@@ -1168,8 +1168,9 @@ public class VirtualizeTest
                     100);
             }
 
-            requestStarted.TrySetResult();
-            using var registration = request.CancellationToken.Register(requestCanceled.SetResult);
+            providerCancellationToken = request.CancellationToken;
+            // Cancel only after capturing the provider token, so no separate start-signal rendezvous is needed.
+            cts.Cancel();
             await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
             return default;
         }
@@ -1181,15 +1182,11 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         blockProvider = true;
-        using var cts = new CancellationTokenSource();
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(90, cts.Token); });
-        await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-        cts.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(TimeSpan.FromSeconds(5)));
-        await requestCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(providerCancellationToken is { IsCancellationRequested: true });
     }
 
     [Fact]
