@@ -27,6 +27,27 @@ internal static class CertificateManagerProcessRunner
 
         return new ProcessExecutionResult(process.ExitCode, standardOutput, standardError);
     }
+
+    internal static int RunAndDiscardOutput(ProcessStartInfo processInfo)
+    {
+        using var process = Process.Start(processInfo)
+            ?? throw new InvalidOperationException($"Failed to start process '{processInfo.FileName}'.");
+
+        if (processInfo.RedirectStandardOutput)
+        {
+            process.OutputDataReceived += static (_, _) => { };
+            process.BeginOutputReadLine();
+        }
+
+        if (processInfo.RedirectStandardError)
+        {
+            process.ErrorDataReceived += static (_, _) => { };
+            process.BeginErrorReadLine();
+        }
+
+        process.WaitForExit();
+        return process.ExitCode;
+    }
 }
 
 internal readonly record struct ProcessExecutionResult(int ExitCode, string StandardOutput, string StandardError);
