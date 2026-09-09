@@ -43,7 +43,7 @@ internal sealed class AudioCaptureButtonInterop(IJSRuntime jsRuntime) : IAsyncDi
             "isLiveSpeechRecognitionSupported");
     }
 
-    public async ValueTask StartSpeechRecognitionAsync<T>(
+    public async ValueTask InitializeSpeechRecognitionAsync<T>(
         DotNetObjectReference<T> callbacks,
         string? language)
         where T : class
@@ -53,7 +53,13 @@ internal sealed class AudioCaptureButtonInterop(IJSRuntime jsRuntime) : IAsyncDi
             "createLiveSpeechRecognizer",
             callbacks,
             language);
-        await _speechRecognizer.InvokeVoidAsync("start");
+    }
+
+    public ValueTask StartSpeechRecognitionAsync()
+    {
+        return _speechRecognizer is null
+            ? ValueTask.CompletedTask
+            : _speechRecognizer.InvokeVoidAsync("start");
     }
 
     public ValueTask StopSpeechRecognitionAsync()

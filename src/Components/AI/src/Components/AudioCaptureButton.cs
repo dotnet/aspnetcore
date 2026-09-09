@@ -9,8 +9,8 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Components.AI;
 
 /// <summary>
-/// Records audio in the browser and transcribes or attaches it to the nearest
-/// <see cref="MessageInput"/>.
+/// Captures speech using browser recognition, backend transcription, or both,
+/// and adds the resulting text to the nearest <see cref="MessageInput"/>.
 /// </summary>
 public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 {
@@ -22,6 +22,10 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _operationCts;
     private string _dictationPrefix = string.Empty;
     private string _committedTranscript = string.Empty;
+    private bool _isEnabled;
+    private bool _isListening;
+    private bool _isStarting;
+    private bool _isFinalizing;
     private bool _isRecording;
     private bool _isTranscribing;
     private bool _isDictating;
@@ -49,28 +53,47 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     internal IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the maximum recording size in bytes.
+    /// Gets or sets the maximum recording size in bytes. This value is ignored
+    /// when <see cref="RecognitionMode"/> is <see cref="SpeechRecognitionMode.BrowserSpeechRecognition"/>.
     /// </summary>
     [Parameter]
     public long MaximumBytes { get; set; } = 10 * 1024 * 1024;
 
     /// <summary>
     /// Gets or sets whether a new recording replaces existing audio attachments.
+    /// This value is ignored when <see cref="RecognitionMode"/> is
+    /// <see cref="SpeechRecognitionMode.BrowserSpeechRecognition"/>.
     /// </summary>
     [Parameter]
     public bool ReplaceExistingAudio { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether captured audio is added to the outgoing message.
+    /// This value is ignored when <see cref="RecognitionMode"/> is
+    /// <see cref="SpeechRecognitionMode.BrowserSpeechRecognition"/>.
     /// </summary>
     [Parameter]
     public bool AttachRecording { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets whether browser speech recognition updates the composer while recording.
+    /// Gets or sets how captured speech is converted to text.
     /// </summary>
     [Parameter]
-    public bool ShowInterimTranscript { get; set; }
+    public SpeechRecognitionMode RecognitionMode { get; set; } =
+        SpeechRecognitionMode.BackendTranscription;
+
+    /// <summary>
+    /// Gets or sets whether finalized speech is submitted automatically.
+    /// </summary>
+    [Parameter]
+    public bool AutoSubmit { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether browser recognition resumes after an automatically
+    /// submitted response completes.
+    /// </summary>
+    [Parameter]
+    public bool ContinuousListening { get; set; }
 
     /// <summary>
     /// Gets or sets the browser speech-recognition language. The browser default is used when omitted.
@@ -79,25 +102,27 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     public string? SpeechRecognitionLanguage { get; set; }
 
     /// <summary>
-    /// Gets or sets the accessible label shown before recording starts.
+    /// Gets or sets the accessible label shown before voice input starts.
     /// </summary>
     [Parameter]
     public string StartLabel { get; set; } = "Record audio";
 
     /// <summary>
-    /// Gets or sets the accessible label shown while recording.
+    /// Gets or sets the accessible label shown while voice input is active.
     /// </summary>
     [Parameter]
     public string StopLabel { get; set; } = "Stop recording";
 
     /// <summary>
-    /// Gets or sets custom button content based on whether recording is active.
+    /// Gets or sets custom button content based on whether voice input is active.
     /// </summary>
     [Parameter]
     public RenderFragment<bool>? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets a callback invoked when audio has been captured.
+    /// Gets or sets a callback invoked when audio has been captured. This callback
+    /// is not invoked when <see cref="RecognitionMode"/> is
+    /// <see cref="SpeechRecognitionMode.BrowserSpeechRecognition"/>.
     /// </summary>
     [Parameter]
     public EventCallback<DataContent> OnRecorded { get; set; }
@@ -109,10 +134,16 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     public Func<DataContent, CancellationToken, ValueTask<string?>>? Transcribe { get; set; }
 
     /// <summary>
-    /// Gets or sets a callback invoked after captured audio has been transcribed.
+    /// Gets or sets a callback invoked when speech has been finalized.
     /// </summary>
     [Parameter]
     public EventCallback<string> OnTranscribed { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback invoked when the visible browser transcript changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnInterimTranscript { get; set; }
 
     /// <summary>
     /// Gets or sets additional attributes applied to the recording button.
@@ -123,6 +154,26 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (RecognitionMode is not SpeechRecognitionMode.BrowserSpeechRecognition &&
+            Transcribe is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(Transcribe)} is required for backend speech recognition.");
+        }
+
+        if (ContinuousListening &&
+            RecognitionMode is not SpeechRecognitionMode.BrowserSpeechRecognition)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(ContinuousListening)} can only be used with browser speech recognition.");
+        }
+
+        if (ContinuousListening && !AutoSubmit)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(ContinuousListening)} requires {nameof(AutoSubmit)}.");
+        }
+
         if (ReferenceEquals(_subscribedContext, Context))
         {
             return;
@@ -130,14 +181,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         _changeSubscription?.Dispose();
         _subscribedContext = Context;
-        _changeSubscription = Context.RegisterOnChanged(
-            () => _ = InvokeAsync(StateHasChanged));
+        _changeSubscription = Context.RegisterOnChanged(OnContextChanged);
     }
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var isActive = _isRecording || _isTranscribing;
+        var isActive = _isEnabled || _isRecording || _isTranscribing;
         var disabled = !_isSupported ||
             (!isActive && (Context.IsConversationBusy || Context.IsComposing));
         var label = isActive ? StopLabel : StartLabel;
@@ -177,10 +227,15 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         try
         {
             _interop = new AudioCaptureButtonInterop(JSRuntime);
-            _isSupported = await _interop.IsAudioCaptureSupportedAsync();
+            _isSupported = RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition
+                ? await _interop.IsSpeechRecognitionSupportedAsync()
+                : await _interop.IsAudioCaptureSupportedAsync();
             if (!_isSupported)
             {
-                Context.SetErrorMessage("Audio recording is not supported by this browser.");
+                Context.SetErrorMessage(
+                    RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition
+                        ? "Browser speech recognition is not supported by this browser."
+                        : "Audio recording is not supported by this browser.");
             }
             await InvokeAsync(StateHasChanged);
         }
@@ -198,6 +253,11 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         {
             CancelTranscription();
             return Task.CompletedTask;
+        }
+
+        if (RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition)
+        {
+            return _isEnabled ? StopBrowserRecognitionAsync() : StartBrowserRecognitionAsync();
         }
 
         return _isRecording ? StopRecordingAsync() : StartRecordingAsync();
@@ -222,9 +282,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             }
 
             _isRecording = true;
+            _isEnabled = true;
             Context.SetComposing(true);
             Context.SetStatusMessage("Recording audio.");
-            await StartInterimTranscriptionAsync();
+            if (RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription)
+            {
+                await StartBrowserDraftAsync();
+            }
         }
         catch (JSException)
         {
@@ -330,6 +394,16 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                         : AppendText(Context.Text, transcript.Trim());
                     await OnTranscribed.InvokeAsync(transcript.Trim());
                     Context.SetStatusMessage("Voice transcription ready.");
+                    if (AutoSubmit)
+                    {
+                        _isTranscribing = false;
+                        Context.SetComposing(false);
+                        if (Context.CanSubmit)
+                        {
+                            Context.SetStatusMessage("Sending voice instruction.");
+                            await Context.SubmitAsync();
+                        }
+                    }
                 }
                 else
                 {
@@ -376,6 +450,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             if (ReferenceEquals(_operationCts, operationCts))
             {
                 _operationCts = null;
+                _isEnabled = false;
                 _isRecording = false;
                 _isTranscribing = false;
                 if (!_isDisposed)
@@ -396,9 +471,9 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         Context.SetStatusMessage("Audio transcription canceled.");
     }
 
-    private async Task StartInterimTranscriptionAsync()
+    private async Task StartBrowserDraftAsync()
     {
-        if (!ShowInterimTranscript || _interop is null)
+        if (_interop is null)
         {
             return;
         }
@@ -411,19 +486,100 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             }
 
             _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
-            await _interop.StartSpeechRecognitionAsync(
+            await _interop.InitializeSpeechRecognitionAsync(
                 _speechCallbackReference,
                 SpeechRecognitionLanguage);
+            await _interop.StartSpeechRecognitionAsync();
             _dictationPrefix = Context.Text.Trim();
             _committedTranscript = string.Empty;
             _isDictating = true;
+            _isListening = true;
             Context.SetStatusMessage("Recording and transcribing.");
         }
         catch (JSException)
         {
             _isDictating = false;
+            _isListening = false;
             Context.SetStatusMessage("Recording audio. Live transcription is unavailable.");
         }
+    }
+
+    private async Task StartBrowserRecognitionAsync()
+    {
+        Context.SetErrorMessage(null);
+        _operationCts?.Cancel();
+        _operationCts?.Dispose();
+        _operationCts = new CancellationTokenSource();
+        _interop ??= new AudioCaptureButtonInterop(JSRuntime);
+        _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
+
+        try
+        {
+            await _interop.InitializeSpeechRecognitionAsync(
+                _speechCallbackReference,
+                SpeechRecognitionLanguage);
+            _dictationPrefix = Context.Text.Trim();
+            _committedTranscript = string.Empty;
+            _isEnabled = true;
+            _isDictating = true;
+            await StartListeningAsync();
+        }
+        catch (JSException)
+        {
+            _isEnabled = false;
+            _isListening = false;
+            _isDictating = false;
+            Context.SetComposing(false);
+            Context.SetErrorMessage(
+                "Microphone speech recognition was not available. Check browser permissions.");
+        }
+    }
+
+    private async Task StartListeningAsync()
+    {
+        if (!_isEnabled || _isListening || _isStarting)
+        {
+            return;
+        }
+
+        _isStarting = true;
+        try
+        {
+            await _interop!.StartSpeechRecognitionAsync();
+            _isListening = true;
+            Context.SetComposing(true);
+            Context.SetStatusMessage("Listening for your next instruction.");
+        }
+        catch (JSException)
+        {
+            _isEnabled = false;
+            _isListening = false;
+            _isDictating = false;
+            Context.SetComposing(false);
+            Context.SetErrorMessage(
+                "Microphone speech recognition was not available. Check browser permissions.");
+        }
+        finally
+        {
+            _isStarting = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task StopBrowserRecognitionAsync()
+    {
+        _isEnabled = false;
+        _isListening = false;
+        _isDictating = false;
+        Context.SetComposing(false);
+        if (_interop is not null)
+        {
+            await _interop.StopSpeechRecognitionAsync();
+        }
+
+        await OnInterimTranscript.InvokeAsync(string.Empty);
+        Context.SetStatusMessage("Voice input stopped.");
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task StopInterimTranscriptionAsync()
@@ -434,6 +590,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
 
         _isDictating = false;
+        _isListening = false;
         try
         {
             await _interop.StopSpeechRecognitionAsync();
@@ -448,9 +605,9 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         string finalTranscript,
         string interimTranscript)
     {
-        return InvokeAsync(() =>
+        return InvokeAsync(async () =>
         {
-            if (!_isRecording || !_isDictating)
+            if (!_isEnabled || !_isDictating || _isFinalizing)
             {
                 return;
             }
@@ -461,29 +618,139 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                     AppendText(_committedTranscript, finalTranscript);
             }
 
+            var recognizedText = AppendText(_committedTranscript, interimTranscript);
             Context.Text = AppendText(
                 AppendText(_dictationPrefix, _committedTranscript),
                 interimTranscript);
-            Context.SetStatusMessage("Recording and transcribing.");
+            await OnInterimTranscript.InvokeAsync(recognizedText);
+            if (string.IsNullOrWhiteSpace(finalTranscript))
+            {
+                Context.SetStatusMessage(
+                    _isRecording ? "Recording and transcribing." : "Listening...");
+                return;
+            }
+
+            await OnTranscribed.InvokeAsync(finalTranscript.Trim());
+            if (RecognitionMode is not SpeechRecognitionMode.BrowserSpeechRecognition || !AutoSubmit)
+            {
+                Context.SetStatusMessage(
+                    _isRecording ? "Recording and transcribing." : "Listening for more.");
+                return;
+            }
+
+            _isFinalizing = true;
+            _isListening = false;
+            try
+            {
+                await _interop!.StopSpeechRecognitionAsync();
+                Context.SetComposing(false);
+                Context.SetStatusMessage("Sending voice instruction.");
+                if (Context.CanSubmit)
+                {
+                    var submitTask = Context.SubmitAsync();
+                    await OnInterimTranscript.InvokeAsync(string.Empty);
+                    await submitTask;
+                }
+
+                _dictationPrefix = string.Empty;
+                _committedTranscript = string.Empty;
+            }
+            finally
+            {
+                _isFinalizing = false;
+            }
+
+            if (ContinuousListening && _isEnabled && !_isDisposed)
+            {
+                _isDictating = true;
+                await StartListeningAsync();
+            }
+            else
+            {
+                _isEnabled = false;
+                _isDictating = false;
+            }
         });
     }
 
-    private Task HandleSpeechErrorAsync()
+    private Task HandleSpeechStartedAsync()
     {
         return InvokeAsync(() =>
         {
-            _isDictating = false;
+            if (!_isEnabled || _isFinalizing)
+            {
+                return;
+            }
+
+            _isListening = true;
+            _isDictating = true;
+            Context.SetComposing(true);
+            Context.SetErrorMessage(null);
+            Context.SetStatusMessage("Listening for your next instruction.");
+            StateHasChanged();
+        });
+    }
+
+    private void OnContextChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            if (RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition &&
+                ContinuousListening &&
+                _isEnabled &&
+                !_isListening &&
+                !_isStarting &&
+                !_isFinalizing &&
+                Context.Status is ConversationStatus.Idle or ConversationStatus.Error)
+            {
+                _isDictating = true;
+                await StartListeningAsync();
+            }
+        });
+    }
+
+    private Task HandleSpeechErrorAsync(string error, bool isFatal)
+    {
+        return InvokeAsync(async () =>
+        {
+            _isListening = false;
             if (_isRecording)
             {
+                _isDictating = false;
                 Context.SetStatusMessage(
                     "Recording audio. Live transcription is unavailable.");
+                StateHasChanged();
+                return;
             }
+
+            if (!isFatal)
+            {
+                Context.SetStatusMessage(
+                    "Voice input was interrupted. Reconnecting automatically.");
+                StateHasChanged();
+                return;
+            }
+
+            _isEnabled = false;
+            _isDictating = false;
+            Context.SetComposing(false);
+            await OnInterimTranscript.InvokeAsync(string.Empty);
+            Context.SetErrorMessage(error switch
+            {
+                "not-allowed" or "service-not-allowed" =>
+                    "Microphone access was denied. Allow microphone access to use voice input.",
+                "language-not-supported" =>
+                    "The selected speech recognition language is not supported by this browser.",
+                _ => "Voice input could not continue because speech recognition is not configured correctly.",
+            });
+            StateHasChanged();
         });
     }
 
     private string CssClass()
     {
-        var css = _isRecording
+        var css = _isEnabled
             ? "sc-ai-input__audio sc-ai-input__audio--recording"
             : "sc-ai-input__audio";
         if (AdditionalAttributes?.TryGetValue("class", out var value) == true &&
@@ -567,9 +834,15 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
 
         [JSInvokable]
-        public Task OnErrorAsync(string _, bool __)
+        public Task OnStartedAsync()
         {
-            return owner.HandleSpeechErrorAsync();
+            return owner.HandleSpeechStartedAsync();
+        }
+
+        [JSInvokable]
+        public Task OnErrorAsync(string error, bool isFatal)
+        {
+            return owner.HandleSpeechErrorAsync(error, isFatal);
         }
     }
 

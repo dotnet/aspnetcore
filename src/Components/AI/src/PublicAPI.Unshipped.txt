@@ -353,22 +353,28 @@ Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AdditionalAttributes.get -
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AttachRecording.get -> bool
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AttachRecording.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AutoSubmit.get -> bool
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AutoSubmit.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AudioCaptureButton() -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<bool>?
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ChildContent.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ContinuousListening.get -> bool
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ContinuousListening.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.MaximumBytes.get -> long
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.MaximumBytes.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnRecorded.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.Extensions.AI.DataContent!>
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnRecorded.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnInterimTranscript.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnInterimTranscript.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnTranscribed.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnTranscribed.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ReplaceExistingAudio.get -> bool
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ReplaceExistingAudio.set -> void
-Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ShowInterimTranscript.get -> bool
-Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ShowInterimTranscript.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.RecognitionMode.get -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.RecognitionMode.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.get -> string?
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartLabel.get -> string!
@@ -377,29 +383,10 @@ Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.get -> string!
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Transcribe.get -> System.Func<Microsoft.Extensions.AI.DataContent!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string?>>?
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Transcribe.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AdditionalAttributes.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AutoSubmit.get -> bool
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AutoSubmit.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<bool>?
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ChildContent.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Context.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Language.get -> string?
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Language.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.LiveSpeechButton() -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnInterimTranscript.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnInterimTranscript.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnTranscript.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnTranscript.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ShowInterimInComposer.get -> bool
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ShowInterimInComposer.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StartLabel.get -> string!
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StartLabel.set -> void
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StopLabel.get -> string!
-Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StopLabel.set -> void
+Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
+Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BackendTranscription = 0 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
+Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BrowserSpeechRecognition = 2 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
+Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription = 1 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
 Microsoft.AspNetCore.Components.AI.DataContentBlock
 Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.get -> Microsoft.Extensions.AI.DataContent!
 Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.set -> void

@@ -56,7 +56,7 @@
             <AudioCaptureButton class="claim-composer__media-button"
                                 AttachRecording="false"
                                 MaximumBytes="@MaxAudioBytes"
-                                ShowInterimTranscript
+                                RecognitionMode="SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription"
                                 StartLabel="Record voice"
                                 StopLabel="Stop recording"
                                 Transcribe="TranscribeRecordingAsync">
@@ -77,11 +77,14 @@
                 </ChildContent>
             </AudioCaptureButton>
 
-            <LiveSpeechButton class="claim-composer__media-button"
-                              ShowInterimInComposer="false"
-                              StartLabel="Start live voice"
-                              StopLabel="Stop live voice"
-                              OnInterimTranscript="OnLiveTranscriptChanged">
+            <AudioCaptureButton class="claim-composer__media-button"
+                                RecognitionMode="SpeechRecognitionMode.BrowserSpeechRecognition"
+                                AttachRecording="false"
+                                AutoSubmit
+                                ContinuousListening
+                                StartLabel="Start live voice"
+                                StopLabel="Stop live voice"
+                                OnInterimTranscript="OnLiveTranscriptChanged">
                 <ChildContent Context="isActive">
                     @if (isActive)
                     {
@@ -96,7 +99,7 @@
                         <span>Live voice</span>
                     }
                 </ChildContent>
-            </LiveSpeechButton>
+            </AudioCaptureButton>
 
             <MessageStopButton class="claim-cancel"
                                Label="Cancel claim assessment">
