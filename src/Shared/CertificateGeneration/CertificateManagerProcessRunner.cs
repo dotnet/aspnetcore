@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
