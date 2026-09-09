@@ -24,6 +24,8 @@ DERIVED_TEST_NAME = (
     "DerivedTests.ReturnsExpectedResponse"
 )
 QUARANTINE_ATTRIBUTE = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
+RUNNER_TEST_NAME = "Sample.Runner.ReturnsExpectedResponse"
+RUNNER_USINGS = "using Xunit;\nusing Microsoft.AspNetCore.InternalTesting;"
 
 
 def run(root, *args, env=None):
@@ -340,6 +342,109 @@ def initialize_repository(root, project_count=1):
     )
     file_path = root / TEST_PATH
     return project, file_path
+
+
+def runner_source(
+    type_name,
+    *,
+    partial=False,
+    base=None,
+    quarantine=False,
+    member=False,
+    members=None,
+):
+    if members is None and member:
+        members = [f"[Fact]\n{method_member()}"]
+    return class_source(
+        "Sample",
+        type_name,
+        partial=partial,
+        base=base,
+        type_quarantine=QUARANTINE_ATTRIBUTE if quarantine else "",
+        members=members,
+        usings=RUNNER_USINGS,
+    )
+
+
+def runner_result(root, *, assembly="Sample.Tests--net11.0", module=None):
+    data = evidence(test_name=RUNNER_TEST_NAME)
+    data["source_a"][RUNNER_TEST_NAME]["assembly"] = assembly
+    return collect_result(
+        root,
+        data,
+        test_name=RUNNER_TEST_NAME,
+        module=module,
+    )
+
+
+def assert_case_a(result, source_path):
+    assert result["status"] == "eligible", result
+    assert result["originating_case"] == "case-a", result
+    assert result["latest_quarantine_transition"] == "none", result
+    assert result["source_resolution"]["status"] == "exact", result
+    assert result["source_resolution"]["path"] == source_path, result
+    assert result["eligible_failure_builds"] == [101, 102], result
+
+
+def initialize_partial_base_runner_repository(root, *, runner_inherits_base):
+    project = create_project(
+        root,
+        "Sample.Tests",
+        {
+            "Base.Method.cs": runner_source("Base", partial=True, member=True),
+            "Base.Quarantine.cs": runner_source("Base", partial=True, quarantine=True),
+            "Runner.cs": runner_source(
+                "Runner",
+                base="Base" if runner_inherits_base else None,
+            ),
+        },
+    )
+    commit(root, "Add quarantined base and runner", "2026-08-01T00:00:00Z")
+    quarantine_path = project / "Base.Quarantine.cs"
+    quarantine_path.write_text(
+        runner_source("Base", partial=True),
+        encoding="utf-8",
+    )
+    commit(root, "Remove sibling base quarantine", "2026-08-02T00:00:00Z")
+    return project, run_output(root, "git", "rev-parse", "HEAD")
+
+
+def initialize_multihop_runner_repository(root, *, mid_inherits_base):
+    project = create_project(
+        root,
+        "Sample.Tests",
+        {
+            "Base.Method.cs": runner_source("Base", partial=True, member=True),
+            "Base.Quarantine.cs": runner_source("Base", partial=True, quarantine=True),
+            "Mid.cs": runner_source(
+                "Mid",
+                base="Base" if mid_inherits_base else None,
+            ),
+            "Runner.cs": runner_source("Runner", base="Mid"),
+        },
+    )
+    commit(root, "Add quarantined base and multi-hop runner", "2026-08-01T00:00:00Z")
+    quarantine_path = project / "Base.Quarantine.cs"
+    quarantine_path.write_text(
+        runner_source("Base", partial=True),
+        encoding="utf-8",
+    )
+    commit(root, "Remove sibling base quarantine", "2026-08-02T00:00:00Z")
+    return project, run_output(root, "git", "rev-parse", "HEAD")
+
+
+def initialize_mid_quarantine_runner_repository(root, *, runner_base):
+    project = create_project(
+        root,
+        "Sample.Tests",
+        {
+            "Base.cs": runner_source("Base", member=True),
+            "Mid.cs": runner_source("Mid", base="Base", quarantine=True),
+            "Runner.cs": runner_source("Runner", base=runner_base),
+        },
+    )
+    commit(root, "Add quarantined Mid runner chain", "2026-08-01T00:00:00Z")
+    return project
 
 
 def test_assembly_quarantine_history():
@@ -1179,6 +1284,329 @@ def test_inherited_runner_added_after_declaring_type_unquarantine_stays_case_a(m
         ), result
 
 
+def test_runner_inherits_base_after_partial_type_unquarantine_stays_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project, _ = initialize_partial_base_runner_repository(
+            root,
+            runner_inherits_base=False,
+        )
+
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Runner now inherits Base", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert_case_a(result, "src/Sample.Tests/Base.Method.cs")
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+
+
+def test_runner_already_inherits_base_before_partial_type_unquarantine_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        _, removal_commit = initialize_partial_base_runner_repository(
+            root,
+            runner_inherits_base=True,
+        )
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.Method.cs", result
+        assert_case_b(result, removal_commit)
+
+
+def test_duplicate_runner_identity_with_inherited_assembly_fails_closed(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "A.Tests",
+            {
+                "Runner.cs": runner_source("Runner", member=True),
+            },
+        )
+        create_project(
+            root,
+            "B.Tests",
+            {
+                "Base.cs": runner_source("Base", member=True, quarantine=True),
+                "Runner.cs": runner_source("Runner", base="Base"),
+            },
+        )
+        commit(root, "Add duplicate runner identities", "2026-08-01T00:00:00Z")
+
+        result = runner_result(root, assembly="B.Tests--net11.0", module=module)
+        assert result["status"] == "unproven", result
+        assert result["source_resolution"]["status"] == "ambiguous", result
+        assert "source-ambiguous" in result["reasons"], result
+
+
+def test_unique_direct_runner_identity_stays_exact_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "A.Tests",
+            {
+                "Runner.cs": runner_source("Runner", member=True),
+            },
+        )
+        commit(root, "Add unique direct runner", "2026-08-01T00:00:00Z")
+
+        result = runner_result(root, assembly="A.Tests--net11.0", module=module)
+        assert_case_a(result, "src/A.Tests/Runner.cs")
+        assert result["source_resolution"]["declaring_type"] == "Sample.Runner", result
+
+
+def test_multihop_runner_reaches_base_after_partial_type_unquarantine_stays_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project, _ = initialize_multihop_runner_repository(
+            root,
+            mid_inherits_base=False,
+        )
+
+        (project / "Mid.cs").write_text(
+            runner_source("Mid", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Mid now inherits Base", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert_case_a(result, "src/Sample.Tests/Base.Method.cs")
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert {
+            entry["path"] for entry in result["source_resolution"]["history_locations"]
+        } == {
+            "src/Sample.Tests/Base.Method.cs",
+            "src/Sample.Tests/Mid.cs",
+            "src/Sample.Tests/Runner.cs",
+        }, result
+
+
+def test_multihop_runner_already_reaches_base_before_partial_type_unquarantine_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        _, removal_commit = initialize_multihop_runner_repository(
+            root,
+            mid_inherits_base=True,
+        )
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.Method.cs", result
+        assert_case_b(result, removal_commit)
+
+
+def test_runner_switches_to_mid_after_base_unquarantine_stays_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project, removal_commit = initialize_partial_base_runner_repository(
+            root,
+            runner_inherits_base=True,
+        )
+
+        (project / "Mid.cs").write_text(
+            runner_source("Mid", base="Base"),
+            encoding="utf-8",
+        )
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Mid"),
+            encoding="utf-8",
+        )
+        commit(root, "Introduce Mid and retarget Runner", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.Method.cs", result
+        assert_case_b(result, removal_commit)
+
+
+def test_historical_mid_unquarantine_stays_case_b_after_runner_switches_directly_to_base(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = initialize_mid_quarantine_runner_repository(root, runner_base="Mid")
+
+        mid_path = project / "Mid.cs"
+        mid_path.write_text(
+            runner_source("Mid", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Remove Mid quarantine", "2026-08-02T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Base"),
+            encoding="utf-8",
+        )
+        mid_path.unlink()
+        commit(root, "Runner now inherits Base directly", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.cs", result
+        assert_case_b(result, removal_commit)
+
+
+def test_mid_unquarantine_before_runner_adopts_mid_stays_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = initialize_mid_quarantine_runner_repository(root, runner_base="Base")
+
+        (project / "Mid.cs").write_text(
+            runner_source("Mid", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Remove Mid quarantine", "2026-08-02T00:00:00Z")
+
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Mid"),
+            encoding="utf-8",
+        )
+        commit(root, "Runner now inherits Mid", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert_case_a(result, "src/Sample.Tests/Base.cs")
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+
+
+def test_historical_conflicting_partial_runner_bases_before_base_unquarantine_fail_closed(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = create_project(
+            root,
+            "Sample.Tests",
+            {
+                "Base.Method.cs": runner_source("Base", partial=True, member=True),
+                "Base.Quarantine.cs": runner_source("Base", partial=True, quarantine=True),
+                "Other.cs": runner_source("Other"),
+                "Runner.Left.cs": runner_source("Runner", partial=True, base="Base"),
+                "Runner.Right.cs": runner_source("Runner", partial=True, base="Other"),
+            },
+        )
+        commit(root, "Add conflicting partial runner bases", "2026-08-01T00:00:00Z")
+
+        (project / "Base.Quarantine.cs").write_text(
+            runner_source("Base", partial=True),
+            encoding="utf-8",
+        )
+        commit(root, "Remove base quarantine", "2026-08-02T00:00:00Z")
+
+        (project / "Runner.Right.cs").write_text(
+            runner_source("Runner", partial=True),
+            encoding="utf-8",
+        )
+        commit(root, "Resolve conflicting partial runner bases", "2026-08-03T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["status"] == "unproven", result
+        assert result["latest_quarantine_transition"] == "ambiguous", result
+        assert "quarantine-history-ambiguous" in result["reasons"], result
+
+
+def test_runner_inherits_base_after_assembly_unquarantine_stays_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = create_project(
+            root,
+            "Sample.Tests",
+            {
+                "Base.cs": runner_source("Base", member=True),
+                "Runner.cs": runner_source("Runner"),
+            },
+        )
+        commit(root, "Add runner before assembly quarantine", "2026-08-01T00:00:00Z")
+
+        assembly_info = project / "AssemblyQuarantine.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test assembly", "2026-08-02T00:00:00Z")
+
+        assembly_info.unlink()
+        commit(root, "Remove assembly quarantine", "2026-08-03T00:00:00Z")
+
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Runner now inherits Base", "2026-08-04T00:00:00Z")
+
+        result = runner_result(root, module=module)
+        assert_case_a(result, "src/Sample.Tests/Base.cs")
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+
+
+def test_runner_already_inherits_base_before_assembly_unquarantine_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = create_project(
+            root,
+            "Sample.Tests",
+            {
+                "Base.cs": runner_source("Base", member=True),
+                "Runner.cs": runner_source("Runner"),
+            },
+        )
+        commit(root, "Add runner before assembly quarantine", "2026-08-01T00:00:00Z")
+
+        assembly_info = project / "AssemblyQuarantine.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test assembly", "2026-08-02T00:00:00Z")
+
+        (project / "Runner.cs").write_text(
+            runner_source("Runner", base="Base"),
+            encoding="utf-8",
+        )
+        commit(root, "Runner now inherits Base", "2026-08-03T00:00:00Z")
+
+        assembly_info.unlink()
+        commit(root, "Remove assembly quarantine", "2026-08-04T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = runner_result(root, module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.cs", result
+        assert_case_b(result, removal_commit)
+
+
 def test_partial_runner_conflicting_bases_in_same_project_fail_closed(module=None):
     module = module or MODULE
     with tempfile.TemporaryDirectory() as directory:
@@ -1507,6 +1935,18 @@ public class DerivedTests : BaseTests
     test_other_project_same_full_intermediate_type_does_not_contaminate_multihop_inherited_resolution()
     test_partial_type_quarantine_removal_only_applies_to_methods_present_at_removal()
     test_inherited_runner_added_after_declaring_type_unquarantine_stays_case_a()
+    test_runner_inherits_base_after_partial_type_unquarantine_stays_case_a()
+    test_runner_already_inherits_base_before_partial_type_unquarantine_is_case_b()
+    test_duplicate_runner_identity_with_inherited_assembly_fails_closed()
+    test_unique_direct_runner_identity_stays_exact_case_a()
+    test_multihop_runner_reaches_base_after_partial_type_unquarantine_stays_case_a()
+    test_multihop_runner_already_reaches_base_before_partial_type_unquarantine_is_case_b()
+    test_runner_switches_to_mid_after_base_unquarantine_stays_case_b()
+    test_historical_mid_unquarantine_stays_case_b_after_runner_switches_directly_to_base()
+    test_mid_unquarantine_before_runner_adopts_mid_stays_case_a()
+    test_historical_conflicting_partial_runner_bases_before_base_unquarantine_fail_closed()
+    test_runner_inherits_base_after_assembly_unquarantine_stays_case_a()
+    test_runner_already_inherits_base_before_assembly_unquarantine_is_case_b()
     test_partial_runner_conflicting_bases_in_same_project_fail_closed()
     test_partial_sibling_edits_do_not_expand_source_b_or_freshness_scope()
 

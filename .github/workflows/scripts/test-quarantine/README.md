@@ -19,10 +19,15 @@ the script validates deterministic evidence and renders the final issue.
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
    renames, deletions, and attribute removals can still surface as Case B.
-   A transition applies only when the declaring method and inherited runner
-   types existed at that point; later-added tests do not inherit old removals.
+   Type and assembly transitions apply only when the test resolved through the
+   runner's actual inheritance chain at that commit. Merely having both types
+   present is insufficient; later-added tests or later inheritance do not
+   inherit old removals. Historical-only intermediate types are considered,
+   rather than assuming the current chain existed unchanged.
    Partial inherited runners are resolved through an unambiguous same-project
-   base chain. That logical type-history check remains separate from the exact
+   base chain. A full runner name found in multiple projects is rejected before
+   either direct or inherited method matching. That logical type-history check
+   remains separate from the exact
    method freshness cutoff and Source B pull-request file checks, which still
    key off the resolved declaring method and inherited runner files rather than
    every partial sibling declaration.
@@ -43,6 +48,12 @@ the script validates deterministic evidence and renders the final issue.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
+
+Part 1 still aggregates by normalized test name, not by assembly-qualified
+identity. The collector therefore fails closed on ambiguous runner names rather
+than using the representative assembly field to choose a project. This does not
+redesign aggregation or method-level, file-based quarantine history. Unresolved
+historical inheritance is unproven, not evidence that a test was never inherited.
 
 ## Build Insights behavior
 
