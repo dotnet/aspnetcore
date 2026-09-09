@@ -37,6 +37,7 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
         }
 
         var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
+
         Navigate(url);
 
         foreach (var callback in expectedInvokedCallbacks)
