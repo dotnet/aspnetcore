@@ -1053,11 +1053,11 @@ public class VirtualizeTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68852")]
     public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
     {
         var blockProvider = false;
-        var requestStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cts = new CancellationTokenSource();
+        CancellationToken? providerCancellationToken = null;
 
         async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
         {
@@ -1068,7 +1068,9 @@ public class VirtualizeTest
                     100);
             }
 
-            requestStarted.TrySetResult(request.CancellationToken);
+            providerCancellationToken = request.CancellationToken;
+            // Cancel only after capturing the provider token, so no separate start-signal rendezvous is needed.
+            cts.Cancel();
             await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
             return default;
         }
@@ -1080,15 +1082,11 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         blockProvider = true;
-        using var cts = new CancellationTokenSource();
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(90, cts.Token); });
-        var providerCancellationToken = await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-        cts.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(TimeSpan.FromSeconds(5)));
-        Assert.True(providerCancellationToken.IsCancellationRequested);
+        Assert.True(providerCancellationToken is { IsCancellationRequested: true });
     }
 
     [Fact]
