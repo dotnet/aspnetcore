@@ -5,15 +5,15 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
-internal sealed class DataContentHandler : ContentBlockHandler<DataContentBlock>
+internal sealed class DataContentHandler : ContentBlockHandler<MediaContentBlock>
 {
-    public override BlockMappingResult<DataContentBlock> Handle(
+    public override BlockMappingResult<MediaContentBlock> Handle(
         BlockMappingContext context,
-        DataContentBlock state)
+        MediaContentBlock state)
     {
         if (state.Content is not null)
         {
-            return BlockMappingResult<DataContentBlock>.Complete();
+            return BlockMappingResult<MediaContentBlock>.Complete();
         }
 
         foreach (var content in context.UnhandledContents)
@@ -21,12 +21,13 @@ internal sealed class DataContentHandler : ContentBlockHandler<DataContentBlock>
             if (content is DataContent dataContent)
             {
                 context.MarkHandled(dataContent);
-                state.Content = dataContent;
+                state.Content = MediaContentFactory.Create(dataContent);
+                state.Name = dataContent.Name;
                 state.Id = Guid.NewGuid().ToString("N");
-                return BlockMappingResult<DataContentBlock>.Emit(state, state);
+                return BlockMappingResult<MediaContentBlock>.Emit(state, state);
             }
         }
 
-        return BlockMappingResult<DataContentBlock>.Pass();
+        return BlockMappingResult<MediaContentBlock>.Pass();
     }
 }

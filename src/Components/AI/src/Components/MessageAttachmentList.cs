@@ -66,11 +66,11 @@ public sealed class MessageAttachmentList : ComponentBase, IDisposable
             builder.OpenElement(0, "li");
             builder.SetKey(attachment);
 
-            builder.OpenComponent<MediaContent>(1);
-            builder.AddComponentParameter(2, nameof(MediaContent.Content), attachment);
+            builder.OpenComponent<MessageAttachmentContent>(1);
+            builder.AddComponentParameter(2, nameof(MessageAttachmentContent.Content), attachment);
             builder.AddComponentParameter(
                 3,
-                nameof(MediaContent.AlternativeText),
+                nameof(MessageAttachmentContent.AlternativeText),
                 GetAlternativeText(attachment));
             builder.CloseComponent();
 

@@ -67,9 +67,9 @@ public class MessageListContext
                 builder.CloseElement(); // bubble div
                 builder.CloseElement(); // message div
             }
-            else if (block is DataContentBlock data)
+            else if (block is MediaContentBlock media)
             {
-                RenderDataContentBlock(builder, data);
+                RenderMediaContentBlock(builder, media);
             }
             else if (block is FunctionApprovalBlock approval)
             {
@@ -99,9 +99,9 @@ public class MessageListContext
         OnRegistrationsChanged?.Invoke();
     }
 
-    private static void RenderDataContentBlock(
+    private static void RenderMediaContentBlock(
         RenderTreeBuilder builder,
-        DataContentBlock block)
+        MediaContentBlock block)
     {
         var role = block.Role == ChatRole.User ? "user" : "assistant";
         builder.OpenElement(0, "div");
@@ -111,15 +111,13 @@ public class MessageListContext
         builder.OpenElement(3, "div");
         builder.AddAttribute(4, "class", "sc-ai-message__bubble sc-ai-message__bubble--media");
 
-        builder.OpenComponent<MediaContent>(5);
-        builder.AddComponentParameter(6, nameof(MediaContent.Content), block.Content);
-        builder.CloseComponent();
+        builder.AddContent(5, block.Content);
 
-        if (!string.IsNullOrWhiteSpace(block.Content.Name))
+        if (!string.IsNullOrWhiteSpace(block.Name))
         {
-            builder.OpenElement(7, "span");
-            builder.AddAttribute(8, "class", "sc-ai-message__media-name");
-            builder.AddContent(9, block.Content.Name);
+            builder.OpenElement(6, "span");
+            builder.AddAttribute(7, "class", "sc-ai-message__media-name");
+            builder.AddContent(8, block.Name);
             builder.CloseElement();
         }
 

@@ -184,7 +184,7 @@ public class BlockMappingPipelineTests
         var blocks = await ProcessAsync(pipeline, update);
 
         Assert.Equal(2, blocks.Count);
-        Assert.All(blocks, block => Assert.IsType<DataContentBlock>(block));
+        Assert.All(blocks, block => Assert.IsType<MediaContentBlock>(block));
         Assert.NotEqual(blocks[0].Id, blocks[1].Id);
     }
 

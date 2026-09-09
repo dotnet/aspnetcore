@@ -391,18 +391,6 @@ Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
 Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BackendTranscription = 0 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
 Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BrowserSpeechRecognition = 2 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
 Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription = 1 -> Microsoft.AspNetCore.Components.AI.SpeechRecognitionMode
-Microsoft.AspNetCore.Components.AI.DataContentBlock
-Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.get -> Microsoft.Extensions.AI.DataContent!
-Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.set -> void
-Microsoft.AspNetCore.Components.AI.DataContentBlock.DataContentBlock() -> void
-Microsoft.AspNetCore.Components.AI.MediaContent
-Microsoft.AspNetCore.Components.AI.MediaContent.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
-Microsoft.AspNetCore.Components.AI.MediaContent.AdditionalAttributes.set -> void
-Microsoft.AspNetCore.Components.AI.MediaContent.AlternativeText.get -> string?
-Microsoft.AspNetCore.Components.AI.MediaContent.AlternativeText.set -> void
-Microsoft.AspNetCore.Components.AI.MediaContent.Content.get -> Microsoft.Extensions.AI.DataContent!
-Microsoft.AspNetCore.Components.AI.MediaContent.Content.set -> void
-Microsoft.AspNetCore.Components.AI.MediaContent.MediaContent() -> void
 Microsoft.AspNetCore.Components.AI.MessageAttachButton
 Microsoft.AspNetCore.Components.AI.MessageAttachButton.Accept.get -> string?
 Microsoft.AspNetCore.Components.AI.MessageAttachButton.Accept.set -> void
