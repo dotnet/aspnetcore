@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -192,12 +193,13 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    public Task WaitForNonStreamingPendingTasks()
+    public Task<bool> WaitForNonStreamingPendingTasks()
     {
         return NonStreamingPendingTasksCompletion ??= Execute();
 
-        async Task Execute()
+        async Task<bool> Execute()
         {
+            var navigationExceptionHandled = false;
             while (_nonStreamingPendingTasks.Count > 0)
             {
                 // Create a Task that represents the remaining ongoing work for the rendering process
@@ -214,10 +216,36 @@ internal partial class EndpointHtmlRenderer
                 }
                 catch (NavigationException navigationException)
                 {
+                    if (GetFirstNonNavigationException(pendingWork.Exception) is { } nonNavigationException)
+                    {
+                        ExceptionDispatchInfo.Capture(nonNavigationException).Throw();
+                    }
+
+                    navigationExceptionHandled = true;
                     await HandleNavigationException(_httpContext, navigationException);
                 }
             }
+
+            return navigationExceptionHandled;
         }
+    }
+
+    private static Exception? GetFirstNonNavigationException(AggregateException? aggregateException)
+    {
+        if (aggregateException is null)
+        {
+            return null;
+        }
+
+        foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+        {
+            if (innerException is not NavigationException)
+            {
+                return innerException;
+            }
+        }
+
+        return null;
     }
 
     public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)

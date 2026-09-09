@@ -31,6 +31,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.JSInterop;
+using Microsoft.Net.Http.Headers;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -982,6 +983,38 @@ public class EndpointHtmlRendererTest
             + "has not yet loaded in the browser. Statically-rendered components must wrap any JavaScript interop calls "
             + "in conditional logic to ensure those interop calls are not attempted during static rendering.",
             exception.Message);
+    }
+
+    [Fact]
+    public async Task WaitForNonStreamingPendingTasks_ReportsHandledNavigationException()
+    {
+        var httpContext = GetHttpContext();
+        var renderer = GetEndpointHtmlRenderer();
+        renderer.SetHttpContext(httpContext);
+        renderer.AddNonStreamingPendingTask(Task.FromException(new NavigationException("http://localhost/redirect")));
+
+        var navigationExceptionHandled = await renderer.WaitForNonStreamingPendingTasks();
+
+        Assert.True(navigationExceptionHandled);
+        Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
+        Assert.Equal("http://localhost/redirect", httpContext.Response.Headers.Location);
+    }
+
+    [Fact]
+    public async Task WaitForNonStreamingPendingTasks_DoesNotHandleMixedNavigationAndNonNavigationExceptions()
+    {
+        var httpContext = GetHttpContext();
+        var renderer = GetEndpointHtmlRenderer();
+        renderer.SetHttpContext(httpContext);
+        renderer.AddNonStreamingPendingTask(Task.FromException(new NavigationException("http://localhost/redirect")));
+        renderer.AddNonStreamingPendingTask(Task.FromException(new InvalidOperationException("Test exception")));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            renderer.WaitForNonStreamingPendingTasks);
+
+        Assert.Equal("Test exception", exception.Message);
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.Headers.ContainsKey(HeaderNames.Location));
     }
 
     [ConditionalTheory]
@@ -1993,6 +2026,11 @@ public class EndpointHtmlRendererTest
         {
             SetHttpContext(httpContext);
             await SetNotFoundWhenResponseHasStarted();
+        }
+
+        public void AddNonStreamingPendingTask(Task task)
+        {
+            AddPendingTask(null, task);
         }
     }
 
