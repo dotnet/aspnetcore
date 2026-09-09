@@ -119,8 +119,8 @@ export function isAudioCaptureSupported() {
         typeof navigator?.mediaDevices?.getUserMedia === "function";
 }
 
-export function createAudioRecorder(maximumBytes) {
-    return new AudioRecorder(maximumBytes);
+export function createAudioRecorder(maximumBytes, callbacks) {
+    return new AudioRecorder(maximumBytes, callbacks);
 }
 
 export function isLiveSpeechRecognitionSupported() {
@@ -246,12 +246,16 @@ class LiveSpeechRecognizer {
 }
 
 class AudioRecorder {
-    constructor(maximumBytes) {
+    constructor(maximumBytes, callbacks) {
         this.maximumBytes = maximumBytes;
+        this.callbacks = callbacks;
         this.recorder = undefined;
         this.stream = undefined;
         this.chunks = [];
         this.startedAt = 0;
+        this.stopping = false;
+        this.permissionStatus = undefined;
+        this.permissionChangeHandler = undefined;
     }
 
     async start() {
@@ -265,11 +269,27 @@ class AudioRecorder {
             ? new MediaRecorder(this.stream, { mimeType })
             : new MediaRecorder(this.stream);
         this.chunks = [];
+        this.stopping = false;
         this.recorder.addEventListener("dataavailable", event => {
             if (event.data.size > 0) {
                 this.chunks.push(event.data);
             }
         });
+        this.recorder.addEventListener("error", event => {
+            if (!this.stopping) {
+                this.notifyError(event.error?.name ?? "recorder-error");
+                this.dispose();
+            }
+        });
+        this.stream.getTracks().forEach(track => {
+            track.addEventListener("ended", () => {
+                if (!this.stopping) {
+                    this.notifyError("permission-revoked");
+                    this.dispose();
+                }
+            }, { once: true });
+        });
+        await this.watchMicrophonePermission();
         this.startedAt = performance.now();
         this.recorder.start(250);
     }
@@ -285,6 +305,7 @@ class AudioRecorder {
         }
 
         const activeRecorder = this.recorder;
+        this.stopping = true;
         const remainingCaptureTime = Math.max(0, 600 - (performance.now() - this.startedAt));
         if (remainingCaptureTime > 0) {
             await new Promise(resolve => setTimeout(resolve, remainingCaptureTime));
@@ -331,11 +352,46 @@ class AudioRecorder {
     }
 
     dispose() {
+        this.stopping = true;
+        if (this.permissionStatus && this.permissionChangeHandler) {
+            this.permissionStatus.removeEventListener("change", this.permissionChangeHandler);
+        }
+        this.permissionStatus = undefined;
+        this.permissionChangeHandler = undefined;
         this.stream?.getTracks().forEach(track => track.stop());
         this.stream = undefined;
         this.recorder = undefined;
         this.chunks = [];
         this.startedAt = 0;
+    }
+
+    notifyError(error) {
+        this.callbacks.invokeMethodAsync("OnRecordingErrorAsync", error).catch(error => {
+            console.warn("Audio recording error handling failed.", error);
+        });
+    }
+
+    async watchMicrophonePermission() {
+        try {
+            this.permissionStatus =
+                await navigator.permissions?.query({ name: "microphone" });
+            if (!this.permissionStatus) {
+                return;
+            }
+
+            this.permissionChangeHandler = () => {
+                if (!this.stopping && this.permissionStatus.state === "denied") {
+                    this.notifyError("permission-revoked");
+                    this.dispose();
+                }
+            };
+            this.permissionStatus.addEventListener(
+                "change",
+                this.permissionChangeHandler);
+        } catch {
+            this.permissionStatus = undefined;
+            this.permissionChangeHandler = undefined;
+        }
     }
 }
 

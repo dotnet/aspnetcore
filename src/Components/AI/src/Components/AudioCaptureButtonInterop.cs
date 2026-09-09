@@ -20,12 +20,16 @@ internal sealed class AudioCaptureButtonInterop(IJSRuntime jsRuntime) : IAsyncDi
         return await module.InvokeAsync<bool>("isAudioCaptureSupported");
     }
 
-    public async ValueTask StartRecordingAsync(long maximumBytes)
+    public async ValueTask StartRecordingAsync<T>(
+        long maximumBytes,
+        DotNetObjectReference<T> callbacks)
+        where T : class
     {
         var module = await GetModuleAsync();
         _recorder ??= await module.InvokeAsync<IJSObjectReference>(
             "createAudioRecorder",
-            maximumBytes);
+            maximumBytes,
+            callbacks);
         await _recorder.InvokeVoidAsync("start");
     }
 

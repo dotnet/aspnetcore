@@ -58,6 +58,82 @@ public class AudioCaptureButtonTests
     }
 
     [Fact]
+    public async Task BrowserRecognition_PermissionRevokedStopsListening()
+    {
+        var speechRecognizer = new TestSpeechRecognizer();
+        var (cut, input, _) = RenderAudioCapture(
+            transcribe: null,
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognition,
+            autoSubmit: true,
+            continuousListening: true,
+            speechRecognizer: speechRecognizer);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await speechRecognizer.EmitResultAsync(string.Empty, "unfinished");
+        await speechRecognizer.EmitErrorAsync("not-allowed", isFatal: true);
+
+        Assert.False(input.IsComposing);
+        Assert.Equal("unfinished", input.Text);
+        Assert.Equal(
+            "Microphone access was denied. Allow microphone access to use voice input.",
+            input.ErrorMessage);
+        Assert.Equal(1, speechRecognizer.StartCount);
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
+    }
+
+    [Fact]
+    public async Task Recording_PermissionRevokedStopsRecording()
+    {
+        var (cut, input, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await recorder.EmitErrorAsync("permission-revoked");
+
+        Assert.False(input.IsComposing);
+        Assert.Equal(
+            "Microphone access was revoked. Allow microphone access to record audio.",
+            input.ErrorMessage);
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
+    }
+
+    [Fact]
+    public void BrowserRecognition_UnsupportedDoesNotRenderControl()
+    {
+        var (cut, input, _) = RenderAudioCapture(
+            transcribe: null,
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognition,
+            speechRecognitionSupported: false);
+
+        Assert.DoesNotContain("sc-ai-input__audio", cut.GetHtml());
+        Assert.Null(input.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task BrowserRecognition_InterimAndFinalResultsUpdateTextWithoutClearingIt()
+    {
+        var speechRecognizer = new TestSpeechRecognizer();
+        var transcriptChanges = new List<string>();
+        var (cut, input, _) = RenderAudioCapture(
+            transcribe: null,
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognition,
+            speechRecognizer: speechRecognizer,
+            onInterimTranscript: transcriptChanges.Add);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await speechRecognizer.EmitResultAsync(string.Empty, "hello wor");
+        Assert.Equal("hello wor", input.Text);
+
+        await speechRecognizer.EmitResultAsync("hello world", string.Empty);
+
+        Assert.Equal("hello world", input.Text);
+        Assert.Equal(["hello wor", "hello world"], transcriptChanges);
+    }
+
+    [Fact]
     public async Task ClickWhileTranscribing_CancelsOperationWithoutStoppingRecorderAgain()
     {
         var transcriptionStarted = new TaskCompletionSource(
@@ -146,7 +222,9 @@ public class AudioCaptureButtonTests
             bool autoSubmit = false,
             bool continuousListening = false,
             Action<ChatMessage>? onSubmitted = null,
-            TestSpeechRecognizer? speechRecognizer = null)
+            TestSpeechRecognizer? speechRecognizer = null,
+            bool speechRecognitionSupported = true,
+            Action<string>? onInterimTranscript = null)
     {
         var recorder = new TestAudioRecorder();
         var services = new TestServiceProvider();
@@ -154,7 +232,8 @@ public class AudioCaptureButtonTests
             new TestJSRuntime(
                 new TestAudioModule(
                     recorder,
-                    speechRecognizer ?? new TestSpeechRecognizer())));
+                    speechRecognizer ?? new TestSpeechRecognizer(),
+                    speechRecognitionSupported)));
         var renderer = new TestRenderer(services);
         MessageInputContext? input = null;
         var client = new DelegatingStreamingChatClient();
@@ -206,6 +285,12 @@ public class AudioCaptureButtonTests
                             5,
                             nameof(AudioCaptureButton.ContinuousListening),
                             continuousListening);
+                        childBuilder.AddComponentParameter(
+                            6,
+                            nameof(AudioCaptureButton.OnInterimTranscript),
+                            EventCallback.Factory.Create<string>(
+                                receiver: new object(),
+                                transcript => onInterimTranscript?.Invoke(transcript)));
                         childBuilder.CloseComponent();
                     }));
                 builder.CloseComponent();
@@ -264,7 +349,8 @@ public class AudioCaptureButtonTests
 
     private sealed class TestAudioModule(
         TestAudioRecorder recorder,
-        TestSpeechRecognizer speechRecognizer) : IJSObjectReference
+        TestSpeechRecognizer speechRecognizer,
+        bool speechRecognitionSupported) : IJSObjectReference
     {
         public ValueTask<TValue> InvokeAsync<TValue>(
             string identifier,
@@ -278,10 +364,12 @@ public class AudioCaptureButtonTests
         {
             return identifier switch
             {
-                "isAudioCaptureSupported" or "isLiveSpeechRecognitionSupported" =>
+                "isAudioCaptureSupported" =>
                     ValueTask.FromResult((TValue)(object)true),
+                "isLiveSpeechRecognitionSupported" =>
+                    ValueTask.FromResult((TValue)(object)speechRecognitionSupported),
                 "createAudioRecorder" =>
-                    ValueTask.FromResult((TValue)(object)recorder),
+                    CreateAudioRecorder<TValue>(args),
                 "createLiveSpeechRecognizer" =>
                     CreateSpeechRecognizer<TValue>(args),
                 _ => ValueTask.FromResult(default(TValue)!),
@@ -295,15 +383,33 @@ public class AudioCaptureButtonTests
             speechRecognizer.SetCallbacks(args![0]!);
             return ValueTask.FromResult((TValue)(object)speechRecognizer);
         }
+
+        private ValueTask<TValue> CreateAudioRecorder<TValue>(object?[]? args)
+        {
+            recorder.SetCallbacks(args![1]!);
+            return ValueTask.FromResult((TValue)(object)recorder);
+        }
     }
 
     private sealed class TestAudioRecorder : IJSObjectReference
     {
+        private object? _callbacks;
+
         internal TestStreamReference StreamReference { get; } = new();
 
         internal int StopCount { get; private set; }
 
         internal int StartCount { get; private set; }
+
+        internal void SetCallbacks(object callbacks)
+        {
+            _callbacks = callbacks;
+        }
+
+        internal Task EmitErrorAsync(string error)
+        {
+            return InvokeCallbackAsync("OnRecordingErrorAsync", error);
+        }
 
         public ValueTask<TValue> InvokeAsync<TValue>(
             string identifier,
@@ -338,6 +444,18 @@ public class AudioCaptureButtonTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private Task InvokeCallbackAsync(string methodName, params object[] args)
+        {
+            var callbackReference = _callbacks
+                ?? throw new InvalidOperationException("Audio callbacks were not initialized.");
+            var callback = callbackReference.GetType()
+                .GetProperty("Value")!
+                .GetValue(callbackReference)!;
+            return (Task)callback.GetType()
+                .GetMethod(methodName)!
+                .Invoke(callback, args)!;
+        }
     }
 
     private sealed class TestSpeechRecognizer : IJSObjectReference
@@ -355,14 +473,15 @@ public class AudioCaptureButtonTests
 
         internal Task EmitResultAsync(string finalTranscript, string interimTranscript)
         {
-            var callbackReference = _callbacks
-                ?? throw new InvalidOperationException("Speech callbacks were not initialized.");
-            var callback = callbackReference.GetType()
-                .GetProperty("Value")!
-                .GetValue(callbackReference)!;
-            return (Task)callback.GetType()
-                .GetMethod("OnResultAsync")!
-                .Invoke(callback, [finalTranscript, interimTranscript])!;
+            return InvokeCallbackAsync(
+                "OnResultAsync",
+                finalTranscript,
+                interimTranscript);
+        }
+
+        internal Task EmitErrorAsync(string error, bool isFatal)
+        {
+            return InvokeCallbackAsync("OnErrorAsync", error, isFatal);
         }
 
         public ValueTask<TValue> InvokeAsync<TValue>(
@@ -388,6 +507,18 @@ public class AudioCaptureButtonTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private Task InvokeCallbackAsync(string methodName, params object[] args)
+        {
+            var callbackReference = _callbacks
+                ?? throw new InvalidOperationException("Speech callbacks were not initialized.");
+            var callback = callbackReference.GetType()
+                .GetProperty("Value")!
+                .GetValue(callbackReference)!;
+            return (Task)callback.GetType()
+                .GetMethod(methodName)!
+                .Invoke(callback, args)!;
+        }
     }
 
     private sealed class TestStreamReference : IJSStreamReference

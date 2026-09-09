@@ -187,6 +187,11 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        if (!_isSupported)
+        {
+            return;
+        }
+
         var isActive = _isEnabled || _isRecording || _isTranscribing;
         var disabled = !_isSupported ||
             (!isActive && (Context.IsConversationBusy || Context.IsComposing));
@@ -230,13 +235,6 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             _isSupported = RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition
                 ? await _interop.IsSpeechRecognitionSupportedAsync()
                 : await _interop.IsAudioCaptureSupportedAsync();
-            if (!_isSupported)
-            {
-                Context.SetErrorMessage(
-                    RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition
-                        ? "Browser speech recognition is not supported by this browser."
-                        : "Audio recording is not supported by this browser.");
-            }
             await InvokeAsync(StateHasChanged);
         }
         catch (JSException)
@@ -273,7 +271,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         try
         {
             _interop ??= new AudioCaptureButtonInterop(JSRuntime);
-            await _interop.StartRecordingAsync(MaximumBytes);
+            _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
+            await _interop.StartRecordingAsync(MaximumBytes, _speechCallbackReference);
             if (!ReferenceEquals(_operationCts, operationCts) ||
                 operationCts.IsCancellationRequested)
             {
@@ -748,6 +747,37 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         });
     }
 
+    private Task HandleRecordingErrorAsync(string error)
+    {
+        return InvokeAsync(async () =>
+        {
+            if (!_isRecording)
+            {
+                return;
+            }
+
+            _operationCts?.Cancel();
+            _operationCts?.Dispose();
+            _operationCts = null;
+            _isEnabled = false;
+            _isRecording = false;
+            _isTranscribing = false;
+            _isDictating = false;
+            _isListening = false;
+            Context.SetComposing(false);
+            if (_interop is not null)
+            {
+                await _interop.StopSpeechRecognitionAsync();
+            }
+
+            await OnInterimTranscript.InvokeAsync(string.Empty);
+            Context.SetErrorMessage(error is "permission-revoked" or "not-allowed"
+                ? "Microphone access was revoked. Allow microphone access to record audio."
+                : "Audio recording stopped because the microphone became unavailable.");
+            StateHasChanged();
+        });
+    }
+
     private string CssClass()
     {
         var css = _isEnabled
@@ -792,8 +822,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
     private static string AppendText(string existingText, string transcript)
     {
-        return string.IsNullOrWhiteSpace(existingText)
-            ? transcript
+        if (string.IsNullOrWhiteSpace(existingText))
+        {
+            return transcript;
+        }
+
+        return string.IsNullOrWhiteSpace(transcript)
+            ? existingText.TrimEnd()
             : $"{existingText.TrimEnd()} {transcript}";
     }
 
@@ -843,6 +878,12 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         public Task OnErrorAsync(string error, bool isFatal)
         {
             return owner.HandleSpeechErrorAsync(error, isFatal);
+        }
+
+        [JSInvokable]
+        public Task OnRecordingErrorAsync(string error)
+        {
+            return owner.HandleRecordingErrorAsync(error);
         }
     }
 
