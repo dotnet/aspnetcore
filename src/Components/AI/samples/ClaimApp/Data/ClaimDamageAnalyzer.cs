@@ -414,7 +414,8 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
                 HttpMethod.Post,
                 CreateFoundryEndpoint(
                     $"openai/deployments/{Uri.EscapeDataString(_options.TranscriptionDeployment)}" +
-                    $"/audio/transcriptions?api-version={TranscriptionApiVersion}"));
+                    $"/audio/transcriptions?api-version={TranscriptionApiVersion}",
+                    _options.TranscriptionEndpoint));
             await ApplyAuthenticationAsync(request, cancellationToken);
             using var form = new MultipartFormDataContent();
             using var audioContent = new ByteArrayContent(recording.Data.ToArray());
@@ -485,15 +486,18 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         }
     }
 
-    private Uri CreateFoundryEndpoint(string relativePath)
+    private Uri CreateFoundryEndpoint(
+        string relativePath,
+        string? endpointOverride = null)
     {
-        if (!Uri.TryCreate(_options.Endpoint, UriKind.Absolute, out var endpoint) ||
+        var configuredEndpoint = endpointOverride ?? _options.Endpoint;
+        if (!Uri.TryCreate(configuredEndpoint, UriKind.Absolute, out var endpoint) ||
             endpoint.AbsolutePath != "/" ||
             !string.IsNullOrEmpty(endpoint.Query) ||
             !string.IsNullOrEmpty(endpoint.Fragment))
         {
             throw new InvalidOperationException(
-                "AZURE_OPENAI_ENDPOINT must be an absolute resource URI without a path, query, or fragment.");
+                "Azure OpenAI endpoints must be absolute resource URIs without a path, query, or fragment.");
         }
 
         return new Uri(

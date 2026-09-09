@@ -11,5 +11,7 @@ internal sealed class ClaimFoundryOptions
 
     public string ChatDeployment { get; set; } = "gpt-5-mini";
 
+    public string? TranscriptionEndpoint { get; set; }
+
     public string TranscriptionDeployment { get; set; } = "gpt-4o-mini-transcribe";
 }

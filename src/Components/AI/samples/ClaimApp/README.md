@@ -18,4 +18,8 @@ The signed-in identity must have access to the Azure OpenAI resource, such as th
 
 To use API-key authentication instead, set `AZURE_OPENAI_API_KEY`.
 
-The sample uses `gpt-5-mini` for chat and vision and `gpt-4o-mini-transcribe` for recorded audio. Override them with `AZURE_OPENAI_CHAT_DEPLOYMENT` and `AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT`.
+The sample uses `gpt-5-mini` for chat and vision and
+`gpt-4o-mini-transcribe` for recorded audio. Override them with
+`AZURE_OPENAI_CHAT_DEPLOYMENT` and `AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT`.
+When the transcription deployment belongs to a different resource, set
+`AZURE_OPENAI_TRANSCRIPTION_ENDPOINT` to that resource's endpoint.

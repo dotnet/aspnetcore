@@ -29,6 +29,8 @@ foundryOptions.Endpoint ??= builder.Configuration["AZURE_OPENAI_ENDPOINT"];
 foundryOptions.ApiKey ??= builder.Configuration["AZURE_OPENAI_API_KEY"];
 foundryOptions.ChatDeployment =
     builder.Configuration["AZURE_OPENAI_CHAT_DEPLOYMENT"] ?? foundryOptions.ChatDeployment;
+foundryOptions.TranscriptionEndpoint ??=
+    builder.Configuration["AZURE_OPENAI_TRANSCRIPTION_ENDPOINT"];
 foundryOptions.TranscriptionDeployment =
     builder.Configuration["AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT"] ?? foundryOptions.TranscriptionDeployment;
 
