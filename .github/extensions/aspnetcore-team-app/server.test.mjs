@@ -8,6 +8,7 @@ import {
   loadCanvasData,
   parseRefreshRequest,
 } from "./server.mjs";
+import { loadQueue } from "./queue.mjs";
 import { parseActionRequest } from "./state.mjs";
 
 test("action requests accept only opaque IDs and declared kinds", () => {
@@ -162,6 +163,32 @@ test("canvas data consumes skill-owned personal coverage without hiding the queu
   });
   assert.equal(partial.personalInbox.coverage.overall, "partial");
   assert.equal(partial.personalInbox.metrics.elapsedMs, 10);
+});
+
+test("canvas data falls back to the bundled fixture when live GitHub access fails", async () => {
+  const fixture = await loadQueue({ source: "fixture", preset: "blazor" });
+  const fallback = await loadCanvasData({
+    source: "live",
+    preset: "blazor",
+    identityScope: "PureWeen",
+  }, {
+    loadQueueImpl: async (requested) => {
+      if (requested.source === "live") {
+        throw new Error("GitHub CLI failed: gh: Could not resolve to a Repository with the name 'dotnet/aspnetcore'.");
+      }
+      assert.equal(requested.source, "fixture");
+      return fixture;
+    },
+  });
+
+  assert.equal(fallback.options.source, "fixture");
+  assert.equal(fallback.queue.repository, fixture.queue.repository);
+  assert.equal(fallback.personalInbox.coverage.overall, "unavailable");
+  assert.equal(fallback.personalInbox.items.length, 0);
+  assert.match(
+    fallback.queue.warnings.at(-1),
+    /Live GitHub data unavailable; showing the bundled fixture snapshot instead:/,
+  );
 });
 
 test("review dispatch routes new session and this session prompts distinctly", async () => {

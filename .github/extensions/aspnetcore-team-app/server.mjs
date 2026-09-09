@@ -91,7 +91,30 @@ export async function loadCanvasData(
   options,
   { loadQueueImpl = loadQueue } = {},
 ) {
-  const loaded = await loadQueueImpl(options);
+  let loaded;
+  try {
+    loaded = await loadQueueImpl(options);
+  } catch (error) {
+    if (options.source !== "live") {
+      throw error;
+    }
+
+    const fallbackOptions = {
+      ...options,
+      source: "fixture",
+    };
+    loaded = await loadQueueImpl(fallbackOptions);
+    loaded = {
+      ...loaded,
+      queue: {
+        ...loaded.queue,
+        warnings: [
+          ...(Array.isArray(loaded.queue.warnings) ? loaded.queue.warnings : []),
+          `Live GitHub data unavailable; showing the bundled fixture snapshot instead: ${error.message}`,
+        ],
+      },
+    };
+  }
   return {
     ...loaded,
     personalInbox: normalizePersonalInbox(loaded.queue.personal, loaded.queue),
