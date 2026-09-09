@@ -250,7 +250,7 @@ async function runWithoutReset(item = createItem(), options = {}) {
   };
   const env = {
     ...process.env,
-    RUNNER_TEMP: root,
+    RUNNER_TEMP: Object.hasOwn(options, "runnerTemp") ? options.runnerTemp : root,
     TEST_QUARANTINE_ENABLE_KBE: options.enableKbe ? "true" : "false",
     GH_AW_SAFE_OUTPUTS_STAGED: options.staged ? "true" : "false",
     GH_AW_DETECTION_CONCLUSION: options.threatConclusion ?? "success",
@@ -314,6 +314,15 @@ async function main() {
   {
     const output = await run(createItem(), { enableKbe: true });
     assert.deepEqual(createdIssue(output).labels, ["test-failure", "Known Build Error"]);
+  }
+
+  for (const runnerTemp of [undefined, ""]) {
+    const output = await run(createItem(), { runnerTemp, enableKbe: true });
+    const scenario = `RUNNER_TEMP is ${runnerTemp === undefined ? "missing" : "empty"}`;
+    assert.equal(output.result.success, false, scenario);
+    assert.match(output.result.error, /RUNNER_TEMP must be set/, scenario);
+    assert.equal(output.calls.paginate.length, 0, scenario);
+    assert.equal(output.calls.create.length, 0, scenario);
   }
 
   {
@@ -452,6 +461,69 @@ async function main() {
       ]),
     }), { evidence });
     assert.match(createdIssue(output).body, /"ErrorMessage": \[/);
+  }
+
+  {
+    const values = [
+      "Expected response body to contain stable-marker-123 but it was empty.",
+      "Actual response body: <empty>",
+    ];
+    const item = createItem({
+      matcher_kind: "literal-array",
+      matcher: JSON.stringify(values),
+    });
+    for (const { name, error, matches } of [
+      {
+        name: "substrings on successive lines",
+        error: `[assertion] ${values[0]} (request failed)\n[response] ${values[1]} (length=0)`,
+        matches: true,
+      },
+      {
+        name: "substrings separated by diagnostic lines",
+        error: `[assertion] ${values[0]}\nAdditional diagnostic details\n${values[1]} (length=0)`,
+        matches: true,
+      },
+      {
+        name: "substrings in reverse order",
+        error: `${values[1]}\n${values[0]}`,
+        matches: false,
+      },
+      {
+        name: "substrings on the same line",
+        error: `${values[0]} ${values[1]}`,
+        matches: false,
+      },
+    ]) {
+      const evidence = createEvidence();
+      evidence.source_a[testName].error = error;
+      const issue = createdIssue(await run(item, { evidence, enableKbe: true }));
+      assert.deepEqual(
+        issue.labels,
+        matches ? ["test-failure", "Known Build Error"] : ["test-failure"],
+        name,
+      );
+      if (matches) {
+        const json = JSON.parse(issue.body.match(/```json\n([\s\S]*?)\n```/)[1]);
+        assert.deepEqual(json.ErrorMessage, values, name);
+      } else {
+        assert.doesNotMatch(issue.body, /```json/, name);
+        assert.match(issue.body, /does not match this test's deterministic error or stack evidence/, name);
+      }
+    }
+
+    for (const source of ["source_a", "source_b"]) {
+      const evidence = createEvidence();
+      evidence.source_a[testName].error = values.join("\n");
+      evidence[source][otherTestName] = {
+        ...evidence.source_a[testName],
+        error: `[other test] ${values[0]}\nAdditional details\n${values[1]} (length=0)`,
+        stack: "",
+      };
+      const issue = createdIssue(await run(item, { evidence, enableKbe: true }));
+      assert.deepEqual(issue.labels, ["test-failure"], source);
+      assert.doesNotMatch(issue.body, /```json/, source);
+      assert.match(issue.body, /matcher also matches another failure record/, source);
+    }
   }
 
   {

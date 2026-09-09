@@ -537,6 +537,7 @@ on:
       env:
         SOURCE_B_BUILD_IDS: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
       run: |
+        : "${RUNNER_TEMP:?RUNNER_TEMP must be set}"
         # Part 1 (Sources A/B/C) failure gathering is the dominant token sink of this
         # workflow: it spans ~200 builds, many resultsbyBuild calls, and multi-MB Helix
         # console logs. Surfacing that data into the metered agent loop is what exhausted
@@ -1156,7 +1157,7 @@ on:
             js = main()
             validate_part1_json(js)
             evidence_path = os.path.join(
-                os.environ.get("RUNNER_TEMP", "/tmp"),
+                os.environ["RUNNER_TEMP"],
                 "test-quarantine-part1.json")
             with open(evidence_path, "w", encoding="utf-8") as evidence_file:
                 evidence_file.write(js)
@@ -1178,6 +1179,7 @@ on:
         CLOSED_QUARANTINE_PRS: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        : "${RUNNER_TEMP:?RUNNER_TEMP must be set}"
         python3 << 'SCRIPT'
         import json
         import os
@@ -1191,7 +1193,7 @@ on:
         if not isinstance(parsed, list):
             raise SystemExit("FATAL: CLOSED_QUARANTINE_PRS must be a JSON array")
         pathlib.Path(
-            os.environ.get("RUNNER_TEMP", "/tmp"),
+            os.environ["RUNNER_TEMP"],
             "test-quarantine-closed-prs.json",
         ).write_text(json.dumps(parsed, separators=(",", ":")), encoding="utf-8")
         SCRIPT
@@ -1396,12 +1398,16 @@ safe-outputs:
           return fail(`Threat detection did not succeed: ${process.env.GH_AW_DETECTION_CONCLUSION}`);
         }
 
+        const runnerTemp = process.env.RUNNER_TEMP;
+        if (!runnerTemp) {
+          return fail("RUNNER_TEMP must be set for deterministic evidence validation");
+        }
         const evidencePath = path.join(
-          process.env.RUNNER_TEMP || "/tmp",
+          runnerTemp,
           "test-quarantine-evidence",
           "test-quarantine-part1.json");
         const eligibilityPath = path.join(
-          process.env.RUNNER_TEMP || "/tmp",
+          runnerTemp,
           "test-quarantine-evidence",
           "test-quarantine-case-a-eligibility.json");
         let evidence;

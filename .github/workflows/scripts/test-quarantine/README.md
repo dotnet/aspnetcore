@@ -91,6 +91,17 @@ regression, stale failure, existing quarantine, or Case B record into a KBE.
 
 ## Validation
 
+The `Quarantine workflow checks` pull-request workflow runs both suites below
+when the quarantine workflow, matcher instructions, skill, or supporting scripts
+change. It uses a disposable GitHub-hosted runner with read-only permissions,
+does not persist checkout credentials, and has no secrets or artifact handoff
+to the privileged quarantine workflow.
+
+These fixtures use synthetic evidence, mock GitHub requests, and temporary Git
+repositories. They do not create issues or pull requests, run an agent, or prove
+live Build Insights enrollment. The workflow source and generated lock still
+need the separate compilation step below.
+
 Run the executable handler tests:
 
 ```bash
@@ -100,7 +111,7 @@ node .github/workflows/scripts/test-quarantine/test_kbe_issue_handler.js
 Run the deterministic collector fixtures:
 
 ```bash
-python3 .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
+python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
 ```
 
 Validate the source with the repository's gh-aw v0.88.2 toolchain:

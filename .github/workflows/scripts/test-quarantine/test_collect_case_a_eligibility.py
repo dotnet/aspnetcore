@@ -8,6 +8,7 @@ import os
 import pathlib
 import subprocess
 import tempfile
+import textwrap
 from unittest import mock
 
 
@@ -187,6 +188,37 @@ def test_github_pr_files():
         else:
             raise AssertionError("github_pr_files must fail when a page cannot be read")
     failing_urlopen.assert_called_once()
+
+
+def test_workflow_runner_temp():
+    workflow = (SCRIPT.parents[2] / "test-quarantine.md").read_text(encoding="utf-8")
+    for step_name in ["Aggregate Part 1 failures", "Collect deterministic Case A eligibility"]:
+        step = workflow.split(f"    - name: {step_name}\n", 1)[1].split("\n    - name:", 1)[0]
+        script = textwrap.dedent(step.split("      run: |\n", 1)[1])
+        # Stop at the first Python invocation so the preflight cannot collect live evidence.
+        command = "python3() { printf 'Python invoked\\n' >&2; return 97; }\n" + script
+        with tempfile.TemporaryDirectory() as directory:
+            for name, runner_temp in [("missing", None), ("empty", ""), ("set", directory)]:
+                env = dict(os.environ)
+                env.pop("RUNNER_TEMP", None)
+                if runner_temp is not None:
+                    env["RUNNER_TEMP"] = runner_temp
+                result = subprocess.run(
+                    ["/bin/bash", "--noprofile", "--norc", "-e", "-c", command],
+                    env=env,
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                scenario = f"{step_name}: RUNNER_TEMP {name}"
+                if runner_temp:
+                    assert result.returncode == 97, (scenario, result.stderr)
+                    assert "Python invoked" in result.stderr, scenario
+                else:
+                    assert result.returncode != 0, scenario
+                    assert "RUNNER_TEMP must be set" in result.stderr, (scenario, result.stderr)
+                    assert "Python invoked" not in result.stderr, scenario
 
 
 def initialize_repository(root, project_count=1):
@@ -392,6 +424,7 @@ def run_output(root, *args):
 
 
 def main():
+    test_workflow_runner_temp()
     test_github_pr_files()
 
     assert MODULE.github_changed_paths([

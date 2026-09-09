@@ -53,10 +53,15 @@ stack trace. It must identify the failure mode rather than merely the test.
 
 Use an ordered array when no single line is specific enough. Every element:
 
-- represents one line;
+- is a literal substring of a single line;
 - is copied verbatim;
 - contributes meaningful specificity;
-- appears in order in the supplied evidence.
+- appears on a later line than the preceding element in the supplied evidence.
+
+Build Insights uses `String.Contains`, not whole-line equality, for each
+`ErrorMessage` element. Prefixes and suffixes on a line are allowed, and
+matching lines do not have to be adjacent. The handler uses the same semantics
+both to verify the selected failure and to reject matches against other tests.
 
 Do not pad arrays with generic text.
 
