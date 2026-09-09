@@ -1337,24 +1337,123 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_ReportsUnrelatedError_WhenConnectionCancellationIsRequested()
+    public async Task UpdateRootComponents_CompletesQueuedUpdates_WhenCircuitIsDisposed()
     {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(handler)
+            .BuildServiceProvider();
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: GetRemoteRenderer(),
-            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
-        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+            serviceScope: services.CreateAsyncScope());
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var queuedUpdates = Enumerable.Range(2, 3)
+            .Select(batchId =>
+            {
+                var store = new Mock<IClearableStore>();
+                var update = circuitHost.UpdateRootComponents(new()
+                {
+                    BatchId = batchId,
+                    Operations = [CreateAddOperation<DynamicallyAddedComponent>(batchId)],
+                }, store.Object, false, CancellationToken.None);
+                return (store, update);
+            })
+            .ToArray();
+
+        await circuitHost.DisposeAsync();
+
+        Assert.All(queuedUpdates, item =>
+        {
+            Assert.True(item.update.IsCompletedSuccessfully);
+            item.store.Verify(store => store.Clear(), Times.Once);
+        });
+
+        handler.Release();
+        await firstUpdate;
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_RejectsUpdate_WhenPendingQueueLimitIsReached()
+    {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(handler)
+            .BuildServiceProvider();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope());
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var queuedUpdates = Enumerable.Range(2, 9)
+            .Select(batchId => circuitHost.UpdateRootComponents(new()
+            {
+                BatchId = batchId,
+                Operations = [CreateAddOperation<DynamicallyAddedComponent>(batchId)],
+            }, null, false, CancellationToken.None))
+            .ToArray();
+        var rejectedStores = new[] { new Mock<IClearableStore>(), new Mock<IClearableStore>() };
+
+        try
+        {
+            var rejectedUpdates = rejectedStores.Select((store, index) => circuitHost.UpdateRootComponents(new()
+            {
+                BatchId = 11 + index,
+                Operations = [CreateAddOperation<DynamicallyAddedComponent>(11 + index)],
+            }, store.Object, false, CancellationToken.None));
+
+            await Task.WhenAll(rejectedUpdates).WaitAsync(TimeSpan.FromSeconds(5));
+
+            var exception = Assert.Single(unhandledExceptions);
+            Assert.Equal("The maximum number of pending root component updates has been exceeded.", exception.Message);
+            Assert.All(rejectedStores, store => store.Verify(rejectedStore => rejectedStore.Clear(), Times.Once));
+            Assert.All(queuedUpdates, update => Assert.False(update.IsCompleted));
+        }
+        finally
+        {
+            await circuitHost.DisposeAsync();
+            handler.Release();
+            await firstUpdate;
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_AcknowledgesSuccessfulUpdate_WhenConnectionCancellationIsRequested()
+    {
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-        circuitHost.UnhandledException += (_, eventArgs) => unhandledException.SetResult((Exception)eventArgs.ExceptionObject);
 
         await circuitHost.UpdateRootComponents(new()
         {
-            Operations = [CreateUpdateOperation<DynamicallyAddedComponent>(99)],
+            BatchId = 1,
+            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
         }, null, false, cancellation.Token);
 
-        var exception = await unhandledException.Task;
-        Assert.Equal("No root component exists with SSR component ID 99.", exception.Message);
+        client.Verify(c => c.SendCoreAsync(
+            "JS.EndUpdateRootComponents",
+            It.Is<object[]>(arguments => (long)arguments[0] == 1),
+            It.Is<CancellationToken>(token => !token.IsCancellationRequested)), Times.Once);
     }
 
     [Fact]
