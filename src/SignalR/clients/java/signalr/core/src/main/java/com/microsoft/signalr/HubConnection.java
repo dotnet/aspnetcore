@@ -46,9 +46,10 @@ public class HubConnection implements AutoCloseable {
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
     private final HttpClient httpClient;
     private final Transport customTransport;
-    private final OnReceiveCallBack callback;
     private final Single<String> accessTokenProvider;
     private final TransportEnum transportEnum;
+    // Teardown left running by a start that failed. Guarded by state.lock.
+    private Completable pendingTeardown = Completable.complete();
 
     // These are all user-settable properties
     private String baseUrl;
@@ -165,8 +166,6 @@ public class HubConnection implements AutoCloseable {
 
         this.serverTimeout = serverTimeout;
         this.keepAliveInterval = keepAliveInterval;
-
-        this.callback = (payload) -> ReceiveLoop(payload);
     }
 
     private Single<NegotiateResponse> handleNegotiate(String url, Map<String, String> localHeaders) {
@@ -291,8 +290,10 @@ public class HubConnection implements AutoCloseable {
 
                 connectionState.transport = transport;
 
-                transport.setOnReceive(this.callback);
-                transport.setOnClose((message) -> stopConnection(message));
+                // Scope the callbacks to this attempt. Once the attempt is no longer the current one,
+                // its transport must not be able to touch whatever connection replaced it.
+                transport.setOnReceive((payload) -> ReceiveLoop(connectionState, payload));
+                transport.setOnClose((message) -> stopConnection(connectionState, message));
 
                 return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
                     ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
@@ -354,6 +355,9 @@ public class HubConnection implements AutoCloseable {
                         // DISCONNECTED state, so nothing ever cleaned them up.
                         releaseConnection = true;
                         this.state.setConnectionState(null);
+                        // stop() and close() have to be able to wait for this teardown, otherwise they
+                        // report the connection stopped while its transport is still shutting down.
+                        this.pendingTeardown = connectionState.getTransportStopped();
                         connectionState.close();
                         this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
                     }
@@ -365,13 +369,8 @@ public class HubConnection implements AutoCloseable {
 
                 if (releaseConnection) {
                     try {
-                        // The cleanup above already ran, so stop the transport without letting its onClose
-                        // callback re-enter stopConnection now that there is no connection state.
-                        Transport failedTransport = connectionState.transport;
-                        if (failedTransport != null) {
-                            failedTransport.setOnClose((message) -> {
-                            });
-                        }
+                        // The transport's callbacks are scoped to this attempt, so they no-op from here on
+                        // and stopping it cannot disturb whatever connection comes next.
                         connectionState.stopTransport().onErrorComplete().subscribe();
                     } catch (Exception ex) {
                         // Cleaning up must never keep the start task from terminating below, since that
@@ -447,7 +446,9 @@ public class HubConnection implements AutoCloseable {
         this.state.lock();
         try {
             if (this.state.getHubConnectionState() == HubConnectionState.DISCONNECTED) {
-                return Completable.complete();
+                // A start that already failed released the connection and kicked off its transport
+                // teardown. Wait for that instead of reporting stopped while it is still running.
+                return this.pendingTeardown;
             }
 
             connectionState = this.state.getConnectionStateUnsynchronized(false);
@@ -476,13 +477,19 @@ public class HubConnection implements AutoCloseable {
         return subject;
     }
 
-    private void ReceiveLoop(ByteBuffer payload)
+    private void ReceiveLoop(ConnectionState expectedState, ByteBuffer payload)
     {
         List<HubMessage> messages;
         ConnectionState connectionState;
         this.state.lock();
         try {
-            connectionState = this.state.getConnectionState();
+            connectionState = this.state.getConnectionStateUnsynchronized(true);
+            if (connectionState != expectedState) {
+                // The attempt that owns this transport is gone, so this payload is no longer ours to handle.
+                logger.debug("Ignoring a message received after its connection was released.");
+                return;
+            }
+
             connectionState.resetServerTimeout();
             connectionState.handleHandshake(payload);
             // The payload only contained the handshake response so we can return.
@@ -561,11 +568,18 @@ public class HubConnection implements AutoCloseable {
         return stop(null);
     }
 
-    private void stopConnection(String errorMessage) {
+    private void stopConnection(ConnectionState expectedState, String errorMessage) {
         RuntimeException exception = null;
         this.state.lock();
         try {
             ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
+
+            if (connectionState != expectedState) {
+                // The attempt that owns this transport was already released, so there is nothing left to
+                // stop. Tearing down here would close whatever connection replaced it.
+                logger.debug("Ignoring a transport close for a connection that was already released.");
+                return;
+            }
 
             if (connectionState == null)
             {
@@ -1560,6 +1574,11 @@ public class HubConnection implements AutoCloseable {
             handshakeTimeout.schedule(() -> {
                 errorHandshake(new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
             }, timeout, unit);
+        }
+
+        // The shared stop for this attempt's transport, without starting it.
+        public Completable getTransportStopped() {
+            return transportStopped;
         }
 
         // Stops the transport at most once. Both a failed start and stop() get here, and stopping a

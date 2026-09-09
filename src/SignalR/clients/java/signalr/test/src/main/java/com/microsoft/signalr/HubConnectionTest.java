@@ -3399,6 +3399,70 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
+    // stop() used to short circuit on the DISCONNECTED state that a failed start had already published,
+    // so it reported the connection stopped while the abandoned transport was still shutting down.
+    @Test
+    public void stopAfterFailedStartWaitsForTheTransportToStop() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        CompletableSubject releaseTransportStop = CompletableSubject.create();
+        AtomicBoolean transportStopped = new AtomicBoolean(false);
+
+        Transport transport = new Transport() {
+            @Override
+            public Completable start(String url) {
+                return Completable.complete();
+            }
+
+            @Override
+            public Completable send(ByteBuffer message) {
+                return Completable.complete();
+            }
+
+            @Override
+            public void setOnReceive(OnReceiveCallBack callback) {
+            }
+
+            @Override
+            public void onReceive(ByteBuffer message) {
+            }
+
+            @Override
+            public void setOnClose(TransportOnClosedCallback onCloseCallback) {
+            }
+
+            @Override
+            public Completable stop() {
+                // Take as long to shut down as a transport whose peer never answers the close.
+                return releaseTransportStop.doOnComplete(() -> transportStopped.set(true));
+            }
+        };
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        // Never send a handshake response, so start fails on the handshake timeout.
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        TestObserver<Void> stop = hubConnection.stop().test();
+        stop.assertNotComplete();
+        assertFalse(transportStopped.get());
+
+        releaseTransportStop.onComplete();
+
+        stop.awaitDone(30, TimeUnit.SECONDS).assertComplete();
+        assertTrue(transportStopped.get());
+    }
+
     // The abandoned attempt also leaves behind the close callback that tears the hub down. Releasing it
     // has to detach that callback, otherwise a late close from the abandoned transport closes whichever
     // connection is current by then.
