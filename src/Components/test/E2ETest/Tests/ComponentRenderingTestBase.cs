@@ -93,7 +93,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         TemporaryDiagnostic_CounterClickScreenshotCore(nameof(TemporaryDiagnostic_CounterClickScreenshot_Quarantined));
     }
 
-    private static void TemporaryDiagnostic_CounterClickScreenshotCore(string testName)
+    private void TemporaryDiagnostic_CounterClickScreenshotCore(string testName)
     {
         Output.WriteLine($"TemporaryDiagnostic test: Microsoft.AspNetCore.Components.E2ETest.Tests.ComponentRenderingTest.{testName}");
         var screenshotsPath = E2ETestOptions.Instance.ScreenShotsPath;
@@ -107,7 +107,10 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
         appElement.FindElement(By.TagName("button")).Click();
         Browser.Equal("Current count: 1", () => countDisplayElement.Text);
-        Browser.Equal("Current count: 2", () => countDisplayElement.Text);
+        Browser.True(
+            () => countDisplayElement.Text == "Current count: 2",
+            TimeSpan.FromSeconds(2),
+            "Expected counter text to become 'Current count: 2' after proving the real click produced 'Current count: 1'.");
     }
 
     [Fact]

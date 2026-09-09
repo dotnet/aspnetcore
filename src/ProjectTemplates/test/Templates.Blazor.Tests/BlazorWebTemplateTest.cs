@@ -337,12 +337,10 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var browserKind = BrowserKind.Chromium;
         if (!BrowserManager.IsAvailable(browserKind))
         {
-            EnsureBrowserAvailable(browserKind);
-            return;
+            Assert.Fail($"Temporary diagnostic requires browser '{browserKind}' to be available.");
         }
 
         Output.WriteLine($"TemporaryDiagnostic test: BlazorTemplates.Tests.BlazorWebTemplateTest.{testName}");
-        Output.WriteLine($"TemporaryDiagnostic video directory: {Path.Combine(AppContext.BaseDirectory, "videos")}");
         Output.WriteLine("TemporaryDiagnostic app boundary: built project");
 
         var project = await CreateBuildPublishAsync(args: ["-int", "Server", "-au", "None"]);
@@ -355,6 +353,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
         await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
         var page = await browser.NewPageAsync();
+        Assert.NotNull(page.Video);
 
         try
         {
@@ -374,6 +373,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         }
         finally
         {
+            Output.WriteLine($"TemporaryDiagnostic video path: {await page.Video.PathAsync()}");
             await page.CloseAsync();
         }
     }
