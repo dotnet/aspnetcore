@@ -24,7 +24,7 @@ public class ClaimDamageAnalyzerTests
             credential);
         using var cancellationSource = new CancellationTokenSource();
         var transcriptionTask = analyzer.TranscribeAsync(
-            new DataContent([1, 2, 3, 4], "audio/webm"),
+            new DataContent(new byte[] { 1, 2, 3, 4 }, "audio/webm"),
             cancellationSource.Token);
 
         await credential.AuthenticationStarted;
