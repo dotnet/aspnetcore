@@ -4,14 +4,14 @@
 using Microsoft.AspNetCore.Components.AI;
 using Microsoft.Extensions.AI;
 
-namespace DojoClient.Components.Scenarios.SharedState;
+namespace DojoClient;
 
-internal sealed class SharedStateConversationThread : IConversationThread
+internal sealed class DojoConversationThread : IConversationThread
 {
     private readonly List<ChatResponseUpdate> _updates = [];
     private List<ChatResponseUpdate>? _currentTurn;
 
-    internal SharedStateConversationThread(string threadId)
+    internal DojoConversationThread(string threadId)
     {
         ArgumentException.ThrowIfNullOrEmpty(threadId);
         ThreadId = threadId;

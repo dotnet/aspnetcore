@@ -72,7 +72,7 @@
 
     private readonly HashSet<string> _changedSections = new(StringComparer.Ordinal);
     private UIAgent<RecipeState> _agent = default!;
-    private SharedStateConversationThread _thread = default!;
+    private DojoConversationThread _thread = default!;
     private IDisposable? _stateChangedRegistration;
     private Recipe _lastRecipe = default!;
     private bool _isApplyingLocalState;
@@ -86,7 +86,7 @@
 
     private UIAgent<RecipeState> CreateAgent(RecipeState initialState)
     {
-        _thread = new SharedStateConversationThread(Guid.NewGuid().ToString("N"));
+        _thread = new DojoConversationThread(Guid.NewGuid().ToString("N"));
 
         return new UIAgent<RecipeState>(ChatClient, options =>
         {

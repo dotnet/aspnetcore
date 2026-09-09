@@ -7,7 +7,10 @@ Microsoft.AspNetCore.Components.AI.AgentBoundary.ChildContent.get -> Microsoft.A
 Microsoft.AspNetCore.Components.AI.AgentBoundary.ChildContent.set -> void
 Microsoft.AspNetCore.Components.AI.AgentBoundary.Dispose() -> void
 Microsoft.AspNetCore.Components.AI.AgentState<T>
+Microsoft.AspNetCore.Components.AI.AgentState<T>.AcceptPredictiveState() -> void
+Microsoft.AspNetCore.Components.AI.AgentState<T>.HasPendingPredictiveState.get -> bool
 Microsoft.AspNetCore.Components.AI.AgentState<T>.OnChanged(System.Action! callback) -> System.IDisposable!
+Microsoft.AspNetCore.Components.AI.AgentState<T>.RejectPredictiveState() -> void
 Microsoft.AspNetCore.Components.AI.AgentState<T>.Value.get -> T!
 Microsoft.AspNetCore.Components.AI.AgentState<T>.Value.set -> void
 Microsoft.AspNetCore.Components.AI.AgentContext
@@ -274,6 +277,7 @@ Microsoft.AspNetCore.Components.AI.StrongNode
 Microsoft.AspNetCore.Components.AI.StrongNode.StrongNode() -> void
 Microsoft.AspNetCore.Components.AI.StateMapperContext
 Microsoft.AspNetCore.Components.AI.StateMapperContext.MarkHandled(Microsoft.Extensions.AI.AIContent! content) -> void
+Microsoft.AspNetCore.Components.AI.StateMapperContext.SetPredictiveState(object! value) -> void
 Microsoft.AspNetCore.Components.AI.StateMapperContext.SetState(object! value) -> void
 Microsoft.AspNetCore.Components.AI.StateMapperContext.UnhandledContents.get -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent!>!
 Microsoft.AspNetCore.Components.AI.StateMapperContext.Update.get -> Microsoft.Extensions.AI.ChatResponseUpdate!

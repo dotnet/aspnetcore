@@ -50,6 +50,15 @@ internal class DojoModelOverrides
             new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
     }
 
+    public static void PredictiveStateUpdates(IServiceCollection services)
+    {
+        services.AddSingleton(_ => RecordedScript.Load("PredictiveStateUpdates.recording.json"));
+        services.AddScoped<RecordedChatClient>();
+        services.AddKeyedScoped<IChatClient>(
+            "predictive-state-updates-model",
+            (sp, _) => sp.GetRequiredService<RecordedChatClient>());
+    }
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
