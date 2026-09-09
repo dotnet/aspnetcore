@@ -97,6 +97,50 @@ The script repacks the selected template project, reinstalls the locally built p
 project under `scripts`, imports the local Shipping and NonShipping package sources, and publishes the generated
 application to `.publish`.
 
+#### Generate a template with Individual authentication
+
+Use a local runner when the generated application must be restored, published, and run against the locally built ASP.NET Core packages and runtime:
+
+```powershell
+.\src\ProjectTemplates\scripts\Run-BlazorWeb-Locally.ps1 `
+    -Auth Individual -Interactivity Auto -Configuration Release
+```
+
+Equivalent runners are available for Razor Pages, MVC, and standalone Blazor WebAssembly:
+
+```powershell
+.\src\ProjectTemplates\scripts\Run-Razor-Locally.ps1 -Auth Individual
+.\src\ProjectTemplates\scripts\Run-Starterweb-Locally.ps1 -Auth Individual
+.\src\ProjectTemplates\scripts\Run-BlazorWasm-Locally.ps1 -Auth Individual
+```
+
+The Blazor Auto runner publishes the server project to
+`src\ProjectTemplates\scripts\MyBlazorApp\MyBlazorApp\.publish\MyBlazorApp.exe`.
+The helper restores the selected main project before running Entity Framework migrations and passes it explicitly as both the EF target and startup project. SQLite is the default; pass `-UseLocalDb` only when LocalDB is required.
+
+To validate template installation and generation without modifying the default template hive, install the locally built package into a custom hive:
+
+```powershell
+$packages = @(Get-ChildItem `
+    ".\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.*-dev.nupkg")
+if ($packages.Count -ne 1) {
+    throw "Expected exactly one locally built web project-template package, but found $($packages.Count)."
+}
+
+$hive = Join-Path $PWD "artifacts\template-hive"
+$output = Join-Path $PWD "artifacts\generated\BlazorIndividual"
+
+dotnet new install $packages[0].FullName --debug:custom-hive $hive
+dotnet new blazor --auth Individual --interactivity Auto --no-restore `
+    --output $output `
+    --debug:disable-sdk-templates `
+    --debug:custom-hive $hive
+```
+
+For Razor Pages or MVC, replace `blazor --interactivity Auto` with `webapp` or `mvc` and retain `--auth Individual`. `--debug:custom-hive` isolates template registration; `--debug:disable-sdk-templates` ensures the SDK-bundled template does not take precedence.
+
+Custom-hive creation validates installation and generation only. Use the `Run-*-Locally.ps1` runners for restore, build, publish, and runtime validation because they add the generated `Templates.Tests` imports, both local package sources, and the isolated locally built runtime.
+
 Run framework-dependent outputs with the isolated SDK and locally built `Microsoft.AspNetCore.App` prepared by
 the script:
 
@@ -114,7 +158,7 @@ Confirm behavior at the application boundary, then stop the process with <kbd>Ct
 | Area | Script | Generated output | Manual probe |
 | --- | --- | --- | --- |
 | Web API | `Run-WebApi-Locally.ps1` | `webapi\.publish\webapi.exe` | Request `/weatherforecast` |
-| Blazor | `Run-BlazorWeb-Locally.ps1` | `MyBlazorApp\.publish\MyBlazorApp.exe` | Request `/` and interact with the changed UI |
+| Blazor | `Run-BlazorWeb-Locally.ps1` | `MyBlazorApp\.publish\MyBlazorApp.exe` (Server) or `MyBlazorApp\MyBlazorApp\.publish\MyBlazorApp.exe` (Auto/WebAssembly) | Request `/`, complete registration/login for Individual auth, and interact with the changed UI |
 | Worker | `Run-Worker-Locally.ps1` | `worker\.publish\worker.exe` | Observe the recurring worker log |
 | gRPC | `Run-gRPC-Locally.ps1` | `grpc\.publish\grpc.exe` | Call the Greeter service with an HTTP/2 gRPC client |
 | MCP | `Run-McpServer-Locally.ps1` | `mcpserver\.publish\mcpserver.exe` | Connect an MCP stdio client and initialize a session |
