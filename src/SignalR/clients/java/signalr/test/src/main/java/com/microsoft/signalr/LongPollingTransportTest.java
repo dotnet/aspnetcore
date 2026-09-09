@@ -34,8 +34,8 @@ public class LongPollingTransportTest {
         assertFalse(transport.isActive());
     }
 
-    // The receive loop only starts after the first poll succeeds, so a stop() that races with a failed
-    // start used to wait forever on a loop that never ran.
+    // stop() sends DELETE and then waits on receiveLoopSubject. The receive loop only starts once the
+    // first poll succeeds, so stopping after a failed start used to wait on a loop that never ran.
     @Test
     public void LongPollingTransportStopDoesNotHangWhenStartFails() {
         TestHttpClient client = new TestHttpClient()

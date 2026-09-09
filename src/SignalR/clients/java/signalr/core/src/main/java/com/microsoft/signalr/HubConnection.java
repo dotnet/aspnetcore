@@ -364,14 +364,20 @@ public class HubConnection implements AutoCloseable {
                 }
 
                 if (releaseConnection) {
-                    // The cleanup above already ran, so stop the transport without letting its onClose
-                    // callback re-enter stopConnection now that there is no connection state.
-                    Transport failedTransport = connectionState.transport;
-                    if (failedTransport != null) {
-                        failedTransport.setOnClose((message) -> {
-                        });
+                    try {
+                        // The cleanup above already ran, so stop the transport without letting its onClose
+                        // callback re-enter stopConnection now that there is no connection state.
+                        Transport failedTransport = connectionState.transport;
+                        if (failedTransport != null) {
+                            failedTransport.setOnClose((message) -> {
+                            });
+                        }
+                        connectionState.stopTransport().onErrorComplete().subscribe();
+                    } catch (Exception ex) {
+                        // Cleaning up must never keep the start task from terminating below, since that
+                        // leaves the caller waiting forever on a connection that already failed.
+                        logger.warn("Failed to clean up after the connection failed to start.", ex);
                     }
-                    connectionState.stopTransport().onErrorComplete().subscribe();
                 }
 
                 localStart.onError(error);
@@ -1560,8 +1566,17 @@ public class HubConnection implements AutoCloseable {
         // transport twice runs its shutdown a second time, so callers share a single stop.
         public Completable stopTransport() {
             if (transportStopInitiated.compareAndSet(false, true)) {
-                Transport transportToStop = this.transport;
-                Completable stop = (transportToStop != null) ? transportToStop.stop() : Completable.complete();
+                Completable stop;
+                try {
+                    Transport transportToStop = this.transport;
+                    stop = (transportToStop != null) ? transportToStop.stop() : Completable.complete();
+                } catch (Exception ex) {
+                    // A transport that failed to start can throw from stop(), for example a WebSocket
+                    // that never created its client. Report that instead of throwing at the caller,
+                    // which would leave whoever is waiting on this stop hanging.
+                    stop = Completable.error(ex);
+                }
+
                 stop.subscribe(() -> transportStopped.onComplete(), e -> transportStopped.onError(e));
             }
 
