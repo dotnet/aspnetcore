@@ -1189,16 +1189,22 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Creates a claims principal for the specified 2fa information.
     /// </summary>
-    /// <param name="userId">The user whose is logging in via 2fa.</param>
-    /// <param name="loginProvider">The 2fa provider.</param>
+    /// <param name="user">The user who is logging in via 2fa.</param>
+    /// <param name="loginProvider">The external login provider used to complete sign-in after 2FA (if applicable).</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
-    internal static ClaimsPrincipal StoreTwoFactorInfo(string userId, string? loginProvider)
+    internal async Task<ClaimsPrincipal> StoreTwoFactorInfo(TUser user, string? loginProvider)
     {
+        var userId = await UserManager.GetUserIdAsync(user);
         var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         identity.AddClaim(new Claim(ClaimTypes.Name, userId));
         if (loginProvider != null)
         {
             identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
+        }
+        if (UserManager.SupportsUserSecurityStamp)
+        {
+            var stamp = await UserManager.GetSecurityStampAsync(user);
+            identity.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, stamp));
         }
         return new ClaimsPrincipal(identity);
     }
@@ -1253,9 +1259,8 @@ public class SignInManager<TUser> where TUser : class
 
                 if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
                 {
-                    // Store the userId for use after two factor check
-                    var userId = await UserManager.GetUserIdAsync(user);
-                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                    // Store the user for use after two factor check
+                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, await StoreTwoFactorInfo(user, loginProvider));
                 }
 
                 return SignInResult.TwoFactorRequired;
@@ -1290,13 +1295,9 @@ public class SignInManager<TUser> where TUser : class
             return null;
         }
 
-        var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
-        if (userId == null)
-        {
-            return null;
-        }
-
-        var user = await UserManager.FindByIdAsync(userId);
+        // Validate the security stamp embedded in the two-factor principal so that a stale
+        // two-factor cookie (e.g. issued before a password reset) can no longer complete sign in.
+        var user = await ValidateTwoFactorSecurityStampAsync(result.Principal);
         if (user == null)
         {
             return null;
