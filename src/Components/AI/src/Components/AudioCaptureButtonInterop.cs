@@ -13,57 +13,73 @@ internal sealed class AudioCaptureButtonInterop(IJSRuntime jsRuntime) : IAsyncDi
     private IJSObjectReference? _module;
     private IJSObjectReference? _recorder;
     private IJSObjectReference? _speechRecognizer;
+    private bool? _isAudioCaptureSupported;
+    private bool? _isSpeechRecognitionSupported;
 
     public async ValueTask<bool> IsAudioCaptureSupportedAsync()
     {
-        var module = await GetModuleAsync();
-        return await module.InvokeAsync<bool>("isAudioCaptureSupported");
+        if (_isAudioCaptureSupported is null)
+        {
+            var module = await GetModuleAsync();
+            _isAudioCaptureSupported = await module.InvokeAsync<bool>("isAudioCaptureSupported");
+        }
+
+        return _isAudioCaptureSupported.Value;
     }
 
     public async ValueTask StartRecordingAsync<T>(
         long maximumBytes,
-        DotNetObjectReference<T> callbacks)
+        DotNetObjectReference<T> callbacks,
+        CancellationToken cancellationToken)
         where T : class
     {
         var module = await GetModuleAsync();
         _recorder ??= await module.InvokeAsync<IJSObjectReference>(
             "createAudioRecorder",
+            cancellationToken,
             maximumBytes,
             callbacks);
-        await _recorder.InvokeVoidAsync("start");
+        await _recorder.InvokeVoidAsync("start", cancellationToken);
     }
 
-    public ValueTask<AudioCaptureResult> StopRecordingAsync()
+    public ValueTask<AudioCaptureResult> StopRecordingAsync(CancellationToken cancellationToken)
     {
         return _recorder is null
             ? ValueTask.FromResult(new AudioCaptureResult())
-            : _recorder.InvokeAsync<AudioCaptureResult>("stop");
+            : _recorder.InvokeAsync<AudioCaptureResult>("stop", cancellationToken);
     }
 
     public async ValueTask<bool> IsSpeechRecognitionSupportedAsync()
     {
-        var module = await GetModuleAsync();
-        return await module.InvokeAsync<bool>(
-            "isLiveSpeechRecognitionSupported");
+        if (_isSpeechRecognitionSupported is null)
+        {
+            var module = await GetModuleAsync();
+            _isSpeechRecognitionSupported = await module.InvokeAsync<bool>(
+                "isLiveSpeechRecognitionSupported");
+        }
+
+        return _isSpeechRecognitionSupported.Value;
     }
 
     public async ValueTask InitializeSpeechRecognitionAsync<T>(
         DotNetObjectReference<T> callbacks,
-        string? language)
+        string? language,
+        CancellationToken cancellationToken)
         where T : class
     {
         var module = await GetModuleAsync();
         _speechRecognizer ??= await module.InvokeAsync<IJSObjectReference>(
             "createLiveSpeechRecognizer",
+            cancellationToken,
             callbacks,
             language);
     }
 
-    public ValueTask StartSpeechRecognitionAsync()
+    public ValueTask StartSpeechRecognitionAsync(CancellationToken cancellationToken)
     {
         return _speechRecognizer is null
             ? ValueTask.CompletedTask
-            : _speechRecognizer.InvokeVoidAsync("start");
+            : _speechRecognizer.InvokeVoidAsync("start", cancellationToken);
     }
 
     public ValueTask StopSpeechRecognitionAsync()

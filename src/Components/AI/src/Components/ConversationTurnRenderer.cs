@@ -52,9 +52,7 @@ internal class ConversationTurnRenderer : IDisposable
     private void OnResponseBlocksTruncated(int count)
     {
         var retainedContainerCount = _turn.RequestBlocks.Count + count;
-        for (var index = _blockContainers.Count - 1;
-            index >= retainedContainerCount;
-            index--)
+        for (var index = _blockContainers.Count - 1; index >= retainedContainerCount; index--)
         {
             _blockContainers[index].Dispose();
             _blockContainers.RemoveAt(index);

@@ -111,13 +111,13 @@ public sealed class MessageList : IComponent, IDisposable
                 (RenderFragment)(inner =>
                 {
                     inner.OpenElement(3, "div");
-                    inner.AddAttribute(3, "class", "sc-ai-message-list");
-                    inner.AddAttribute(4, "role", "log");
-                    inner.AddAttribute(5, "aria-label", Label);
-                    inner.AddAttribute(6, "aria-live", "off");
-                    inner.AddAttribute(7, "aria-relevant", "additions");
+                    inner.AddAttribute(4, "class", "sc-ai-message-list");
+                    inner.AddAttribute(5, "role", "log");
+                    inner.AddAttribute(6, "aria-label", Label);
+                    inner.AddAttribute(7, "aria-live", "off");
+                    inner.AddAttribute(8, "aria-relevant", "additions");
                     inner.AddAttribute(
-                        8,
+                        9,
                         "aria-busy",
                         _agentContext.Status == ConversationStatus.Streaming ? "true" : "false");
                     if (_childContent is not null)

@@ -377,8 +377,12 @@ Microsoft.AspNetCore.Components.AI.AudioCaptureButton.RecognitionMode.get -> Mic
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.RecognitionMode.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.get -> string?
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartAriaLabel.get -> string?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartAriaLabel.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartLabel.get -> string!
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartLabel.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopAriaLabel.get -> string?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopAriaLabel.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.get -> string!
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.set -> void
 Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Transcribe.get -> System.Func<Microsoft.Extensions.AI.DataContent!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string?>>?

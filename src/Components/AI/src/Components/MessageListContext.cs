@@ -48,20 +48,20 @@ public class MessageListContext
                 builder.OpenElement(0, "div");
                 builder.AddAttribute(1, "class", $"sc-ai-message sc-ai-message--{role}");
                 builder.AddAttribute(2, "aria-label", role == "user" ? "You" : "Assistant");
-                builder.OpenElement(2, "div");
-                builder.AddAttribute(3, "class", "sc-ai-message__bubble");
-                builder.OpenElement(4, "div");
+                builder.OpenElement(3, "div");
+                builder.AddAttribute(4, "class", "sc-ai-message__bubble");
+                builder.OpenElement(5, "div");
                 var contentClass = block.LifecycleState == BlockLifecycleState.Active
                     ? "sc-ai-message__content sc-ai-message__content--streaming"
                     : "sc-ai-message__content";
-                builder.AddAttribute(5, "class", contentClass);
+                builder.AddAttribute(6, "class", contentClass);
                 if (rich.Content.Count > 0)
                 {
                     RenderRichTextNodes(builder, rich.Content);
                 }
                 else
                 {
-                    builder.AddContent(6, rich.RawText);
+                    builder.AddContent(7, rich.RawText);
                 }
                 builder.CloseElement(); // content div
                 builder.CloseElement(); // bubble div

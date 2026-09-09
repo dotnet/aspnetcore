@@ -100,6 +100,57 @@ public class AudioCaptureButtonTests
     }
 
     [Fact]
+    public async Task Recording_StartFlowsCancellationTokenToInterop()
+    {
+        var (cut, _, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.True(recorder.StartToken.CanBeCanceled);
+    }
+
+    [Fact]
+    public async Task Recording_MissingMimeTypeReportsError()
+    {
+        var recorder = new TestAudioRecorder
+        {
+            MimeType = string.Empty,
+        };
+        var (cut, input, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"),
+            recorder: recorder);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.Equal(
+            "The browser did not provide the recorded audio MIME type.",
+            input.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task Recording_InteropFailureIncludesExceptionDetails()
+    {
+        var recorder = new TestAudioRecorder
+        {
+            StartException = new JSException("Permission denied by browser policy."),
+        };
+        var (cut, input, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"),
+            recorder: recorder);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.Equal(
+            "Microphone access was not available. Permission denied by browser policy.",
+            input.ErrorMessage);
+    }
+
+    [Fact]
     public void BrowserRecognition_UnsupportedDoesNotRenderControl()
     {
         var (cut, input, _) = RenderAudioCapture(
@@ -109,6 +160,18 @@ public class AudioCaptureButtonTests
 
         Assert.DoesNotContain("sc-ai-input__audio", cut.GetHtml());
         Assert.Null(input.ErrorMessage);
+    }
+
+    [Fact]
+    public void CustomAriaLabels_AreIndependentFromVisibleContent()
+    {
+        var (cut, _, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"),
+            startAriaLabel: "Start voice input");
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        Assert.Equal("Start voice input", GetAttribute(button, "aria-label"));
+        Assert.Contains("Record audio", button.GetHtml());
     }
 
     [Fact]
@@ -131,6 +194,28 @@ public class AudioCaptureButtonTests
 
         Assert.Equal("hello world", input.Text);
         Assert.Equal(["hello wor", "hello world"], transcriptChanges);
+    }
+
+    [Fact]
+    public async Task CombinedRecognition_CachesBrowserSupportCheck()
+    {
+        var speechRecognizer = new TestSpeechRecognizer();
+        var module = new TestAudioModule(
+            new TestAudioRecorder(),
+            speechRecognizer,
+            speechRecognitionSupported: true);
+        var (cut, _, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"),
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognitionWithBackendTranscription,
+            module: module);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.Equal(1, module.SpeechRecognitionSupportCheckCount);
     }
 
     [Fact]
@@ -224,16 +309,18 @@ public class AudioCaptureButtonTests
             Action<ChatMessage>? onSubmitted = null,
             TestSpeechRecognizer? speechRecognizer = null,
             bool speechRecognitionSupported = true,
-            Action<string>? onInterimTranscript = null)
+            Action<string>? onInterimTranscript = null,
+            string? startAriaLabel = null,
+            TestAudioRecorder? recorder = null,
+            TestAudioModule? module = null)
     {
-        var recorder = new TestAudioRecorder();
+        recorder ??= new TestAudioRecorder();
+        module ??= new TestAudioModule(
+            recorder,
+            speechRecognizer ?? new TestSpeechRecognizer(),
+            speechRecognitionSupported);
         var services = new TestServiceProvider();
-        services.AddService<IJSRuntime>(
-            new TestJSRuntime(
-                new TestAudioModule(
-                    recorder,
-                    speechRecognizer ?? new TestSpeechRecognizer(),
-                    speechRecognitionSupported)));
+        services.AddService<IJSRuntime>(new TestJSRuntime(module));
         var renderer = new TestRenderer(services);
         MessageInputContext? input = null;
         var client = new DelegatingStreamingChatClient();
@@ -291,6 +378,10 @@ public class AudioCaptureButtonTests
                             EventCallback.Factory.Create<string>(
                                 receiver: new object(),
                                 transcript => onInterimTranscript?.Invoke(transcript)));
+                        childBuilder.AddComponentParameter(
+                            7,
+                            nameof(AudioCaptureButton.StartAriaLabel),
+                            startAriaLabel);
                         childBuilder.CloseComponent();
                     }));
                 builder.CloseComponent();
@@ -352,6 +443,8 @@ public class AudioCaptureButtonTests
         TestSpeechRecognizer speechRecognizer,
         bool speechRecognitionSupported) : IJSObjectReference
     {
+        internal int SpeechRecognitionSupportCheckCount { get; private set; }
+
         public ValueTask<TValue> InvokeAsync<TValue>(
             string identifier,
             object?[]? args)
@@ -367,7 +460,7 @@ public class AudioCaptureButtonTests
                 "isAudioCaptureSupported" =>
                     ValueTask.FromResult((TValue)(object)true),
                 "isLiveSpeechRecognitionSupported" =>
-                    ValueTask.FromResult((TValue)(object)speechRecognitionSupported),
+                    GetSpeechRecognitionSupport<TValue>(),
                 "createAudioRecorder" =>
                     CreateAudioRecorder<TValue>(args),
                 "createLiveSpeechRecognizer" =>
@@ -377,6 +470,12 @@ public class AudioCaptureButtonTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        private ValueTask<TValue> GetSpeechRecognitionSupport<TValue>()
+        {
+            SpeechRecognitionSupportCheckCount++;
+            return ValueTask.FromResult((TValue)(object)speechRecognitionSupported);
+        }
 
         private ValueTask<TValue> CreateSpeechRecognizer<TValue>(object?[]? args)
         {
@@ -401,6 +500,12 @@ public class AudioCaptureButtonTests
 
         internal int StartCount { get; private set; }
 
+        internal CancellationToken StartToken { get; private set; }
+
+        internal string MimeType { get; init; } = "audio/webm";
+
+        internal JSException? StartException { get; init; }
+
         internal void SetCallbacks(object callbacks)
         {
             _callbacks = callbacks;
@@ -423,7 +528,13 @@ public class AudioCaptureButtonTests
         {
             if (identifier == "start")
             {
+                if (StartException is not null)
+                {
+                    throw StartException;
+                }
+
                 StartCount++;
+                StartToken = cancellationToken;
                 return ValueTask.FromResult(default(TValue)!);
             }
 
@@ -437,7 +548,7 @@ public class AudioCaptureButtonTests
             typeof(TValue).GetProperty("StreamReference")!
                 .SetValue(result, StreamReference);
             typeof(TValue).GetProperty("MimeType")!
-                .SetValue(result, "audio/webm");
+                .SetValue(result, MimeType);
             typeof(TValue).GetProperty("Size")!
                 .SetValue(result, StreamReference.Length);
             return ValueTask.FromResult((TValue)result);

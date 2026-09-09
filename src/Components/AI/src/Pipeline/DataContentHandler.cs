@@ -22,7 +22,7 @@ internal sealed class DataContentHandler : ContentBlockHandler<DataContentBlock>
             {
                 context.MarkHandled(dataContent);
                 state.Content = dataContent;
-                state.Id = context.Update.MessageId ?? Guid.NewGuid().ToString("N");
+                state.Id = Guid.NewGuid().ToString("N");
                 return BlockMappingResult<DataContentBlock>.Emit(state, state);
             }
         }

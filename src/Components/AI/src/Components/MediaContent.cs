@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Media;
 using Microsoft.Extensions.AI;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
@@ -14,7 +13,6 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public sealed class MediaContent : ComponentBase
 {
-    private static readonly ConditionalWeakTable<DataContent, MediaCacheKey> CacheKeys = new();
     private DataContent? _currentContent;
     private MediaSource? _source;
 
@@ -47,9 +45,7 @@ public sealed class MediaContent : ComponentBase
             _source = new MediaSource(
                 Content.Data.ToArray(),
                 Content.MediaType,
-                CacheKeys.GetValue(
-                    Content,
-                    static _ => new MediaCacheKey($"ai-media-{Guid.NewGuid():N}")).Value);
+                $"ai-media-{Guid.NewGuid():N}");
         }
     }
 
@@ -119,6 +115,4 @@ public sealed class MediaContent : ComponentBase
             ? "attachment"
             : Path.GetFileName(Content.Name);
     }
-
-    private sealed record MediaCacheKey(string Value);
 }

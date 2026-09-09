@@ -167,6 +167,28 @@ public class BlockMappingPipelineTests
     }
 
     [Fact]
+    public async Task Process_MultipleDataContents_EmitsBlocksWithUniqueIds()
+    {
+        var pipeline = CreatePipeline();
+        var update = new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "msg-1",
+            Contents =
+            [
+                new DataContent(new byte[] { 1 }, "image/png"),
+                new DataContent(new byte[] { 2 }, "image/png"),
+            ],
+        };
+
+        var blocks = await ProcessAsync(pipeline, update);
+
+        Assert.Equal(2, blocks.Count);
+        Assert.All(blocks, block => Assert.IsType<DataContentBlock>(block));
+        Assert.NotEqual(blocks[0].Id, blocks[1].Id);
+    }
+
+    [Fact]
     public async Task Finalize_DeactivatesAndNotifiesActiveBlocks()
     {
         var pipeline = CreatePipeline();

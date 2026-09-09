@@ -114,6 +114,20 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     public string StopLabel { get; set; } = "Stop recording";
 
     /// <summary>
+    /// Gets or sets the accessible label used before voice input starts.
+    /// Defaults to <see cref="StartLabel"/>.
+    /// </summary>
+    [Parameter]
+    public string? StartAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label used while voice input is active.
+    /// Defaults to <see cref="StopLabel"/>.
+    /// </summary>
+    [Parameter]
+    public string? StopAriaLabel { get; set; }
+
+    /// <summary>
     /// Gets or sets custom button content based on whether voice input is active.
     /// </summary>
     [Parameter]
@@ -150,6 +164,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _interop = new AudioCaptureButtonInterop(JSRuntime);
+        _speechCallbackReference = DotNetObjectReference.Create(_speechCallbacks);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -196,13 +217,16 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         var disabled = !_isSupported ||
             (!isActive && (Context.IsConversationBusy || Context.IsComposing));
         var label = isActive ? StopLabel : StartLabel;
+        var ariaLabel = isActive
+            ? StopAriaLabel ?? StopLabel
+            : StartAriaLabel ?? StartLabel;
 
         builder.OpenElement(0, "button");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", "button");
         builder.AddAttribute(3, "class", CssClass());
         builder.AddAttribute(4, "disabled", disabled);
-        builder.AddAttribute(5, "aria-label", label);
+        builder.AddAttribute(5, "aria-label", ariaLabel);
         builder.AddAttribute(6, "aria-pressed", isActive ? "true" : "false");
         builder.AddAttribute(
             7,
@@ -231,17 +255,17 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _interop = new AudioCaptureButtonInterop(JSRuntime);
             _isSupported = RecognitionMode is SpeechRecognitionMode.BrowserSpeechRecognition
-                ? await _interop.IsSpeechRecognitionSupportedAsync()
-                : await _interop.IsAudioCaptureSupportedAsync();
-            await InvokeAsync(StateHasChanged);
+                ? await _interop!.IsSpeechRecognitionSupportedAsync()
+                : await _interop!.IsAudioCaptureSupportedAsync();
+            StateHasChanged();
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             _isSupported = false;
-            Context.SetErrorMessage("Audio recording could not be initialized.");
-            await InvokeAsync(StateHasChanged);
+            Context.SetErrorMessage(
+                $"Audio recording could not be initialized. {exception.Message}");
+            StateHasChanged();
         }
     }
 
@@ -270,9 +294,10 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         try
         {
-            _interop ??= new AudioCaptureButtonInterop(JSRuntime);
-            _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
-            await _interop.StartRecordingAsync(MaximumBytes, _speechCallbackReference);
+            await _interop!.StartRecordingAsync(
+                MaximumBytes,
+                _speechCallbackReference!,
+                operationCts.Token);
             if (!ReferenceEquals(_operationCts, operationCts) ||
                 operationCts.IsCancellationRequested)
             {
@@ -289,7 +314,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 await StartBrowserDraftAsync();
             }
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             if (ReferenceEquals(_operationCts, operationCts))
             {
@@ -297,7 +322,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 _isRecording = false;
                 Context.SetComposing(false);
                 Context.SetErrorMessage(
-                    "Microphone access was not available. Check browser permissions.");
+                    $"Microphone access was not available. {exception.Message}");
             }
 
             operationCts.Dispose();
@@ -312,13 +337,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         var cancellationToken = operationCts.Token;
         _isRecording = false;
         _isTranscribing = true;
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
 
         try
         {
             var hadInterimTranscript = _isDictating;
             await StopInterimTranscriptionAsync();
-            var recording = await _interop!.StopRecordingAsync();
+            var recording = await _interop!.StopRecordingAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             if (recording.TooLarge || recording.Size > MaximumBytes)
@@ -339,9 +364,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 return;
             }
 
-            var mediaType = string.IsNullOrWhiteSpace(recording.MimeType)
-                ? "audio/webm"
-                : recording.MimeType;
+            if (string.IsNullOrWhiteSpace(recording.MimeType))
+            {
+                throw new InvalidOperationException(
+                    "The browser did not provide the recorded audio MIME type.");
+            }
+
+            var mediaType = recording.MimeType;
             await using var streamReference = recording.StreamReference;
             await using var stream = await streamReference.OpenReadStreamAsync(
                 MaximumBytes,
@@ -423,11 +452,12 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             if (ReferenceEquals(_operationCts, operationCts))
             {
-                Context.SetErrorMessage("The audio recording could not be completed.");
+                Context.SetErrorMessage(
+                    $"The audio recording could not be completed. {exception.Message}");
             }
         }
         catch (IOException)
@@ -484,22 +514,23 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 return;
             }
 
-            _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
             await _interop.InitializeSpeechRecognitionAsync(
-                _speechCallbackReference,
-                SpeechRecognitionLanguage);
-            await _interop.StartSpeechRecognitionAsync();
+                _speechCallbackReference!,
+                SpeechRecognitionLanguage,
+                _operationCts?.Token ?? default);
+            await _interop.StartSpeechRecognitionAsync(_operationCts?.Token ?? default);
             _dictationPrefix = Context.Text.Trim();
             _committedTranscript = string.Empty;
             _isDictating = true;
             _isListening = true;
             Context.SetStatusMessage("Recording and transcribing.");
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             _isDictating = false;
             _isListening = false;
-            Context.SetStatusMessage("Recording audio. Live transcription is unavailable.");
+            Context.SetStatusMessage(
+                $"Recording audio. Live transcription is unavailable. {exception.Message}");
         }
     }
 
@@ -509,28 +540,28 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         _operationCts?.Cancel();
         _operationCts?.Dispose();
         _operationCts = new CancellationTokenSource();
-        _interop ??= new AudioCaptureButtonInterop(JSRuntime);
-        _speechCallbackReference ??= DotNetObjectReference.Create(_speechCallbacks);
+        var cancellationToken = _operationCts.Token;
 
         try
         {
-            await _interop.InitializeSpeechRecognitionAsync(
-                _speechCallbackReference,
-                SpeechRecognitionLanguage);
+            await _interop!.InitializeSpeechRecognitionAsync(
+                _speechCallbackReference!,
+                SpeechRecognitionLanguage,
+                cancellationToken);
             _dictationPrefix = Context.Text.Trim();
             _committedTranscript = string.Empty;
             _isEnabled = true;
             _isDictating = true;
             await StartListeningAsync();
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             _isEnabled = false;
             _isListening = false;
             _isDictating = false;
             Context.SetComposing(false);
             Context.SetErrorMessage(
-                "Microphone speech recognition was not available. Check browser permissions.");
+                $"Microphone speech recognition was not available. {exception.Message}");
         }
     }
 
@@ -544,24 +575,24 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         _isStarting = true;
         try
         {
-            await _interop!.StartSpeechRecognitionAsync();
+            await _interop!.StartSpeechRecognitionAsync(_operationCts?.Token ?? default);
             _isListening = true;
             Context.SetComposing(true);
             Context.SetStatusMessage("Listening for your next instruction.");
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             _isEnabled = false;
             _isListening = false;
             _isDictating = false;
             Context.SetComposing(false);
             Context.SetErrorMessage(
-                "Microphone speech recognition was not available. Check browser permissions.");
+                $"Microphone speech recognition was not available. {exception.Message}");
         }
         finally
         {
             _isStarting = false;
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
 
@@ -578,7 +609,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
         await OnInterimTranscript.InvokeAsync(string.Empty);
         Context.SetStatusMessage("Voice input stopped.");
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private async Task StopInterimTranscriptionAsync()
