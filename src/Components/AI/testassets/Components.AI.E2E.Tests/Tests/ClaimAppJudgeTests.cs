@@ -1093,6 +1093,11 @@ public partial class ClaimAppJudgeTests : BrowserTest
                     "front bumper",
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase),
                 new() { Timeout = 120_000 });
+        await Expect(_page.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Record voice", Exact = true }))
+            .ToBeVisibleAsync(new() { Timeout = 120_000 });
+        await Expect(SendButton).ToBeEnabledAsync();
 
         await SendButton.ClickAsync();
         await Expect(ClaimDetail("Accident"))

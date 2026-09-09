@@ -33,6 +33,9 @@ public class AudioCaptureButtonTests
 
         var stopTask = cut.InvokeAsync(() => ClickAsync(button));
         await transcriptionStarted.Task;
+        Assert.Equal("Stop recording", GetAttribute(button, "aria-label"));
+        Assert.Equal("true", GetAttribute(button, "aria-pressed"));
+
         await cut.InvokeAsync(() => ClickAsync(button));
         await stopTask;
 
@@ -43,6 +46,8 @@ public class AudioCaptureButtonTests
         Assert.False(input.IsComposing);
         Assert.Null(input.ErrorMessage);
         Assert.Equal("Audio transcription canceled.", input.StatusMessage);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
     }
 
     [Fact]
@@ -152,7 +157,20 @@ public class AudioCaptureButtonTests
             EventCallback eventCallback => eventCallback.InvokeAsync(),
             _ => throw new InvalidOperationException(
                 $"Unexpected click callback type {callback?.GetType().FullName}."),
-        };
+        }
+
+        private static object? GetAttribute(
+            RenderedComponent<AudioCaptureButton> button,
+            string attributeName)
+        {
+            var frames = button.GetFrames();
+            return frames.Array
+                .Take(frames.Count)
+                .Single(frame =>
+                    frame.FrameType == RenderTreeFrameType.Attribute &&
+                    frame.AttributeName == attributeName)
+                .AttributeValue;
+        }
     }
 
     private sealed class TestJSRuntime(TestAudioModule module) : IJSRuntime

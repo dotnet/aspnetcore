@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Azure.Core;
+using Azure.Identity;
 using Microsoft.Extensions.AI;
 
 namespace ComponentsAIClaimApp.Data;
@@ -652,9 +653,23 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
             return;
         }
 
-        var accessToken = await _credential.GetTokenAsync(
-            new TokenRequestContext([AzureOpenAIScope]),
-            cancellationToken);
+        AccessToken accessToken;
+        try
+        {
+            accessToken = await _credential.GetTokenAsync(
+                new TokenRequestContext([AzureOpenAIScope]),
+                cancellationToken);
+        }
+        catch (AuthenticationFailedException exception)
+            when (cancellationToken.IsCancellationRequested &&
+                exception.InnerException is OperationCanceledException)
+        {
+            throw new OperationCanceledException(
+                "Azure authentication was canceled.",
+                exception,
+                cancellationToken);
+        }
+
         request.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken.Token);
     }
