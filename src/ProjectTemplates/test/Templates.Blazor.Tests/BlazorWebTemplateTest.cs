@@ -13,6 +13,20 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 {
     public override string ProjectType => "blazor";
 
+    [ConditionalFact]
+    [EnvironmentVariableSkipCondition("ASPNETCORE_TEMP_CI_MEDIA_DIAGNOSTICS", "true")]
+    public Task TemporaryDiagnostic_BlazorWebTemplateVideo_Passes()
+        => TemporaryDiagnostic_BlazorWebTemplateVideoCoreAsync(
+            nameof(TemporaryDiagnostic_BlazorWebTemplateVideo_Passes),
+            expectFailure: false);
+
+    [ConditionalFact]
+    [EnvironmentVariableSkipCondition("ASPNETCORE_TEMP_CI_MEDIA_DIAGNOSTICS", "true")]
+    public Task TemporaryDiagnostic_BlazorWebTemplateVideo_Fails()
+        => TemporaryDiagnostic_BlazorWebTemplateVideoCoreAsync(
+            nameof(TemporaryDiagnostic_BlazorWebTemplateVideo_Fails),
+            expectFailure: true);
+
     [Theory]
     [InlineData(BrowserKind.Chromium, "None")]
     [InlineData(BrowserKind.Chromium, "Server")]
@@ -315,6 +329,52 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
+        }
+    }
+
+    private async Task TemporaryDiagnostic_BlazorWebTemplateVideoCoreAsync(string testName, bool expectFailure)
+    {
+        var browserKind = BrowserKind.Chromium;
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        Output.WriteLine($"TemporaryDiagnostic test: BlazorTemplates.Tests.BlazorWebTemplateTest.{testName}");
+        Output.WriteLine($"TemporaryDiagnostic video directory: {Path.Combine(AppContext.BaseDirectory, "videos")}");
+        Output.WriteLine("TemporaryDiagnostic app boundary: built project");
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server", "-au", "None"]);
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+
+        try
+        {
+            await page.GotoAsync(aspNetProcess.ListeningUri.AbsoluteUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+            await page.WaitForSelectorAsync("nav");
+            await Task.WhenAll(
+                page.WaitForURLAsync("**/counter"),
+                page.WaitForSelectorAsync("h1 >> text=Counter"),
+                page.WaitForSelectorAsync("p >> text=Current count: 0"),
+                page.ClickAsync("a[href=counter]"));
+
+            await page.ClickAsync("p+button >> text=Click me");
+            await page.WaitForSelectorAsync("p >> text=Current count: 1");
+
+            var actualCount = (await page.Locator("p").TextContentAsync())?.Trim();
+            Assert.Equal(expectFailure ? "Current count: 99" : "Current count: 1", actualCount);
+        }
+        finally
+        {
+            await page.CloseAsync();
         }
     }
 

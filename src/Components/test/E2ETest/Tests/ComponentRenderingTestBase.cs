@@ -78,6 +78,38 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Current count: 1", () => countDisplayElement.Text);
     }
 
+    [ConditionalFact]
+    [EnvironmentVariableSkipCondition("ASPNETCORE_TEMP_CI_MEDIA_DIAGNOSTICS", "true")]
+    public void TemporaryDiagnostic_CounterClickScreenshot_Unquarantined()
+    {
+        TemporaryDiagnostic_CounterClickScreenshotCore(nameof(TemporaryDiagnostic_CounterClickScreenshot_Unquarantined));
+    }
+
+    [ConditionalFact]
+    [EnvironmentVariableSkipCondition("ASPNETCORE_TEMP_CI_MEDIA_DIAGNOSTICS", "true")]
+    [QuarantinedTest("Temporary CI media diagnostics")]
+    public void TemporaryDiagnostic_CounterClickScreenshot_Quarantined()
+    {
+        TemporaryDiagnostic_CounterClickScreenshotCore(nameof(TemporaryDiagnostic_CounterClickScreenshot_Quarantined));
+    }
+
+    private static void TemporaryDiagnostic_CounterClickScreenshotCore(string testName)
+    {
+        Output.WriteLine($"TemporaryDiagnostic test: Microsoft.AspNetCore.Components.E2ETest.Tests.ComponentRenderingTest.{testName}");
+        var screenshotsPath = E2ETestOptions.Instance.ScreenShotsPath;
+        Output.WriteLine(screenshotsPath is null
+            ? "TemporaryDiagnostic effective screenshot path: (null)"
+            : $"TemporaryDiagnostic effective screenshot path: {Path.GetFullPath(screenshotsPath)}");
+
+        var appElement = Browser.MountTestComponent<CounterComponent>();
+        var countDisplayElement = appElement.FindElement(By.TagName("p"));
+        Assert.Equal("Current count: 0", countDisplayElement.Text);
+
+        appElement.FindElement(By.TagName("button")).Click();
+        Browser.Equal("Current count: 1", () => countDisplayElement.Text);
+        Browser.Equal("Current count: 2", () => countDisplayElement.Text);
+    }
+
     [Fact]
     public void CanTriggerAsyncEventHandlers()
     {
