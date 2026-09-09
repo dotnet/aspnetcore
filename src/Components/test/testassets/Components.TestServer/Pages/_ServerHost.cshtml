@@ -50,7 +50,11 @@
         }
     </script>
     
-    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        myJsRootComponentInitializers.captureRendererInterop(Blazor);
+        Blazor.start();
+    </script>
     <script src="js/jsRootComponentInitializers.js"></script>
 
     <!-- Used by ExternalContentPackage -->

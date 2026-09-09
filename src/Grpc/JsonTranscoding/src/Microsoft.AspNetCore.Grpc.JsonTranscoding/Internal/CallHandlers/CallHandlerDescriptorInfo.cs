@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 
 internal sealed class CallHandlerDescriptorInfo
 {
+    internal readonly int MaxPathDescriptorsCacheCount;
+
     public CallHandlerDescriptorInfo(
         FieldDescriptor? responseBodyDescriptor,
         MessageDescriptor? bodyDescriptor,
@@ -26,12 +28,12 @@ internal sealed class CallHandlerDescriptorInfo
         RouteAdapter = routeAdapter;
         PathDescriptorsCache = new ConcurrentDictionary<string, List<FieldDescriptor>>();
 
-        var jsonPaths = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var routeParameter in routeParameterDescriptors.Values)
+        MaxPathDescriptorsCacheCount = AppContext.GetData("Microsoft.AspNetCore.Grpc.JsonTranscoding.MaxPathDescriptorsCacheCount") switch
         {
-            jsonPaths.Add(routeParameter.JsonPath);
-        }
-        RouteParameterJsonPaths = jsonPaths;
+            int count when count > 0 => count,
+            string countStr when int.TryParse(countStr, out var parsed) && parsed > 0 => parsed,
+            _ => 1000,
+        };
     }
 
     public FieldDescriptor? ResponseBodyDescriptor { get; }
@@ -42,5 +44,14 @@ internal sealed class CallHandlerDescriptorInfo
     public Dictionary<string, RouteParameter> RouteParameterDescriptors { get; }
     public JsonTranscodingRouteAdapter RouteAdapter { get; }
     public ConcurrentDictionary<string, List<FieldDescriptor>> PathDescriptorsCache { get; }
-    public HashSet<string> RouteParameterJsonPaths { get; }
+
+    public bool TryAddPathDescriptors(string path, List<FieldDescriptor> pathDescriptors)
+    {
+        if (PathDescriptorsCache.Count >= MaxPathDescriptorsCacheCount)
+        {
+            return false;
+        }
+
+        return PathDescriptorsCache.TryAdd(path, pathDescriptors);
+    }
 }
