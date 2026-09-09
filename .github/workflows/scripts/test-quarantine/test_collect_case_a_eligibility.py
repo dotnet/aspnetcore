@@ -19,6 +19,11 @@ SPEC.loader.exec_module(MODULE)
 
 TEST_NAME = "Microsoft.AspNetCore.Tests.SampleTests.ReturnsExpectedResponse"
 TEST_PATH = "src/Sample.Tests/SampleTests.cs"
+DERIVED_TEST_NAME = (
+    "Microsoft.AspNetCore.Server.Tests."
+    "DerivedTests.ReturnsExpectedResponse"
+)
+QUARANTINE_ATTRIBUTE = '[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]'
 
 
 def run(root, *args, env=None):
@@ -73,7 +78,51 @@ public class SampleTests
 """
 
 
-def evidence(regression=False, builds=(101, 102)):
+def method_member(name="ReturnsExpectedResponse", quarantine=""):
+    prefix = f"{quarantine}\n" if quarantine else ""
+    return f"""{prefix}public void {name}()
+{{
+}}
+"""
+
+
+def class_source(
+    namespace,
+    type_name,
+    *,
+    partial=False,
+    base=None,
+    type_quarantine="",
+    members=None,
+    usings="",
+):
+    declaration = f"public{' partial' if partial else ''} class {type_name}"
+    if base:
+        declaration = f"{declaration} : {base}"
+
+    member_items = [members] if isinstance(members, str) else list(members or [])
+    member_text = "\n\n".join(
+        textwrap.dedent(item).strip("\n")
+        for item in member_items
+        if item
+    )
+    if member_text:
+        member_text = f"{textwrap.indent(member_text, '    ')}\n"
+
+    using_block = f"{textwrap.dedent(usings).strip()}\n\n" if usings else ""
+    attribute_block = f"{type_quarantine}\n" if type_quarantine else ""
+
+    return (
+        f"{using_block}namespace {namespace};\n\n"
+        f"{attribute_block}{declaration}\n"
+        "{\n"
+        f"{member_text}"
+        "}\n"
+    )
+
+
+def evidence(regression=False, builds=(101, 102), test_name=TEST_NAME):
+    type_name, method_name = test_name.rsplit(".", 1)
     metadata = {
         str(build): {
             "def": 83,
@@ -88,7 +137,7 @@ def evidence(regression=False, builds=(101, 102)):
         "generated_utc": "2026-08-17T00:00:00Z",
         "builds": metadata,
         "source_a": {
-            TEST_NAME: {
+            test_name: {
                 "count": len(builds),
                 "assembly": "Sample.Tests--net11.0",
                 "builds": list(builds),
@@ -97,7 +146,7 @@ def evidence(regression=False, builds=(101, 102)):
                 "result_id": 3001,
                 "leg": "Linux_Test",
                 "error": "stable-marker-123",
-                "stack": "at SampleTests.ReturnsExpectedResponse()",
+                "stack": f"at {type_name.rsplit('.', 1)[-1]}.{method_name}()",
                 "is_consistent_regression": regression,
             },
         },
@@ -107,9 +156,18 @@ def evidence(regression=False, builds=(101, 102)):
     }
 
 
-def collect(root, data, pr_files_provider=lambda _: set()):
+def source_b_evidence(builds=(101, 102), test_name=TEST_NAME):
+    data = evidence(builds=builds, test_name=test_name)
+    data["source_b"] = data.pop("source_a")
+    for metadata in data["builds"].values():
+        metadata["pr"] = 42
+    return data
+
+
+def collect(root, data, pr_files_provider=lambda _: set(), module=None):
+    module = module or MODULE
     serialized = json.dumps(data, separators=(",", ":")).encode()
-    return MODULE.collect(
+    return module.collect(
         data,
         serialized,
         root,
@@ -121,8 +179,37 @@ def collect(root, data, pr_files_provider=lambda _: set()):
     )
 
 
-def record(receipt):
-    return receipt["tests"][TEST_NAME]
+def record(receipt, test_name=TEST_NAME):
+    return receipt["tests"][test_name]
+
+
+def collect_result(
+    root,
+    data,
+    *,
+    test_name=TEST_NAME,
+    pr_files_provider=lambda _: set(),
+    module=None,
+):
+    return record(
+        collect(root, data, pr_files_provider=pr_files_provider, module=module),
+        test_name,
+    )
+
+
+def assert_case_b(result, removal_commit):
+    assert result["status"] == "ineligible", result
+    assert result["originating_case"] == "case-b", result
+    assert result["current_quarantine_state"] == "not-quarantined", result
+    assert result["latest_quarantine_transition"] == "removed", result
+    assert result["cutoff"]["commit"] == removal_commit, result
+    assert result["cutoff"]["reason"] == "latest-quarantine-transition", result
+
+
+def assert_already_quarantined(result):
+    assert result["status"] == "ineligible", result
+    assert result["originating_case"] == "already-quarantined", result
+    assert result["current_quarantine_state"] == "quarantined", result
 
 
 class FakeResponse(io.BytesIO):
@@ -221,20 +308,37 @@ def test_workflow_runner_temp():
                     assert "Python invoked" not in result.stderr, scenario
 
 
-def initialize_repository(root, project_count=1):
+def initialize_git_repository(root):
     run(root, "git", "init", "-q")
     run(root, "git", "config", "user.email", "test@example.com")
     run(root, "git", "config", "user.name", "Test")
-    project = root / "src/Sample.Tests"
+
+
+def create_project(root, project_name, files, project_count=1):
+    project = root / "src" / project_name
     project.mkdir(parents=True)
     for index in range(project_count):
         suffix = "" if index == 0 else str(index + 1)
-        (project / f"Sample.Tests{suffix}.csproj").write_text(
+        (project / f"{project_name}{suffix}.csproj").write_text(
             "<Project />",
             encoding="utf-8",
         )
+    for relative_path, content in files.items():
+        file_path = project / relative_path
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(content, encoding="utf-8")
+    return project
+
+
+def initialize_repository(root, project_count=1):
+    initialize_git_repository(root)
+    project = create_project(
+        root,
+        "Sample.Tests",
+        {"SampleTests.cs": source()},
+        project_count=project_count,
+    )
     file_path = root / TEST_PATH
-    file_path.write_text(source(), encoding="utf-8")
     return project, file_path
 
 
@@ -413,6 +517,765 @@ public class DerivedTests : IntermediateTests
         assert result["status"] == "unproven", result
         assert result["latest_quarantine_transition"] == "ambiguous"
         assert "quarantine-history-ambiguous" in result["reasons"]
+
+
+def test_partial_sibling_type_quarantine_is_already_quarantined(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    type_quarantine=QUARANTINE_ATTRIBUTE,
+                ),
+            },
+        )
+        commit(root, "Add partially quarantined test", "2026-08-01T00:00:00Z")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert_already_quarantined(result)
+
+
+def test_partial_sibling_type_quarantine_removal_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                ),
+            },
+        )
+        commit(root, "Add partial test", "2026-08-01T00:00:00Z")
+
+        sibling_path = root / "src/Sample.Tests/SampleTests.Partial.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine sibling partial type", "2026-08-02T00:00:00Z")
+
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove sibling partial quarantine", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert_case_b(result, removal_commit)
+
+
+def test_partial_sibling_type_quarantine_removal_after_rename_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                ),
+            },
+        )
+        commit(root, "Add partial test", "2026-08-01T00:00:00Z")
+
+        original_path = root / "src/Sample.Tests/SampleTests.Partial.cs"
+        original_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine sibling partial type", "2026-08-02T00:00:00Z")
+
+        renamed_path = root / "src/Sample.Tests/RenamedSampleTests.Partial.cs"
+        run(root, "git", "mv", original_path, renamed_path)
+        commit(root, "Rename sibling partial quarantine file", "2026-08-03T00:00:00Z")
+
+        renamed_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove renamed sibling partial quarantine", "2026-08-04T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert_case_b(result, removal_commit)
+
+
+def test_partial_sibling_type_quarantine_removal_by_deletion_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                ),
+            },
+        )
+        commit(root, "Add partial test", "2026-08-01T00:00:00Z")
+
+        sibling_path = root / "src/Sample.Tests/SampleTests.Partial.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine sibling partial type", "2026-08-02T00:00:00Z")
+
+        sibling_path.unlink()
+        commit(root, "Delete sibling partial quarantine file", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["source_resolution"]["status"] == "exact", result
+        assert_case_b(result, removal_commit)
+
+
+def test_partial_other_method_unquarantine_does_not_make_test_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Other.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member(
+                        "ReturnsOtherResponse",
+                        quarantine=QUARANTINE_ATTRIBUTE,
+                    )],
+                ),
+            },
+        )
+        commit(root, "Add unrelated quarantined sibling method", "2026-08-01T00:00:00Z")
+
+        sibling_path = root / "src/Sample.Tests/SampleTests.Other.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                members=[method_member("ReturnsOtherResponse")],
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine unrelated sibling method", "2026-08-02T00:00:00Z")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+        assert result["latest_quarantine_transition"] == "none", result
+        assert result["eligible_failure_builds"] == [101, 102], result
+
+
+def test_partial_inherited_runner_sibling_type_removal_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+                "DerivedTests.Base.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    partial=True,
+                    base="BaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+                "DerivedTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    partial=True,
+                ),
+            },
+        )
+        commit(root, "Add partial inherited runner", "2026-08-01T00:00:00Z")
+
+        sibling_path = root / "src/Sample.Tests/DerivedTests.Partial.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Server.Tests",
+                "DerivedTests",
+                partial=True,
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine sibling runner partial type", "2026-08-02T00:00:00Z")
+
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Server.Tests",
+                "DerivedTests",
+                partial=True,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove sibling runner partial quarantine", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["type"] == (
+            "Microsoft.AspNetCore.Server.Tests.DerivedTests"
+        ), result
+        assert result["source_resolution"]["declaring_type"] == (
+            "Microsoft.AspNetCore.Tests.BaseTests"
+        ), result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/BaseTests.cs", result
+        assert_case_b(result, removal_commit)
+
+
+def test_partial_declaring_type_sibling_quarantine_removal_is_case_b_for_inherited_test(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.Method.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "BaseTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    partial=True,
+                ),
+                "DerivedTests.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    base="BaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+            },
+        )
+        commit(root, "Add inherited test with partial declaring type", "2026-08-01T00:00:00Z")
+
+        sibling_path = root / "src/Sample.Tests/BaseTests.Partial.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "BaseTests",
+                partial=True,
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine declaring type in sibling partial", "2026-08-02T00:00:00Z")
+
+        current = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert current["source_resolution"]["status"] == "exact", current
+        assert_already_quarantined(current)
+
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "BaseTests",
+                partial=True,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove declaring type sibling partial quarantine", "2026-08-03T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["source_resolution"]["status"] == "exact", result
+        assert_case_b(result, removal_commit)
+
+
+def test_same_full_type_in_multiple_projects_fails_closed(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+                "DerivedTests.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    base="BaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+            },
+        )
+        create_project(
+            root,
+            "Other.Tests",
+            {
+                "AlternativeBaseTests.cs": class_source(
+                    "Contoso.Tests",
+                    "AlternativeBaseTests",
+                    members=[method_member()],
+                ),
+                "DerivedTests.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    base="AlternativeBaseTests",
+                    usings="using Contoso.Tests;",
+                ),
+            },
+        )
+        commit(root, "Add conflicting inherited runners", "2026-08-01T00:00:00Z")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["status"] == "unproven", result
+        assert result["source_resolution"]["status"] == "ambiguous", result
+        assert "source-ambiguous" in result["reasons"], result
+
+
+def test_other_project_same_name_type_does_not_contaminate_inherited_resolution(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+                "DerivedTests.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    base="BaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+            },
+        )
+        create_project(
+            root,
+            "Other.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Contoso.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+            },
+        )
+        commit(root, "Add same-name base type in another project", "2026-08-01T00:00:00Z")
+
+        resolved = module.resolve_source(root, DERIVED_TEST_NAME)
+        assert resolved["status"] == "exact", resolved
+        assert resolved["type"] == "Microsoft.AspNetCore.Server.Tests.DerivedTests", resolved
+        assert resolved["declaring_type"] == "Microsoft.AspNetCore.Tests.BaseTests", resolved
+        assert resolved["path"] == "src/Sample.Tests/BaseTests.cs", resolved
+
+
+def test_other_project_same_full_intermediate_type_does_not_contaminate_multihop_inherited_resolution(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+                "MidTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "MidTests",
+                    base="BaseTests",
+                    members=["// Intermediate runner without its own method body."],
+                ),
+                "DerivedTests.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    base="MidTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+            },
+        )
+        create_project(
+            root,
+            "Other.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member("ReturnsOtherProjectResponse")],
+                ),
+                "MidTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "MidTests",
+                    base="BaseTests",
+                    members=["// Same full intermediate type in another project."],
+                ),
+            },
+        )
+        commit(root, "Add multi-hop inherited test with duplicate intermediate type", "2026-08-01T00:00:00Z")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["path"] == "src/Sample.Tests/BaseTests.cs", result
+        assert {
+            entry["path"] for entry in result["source_resolution"]["history_locations"]
+        } == {
+            "src/Sample.Tests/BaseTests.cs",
+            "src/Sample.Tests/MidTests.cs",
+            "src/Sample.Tests/DerivedTests.cs",
+        }, result
+
+
+def test_partial_type_quarantine_removal_only_applies_to_methods_present_at_removal(module=None):
+    module = module or MODULE
+    added_later_test_name = (
+        "Microsoft.AspNetCore.Tests.SampleTests.AddedLaterStaysEligible"
+    )
+    existing_test_name = (
+        "Microsoft.AspNetCore.Tests.SampleTests.RemovedEarlierStaysCaseB"
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.Existing.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member("RemovedEarlierStaysCaseB")],
+                ),
+                "SampleTests.Quarantine.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    type_quarantine=QUARANTINE_ATTRIBUTE,
+                ),
+            },
+        )
+        commit(root, "Add quarantined partial type with existing method", "2026-08-01T00:00:00Z")
+
+        quarantine_path = root / "src/Sample.Tests/SampleTests.Quarantine.cs"
+        quarantine_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove sibling partial type quarantine", "2026-08-02T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        (root / "src/Sample.Tests/SampleTests.Added.cs").write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                members=[method_member("AddedLaterStaysEligible")],
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add later partial test method", "2026-08-03T00:00:00Z")
+
+        data = evidence(test_name=added_later_test_name)
+        data["source_a"][existing_test_name] = dict(
+            data["source_a"][added_later_test_name],
+            run_id=2002,
+            result_id=3002,
+        )
+        receipt = collect(root, data, module=module)["tests"]
+
+        added_later = receipt[added_later_test_name]
+        assert added_later["status"] == "eligible", added_later
+        assert added_later["originating_case"] == "case-a", added_later
+        assert added_later["latest_quarantine_transition"] == "none", added_later
+        assert added_later["eligible_failure_builds"] == [101, 102], added_later
+
+        existing = receipt[existing_test_name]
+        assert_case_b(existing, removal_commit)
+
+
+def test_inherited_runner_added_after_declaring_type_unquarantine_stays_case_a(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    type_quarantine=QUARANTINE_ATTRIBUTE,
+                    members=[method_member()],
+                ),
+            },
+        )
+        commit(root, "Add quarantined declaring base type", "2026-08-01T00:00:00Z")
+
+        base_path = root / "src/Sample.Tests/BaseTests.cs"
+        base_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "BaseTests",
+                members=[method_member()],
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Remove declaring base type quarantine", "2026-08-02T00:00:00Z")
+
+        (root / "src/Sample.Tests/DerivedTests.cs").write_text(
+            class_source(
+                "Microsoft.AspNetCore.Server.Tests",
+                "DerivedTests",
+                base="BaseTests",
+                usings="using Microsoft.AspNetCore.Tests;",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add inherited runner after declaring type unquarantine", "2026-08-03T00:00:00Z")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+        assert result["latest_quarantine_transition"] == "none", result
+        assert result["source_resolution"]["status"] == "exact", result
+        assert result["source_resolution"]["declaring_type"] == (
+            "Microsoft.AspNetCore.Tests.BaseTests"
+        ), result
+
+
+def test_partial_runner_conflicting_bases_in_same_project_fail_closed(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "BaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "BaseTests",
+                    members=[method_member()],
+                ),
+                "AlternativeBaseTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "AlternativeBaseTests",
+                    members=[method_member()],
+                ),
+                "DerivedTests.Left.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    partial=True,
+                    base="BaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+                "DerivedTests.Right.cs": class_source(
+                    "Microsoft.AspNetCore.Server.Tests",
+                    "DerivedTests",
+                    partial=True,
+                    base="AlternativeBaseTests",
+                    usings="using Microsoft.AspNetCore.Tests;",
+                ),
+            },
+        )
+        commit(root, "Add partial runner with conflicting bases", "2026-08-01T00:00:00Z")
+
+        result = collect_result(
+            root,
+            evidence(test_name=DERIVED_TEST_NAME),
+            test_name=DERIVED_TEST_NAME,
+            module=module,
+        )
+        assert result["status"] == "unproven", result
+        assert result["source_resolution"]["status"] == "ambiguous", result
+        assert "source-ambiguous" in result["reasons"], result
+
+
+def test_partial_sibling_edits_do_not_expand_source_b_or_freshness_scope(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {
+                "SampleTests.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                    members=[method_member()],
+                ),
+                "SampleTests.Partial.cs": class_source(
+                    "Microsoft.AspNetCore.Tests",
+                    "SampleTests",
+                    partial=True,
+                ),
+            },
+        )
+        commit(root, "Add partial test", "2026-08-01T00:00:00Z")
+        method_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        sibling_path = root / "src/Sample.Tests/SampleTests.Partial.cs"
+        sibling_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                partial=True,
+                members=["// unrelated sibling-only edit"],
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Edit unrelated sibling partial file", "2026-08-20T00:00:00Z")
+
+        result = collect_result(
+            root,
+            source_b_evidence(),
+            pr_files_provider=lambda _: {"src/Sample.Tests/SampleTests.Partial.cs"},
+            module=module,
+        )
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+        assert result["excluded_builds"] == [], result
+        assert result["eligible_failure_builds"] == [101, 102], result
+        assert result["cutoff"]["reason"] == "latest-test-file-change", result
+        assert result["cutoff"]["commit"] == method_commit, result
 
 
 def run_output(root, *args):
@@ -632,6 +1495,20 @@ public class DerivedTests : BaseTests
         assert inherited_case_b["originating_case"] == "case-b"
 
     test_assembly_quarantine_history()
+    test_partial_sibling_type_quarantine_is_already_quarantined()
+    test_partial_sibling_type_quarantine_removal_is_case_b()
+    test_partial_sibling_type_quarantine_removal_after_rename_is_case_b()
+    test_partial_sibling_type_quarantine_removal_by_deletion_is_case_b()
+    test_partial_other_method_unquarantine_does_not_make_test_case_b()
+    test_partial_inherited_runner_sibling_type_removal_is_case_b()
+    test_partial_declaring_type_sibling_quarantine_removal_is_case_b_for_inherited_test()
+    test_same_full_type_in_multiple_projects_fails_closed()
+    test_other_project_same_name_type_does_not_contaminate_inherited_resolution()
+    test_other_project_same_full_intermediate_type_does_not_contaminate_multihop_inherited_resolution()
+    test_partial_type_quarantine_removal_only_applies_to_methods_present_at_removal()
+    test_inherited_runner_added_after_declaring_type_unquarantine_stays_case_a()
+    test_partial_runner_conflicting_bases_in_same_project_fail_closed()
+    test_partial_sibling_edits_do_not_expand_source_b_or_freshness_scope()
 
     print("All Case A eligibility collector tests passed.")
 

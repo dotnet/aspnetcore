@@ -16,9 +16,16 @@ the script validates deterministic evidence and renders the final issue.
    the conservative freshness cutoff, exact evidence identity, and the
    `origin/main` history commit used for the decision. Assembly history is
    reconstructed across the resolved test project, including deleted
-   quarantine files. Inherited tests retain both the declaring-method file and
-   every runner-type file so a change or unquarantine on either side
-   invalidates stale evidence.
+   quarantine files. Same-project partial declarations are also evaluated as a
+   logical type for type-level quarantine history, so sibling declaration
+   renames, deletions, and attribute removals can still surface as Case B.
+   A transition applies only when the declaring method and inherited runner
+   types existed at that point; later-added tests do not inherit old removals.
+   Partial inherited runners are resolved through an unambiguous same-project
+   base chain. That logical type-history check remains separate from the exact
+   method freshness cutoff and Source B pull-request file checks, which still
+   key off the resolved declaring method and inherited runner files rather than
+   every partial sibling declaration.
 3. The pre-activation job uploads both files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
 4. The agent may choose a Case A test only from the deterministic eligible-test

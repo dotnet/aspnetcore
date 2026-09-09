@@ -299,6 +299,77 @@ def build_source_index(root):
     }
 
 
+def logical_type(source_index, type_name, project_root=None):
+    declarations = source_index["types"].get(type_name, [])
+    if project_root is not None:
+        declarations = [
+            entry for entry in declarations
+            if entry["project_root"] == project_root
+        ]
+    if not declarations:
+        return {"status": "missing"}
+
+    projects = {entry["project_root"] for entry in declarations}
+    if len(projects) != 1:
+        return {"status": "ambiguous"}
+    project_root = next(iter(projects))
+    bases = {
+        normalize_type_name(entry["base"])
+        for entry in declarations
+        if entry.get("base")
+    }
+    if len(bases) > 1:
+        return {"status": "ambiguous"}
+
+    base = next(iter(bases), None)
+    base_declaration = None
+    if base:
+        base_declaration = min(
+            (
+                entry for entry in declarations
+                if entry.get("base")
+                and normalize_type_name(entry["base"]) == base
+            ),
+            key=lambda entry: entry["path"],
+        )
+    return {
+        "status": "exact",
+        "type": type_name,
+        "project_root": project_root,
+        "declarations": declarations,
+        "base": base,
+        "base_declaration": base_declaration,
+        "quarantined": any(entry["quarantined"] for entry in declarations),
+        "assembly_quarantined": declarations[0]["assembly_quarantined"],
+        "assembly_quarantine_ambiguous": declarations[0][
+            "assembly_quarantine_ambiguous"
+        ],
+    }
+
+
+def resolve_base_type(source_index, current_type, base_name, project_root):
+    namespace = current_type.rsplit(".", 1)[0] if "." in current_type else ""
+    qualified_base = f"{namespace}.{base_name}" if namespace else base_name
+    candidates = {
+        name
+        for name, declarations in source_index["types"].items()
+        if any(entry["project_root"] == project_root for entry in declarations)
+        and (
+            name == base_name
+            or name == qualified_base
+            or name.endswith(f".{base_name}")
+        )
+    }
+    if not candidates:
+        return {"status": "missing"}
+    if len(candidates) != 1:
+        return {"status": "ambiguous"}
+    return {
+        "status": "exact",
+        "type": next(iter(candidates)),
+    }
+
+
 def resolve_source(root, test_name, source_index=None):
     method = test_name.rsplit(".", 1)[-1]
     expected_type = normalize_type_name(test_name.rsplit(".", 1)[0])
@@ -308,44 +379,72 @@ def resolve_source(root, test_name, source_index=None):
         if entry["type"] == expected_type
     ]
     runner_types = []
+    resolution_status = None
     if not matches:
         current_type = expected_type
+        project_root = None
         visited = set()
         while current_type not in visited:
             visited.add(current_type)
-            declarations = source_index["types"].get(current_type, [])
-            if len(declarations) != 1 or not declarations[0].get("base"):
+            runner_type = logical_type(source_index, current_type, project_root)
+            if runner_type["status"] == "ambiguous":
+                resolution_status = "ambiguous"
                 break
-            runner_types.append(declarations[0])
-            base_name = normalize_type_name(declarations[0]["base"])
-            namespace = current_type.rsplit(".", 1)[0]
-            candidates = [
-                name for name in source_index["types"]
-                if name == f"{namespace}.{base_name}" or name.endswith(f".{base_name}")
-            ]
-            if len(candidates) != 1:
+            if runner_type["status"] != "exact" or not runner_type["base"]:
                 break
-            current_type = candidates[0]
+            project_root = runner_type["project_root"]
+            runner_types.append(runner_type)
+            base_type = resolve_base_type(
+                source_index,
+                current_type,
+                runner_type["base"],
+                runner_type["project_root"],
+            )
+            if base_type["status"] == "ambiguous":
+                resolution_status = "ambiguous"
+                break
+            if base_type["status"] != "exact":
+                break
+            current_type = base_type["type"]
             matches = [
                 entry for entry in source_index["methods"].get(method, [])
-                if entry["type"] == current_type
+                if (
+                    entry["type"] == current_type
+                    and entry["project_root"] == runner_type["project_root"]
+                )
             ]
             if matches:
                 break
-    if len(matches) != 1:
+    if resolution_status == "ambiguous" or len(matches) != 1:
         return {
-            "status": "missing" if not matches else "ambiguous",
+            "status": (
+                "ambiguous"
+                if resolution_status == "ambiguous" or matches
+                else "missing"
+            ),
             "matches": matches[:5],
         }
+
+    declaring_type = logical_type(
+        source_index,
+        matches[0]["type"],
+        matches[0]["project_root"],
+    )
+    if declaring_type["status"] != "exact":
+        return {
+            "status": declaring_type["status"],
+            "matches": matches[:5],
+        }
+
     result = dict(matches[0])
     result["status"] = "exact"
     result["declaring_type"] = result["type"]
     result["type"] = expected_type
     result["type_quarantined"] = (
-        result["type_quarantined"]
+        declaring_type["quarantined"]
         or any(entry["quarantined"] for entry in runner_types)
     )
-    assembly_declaration = runner_types[0] if runner_types else result
+    assembly_declaration = runner_types[0] if runner_types else declaring_type
     result["assembly_quarantined"] = assembly_declaration["assembly_quarantined"]
     result["assembly_quarantine_ambiguous"] = assembly_declaration[
         "assembly_quarantine_ambiguous"
@@ -358,7 +457,7 @@ def resolve_source(root, test_name, source_index=None):
         "project_root": result["project_root"],
     }]
     locations.extend({
-        "path": entry["path"],
+        "path": entry["base_declaration"]["path"],
         "type": entry["type"],
         "method": None,
         "project_root": entry["project_root"],
@@ -373,6 +472,18 @@ def resolve_source(root, test_name, source_index=None):
     result["assembly_history_locations"] = list({
         (entry["path"], entry["type"], entry["method"]): entry
         for entry in assembly_locations
+    }.values())
+    type_locations = [{
+        "type": declaring_type["type"],
+        "project_root": declaring_type["project_root"],
+    }]
+    type_locations.extend({
+        "type": entry["type"],
+        "project_root": entry["project_root"],
+    } for entry in runner_types)
+    result["type_history_locations"] = list({
+        (entry["project_root"], entry["type"]): entry
+        for entry in type_locations
     }.values())
     return result
 
@@ -510,8 +621,10 @@ def historical_project_source_index(
     commit,
     source_cache,
     content_cache,
+    *,
+    quarantine_only=False,
 ):
-    cache_key = (commit, project_root)
+    cache_key = (commit, project_root, quarantine_only)
     if cache_key in source_cache:
         return source_cache[cache_key]
 
@@ -527,6 +640,24 @@ def historical_project_source_index(
     if tree.returncode != 0:
         return {"status": "ambiguous"}
     paths = tree.stdout.splitlines()
+    quarantine_paths = None
+    if quarantine_only:
+        matches = git_result(
+            root,
+            "grep",
+            "-l",
+            "-F",
+            QUARANTINE,
+            commit,
+            "--",
+            project_root,
+        )
+        if matches.returncode not in (0, 1):
+            return {"status": "ambiguous"}
+        quarantine_paths = {
+            match.split(":", 1)[-1]
+            for match in matches.stdout.splitlines()
+        }
     project_directories = {}
     for path in paths:
         if path.endswith(".csproj"):
@@ -538,9 +669,12 @@ def historical_project_source_index(
         return result
 
     types = set()
+    type_quarantines = set()
     methods = {}
     for relative_path in paths:
         if not relative_path.endswith(".cs"):
+            continue
+        if quarantine_paths is not None and relative_path not in quarantine_paths:
             continue
         directory = pathlib.PurePosixPath(relative_path).parent
         while str(directory) not in project_directories:
@@ -559,7 +693,9 @@ def historical_project_source_index(
                 source_cache[cache_key] = result
                 return result
             content_cache[content_key] = content.stdout
-        clean = sanitize_csharp(content_cache[content_key])
+        text = content_cache[content_key]
+        clean = sanitize_csharp(text)
+        lines = text.splitlines()
         file_namespace = None
         namespace_match = re.search(
             r"(?m)^[ \t]*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;",
@@ -571,12 +707,16 @@ def historical_project_source_index(
         for entry in ranges:
             if entry[2] != "type":
                 continue
-            types.add(full_type_name(
+            type_name = full_type_name(
                 ranges,
                 entry[4],
                 file_namespace,
                 declared_type=entry[3],
-            ))
+            )
+            types.add(type_name)
+            declaration_line = clean.count("\n", 0, entry[4])
+            if QUARANTINE in attribute_block(lines, declaration_line):
+                type_quarantines.add(type_name)
         for match in METHOD_PATTERN.finditer(clean):
             key = (
                 full_type_name(ranges, match.start(), file_namespace),
@@ -587,6 +727,7 @@ def historical_project_source_index(
     result = {
         "status": "exact",
         "types": types,
+        "type_quarantines": type_quarantines,
         "methods": methods,
     }
     source_cache[cache_key] = result
@@ -681,6 +822,130 @@ def assembly_quarantine_transition(
     return {"status": "none"}
 
 
+def type_quarantine_transition(
+    root,
+    project_root,
+    type_name,
+    locations,
+    history_ref,
+    history_cache,
+    source_cache,
+    content_cache,
+):
+    root = pathlib.Path(root)
+    relative_project_root = str(
+        pathlib.Path(project_root).relative_to(root)
+    ).replace(os.sep, "/")
+    if relative_project_root not in history_cache:
+        history = git_result(
+            root,
+            "log",
+            "--first-parent",
+            "--format=%H%x09%P%x09%cI",
+            "-G",
+            QUARANTINE,
+            history_ref,
+            "--",
+            relative_project_root,
+        )
+        if history.returncode != 0:
+            history_cache[relative_project_root] = {
+                "lines": None,
+                "types": {},
+            }
+        else:
+            history_cache[relative_project_root] = {
+                "lines": history.stdout.splitlines(),
+                "types": {},
+            }
+    cached_history = history_cache[relative_project_root]
+    cache_key = (
+        type_name,
+        tuple(
+            (location["project_root"], location["type"], location["method"])
+            for location in locations
+        ),
+    )
+    if cache_key in cached_history["types"]:
+        return cached_history["types"][cache_key]
+    history = cached_history["lines"]
+    if history is None:
+        return {"status": "ambiguous"}
+
+    for line in history:
+        sha, parent_values, timestamp = line.split("\t", 2)
+        parent = parent_values.split()[0] if parent_values else None
+        current_index = historical_project_source_index(
+            root,
+            relative_project_root,
+            sha,
+            source_cache,
+            content_cache,
+            quarantine_only=True,
+        )
+        if parent is None:
+            parent_index = {
+                "status": "exact",
+                "type_quarantines": set(),
+            }
+        else:
+            parent_index = historical_project_source_index(
+                root,
+                relative_project_root,
+                parent,
+                source_cache,
+                content_cache,
+                quarantine_only=True,
+            )
+        if (
+            current_index["status"] != "exact"
+            or parent_index["status"] != "exact"
+        ):
+            result = {
+                "status": "ambiguous",
+                "commit": sha,
+                "utc": timestamp,
+            }
+            cached_history["types"][cache_key] = result
+            return result
+        current_state = type_name in current_index["type_quarantines"]
+        parent_state = type_name in parent_index["type_quarantines"]
+        if current_state == parent_state:
+            continue
+        applicable_commit = sha if current_state else parent
+        location_statuses = [
+            source_location_status(
+                root,
+                location,
+                applicable_commit,
+                source_cache,
+                content_cache,
+            )
+            for location in locations
+        ]
+        if "ambiguous" in location_statuses:
+            result = {
+                "status": "ambiguous",
+                "commit": sha,
+                "utc": timestamp,
+            }
+            cached_history["types"][cache_key] = result
+            return result
+        if not all(status == "exact" for status in location_statuses):
+            continue
+        result = {
+            "status": "added" if current_state else "removed",
+            "commit": sha,
+            "utc": timestamp,
+            "scope": "type",
+        }
+        cached_history["types"][cache_key] = result
+        return result
+    result = {"status": "none"}
+    cached_history["types"][cache_key] = result
+    return result
+
+
 def quarantine_transition(root, relative_path, method, type_name, history_ref):
     try:
         history = git(
@@ -743,7 +1008,7 @@ def quarantine_transition(root, relative_path, method, type_name, history_ref):
                     hunk_ambiguous = True
                 elif method and re.search(rf"\b{re.escape(method)}\s*\(", target):
                     hunk_relevant = True
-                elif re.search(
+                elif not method and re.search(
                     rf"\b(?:class|struct|record)\s+{re.escape(type_short_name)}\b",
                     target,
                 ):
@@ -873,6 +1138,7 @@ def collect(
     receipts = {}
     pr_files_cache = {}
     assembly_history_cache = {}
+    type_history_cache = {}
     historical_source_cache = {}
     historical_content_cache = {}
 
@@ -930,7 +1196,21 @@ def collect(
                 history_ref,
             )
             for location in source["history_locations"]
+            if location["method"] is not None
         ]
+        transitions.extend(
+            type_quarantine_transition(
+                root,
+                location["project_root"],
+                location["type"],
+                source["history_locations"],
+                history_ref,
+                type_history_cache,
+                historical_source_cache,
+                historical_content_cache,
+            )
+            for location in source["type_history_locations"]
+        )
         transitions.append(assembly_quarantine_transition(
             root,
             source["assembly_project_root"],
