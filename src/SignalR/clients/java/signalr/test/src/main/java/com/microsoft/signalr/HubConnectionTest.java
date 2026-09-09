@@ -28,6 +28,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.CompletableSubject;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -3322,6 +3323,79 @@ class HubConnectionTest {
         hubConnection.stop();
         closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
         blockGet.onComplete();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    // Regression test for stop() hanging when it races with a failing start. stop() waits on the start
+    // task, then stops the transport. The initial poll had already been issued, so LongPollingTransport
+    // sent DELETE and waited on a receive loop that never started.
+    @Test
+    public void stopDuringFailingInitialLongPollDoesNotHang() throws Exception {
+        CompletableSubject initialPollArrived = CompletableSubject.create();
+        // Leave the initial poll unresolved so start() returns while it is still in flight.
+        SingleSubject<HttpResponse> initialPoll = SingleSubject.create();
+        AtomicBoolean deleteSent = new AtomicBoolean(false);
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                initialPollArrived.onComplete();
+                return initialPoll;
+            })
+            .on("DELETE", (req) -> {
+                deleteSent.set(true);
+                return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        TestObserver<Void> start = hubConnection.start().test();
+        assertTrue(initialPollArrived.blockingAwait(30, TimeUnit.SECONDS));
+
+        // stop() has to observe the in-progress start, so it waits on the start task.
+        TestObserver<Void> stop = hubConnection.stop().test();
+
+        // Fail the poll from another thread so a hang shows up as a failed assertion below rather than
+        // blocking the test thread inside onSuccess.
+        Thread poller = new Thread(() -> initialPoll.onSuccess(new HttpResponse(500, "", TestUtils.emptyByteBuffer)));
+        poller.setDaemon(true);
+        poller.start();
+
+        assertTrue(start.await(30, TimeUnit.SECONDS), "start() never terminated.");
+        start.assertError(Throwable.class);
+        assertTrue(stop.await(30, TimeUnit.SECONDS), "stop() never terminated.");
+        assertTrue(deleteSent.get());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    // A failed start used to leave the transport running, and because the hub was already DISCONNECTED a
+    // later stop() did nothing, so the abandoned transport kept polling.
+    @Test
+    public void failedStartStopsTheTransport() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        MockTransport transport = new MockTransport(false);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        // Never send a handshake response, so start fails on the handshake timeout.
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+
+        transport.getStopTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 

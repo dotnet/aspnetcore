@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -343,16 +344,34 @@ public class HubConnection implements AutoCloseable {
             }).subscribe(() -> {
                 localStart.onComplete();
             }, error -> {
+                boolean releaseConnection = false;
                 this.state.lock();
                 try {
                     ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
                     if (activeState == connectionState) {
+                        // Release the failed attempt. Leaving the connection state in place kept the
+                        // transport and its timers running, and a later stop() short circuits on the
+                        // DISCONNECTED state, so nothing ever cleaned them up.
+                        releaseConnection = true;
+                        this.state.setConnectionState(null);
+                        connectionState.close();
                         this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
                     }
                 // this error is already logged and we want the user to see the original error
                 } catch (Exception ex) {
                 } finally {
                     this.state.unlock();
+                }
+
+                if (releaseConnection) {
+                    // The cleanup above already ran, so stop the transport without letting its onClose
+                    // callback re-enter stopConnection now that there is no connection state.
+                    Transport failedTransport = connectionState.transport;
+                    if (failedTransport != null) {
+                        failedTransport.setOnClose((message) -> {
+                        });
+                    }
+                    connectionState.stopTransport().onErrorComplete().subscribe();
                 }
 
                 localStart.onError(error);
@@ -445,9 +464,7 @@ public class HubConnection implements AutoCloseable {
         CompletableSubject subject = CompletableSubject.create();
         startTask.onErrorComplete().subscribe(() ->
         {
-            Transport transport = connectionState.transport;
-            Completable stop = (transport != null) ? transport.stop() : Completable.complete();
-            stop.subscribe(() -> subject.onComplete(), e -> subject.onError(e));
+            connectionState.stopTransport().subscribe(() -> subject.onComplete(), e -> subject.onError(e));
         });
 
         return subject;
@@ -1395,6 +1412,8 @@ public class HubConnection implements AutoCloseable {
         private ScheduledExecutorService handshakeTimeout = null;
         private BehaviorSubject<InvocationMessage> messages = BehaviorSubject.create();
         private ExecutorService resultInvocationPool = null;
+        private final AtomicBoolean transportStopInitiated = new AtomicBoolean(false);
+        private final CompletableSubject transportStopped = CompletableSubject.create();
 
         public final Lock lock = new ReentrantLock();
         public final CompletableSubject handshakeResponseSubject = CompletableSubject.create();
@@ -1535,6 +1554,18 @@ public class HubConnection implements AutoCloseable {
             handshakeTimeout.schedule(() -> {
                 errorHandshake(new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
             }, timeout, unit);
+        }
+
+        // Stops the transport at most once. Both a failed start and stop() get here, and stopping a
+        // transport twice runs its shutdown a second time, so callers share a single stop.
+        public Completable stopTransport() {
+            if (transportStopInitiated.compareAndSet(false, true)) {
+                Transport transportToStop = this.transport;
+                Completable stop = (transportToStop != null) ? transportToStop.stop() : Completable.complete();
+                stop.subscribe(() -> transportStopped.onComplete(), e -> transportStopped.onError(e));
+            }
+
+            return transportStopped;
         }
 
         public void close() {
