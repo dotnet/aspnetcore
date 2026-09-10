@@ -321,7 +321,63 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), connectionIds, cancellationToken);
+        // Bound deduplication costs. Large lists retain the original scan without target-sized allocations.
+        if (connectionIds.Count > 16)
+        {
+            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), connectionIds, cancellationToken);
+        }
+
+        List<Task>? tasks = null;
+        SerializedHubMessage? message = null;
+
+        for (var i = 0; i < connectionIds.Count; i++)
+        {
+            var connectionId = connectionIds[i];
+            if (IsDuplicateConnectionId(connectionIds, i, connectionId))
+            {
+                continue;
+            }
+
+            var connection = _connections[connectionId];
+            if (connection is null)
+            {
+                continue;
+            }
+
+            message ??= CreateSerializedInvocationMessage(methodName, args);
+
+            var task = connection.WriteAsync(message, cancellationToken);
+            if (!task.IsCompletedSuccessfully)
+            {
+                tasks ??= new List<Task>();
+                tasks.Add(task.AsTask());
+            }
+            else
+            {
+                // Consume IValueTaskSource-backed writes so their sources can be reset.
+                task.GetAwaiter().GetResult();
+            }
+        }
+
+        return tasks is null ? Task.CompletedTask : Task.WhenAll(tasks);
+    }
+
+    private static bool IsDuplicateConnectionId(IReadOnlyList<string> connectionIds, int count, string connectionId)
+    {
+        if (connectionIds is string[] array)
+        {
+            return array.AsSpan(0, count).Contains(connectionId);
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            if (string.Equals(connectionIds[i], connectionId, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <inheritdoc />

@@ -228,7 +228,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             case CancelInvocationMessage cancelInvocationMessage:
                 // Check if there is an associated active invocation or stream and cancel it if it exists.
                 // The cts will be removed when the hub method completes executing
-                if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
+                if (connection.TryGetActiveRequestCancellationSource(cancelInvocationMessage.InvocationId!, out var cts))
                 {
                     Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
@@ -767,18 +767,16 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return IsHubMethodAuthorizedSlow(
             provider,
             hubCallerContext.User ?? new ClaimsPrincipal(),
-            descriptor.Policies,
+            descriptor,
             new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
-    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
+    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, HubMethodDescriptor descriptor, HubInvocationContext resource)
     {
         var authService = provider.GetRequiredService<IAuthorizationService>();
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);
-        // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
-        Debug.Assert(authorizePolicy != null);
+        var authorizePolicy = await descriptor.GetAuthorizationPolicyAsync(policyProvider);
 
         var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
         // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
