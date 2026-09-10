@@ -134,6 +134,5 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
 
     protected override void Dispose(bool disposing)
     {
-        // The keyed model may be shared by several scoped scenario adapters; DI owns it.
     }
 }

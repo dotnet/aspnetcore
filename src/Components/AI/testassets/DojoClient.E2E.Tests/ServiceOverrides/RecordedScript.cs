@@ -5,10 +5,6 @@ using System.Text.Json;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// A recorded model response, replayed by either backend so browser tests are deterministic.
-//
-// The latest prompt and message count select a call. Mutable thread expectations belong
-// to this script instance, which is created separately for each test session.
 internal sealed class RecordedScript
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -68,43 +64,31 @@ internal sealed class RecordedScript
 
 internal sealed class RecordedCall
 {
-    /// <summary>The prefix of the last user message this call answers.</summary>
     public required string Prompt { get; init; }
 
-    /// <summary>The message count that distinguishes continuations of the same prompt.</summary>
     public int? MessageCount { get; init; }
 
-    /// <summary>The tool declarations expected on this model request.</summary>
     public List<string>? ToolNames { get; init; }
 
-    /// <summary>The function result call IDs expected on this model request.</summary>
     public List<string>? ToolResultCallIds { get; init; }
 
-    /// <summary>The function results expected on this model request.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
 
-    /// <summary>The UI state expected on this model request.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>Whether this call must use the same non-empty thread as prior calls.</summary>
     public bool RequireStableThread { get; init; }
 
-    /// <summary>The response, split into the checkpoints a test can stop at.</summary>
     public required List<RecordedFrame> Frames { get; init; }
 }
 
 internal sealed class RecordedFrame
 {
-    /// <summary>Name of the checkpoint, used to build the lock key that gates it.</summary>
     public required string Name { get; init; }
 
-    /// <summary>The text chunks streamed for this checkpoint.</summary>
     public List<string> Chunks { get; init; } = [];
 
-    /// <summary>A predictive state snapshot emitted at this checkpoint.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>A function call emitted at this checkpoint.</summary>
     public RecordedFunctionCall? FunctionCall { get; init; }
 }
 

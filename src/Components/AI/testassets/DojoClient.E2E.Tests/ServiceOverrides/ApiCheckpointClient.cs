@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Checkpoints belong to a test session, not to the shared model host.
 internal sealed class ApiCheckpointClient
 {
     private readonly ServerInstance _server;

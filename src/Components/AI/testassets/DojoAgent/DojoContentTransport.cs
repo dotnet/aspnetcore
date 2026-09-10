@@ -30,7 +30,6 @@ public static class DojoContentTransport
     {
         await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            // Raw events bypass standard conversion, including buffering native tool calls.
             yield return new ChatResponseUpdate
             {
                 RawRepresentation = new CustomEvent
@@ -62,7 +61,6 @@ public static class DojoContentTransport
             ?? throw new JsonException("A dojo content update is required.");
         foreach (var content in update.Contents)
         {
-            // System.Text.Json represents object-valued results as JsonElement by default.
             if (content is FunctionResultContent { Result: JsonElement { ValueKind: JsonValueKind.String } result } functionResult)
             {
                 functionResult.Result = result.GetString();
@@ -134,7 +132,6 @@ public static class DojoContentTransport
 
             var value = root.GetProperty("node");
             var node = (RichTextNode)value.Deserialize(nodeType, options)!;
-            // Children is a read-only view; concrete node deserialization restores properties only.
             var childrenProperty = options.PropertyNamingPolicy?.ConvertName(nameof(RichTextNode.Children))
                 ?? nameof(RichTextNode.Children);
             foreach (var child in value.GetProperty(childrenProperty).EnumerateArray())

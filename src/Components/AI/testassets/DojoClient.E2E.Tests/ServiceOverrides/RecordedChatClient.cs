@@ -10,11 +10,6 @@ using Microsoft.Extensions.AI;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Replaces only the model client in AGUIDojoApi or DojoClient. Components.AI and the
-// selected backend's tool, state, and streaming pipelines remain real.
-//
-// Between checkpoints the client waits on a test-controlled gate, so a test can assert the
-// partially streamed UI before letting the response finish.
 internal sealed class RecordedChatClient : IChatClient
 {
     private readonly RecordedScript _script;
@@ -143,7 +138,6 @@ internal sealed class RecordedChatClient : IChatClient
                     .Select(result => new RecordedToolResult
                     {
                         CallId = result.CallId,
-                        // Recordings store the AG-UI JSON encoding, not the native result value.
                         Result = _backend == DojoBackendKind.Direct
                             ? JsonSerializer.Serialize(result.Result, AIJsonUtilities.DefaultOptions)
                             : result.Result?.ToString() ?? "",

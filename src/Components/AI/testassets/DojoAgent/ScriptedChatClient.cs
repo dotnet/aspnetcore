@@ -10,9 +10,6 @@ using Microsoft.Extensions.AI;
 
 namespace DojoAgent;
 
-// Local stand-in for a model, used when no live model is configured. It streams a canned
-// answer one word at a time so the dojo can be exercised end to end (including incremental
-// rendering) without any credentials.
 internal sealed class ScriptedChatClient : IChatClient
 {
     private static JsonElement? GetState(ChatOptions? options)

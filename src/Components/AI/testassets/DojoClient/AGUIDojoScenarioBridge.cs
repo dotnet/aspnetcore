@@ -7,7 +7,6 @@ using Microsoft.Extensions.AI;
 
 namespace DojoClient;
 
-/// <summary>Bridges a dojo scenario to the AG-UI HTTP/SSE transport.</summary>
 internal sealed class AGUIDojoScenarioBridge : IDojoScenarioBridge
 {
     public ChatOptions CreateStateOptions(Func<DojoRequestContext> getContext) => new()

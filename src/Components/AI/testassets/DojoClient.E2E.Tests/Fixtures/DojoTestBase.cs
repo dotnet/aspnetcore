@@ -51,13 +51,10 @@ public abstract class DojoTestBase : BrowserTest
             }
             else
             {
-                // An accidental AG-UI dependency must fail rather than reach an ambient server.
                 options.EnvironmentVariables["AGUI_DOJO_API_URL"] = "http://127.0.0.1:1";
             }
         });
 
-        // Recording selection never enters ServerStartOptions, so ServerFactory reuses at most
-        // one API host and one UI host per backend for the entire assembly.
         var session = new DojoTestSession(ui, api ?? ui);
         _sessions.Add(session);
         await session.InitializeAsync(recording);

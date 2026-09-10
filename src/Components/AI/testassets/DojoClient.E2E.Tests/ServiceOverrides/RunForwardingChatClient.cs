@@ -38,8 +38,6 @@ internal sealed class RunForwardingChatClient(
         }
         else
         {
-            // AGUIChatClient pins its generated thread ID in the supplied options. Preserve
-            // that shared metadata when wrapping the request factory.
             if (options is not null)
             {
                 options.AdditionalProperties ??= [];
@@ -74,8 +72,6 @@ internal sealed class RunForwardingChatClient(
         {
             if (backend == DojoBackendKind.AGUI && update.RawRepresentation is RunStartedEvent started)
             {
-                // These IDs are echoed by the API from the actual RunAgentInput, including
-                // requests whose page supplied no RawRepresentationFactory.
                 ArgumentException.ThrowIfNullOrEmpty(started.ThreadId);
                 ArgumentException.ThrowIfNullOrEmpty(started.RunId);
             }

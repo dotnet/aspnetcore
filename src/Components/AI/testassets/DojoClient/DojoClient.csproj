@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-    <!-- This test asset intentionally references projects whose names match shared-framework packages. -->
     <NoWarn>$(NoWarn);NU1511</NoWarn>
   </PropertyGroup>
 
@@ -31,8 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The default dojo backend uses AG-UI. AGUI.Client brings
-         AGUI.Abstractions and AGUI.Formatting transitively. -->
     <Reference Include="AGUI.Client" />
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
   </ItemGroup>

@@ -14,7 +14,6 @@ using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AG-UI hosting: the SSE formatter plus the JSON configuration the protocol types need.
 builder.Services.TryAddEnumerable(
     ServiceDescriptor.Singleton<IAGUIEventStreamFormatter, SseEventStreamFormatter>());
 builder.Services.Configure<JsonOptions>(options =>
@@ -42,7 +41,6 @@ builder.Services.AddKeyedSingleton<IChatClient>(
 var app = builder.Build();
 var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
-// Map the AG-UI agent endpoints for the dojo scenarios.
 app.MapDojoEndpoint(DojoScenarioEndpoints.AgenticChatEndpoint);
 app.MapDojoEndpoint(FunctionScenarios.Approval, chatClientKey: FunctionScenarios.Approval);
 app.MapDojoEndpoint(FunctionScenarios.Invocation, chatClientKey: FunctionScenarios.Invocation);

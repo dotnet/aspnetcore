@@ -38,8 +38,6 @@ internal sealed class DojoModelOverrides
                 (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>(), predictive: true));
         }
 
-        // Decorate UI-facing clients, not the underlying model registrations. NavigationManager
-        // supplies the circuit's test ID without relying on HttpContext during interactive rendering.
         for (var index = 0; index < services.Count; index++)
         {
             var descriptor = services[index];

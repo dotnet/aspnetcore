@@ -49,14 +49,10 @@ else
     builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
     {
         client.BaseAddress = new Uri(apiBaseUrl);
-        // Streamed AG-UI responses have no meaningful overall duration limit.
         client.Timeout = Timeout.InfiniteTimeSpan;
     });
 }
 
-// E2E tests decorate these registrations (see DojoModelOverrides.ConfigureUI); each must stay
-// a factory registration so the decorator can rebuild the scenario's CreateChatClient pipeline
-// around a replaced model, instead of wrapping a fixed instance.
 builder.Services.AddScoped<IChatClient>(sp =>
     CreateChatClient(sp, DojoScenarioEndpoints.AgenticChatEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,

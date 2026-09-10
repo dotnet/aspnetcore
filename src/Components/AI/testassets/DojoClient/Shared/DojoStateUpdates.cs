@@ -27,9 +27,6 @@ internal sealed class DojoStateUpdates
                 yield return (delta.Delta, true);
                 yield break;
             case BaseEvent:
-                // AG-UI carries state only through the two events mapped above; any other
-                // event has no native state fallback, so applying it again here would
-                // duplicate a state update already delivered as an event.
                 yield break;
         }
 
