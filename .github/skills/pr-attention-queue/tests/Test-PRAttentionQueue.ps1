@@ -691,4 +691,65 @@ foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)
     }
 }
 
+# Shared detail failures must abort the public collection path before any JSON is emitted.
+Import-Module -Scope Local -Force $modulePath
+$failureModule = Get-Module PRAttentionQueue
+$sharedFailureResults = @(
+    foreach ($failureKind in @("transport", "graphql", "missing-pr", "missing-shared-field", "null-shared-field")) {
+        & $failureModule {
+            param($kind, $now, $fixture)
+            $raw = Get-Content $fixture -Raw | ConvertFrom-Json -Depth 100
+            function Invoke-GhJson {
+                param([string[]]$Arguments)
+                $query = @($Arguments | Where-Object { $_ -like "query=*" }) -join ""
+                if ($Arguments[0] -eq "pr") {
+                    return [pscustomobject]@{
+                        number = 800; title = "Shared source failure"; url = $raw.url
+                        author = $raw.author; headRefOid = $raw.headRefOid; isDraft = $false
+                        createdAt = "2026-09-01T10:00:00Z"; updatedAt = "2026-09-01T10:00:00Z"
+                        labels = @(); files = @(); changedFiles = 0
+                    }
+                }
+                if ($query -like "*pullRequests(states:OPEN)*") {
+                    return [pscustomobject]@{ data = [pscustomobject]@{ repository = [pscustomobject]@{
+                        pullRequests = [pscustomobject]@{ totalCount = 1 }
+                    } } }
+                }
+                if ($query -like "*reviews(last: 50)*") {
+                    switch ($kind) {
+                        "transport" { throw "Deliberate shared-detail transport failure." }
+                        "graphql" {
+                            $raw.reviews = $null
+                            return [pscustomobject]@{
+                                data = [pscustomobject]@{ repository = [pscustomobject]@{ pr800 = $raw } }
+                                errors = @([pscustomobject]@{ message = "Deliberate shared review failure."; path = @("repository", "pr800", "reviews") })
+                            }
+                        }
+                        "missing-pr" { return [pscustomobject]@{ data = [pscustomobject]@{ repository = [pscustomobject]@{} } } }
+                        "missing-shared-field" { $raw.reviews = $null }
+                        "null-shared-field" { $raw.mergeable = $null }
+                    }
+                }
+                return [pscustomobject]@{ data = [pscustomobject]@{ repository = [pscustomobject]@{ pr800 = $raw } } }
+            }
+            $output = [System.Collections.Generic.List[object]]::new()
+            $failure = $null
+            try {
+                Invoke-PRAttentionQueue -AllRepo -DisablePersonalInbox -Now $now -OutputFormat Json |
+                    ForEach-Object { $output.Add($_) }
+            }
+            catch { $failure = $_.Exception.Message }
+            [pscustomobject]@{ kind = $kind; error = $failure; outputCount = $output.Count }
+        } $failureKind $snapshot (Join-Path $PSScriptRoot "fixtures/review-lifecycle.json")
+    }
+)
+foreach ($failure in $sharedFailureResults) {
+    Write-Output "Shared-detail public entry point: $($failure.kind); error=$($failure.error); outputCount=$($failure.outputCount)"
+}
+foreach ($failure in $sharedFailureResults) {
+    Assert-True ($failure.error -and $failure.outputCount -eq 0) "Shared-detail $($failure.kind) failure must throw, not emit a complete actionable public result."
+}
+
+. (Join-Path $PSScriptRoot "Test-ReviewLifecycle.ps1")
+
 Write-Output "All PR attention queue tests passed."

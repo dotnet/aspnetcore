@@ -1,0 +1,67 @@
+{
+  "number": 800,
+  "title": "Observable review candidate evidence",
+  "url": "https://github.com/dotnet/aspnetcore/pull/800",
+  "state": "OPEN",
+  "isDraft": false,
+  "author": { "__typename": "User", "login": "contributor" },
+  "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "mergeable": "MERGEABLE",
+  "mergeStateStatus": "CLEAN",
+  "reviewDecision": "REVIEW_REQUIRED",
+  "reviews": {
+    "totalCount": 1,
+    "pageInfo": { "hasPreviousPage": false },
+    "nodes": [{
+      "id": "R1", "url": "https://github.com/dotnet/aspnetcore/pull/800#pullrequestreview-1",
+      "author": { "__typename": "User", "login": "reviewer" },
+      "state": "COMMENTED", "submittedAt": "2026-09-01T10:00:00Z", "body": "",
+      "commit": { "oid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+    }]
+  },
+  "reviewRequests": {
+    "totalCount": 1, "pageInfo": { "hasNextPage": false },
+    "nodes": [{ "requestedReviewer": { "__typename": "User", "login": "reviewer" } }]
+  },
+  "comments": { "totalCount": 0, "pageInfo": { "hasPreviousPage": false }, "nodes": [] },
+  "reviewThreads": {
+    "totalCount": 1, "pageInfo": { "hasPreviousPage": false },
+    "nodes": [{
+      "id": "T1", "isResolved": false, "isOutdated": false, "path": "src/Components/example.cs",
+      "comments": {
+        "totalCount": 2, "pageInfo": { "hasPreviousPage": false },
+        "nodes": [{
+          "id": "C1", "url": "https://github.com/dotnet/aspnetcore/pull/800#discussion_r1",
+          "author": { "__typename": "User", "login": "reviewer" },
+          "authorAssociation": "MEMBER", "state": "SUBMITTED",
+          "createdAt": "2026-09-01T10:00:00Z", "body": "Please add the regression test.",
+          "replyTo": null,
+          "pullRequestReview": { "id": "R1", "state": "COMMENTED", "submittedAt": "2026-09-01T10:00:00Z" }
+        }, {
+          "id": "C2", "url": "https://github.com/dotnet/aspnetcore/pull/800#discussion_r2",
+          "author": { "__typename": "User", "login": "contributor" },
+          "authorAssociation": "CONTRIBUTOR", "state": "SUBMITTED",
+          "createdAt": "2026-09-01T12:00:00Z",
+          "body": "Done, added in aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.",
+          "replyTo": { "id": "C1" },
+          "pullRequestReview": { "id": "R2", "state": "COMMENTED", "submittedAt": "2026-09-01T12:00:00Z" }
+        }]
+      }
+    }]
+  },
+  "timelineItems": {
+    "totalCount": 0, "filteredCount": 0, "pageInfo": { "hasPreviousPage": false }, "nodes": []
+  },
+  "commits": {
+    "nodes": [{
+      "commit": {
+        "oid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "url": "https://github.com/dotnet/aspnetcore/commit/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "committedDate": "2026-09-01T11:00:00Z",
+        "author": { "user": { "__typename": "User", "login": "contributor" } },
+        "committer": { "user": { "__typename": "User", "login": "contributor" } },
+        "statusCheckRollup": { "state": "SUCCESS" }
+      }
+    }]
+  }
+}

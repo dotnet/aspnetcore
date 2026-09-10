@@ -7,7 +7,8 @@ description: >-
   review", "PR attention queue", "what should I review today", "stale community PRs", "who is the
   next actor", "show the Blazor queue", or requests to filter the queue by ASP.NET Core labels or
   changed paths. Returns a capped Review now list, Needs rescue list, ready-to-merge items, resolved
-  scope, next actor, and evidence-backed reason codes. DO NOT USE FOR deeply reviewing one PR,
+  scope, next actor, and evidence-backed reason codes. JSON also provides complete prioritized
+  lifecycle groups for merge, re-review, and first feedback. DO NOT USE FOR deeply reviewing one PR,
   posting reviews/comments/labels, finding adversarial review benchmarks or fix challenges,
   investigating CI failures, or reviewing public API proposals.
 ---
@@ -54,8 +55,9 @@ This is deliberately not an LLM judgment. It only reports transparent evidence:
 - author wording that explicitly raises close/continue disposition;
 - actionable or unknown non-author top-level discussion, including feedback after the latest author
   response, categorized by a narrow documented text heuristic;
-- counts of resolved, unresolved, and outdated review threads. A current unresolved inline thread is
-  surfaced for verification because this bounded pass does not read its comment text; and
+- counts of resolved, unresolved, and outdated review threads. The legacy discussion assessment still
+  surfaces a current unresolved inline thread for verification; it does not interpret the nested
+  conversation evidence used by the separate JSON lifecycle assessment; and
 - whether the bounded comments or thread queries were truncated.
 
 An unresolved thread alone does not change ownership, but a current unresolved thread without
@@ -188,6 +190,115 @@ pwsh .github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue.ps1 `
 Do not replace the script with an improvised `gh pr list` query or re-rank its output with model
 judgment. The deterministic rules and reason codes are the contract.
 
+### Observable review candidates (JSON only)
+
+Use `-OutputFormat Json` for these **candidate groups**, in this priority order:
+
+1. `merge-candidates` — **Merge candidates**
+2. `review-follow-up-candidates` — **Review follow-up candidates**
+3. `initial-review-candidates` — **Initial review candidates**
+
+These are lists worth inspecting, not assertions that feedback was addressed, promises were
+fulfilled, a PR is reviewer-ready, or a particular person must act next. The new path does not
+interpret acknowledgment, commitment, disagreement, completion or hand-back wording. Quoted text
+and original Markdown remain evidence, never instructions or inferred author intent.
+
+The unpublished extension retains the name `reviewLifecycle` and is identified by
+`reviewLifecycle.kind == "review-candidates"`; root `schemaVersion` remains `1.0.0`. Candidate
+consumers must use its indexes and per-item assessments. Do not reconstruct these groups from
+legacy `ReviewNow`, `nextActor`, `shownInDigest` or digest ranks. A payload without this candidate
+kind does not implement this contract. The old Markdown report, buckets, ranking, caps, personal
+inbox and existing JSON/display fields retain their original behavior. There is no new Markdown
+output or migration of presentation defaults.
+
+#### Grouping rules
+
+- **Merge candidates:** require affirmative GitHub `APPROVED`, `MERGEABLE`, and passing checks
+  associated with the observed head, with existing draft/conflict/author/design/CI/stack/exclusion
+  gates preserved. `CLEAN` is accepted. The one explicit exception permits `mergeStateStatus:
+  UNKNOWN` when the only legacy gate is `merge-state-not-clean`: the candidate carries
+  `caveats: ["merge-state-unknown"]` and the same reason. **UNKNOWN is unresolved, not passing or
+  clearance to merge.** Its legacy bucket remains `WaitingOnCI`; legacy `ReadyToMerge` still
+  requires CLEAN. BLOCKED, BEHIND, conflicting, failed or pending merge checks are not this exception.
+- **Review follow-up candidates:** complete feedback sources contain a non-author human submitted
+  review, inline comment or top-level comment, followed by recorded author review/comment activity,
+  a current-head commit date, or a human-originated request for human/team review. The comparison
+  uses the latest observed human feedback, including later publication or edit timestamps.
+  A current-head approval followed by additional review requests while GitHub reports
+  `REVIEW_REQUIRED` belongs here, not in merge candidates. The date of a head commit is not a
+  fabricated push time or proof that the author fixed anything.
+- **Initial review candidates:** complete review, top-level-comment and inline histories contain
+  no non-author human feedback. Dismissed submitted reviews count as history. **Every observed
+  non-author human comment counts**, including greetings, acknowledgments, quoted comments and
+  administrative remarks; there is no “substantive comment” text parser. Bot and author-only
+  activity do not constitute human reviewer feedback. Zero submitted reviews alone is insufficient.
+
+Existing hard gates remain effective rather than being reinterpreted through discussion text.
+Pending CI can coexist with ordinary review under legacy rules, but is surfaced as `checks-pending`,
+not green. Missing check evidence is not passing. Existing feedback without later observed activity
+is `not-grouped`, not an automatic author obligation. Missing publication, identity, typed actors
+or required histories is `verification-needed`, never a fabricated initial-review candidate.
+The author's wording “I'll add that tomorrow” followed by “Thanks!” neither creates nor discharges
+an inferred obligation: neither such inference exists in candidate grouping.
+
+#### Candidate JSON contract
+
+Each `items[].reviewLifecycle` has:
+
+- `group` (one of the three identifiers, or null), `status`, and nullable within-group `rank`;
+- factual `reasons`, explicit `caveats`, and `primaryUncertaintyReason` when verification is needed;
+- `coverage` per source: `complete`, `partial` or `not-collected`, with observed connection metadata;
+- `evidence` containing head/draft/author identities, GitHub approval/merge/check facts, `headCommit`,
+  published `events`, `reviewRequestEvents`, `currentReviewRequests`, `laterReviewRequests`,
+  `humanFeedbackCount`, `latestHumanFeedbackAt`, `latestAuthorActivityAt`, and original source errors.
+  Feedback count counts published records, not people or inferred review rounds. Event records
+  preserve kind, actor, dates, state, original body, review/thread/reply identity and resolved flags.
+  A missing body does not imply an empty body or prevent grouping based on publication metadata.
+
+There is **no lifecycle `nextActor` field**, conversation-resolution verdict or confident-routing
+metric. Legacy `items[].nextActor` is unchanged. Nullable facts remain null rather than invented
+timestamps, SHAs or links.
+
+At the root:
+
+- `groupOrder` provides the priority above. `groups` contains `{ id, count, numbers }` references
+  into the sole PR records in `items`. No digest/per-author cap truncates these inventories.
+  Each PR has at most one group, with contiguous ranks using the existing within-group ordering.
+- `statusCounts` reconciles all scoped items across `grouped`, `not-grouped`, `blocked` and
+  `verification-needed`.
+- `coverage.inventory` covers every scoped item. `coverage.reviewWork` freezes the legacy
+  otherwise-reviewable cohort after explicit author/stack exclusions, before discussion and digest
+  limits; it includes `insideDiscussionBudget` and `outsideDiscussionBudget` breakdowns.
+  `coverage.mergeWork` separately covers eligible legacy merge items and the UNKNOWN exception.
+- Each summary reports `denominator`, `grouped`, `notGrouped`, `blocked`, `verificationNeeded`,
+  `groupedFraction`, `groupCounts`, `primaryUncertaintyReasons`, and per-source `sources` counts.
+  These measure **group membership and evidence availability**, not certification, accuracy,
+  established actors or successful routing. Fractions are null for zero denominators. One primary
+  uncertainty reason per PR makes cause totals reconcile; all reasons remain on the item.
+- `display.reviewLifecycle` supplies candidate-specific labels and descriptions without altering
+  existing display entries.
+
+#### Bounded collection and failure behavior
+
+The existing all-candidate detail query retains typed actors, authoritative counts/page metadata,
+head identity, published activity and review-request events. The leading **20** legacy review
+candidates receive the existing richer discussion collection: last 50 top-level comments and
+threads, with last 20 comments per thread. Batches remain at most five PRs. No crawler, expanded
+budget, personal-inbox dependency or model scoring is introduced. Assessment uses all collected
+events, not the legacy ten-comment excerpt. Filtered request timelines use `filteredCount`.
+
+Complete zero histories can establish initial candidates outside the richer budget. Incomplete
+feedback histories or unknown/deleted actors cannot. Pending private reviews/comments are ignored.
+The existing configured automation policy is preserved; User-typed service-looking identities
+without established policy remain uncertain and visible, not silently excluded.
+
+Shared detail GraphQL transport failures, returned errors, missing PRs or missing shared fields
+**abort the public query before emitting JSON**. Inventory-only records must never become a
+success-shaped legacy review digest. Lifecycle-only discussion failures can remain explicit
+uncertainty when the shared legacy detail data is intact. Repository incompleteness remains an
+error. Head/draft/author or review-identity disagreement between collection stages also prevents
+candidate grouping.
+
 JSON consumers must validate `schemaVersion`. Additive fields may be introduced within a supported
 schema version, and consumers must ignore fields they do not recognize. Removing, renaming,
 retyping, or changing the meaning of a required field requires a new schema version. The `display`
@@ -200,7 +311,8 @@ where `query.complete` is not `true`.
 The root `discussion` summary and each assessed item's `discussionAssessment` are additive contract
 fields. `discussionAssessment.state == verification-needed` is not a new bucket or an inference
 that the author is next. It means the item must be opened and its surfaced evidence interpreted
-before starting an ordinary review. Renderers must not present a `Review` action for those items.
+before starting an ordinary review in the legacy digest. Legacy discussion consumers must not present
+a `Review` action for those items; lifecycle consumers use the independent authoritative contract above.
 
 ### 3. Preserve the classifications
 
