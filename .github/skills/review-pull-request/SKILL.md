@@ -287,14 +287,15 @@ task(
           <selected delegated clauses>
           Policy provenance:
           <GUIDANCE_REPO>/<policy-path>@<GUIDANCE_SHA>#<anchor>
-
           Your only review topic is: <single named topic>.
           This is a delegated topic pass: do not invoke/re-invoke review-pull-request, emit
           MANIFEST/PATH or global provenance/accounting, inspect sibling topics, or dispatch.
-          Apply every bullet to changed lines and return LGTM or candidates with severity, changed
-          path/line, trigger, material consequence, source/primary-contract evidence, and topic-only
-          test-boundary notes. Read source only through immutable GitHub data at `HEAD_SHA`; do not
-          execute, build, test, check out, modify code, or call mutating APIs."
+          Apply every bullet to changed lines. Return LGTM or candidates with severity, changed path/line,
+          trigger, material consequence, source/primary-contract evidence, and topic-only test-boundary notes.
+          Each candidate must include `before` (immutable PR-diff old side/pre-change context), `after` (frozen `HEAD_SHA` behavior),
+          `changed_edge` (causal connection), and `binding_requirement` (mandatory for unchanged-behavior/incomplete-fix/new-feature claims; otherwise `none`).
+          Read only immutable GitHub source at `HEAD_SHA` or the diff's pre-change revision; never execute,
+          build, test, check out, modify code, or call mutating APIs."
 )
 ```
 
