@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';

@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { DotNet } from "../src/Microsoft.JSInterop";
+import * as DotNet from "../../src/JSInterop/Microsoft.JSInterop";
 
 describe("findObjectMember", () => {
     const testObject = {

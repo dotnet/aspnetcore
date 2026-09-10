@@ -94,6 +94,10 @@
     <Project Path="src/Components/Forms/src/Microsoft.AspNetCore.Components.Forms.csproj" />
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/JSInterop/">
+    <Project Path="src/Components/JSInterop/src/Microsoft.JSInterop.csproj" />
+    <Project Path="src/Components/JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Samples/">
     <Project Path="src/Components/Samples/BlazorWebAppGlobal.Client/BlazorWebAppGlobal.Client.csproj" />
     <Project Path="src/Components/Samples/BlazorWebAppGlobal/BlazorWebAppGlobal.csproj" />
@@ -484,11 +488,6 @@
       <Build Solution="Debug|arm64" Project="false" />
       <Deploy Solution="*|x86" />
     </Project>
-  </Folder>
-  <Folder Name="/src/JSInterop/" />
-  <Folder Name="/src/JSInterop/Microsoft.JSInterop/">
-    <Project Path="src/JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj" />
-    <Project Path="src/JSInterop/Microsoft.JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Localization/">
     <Project Path="src/Localization/Abstractions/src/Microsoft.Extensions.Localization.Abstractions.csproj" />

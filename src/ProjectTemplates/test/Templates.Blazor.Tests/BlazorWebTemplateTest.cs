@@ -61,6 +61,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
@@ -265,6 +266,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanRequireConfirmedEmail(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(
