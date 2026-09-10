@@ -5,18 +5,20 @@ This guidance covers ASP.NET Core Blazor and Razor Components work under `src/Co
 interactive Server circuits. Consult the relevant sections alongside the requested task and
 applicable repository and area instructions.
 
+The [Blazor Components architecture](../src/Components/ARCHITECTURE.md) is the canonical composition
+and ownership model for `src/Components`. This guide complements it with task-oriented change and
+validation guidance rather than defining a separate architecture.
+
 ## Overarching principles
 
-- **Preserve coherent hosting and lifecycle boundaries:** no single renderer owns every scenario.
-- **Keep framework layers separated:** core Components abstractions must not absorb endpoint, hosting, browser, or circuit specifics unless intentionally general.
-- **Let the renderer own component state:** lifecycle continuations, events, disposal, and `StateHasChanged` go through the renderer dispatcher or circuit synchronization context.
+- **Choose representative scenarios:** cover the render modes and lifecycle transitions affected by the change, including mixed-runtime cases where relevant.
 - **Treat JS interop and browser state as availability- and lifetime-sensitive:** `IJSRuntime`, `IJSObjectReference`, `ElementReference`, DOM callbacks, and browser resources need render-mode guards and deterministic cleanup.
 
 ## Topics
 
 ### Scope, layering, and public API shape
 
-- Keep render-mode, endpoint, hosting, environment, `HttpContext`, and circuit-specific logic in the assembly that owns that environment; do not move server-only concepts into core Components or Components.Web for one scenario.
+- When changing shared abstractions, check consumers in other affected hosts for new environment-specific dependencies.
 - Public Components and JS interop APIs must have narrow names that describe the scenario, preserve existing overload compatibility, and expose only genuinely general extension points.
 - Use `Microsoft.Extensions.Options` and idempotent DI registration patterns for framework configuration; avoid duplicate registrations or hidden dependencies omitted by slim builders.
 - Keep source-generated or framework-only plumbing internal unless public generation contracts require access; expose strongly typed surfaces rather than untyped internal mechanisms.
@@ -26,15 +28,14 @@ applicable repository and area instructions.
 
 - For changes crossing Components renderers, runtimes, or DI scopes, use the [cross-runtime design checkpoint](../src/Components/AGENTS.md#cross-runtime-design-checkpoint) to select relevant render-mode cells and exclusions. Retain explicit static SSR, streaming, and rehydration checks when affected; do not infer correctness from one render mode.
 - Root-component and render-mode APIs must carry only serializable parameters and required metadata across process or host boundaries, including parameter definitions needed for unmatched values.
-- Treat Auto as a per-activation renderer choice based on cache and runtime availability; once selected for a component activation, retain that assignment and test both cached and uncached paths.
+- Cover Auto activation with both cached and uncached WebAssembly resources, including resources becoming available while an existing root remains active.
 - If a host cannot understand a known render-mode marker or descriptor, ignore unsupported host-specific markers where safe instead of failing unrelated startup paths.
-- Server interactivity options belong with circuit or remote-renderer infrastructure; WebAssembly-only behavior belongs with WebAssembly boot or client infrastructure.
 
 ### Prerendering, static SSR, streaming, and state persistence
 
-- Components must distinguish prerender/static SSR from later interactivity; browser-only work, JS interop, `ElementReference` access, and DOM mutation belong after the interactive render point.
-- Account for double execution and rehydration: initialization, parameter application, persistent state, antiforgery state, and user-visible side effects must not run twice accidentally.
-- Streaming SSR and enhanced navigation responses should converge to the latest desired DOM state; orphaned streaming updates from superseded navigations must be ignored or cancelled deterministically.
+- Check browser-dependent initialization with prerendering enabled and disabled, including JS interop, `ElementReference`, and DOM access.
+- For prerendered components, check restored parameters, state, and user-visible side effects across activation; cover both persisted-state reuse and initialization when no state is available.
+- Cover overlapping enhanced navigations with delayed streaming updates; verify the final DOM belongs to the latest navigation.
 - Persisted component state should serialize only required data; protect Server-consumed state with ASP.NET Core data protection, exclude secrets from WebAssembly or Auto client-readable state, and persist metadata and state atomically under consistent size limits.
 - Track quiescence through existing renderer and `SetParametersAsync` task flows rather than new public wait hooks unless the extension point is broadly useful.
 
@@ -42,9 +43,9 @@ applicable repository and area instructions.
 
 - Distinguish `SetParametersAsync`, `OnInitialized{Async}`, `OnParametersSet{Async}`, and `OnAfterRender{Async}`; initialization, parameter-change handling, and DOM-dependent work must be in the correct lifecycle stage.
 - Validate `ComponentBase` lifecycle changes against synchronous success, asynchronous success, cancellation, and exception paths, including `ErrorBoundary` wrapping and resulting `StateHasChanged` behavior.
-- Use `async`/`await` and renderer `Dispatcher.InvokeAsync` for continuations that touch component state; avoid `ContinueWith`, sync-over-async, and background mutations that bypass the renderer context.
+- For asynchronous lifecycle changes, cover an incomplete await followed by a new parameter update, event, or disposal before the continuation resumes.
 - Do not call `StateHasChanged` redundantly after normal event callbacks when the framework already rerenders; call it explicitly for external updates that bypass parameter binding or event dispatch.
-- Fire-and-forget work must have an owning lifetime, preserved exceptions or cancellation, and a documented reason it is safe not to await.
+- For fire-and-forget work started by a component callback, check that exceptions and cancellation remain observable when the component is disposed.
 
 ### Parameters, cascading values, and binding
 
@@ -58,7 +59,7 @@ applicable repository and area instructions.
 
 - `RenderTreeBuilder` sequence numbers, regions, stable sorts, and degenerate comparisons must tolerate valid compiler/runtime call patterns without corrupting render batches.
 - Use stable `@key` and component identity rules when preserving instances matters; weak or unstable identifiers may recreate components but must not break app correctness.
-- Keep render-batch DOM synchronization incremental and scoped to changed regions; enhanced navigation intentionally diffs the whole document, so do not embed component-specific knowledge where shared DOM sync abstractions should own it.
+- For DOM synchronization changes, cover interactive render batches alongside enhanced-navigation document updates so component updates do not overwrite unrelated content.
 - Virtualization and scroll-convergence logic should use narrow DOM signals, guard against browser overflow anchoring, and avoid MutationObserver feedback loops triggered by unrelated DOM churn.
 - Section, head, title, and attribute updates should preserve user-provided attributes and target the semantically correct DOM node without unnecessary markup or global selectors.
 
@@ -68,7 +69,7 @@ applicable repository and area instructions.
 - Custom browser event args require intentional opt-in before untrusted browser data is deserialized, while built-in DOM events must keep their known `EventArgs` mappings for compatibility.
 - Location-changing and navigation interception APIs need awaitable handlers, history state, deterministic cancellation, observable outcomes when exposed, and parity between programmatic and JS-initiated navigation.
 - Blazor router precedence must reject non-optional parameters after optional parameters, prefer exact matches by specificity (literal, non-optional parameter, optional parameter), and choose the most-specific route over wildcard or optional matches.
-- Enhanced navigation must preserve browser behavior: exclude download and non-navigation links, use real page loads for external replace-history navigations, and keep server and client `NavigationManager` state synchronized.
+- Preserve exclusions for download and non-navigation links, real page loads for external replace-history navigation, and server/client `NavigationManager` synchronization.
 - Enhanced form and navigation tests should use explicit promises, per-test storage IDs, and isolated hooks instead of timeouts or shared ambient state.
 
 ### JS interop, browser APIs, and serialization
@@ -85,7 +86,7 @@ applicable repository and area instructions.
 - Components and services must unsubscribe from long-lived events, cancel timers and pending operations, dispose JS references, and prevent callbacks after component or circuit disposal.
 - Cancellation should cancel work before disposal invalidates state; call `Cancel` before disposing token sources when consumers may still observe cancellation.
 - Open interactive Server circuits before accepting JS interop, but keep long-running initialization in awaitable paths that tests and error handling can observe.
-- Shared mutable circuit, renderer, logger, cache, and WebAssembly state needs thread-safe ownership even when today’s host usually runs single-threaded.
+- For caches or services shared across renderers or circuits, cover concurrent access independently of the component lifecycle tests.
 
 ### Forms, validation, antiforgery, and file handling
 
