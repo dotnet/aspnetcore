@@ -63,7 +63,7 @@ stimuli:
       - The resolved scope is the named Blazor preset rather than the whole repository.
       - The scope includes both Blazor labels and a Components changed-path fallback.
       - Review now and Needs rescue are reported as separate sections.
-      - The fixture-backed run reports pull request #101 in Review now and pull request #102 in Needs rescue.
+      - "The fixture-backed run reports pull request #101 in Review now and pull request #102 in Needs rescue."
       - Review now contains at most five pull requests and is not padded to reach five.
       - Needs rescue contains at most three pull requests.
       - No GitHub mutation is performed, and none is claimed as completed.
@@ -107,7 +107,7 @@ stimuli:
       - The effective filter includes both area-identity and src/Identity/**.
       - A pull request may match by label or by path rather than being required to match both.
       - Review now and Needs rescue remain separate sections.
-      - The fixture-backed run reports pull request #201 in Review now and pull request #202 in Needs rescue.
+      - "The fixture-backed run reports pull request #201 in Review now and pull request #202 in Needs rescue."
       - The bundled deterministic script is used rather than an improvised ranking.
     graders:
       - type: skill-invocation
