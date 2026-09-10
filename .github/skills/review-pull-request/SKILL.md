@@ -425,7 +425,7 @@ FINDINGS: <0-5>
    line: <new-file line number present in the diff>
    what: <one sentence — the defect on that changed line>
    trigger: <the concrete input/ordering/config that reaches it>
-   before: <behavior at the frozen base>
+   before: <behavior on the immutable PR-diff old side, with pre-change context as needed>
    after: <behavior at the frozen head>
    changed_edge: <the changed causal connection to the consequence>
    binding_requirement: <required for incomplete-fix/new-feature claims; otherwise "none">
