@@ -6115,7 +6115,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68772")]
     public void InitialIndex_RetainsTargetWhenPreviousItemExpandsThenHomeEndTakeOver(bool useProvider)
     {
         const int initialIndex = 500;
@@ -6153,9 +6152,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0,
             TimeSpan.FromSeconds(10),
             $"After End from InitialItemIndex={initialIndex} (useProvider={useProvider}), the last item (999) should be rendered.");
+        WaitForRenderToSettle(container, js);
 
         container.SendKeys(Keys.Home);
-        Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='0']")).Count > 0,
+        WaitForRenderToSettle(container, js);
+        Browser.True(() => GetTopRenderedIndex(js) == 0,
             TimeSpan.FromSeconds(10),
             $"After Home from InitialItemIndex={initialIndex} (useProvider={useProvider}), item 0 should be rendered.");
     }
