@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+# Compute eligibility for new quarantines before the agent runs. Combine
+# main-branch and merged-PR failures, resolve each exact test's source and
+# quarantine history, and exclude stale or test-changing-PR evidence. Require
+# two distinct post-cutoff failing builds and bind an eligible test to exact
+# build/run/result evidence. Emit repository/commit-bound receipts, including
+# rejection reasons, for agent candidate selection and safe-output validation.
+# This script does not diagnose failures, choose matchers, or create GitHub objects.
+
 import argparse
 import datetime
 import hashlib

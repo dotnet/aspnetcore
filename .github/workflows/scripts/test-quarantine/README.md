@@ -1,8 +1,15 @@
 # Test quarantine KBE validation
 
 The test-quarantine workflow uses a repository-owned `create_quarantine_issue`
-safe-output script for new Case A quarantines. The agent selects a matcher, but
+safe-output script for new quarantines. The agent selects a matcher, but
 the script validates deterministic evidence and renders the final issue.
+
+A **new quarantine** is for a test that is not currently quarantined and is not
+being re-quarantined after a prior unquarantine. A **re-quarantine** restores
+quarantine after it was previously removed and reuses the original tracking
+issue. These correspond to Case A and Case B in
+[`test-quarantine.md`](../../test-quarantine.md), respectively, and to the
+`case-a` and `case-b` values in eligibility receipts.
 
 ## Data flow
 
@@ -18,7 +25,7 @@ the script validates deterministic evidence and renders the final issue.
    reconstructed across the resolved test project, including deleted
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
-   renames, deletions, and attribute removals can still surface as Case B.
+   renames, deletions, and attribute removals can still reveal a prior unquarantine.
    Type and assembly transitions apply only when the test resolved through the
    runner's actual inheritance chain at that commit. Merely having both types
    present is insufficient; later-added tests or later inheritance do not
@@ -33,11 +40,11 @@ the script validates deterministic evidence and renders the final issue.
    every partial sibling declaration.
 3. The pre-activation job uploads both files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
-4. The agent may choose a Case A test only from the deterministic eligible-test
-   list injected into its prompt.
+4. The agent may choose a new-quarantine candidate only from the deterministic
+   eligible-test list injected into its prompt.
 5. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
-   repository, ref, commit, minimum Case A predicates, exact test, matcher, and
-   build/run/result identity.
+   repository, ref, commit, minimum new-quarantine predicates, exact test,
+   matcher, and build/run/result identity.
 6. The handler creates or reuses the quarantine issue and returns the
    temporary-ID mapping used by `add_comment` and `create_pull_request`. Reuse
    is resolved by paginating `GET /repos/{owner}/{repo}/issues` with
@@ -63,36 +70,37 @@ one matcher field is populated. `BuildRetry` is always `false` and
 `ExcludeConsoleLog` is always `true`.
 
 The `test-failure` label is always applied to a newly created quarantine issue.
-The `Known Build Error` label is applied only when the collector proves Case A
-eligibility, the matcher and duplicate search validate, and the repository variable
-`TEST_QUARANTINE_ENABLE_KBE` is exactly `true`. The variable is intentionally
-disabled by default until a post-merge canary is explicitly approved.
+The `Known Build Error` label is applied only when the collector proves
+new-quarantine eligibility, the matcher and duplicate search validate, and the
+repository variable `TEST_QUARANTINE_ENABLE_KBE` is exactly `true`. The variable
+is intentionally disabled by default until a post-merge canary is explicitly approved.
 
 Missing, contradictory, ineligible, or unproven receipts and incomplete, broad,
 colliding, or unverifiable matchers produce the ordinary quarantine issue
 without a KBE JSON block or KBE label. An individual test found only in
 deterministic Source C crash blocks can also receive an ordinary issue, but
-cannot activate a KBE because it has no collector-authored Case A receipt or
-exact VSTMR test-run/result identity.
+cannot activate a KBE because it has no collector-authored new-quarantine
+receipt or exact VSTMR test-run/result identity.
 
 This is intentionally stricter than runtime's current `ci-failure-scan`.
 Runtime is prior art for the Build Insights JSON and automatic-label behavior;
 ASP.NET Core's combined quarantine/unquarantine workflow additionally binds KBE
-activation to a deterministic Case A receipt so agent selection cannot turn a
-regression, stale failure, existing quarantine, or Case B record into a KBE.
+activation to a deterministic new-quarantine receipt so agent selection cannot
+turn a regression, stale failure, existing quarantine, or re-quarantine record
+into a KBE.
 
 ## Safety properties
 
-- One exact fully qualified test per Case A issue and PR.
-- The agent cannot author or override Case A eligibility facts.
+- One exact fully qualified test per new-quarantine issue and PR.
+- The agent cannot author or override new-quarantine eligibility facts.
 - At least two distinct post-cutoff failures, exact current quarantine state,
-  regression exclusion, and originating Case A category are enforced before
+  regression exclusion, and the new-quarantine category are enforced before
   KBE rendering.
-- An assembly quarantine removal is treated as Case B when the exact test and
-  runner existed at that transition. Ambiguous project or historical source
-  association fails closed as unproven.
+- An assembly quarantine removal is treated as a prior unquarantine only if the
+  runner actually inherited or declared the test at that transition. Ambiguous
+  project or historical source association fails closed as unproven.
 - The repository handler independently rejects a second `create_quarantine_issue`
-  call in the same run, bounding new Case A output to one issue/PR/comment
+  call in the same run, bounding new-quarantine output to one issue/PR/comment
   chain. This does not depend on the gh-aw v0.88.2 per-tool call allowance.
 - Current repository only; fixed title and label policy.
 - Exact-title open `test-failure` issues are reused without editing or
