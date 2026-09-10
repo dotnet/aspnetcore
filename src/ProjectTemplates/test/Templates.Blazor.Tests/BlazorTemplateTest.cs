@@ -434,6 +434,90 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.EvaluateAsync("() => window.__resolveUnknownCredentialSignal()");
                 await page.WaitForFunctionAsync("() => window.__passkeyAutofillStarted");
+
+                // Now check that a second account can be created with a passkey and no password
+                var registerUrl = new Uri(new Uri(page.Url), "/Account/Register").ToString();
+                var loginUrl = new Uri(new Uri(page.Url), "/Account/Login").ToString();
+
+                await page.GotoAsync(registerUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.WaitForSelectorAsync("text=Create a new account.");
+
+                // An address that is already registered is rejected before the browser is asked
+                // for a passkey, so this simulated failure never gets a chance to run
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.ClickAsync("text=Sign up with a passkey");
+                await page.WaitForSelectorAsync("text=Error: Username");
+
+                var passkeyUserName = $"{Guid.NewGuid()}+passkey@example.com";
+
+                // Check that a cancelled ceremony is reported
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var registrationOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRegistrationOptions?", StringComparison.Ordinal));
+                await page.ClickAsync("text=Sign up with a passkey");
+                var registrationOptionsRequest = await registrationOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", registrationOptionsRequest.Url);
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
+
+                // Now register for real, leaving both password boxes empty
+                await page.GotoAsync(registerUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Sign up with a passkey"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Click here to confirm your account"));
+
+                // The account has no password, so a password sign-in cannot succeed
+                await page.GotoAsync(loginUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("button[type=\"submit\"]");
+                await page.WaitForSelectorAsync("text=Error: Invalid login attempt.");
+
+                // The passkey created during registration signs the account in
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var requestOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRequestOptions?", StringComparison.Ordinal));
+                await page.ClickAsync("text=Log in with a passkey");
+                var requestOptionsRequest = await requestOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", requestOptionsRequest.Url);
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // The password page offers to set a password rather than change one, which only
+                // happens when the account has no password stored
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/SetPassword**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/ChangePassword\"]"));
+
+                await page.WaitForSelectorAsync("text=Set your password");
             }
         }
 
