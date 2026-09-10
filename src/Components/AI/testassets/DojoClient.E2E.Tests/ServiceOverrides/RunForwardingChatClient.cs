@@ -72,6 +72,14 @@ internal sealed class RunForwardingChatClient(
         await foreach (var update in base.GetStreamingResponseAsync(
             messages, requestOptions, cancellationToken).ConfigureAwait(false))
         {
+            if (backend == DojoBackendKind.AGUI && update.RawRepresentation is RunStartedEvent started)
+            {
+                // These IDs are echoed by the API from the actual RunAgentInput, including
+                // requests whose page supplied no RawRepresentationFactory.
+                ArgumentException.ThrowIfNullOrEmpty(started.ThreadId);
+                ArgumentException.ThrowIfNullOrEmpty(started.RunId);
+            }
+
             yield return update;
         }
     }
