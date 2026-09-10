@@ -24,7 +24,9 @@
 # This logic is also abstracted into enable-internal-sources.yml.
 
 ConfigFile=$1
-CredToken=$2
+# Prefer the environment variable so credentials do not appear in process arguments.
+# Retain the positional argument as a compatibility fallback for existing callers.
+CredToken=${Token:-$2}
 NL='\n'
 TB='    '
 
@@ -167,7 +169,7 @@ if [ "$?" == "0" ]; then
     EnableMaestroInternalPackageSources
 fi
 
-DotNetVersions=('5' '6' '7' '8' '9' '10')
+DotNetVersions=('5' '6' '7' '8' '9' '10' '11')
 
 for DotNetVersion in ${DotNetVersions[@]} ; do
     FeedPrefix="dotnet${DotNetVersion}";

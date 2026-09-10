@@ -1,0 +1,207 @@
+@page "/function-invocation"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Runtime.CompilerServices
+
+<PageTitle>Built-in function invocation mapping</PageTitle>
+
+<h1>Built-in function invocation mapping</h1>
+
+<button class="release-function-result"
+        disabled="@(!_chatClient.IsWaitingForResult)"
+        @onclick="_chatClient.ReleaseResult">
+    Release function result
+</button>
+
+<ChatPage Agent="_agent" Placeholder="Request a server tool">
+    <WelcomeContent>
+        <p>Send a message to render a generic function invocation block.</p>
+    </WelcomeContent>
+    <MessageListContent>
+        <BlockRenderer TBlock="FunctionInvocationContentBlock"
+                       Context="invocation"
+                       When="@(block => block.GetType() == typeof(FunctionInvocationContentBlock))">
+            <div class="function-invocation-card @(invocation.HasResult
+                ? "function-invocation-card--complete"
+                : "function-invocation-card--loading")"
+                 data-informational="@((invocation.Call?.InformationalOnly).ToString())">
+                <div class="function-invocation-card__tool">@invocation.ToolName</div>
+                <div class="function-invocation-card__location">
+                    @invocation.Arguments?["location"]
+                </div>
+                @if (invocation.HasResult)
+                {
+                    <div class="function-invocation-card__result">@invocation.Result?.Result</div>
+                }
+                else
+                {
+                    <div class="function-invocation-card__status">Loading...</div>
+                }
+            </div>
+        </BlockRenderer>
+    </MessageListContent>
+</ChatPage>
+
+@code {
+    private readonly WeatherFunctionChatClient _chatClient = new();
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        _chatClient.StateChanged = () => InvokeAsync(StateHasChanged);
+        _agent = new UIAgent(_chatClient);
+    }
+
+    public void Dispose() => _agent.Dispose();
+
+    private sealed class WeatherFunctionChatClient : DelegatingChatClient
+    {
+        private TaskCompletionSource _resultGate =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly AIFunction _weatherTool;
+
+        public WeatherFunctionChatClient()
+            : base(new FunctionInvokingChatClient(new WeatherModelChatClient()))
+        {
+            _weatherTool = AIFunctionFactory.Create(
+                GetWeatherAsync,
+                name: "get_weather",
+                description: "Get the weather for a given location.");
+        }
+
+        public Action? StateChanged { get; set; }
+
+        public bool IsWaitingForResult { get; private set; }
+
+        public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await foreach (var update in base.GetStreamingResponseAsync(
+                messages,
+                AddWeatherTool(options),
+                cancellationToken).ConfigureAwait(false))
+            {
+                var originalCalls = new List<(int Index, FunctionCallContent Call)>();
+                for (var i = 0; i < update.Contents.Count; i++)
+                {
+                    if (update.Contents[i] is FunctionCallContent call)
+                    {
+                        originalCalls.Add((i, call));
+                        update.Contents[i] = CreateInformationalCopy(call);
+                    }
+                }
+
+                try
+                {
+                    yield return update;
+                }
+                finally
+                {
+                    foreach (var (index, call) in originalCalls)
+                    {
+                        update.Contents[index] = call;
+                    }
+                }
+            }
+        }
+
+        public override Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => base.GetResponseAsync(messages, AddWeatherTool(options), cancellationToken);
+
+        public void ReleaseResult()
+        {
+            IsWaitingForResult = false;
+            _resultGate.TrySetResult();
+            StateChanged?.Invoke();
+        }
+
+        private ChatOptions AddWeatherTool(ChatOptions? options)
+        {
+            var optionsWithTools = options?.Clone() ?? new ChatOptions();
+            optionsWithTools.Tools = [_weatherTool];
+
+            return optionsWithTools;
+        }
+
+        private static FunctionCallContent CreateInformationalCopy(FunctionCallContent call)
+            => new(call.CallId, call.Name, call.Arguments)
+            {
+                AdditionalProperties = call.AdditionalProperties,
+                Annotations = call.Annotations,
+                Exception = call.Exception,
+                InformationalOnly = true,
+                RawRepresentation = call.RawRepresentation,
+            };
+
+        private async Task<string> GetWeatherAsync(
+            string location,
+            CancellationToken cancellationToken)
+        {
+            _resultGate = new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            IsWaitingForResult = true;
+            StateChanged?.Invoke();
+
+            await _resultGate.Task.WaitAsync(cancellationToken);
+
+            return "sunny";
+        }
+    }
+
+    private sealed class WeatherModelChatClient : IChatClient
+    {
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var messageList = messages.ToList();
+            if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = "aiapp-weather-response",
+                    Contents = [new TextContent("The weather in Seattle is sunny.")],
+                    FinishReason = ChatFinishReason.Stop,
+                };
+                yield break;
+            }
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = "aiapp-function-invocation",
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "aiapp-call-1",
+                        "get_weather",
+                        new Dictionary<string, object?> { ["location"] = "Seattle" })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+
+            await Task.CompletedTask;
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => GetStreamingResponseAsync(messages, options, cancellationToken)
+                .ToChatResponseAsync(cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => serviceType == typeof(IChatClient) ? this : null;
+
+        public void Dispose()
+        {
+        }
+    }
+}

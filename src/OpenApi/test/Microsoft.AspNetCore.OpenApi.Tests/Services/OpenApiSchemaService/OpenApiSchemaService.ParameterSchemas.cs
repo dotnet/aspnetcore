@@ -459,10 +459,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(Guid[] id) => { }, JsonSchemaType.String, false],
         [(Guid?[] id) => { }, JsonSchemaType.String, true],
         [(string[] id) => { }, JsonSchemaType.String, false],
-        // Due to runtime restrictions, we can't resolve nullability
-        // info for reference types as element types so this will still
-        // encode as non-nullable.
-        [(string?[] id) => { }, JsonSchemaType.String, false],
+        [(string?[] id) => { }, JsonSchemaType.String, true],
         [(DateTime[] id) => { }, JsonSchemaType.String, false],
         [(DateTime?[] id) => { }, JsonSchemaType.String, true],
         [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],

@@ -597,7 +597,9 @@ on:
         # GITHUB_OUTPUT secret detector then skips the ENTIRE part1_data output
         # ("Skip output 'part1_data' since it may contain secret"), starving the agent of all
         # Part 1 data and producing a false noop. Scrubbing removes the trigger and avoids
-        # surfacing live tokens in the prompt and uploaded artifacts.
+        # surfacing live tokens in the prompt and uploaded artifacts. Only call this for
+        # captured failure text, never for the serialized payload: the broad fallback pattern
+        # also matches long test identifiers and would corrupt object keys.
         _SECRET_PATTERNS = [
             re.compile(r'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}'),         # JWT (header.payload.signature)
             re.compile(r'eyJ[A-Za-z0-9_-]{20,}'),                                               # bare JWT segment
@@ -724,25 +726,30 @@ on:
 
 
         def norm_name(t):
-            name = t.get("automatedTestName") or ""
-            if not name:
-                # testCaseTitle can carry parameterized args; strip them for stable dedup.
-                name = (t.get("testCaseTitle") or "").split("(")[0].strip()
-            return name
+            # Both automatedTestName and testCaseTitle can carry theory arguments.
+            # Quarantine applies to the source method, so normalize every theory row to
+            # that method before deduplicating the build-level failure incident.
+            name = t.get("automatedTestName") or t.get("testCaseTitle") or ""
+            return name.split("(")[0].strip()
 
 
         def aggregate(build_ids):
             agg = {}
             for bid in build_ids:
+                seen_in_build = set()
                 for t in failed_results(bid):
                     name = norm_name(t)
-                    if not name:
+                    if not name or name in seen_in_build:
                         continue
+                    # Azure DevOps can publish duplicate rows for one test execution, and
+                    # theories publish one row per argument set. Neither is independent
+                    # flakiness evidence: count at most one incident per source method per
+                    # build, while retaining one representative result for enrichment.
+                    seen_in_build.add(name)
                     e = agg.setdefault(name, {"count": 0, "assembly": t.get("automatedTestStorage", ""),
                                               "builds": [], "occ": []})
                     e["count"] += 1
-                    if bid not in e["builds"]:
-                        e["builds"].append(bid)
+                    e["builds"].append(bid)
                     if t.get("runId") and t.get("id") and len(e["occ"]) < OCC_CAP:
                         e["occ"].append({"runId": t["runId"], "resultId": t["id"], "build": bid})
             return agg
@@ -1106,12 +1113,33 @@ on:
                 f.write(f"part1_data_{k}<<PART1_EOF\n{chunk}\nPART1_EOF\n")
 
 
+        def validate_part1_json(js):
+            """Fail closed if a future payload transformation produces duplicate JSON keys."""
+            duplicates = set()
+
+            def reject_duplicate_keys(pairs):
+                result = {}
+                for key, value in pairs:
+                    if key in result:
+                        duplicates.add(key)
+                    result[key] = value
+                return result
+
+            try:
+                json.loads(js, object_pairs_hook=reject_duplicate_keys)
+            except json.JSONDecodeError as ex:
+                sys.exit(f"FATAL: part1_data is invalid JSON: {ex}")
+            if duplicates:
+                examples = ", ".join(sorted(duplicates)[:3])
+                sys.exit(f"FATAL: part1_data contains duplicate JSON keys: {examples}")
+
+
         if __name__ == "__main__":
-            # Final safety net: scrub the fully serialized payload as well. GitHub skips a
-            # part1_data_N output if any token pattern is detected, so a leaked secret in
-            # any field (not just the three scrubbed above) would starve the agent. Scrubbing
-            # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
-            js = scrub_secrets(main())
+            # Error messages, stack traces, and Source C failure blocks are scrubbed before
+            # serialization. Do not scrub the complete JSON string because doing so can alter
+            # test-name keys and collapse unrelated failures into duplicate keys.
+            js = main()
+            validate_part1_json(js)
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if not gh_out:
                 sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
@@ -1279,7 +1307,23 @@ If you later need the per-test `.log` file for a **final** candidate when writin
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
-**IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
+**IMPORTANT: Aggregate all failure data before identifying candidates, using distinct builds as the unit of evidence.** For each normalized source test method, union the Azure DevOps build IDs from Source A, Source B, and any matching Source C `[FAIL]` blocks. Count each build ID at most once for that method, even if Azure DevOps published duplicate result rows, multiple theory/parameter rows failed, or the same incident appears in more than one source. The injected Source A/B `count` fields already follow this rule, but when combining sources you **must recompute the unified count from the union of build IDs rather than adding the `count` fields**. A test with failures in two distinct builds qualifies for the 2-failure threshold; two or more rows from one build count as one incident. Do not evaluate sources separately. Only after combining all sources into a single per-test set of failure builds should you apply the cutoffs and thresholds below.
+
+**Mandatory evidence cutoff — perform this before Case A or Case B classification.** Perform this for every non-quarantined individual test with **at least one** raw build incident. Case B needs only one fresh incident, so do not prefilter this step using Case A's 2-build threshold.
+
+1. Inspect the exact test's history on the unambiguous `refs/remotes/origin/main` remote-tracking ref across the full available history, per test rather than per file:
+   ```
+   git log refs/remotes/origin/main --first-parent --follow -p --format="commit %H %ci %s" -- <path/to/TestFile.cs>
+   ```
+   Find the latest `main` commit that either:
+   - removed this exact test's `[QuarantinedTest]` attribute, or
+   - changed this exact test method/class in a way that plausibly fixes the observed failure, including a commit whose subject or patch explicitly identifies the test or failure being fixed.
+   Do not treat an unrelated edit elsewhere in the same file as a fix. If no such commit exists, there is no history-derived cutoff.
+2. Use that commit's committer timestamp as the `main` landing time. Because this is a first-parent walk of `refs/remotes/origin/main`, do not use an earlier topic-branch author/committer timestamp.
+3. Combine this history-derived cutoff with any trusted prior-attempt cutoff from the injected closed-PR data, taking the latest applicable timestamp.
+4. Discard every failure whose `builds[<id>].startedUtc` is not strictly after the final cutoff. Recompute the distinct-build incident count after filtering.
+
+This cutoff is mandatory even when the test would otherwise look like a new Case A candidate. A fix or unquarantine invalidates all earlier evidence; stale failures must never cause immediate quarantine or re-quarantine.
 
 A test is a candidate for quarantining if it meets **either** of the following cases:
 
@@ -1295,17 +1339,17 @@ All of the following are true:
 
 **Case B – Re-quarantine of a previously unquarantined test**
 
-**Evaluate Case B before Case A.** A failing test that was previously quarantined and later unquarantined is a **re-quarantine (Case B)**, not a new quarantine (Case A) — *regardless of how long ago the unquarantine happened*. There is **no time limit**: a test unquarantined weeks or months ago that starts failing again must reuse its original tracking issue, not be given a brand-new one.
+**Classify Case B before Case A.** A test whose latest per-test `[QuarantinedTest]` history change removed the attribute is permanently classified as **previously unquarantined / Case B** until it is quarantined again — *regardless of how long ago the unquarantine happened and regardless of whether any post-unquarantine failures remain after the evidence cutoff*. There is **no time limit**. Such a test must never fall back to Case A and receive a new issue merely because its stale pre-unquarantine failures were discarded. If it lacks the required fresh post-cutoff evidence, it is not a candidate this run.
 
 All of the following are true:
 - The test was **previously unquarantined**: it currently has **no** `[QuarantinedTest]` attribute, and the most recent commit that changed *this test's* `[QuarantinedTest]` attribute **removed** it (an unquarantine). Detect this **per-test**, not per-file — a single source file usually contains **many** tests, each with an independent quarantine history, so you **must not** key off "the file's newest `[QuarantinedTest]` commit" (that commit may belong to a different test). Inspect the test's own source file across its **full history** — do **not** add a `--since` cutoff (the old 14-day window wrongly excluded tests unquarantined more than two weeks ago). Pass `--follow` so the walk traverses renames/moves of the file (a test whose file was renamed would otherwise lose its earlier quarantine/unquarantine commits):
   ```
-  git log --follow -p -G 'QuarantinedTest' --format="commit %H %ci %s" -- <path/to/TestFile.cs>
+  git log refs/remotes/origin/main --first-parent --follow -p -G 'QuarantinedTest' --format="commit %H %ci %s" -- <path/to/TestFile.cs>
   ```
-  The `-p` flag prints each commit's patch inline using the file's **historical** path at that commit, so it works correctly across renames — do **not** issue a separate `git show <sha> -- <current path>`, which would return an empty diff for any commit from before a rename. Walk the matching commits from **newest to oldest**, inspecting the inline patch of each, and stop at the most recent commit whose patch **adds or removes the `[QuarantinedTest]` attribute on _this specific_ test method/class** (ignore commits that only touch *other* tests in the same file). If that commit **removed** this test's attribute, Case B applies and that commit is the **unquarantine commit**; if it **added** the attribute, the test is currently/most-recently quarantined and Case B does **not** apply.
-- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time — compare the landing time against `builds[<id>].startedUtc` for each build in the test's `builds` list (no AzDO call needed). Failures from before the unquarantine do not count — they are from when the test was still quarantined.
+  The `refs/remotes/origin/main --first-parent` walk makes this the actual main-branch landing commit and timestamp, not an earlier topic-branch commit. The fully qualified ref avoids ambiguity with a local branch named `origin/main`. The `-p` flag prints each commit's patch inline using the file's **historical** path at that commit, so it works correctly across renames — do **not** issue a separate `git show <sha> -- <current path>`, which would return an empty diff for any commit from before a rename. Walk the matching commits from **newest to oldest**, inspecting the inline patch of each, and stop at the most recent commit whose patch **adds or removes the `[QuarantinedTest]` attribute on _this specific_ test method/class** (ignore commits that only touch *other* tests in the same file). If that commit **removed** this test's attribute, Case B applies and that commit is the **unquarantine commit**; if it **added** the attribute, the test is currently/most-recently quarantined and Case B does **not** apply.
+- It has **at least one distinct-build failure incident remaining after the mandatory evidence cutoff above**. The history-derived cutoff includes the unquarantine landing time and any later relevant fix, and the final cutoff also includes any later trusted prior-attempt decision. Failures from before that cutoff do not count — they are stale evidence from before the test was repaired/unquarantined or before a maintainer rejected an earlier attempt. If no incidents remain, do not re-quarantine and do not evaluate the test under Case A.
 - **Respect any prior-attempt cutoff (see the "Check for recently closed (not merged) PRs" rule).** If a trusted contributor already closed a recent re-quarantine attempt for this same test, only failures whose build `startedUtc` is strictly after that PR's `closed_at` count toward re-quarantining. If no failure post-dates that cutoff, do **not** re-quarantine this run — defer until there is fresh flakiness after the maintainer's decision.
-- **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the unquarantine commit's patch** (the inline `-p` patch already obtained above for that commit — do not run a separate `git show <sha> -- <current path>`, which fails for pre-rename commits), which shows the exact attribute that was removed. The removed line `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]` names issue **N** — that is the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on searching for a `"Quarantine {test}"`-titled issue: the original tracking issue may be a `[Known Build Error]` / `Known Build Error`-labeled issue (or otherwise not match that title), so a title search would miss it. Confirm issue **N** exists (it may be **open or closed**) before reusing it. If the removed attribute has **no valid numeric issue URL** (e.g. an empty or non-`issues/N` argument), you cannot reuse an issue — fall back to **Case A** and create a new tracking issue.
+- **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the unquarantine commit's patch** (the inline `-p` patch already obtained above for that commit — do not run a separate `git show <sha> -- <current path>`, which fails for pre-rename commits), which shows the exact attribute that was removed. The removed line `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]` names issue **N** — that is the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on searching for a `"Quarantine {test}"`-titled issue: the original tracking issue may be a `[Known Build Error]` / `Known Build Error`-labeled issue (or otherwise not match that title), so a title search would miss it. Confirm issue **N** exists (it may be **open or closed**) before reusing it. If the removed attribute has **no valid numeric issue URL** (e.g. an empty or non-`issues/N` argument), fail closed and skip automated re-quarantine for this test. It remains Case B and must not fall back to Case A or receive a duplicate issue.
 
 **Class-level quarantine (applies to both Case A and Case B)**
 
@@ -1575,8 +1619,8 @@ If any added attribute fails these checks, **do not create the PR** — correct 
 
 Before writing the issue body (Case A) or investigation comment (Case B), compute two things for this candidate — both are required in the write-up, and both come entirely from the already-injected Part 1 data (no extra AzDO calls needed):
 
-1. **Failure frequency.** The test's total combined failure count across all sources, as already computed in Step 1.2. Phrase it as: `Failed {N} times over the past 30 days.`
-2. **Most recent failing build.** Across the test's combined `builds` list (`source_a` plus `source_b`, deduplicated), find the build ID whose `builds[<id>].startedUtc` (from the injected metadata map) is latest.
+1. **Failure frequency.** The size of the test's unified, post-cutoff distinct-build set from Step 1.2. Phrase it as: `Failed {N} times over the past 30 days.`
+2. **Most recent failing build.** Use that same unified, post-cutoff distinct-build set, including a Source C build when it supplied the matching individual `[FAIL]` evidence. Find the build ID whose `builds[<id>].startedUtc` (from the injected metadata map) is latest. Do not re-derive this from Source A/B counts or include a build discarded by the cutoff.
 
 #### Case B — Re-quarantine of a previously unquarantined test
 

@@ -73,7 +73,11 @@ public static class ComponentEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);
+        var hubEndpoint = endpoints.MapHub<ComponentHub>(path, options =>
+        {
+            options.EnableAuthenticationRefresh = true;
+            configureOptions(options);
+        });
 
         var disconnectEndpoint = endpoints.Map(
             (path.EndsWith('/') ? path : path + "/") + "disconnect/",

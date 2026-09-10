@@ -139,7 +139,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connectionBuilder = new HubConnectionBuilder()
       .withUrl('_blazor')
-      .withHubProtocol(hubProtocol);
+      .withHubProtocol(hubProtocol)
+      .withAuthenticationRefresh();
 
     this._options.configureSignalR(connectionBuilder);
 

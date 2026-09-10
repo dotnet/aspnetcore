@@ -91,7 +91,6 @@ internal sealed class ClientValidationCache : IDisposable
         }
     }
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     private bool IsFieldValidatedByMev(Type formType, string renderedName)
     {
         var path = GetModelRelativePath(renderedName);
@@ -128,7 +127,6 @@ internal sealed class ClientValidationCache : IDisposable
         _validationOptions.Resolvers.Count > 0
             && _typeHasValidatableInfo.GetOrAdd(type,
                 key => _validationOptions.TryGetValidatableTypeInfo(key, out _));
-#pragma warning restore ASP0029
 
     // Derives the field's property-name path relative to the form model from the rendered HTML name.
     // The rendered name is the binder key "{modelPrefix}.{path}" (e.g. "Person.Address.Street"):

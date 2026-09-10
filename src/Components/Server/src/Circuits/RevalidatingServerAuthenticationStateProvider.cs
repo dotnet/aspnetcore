@@ -3,6 +3,7 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server;
@@ -61,7 +62,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         try
         {
             var authenticationState = await authenticationStateTask;
-            if (authenticationState.User.Identity?.IsAuthenticated == true)
+            if (SecurityHelper.IsAuthenticated(authenticationState.User))
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {

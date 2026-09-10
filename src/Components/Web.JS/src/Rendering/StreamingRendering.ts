@@ -97,6 +97,9 @@ function redirect(node: HTMLTemplateElement, changeUrl: boolean, isEnhancedNav: 
 }
 
 function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag: DocumentFragment): void {
+  // Apply configuration before streamed components can activate.
+  navigationEnhancementCallbacks.beforeDomUpdate(docFrag);
+
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
