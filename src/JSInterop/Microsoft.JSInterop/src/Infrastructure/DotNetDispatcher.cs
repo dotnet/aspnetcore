@@ -61,6 +61,17 @@ public static class DotNetDispatcher
             return null;
         }
 
+        // A Task or ValueTask result means the targeted method is asynchronous and was invoked
+        // synchronously. Serializing the task instance produces confusing serialization-related
+        // errors, so fail with a message that explains the actual problem.
+        if (syncResult is Task
+            || (syncResult.GetType() is { IsGenericType: true } syncResultType
+                && syncResultType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
+        {
+            throw new InvalidOperationException(
+                $"Cannot invoke the method '{invocationInfo.MethodIdentifier}' synchronously from JavaScript because it is asynchronous. Use 'invokeMethodAsync' instead of 'invokeMethod'.");
+        }
+
         return JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
     }
 

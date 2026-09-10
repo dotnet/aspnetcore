@@ -617,6 +617,34 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
+    public void CannotInvokeAsyncMethodReturningTaskSynchronously()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntime();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableAsyncMethodReturningTask), default, default), null));
+
+        Assert.Contains(nameof(SomePublicType.InvokableAsyncMethodReturningTask), ex.Message);
+        Assert.Contains("invokeMethodAsync", ex.Message);
+    }
+
+    [Fact]
+    public void CannotInvokeAsyncMethodReturningGenericTaskSynchronously()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntime();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableAsyncMethodReturningTaskWithResult), default, default), null));
+
+        Assert.Contains(nameof(SomePublicType.InvokableAsyncMethodReturningTaskWithResult), ex.Message);
+        Assert.Contains("invokeMethodAsync", ex.Message);
+    }
+
+    [Fact]
     public async Task CanInvokeAsyncMethod()
     {
         // Arrange: Track some instance plus another object we'll pass as a param
@@ -708,6 +736,23 @@ public class DotNetDispatcherTest
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
             Assert.True(jsRuntime.LastCompletionResult.Success);
         }
+
+    [Fact]
+    public async Task CanInvokeAsyncMethodReturningTask()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntime();
+
+        // Act
+        var callId = "123";
+        var resultTask = jsRuntime.NextInvocationTask;
+        DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableAsyncMethodReturningTask), default, callId), null);
+        await resultTask; // This won't throw, it sets properties on the jsRuntime.
+
+        // Assert
+        Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+        Assert.True(jsRuntime.LastCompletionResult.Success);
+    }
 
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
@@ -1006,6 +1051,19 @@ public class DotNetDispatcherTest
         {
             await Task.CompletedTask;
             return;
+        }
+
+        [JSInvokable]
+        public static async Task InvokableAsyncMethodReturningTask()
+        {
+            await Task.CompletedTask;
+        }
+
+        [JSInvokable]
+        public static async Task<TestDTO> InvokableAsyncMethodReturningTaskWithResult()
+        {
+            await Task.CompletedTask;
+            return new TestDTO { StringVal = "Test", IntVal = 123 };
         }
 
         public class InvokableAsyncMethodResult
