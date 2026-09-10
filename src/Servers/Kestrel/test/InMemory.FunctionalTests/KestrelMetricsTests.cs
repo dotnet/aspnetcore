@@ -171,7 +171,12 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         await using var server = new TestServer(async context =>
         {
             var result = await context.Request.BodyReader.ReadAsync();
-            await context.Response.BodyWriter.WriteAsync(result.Buffer.ToArray());
+
+            // The request body might be incomplete, but there should be something in the first read.
+            Assert.True(result.Buffer.Length > 0);
+            Assert.Equal(result.Buffer.ToSpan(), "Hello World?"u8[..(int)result.Buffer.Length]);
+
+            await context.Response.WriteAsync("Hello World?");
             // No BodyReader.Advance. Connection will fail when attempting to complete body.
         }, serviceContext);
 
@@ -268,7 +273,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
-            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool,
+            MemoryPoolFactory = new TestServiceContext.WrappingMemoryPoolFactory(() => TestMemoryPoolFactory.CreatePinnedBlockMemoryPool()),
             ShutdownTimeout = TimeSpan.Zero
         };
 
@@ -393,16 +398,24 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+        var finishedSendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await using var server = new TestServer(c =>
+        await using var server = new TestServer(async c =>
         {
+            await c.Request.Body.ReadUntilEndAsync();
+
+            // An extra check to ensure that client is done sending before the server aborts.
+            // This might not be necessary since we're reading to the end of the request body, but it doesn't hurt.
+            await finishedSendingTcs.Task;
+
             c.Abort();
-            return Task.CompletedTask;
         }, serviceContext);
 
         using (var connection = server.CreateConnection())
         {
             await connection.Send(sendString).DefaultTimeout();
+
+            finishedSendingTcs.SetResult();
 
             await connection.ReceiveEnd().DefaultTimeout();
 
@@ -472,6 +485,181 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         });
         Assert.Collection(activeConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
+    }
+
+    [Fact]
+    public async Task Http1Connection_BareLineFeedTerminatorRejected_RecordsMetricWithRejectedOutcome()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            // Bare LF terminator on the request line is rejected when bare LF terminators are disabled.
+            await connection.Send("GET / HTTP/1.1\nHost:\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Collection(bareLineFeedRequests.GetMeasurementSnapshot(), m => AssertBareLineFeed(m, rejected: true));
+    }
+
+    [Fact]
+    public async Task Http1Connection_BareLineFeedTerminatorAccepted_RecordsMetricOncePerRequest()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: false, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            // Every line uses a bare LF terminator, but the metric is only recorded once for the request.
+            await connection.Send("GET / HTTP/1.1\nHost:\nConnection: close\n\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Collection(bareLineFeedRequests.GetMeasurementSnapshot(), m => AssertBareLineFeed(m, rejected: false));
+    }
+
+    [Fact]
+    public async Task Http1Connection_CrlfTerminators_DoesNotRecordBareLineFeedMetric()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send("GET / HTTP/1.1\r\nHost:\r\nConnection: close\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Empty(bareLineFeedRequests.GetMeasurementSnapshot());
+    }
+
+    [Fact]
+    public async Task Http1Connection_BareLineFeedTerminator_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true);
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send("GET / HTTP/1.1\nHost:\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1BareLineFeedTerminator");
+    }
+
+    [Fact]
+    public async Task Http1Connection_ChunkedExtensionAccepted_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        serviceContext.ServerOptions.EnableChunkedExtensions = true;
+
+        await using var server = new TestServer(ChunkedEchoApp, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Transfer-Encoding: chunked",
+                "",
+                "2;a=b",
+                "xy",
+                "0",
+                "",
+                "").DefaultTimeout();
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 2",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "xy").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1ChunkedExtension");
+    }
+
+    [Fact]
+    public async Task Http1Connection_ChunkedExtensionRejected_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        serviceContext.ServerOptions.EnableChunkedExtensions = false;
+
+        await using var server = new TestServer(ChunkedEchoApp, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Transfer-Encoding: chunked",
+                "",
+                "2;a=b",
+                "xy",
+                "0",
+                "",
+                "").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1ChunkedExtension");
+    }
+
+    private static async Task ChunkedEchoApp(HttpContext httpContext)
+    {
+        var request = httpContext.Request;
+        var response = httpContext.Response;
+
+        var data = new MemoryStream();
+        await request.Body.CopyToAsync(data);
+        var bytes = data.ToArray();
+
+        response.Headers.ContentLength = bytes.Length;
+        await response.Body.WriteAsync(bytes);
     }
 
     [Fact]
@@ -599,7 +787,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ShutdownTimeout = TimeSpan.Zero,
-            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool
+            MemoryPoolFactory = new TestServiceContext.WrappingMemoryPoolFactory(() => TestMemoryPoolFactory.CreatePinnedBlockMemoryPool())
         };
 
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -991,5 +1179,14 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         {
             Assert.DoesNotContain("network.type", measurement.Tags.Keys);
         }
+    }
+
+    private static void AssertBareLineFeed(CollectedMeasurement<long> measurement, bool rejected)
+    {
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal(rejected ? "rejected" : "accepted", (string)measurement.Tags["kestrel.bare_line_feed.outcome"]);
+        Assert.Equal("http", (string)measurement.Tags["network.protocol.name"]);
+        Assert.Equal("1.1", (string)measurement.Tags["network.protocol.version"]);
+        Assert.Equal("127.0.0.1", (string)measurement.Tags["server.address"]);
     }
 }

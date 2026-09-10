@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 public class DefaultRequestDecompressionProviderTests
 {
     [Theory]
+    [InlineData("zstd", typeof(ZstandardStream))]
+    [InlineData("ZSTD", typeof(ZstandardStream))]
     [InlineData("br", typeof(BrotliStream))]
     [InlineData("BR", typeof(BrotliStream))]
     [InlineData("deflate", typeof(ZLibStream))]
@@ -45,7 +47,7 @@ public class DefaultRequestDecompressionProviderTests
             $"The request will be decompressed with '{contentEncoding.ToLowerInvariant()}'.");
 
         var contentEncodingHeader = httpContext.Request.Headers.ContentEncoding;
-        Assert.Empty(contentEncodingHeader);
+        Assert.Equal(0, contentEncodingHeader.Count);
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class DefaultRequestDecompressionProviderTests
             "The Content-Encoding header is empty or not specified. Skipping request decompression.");
 
         var contentEncodingHeader = httpContext.Request.Headers.ContentEncoding;
-        Assert.Empty(contentEncodingHeader);
+        Assert.Equal(0, contentEncodingHeader.Count);
     }
 
     [Fact]

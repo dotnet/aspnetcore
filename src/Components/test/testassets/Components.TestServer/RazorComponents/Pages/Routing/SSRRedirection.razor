@@ -1,0 +1,17 @@
+﻿@page "/routing/ssr-navigate-to"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<p id="test-info">Click submit to navigate to home</p>
+<form method="post" @onsubmit="Submit" @formname="MyUniqueFormName">
+    <AntiforgeryToken />
+    <button type="submit" id="redirectButton" class="btn btn-primary">Redirect</button>
+</form>
+
+@code {
+    private void Submit()
+    {
+        NavigationManager.NavigateTo("/subdir/routing");
+    }
+}
+

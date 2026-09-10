@@ -8,10 +8,10 @@
 ~Microsoft.AspNetCore.HttpOverrides.IPNetwork.IPNetwork(System.Net.IPAddress prefix, int prefixLength) -> void
 ~Microsoft.AspNetCore.HttpOverrides.IPNetwork.Prefix.get -> System.Net.IPAddress
 ~static Microsoft.AspNetCore.Builder.CertificateForwardingBuilderExtensions.UseCertificateForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, Microsoft.AspNetCore.Builder.ForwardedHeadersOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedForHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedHostHeaderName.get -> string
 ~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string
@@ -39,6 +39,7 @@ Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.ge
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.get -> int?
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.set -> void
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownIPNetworks.get -> System.Collections.Generic.IList<System.Net.IPNetwork>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownNetworks.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownProxies.get -> System.Collections.Generic.IList<System.Net.IPAddress!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalForHeaderName.get -> string!
@@ -86,10 +87,10 @@ Microsoft.AspNetCore.HttpOverrides.IPNetwork.Prefix.get -> System.Net.IPAddress!
 Microsoft.AspNetCore.HttpOverrides.IPNetwork.PrefixLength.get -> int
 Microsoft.Extensions.DependencyInjection.CertificateForwardingServiceExtensions
 static Microsoft.AspNetCore.Builder.CertificateForwardingBuilderExtensions.UseCertificateForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Builder.ForwardedHeadersOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions.UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions.UseHttpMethodOverride(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedForHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedHostHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string!

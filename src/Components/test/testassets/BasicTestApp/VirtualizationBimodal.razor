@@ -1,0 +1,105 @@
+@* Tests: bimodal height distribution, nested virtualize isolation, large dataset (100K items) *@
+<p>
+    <b>Bimodal Height Distribution</b> (alternating 30px/300px items):<br />
+    <div id="bimodal-container" style="background-color: #eee; height: 300px; overflow-y: auto">
+        <Virtualize Items="@bimodalItems" ItemSize="50">
+            <div @key="context.Index" id="bimodal-item-@context.Index" class="bimodal-item"
+                 style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%); padding: 4px; box-sizing: border-box;">
+                <span class="item-index">@context.Index</span> - H:@context.Height
+            </div>
+        </Virtualize>
+    </div>
+    <span id="bimodal-count">@bimodalItems.Count</span>
+</p>
+
+<p>
+    <b>Nested Virtualize</b> (outer + inner, measurement isolation):<br />
+    <div id="nested-outer-container" style="background-color: #ddd; height: 400px; overflow-y: auto">
+        <Virtualize Items="@nestedOuterItems" ItemSize="120">
+            <div @key="context.Index" id="nested-outer-item-@context.Index" class="nested-outer-item"
+                 style="height: 120px; background-color: hsl(@(context.Index * 30 % 360), 50%, 85%); padding: 4px; box-sizing: border-box;">
+                <span class="outer-index">Outer @context.Index</span>
+                @if (context.Index == 0)
+                {
+                    <div id="nested-inner-container" style="height: 80px; overflow-y: auto; background-color: #fff;">
+                        <Virtualize Items="@nestedInnerItems" ItemSize="20" Context="innerCtx">
+                            <div @key="innerCtx.Index" id="nested-inner-item-@innerCtx.Index" class="nested-inner-item"
+                                 style="height: @(innerCtx.Height)px; background-color: hsl(@(innerCtx.Hue), 70%, 70%); box-sizing: border-box;">
+                                Inner @innerCtx.Index
+                            </div>
+                        </Virtualize>
+                    </div>
+                }
+            </div>
+        </Virtualize>
+    </div>
+    <span id="nested-outer-count">@nestedOuterItems.Count</span>
+    <span id="nested-inner-count">@nestedInnerItems.Count</span>
+</p>
+
+<p>
+    <b>Large Dataset</b> (100K items):<br />
+    <button id="load-large" @onclick="LoadLargeDataset">Load 100K items</button>
+    <span id="large-dataset-status">@largeDatasetStatus</span>
+    @if (largeItems != null)
+    {
+        <div id="large-dataset-container" style="background-color: #eee; height: 300px; overflow-y: auto">
+            <Virtualize Items="@largeItems" ItemSize="40">
+                <div @key="context.Index" id="large-item-@context.Index" class="large-dataset-item"
+                     style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 60%, 80%); padding: 2px; box-sizing: border-box;">
+                    <span class="item-index">@context.Index</span>
+                </div>
+            </Virtualize>
+        </div>
+    }
+</p>
+
+@code {
+    ICollection<HeightItem> bimodalItems;
+    ICollection<HeightItem> nestedOuterItems;
+    ICollection<HeightItem> nestedInnerItems;
+    ICollection<HeightItem> largeItems;
+    string largeDatasetStatus = "Not loaded";
+
+    protected override void OnInitialized()
+    {
+        bimodalItems = Enumerable.Range(0, 200).Select(i => new HeightItem
+        {
+            Index = i,
+            Height = i % 2 == 0 ? 30 : 300,
+            Hue = i * 7 % 360
+        }).ToList();
+
+        nestedOuterItems = Enumerable.Range(0, 50).Select(i => new HeightItem
+        {
+            Index = i,
+            Height = 120,
+            Hue = i * 30 % 360
+        }).ToList();
+
+        nestedInnerItems = Enumerable.Range(0, 100).Select(i => new HeightItem
+        {
+            Index = i,
+            Height = 15 + (i * 7 % 21),
+            Hue = i * 12 % 360
+        }).ToList();
+    }
+
+    void LoadLargeDataset()
+    {
+        largeItems = Enumerable.Range(0, 100_000).Select(i => new HeightItem
+        {
+            Index = i,
+            Height = 25 + (i * 13 % 41),
+            Hue = i * 3 % 360
+        }).ToList();
+        largeDatasetStatus = $"Loaded {largeItems.Count} items";
+    }
+
+    class HeightItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}

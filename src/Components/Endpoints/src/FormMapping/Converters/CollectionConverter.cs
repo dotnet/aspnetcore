@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 // The buffer implements ICollection<T>, so we can add items to it.
 // The buffer does not implement ICollection<T>, so we need to use custom code to add items to it.
 // These aspects are captured in the TCollectionPolicy type parameter.
-// Instead of creating a hierachy with virtual members, we are using generics and virtual interface dispatch to achieve the same result.
+// Instead of creating a hierarchy with virtual members, we are using generics and virtual interface dispatch to achieve the same result.
 // This allows us to avoid virtual dispatch at runtime, and enables us to easily adapt to different types of collections.
 
 internal abstract class CollectionConverter<TCollection> : FormDataConverter<TCollection>
@@ -61,13 +61,13 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         TBuffer? buffer = default;
         bool foundCurrentElement;
         bool currentElementSuccess;
-        bool succeded;
+        bool succeeded;
         // Even though we have indexes, we special case 0 an 1 and use literals directly. We leave them in the indexes
         // collection because it makes other indexes align.
         try
         {
             context.PushPrefix("[0]");
-            succeded = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out found);
+            succeeded = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out found);
         }
         finally
         {
@@ -76,7 +76,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
 
         if (!found)
         {
-            return TryReadSingleValueCollection(ref context, out result, ref found, ref buffer, ref succeded);
+            return TryReadSingleValueCollection(ref context, out result, ref found, ref buffer, ref succeeded);
         }
 
         // We already know we found an element;
@@ -90,7 +90,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         {
             context.PushPrefix("[1]");
             currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
-            succeded = succeded && currentElementSuccess;
+            succeeded = succeeded && currentElementSuccess;
         }
         catch
         {
@@ -127,7 +127,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             {
                 context.PushPrefix(prefix);
                 currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
-                succeded = succeded && currentElementSuccess;
+                succeeded = succeeded && currentElementSuccess;
             }
             catch
             {
@@ -147,11 +147,11 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         if (!foundCurrentElement)
         {
             result = TCollectionPolicy.ToResult(buffer);
-            if (!succeded)
+            if (!succeeded)
             {
                 context.AttachInstanceToErrors(result!);
             }
-            return succeded;
+            return succeeded;
         }
 
         // We need to compute the prefix for the index, since it's not precomputed.
@@ -170,7 +170,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             // We need to compute the prefix for the index, since it's not precomputed.
             if (!index.TryFormat(computedPrefix[1..], out var charsWritten, provider: CultureInfo.InvariantCulture))
             {
-                succeded = false;
+                succeeded = false;
                 break;
             }
 
@@ -179,7 +179,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
                 computedPrefix[charsWritten + 1] = ']';
                 context.PushPrefix(computedPrefix[..(charsWritten + 2)]);
                 currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
-                succeded = succeded && currentElementSuccess;
+                succeeded = succeeded && currentElementSuccess;
             }
             catch
             {
@@ -209,15 +209,15 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         }
         else
         {
-            if (!succeded)
+            if (!succeeded)
             {
                 context.AttachInstanceToErrors(result!);
             }
-            return succeded;
+            return succeeded;
         }
     }
 
-    private bool TryReadSingleValueCollection(ref FormDataReader context, out TCollection? result, ref bool found, ref TBuffer? buffer, ref bool succeded)
+    private bool TryReadSingleValueCollection(ref FormDataReader context, out TCollection? result, ref bool found, ref TBuffer? buffer, ref bool succeeded)
     {
         if (_elementConverter is ISingleValueConverter<TElement> singleValueConverter &&
             singleValueConverter.CanConvertSingleValue() &&
@@ -233,7 +233,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
                 {
                     if (!singleValueConverter.TryConvertValue(ref context, value!, out var elementValue))
                     {
-                        succeded = false;
+                        succeeded = false;
                     }
                     else
                     {
@@ -242,7 +242,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
                 }
                 catch (Exception ex)
                 {
-                    succeded = false;
+                    succeeded = false;
                     context.AddMappingError(ex, value);
                 }
             };
@@ -254,6 +254,6 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             result = default;
         }
 
-        return succeded;
+        return succeeded;
     }
 }

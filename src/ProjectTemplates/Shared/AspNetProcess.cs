@@ -5,8 +5,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
-using AngleSharp.Dom.Html;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
@@ -141,7 +141,7 @@ public class AspNetProcess : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var parser = new HtmlParser();
-        var html = await parser.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var html = await parser.ParseDocumentAsync(await response.Content.ReadAsStreamAsync());
 
         foreach (IHtmlLinkElement styleSheet in html.GetElementsByTagName("link"))
         {
@@ -171,12 +171,19 @@ public class AspNetProcess : IDisposable
             else
             {
                 Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
-                var result = await RetryHelper.RetryRequest(async () =>
-                {
-                    return await _httpClient.GetAsync(anchor.Href);
-                }, logger: NullLogger.Instance);
 
-                Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
+                if (!string.Equals(anchor.Protocol, "https:") || string.Equals(anchor.HostName, "localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    // This is a relative or same-site URI, so verify it goes to a real destination within the app.
+                    // We don't do this for external (absolute) URIs as it would introduce flakiness, and the code
+                    // above already checks that the URI is what we expect.
+                    var result = await RetryHelper.RetryRequest(async () =>
+                    {
+                        return await _httpClient.GetAsync(anchor.Href);
+                    }, logger: NullLogger.Instance);
+
+                    Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
+                }
             }
         }
     }

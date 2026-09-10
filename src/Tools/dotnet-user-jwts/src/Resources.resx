@@ -150,6 +150,12 @@
   <data name="CreateCommand_ExpiresOnOption_Description" xml:space="preserve">
     <value>The UTC date &amp; time the JWT should expire in the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'. Defaults to 3 months after the --not-before date. Do not use this option in conjunction with the --valid-for option.</value>
   </data>
+  <data name="CreateCommand_InvalidAppsettingsFile_Error" xml:space="preserve">
+    <value>Invalid Appsettings file extension. Ensure file extension is .json.</value>
+  </data>
+  <data name="CreateCommand_AppsettingsFileNotFound_Error" xml:space="preserve">
+    <value>Could not find Appsettings file in '{0}'. Check the filename and that the file exists.</value>
+  </data>
   <data name="CreateCommand_InvalidClaims_Error" xml:space="preserve">
     <value>Malformed claims supplied. Ensure each claim is in the format "name=value".</value>
   </data>
@@ -189,6 +195,9 @@
   <data name="CreateCommand_ValidForOption_Description" xml:space="preserve">
     <value>The period the JWT should expire after. Specify using a number followed by a duration type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
   </data>
+  <data name="CreateCommand_appsettingsFileOption_Description" xml:space="preserve">
+    <value>The appSettings configuration file to add the test scheme to.</value>
+  </data>
   <data name="JwtPrint_Audiences" xml:space="preserve">
     <value>Audience(s)</value>
   </data>
@@ -224,6 +233,9 @@
   </data>
   <data name="JwtPrint_Scopes" xml:space="preserve">
     <value>Scopes</value>
+  </data>
+  <data name="JwtPrint_appsettingsFile" xml:space="preserve">
+    <value>Appsettings File</value>
   </data>
   <data name="JwtPrint_Token" xml:space="preserve">
     <value>Token</value>
@@ -295,10 +307,25 @@
     <value>No project found at `-p|--project` path or current directory.</value>
   </data>
   <data name="ProjectOption_SercretIdNotFound" xml:space="preserve">
-    <value>Project does not contain a user secrets ID.</value>
+    <value>Project or file-based app does not contain a user secrets ID.</value>
   </data>
   <data name="ProjectOption_Description" xml:space="preserve">
     <value>The path of the project to operate on. Defaults to the project in the current directory.</value>
+  </data>
+  <data name="ProjectOption_FileBasedAppNotSupported" xml:space="preserve">
+    <value>File-based apps must be specified with the --file option.</value>
+  </data>
+  <data name="FileOption_Description" xml:space="preserve">
+    <value>The path of the file-based app .cs file to operate on.</value>
+  </data>
+  <data name="FileOption_FileNotFound" xml:space="preserve">
+    <value>No file-based app found at `--file` path.</value>
+  </data>
+  <data name="FileOption_InvalidExtension" xml:space="preserve">
+    <value>The --file option only supports .cs file-based apps.</value>
+  </data>
+  <data name="ProjectAndFileOptions_Error" xml:space="preserve">
+    <value>The --project and --file options are mutually exclusive. Provide either option but not both.</value>
   </data>
   <data name="RemoveCommand_Confirmed" xml:space="preserve">
     <value>Deleted JWT with ID '{0}'.</value>
@@ -311,6 +338,12 @@
   </data>
   <data name="RemoveCommand_NoJwtFound" xml:space="preserve">
     <value>No JWT with ID '{0}' found.</value>
+  </data>
+  <data name="RemoveCommand_InvalidAppsettingsFile_Error" xml:space="preserve">
+    <value>The specified appsettings file is invalid. Please provide a valid JSON file.</value>
+  </data>
+  <data name="RemoveCommand_AppsettingsFileNotFound_Error" xml:space="preserve">
+    <value>Could not find Appsettings file '{0}'. Check the filename and that the file exists.</value>
   </data>
   <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
     <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>

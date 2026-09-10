@@ -7,10 +7,19 @@ using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using TestContentPackage;
+using TestContentPackage.Services;
 
 namespace TestServer;
 
@@ -26,19 +35,101 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents(options =>
+        var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
+
+        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
+        // switch value once at static initialization and won't see subsequent AppContext changes.
+        // This write at fixture creation is only safe because the E2E suite runs serially
+        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
+        // let servers needing opposite values race on this process-global field and reintroduce #66883.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, enableUrlNavigation);
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            services.AddControllers();
+        }
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
+        services.AddSingleton<ExternalNavigationTarget>();
+        services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
+
+        var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
-            .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
+            .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
+            .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                if (Configuration.GetValue<bool>("DisableCircuitPersistence"))
+                {
+                    // This disables the circuit persistence.
+                    // In combination with DisableReconnectionCache this means that a disconnected client will always
+                    // be rejected on reconnection/resume attempts.
+                    options.PersistedCircuitInMemoryMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                var retentionPeriod = Configuration.GetValue<int?>("PersistedCircuitRetentionPeriod");
+                if (retentionPeriod.HasValue)
+                {
+                    // This sets both in-memory and distributed persisted circuit retention periods to the specified value in milliseconds.
+                    // This setting can be used to test expiration of persisted circuit state, including client-held state in case of graceful pause.
+                    options.PersistedCircuitInMemoryRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                    options.PersistedCircuitDistributedRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                }
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
+        {
+            Configuration["Components:UseCultureFromServer"] = "true";
+        }
+        else
+        {
+            Configuration["Components:UseCultureFromServer"] = "false";
+        }
+
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
+
+        services.AddScoped<InteractiveWebAssemblyService>();
+        services.AddScoped<InteractiveServerService>();
+        services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
@@ -48,6 +139,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
+
+        services.AddScoped<PauseTrackingHandler>();
+        services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,57 +160,134 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
-
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
+
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+            app.Map("/interactive-reexecution", reexecutionApp =>
+            {
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+
+            ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR", "es-ES");
+                options.AddSupportedUICultures("en-US", "fr-FR", "es-ES");
+                options.RequestCultureProviders.Clear();
+                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+                options.SetDefaultCulture("en-US");
+            });
+        }
+        else
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.RequestCultureProviders.Clear();
+                options.SetDefaultCulture("en-US");
+            });
+        }
+
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseWebSockets();
+        app.UseRouting();
+        UseFakeAuthState(app);
+        app.UseAntiforgery();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+        });
+
+        app.Use((ctx, nxt) =>
+        {
+            if (ctx.Request.Query.ContainsKey("add-csp"))
+            {
+                ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+            }
+            return nxt();
+        });
+        ConfigureEndpoints(app, env);
+    }
+
+    private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        _ = app.UseEndpoints(endpoints =>
+        {
+            if (Configuration.GetValue<bool>("EnableCultureTesting"))
+            {
+                endpoints.MapControllers();
             }
 
-            app.UseRouting();
-            UseFakeAuthState(app);
-            app.UseAntiforgery();
-
-            app.Use((ctx, nxt) =>
+            var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+            if (File.Exists(contentRootStaticAssetsPath))
             {
-                if (ctx.Request.Query.ContainsKey("add-csp"))
-                {
-                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
-                }
-                return nxt();
-            });
-
-            _ = app.UseEndpoints(endpoints =>
+                endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+            }
+            else
             {
-                var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
-                if (File.Exists(contentRootStaticAssetsPath))
-                {
-                    endpoints.MapStaticAssets(contentRootStaticAssetsPath);
-                }
-                else
-                {
-                    endpoints.MapStaticAssets();
-                }
+                endpoints.MapStaticAssets();
+            }
 
-                _ = endpoints.MapRazorComponents<TRootComponent>()
-                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode(options =>
+            _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
+                .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
+                .AddInteractiveServerRenderMode(options =>
+                {
+                    var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                    options.DisableWebSocketCompression = config.IsCompressionDisabled;
+
+                    options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+
+                    options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
+                })
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
+                .WithBrowserOptions(config =>
+                {
+                    config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
+                        || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
                     {
-                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
-                        options.DisableWebSocketCompression = config.IsCompressionDisabled;
+                        config.InteractiveWebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                    }
+                });
 
-                        options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+            NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
+            StreamingRenderingForm.MapEndpoints(endpoints);
+            InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
-                        options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
-                    })
-                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
-
-                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
-                StreamingRenderingForm.MapEndpoints(endpoints);
-                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
-
-                MapEnhancedNavigationEndpoints(endpoints);
-            });
+            MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 
@@ -225,10 +398,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }

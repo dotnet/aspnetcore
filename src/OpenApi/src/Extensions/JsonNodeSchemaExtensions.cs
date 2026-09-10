@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -25,28 +24,30 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
+    private static readonly Dictionary<Type, string> _simpleTypeToFormat = new()
     {
-        [typeof(bool)] = new() { Type = "boolean" },
-        [typeof(byte)] = new() { Type = "integer", Format = "uint8" },
-        [typeof(byte[])] = new() { Type = "string", Format = "byte" },
-        [typeof(int)] = new() { Type = "integer", Format = "int32" },
-        [typeof(uint)] = new() { Type = "integer", Format = "uint32" },
-        [typeof(long)] = new() { Type = "integer", Format = "int64" },
-        [typeof(ulong)] = new() { Type = "integer", Format = "uint64" },
-        [typeof(short)] = new() { Type = "integer", Format = "int16" },
-        [typeof(ushort)] = new() { Type = "integer", Format = "uint16" },
-        [typeof(float)] = new() { Type = "number", Format = "float" },
-        [typeof(double)] = new() { Type = "number", Format = "double" },
-        [typeof(decimal)] = new() { Type = "number", Format = "double" },
-        [typeof(DateTime)] = new() { Type = "string", Format = "date-time" },
-        [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
-        [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
-        [typeof(char)] = new() { Type = "string", Format = "char" },
-        [typeof(Uri)] = new() { Type = "string", Format = "uri" },
-        [typeof(string)] = new() { Type = "string" },
-        [typeof(TimeOnly)] = new() { Type = "string", Format = "time" },
-        [typeof(DateOnly)] = new() { Type = "string", Format = "date" },
+        [typeof(byte)] = "uint8",
+        // Note: byte format is deprecated per https://spec.openapis.org/registry/format/
+        // We should follow the >= 3.1 approach stated in https://spec.openapis.org/oas/v3.2.0.html#migrating-binary-descriptions-from-oas-3-0
+        // In addition, we should ensure that Microsoft.OpenApi will be able to serialize the >= 3.1 representation correctly when
+        // it's asked to serialize as < 3.1 document.
+        [typeof(byte[])] = "byte",
+        [typeof(int)] = "int32",
+        [typeof(uint)] = "uint32",
+        [typeof(long)] = "int64",
+        [typeof(ulong)] = "uint64",
+        [typeof(short)] = "int16",
+        [typeof(ushort)] = "uint16",
+        [typeof(float)] = "float",
+        [typeof(double)] = "double",
+        [typeof(decimal)] = "double",
+        [typeof(DateTime)] = "date-time",
+        [typeof(DateTimeOffset)] = "date-time",
+        [typeof(Guid)] = "uuid",
+        [typeof(char)] = "char",
+        [typeof(Uri)] = "uri",
+        [typeof(TimeOnly)] = "time",
+        [typeof(DateOnly)] = "date",
     };
 
     /// <summary>
@@ -86,13 +87,47 @@ internal static class JsonNodeSchemaExtensions
         {
             if (attribute is Base64StringAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
             }
             else if (attribute is RangeAttribute rangeAttribute)
             {
-                schema[OpenApiSchemaKeywords.MinimumKeyword] = decimal.Parse(rangeAttribute.Minimum.ToString()!, CultureInfo.InvariantCulture);
-                schema[OpenApiSchemaKeywords.MaximumKeyword] = decimal.Parse(rangeAttribute.Maximum.ToString()!, CultureInfo.InvariantCulture);
+                decimal? minDecimal = null;
+                decimal? maxDecimal = null;
+
+                if (rangeAttribute.Minimum is int minimumInteger)
+                {
+                    // The range was set with the RangeAttribute(int, int) constructor.
+                    minDecimal = minimumInteger;
+                    maxDecimal = (int)rangeAttribute.Maximum;
+                }
+                else
+                {
+                    // Use InvariantCulture if explicitly requested or if the range has been set via the RangeAttribute(double, double) constructor.
+                    var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double
+                        ? CultureInfo.InvariantCulture
+                        : CultureInfo.CurrentCulture;
+
+                    var minString = Convert.ToString(rangeAttribute.Minimum, targetCulture);
+                    var maxString = Convert.ToString(rangeAttribute.Maximum, targetCulture);
+
+                    if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var value))
+                    {
+                        minDecimal = value;
+                    }
+                    if (decimal.TryParse(maxString, NumberStyles.Any, targetCulture, out value))
+                    {
+                        maxDecimal = value;
+                    }
+                }
+
+                if (minDecimal is { } minValue)
+                {
+                    schema[rangeAttribute.MinimumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMinimum : OpenApiSchemaKeywords.MinimumKeyword] = minValue;
+                }
+                if (maxDecimal is { } maxValue)
+                {
+                    schema[rangeAttribute.MaximumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMaximum : OpenApiSchemaKeywords.MaximumKeyword] = maxValue;
+                }
             }
             else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
             {
@@ -100,23 +135,25 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is MaxLengthAttribute maxLengthAttribute)
             {
-                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MaxItemsKeyword : OpenApiSchemaKeywords.MaxLengthKeyword;
-                schema[targetKey] = maxLengthAttribute.Length;
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var key = isArray ? OpenApiSchemaKeywords.MaxItemsKeyword : OpenApiSchemaKeywords.MaxLengthKeyword;
+                schema[key] = maxLengthAttribute.Length;
             }
             else if (attribute is MinLengthAttribute minLengthAttribute)
             {
-                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MinItemsKeyword : OpenApiSchemaKeywords.MinLengthKeyword;
-                schema[targetKey] = minLengthAttribute.Length;
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var key = isArray ? OpenApiSchemaKeywords.MinItemsKeyword : OpenApiSchemaKeywords.MinLengthKeyword;
+                schema[key] = minLengthAttribute.Length;
             }
             else if (attribute is LengthAttribute lengthAttribute)
             {
-                var targetKeySuffix = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? "Items" : "Length";
+                var isArray = MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes && schemaTypes.HasFlag(JsonSchemaType.Array);
+                var targetKeySuffix = isArray ? "Items" : "Length";
                 schema[$"min{targetKeySuffix}"] = lengthAttribute.MinimumLength;
                 schema[$"max{targetKeySuffix}"] = lengthAttribute.MaximumLength;
             }
             else if (attribute is UrlAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "uri";
             }
             else if (attribute is StringLengthAttribute stringLengthAttribute)
@@ -140,28 +177,26 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
+        var schemaAttribute = schema.WillBeComponentized()
+            ? OpenApiConstants.RefDefaultAnnotation
+            : OpenApiSchemaKeywords.DefaultKeyword;
+
         if (defaultValue is null)
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = null;
+            schema[schemaAttribute] = null;
         }
         else
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+            schema[schemaAttribute] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
         }
     }
 
     /// <summary>
-    /// Applies the primitive types and formats to the schema based on the type.
+    /// Applies the format of known types to the schema.
     /// </summary>
     /// <remarks>
-    /// OpenAPI v3 requires support for the format keyword in generated types. Because the
-    /// underlying schema generator does not support this, we need to manually apply the
-    /// supported formats to the schemas associated with the generated type.
-    ///
-    /// Whereas JsonSchema represents nullable types via `type: ["string", "null"]`, OpenAPI
-    /// v3 exposes a nullable property on the schema. This method will set the nullable property
-    /// based on whether the underlying schema generator returned an array type containing "null" to
-    /// represent a nullable type or if the type was denoted as nullable from our lookup cache.
+    /// OpenAPI hosts a format registry in https://spec.openapis.org/registry/format/.
+    /// See also https://json-schema.org/draft/2020-12/json-schema-validation#name-vocabularies-for-semantic-c
     ///
     /// Note that this method targets <see cref="JsonNode"/> and not <see cref="OpenApiSchema"/> because
     /// it is is designed to be invoked via the `OnGenerated` callback in the underlying schema generator as
@@ -169,21 +204,13 @@ internal static class JsonNodeSchemaExtensions
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
-    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
+    internal static void ApplyPrimitiveFormats(this JsonNode schema, JsonSchemaExporterContext context)
     {
         var type = context.TypeInfo.Type;
         var underlyingType = Nullable.GetUnderlyingType(type);
-        if (_simpleTypeToOpenApiSchema.TryGetValue(underlyingType ?? type, out var openApiSchema))
+        if (_simpleTypeToFormat.TryGetValue(underlyingType ?? type, out var format))
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
-            schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
-            schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
-            schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
-            schema[OpenApiSchemaKeywords.NullableKeyword] = underlyingType != null;
-            // Clear out patterns that the underlying JSON schema generator uses to represent
-            // validations for DateTime, DateTimeOffset, and integers.
-            schema[OpenApiSchemaKeywords.PatternKeyword] = null;
+            schema[OpenApiSchemaKeywords.FormatKeyword] = format;
         }
     }
 
@@ -196,7 +223,7 @@ internal static class JsonNodeSchemaExtensions
     {
         // Apply constraints in reverse order because when it comes to the routing
         // layer the first constraint that is violated causes routing to short circuit.
-        foreach (var constraint in constraints.Reverse())
+        foreach (var constraint in Enumerable.Reverse(constraints))
         {
             if (constraint is MinRouteConstraint minRouteConstraint)
             {
@@ -221,7 +248,7 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (constraint is RegexRouteConstraint regexRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
                 schema[OpenApiSchemaKeywords.PatternKeyword] = regexRouteConstraint.Constraint.ToString();
             }
@@ -232,32 +259,32 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (constraint is FloatRouteConstraint or DecimalRouteConstraint or DoubleRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Number.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is FloatRouteConstraint ? "float" : "double";
             }
             else if (constraint is LongRouteConstraint or IntRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Integer.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is LongRouteConstraint ? "int64" : "int32";
             }
             else if (constraint is GuidRouteConstraint or StringRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is GuidRouteConstraint ? "uuid" : null;
             }
             else if (constraint is BoolRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.Boolean.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is AlphaRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is DateTimeRouteConstraint)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "date-time";
             }
         }
@@ -293,6 +320,11 @@ internal static class JsonNodeSchemaExtensions
             var attributes = validations.OfType<ValidationAttribute>();
             schema.ApplyValidationAttributes(attributes);
         }
+        if (parameterDescription.ModelMetadata is Mvc.ModelBinding.Metadata.DefaultModelMetadata { Attributes.PropertyAttributes.Count: > 0 } metadata &&
+            metadata.Attributes.PropertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } metadataDefaultValueAttribute)
+        {
+            schema.ApplyDefaultValue(metadataDefaultValueAttribute.Value, jsonTypeInfo);
+        }
         if (parameterDescription.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
         {
             if (parameterInfo.HasDefaultValue)
@@ -304,12 +336,10 @@ internal static class JsonNodeSchemaExtensions
                 schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
             }
 
-            if (parameterInfo.GetCustomAttributes().OfType<ValidationAttribute>() is { } validationAttributes)
+            if (parameterInfo.GetCustomAttributes<ValidationAttribute>() is { } validationAttributes)
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-
-            schema.ApplyNullabilityContextInfo(parameterInfo);
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
@@ -319,14 +349,69 @@ internal static class JsonNodeSchemaExtensions
             schema.ApplyRouteConstraints(constraints);
         }
 
-        if (parameterDescription.Source is { } bindingSource && SupportsNullableProperty(bindingSource))
+        // Parameters sourced from query, path, header, and form are bound via Enum.TryParse,
+        // which only accepts the original C# member names — not names transformed by a JSON
+        // naming policy (e.g. KebabCaseLower). Replace the schema's enum values and default
+        // value with the original member names so the OpenAPI spec matches what the server
+        // actually accepts.
+        if (parameterDescription.Source is { } source && IsNonBodyBindingSource(source)
+            && parameterDescription.Type is { } paramType)
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = false;
+            var enumType = Nullable.GetUnderlyingType(paramType) ?? paramType;
+            if (enumType.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                var enumArray = new JsonArray();
+                foreach (var name in memberNames)
+                {
+                    enumArray.Add((JsonNode)name);
+                }
+                schema[OpenApiSchemaKeywords.EnumKeyword] = enumArray;
+
+                // Also fix the default value — it was serialized using the naming policy
+                // (e.g. "high-priority") but should use the original member name
+                // (e.g. "HighPriority") to match what Enum.TryParse accepts. The default
+                // may be stored in "default" or "x-ref-default" depending on whether the
+                // schema was tagged for componentization.
+                var defaultKey = schema[OpenApiConstants.RefDefaultAnnotation] is not null
+                    ? OpenApiConstants.RefDefaultAnnotation
+                    : OpenApiSchemaKeywords.DefaultKeyword;
+                if (jsonTypeInfo is not null
+                    && schema[defaultKey] is JsonNode defaultNode
+                    && defaultNode.GetValueKind() == JsonValueKind.String)
+                {
+                    var defaultValue = defaultNode.GetValue<string>();
+                    foreach (var memberName in memberNames)
+                    {
+                        var enumValue = Enum.Parse(enumType, memberName);
+                        var serialized = JsonSerializer.SerializeToNode(enumValue, jsonTypeInfo);
+                        if (serialized?.GetValue<string>() == defaultValue)
+                        {
+                            schema[defaultKey] = (JsonNode)memberName;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (parameterDescription.Source is { } bindingSource
+            && DoesNotSupportNullValue(bindingSource)
+            && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+            schemaTypes.HasFlag(JsonSchemaType.Null))
+        {
+            schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes & ~JsonSchemaType.Null).ToString();
         }
 
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
-        static bool SupportsNullableProperty(BindingSource bindingSource) =>bindingSource == BindingSource.Header
+        static bool DoesNotSupportNullValue(BindingSource bindingSource) => bindingSource == BindingSource.Header
+            || bindingSource == BindingSource.Query
+            || bindingSource == BindingSource.Path
+            || bindingSource == BindingSource.Form
+            || bindingSource == BindingSource.FormFile;
+
+        static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -355,6 +440,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 return;
             }
+            var baseSchemaReferenceId = createSchemaReferenceId(context.TypeInfo);
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -366,11 +452,15 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"#/components/schemas/{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
+                    mappings[$"{discriminator}"] = $"{baseSchemaReferenceId}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+            if (baseSchemaReferenceId is not null && IsNonAbstractTypeWithDerivedTypeReference(context))
+            {
+                schema[OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword] = baseSchemaReferenceId;
+            }
         }
     }
 
@@ -386,12 +476,38 @@ internal static class JsonNodeSchemaExtensions
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }
+
+        // C# union types are value types, so in case of Nullable<Union> JsonTypeInfoKind is None.
+        // We need to unpack it to properly detect the union: see https://github.com/dotnet/aspnetcore/issues/68653.
+        var unionTypeInfo = context.TypeInfo;
+        if (Nullable.GetUnderlyingType(unionTypeInfo.Type) is { } underlyingType
+            && unionTypeInfo.Options.TryGetTypeInfo(underlyingType, out var underlyingTypeInfo))
+        {
+            unionTypeInfo = underlyingTypeInfo;
+        }
+
+        if (unionTypeInfo.Kind == JsonTypeInfoKind.Union)
+        {
+            schema[OpenApiConstants.SchemaIsUnion] = true;
+        }
         // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
         if (context.BaseTypeInfo == context.TypeInfo &&
             IsNonAbstractTypeWithoutDerivedTypeReference(context))
         {
             schema[OpenApiConstants.SchemaId] = "Base";
         }
+    }
+
+    /// <summary>
+    /// Determines whether the specified JSON schema will be moved into the components section.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
+    internal static bool WillBeComponentized(this JsonNode schema)
+    {
+        return (schema[OpenApiConstants.SchemaId] is JsonNode schemaIdNode
+            && schemaIdNode.GetValueKind() == JsonValueKind.String &&
+            !string.IsNullOrEmpty(schemaIdNode.GetValue<string>()));
     }
 
     /// <summary>
@@ -407,23 +523,15 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Support applying nullability status for reference types provided as a parameter.
+    /// Returns <see langword="true"/> if the current type is a non-abstract base class that is defined as its
+    /// own derived type with a discriminator.
     /// </summary>
-    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="parameterInfo">The <see cref="ParameterInfo" /> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ParameterInfo parameterInfo)
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithDerivedTypeReference(JsonSchemaExporterContext context)
     {
-        if (parameterInfo.ParameterType.IsValueType)
-        {
-            return;
-        }
-
-        var nullabilityInfoContext = new NullabilityInfoContext();
-        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
-        if (nullabilityInfo.WriteState == NullabilityState.Nullable)
-        {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
-        }
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type && type.TypeDiscriminator is not null);
     }
 
     /// <summary>
@@ -433,11 +541,116 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
-        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
-        // all schema (no type, no format, no constraints).
-        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
+        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+
+        // Work around a System.Text.Json schema export issue where get-only properties can report
+        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602
+        var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
+            propertyInfo.Set is null &&
+            !propertyInfo.IsGetNullable &&
+            propertyInfo.IsSetNullable;
+        if (shouldPruneNullFromReadOnlyProperty)
         {
-            schema[OpenApiSchemaKeywords.NullableKeyword] = true;
+            shouldApplyNullableSchema = false;
+        }
+
+        if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes)
+        {
+            if (shouldApplyNullableSchema && !schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
+            }
+            else if (shouldPruneNullFromReadOnlyProperty && schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                var nonNullableSchemaTypes = schemaTypes & ~JsonSchemaType.Null;
+                if (nonNullableSchemaTypes != 0)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = nonNullableSchemaTypes.ToString();
+                }
+                else if (schema is JsonObject schemaObject)
+                {
+                    schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
+                }
+            }
+        }
+
+        if (schema.WillBeComponentized() &&
+            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+        {
+            schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    /// <summary>
+    /// Prunes the "null" type from the schema for types that are componentized. These
+    /// types should represent their nullability using oneOf with null instead.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
+    {
+        if (schema.WillBeComponentized())
+        {
+            if (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+            {
+                for (var i = typeArray.Count - 1; i >= 0; i--)
+                {
+                    if (typeArray[i]?.GetValue<string>() == "null")
+                    {
+                        typeArray.RemoveAt(i);
+                    }
+                }
+                if (typeArray.Count == 1)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
+                }
+            }
+            if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
+            {
+                enumArray.Remove(null);
+            }
+        }
+    }
+
+    private static JsonSchemaType? MapJsonNodeToSchemaType(JsonNode? jsonNode)
+    {
+        if (jsonNode is not JsonArray jsonArray)
+        {
+            if (Enum.TryParse<JsonSchemaType>(jsonNode?.GetValue<string>(), true, out var openApiSchemaType))
+            {
+                return openApiSchemaType;
+            }
+
+            return jsonNode is JsonValue jsonValue && jsonValue.TryGetValue<string>(out var identifier)
+                ? ToSchemaType(identifier)
+                : null;
+        }
+
+        JsonSchemaType? schemaType = null;
+
+        foreach (var node in jsonArray)
+        {
+            if (node is JsonValue jsonValue && jsonValue.TryGetValue<string>(out var identifier))
+            {
+                var type = ToSchemaType(identifier);
+                schemaType = schemaType.HasValue ? (schemaType | type) : type;
+            }
+        }
+
+        return schemaType;
+
+        static JsonSchemaType ToSchemaType(string identifier)
+        {
+            return identifier.ToLowerInvariant() switch
+            {
+                "null" => JsonSchemaType.Null,
+                "boolean" => JsonSchemaType.Boolean,
+                "integer" => JsonSchemaType.Integer,
+                "number" => JsonSchemaType.Number,
+                "string" => JsonSchemaType.String,
+                "array" => JsonSchemaType.Array,
+                "object" => JsonSchemaType.Object,
+                _ => throw new InvalidOperationException($"Unknown schema type: {identifier}"),
+            };
         }
     }
 }

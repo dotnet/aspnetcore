@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web.Internal;
 
@@ -17,4 +18,10 @@ public interface IInternalWebJSInProcessRuntime
     /// For internal framework use only.
     /// </summary>
     string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId);
+
+    /// <summary>
+    /// For internal framework use only.
+    /// </summary>
+    string InvokeJS(in JSInvocationInfo invocationInfo)
+        => throw new NotImplementedException();
 }

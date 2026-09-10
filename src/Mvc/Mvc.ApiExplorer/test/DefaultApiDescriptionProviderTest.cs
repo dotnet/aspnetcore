@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -32,6 +31,36 @@ namespace Microsoft.AspNetCore.Mvc.Description;
 
 public class DefaultApiDescriptionProviderTest
 {
+    [Fact]
+    public void OnlyCatchAllParameter_IsReportedAsOptional()
+    {
+        // Arrange: Create an action descriptor with a multi-parameter route template.
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "/products/{category}/items/{group}/inventory/{**any}"
+        };
+
+        // Act: Get the API descriptions using the existing helper.
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert: Only the 'any' parameter should be optional.
+        var description = Assert.Single(descriptions);
+        var categoryParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "category", StringComparison.OrdinalIgnoreCase));
+        var groupParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "group", StringComparison.OrdinalIgnoreCase));
+        var anyParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "any", StringComparison.OrdinalIgnoreCase));
+
+        // The non-catch-all parameters should be required.
+        Assert.True(categoryParameter.IsRequired);
+        Assert.True(groupParameter.IsRequired);
+
+        // The catch-all parameter should be optional.
+        Assert.False(anyParameter.IsRequired);
+    }
+
     [Fact]
     public void GetApiDescription_IgnoresNonControllerActionDescriptor()
     {
@@ -633,7 +662,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.Empty(description.SupportedResponseTypes);
     }
 
-    public static TheoryData ReturnsActionResultWithProducesAndProducesContentTypeData
+    public static TheoryData<Type, string, List<FilterDescriptor>> ReturnsActionResultWithProducesAndProducesContentTypeData
     {
         get
         {
@@ -1107,7 +1136,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(methodName);
         var filter = new ContentTypeAttribute("text/*")
         {
-            Type = typeof(Order)
+            Type = typeof(Order),
+            Description = "Example"
         };
 
         action.FilterDescriptors = new List<FilterDescriptor>
@@ -1124,6 +1154,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.NotNull(responseTypes.ModelMetadata);
         Assert.Equal(200, responseTypes.StatusCode);
         Assert.Equal(typeof(Order), responseTypes.Type);
+        Assert.Equal("Example", responseTypes.Description);
 
         foreach (var responseFormat in responseTypes.ApiResponseFormats)
         {
@@ -1490,6 +1521,20 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_SourceFromDerivedServices()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsFormatters_DerivedServices));
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_SourceFromCustomModelBinder()
     {
         // Arrange
@@ -1577,11 +1622,33 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
-        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.Name");
         Assert.Same(BindingSource.Query, id.Source);
         Assert.Equal(typeof(string), id.Type);
+    }
+
+    [Fact]
+    public void GetApiDescription_ParameterDescription_FromQueryEmployee_WithCustomPropertyBindingNames()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsEmployeeWithCustomPropertyNames));
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(2, description.ParameterDescriptions.Count);
+
+        var header = Assert.Single(description.ParameterDescriptions, p => p.Name == "X-MyCustomHeader");
+        Assert.Same(BindingSource.Header, header.Source);
+        Assert.Equal(typeof(string), header.Type);
+
+        var route = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.employeeid");
+        Assert.Same(BindingSource.Path, route.Source);
+        Assert.Equal(typeof(string), route.Type);
     }
 
     [Fact]
@@ -1596,7 +1663,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1615,7 +1682,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1634,7 +1701,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1653,7 +1720,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1672,7 +1739,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -1691,7 +1758,7 @@ public class DefaultApiDescriptionProviderTest
 
         // Assert
         var description = Assert.Single(descriptions);
-        Assert.Equal(1, description.ParameterDescriptions.Count);
+        Assert.Single(description.ParameterDescriptions);
 
         var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
         Assert.Same(BindingSource.Query, id.Source);
@@ -2477,6 +2544,10 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+    private void AcceptsFormatters_DerivedServices([CustomFromServices] ITestService tempDataProvider, [CustomFromKeyedServices("foo")] ITestService keyedTempDataProvider)
+    {
+    }
+
     private void AcceptsProductChangeDTO(ProductChangeDTO dto)
     {
     }
@@ -2490,6 +2561,10 @@ public class DefaultApiDescriptionProviderTest
     }
 
     private void AcceptsEmployee([FromQuery(Name = "employee")] Employee dto)
+    {
+    }
+
+    private void AcceptsEmployeeWithCustomPropertyNames([FromQuery(Name = "employee")] EmployeeWithCustomPropertyNames dto)
     {
     }
 
@@ -2644,6 +2719,15 @@ public class DefaultApiDescriptionProviderTest
     private class Employee
     {
         public string Name { get; set; }
+    }
+
+    private class EmployeeWithCustomPropertyNames
+    {
+        [FromHeader(Name = "X-MyCustomHeader")]
+        public string HeaderName { get; set; }
+
+        [FromRoute(Name = "employeeid")]
+        public string EmployeeId { get; set; }
     }
 
     [TypeConverter(typeof(EmployeeConverter))]
@@ -2874,6 +2958,8 @@ public class DefaultApiDescriptionProviderTest
 
         public Type Type { get; set; }
 
+        public string Description { get; set; }
+
         public void SetContentTypes(MediaTypeCollection contentTypes)
         {
             contentTypes.Clear();
@@ -2919,4 +3005,8 @@ public class DefaultApiDescriptionProviderTest
             return base.ConvertFrom(context, culture, value);
         }
     }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

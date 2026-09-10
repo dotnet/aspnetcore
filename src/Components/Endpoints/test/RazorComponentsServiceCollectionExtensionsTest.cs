@@ -2,16 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorComponentsServiceCollectionExtensionsTest
 {
+    // AddRazorComponents calls AddMetrics, which calls OptionsBuilderExtensions.ValidateOnStart.
+    // As of .NET 11, ValidateOnStart registers IConfigureOptions<StartupValidatorOptions> twice
+    // (one configure action for synchronous validation and one for asynchronous validation), so this
+    // service type is expected to be registered more than once. StartupValidatorOptions is internal to
+    // Microsoft.Extensions.Options, so it is resolved via reflection.
+    private static readonly Type StartupValidatorConfigureOptionsType =
+        typeof(IConfigureOptions<>).MakeGenericType(
+            typeof(IConfigureOptions<>).Assembly.GetType("Microsoft.Extensions.Options.StartupValidatorOptions", throwOnError: true)!);
+
     [Fact]
     public void AddRazorComponents_RegistersServices()
     {
@@ -92,7 +103,13 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 {
                     typeof(SupplyParameterFromFormValueProvider),
                     typeof(SupplyParameterFromQueryValueProvider),
-                }
+                },
+                [typeof(IPersistentServiceRegistration)] = new[]
+                {
+                    typeof(ResourceCollectionProvider),
+                    typeof(AntiforgeryStateProvider),
+                },
+                [StartupValidatorConfigureOptionsType] = Array.Empty<Type>(),
             };
         }
     }
@@ -128,15 +145,11 @@ public class RazorComponentsServiceCollectionExtensionsTest
 
         if (implementationTypes.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an implementation type for {serviceType}");
+            Assert.Fail($"Could not find an implementation type for {serviceType}");
         }
         else if (implementationTypes.Length != implementationTypes.Distinct().Count())
         {
-            Assert.True(
-                false,
-                $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
+            Assert.Fail($"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
         }
     }
 

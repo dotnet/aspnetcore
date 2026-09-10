@@ -38,9 +38,17 @@ public class ResponseCompressionMiddleware
     {
         if (!_provider.CheckRequestAcceptsCompression(context))
         {
+            var originalResponseFeature = context.Features.GetRequiredFeature<IHttpResponseFeature>();
+            originalResponseFeature.OnStarting(OnStartingResponseHandler, context);
             return _next(context);
         }
         return InvokeCore(context);
+    }
+
+    private async Task OnStartingResponseHandler(object state)
+    {
+        HttpContext context = (HttpContext)state;
+        ResponseCompressionBody.ShouldCompressResponseCommon(_provider, context);
     }
 
     private async Task InvokeCore(HttpContext context)

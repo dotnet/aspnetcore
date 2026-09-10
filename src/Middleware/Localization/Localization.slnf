@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Middleware\\Localization.Routing\\src\\Microsoft.AspNetCore.Localization.Routing.csproj",
       "src\\Middleware\\Localization.Routing\\test\\Microsoft.AspNetCore.Localization.Routing.Tests.csproj",

@@ -172,6 +172,27 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
+    [Theory]
+    [InlineData(".contoso.com:8080")]
+    [InlineData(".test.contoso.com:8080")]
+    [InlineData("..contoso.com:8080")]
+    [InlineData("foo..contoso.com:8080")]
+    [InlineData("foo..bar.contoso.com:8080")]
+    public async Task Match_HostWithWildcard_InvalidSubdomain(string host)
+    {
+        // Arrange
+        var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+        var matcher = CreateMatcher(endpoint);
+        var httpContext = CreateContext("/hello", host);
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        MatcherAssert.AssertNotMatch(httpContext);
+    }
+
     [Fact]
     public async Task Match_HostAndHostWithWildcard_NoSubdomain()
     {
@@ -202,6 +223,30 @@ public abstract class HostMatcherPolicyIntegrationTestBase
 
         // Assert
         MatcherAssert.AssertMatch(httpContext, endpoint);
+    }
+
+    [Theory]
+    [InlineData("contoso.com", "CONTOSO.COM", "contoso.com")]
+    [InlineData("contoso.com:5000", "CONTOSO.COM:5000", "contoso.com:5000")]
+    [InlineData("*.contoso.com", "*.CONTOSO.COM", "www.contoso.com")]
+    [InlineData("*.contoso.com:5000", "*.CONTOSO.COM:5000", "www.contoso.com:5000")]
+    public async Task Match_EquivalentHostsWithDifferentCasing_PreservesCandidatesForLaterPolicies(
+        string firstHost,
+        string secondHost,
+        string requestHost)
+    {
+        var encodedEndpoint = CreateEndpoint(
+            "/hello",
+            hosts: new[] { firstHost },
+            contentEncoding: "gzip");
+        var fallbackEndpoint = CreateEndpoint("/hello", hosts: new[] { secondHost });
+
+        var matcher = CreateMatcher(encodedEndpoint, fallbackEndpoint);
+        var httpContext = CreateContext("/hello", requestHost);
+
+        await matcher.MatchAsync(httpContext);
+
+        MatcherAssert.AssertMatch(httpContext, fallbackEndpoint);
     }
 
     [Fact]
@@ -402,12 +447,18 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         object defaults = null,
         object constraints = null,
         int order = 0,
-        string[] hosts = null)
+        string[] hosts = null,
+        string contentEncoding = null)
     {
         var metadata = new List<object>();
         if (hosts != null)
         {
             metadata.Add(new HostAttribute(hosts ?? Array.Empty<string>()));
+        }
+
+        if (contentEncoding != null)
+        {
+            metadata.Add(new ContentEncodingMetadata(contentEncoding, quality: 1.0));
         }
 
         if (HasDynamicMetadata)

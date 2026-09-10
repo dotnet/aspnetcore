@@ -634,11 +634,11 @@ public class SimpleTypeModelBinderIntegrationTest
         Assert.Empty(modelState.Keys);
     }
 
-    public static TheoryData<IDictionary<string, StringValues>> PersonStoreData
+    public static TheoryData<Dictionary<string, StringValues>> PersonStoreData
     {
         get
         {
-            return new TheoryData<IDictionary<string, StringValues>>
+            return new TheoryData<Dictionary<string, StringValues>>
                 {
                     new Dictionary<string, StringValues>
                     {

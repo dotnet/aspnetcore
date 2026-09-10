@@ -9,6 +9,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 internal sealed class LocalhostListenOptions : ListenOptions
 {
+    private readonly string? _hostPrefix;
+
+    internal LocalhostListenOptions(int port, string hostPrefix)
+        : this(port)
+    {
+        _hostPrefix = hostPrefix ?? throw new ArgumentNullException(nameof(hostPrefix));
+    }
+
     internal LocalhostListenOptions(int port)
         : base(new IPEndPoint(IPAddress.Loopback, port))
     {
@@ -23,7 +31,8 @@ internal sealed class LocalhostListenOptions : ListenOptions
     /// </summary>
     internal override string GetDisplayName()
     {
-        return $"{Scheme}://localhost:{IPEndPoint!.Port}";
+        var host = _hostPrefix is { } prefix ? $"{prefix}.localhost" : "localhost";
+        return $"{Scheme}://{host}:{IPEndPoint!.Port}";
     }
 
     internal override async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)

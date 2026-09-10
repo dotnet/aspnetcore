@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 /// <summary>
 /// This completion provider expands the completion list of target symbols defined in the
 /// ExtensionMethodsCache to include extension methods that can be invoked on the target
-/// type that are defined in auxillary packages. This completion provider is designed to be
+/// type that are defined in auxiliary packages. This completion provider is designed to be
 /// used in conjunction with the `AddPackageFixer` to recommend adding the missing packages
 /// extension methods are defined in.
 /// </summary>

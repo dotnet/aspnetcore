@@ -1,0 +1,50 @@
+@page "/persistent-state/auto-pause-advanced-editable"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause veto — advanced editable surfaces</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Covers editable surfaces the basic veto in <code>CircuitManager.isEditableElementFocused</code>
+may not recognise: shadow DOM and same-origin iframes.</p>
+
+<h3>1. Custom element with editable &lt;input&gt; inside shadow DOM</h3>
+<shadow-editor id="shadow-host"></shadow-editor>
+
+<h3>2. Iframe containing a contenteditable document (same-origin via srcdoc)</h3>
+<iframe id="editable-iframe" srcdoc="<html><body><div id='inner' contenteditable='true' style='min-height:40px;border:1px solid #aaa'>edit me</div></body></html>"></iframe>
+
+<script>
+    (function () {
+        if (customElements.get('shadow-editor')) { return; }
+        class ShadowEditor extends HTMLElement {
+            constructor() {
+                super();
+                const root = this.attachShadow({ mode: 'open' });
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'shadow-input';
+                root.appendChild(input);
+            }
+        }
+        customElements.define('shadow-editor', ShadowEditor);
+    })();
+
+    window.autoPauseAdvanced = {
+        focusShadowInput: function () {
+            const host = document.getElementById('shadow-host');
+            const input = host && host.shadowRoot && host.shadowRoot.getElementById('shadow-input');
+            if (input) { input.focus(); }
+        },
+        focusIframeEditable: function () {
+            const frame = document.getElementById('editable-iframe');
+            const inner = frame && frame.contentDocument && frame.contentDocument.getElementById('inner');
+            if (inner) { inner.focus(); }
+        },
+    };
+</script>

@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import okhttp3.HttpUrl;
+
 class Negotiate {
     public static String resolveNegotiateUrl(String url, int negotiateVersion) {
         String negotiateUrl = "";
@@ -27,7 +29,9 @@ class Negotiate {
             negotiateUrl += url.substring(queryStringIndex);
         }
 
-        if (!url.contains("negotiateVersion")) {
+        HttpUrl parsedUrl = HttpUrl.parse(url);
+        boolean hasNegotiateVersion = parsedUrl != null && parsedUrl.queryParameterNames().contains("negotiateVersion");
+        if (!hasNegotiateVersion) {
             negotiateUrl = Utils.appendQueryString(negotiateUrl, "negotiateVersion=" + negotiateVersion);
         }
 

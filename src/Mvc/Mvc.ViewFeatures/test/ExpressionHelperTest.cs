@@ -10,7 +10,7 @@ public class ExpressionHelperTest
 {
     private readonly ConcurrentDictionary<LambdaExpression, string> _expressionTextCache = new ConcurrentDictionary<LambdaExpression, string>(LambdaExpressionComparer.Instance);
 
-    public static TheoryData<Expression, string> ExpressionAndTexts
+    public static TheoryData<LambdaExpression, string> ExpressionAndTexts
     {
         get
         {
@@ -22,7 +22,7 @@ public class ExpressionHelperTest
             var modelTest = new TestModel();
             var modelType = typeof(TestModel);
 
-            var data = new TheoryData<Expression, string>
+            var data = new TheoryData<LambdaExpression, string>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
@@ -178,14 +178,14 @@ public class ExpressionHelperTest
         }
     }
 
-    public static TheoryData<Expression> CachedExpressions
+    public static TheoryData<LambdaExpression> CachedExpressions
     {
         get
         {
             var key = "TestModel";
             var myModel = new TestModel();
 
-            return new TheoryData<Expression>
+            return new TheoryData<LambdaExpression>
                 {
                     (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
                     (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName),
@@ -198,7 +198,7 @@ public class ExpressionHelperTest
         }
     }
 
-    public static TheoryData<Expression> IndexerExpressions
+    public static TheoryData<LambdaExpression> IndexerExpressions
     {
         get
         {
@@ -206,7 +206,7 @@ public class ExpressionHelperTest
             var key = "TestModel";
             var myModels = new List<TestModel>();
 
-            return new TheoryData<Expression>
+            return new TheoryData<LambdaExpression>
                 {
                     (Expression<Func<IList<TestModel>, Category>>)(model => model[2].SelectedCategory),
                     (Expression<Func<IList<TestModel>, Category>>)(model => myModels[i].SelectedCategory),
@@ -217,14 +217,14 @@ public class ExpressionHelperTest
         }
     }
 
-    public static TheoryData<Expression> UnsupportedExpressions
+    public static TheoryData<LambdaExpression> UnsupportedExpressions
     {
         get
         {
             var i = 2;
             var j = 3;
 
-            return new TheoryData<Expression>
+            return new TheoryData<LambdaExpression>
                 {
                     // Indexers that have multiple arguments.
                     (Expression<Func<TestModel[][], string>>)(model => model[23][3].Name),
@@ -239,14 +239,14 @@ public class ExpressionHelperTest
         }
     }
 
-    public static TheoryData<Expression, Expression> EquivalentExpressions
+    public static TheoryData<LambdaExpression, LambdaExpression> EquivalentExpressions
     {
         get
         {
             var value = "Test";
             var Model = "Test";
 
-            return new TheoryData<Expression, Expression>
+            return new TheoryData<LambdaExpression, LambdaExpression>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
@@ -283,7 +283,7 @@ public class ExpressionHelperTest
         }
     }
 
-    public static TheoryData<Expression, Expression> NonEquivalentExpressions
+    public static TheoryData<LambdaExpression, LambdaExpression> NonEquivalentExpressions
     {
         get
         {
@@ -292,7 +292,7 @@ public class ExpressionHelperTest
             var Model = "Test";
             var myModel = new TestModel();
 
-            return new TheoryData<Expression, Expression>
+            return new TheoryData<LambdaExpression, LambdaExpression>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),

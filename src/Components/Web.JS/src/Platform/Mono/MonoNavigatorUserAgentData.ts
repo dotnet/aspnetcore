@@ -3,15 +3,15 @@
 
 // can be removed once userAgentData is part of lib.dom.d.ts
 declare interface MonoNavigatorUserAgent extends Navigator {
-    readonly userAgentData: MonoUserAgentData;
+  readonly userAgentData: MonoUserAgentData;
 }
 
 declare interface MonoUserAgentData {
-    readonly brands: ReadonlyArray<MonoUserAgentDataBrandVersion>;
-    readonly platform: string;
+  readonly brands: ReadonlyArray<MonoUserAgentDataBrandVersion>;
+  readonly platform: string;
 }
 
 declare interface MonoUserAgentDataBrandVersion {
-    brand?: string;
-    version?: string;
+  brand?: string;
+  version?: string;
 }

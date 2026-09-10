@@ -3,11 +3,13 @@
 
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -126,13 +128,10 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
                 Logger.Reauthenticating();
                 _negotiateState.Dispose();
                 _negotiateState = null;
-                if (persistence != null)
-                {
-                    persistence.State = null;
-                }
+                persistence?.State = null;
             }
 
-            _negotiateState ??= Options.StateFactory.CreateInstance();
+            _negotiateState ??= Options.StateFactory.CreateInstance(GetChannelBindingToken());
 
             var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
             if (errorType != BlobErrorType.None)
@@ -204,7 +203,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
 
             if (_negotiateState.Protocol == "NTLM" && !Options.PersistNtlmCredentials)
             {
-                // NTLM was already put in the persitence cache on the prior request so we could complete the handshake.
+                // NTLM was already put in the persistence cache on the prior request so we could complete the handshake.
                 // Take it out if we don't want it to persist.
                 Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
                     "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");
@@ -409,6 +408,18 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
     {
         return Context.Features.Get<IConnectionItemsFeature>()?.Items
             ?? throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)} like Kestrel.");
+    }
+
+    private ReadOnlyMemory<byte> GetChannelBindingToken()
+    {
+        if (Request.IsHttps &&
+            Context.Features.Get<ITlsConnectionFeature>() is { } tlsConnectionFeature &&
+            tlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var channelBindingToken))
+        {
+            return channelBindingToken;
+        }
+
+        return default;
     }
 
     private void RegisterForConnectionDispose(IDisposable authState)

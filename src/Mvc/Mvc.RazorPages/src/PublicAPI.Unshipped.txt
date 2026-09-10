@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilderResourceCollectionExtensions
-static Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets(this Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder! builder, string? manifestPath = null) -> Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder!

@@ -27,7 +27,7 @@ public class HostStringTests
     [InlineData("1.2.3.4:5000", "1.2.3.4")]
     [InlineData("[2001:db8:a0b:12f0::1]:5000", "[2001:db8:a0b:12f0::1]")]
     [InlineData("本地主機:5000", "本地主機")]
-    public void Domain_ExtractsHostFromValue(string sourceValue, string expectedDomain)
+    public void Domain_ExtractsHostFromValue(string? sourceValue, string expectedDomain)
     {
         // Arrange
         var hostString = new HostString(sourceValue);
@@ -153,6 +153,9 @@ public class HostStringTests
     [InlineData(":", "localhost")]
     [InlineData("example.com:443", "*.example.com")]
     [InlineData(".example.com:443", "*.example.com")]
+    [InlineData("..example.com:443", "*.example.com")]
+    [InlineData("foo..example.com:443", "*.example.com")]
+    [InlineData("foo..bar.example.com:443", "*.example.com")]
     [InlineData("foo.com:443", "*.example.com")]
     [InlineData("foo.example.com.bar:443", "*.example.com")]
     [InlineData(".com:443", "*.com")]

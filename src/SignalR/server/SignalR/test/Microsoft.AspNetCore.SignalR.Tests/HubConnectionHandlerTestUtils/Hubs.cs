@@ -4,14 +4,29 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
+
+/// <summary>
+/// Applies an authorization requirement (via <see cref="IAuthorizationRequirementData"/>) that requires a
+/// <see cref="ClaimTypes.NameIdentifier"/> claim, without using any named policy or <see cref="IAuthorizeData"/>.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public sealed class NameIdentifierClaimRequirementAttribute : Attribute, IAuthorizationRequirementData
+{
+    public IEnumerable<IAuthorizationRequirement> GetRequirements()
+    {
+        yield return new ClaimsAuthorizationRequirement(ClaimTypes.NameIdentifier, allowedValues: null);
+    }
+}
 
 public class MethodHub : TestHub
 {
@@ -154,6 +169,11 @@ public class MethodHub : TestHub
     {
     }
 
+    [NameIdentifierClaimRequirement]
+    public void RequirementDataAuthMethod()
+    {
+    }
+
     [Authorize("test")]
     public void MultiParamAuthMethod(string s1, string s2)
     {
@@ -201,6 +221,11 @@ public class MethodHub : TestHub
         }
 
         return sb.ToString();
+    }
+
+    public async Task<string> StreamingConcatTwoStreams(ChannelReader<string> first, ChannelReader<string> second)
+    {
+        return await StreamingConcat(first) + await StreamingConcat(second);
     }
 
     public async Task StreamDontRead(ChannelReader<string> source)
@@ -1022,6 +1047,15 @@ public class LongRunningHub : Hub
         return 12;
     }
 
+    public async Task<int> CancelableInvocation(CancellationToken token)
+    {
+        _tcsService.StartedMethod.SetResult(null);
+        // Wait for cancellation. Test timeout is enforced by .DefaultTimeout() in the test itself.
+        await token.WaitForCancellationAsync();
+        _tcsService.EndMethod.SetResult(null);
+        return 42;
+    }
+
     public async Task<ChannelReader<string>> LongRunningStream()
     {
         _tcsService.StartedMethod.TrySetResult(null);
@@ -1380,6 +1414,11 @@ public class ServicesHub : TestHub
             total += await channelReader.ReadAsync();
         }
         return total + value;
+    }
+    
+    public int ServiceWithStringAttribute([FromService] Service1 service, string value)
+    {
+        return 115;
     }
 
     public int ServiceWithoutAttribute(Service1 service)

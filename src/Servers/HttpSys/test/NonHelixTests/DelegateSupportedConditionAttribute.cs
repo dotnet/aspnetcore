@@ -9,9 +9,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.NonHelixTests;
 public class DelegateSupportedConditionAttribute : Attribute, ITestCondition
 {
     private readonly bool _isSupported;
-    public DelegateSupportedConditionAttribute(bool isSupported) => _isSupported = isSupported;
+    private readonly bool _httpApiSupportsDelegation;
+    public DelegateSupportedConditionAttribute(bool isSupported)
+    {
+        _isSupported = isSupported;
+        try { _httpApiSupportsDelegation = HttpApi.SupportsDelegation; } catch { }
+    }
 
-    public bool IsMet => HttpApi.SupportsDelegation == _isSupported;
+    public bool IsMet =>  _httpApiSupportsDelegation == _isSupported;
 
     public string SkipReason => $"Http.Sys does {(_isSupported ? "not" : "")} support delegating requests";
 }

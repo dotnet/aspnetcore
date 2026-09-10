@@ -11,10 +11,10 @@
 ~Microsoft.AspNetCore.Session.DistributedSessionStore.DistributedSessionStore(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Session.ISessionStore.Create(string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, bool isNewSessionKey) -> Microsoft.AspNetCore.Http.ISession
 ~Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.SessionOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.SessionOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 ~static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookieName -> string
 ~static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookiePath -> string
 Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions
@@ -51,9 +51,9 @@ Microsoft.AspNetCore.Session.SessionMiddleware
 Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Session.SessionMiddleware.SessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.AspNetCore.Session.ISessionStore! sessionStore, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions!>! options) -> void
 Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions
-static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.SessionOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.SessionOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookieName -> string!
 static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookiePath -> string!

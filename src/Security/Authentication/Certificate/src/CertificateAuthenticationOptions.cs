@@ -11,6 +11,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate;
 public class CertificateAuthenticationOptions : AuthenticationSchemeOptions
 {
     /// <summary>
+    /// Initializes a new instance of <see cref="CertificateAuthenticationOptions"/>.
+    /// </summary>
+    public CertificateAuthenticationOptions()
+    {
+        Events = new CertificateAuthenticationEvents();
+    }
+
+    /// <summary>
     /// Value indicating the types of certificates accepted by the authentication middleware.
     /// </summary>
     /// <value>

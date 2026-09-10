@@ -59,7 +59,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 {
     private readonly IDataProtector _dataProtector;
     private readonly ILogger<ServerComponentDeserializer> _logger;
-    private readonly RootComponentTypeCache _rootComponentTypeCache;
+    private readonly RootTypeCache _RootTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
 
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
@@ -72,7 +72,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
-        RootComponentTypeCache rootComponentTypeCache,
+        RootTypeCache RootTypeCache,
         ComponentParameterDeserializer parametersDeserializer)
     {
         // When we protect the data we use a time-limited data protector with the
@@ -87,13 +87,14 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             .ToTimeLimitedDataProtector();
 
         _logger = logger;
-        _rootComponentTypeCache = rootComponentTypeCache;
+        _RootTypeCache = RootTypeCache;
         _parametersDeserializer = parametersDeserializer;
     }
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markersTypeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(IEnumerable<ComponentMarker>));
+        var markers = (IEnumerable<ComponentMarker>)JsonSerializer.Deserialize(serializedComponentRecords, markersTypeInfo)!;
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -206,8 +207,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
     {
         parameters = default;
-        componentType = _rootComponentTypeCache
-            .GetRootComponent(serverComponent.AssemblyName, serverComponent.TypeName);
+        componentType = _RootTypeCache
+            .GetRootType(serverComponent.AssemblyName, serverComponent.TypeName);
 
         if (componentType == null)
         {
@@ -256,9 +257,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         try
         {
-            result = JsonSerializer.Deserialize<ServerComponent>(
-                unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(ServerComponent));
+            result = (ServerComponent)JsonSerializer.Deserialize(unprotected, typeInfo)!;
             return true;
         }
         catch (Exception e)
@@ -291,14 +291,16 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out RootComponentOperationBatch? result)
+    public bool TryDeserializeRootComponentOperations(
+        string serializedComponentOperations,
+        [NotNullWhen(true)] out RootComponentOperationBatch? result,
+        bool deserializeMarkers = true)
     {
         int[]? seenComponentIdsStorage = null;
         try
         {
-            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
-                serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(RootComponentOperationBatch));
+            result = (RootComponentOperationBatch)JsonSerializer.Deserialize(serializedComponentOperations, typeInfo)!;
             var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128
@@ -327,6 +329,13 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
                     result = null;
                     return false;
+                }
+
+                if (!deserializeMarkers)
+                {
+                    // If we are not deserializing markers, we can skip the rest of the processing.
+                    operation.Descriptor = null;
+                    continue;
                 }
 
                 if (!TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))

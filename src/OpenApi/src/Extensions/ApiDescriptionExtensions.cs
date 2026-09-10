@@ -4,32 +4,58 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.OpenApi.Models;
 
 internal static class ApiDescriptionExtensions
 {
     /// <summary>
-    /// Maps the HTTP method of the ApiDescription to the OpenAPI <see cref="OperationType"/> .
+    /// Maps the HTTP method of the ApiDescription to the HttpMethod.
     /// </summary>
-    /// <param name="apiDescription">The ApiDescription to resolve an operation type from.</param>
-    /// <returns>The <see cref="OperationType"/> associated with the given <paramref name="apiDescription"/>.</returns>
-    public static OperationType GetOperationType(this ApiDescription apiDescription) =>
-        apiDescription.HttpMethod?.ToUpperInvariant() switch
+    /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
+    /// <returns>
+    /// The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, including custom methods
+    /// when the provided HTTP method token is valid. Returns <see langword="null"/> when the HTTP method is missing or invalid.
+    /// </returns>
+    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription)
+    {
+        var httpMethod = apiDescription.HttpMethod;
+        if (string.IsNullOrWhiteSpace(httpMethod))
         {
-            "GET" => OperationType.Get,
-            "POST" => OperationType.Post,
-            "PUT" => OperationType.Put,
-            "DELETE" => OperationType.Delete,
-            "PATCH" => OperationType.Patch,
-            "HEAD" => OperationType.Head,
-            "OPTIONS" => OperationType.Options,
-            "TRACE" => OperationType.Trace,
-            _ => throw new InvalidOperationException($"Unsupported HTTP method: {apiDescription.HttpMethod}"),
+            return null;
+        }
+
+        var normalizedHttpMethod = httpMethod.Trim();
+
+        return normalizedHttpMethod.ToUpperInvariant() switch
+        {
+            "GET" => HttpMethod.Get,
+            "POST" => HttpMethod.Post,
+            "PUT" => HttpMethod.Put,
+            "DELETE" => HttpMethod.Delete,
+            "PATCH" => HttpMethod.Patch,
+            "HEAD" => HttpMethod.Head,
+            "OPTIONS" => HttpMethod.Options,
+            "TRACE" => HttpMethod.Trace,
+            "QUERY" => HttpMethod.Query,
+            _ => TryCreateHttpMethod(normalizedHttpMethod),
         };
+
+        static HttpMethod? TryCreateHttpMethod(string httpMethod)
+        {
+            try
+            {
+                return new HttpMethod(httpMethod);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
+    }
 
     /// <summary>
     /// Maps the relative path included in the ApiDescription to the path
@@ -48,7 +74,7 @@ internal static class ApiDescriptionExtensions
             return "/";
         }
         var strippedRoute = new StringBuilder();
-        var routePattern = RoutePatternFactory.Parse(apiDescription.RelativePath);
+        var routePattern = apiDescription.RoutePattern ?? RoutePatternFactory.Parse(apiDescription.RelativePath);
         for (var i = 0; i < routePattern.PathSegments.Count; i++)
         {
             strippedRoute.Append('/');

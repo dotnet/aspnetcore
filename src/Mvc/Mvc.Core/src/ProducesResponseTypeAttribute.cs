@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -86,6 +86,11 @@ public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProv
 
     // Internal for testing
     internal MediaTypeCollection? ContentTypes => _contentTypes;
+
+    /// <summary>
+    /// Gets or sets the description of the response.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <inheritdoc />
     void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)

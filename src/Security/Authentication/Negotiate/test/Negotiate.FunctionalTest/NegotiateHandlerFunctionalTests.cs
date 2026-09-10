@@ -89,7 +89,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
         var result = await client.GetAsync("/Authenticate");
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
         Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
-        Assert.Equal(version, result.Version);
+        Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades to HTTP/1.1 for Windows auth (dotnet/runtime#123827).
     }
 
     [ConditionalTheory]

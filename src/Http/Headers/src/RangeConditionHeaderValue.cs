@@ -127,7 +127,7 @@ public class RangeConditionHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeConditionHeaderValue? parsedValue)
     {
         var index = 0;
-        return Parser.TryParseValue(input, ref index, out parsedValue!);
+        return Parser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue? parsedValue)
@@ -161,6 +161,13 @@ public class RangeConditionHeaderValue
             if (entityTagLength == 0)
             {
                 return 0;
+            }
+
+            if (entityTag == null)
+            {
+                // The inner parser consumed input without producing a value (malformed quoted-string).
+                // Propagate the consumed length so the recovery loop can skip past it. parsedValue stays null.
+                return entityTagLength;
             }
 
             current = current + entityTagLength;

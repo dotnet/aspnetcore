@@ -199,7 +199,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52783")]
     public void Cancel_CanTrigger()
     {
         Browser.MountTestComponent<DialogEventsComponent>();
@@ -279,11 +278,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void PreventDefault_DotNotApplyByDefault()
+    public void PreventDefault_DoNotApplyByDefault()
     {
         var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
         appElement.FindElement(By.Id("form-2-button")).Click();
-        Assert.Contains("about:blank", Browser.Url);
+
+        // The URL should change because the submit event is not prevented
+        Browser.Contains("about:blank", () => Browser.Url);
     }
 
     [Fact]
@@ -333,9 +334,9 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var element = Browser.Exists(By.Id("disabled-div"));
         var eventLog = Browser.Exists(By.Id("event-log"));
 
-        Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+        Browser.Equal(string.Empty, () => eventLog.GetDomProperty("value"));
         element.Click();
-        Browser.Equal("Got event on div", () => eventLog.GetAttribute("value"));
+        Browser.Equal("Got event on div", () => eventLog.GetDomProperty("value"));
     }
 
     [Theory]
@@ -348,13 +349,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var element = Browser.Exists(By.CssSelector(elementSelector));
         var eventLog = Browser.Exists(By.Id("event-log"));
 
-        Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+        Browser.Equal(string.Empty, () => eventLog.GetDomProperty("value"));
         element.Click();
 
         // It's no use observing that the log is still empty, since maybe the UI just hasn't updated yet
         // To be sure that the preceding action has no effect, we need to trigger a different action that does have an effect
         Browser.Exists(By.Id("enabled-button")).Click();
-        Browser.Equal("Got event on enabled button", () => eventLog.GetAttribute("value"));
+        Browser.Equal("Got event on enabled button", () => eventLog.GetDomProperty("value"));
     }
 
     [Fact]
@@ -366,7 +367,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var eventLog = Browser.Exists(By.Id("event-log"));
 
         SendKeysSequentially(input, "abc");
-        Browser.Equal("abc", () => input.GetAttribute("value"));
+        Browser.Equal("abc", () => input.GetDomProperty("value"));
         Browser.Equal(
             "Change event on item First with value a\n" +
             "Change event on item First with value ab\n" +
@@ -432,5 +433,55 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         {
             target.SendKeys(c.ToString());
         }
+    }
+
+    [Fact]
+    public void ClipboardEvents_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var target = Browser.Exists(By.Id("clipboard-target"));
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('clipboard-target');
+            el.dispatchEvent(new ClipboardEvent('copy', { bubbles: true }));
+            el.dispatchEvent(new ClipboardEvent('cut', { bubbles: true }));
+            el.dispatchEvent(new ClipboardEvent('paste', { bubbles: true }));");
+
+        Browser.Equal("copy,cut,paste,", () => output.Text);
+    }
+
+    [Fact]
+    public void ProgressEvents_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('progress-target');
+            el.dispatchEvent(new ProgressEvent('progress', { bubbles: true }));
+            el.dispatchEvent(new ProgressEvent('loadstart', { bubbles: true }));
+            el.dispatchEvent(new ProgressEvent('loadend', { bubbles: true }));");
+
+        Browser.Equal("progress,loadstart,loadend,", () => output.Text);
+    }
+
+    [Fact]
+    public void ErrorEvent_CanTrigger()
+    {
+        Browser.MountTestComponent<ClipboardProgressErrorEventComponent>();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        Browser.ExecuteJavaScript(@"
+            var el = document.getElementById('error-target');
+            el.dispatchEvent(new ErrorEvent('error', { bubbles: true, message: 'test error' }));");
+
+        Browser.Equal("error,", () => output.Text);
     }
 }

@@ -25,8 +25,7 @@ internal sealed class HtmlAttributePropertyHelper
     /// <summary>
     /// Part of <see cref="MetadataUpdateHandlerAttribute"/> contract.
     /// </summary>
-    /// <param name="_"></param>
-    public static void UpdateCache(Type _)
+    public static void ClearCache(Type[] _)
     {
         ReflectionCache.Clear();
     }

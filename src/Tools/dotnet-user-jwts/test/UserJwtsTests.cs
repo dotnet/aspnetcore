@@ -1,14 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Tools.Internal;
-using Xunit.Abstractions;
-using System.Text.RegularExpressions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.IdentityModel.Tokens.Jwt;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Tools.Internal;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -63,6 +68,140 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_CreatesDefaultAppSettingsFileWhenMissing()
+    {
+        var project = Path.Combine(fixture.CreateProject(createAppSettings: false), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(["create", "--project", project]);
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+    }
+
+    [Fact]
+    public void Create_SupportsFileBasedAppFilePath()
+    {
+        var appFile = fixture.CreateFileBasedApp(createProjectLaunchSettings: true);
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            var output = _console.GetOutput();
+
+            Assert.Contains("New JWT saved", output);
+            Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+
+            var match = Regex.Match(output, "New JWT saved with ID '(.*?)'");
+            Assert.True(match.Success, output);
+            var id = match.Groups[1].Value;
+            _console.ClearOutput();
+
+            app.Run(["print", id, "--file", appFile]);
+            Assert.Contains("Audience(s): https://localhost:7001, http://localhost:7000", _console.GetOutput());
+            _console.ClearOutput();
+
+            app.Run(["list", "--file", appFile, "--output", "json"]);
+            var jwts = JsonSerializer.Deserialize<Dictionary<string, Jwt>>(_console.GetOutput());
+            Assert.NotNull(jwts);
+            Assert.Contains(id, jwts.Keys);
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
+    public void List_RejectsProjectAndFileOptionsTogether()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        app.Run(["list", "--project", project, "--file", appFile]);
+
+        Assert.Contains(Resources.ProjectAndFileOptions_Error, _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_RejectsFileBasedAppProjectPath()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        app.Run(["list", "--project", appFile]);
+
+        Assert.Contains(Resources.ProjectOption_FileBasedAppNotSupported, _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_RejectsFileBasedAppFilePathThatDoesNotExist()
+    {
+        var appFile = Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString(), "does_not_exist.cs");
+        var app = new Program(_console);
+
+        app.Run(["list", "--file", appFile]);
+
+        Assert.Contains(Resources.FileOption_FileNotFound, _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_RejectsFileBasedAppFilePathWithInvalidExtension()
+    {
+        var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
+        try
+        {
+            var appFile = Path.Combine(appDirectory.FullName, "foo.txt");
+            File.WriteAllText(appFile, string.Empty);
+            var app = new Program(_console);
+
+            app.Run(["list", "--file", appFile]);
+
+            Assert.Contains(Resources.FileOption_InvalidExtension, _console.GetOutput());
+        }
+        finally
+        {
+            Directory.Delete(appDirectory.FullName, true);
+        }
+    }
+
+    [Fact]
+    public async Task Create_TokenAcceptedByJwtBearerHandler()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var secrets = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
+        var app = new Program(_console);
+
+        app.Run(["create", "--project", project, "-o", "token"]);
+        var token = _console.GetOutput().Trim();
+
+        var builder = WebApplication.CreateEmptyBuilder(new());
+        builder.WebHost.UseTestServer();
+
+        builder.Configuration.AddJsonFile(appsettings);
+        builder.Configuration.AddJsonFile(secrets);
+
+        builder.Services.AddRouting();
+        builder.Services.AddAuthentication().AddJwtBearer();
+        builder.Services.AddAuthorization();
+
+        using var webApp = builder.Build();
+        webApp.MapGet("/secret", (ClaimsPrincipal user) => $"Hello {user.Identity?.Name}!")
+            .RequireAuthorization();
+
+        await webApp.StartAsync();
+
+        var client = webApp.GetTestClient();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        Assert.Equal($"Hello {Environment.UserName}!", await client.GetStringAsync("/secret"));
+    }
+
+    [Fact]
     public void Create_CanModifyExistingScheme()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -75,6 +214,23 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
         Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
         app.Run(["create", "--project", project, "--issuer", "new-issuer"]);
+        appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+    }
+
+    [Fact]
+    public void Create_CanModifyExistingSchemeInGivenAppSettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+        app.Run(["create", "--project", project, "--issuer", "new-issuer", "--appsettings-file", "appsettings.Local.json"]);
         appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
         Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
     }
@@ -155,6 +311,49 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Remove_RemovesGeneratedToken_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+            var id = matches.SingleOrDefault().Groups[1].Value;
+            app.Run(["create", "--file", appFile, "--scheme", "Scheme2"]);
+
+            app.Run(["remove", id, "--file", appFile]);
+            var appsettingsContent = File.ReadAllText(appsettings);
+            Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+            Assert.Contains("Scheme2", appsettingsContent);
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
+    public void Remove_RemovesGeneratedTokenInGivenAppsettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json", "--scheme", "Scheme2" });
+
+        app.Run(new[] { "remove", id, "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.Contains("Scheme2", appsettingsContent);
+    }
+
+    [Fact]
     public void Clear_RemovesGeneratedTokens()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -173,6 +372,49 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Clear_RemovesGeneratedTokensInGivenAppsettings()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Local.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json" });
+        app.Run(new[] { "create", "--project", project, "--appsettings-file", "appsettings.Local.json", "--scheme", "Scheme2" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        app.Run(new[] { "clear", "--project", project, "--appsettings-file", "appsettings.Local.json", "--force" });
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.DoesNotContain("Scheme2", appsettingsContent);
+    }
+
+    [Fact]
+    public void Clear_RemovesGeneratedTokens_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            app.Run(["create", "--file", appFile, "--scheme", "Scheme2"]);
+
+            Assert.Contains("New JWT saved", _console.GetOutput());
+
+            app.Run(["clear", "--file", appFile, "--force"]);
+            var appsettingsContent = File.ReadAllText(appsettings);
+            Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+            Assert.DoesNotContain("Scheme2", appsettingsContent);
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
     public void Key_CanResetSigningKey()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -184,6 +426,27 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         app.Run(new[] { "key", "--reset", "--force", "--project", project });
         Assert.Contains("New signing key created:", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Key_CanResetSigningKey_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            app.Run(["key", "--file", appFile]);
+            Assert.Contains("Signing Key:", _console.GetOutput());
+
+            app.Run(["key", "--reset", "--force", "--file", appFile]);
+            Assert.Contains("New signing key created:", _console.GetOutput());
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
     }
 
     [Fact]
@@ -626,6 +889,19 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
+
+        var app = new Program(_console);
+        app.Run(["create", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
+    }
+
+    [Fact]
     public void Delete_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -638,6 +914,19 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Delete_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
+
+        var app = new Program(_console);
+        app.Run(["remove", "some-id", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
+    }
+
+    [Fact]
     public void Clear_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -647,6 +936,19 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         app.Run(["clear"]);
 
         Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Clear_CanHandleAppsettingsOption_WithNoFile()
+    {
+        var projectPath = fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+        var expectedAppsettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.DoesNotExist.json");
+
+        var app = new Program(_console);
+        app.Run(["clear", "--appsettings-file", "appsettings.DoesNotExist.json"]);
+
+        Assert.Contains($"Could not find Appsettings file '{expectedAppsettingsPath}'. Check the filename and that the file exists.", _console.GetOutput());
     }
 
     [Fact]
@@ -704,6 +1006,21 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
         Assert.Contains("New JWT saved", _console.GetOutput());
     }
 
+    [Fact]
+    public void Create_CanHandleRelativePathAsOptionForAppsettingsOption()
+    {
+        var projectPath = fixture.CreateProject();
+        var tempPath = Path.GetTempPath();
+        var targetPath = Path.GetRelativePath(tempPath, projectPath);
+        Directory.SetCurrentDirectory(tempPath);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", targetPath, "--appsettings-file", "appsettings.Local.json" });
+        
+        Assert.DoesNotContain($"Could not find Appsettings file '{projectPath}'. Check the filename and that the file exists.", _console.GetOutput());
+        Assert.Contains("New JWT saved", _console.GetOutput());
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void Create_CreatesFileWithUserOnlyUnixFileMode()
@@ -717,5 +1034,17 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         Assert.NotNull(app.UserJwtsFilePath);
         Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(app.UserJwtsFilePath));
+    }
+
+    private static void DeleteUserJwtsDirectory(Program app)
+    {
+        if (app.UserJwtsFilePath is { } userJwtsFilePath)
+        {
+            var userJwtsDirectory = Path.GetDirectoryName(userJwtsFilePath);
+            if (userJwtsDirectory is not null && Directory.Exists(userJwtsDirectory))
+            {
+                Directory.Delete(userJwtsDirectory, true);
+            }
+        }
     }
 }

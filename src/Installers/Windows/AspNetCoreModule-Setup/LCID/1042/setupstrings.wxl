@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core Module"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core Module V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS 런타임"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="IIS에 ASP.NET 코어 애플리케이션 지원을 추가합니다."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Microsoft ASP.NET Core 모듈 for IIS Express"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Microsoft ASP.NET Core 모듈 V2 for IIS Express"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 이상이 설치되어 있지 않습니다."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="이 컴퓨터에 호환되지 않는 제품([CONFLICTING_PRODUCT_NAME])이(가) 있습니다. [ProductName] 설치를 계속할 수 없습니다. 이 제품을 설치하려면 제어 패널의 프로그램 추가/제거에서 [CONFLICTING_PRODUCT_NAME]을(를) 제거하세요."/>
+  <String Id="AdminRequired" Overridable="yes" Value="[ProductName]을(를) 설치하려면 관리자 권한이 필요합니다."/>
+  <String Id="IIS7Only" Overridable="yes" Value="[ProductName]을(를) 사용하려면 IIS 버전 7.0이 필요합니다."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="[ProductName]을(를) 설치하려면 IIS 버전 7.0 이상이 필요합니다."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="[ProductName]을(를) 설치하려면 IIS 버전 7.5 이상이 필요합니다."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="[ProductName]을(를) 설치하려면 IIS 버전 7 또는 7.5가 필요합니다."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="[ProductName]을(를) 설치하려면 IIS 버전 8.0 이상이 필요합니다."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="이 컴퓨터에 [ProductName] 베타 버전이 설치되어 있습니다."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="이 컴퓨터에 [ProductName] 최신 버전이 설치되어 있습니다."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="이 컴퓨터에 이미 다른 [ProductName] 인스턴스가 설치되어 있어 설치를 계속할 수 없습니다. 먼저 제거한 후 설치를 다시 시작하세요."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="[ProductName]을(를) 사용하려면 IIS 7.0 CoreWebEngine 및 W3SVC 기능이 설치되어 있어야 합니다."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="[ProductName]을(를) 사용하려면 IIS 관리 콘솔이 설치되어 있어야 합니다."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="[ProductName]을(를) 설치하기 전에 Windows Process Activation Service(WAS)와 웹 관리 서비스(WMSvc)를 모두 중지하세요. [ProductName]을(를) 설치한 후 서비스를 시작해야 합니다."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="[ProductName]을(를) 설치하려면 IIS 메타베이스가 필요합니다."/>
+  <String Id="LaunchCondition_32BIT" Value="64비트 버전의 [ProductName](는) 32비트 버전의 Microsoft Windows에 설치할 수 없습니다."/>
+  <String Id="LaunchCondition_64BIT" Value="32비트 버전의 [ProductName]은(는) 64비트 버전의 Microsoft Windows에 설치할 수 없습니다."/>
+  <String Id="NetFX2OrGreaterRequired" Value="[ProductName]을(를) 설치하려면 Microsoft .NET Framework 버전 2.0 이상이 필요합니다."/>
+  <String Id="NetFX35OrGreaterRequired" Value="[ProductName]을(를) 설치하려면 Microsoft .NET Framework 버전 3.5 이상이 필요합니다. 서버 관리자에서 '기능 추가'를 사용해 Microsoft .NET 버전 3.5를 설치하세요."/>
+  <String Id="NetFX4OrGreaterRequired" Value="[ProductName]을(를) 설치하려면 Microsoft .NET Framework 버전 4.0 이상이 필요합니다."/>
+  <String Id="NetFX20SP1IsRequired" Value="[ProductName]을(를) 설치하기 전에 Microsoft .NET Framework 버전 2.0 서비스 팩 1 이상을 설치하세요."/>
+  <String Id="WindowsUpdateEnabled" Value="Windows 업데이트(wuauserv) 서비스는 비활성화할 수 없습니다. [ProductName] 설치에 필요합니다."/>
+  <String Id="GetFromOSforWin7" Value="PowerShell 스냅인은 Windows 운영 체제의 일부입니다. '프로그램 및 기능' 또는 '서버 관리자'에서 설치하세요."/>
+  <String Id="WebPI3OrGreaterRequired" Value="[ProductName]을(를) 설치하려면 Microsoft 웹 플랫폼 설치 관리자 버전 3.0 이상이 필요합니다."/>
+
+  <String Id="Error30001" Overridable="yes" Value="설치 프로그램이 공유 구성을 감지하지 못했습니다."/>
+  <String Id="Error30002" Overridable="yes" Value="IIS에서 공유 구성이 활성화되어 있습니다. 공유 구성을 사용하는 경우 [ProductName] 설치를 지원하지 않습니다. 이 기능을 설치하기 전에 공유 구성을 비활성화하세요."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="[ProductName]을(를) 설치하기 전에 World Wide Web 게시 서비스(W3SVC)를 중지하세요. 설치 후 서비스를 다시 시작해야 합니다."/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell 관리 콘솔"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell 스냅인"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell 스냅인을 사용하려면 PowerShell v1.0 또는 v2.0이 설치되어 있어야 합니다."/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell 스냅인을 사용하려면 WAS와 구성이 설치되어 있어야 합니다."/>
+  <String Id="TestBogusString" Overridable="yes" Value="이 문자열은 잘못된 문자열입니다."/>
+
+</WixLocalization>

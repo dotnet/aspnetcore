@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -30,6 +29,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 [RequiresDynamicCode("OpenApiGenerator performs reflection to generate OpenAPI descriptors. This cannot be statically analyzed.")]
 internal sealed class OpenApiGenerator
 {
+    private static readonly IComparer<OpenApiTag> _openApiTagComparer = Comparer<OpenApiTag>.Create(
+        static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
 
@@ -198,7 +199,7 @@ internal sealed class OpenApiGenerator
 
             // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
-            var responseContent = new Dictionary<string, OpenApiMediaType>();
+            var responseContent = new Dictionary<string, IOpenApiMediaType>();
 
             foreach (var contentType in contentTypes)
             {
@@ -270,7 +271,7 @@ internal sealed class OpenApiGenerator
         }
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
+        var requestBodyContent = new Dictionary<string, IOpenApiMediaType>();
 
         if (acceptsMetadata is not null)
         {
@@ -322,19 +323,23 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private HashSet<OpenApiTagReference> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
+        var document = new OpenApiDocument();
+
+        document.Tags ??= new SortedSet<OpenApiTag>(_openApiTagComparer);
 
         if (metadataList.Count > 0)
         {
-            var tags = new List<OpenApiTag>();
+            var tags = new HashSet<OpenApiTagReference>();
 
             foreach (var metadataItem in metadataList)
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    tags.Add(new OpenApiTag() { Name = tag });
+                    document.Tags.Add(new OpenApiTag { Name = tag });
+                    tags.Add(new OpenApiTagReference(tag, document));
                 }
             }
 
@@ -354,13 +359,14 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
+        document.Tags.Add(new OpenApiTag { Name = controllerName });
+        return [new(controllerName, document)];
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
+    private List<IOpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache.Instance);
-        var openApiParameters = new List<OpenApiParameter>();
+        var openApiParameters = new List<IOpenApiParameter>();
 
         foreach (var parameter in parameters)
         {
@@ -420,7 +426,7 @@ internal sealed class OpenApiGenerator
         {
             return (true, null, null);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                 parameter.ParameterType == typeof(HttpContext) ||
                 parameter.ParameterType == typeof(HttpRequest) ||
                 parameter.ParameterType == typeof(HttpResponse) ||
@@ -443,7 +449,9 @@ internal sealed class OpenApiGenerator
                 return (false, ParameterLocation.Query, null);
             }
         }
-        else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
+        else if (parameter.ParameterType == typeof(IFormFile) ||
+                 parameter.ParameterType == typeof(IFormFileCollection) ||
+                 parameter.ParameterType.IsJsonPatchDocument())
         {
             return (true, null, null);
         }

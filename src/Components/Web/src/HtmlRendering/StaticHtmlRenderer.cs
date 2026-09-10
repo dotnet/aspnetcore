@@ -21,7 +21,6 @@ public partial class StaticHtmlRenderer : Renderer
 {
     private static readonly RendererInfo _componentPlatform = new RendererInfo("Static", isInteractive: false);
 
-    private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly NavigationManager? _navigationManager;
 
     /// <summary>

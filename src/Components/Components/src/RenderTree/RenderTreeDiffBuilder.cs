@@ -163,7 +163,7 @@ internal static class RenderTreeDiffBuilder
                             //     we can pick either one to handle on this iteration, and the other will be
                             //     found and handled on the next iteration
                             // So all cases can be handled by the following simple criterion, which is pleasingly
-                            // symetrically opposite the case for newKey==null.
+                            // symmetrically opposite the case for newKey==null.
                             action = newKeyIsInOldTree ? DiffAction.Delete : DiffAction.Insert;
                         }
 
@@ -684,7 +684,7 @@ internal static class RenderTreeDiffBuilder
                         var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldFrameIndex);
                         var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
                         var newParameters = new ParameterView(newParametersLifetime, newTree, newFrameIndex);
-                        var isHotReload = HotReloadManager.Default.MetadataUpdateSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
+                        var isHotReload = HotReloadManager.IsSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
 
                         if (isHotReload && newParameters.HasRemovedDirectParameters(oldParameters))
                         {
@@ -746,8 +746,48 @@ internal static class RenderTreeDiffBuilder
             // We don't handle attributes here, they have their own diff logic.
             // See AppendDiffEntriesForAttributeFrame
             default:
-                throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameTypeField}");
+                throw new NotImplementedException(CreateDiffErrorMessage(ref diffContext, newFrameIndex));
         }
+    }
+
+    private static string CreateDiffErrorMessage(ref DiffContext diffContext, int newFrameIndex)
+    {
+        var newTree = diffContext.NewTree;
+        var unsupportedFrameType = newTree[newFrameIndex].FrameTypeField;
+
+        // Build component hierarchy path
+        var componentPath = BuildComponentPath(diffContext.Renderer, diffContext.ComponentId);
+
+        // Build frame types descriptor
+        var frameTypesDescriptor = BuildFrameTypeDescriptor(newTree, newFrameIndex);
+
+        return $"Encountered an unsupported frame type during diffing {unsupportedFrameType} for Component Path: '{componentPath}' on tree with length '{newTree.Length}' and contents '{frameTypesDescriptor}'.";
+    }
+
+    private static string BuildFrameTypeDescriptor(RenderTreeFrame[] renderTree, int frameIndex)
+    {
+        var frameTypes = new List<string>();
+        for (var i = 0; i <= frameIndex && i < renderTree.Length; i++)
+        {
+            frameTypes.Add(renderTree[i].FrameTypeField.ToString());
+        }
+
+        return string.Join(", ", frameTypes);
+    }
+
+    private static string BuildComponentPath(Renderer renderer, int componentId)
+    {
+        var componentPath = new List<string>();
+        var currentComponentState = renderer.GetRequiredComponentState(componentId);
+
+        while (currentComponentState is not null)
+        {
+            var componentType = currentComponentState.Component.GetType();
+            componentPath.Insert(0, componentType.Name);
+            currentComponentState = currentComponentState.ParentComponentState;
+        }
+
+        return string.Join(" -> ", componentPath);
     }
 
     // This should only be called for attributes that have the same name. This is an

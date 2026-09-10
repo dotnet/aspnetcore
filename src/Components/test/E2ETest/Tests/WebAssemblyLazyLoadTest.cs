@@ -114,7 +114,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         Assert.True(renderedElement.Displayed);
 
         // FocusOnNavigate runs after the lazily-loaded page and focuses the correct element
-        Browser.Equal("lazy-page", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
+        Browser.Equal("lazy-page", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("id"));
     }
 
     [Fact]

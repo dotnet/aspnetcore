@@ -48,7 +48,13 @@ public class StatusCodePagesMiddleware
             statusCodeFeature.Enabled = false;
         }
 
+        // Attach pathFormat to HttpContext.Items early in the pipeline
+        context.Items[nameof(StatusCodePagesOptions)] = _options.PathFormat;
+
         await _next(context);
+
+        // Remove pathFormat from HttpContext.Items after handler execution
+        context.Items.Remove(nameof(StatusCodePagesOptions));
 
         if (!statusCodeFeature.Enabled)
         {

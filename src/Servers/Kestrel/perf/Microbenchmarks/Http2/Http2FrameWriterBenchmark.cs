@@ -24,7 +24,7 @@ public class Http2FrameWriterBenchmark
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
 
         var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         _pipe = new Pipe(options);

@@ -10,7 +10,6 @@
 #define FREE_MEM(ptr) (VOID)LocalFree( (HLOCAL)(ptr) )
 
 
-
 PTRACE_LOG
 CreateTraceLog(
     IN LONG LogSize,
@@ -46,7 +45,7 @@ Return Value:
     ULONG ulEntrySize = 0;
     ULONG ulTmpResult = 0;
     ULONG ulExtraBytesInHeader = 0;
-    PTRACE_LOG log = NULL;
+    PTRACE_LOG log = nullptr;
     HRESULT hr = S_OK;
 
     //
@@ -67,14 +66,14 @@ Return Value:
     ulExtraBytesInHeader = (ULONG) ExtraBytesInHeader;
 
     //
-    // Check if the multiplication operation will overflow a LONG 
+    // Check if the multiplication operation will overflow a LONG
     // ulTotalSize = LogSize * EntrySize;
     //
     hr = ULongMult( ulLogSize, ulEntrySize, &ulTotalSize );
     if ( FAILED(hr) )
-    { 
+    {
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -83,26 +82,26 @@ Return Value:
     //
     hr = ULongAdd( (ULONG) sizeof(TRACE_LOG), ulExtraBytesInHeader, &ulTmpResult );
     if ( FAILED(hr) )
-    { 
+    {
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
-  
+
     //
     // check for overflow in addition operation.
     // ulTotalSize = ulTotalSize + ulTmpResult;
     //
     hr = ULongAdd( ulTmpResult, ulTotalSize, &ulTotalSize );
     if ( FAILED(hr) )
-    { 
+    {
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     if ( ulTotalSize > (ULONG) 0x7FFFFFFF )
-    { 
+    {
         SetLastError( ERROR_ARITHMETIC_OVERFLOW );
-        return NULL;
+        return nullptr;
     }
 
     //
@@ -115,7 +114,7 @@ Return Value:
     // Initialize it.
     //
 
-    if( log != NULL ) {
+    if( log != nullptr ) {
 
         RtlZeroMemory( log, ulTotalSize );
 
@@ -130,7 +129,6 @@ Return Value:
 
 }   // CreateTraceLog
 
-
 VOID
 DestroyTraceLog(
     IN PTRACE_LOG Log
@@ -151,7 +149,7 @@ Return Value:
 
 --*/
 {
-        if ( Log != NULL ) {
+        if ( Log != nullptr ) {
         //DBG_ASSERT( Log->Signature == TRACE_LOG_SIGNATURE );
 
         Log->Signature = TRACE_LOG_SIGNATURE_X;
@@ -160,7 +158,6 @@ Return Value:
 
 }   // DestroyTraceLog
 
-
 LONG
 WriteTraceLog(
     IN PTRACE_LOG Log,
@@ -187,8 +184,8 @@ Return Value:
 --*/
 {
 
-    PUCHAR target;
-    ULONG index;
+    PUCHAR target = nullptr;
+    ULONG index = 0;
 
     //DBG_ASSERT( Log != NULL );
     //DBG_ASSERT( Log->Signature == TRACE_LOG_SIGNATURE );
@@ -213,7 +210,6 @@ Return Value:
     return index;
 }   // WriteTraceLog
 
-
 VOID
 ResetTraceLog(
     IN PTRACE_LOG Log
@@ -231,4 +227,3 @@ ResetTraceLog(
     Log->NextEntry = -1;
 
 }   // ResetTraceLog
-

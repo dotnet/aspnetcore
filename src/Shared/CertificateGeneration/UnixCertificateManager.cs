@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
@@ -31,6 +32,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
     private const string BrowserFamilyChromium = "Chromium";
     private const string BrowserFamilyFirefox = "Firefox";
+
+    private const string PowerShellCommand = "powershell.exe";
+    private const string WslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop";
+    private const string WslInteropLatePath = "/proc/sys/fs/binfmt_misc/WSLInterop-late";
+    private const string WslFriendlyName = AspNetHttpsOidFriendlyName + " (WSL)";
 
     private const string OpenSslCommand = "openssl";
     private const string CertUtilCommand = "certutil";
@@ -62,18 +68,32 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Building the chain will check whether dotnet trusts the cert.  We could, instead,
         // enumerate the Root store and/or look for the file in the OpenSSL directory, but
         // this tests the real-world behavior.
-        using var chain = new X509Chain();
-        // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
-        // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
-        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        if (chain.Build(certificate))
+        var chain = new X509Chain();
+        try
         {
-            sawTrustSuccess = true;
+            // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
+            // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            if (chain.Build(certificate))
+            {
+                sawTrustSuccess = true;
+            }
+            else
+            {
+                sawTrustFailure = true;
+                Log.UnixNotTrustedByDotnet();
+            }
         }
-        else
+        finally
         {
-            sawTrustFailure = true;
-            Log.UnixNotTrustedByDotnet();
+            // Disposing the chain does not dispose the elements we potentially built.
+            // Do the full walk manually to dispose.
+            for (var i = 0; i < chain.ChainElements.Count; i++)
+            {
+                chain.ChainElements[i].Certificate.Dispose();
+            }
+
+            chain.Dispose();
         }
 
         // Will become the name of the file on disk and the nickname in the NSS DBs
@@ -94,7 +114,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
-                    var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                    using var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
                     if (AreCertificatesEqual(certificate, candidate))
                     {
                         foundCert = true;
@@ -179,7 +199,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // This is about correcting storage, not trust.
     }
 
-    protected override bool IsExportable(X509Certificate2 c) => true;
+    internal override bool IsExportable(X509Certificate2 c) => true;
 
     protected override TrustLevel TrustCertificateCore(X509Certificate2 certificate)
     {
@@ -239,7 +259,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
             catch
             {
-                // If we couldn't load the file, then we also can't safely overwite it.
+                // If we couldn't load the file, then we also can't safely overwrite it.
                 Log.UnixNotOverwritingCertificate(certPath);
                 return TrustLevel.None;
             }
@@ -341,13 +361,78 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 ? Path.Combine("$HOME", certDir[homeDirectoryWithSlash.Length..])
                 : certDir;
 
-            if (TryGetOpenSslDirectory(out var openSslDir))
+            var hasValidSslCertDir = false;
+
+            // Check if SSL_CERT_DIR is already set and if certDir is already included
+            var existingSslCertDir = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
+            if (!string.IsNullOrEmpty(existingSslCertDir))
+            {
+                var existingDirs = existingSslCertDir.Split(Path.PathSeparator);
+                var certDirFullPath = Path.GetFullPath(certDir);
+                var isCertDirIncluded = existingDirs.Any(dir =>
+                {
+                    if (string.IsNullOrWhiteSpace(dir))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        return string.Equals(Path.GetFullPath(dir), certDirFullPath, StringComparison.Ordinal);
+                    }
+                    catch
+                    {
+                        // Ignore invalid directory entries in SSL_CERT_DIR
+                        return false;
+                    }
+                });
+
+                if (isCertDirIncluded)
+                {
+                    // The certificate directory is already in SSL_CERT_DIR, no action needed
+                    Log.UnixOpenSslCertificateDirectoryAlreadyConfigured(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = true;
+                }
+                else
+                {
+                    // SSL_CERT_DIR is set but doesn't include our directory - suggest appending
+                    Log.UnixSuggestAppendingToEnvironmentVariable(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = false;
+                }
+            }
+            else if (TryGetOpenSslDirectory(out var openSslDir))
             {
                 Log.UnixSuggestSettingEnvironmentVariable(prettyCertDir, Path.Combine(openSslDir, "certs"), OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
             }
             else
             {
                 Log.UnixSuggestSettingEnvironmentVariableWithoutExample(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
+            }
+
+            sawTrustFailure = !hasValidSslCertDir;
+        }
+
+        // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
+        if (IsRunningOnWslWithInterop())
+        {
+            try
+            {
+                if (TrustCertificateInWindowsStore(certificate))
+                {
+                    Log.WslWindowsTrustSucceeded();
+                }
+                else
+                {
+                    Log.WslWindowsTrustFailed();
+                    sawTrustFailure = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WslWindowsTrustException(ex.Message);
+                sawTrustFailure = true;
             }
         }
 
@@ -550,6 +635,67 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         return $"aspnetcore-localhost-{certificate.Thumbprint}";
     }
 
+    /// <summary>
+    /// Detects if the current environment is Windows Subsystem for Linux (WSL) with interop enabled.
+    /// </summary>
+    /// <returns>True if running on WSL with interop; otherwise, false.</returns>
+    private static bool IsRunningOnWslWithInterop()
+    {
+        // WSL exposes special files that indicate WSL interop is enabled.
+        // Either WSLInterop or WSLInterop-late may be present depending on the WSL version and configuration.
+        if (File.Exists(WslInteropPath) || File.Exists(WslInteropLatePath))
+        {
+            return true;
+        }
+
+        // Additionally check for standard WSL environment variables as a fallback.
+        // WSL_INTEROP is set to the path of the interop socket.
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_INTEROP")))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to trust the certificate in the Windows certificate store via PowerShell when running on WSL.
+    /// If the certificate already exists in the store, this is a no-op.
+    /// </summary>
+    /// <param name="certificate">The certificate to trust.</param>
+    /// <returns>True if the certificate was successfully added to the Windows store; otherwise, false.</returns>
+    private static bool TrustCertificateInWindowsStore(X509Certificate2 certificate)
+    {
+        // Export the certificate as DER-encoded bytes (no private key needed for trust)
+        // and embed it directly in the PowerShell script as Base64 to avoid file path
+        // translation issues between WSL and Windows.
+        var certBytes = certificate.Export(X509ContentType.Cert);
+        var certBase64 = Convert.ToBase64String(certBytes);
+
+        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
+        var powershellScript = $@"
+            $certBytes = [Convert]::FromBase64String('{certBase64}')
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(,$certBytes)
+            $cert.FriendlyName = '{escapedFriendlyName}'
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
+            $store.Open('ReadWrite')
+            $store.Add($cert)
+            $store.Close()
+        ";
+
+        // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
+        var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
+
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
+        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
+        {
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
+        };
+
+        return Process.Run(startInfo).ExitCode == 0;
+    }
+
     /// <remarks>
     /// It is the caller's responsibility to ensure that <see cref="CertUtilCommand"/> is available.
     /// </remarks>
@@ -560,17 +706,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // (The docs suggest that "-V -u A" should do this, but it seems to accept all certs.)
         var operation = nssDb.IsFirefox ? "-L" : "-V -u V";
 
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} {operation}")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return Process.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -589,17 +734,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         var usage = nssDb.IsFirefox ? "C" : "P";
 
         // This silently clobbers an existing entry, so there's no need to check for existence first.
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} -A -i {certificatePath} -t \"{usage},,\"")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return Process.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -613,17 +757,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// </remarks>
     private static bool TryRemoveCertificateFromNssDb(string nickname, NssDb nssDb)
     {
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -D -n {nickname}")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            if (process.ExitCode == 0)
+            if (Process.Run(startInfo).ExitCode == 0)
             {
                 return true;
             }
@@ -776,7 +919,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("OPENSSLDIR:\\s*\"([^\"]+)\"")]
-    private static partial Regex OpenSslVersionRegex();
+    private static partial Regex OpenSslVersionRegex { get; }
 
     /// <remarks>
     /// It is the caller's responsibility to ensure that <see cref="OpenSslCommand"/> is available.
@@ -793,17 +936,15 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
+            var processOutput = Process.RunAndCaptureText(processInfo);
 
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
                 Log.UnixOpenSslVersionFailed();
                 return false;
             }
 
-            var match = OpenSslVersionRegex().Match(stdout);
+            var match = OpenSslVersionRegex.Match(processOutput.StandardOutput);
             if (!match.Success)
             {
                 Log.UnixOpenSslVersionParsingFailed();
@@ -837,17 +978,15 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            var processOutput = Process.RunAndCaptureText(processInfo);
+            
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
                 Log.UnixOpenSslHashFailed(certificatePath);
                 return false;
             }
 
-            hash = stdout.Trim();
+            hash = processOutput.StandardOutput.Trim();
             return true;
         }
         catch (Exception ex)
@@ -858,14 +997,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("^[0-9a-f]+\\.[0-9]+$")]
-    private static partial Regex OpenSslHashFilenameRegex();
+    private static partial Regex OpenSslHashFilenameRegex { get; }
 
     /// <remarks>
     /// We only ever use .pem, but someone will eventually put their own cert in this directory,
     /// so we should handle the same extensions as c_rehash (other than .crl).
     /// </remarks>
     [GeneratedRegex("\\.(pem|crt|cer)$")]
-    private static partial Regex OpenSslCertificateExtensionRegex();
+    private static partial Regex OpenSslCertificateExtensionRegex { get; }
 
     /// <remarks>
     /// This is a simplified version of c_rehash from OpenSSL.  Using the real one would require
@@ -876,21 +1015,17 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         try
         {
             // First, delete all the existing symlinks, so we don't have to worry about fragmentation or leaks.
-
-            var hashRegex = OpenSslHashFilenameRegex();
-            var extensionRegex = OpenSslCertificateExtensionRegex();
-
             var certs = new List<FileInfo>();
 
             var dirInfo = new DirectoryInfo(certificateDirectory);
             foreach (var file in dirInfo.EnumerateFiles())
             {
                 var isSymlink = (file.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-                if (isSymlink && hashRegex.IsMatch(file.Name))
+                if (isSymlink && OpenSslHashFilenameRegex.IsMatch(file.Name))
                 {
                     file.Delete();
                 }
-                else if (extensionRegex.IsMatch(file.Name))
+                else if (OpenSslCertificateExtensionRegex.IsMatch(file.Name))
                 {
                     certs.Add(file);
                 }

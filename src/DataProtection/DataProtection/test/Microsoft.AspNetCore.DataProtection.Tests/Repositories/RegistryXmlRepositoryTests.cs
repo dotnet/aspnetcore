@@ -1,12 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
 
@@ -42,7 +46,7 @@ public class RegistryXmlRepositoryTests
             var allElements = repository.GetAllElements();
 
             // Assert
-            Assert.Equal(0, allElements.Count);
+            Assert.Empty(allElements);
         });
     }
 
@@ -95,7 +99,7 @@ public class RegistryXmlRepositoryTests
             var valueName = valueNames.Single(); // only one value should've been created
 
             // value name should be "{GUID}"
-            Guid parsedGuid = Guid.Parse(valueName as string, CultureInfo.InvariantCulture);
+            Guid parsedGuid = Guid.Parse(valueName as string);
             Assert.NotEqual(Guid.Empty, parsedGuid);
 
             // value contents should be "<element1 />"
@@ -206,7 +210,7 @@ public class RegistryXmlRepositoryTests
                 // Now that the repository has read the element from the registry, delete it out-of-band.
                 regKey.DeleteValue("friendly1");
 
-                Assert.Equal(1, deletableElements.Count);
+                Assert.Single(deletableElements);
 
                 deletableElements.First().DeletionOrder = 1;
             }));

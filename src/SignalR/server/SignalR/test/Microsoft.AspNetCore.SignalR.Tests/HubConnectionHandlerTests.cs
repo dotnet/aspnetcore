@@ -2101,7 +2101,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(streamMethod);
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
                 if (detailedError != null)
@@ -2248,6 +2248,65 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await client.Connected.DefaultTimeout();
 
                 var message = await client.InvokeAsync(nameof(MethodHub.AuthMethod)).DefaultTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UnauthorizedConnectionCannotInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.NotNull(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AuthorizedConnectionCanInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
 
                 Assert.Null(message.Error);
 
@@ -2772,7 +2831,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 {
                     if (hasCloseMessage)
                     {
-                        Assert.True(false, "Received message after close");
+                        Assert.Fail("Received message after close");
                     }
 
                     switch (message)
@@ -2784,7 +2843,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                             hasCloseMessage = true;
                             break;
                         default:
-                            Assert.True(false, "Unexpected message type: " + message.GetType().Name);
+                            Assert.Fail("Unexpected message type: " + message.GetType().Name);
                             break;
                     }
                 }
@@ -3225,7 +3284,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 
@@ -3260,7 +3319,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 var messages = await client.StreamAsync(nameof(StreamingHub.NullStream));
 
-                Assert.Equal(1, messages.Count);
+                Assert.Single(messages);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
 
@@ -3634,6 +3693,88 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var result = (CompletionMessage)await client.ReadAsync().DefaultTimeout();
 
             Assert.Equal("BEANED", result.Result);
+        }
+    }
+
+    [Fact]
+    public async Task UploadStreamWithDuplicateIdsFailsAndConnectionContinues()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+        {
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.StreamBufferCapacity = 1;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            await client.BeginUploadStreamAsync("duplicate", nameof(MethodHub.StreamingConcatTwoStreams), new[] { "id", "id" }, Array.Empty<object>()).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("id", "first")).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("id", "second")).DefaultTimeout();
+            await client.SendInvocationAsync(nameof(MethodHub.Echo), "test").DefaultTimeout();
+
+            var duplicateCompletion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("An unexpected error occurred invoking 'StreamingConcatTwoStreams' on the server. HubException: Stream ID 'id' is already in use.", duplicateCompletion.Error);
+
+            var echoCompletion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("test", echoCompletion.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ActiveUploadStreamCannotBeReplacedAndIdCanBeReusedAfterCompletion()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+        {
+            services.AddSignalR(options => options.EnableDetailedErrors = true);
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            await client.BeginUploadStreamAsync("original", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+            await client.BeginUploadStreamAsync("duplicate", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+
+            var duplicateCompletion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("An unexpected error occurred invoking 'StreamingConcat' on the server. HubException: Stream ID 'id' is already in use.", duplicateCompletion.Error);
+
+            await client.SendHubMessageAsync(new StreamItemMessage("id", "original")).DefaultTimeout();
+            await client.SendHubMessageAsync(CompletionMessage.Empty("id")).DefaultTimeout();
+
+            var originalCompletion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("original", originalCompletion.Result);
+
+            await client.BeginUploadStreamAsync("reused", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("id", "reused")).DefaultTimeout();
+            await client.SendHubMessageAsync(CompletionMessage.Empty("id")).DefaultTimeout();
+
+            var reusedCompletion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("reused", reusedCompletion.Result);
+        }
+    }
+
+    [Fact]
+    public async Task UploadMultipleStreamsWithUniqueIds()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcatTwoStreams), new[] { "first", "second" }, Array.Empty<object>()).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("first", "hello ")).DefaultTimeout();
+            await client.SendHubMessageAsync(CompletionMessage.Empty("first")).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("second", "world")).DefaultTimeout();
+            await client.SendHubMessageAsync(CompletionMessage.Empty("second")).DefaultTimeout();
+
+            var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("hello world", completion.Result);
         }
     }
 
@@ -4376,22 +4517,35 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
+    public async Task InvokeHubMethodCanAcceptCancellationTokenAsArgument()
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var invocationId = await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument)).DefaultTimeout();
+                var invocationId = await client.SendInvocationAsync(nameof(LongRunningHub.CancelableInvocation)).DefaultTimeout();
+                // Wait for the hub method to start
+                await tcsService.StartedMethod.Task.DefaultTimeout();
 
-                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                // Cancel the invocation which should trigger the CancellationToken in the hub method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).DefaultTimeout();
 
-                Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+                var result = await client.ReadAsync().DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(result);
+                Assert.Null(completion.Error);
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.DefaultTimeout();
 
                 client.Dispose();
 
@@ -4677,6 +4831,24 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.SingleService)).DefaultTimeout();
             Assert.True(Assert.IsType<bool>(res.Result));
+        }
+    }
+    
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/61491
+    [Fact]
+    public async Task HubMethodCanInjectServiceWithNullParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithStringAttribute),(string)null ).DefaultTimeout();
+            Assert.Equal(115L, res.Result);
         }
     }
 
@@ -5265,6 +5437,110 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             await connectionHandlerTask.DefaultTimeout();
 
             Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    public enum CloseScenario
+    {
+        PingTimeout,
+        Abort,
+        BackpressureTimeout,
+    }
+
+    [Theory]
+    [InlineData(CloseScenario.PingTimeout)]
+    [InlineData(CloseScenario.Abort)]
+    [InlineData(CloseScenario.BackpressureTimeout)]
+    public async Task StatefulReconnectWithMessageBufferBackpressureIsCancelable(CloseScenario scenario)
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+        {
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new FakeTimeProvider();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                {
+                    options.ClientTimeoutInterval = timeout;
+                    options.StatefulReconnectBufferSize = 100;
+                }), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            connectionHandler.TimeProvider = timeProvider;
+
+            using var client1 = new TestClient();
+            using var client2 = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client1.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connection1HandlerTask = await client1.ConnectAsync(connectionHandler);
+            var connection2HandlerTask = await client2.ConnectAsync(connectionHandler);
+
+            await client1.Connected.DefaultTimeout();
+            await client1.SendHubMessageAsync(PingMessage.Instance);
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            switch (scenario)
+            {
+                case CloseScenario.PingTimeout:
+                    {
+                        // We go over the 100 ms timeout interval multiple times
+                        for (var i = 0; i < 3; i++)
+                        {
+                            timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                            client1.TickHeartbeat();
+                        }
+                        break;
+                    }
+                case CloseScenario.Abort:
+                    {
+                        client1.Connection.Abort();
+                        break;
+                    }
+                case CloseScenario.BackpressureTimeout:
+                    {
+                        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+                        break;
+                    }
+            }
+
+            // This one might not be blocked on client1 if the server sends to client2 first during Broadcast
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            // Send 3rd message to ensure client2 would be blocked if client1 was still blocking the server
+            // Which it shouldn't be as it has timed out
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            // Don't await this task as it's possible the CloseMessage is blocking the client1's MessageBuffer.WriteAsync call on the 5 second token
+            // So we need to advance the TimeProvider to make sure the timeout occurs before making sure client2 got the final broadcast message
+            var readTask = client2.ReadAsync().DefaultTimeout();
+
+            var closeTask = connection1HandlerTask.DefaultTimeout(30_000);
+
+            // We don't know when the server will create the CTS to cancel the client trying to send the CloseMessage
+            // Let's do a small spin wait here to have a better chance of the CTS being created and us timing it out via TimeProvider
+            var maxWait = TimeSpan.FromSeconds(10);
+            for (var i = 0; i < 10; i++)
+            {
+                timeProvider.Advance(TimeSpan.FromSeconds(6));
+                if (closeTask.IsCompleted && readTask.IsCompleted)
+                {
+                    break;
+                }
+                await Task.Delay(maxWait / 10);
+            }
+
+            Assert.IsType<InvocationMessage>(await readTask);
+
+            await client2.DisposeAsync();
+
+            await closeTask;
+            await connection2HandlerTask.DefaultTimeout(30_000);
         }
     }
 

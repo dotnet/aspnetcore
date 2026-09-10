@@ -14,7 +14,6 @@
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
     <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
 
     <!--<Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />-->
@@ -22,4 +21,7 @@
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
 </Project>

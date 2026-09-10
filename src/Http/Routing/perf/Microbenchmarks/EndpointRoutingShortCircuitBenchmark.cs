@@ -6,8 +6,8 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -36,7 +36,7 @@ public class EndpointRoutingShortCircuitBenchmark
             routingMetrics,
             context => Task.CompletedTask);
 
-        var shortCircuitEndpoint = new Endpoint(context => Task.CompletedTask, new EndpointMetadataCollection(new ShortCircuitMetadata(200)), "shortcircuit");
+        var shortCircuitEndpoint = new Endpoint(context => Task.CompletedTask, new EndpointMetadataCollection(new ShortCircuitAttribute(200)), "shortcircuit");
 
         _shortCircuitEndpointMiddleware = new EndpointRoutingMiddleware(
             new BenchmarkMatcherFactory(shortCircuitEndpoint),

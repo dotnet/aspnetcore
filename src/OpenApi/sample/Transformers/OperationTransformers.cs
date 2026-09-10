@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
 
 namespace Sample.Transformers;
 
@@ -15,7 +12,7 @@ public static class OperationTransformers
         return options.AddOperationTransformer((operation, context, cancellationToken) =>
         {
             var schema = OpenApiTypeMapper.MapTypeToOpenApiPrimitiveType(typeof(string));
-            schema.Default = new OpenApiString(defaultValue);
+            schema.Default = defaultValue;
             operation.Parameters ??= [];
             operation.Parameters.Add(new OpenApiParameter
             {

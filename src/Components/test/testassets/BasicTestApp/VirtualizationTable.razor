@@ -9,7 +9,7 @@
         </tr>
     </thead>
     <tbody>
-        <Virtualize Items="@fixedItems" ItemSize="30" SpacerElement="tr">
+        <Virtualize Items="@fixedItems" ItemSize="30" SpacerElement="tr" OverscanCount="3">
             <tr @key="context" style="height: 30px;" id="row-@context">
                 <td>Item @context</td>
                 <td>Another value</td>

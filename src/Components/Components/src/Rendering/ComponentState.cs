@@ -16,13 +16,15 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
-    private readonly bool _hasAnyCascadingParameterSubscriptions;
+    private bool _hasAnyCascadingParameterSubscriptions;
     private IReadOnlyList<CascadingParameterState> _cascadingParameters;
     private bool _hasCascadingParameters;
+    private bool _hasCompletedInitialParameterSupply;
     private bool _hasSingleDeliveryCascadingParameters;
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
+    private readonly string? _componentTypeName;
 
     /// <summary>
     /// Constructs an instance of <see cref="ComponentState"/>.
@@ -44,10 +46,17 @@ public class ComponentState : IAsyncDisposable
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
 
+        _renderer.RegisterComponentState(component, ComponentId, this);
+
         if (_cascadingParameters.Count != 0)
         {
             _hasCascadingParameters = true;
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
+        }
+
+        if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+        {
+            _componentTypeName = component.GetType().FullName;
         }
     }
 
@@ -85,7 +94,12 @@ public class ComponentState : IAsyncDisposable
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 
-    internal Renderer Renderer => _renderer;
+    /// <summary>
+    /// Gets the <see cref="Renderer"/> instance used to render the output.
+    /// </summary>
+    /// <remarks>The <see cref="Renderer"/> instance is accessible to derived classes and classes within the
+    /// same assembly. It provides rendering functionality that may be used for custom rendering logic.</remarks>
+    protected internal Renderer Renderer => _renderer;
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
@@ -159,6 +173,11 @@ public class ComponentState : IAsyncDisposable
         // If we bypass this, the component won't receive the cascading parameters nor
         // will it update its snapshot of direct parameters.
 
+        if (_renderer.IsRenderingOnMetadataUpdate)
+        {
+            RefreshCascadingParameters();
+        }
+
         if (_hasAnyCascadingParameterSubscriptions)
         {
             // We may need to replay these direct parameters later (in NotifyCascadingValueChanged),
@@ -181,7 +200,28 @@ public class ComponentState : IAsyncDisposable
             }
         }
 
+        _hasCompletedInitialParameterSupply = true;
         SupplyCombinedParameters(parameters);
+    }
+
+    private void RefreshCascadingParameters()
+    {
+        // A metadata update can change both the cascading parameter set and the supplier selected
+        // for each parameter, so retained component state must rebuild its subscriptions.
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
+
+        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
+        _hasCascadingParameters = _cascadingParameters.Count != 0;
+
+        if (_hasCompletedInitialParameterSupply && _hasSingleDeliveryCascadingParameters)
+        {
+            StopSupplyingSingleDeliveryCascadingParameters();
+        }
+
+        _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions(CascadingParameterSubscriptionMode.MetadataRefresh);
     }
 
     private void StopSupplyingSingleDeliveryCascadingParameters()
@@ -229,21 +269,35 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
-        // Normalise sync and async exceptions into a Task
+        var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
+
+        // Normalize sync and async exceptions into a Task
         Task setParametersAsyncTask;
         try
         {
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
+
+            // collect metrics
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _ = _renderer.ComponentMetrics.CaptureParametersDuration(setParametersAsyncTask, parametersStartTimestamp, _componentTypeName);
+            }
         }
         catch (Exception ex)
         {
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _renderer.ComponentMetrics.FailParametersSync(ex, parametersStartTimestamp, _componentTypeName);
+            }
+
             setParametersAsyncTask = Task.FromException(ex);
         }
 
         _renderer.AddToPendingTasksWithErrorHandling(setParametersAsyncTask, owningComponentState: this);
     }
 
-    private bool AddCascadingParameterSubscriptions()
+    private bool AddCascadingParameterSubscriptions(
+        CascadingParameterSubscriptionMode mode = CascadingParameterSubscriptionMode.Initial)
     {
         var hasSubscription = false;
         var numCascadingParameters = _cascadingParameters!.Count;
@@ -253,7 +307,7 @@ public class ComponentState : IAsyncDisposable
             var valueSupplier = _cascadingParameters[i].ValueSupplier;
             if (!valueSupplier.IsFixed)
             {
-                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo);
+                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo, mode);
                 hasSubscription = true;
             }
         }
@@ -316,6 +370,39 @@ public class ComponentState : IAsyncDisposable
         }
 
         return DisposeAsync();
+    }
+
+    /// <summary>
+    /// Gets the component key for this component instance.
+    /// This is used for state persistence and component identification across render modes.
+    /// </summary>
+    /// <returns>The component key, or null if no key is available.</returns>
+    protected internal virtual object? GetComponentKey()
+    {
+        if (ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        // Check if the parentComponentState has a `@key` directive applied to the current component.
+        var frames = parentComponentState.CurrentRenderTree.GetFrames();
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var currentFrame = ref frames.Array[i];
+
+            Debug.Assert(currentFrame.FrameType != RenderTreeFrameType.Component || currentFrame.Component != null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
+
+            if (currentFrame.FrameType != RenderTreeFrameType.Component ||
+                !ReferenceEquals(Component, currentFrame.Component))
+            {
+                // Skip any frame that is not the current component.
+                continue;
+            }
+
+            return currentFrame.ComponentKey;
+        }
+
+        return null;
     }
 
     private string GetDebuggerDisplay()

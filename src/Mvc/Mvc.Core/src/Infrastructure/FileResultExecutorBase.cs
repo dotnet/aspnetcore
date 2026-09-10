@@ -19,7 +19,7 @@ public class FileResultExecutorBase
     protected const int BufferSize = 64 * 1024;
 
     /// <summary>
-    /// Intializes a new <see cref="FileResultExecutorBase"/>.
+    /// Initializes a new <see cref="FileResultExecutorBase"/>.
     /// </summary>
     /// <param name="logger">The logger.</param>
     public FileResultExecutorBase(ILogger logger)

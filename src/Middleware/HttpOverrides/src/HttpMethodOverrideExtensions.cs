@@ -28,6 +28,18 @@ public static class HttpMethodOverrideExtensions
     /// Allows incoming POST request to override method type with type specified in form. This middleware
     /// is used when a client is limited to sending GET or POST methods but wants to invoke other HTTP methods.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When <see cref="HttpMethodOverrideOptions.FormFieldName"/> is set and the request has a form content type,
+    /// this middleware reads the incoming POST form before later middleware runs. The request method is overridden
+    /// only if the configured form field is present and has a non-empty value.
+    /// </para>
+    /// <para>
+    /// ASP.NET Core antiforgery middleware validates tokens only for HTTP POST, PUT, and PATCH requests. If you need
+    /// validation for an overridden method outside that set (for example, DELETE), resolve IAntiforgery from DI and
+    /// call ValidateRequestAsync or IsRequestValidAsync in the endpoint handler.
+    /// </para>
+    /// </remarks>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
     /// <param name="options">
     /// The <see cref="HttpMethodOverrideOptions"/> which indicates which form type specifies the override method.

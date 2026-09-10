@@ -13,6 +13,7 @@ public sealed class RequestDecompressionOptions
     /// </summary>
     public IDictionary<string, IDecompressionProvider> DecompressionProviders { get; } = new Dictionary<string, IDecompressionProvider>(StringComparer.OrdinalIgnoreCase)
     {
+        ["zstd"] = new ZstandardDecompressionProvider(),
         ["br"] = new BrotliDecompressionProvider(),
         ["deflate"] = new DeflateDecompressionProvider(),
         ["gzip"] = new GZipDecompressionProvider()

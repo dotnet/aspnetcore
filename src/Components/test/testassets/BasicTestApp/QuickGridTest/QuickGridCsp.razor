@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<div id="csp-quickgrid">
+    <QuickGrid Items="@items" Virtualize="true" ItemSize="50">
+        <PropertyColumn Property="@(p => p.Id)" />
+        <PropertyColumn Property="@(p => p.Name)" />
+    </QuickGrid>
+</div>
+
+@code {
+    private IQueryable<Person> items = Enumerable.Range(1, 1000)
+        .Select(i => new Person { Id = i, Name = $"Person {i}" })
+        .AsQueryable();
+
+    internal class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+}

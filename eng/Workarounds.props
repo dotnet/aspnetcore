@@ -25,9 +25,8 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
-  <!-- Workaround continued use of netcoreapp2.1. -->
   <PropertyGroup>
-    <NoWarn>$(NoWarn);NETSDK1138;CS8969</NoWarn>
+    <NoWarn>$(NoWarn);CS8969</NoWarn>
   </PropertyGroup>
 
   <!-- Workaround obsolete X509Certificate ctor: https://github.com/dotnet/docs/issues/41662 -->

@@ -8,13 +8,24 @@ namespace Microsoft.AspNetCore.InternalTesting;
 
 internal sealed class TestMeterFactory : IMeterFactory
 {
+    private readonly Lock _lock = new();
+
     public List<Meter> Meters { get; } = new List<Meter>();
 
     public Meter Create(MeterOptions options)
     {
-        var meter = new Meter(options.Name, options.Version, Array.Empty<KeyValuePair<string, object>>(), scope: this);
-        Meters.Add(meter);
-        return meter;
+        lock (_lock)
+        {
+            // Simulate DefaultMeterFactory behavior of returning the same meter instance for the same name/version.
+            if (Meters.FirstOrDefault(m => m.Name == options.Name && m.Version == options.Version) is { } existingMeter)
+            {
+                return existingMeter;
+            }
+
+            var meter = new Meter(options.Name, options.Version, Array.Empty<KeyValuePair<string, object>>(), scope: this);
+            Meters.Add(meter);
+            return meter;
+        }
     }
 
     public void Dispose()

@@ -20,6 +20,7 @@ internal sealed partial class JsonTranscodingServiceMethodProvider<TService> : I
     private readonly ILoggerFactory _loggerFactory;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
     private readonly DescriptorRegistry _serviceDescriptorRegistry;
+    private readonly InterceptorActivators _interceptorActivators;
 
     public JsonTranscodingServiceMethodProvider(
         ILoggerFactory loggerFactory,
@@ -27,7 +28,8 @@ internal sealed partial class JsonTranscodingServiceMethodProvider<TService> : I
         IOptions<GrpcServiceOptions<TService>> serviceOptions,
         IGrpcServiceActivator<TService> serviceActivator,
         IOptions<GrpcJsonTranscodingOptions> jsonTranscodingOptions,
-        DescriptorRegistry serviceDescriptorRegistry)
+        DescriptorRegistry serviceDescriptorRegistry,
+        InterceptorActivators interceptorActivators)
     {
         _logger = loggerFactory.CreateLogger<JsonTranscodingServiceMethodProvider<TService>>();
         _globalOptions = globalOptions.Value;
@@ -36,6 +38,7 @@ internal sealed partial class JsonTranscodingServiceMethodProvider<TService> : I
         _loggerFactory = loggerFactory;
         _serviceActivator = serviceActivator;
         _serviceDescriptorRegistry = serviceDescriptorRegistry;
+        _interceptorActivators = interceptorActivators;
     }
 
     public void OnServiceMethodDiscovery(ServiceMethodProviderContext<TService> context)
@@ -70,7 +73,8 @@ internal sealed partial class JsonTranscodingServiceMethodProvider<TService> : I
                     _serviceOptions,
                     _loggerFactory,
                     _serviceActivator,
-                    _jsonTranscodingOptions);
+                    _jsonTranscodingOptions,
+                    _interceptorActivators);
 
                 try
                 {

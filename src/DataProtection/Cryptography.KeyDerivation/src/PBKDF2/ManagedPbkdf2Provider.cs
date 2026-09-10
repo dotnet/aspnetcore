@@ -86,7 +86,7 @@ internal sealed class ManagedPbkdf2Provider : IPbkdf2Provider
         finally
         {
             // The HMAC ctor makes a duplicate of this key; we clear original buffer to limit exposure to the GC.
-            Array.Clear(passwordBytes, 0, passwordBytes.Length);
+            CryptoUtil.ZeroMemory(passwordBytes);
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
@@ -36,16 +36,12 @@
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
-      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
       "src\\Middleware\\CORS\\test\\UnitTests\\Microsoft.AspNetCore.Cors.Test.csproj",
       "src\\Middleware\\CORS\\test\\testassets\\CorsMiddlewareWebSite\\CorsMiddlewareWebSite.csproj",
-      "src\\Middleware\\ConcurrencyLimiter\\perf\\Microbenchmarks\\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj",
-      "src\\Middleware\\ConcurrencyLimiter\\sample\\ConcurrencyLimiterSample.csproj",
-      "src\\Middleware\\ConcurrencyLimiter\\src\\Microsoft.AspNetCore.ConcurrencyLimiter.csproj",
-      "src\\Middleware\\ConcurrencyLimiter\\test\\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj",
       "src\\Middleware\\Diagnostics.Abstractions\\src\\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj",
       "src\\Middleware\\Diagnostics.EntityFrameworkCore\\src\\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj",
       "src\\Middleware\\Diagnostics.EntityFrameworkCore\\test\\FunctionalTests\\Diagnostics.EFCore.FunctionalTests.csproj",

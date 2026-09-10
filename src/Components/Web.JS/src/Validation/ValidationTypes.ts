@@ -1,0 +1,64 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+/** An HTML form element that can be validated. */
+export type ValidatableElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/** Context passed to a validator function with the current field value, element, and rule parameters. */
+export type ValidationContext = {
+  value: string | null | undefined;
+  element: ValidatableElement;
+  params: Record<string, string>;
+};
+
+/**
+ * The result of a validator function.
+ * - `success: true` means the field is valid.
+ * - `success: false` means invalid; if `message` is provided it overrides the rule's
+ *   default error message, otherwise the rule's own message (from the ValidationRule definition) is used.
+ */
+export type ValidationResult = { success: boolean; message?: string };
+
+/** Convenience helpers for constructing {@link ValidationResult} values. */
+export function pass(): ValidationResult {
+  return { success: true };
+}
+export function fail(message?: string): ValidationResult {
+  return message === undefined ? { success: false } : { success: false, message };
+}
+
+/** A function that validates a field value and returns a result. */
+export type Validator = (context: ValidationContext) => ValidationResult;
+
+/**
+ * Public API for client-side form validation. Exposed as `Blazor.formValidation`
+ * when embedded in blazor.web.js.
+ */
+export interface ValidationService {
+  /** Registers a custom validator function for a given rule name (e.g., 'zipcode'). */
+  addValidator(name: string, validator: Validator): void;
+  /** Validates a single field element and updates its error display. */
+  validateField(element: ValidatableElement): boolean;
+  /** Validates all tracked fields in the form. Returns true if all fields are valid. */
+  validateForm(form: HTMLFormElement): boolean;
+}
+
+interface ValidatorEntry {
+  fn: Validator;
+}
+
+/**
+ * Maps rule names (e.g., 'required', 'range') to validator functions.
+ * Used internally for built-in validators and externally via `addValidator`.
+ */
+export class ValidatorRegistry {
+  private validators: Map<string, ValidatorEntry> = new Map();
+
+  set(name: string, validator: Validator): void {
+    this.validators.set(name, { fn: validator });
+  }
+
+  get(name: string): Validator | undefined {
+    return this.validators.get(name)?.fn;
+  }
+}

@@ -275,12 +275,26 @@
         var effectiveCount = lastIndexExcl - request.StartIndex;
         var resultItems = effectiveCount <= 0
             ? Enumerable.Empty<Person>()
-            : Enumerable.Range(1 + request.StartIndex, effectiveCount).Select(GeneratePerson).ToList();
+            : Enumerable.Range(1 + request.StartIndex, effectiveCount).Select(GetOrCreatePerson).ToList();
         return new ItemsProviderResult<Person>(resultItems, largeDataSetLength);
+    }
+
+    readonly Dictionary<int, Person> _personCache = new();
+
+    Person GetOrCreatePerson(int index)
+    {
+        if (!_personCache.TryGetValue(index, out var person))
+        {
+            person = GeneratePerson(index);
+            _personCache[index] = person;
+        }
+
+        return person;
     }
 
     class Person
     {
+        public int Id { get; init; }
         public string Name { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -290,11 +304,18 @@
         {
             Name += " MUTATED";
         }
+
+        public override bool Equals(object obj)
+            => obj is Person other && other.Id == Id;
+
+        public override int GetHashCode()
+            => Id;
     }
 
     static Person GeneratePerson(int index)
         => new Person
         {
+            Id = index,
             Name = $"Person {index}",
             LastName = $"Last Name {index}",
             Email = $"person{index}@example.com",

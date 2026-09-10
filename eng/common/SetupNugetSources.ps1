@@ -7,13 +7,17 @@
 # See example call for this script below.
 #
 #  - task: PowerShell@2
-#    displayName: Setup Private Feeds Credentials
+#    displayName: Setup internal Feeds Credentials
 #    condition: eq(variables['Agent.OS'], 'Windows_NT')
 #    inputs:
-#      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-#      arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+#      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+#      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config
 #    env:
-#      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+#      Token: $(InternalFeedToken)
+#
+# Note: This logic is abstracted into enable-internal-sources.yml, which uses
+# NuGetAuthenticate or a WIF-backed service connection. Prefer that template
+# over calling this script directly.
 #
 # Note that the NuGetAuthenticate task should be called after SetupNugetSources.
 # This ensures that:
@@ -25,39 +29,57 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)][string]$ConfigFile,
-    $Password
+    # Keep the legacy name as an alias while callers migrate secrets to the Token environment variable.
+    [Alias("Password")]$Credential
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$feedCredential = if ($env:Token) { $env:Token } else { $Credential }
+
+# This script only consumes helper functions from tools.ps1 to configure NuGet feeds.
+# Skip importing configure-toolset.ps1 so that repo-specific toolset setup (e.g. acquiring
+# a bootstrap SDK) is not triggered as a side effect of feed configuration.
+$disableConfigureToolsetImport = $true
 
 . $PSScriptRoot\tools.ps1
 
+# Adds or enables the package source with the given name
+function AddOrEnablePackageSource($sources, $disabledPackageSources, $SourceName, $SourceEndPoint, $creds, $Username, $credential) {
+    if ($disabledPackageSources -eq $null -or -not (EnableInternalPackageSource -DisabledPackageSources $disabledPackageSources -Creds $creds -PackageSourceName $SourceName -Credential $credential)) {
+        AddPackageSource -Sources $sources -SourceName $SourceName -SourceEndPoint $SourceEndPoint -Creds $creds -Username $Username -credential $credential
+    }
+}
+
 # Add source entry to PackageSources
-function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Username, $pwd) {
+function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Username, $credential) {
     $packageSource = $sources.SelectSingleNode("add[@key='$SourceName']")
     
     if ($packageSource -eq $null)
     {
+        Write-Host "Adding package source $SourceName"
+
         $packageSource = $doc.CreateElement("add")
         $packageSource.SetAttribute("key", $SourceName)
         $packageSource.SetAttribute("value", $SourceEndPoint)
         $sources.AppendChild($packageSource) | Out-Null
     }
     else {
-        Write-Host "Package source $SourceName already present."
+        Write-Host "Package source $SourceName already present and enabled."
     }
 
-    AddCredential -Creds $creds -Source $SourceName -Username $Username -pwd $pwd
+    AddCredential -Creds $creds -Source $SourceName -Username $Username -credential $credential
 }
 
 # Add a credential node for the specified source
-function AddCredential($creds, $source, $username, $pwd) {
+function AddCredential($creds, $source, $username, $credential) {
     # If no cred supplied, don't do anything.
-    if (!$pwd) {
+    if (!$credential) {
         return;
     }
+
+    Write-Host "Inserting credential for feed: " $source
 
     # Looks for credential configuration for the given SourceName. Create it if none is found.
     $sourceElement = $creds.SelectSingleNode($Source)
@@ -88,27 +110,30 @@ function AddCredential($creds, $source, $username, $pwd) {
         $sourceElement.AppendChild($passwordElement) | Out-Null
     }
     
-    $passwordElement.SetAttribute("value", $pwd)
+    $passwordElement.SetAttribute("value", $credential)
 }
 
-function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Username, $pwd) {
-    $maestroPrivateSources = $Sources.SelectNodes("add[contains(@key,'darc-int')]")
-
-    Write-Host "Inserting credentials for $($maestroPrivateSources.Count) Maestro's private feeds."
-    
-    ForEach ($PackageSource in $maestroPrivateSources) {
-        Write-Host "`tInserting credential for Maestro's feed:" $PackageSource.Key
-        AddCredential -Creds $creds -Source $PackageSource.Key -Username $Username -pwd $pwd
+# Enable all darc-int package sources.
+function EnableMaestroInternalPackageSources($DisabledPackageSources, $Creds, $Credential) {
+    $maestroInternalSources = $DisabledPackageSources.SelectNodes("add[contains(@key,'darc-int')]")
+    ForEach ($DisabledPackageSource in $maestroInternalSources) {
+        EnableInternalPackageSource -DisabledPackageSources $DisabledPackageSources -Creds $Creds -PackageSourceName $DisabledPackageSource.key -Credential $Credential
     }
 }
 
-function EnablePrivatePackageSources($DisabledPackageSources) {
-    $maestroPrivateSources = $DisabledPackageSources.SelectNodes("add[contains(@key,'darc-int')]")
-    ForEach ($DisabledPackageSource in $maestroPrivateSources) {
-        Write-Host "`tEnsuring private source '$($DisabledPackageSource.key)' is enabled by deleting it from disabledPackageSource"
+# Enables an internal package source by name, if found. Returns true if the package source was found and enabled, false otherwise.
+function EnableInternalPackageSource($DisabledPackageSources, $Creds, $PackageSourceName, $Credential) {
+    $DisabledPackageSource = $DisabledPackageSources.SelectSingleNode("add[@key='$PackageSourceName']")
+    if ($DisabledPackageSource) {
+        Write-Host "Enabling internal source '$($DisabledPackageSource.key)'."
+        
         # Due to https://github.com/NuGet/Home/issues/10291, we must actually remove the disabled entries
         $DisabledPackageSources.RemoveChild($DisabledPackageSource)
+
+        AddCredential -Creds $creds -Source $DisabledPackageSource.Key -Username $userName -credential $credential
+        return $true
     }
+    return $false
 }
 
 if (!(Test-Path $ConfigFile -PathType Leaf)) {
@@ -121,15 +146,17 @@ $doc = New-Object System.Xml.XmlDocument
 $filename = (Get-Item $ConfigFile).FullName
 $doc.Load($filename)
 
-# Get reference to <PackageSources> or create one if none exist already
+# Get reference to <PackageSources> - fail if none exist
 $sources = $doc.DocumentElement.SelectSingleNode("packageSources")
 if ($sources -eq $null) {
-    $sources = $doc.CreateElement("packageSources")
-    $doc.DocumentElement.AppendChild($sources) | Out-Null
+    Write-PipelineTelemetryError -Category 'Build' -Message "Eng/common/SetupNugetSources.ps1 returned a non-zero exit code. NuGet config file must contain a packageSources section: $ConfigFile"
+    ExitWithExitCode 1
 }
 
 $creds = $null
-if ($Password) {
+$feedSuffix = "v3/index.json"
+if ($feedCredential) {
+    $feedSuffix = "v2"
     # Looks for a <PackageSourceCredentials> node. Create it if none is found.
     $creds = $doc.DocumentElement.SelectSingleNode("packageSourceCredentials")
     if ($creds -eq $null) {
@@ -138,33 +165,22 @@ if ($Password) {
     }
 }
 
+$userName = "dn-bot"
+
 # Check for disabledPackageSources; we'll enable any darc-int ones we find there
 $disabledSources = $doc.DocumentElement.SelectSingleNode("disabledPackageSources")
 if ($disabledSources -ne $null) {
     Write-Host "Checking for any darc-int disabled package sources in the disabledPackageSources node"
-    EnablePrivatePackageSources -DisabledPackageSources $disabledSources
+    EnableMaestroInternalPackageSources -DisabledPackageSources $disabledSources -Creds $creds -Credential $feedCredential
 }
-
-$userName = "dn-bot"
-
-# Insert credential nodes for Maestro's private feeds
-InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Username $userName -pwd $Password
-
-# 3.1 uses a different feed url format so it's handled differently here
-$dotnet31Source = $sources.SelectSingleNode("add[@key='dotnet3.1']")
-if ($dotnet31Source -ne $null) {
-    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v2" -Creds $creds -Username $userName -pwd $Password
-    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -pwd $Password
-}
-
-$dotnetVersions = @('5','6','7','8','9')
+$dotnetVersions = @('5','6','7','8','9','10','11')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;
     $dotnetSource = $sources.SelectSingleNode("add[@key='$feedPrefix']")
     if ($dotnetSource -ne $null) {
-        AddPackageSource -Sources $sources -SourceName "$feedPrefix-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal/nuget/v2" -Creds $creds -Username $userName -pwd $Password
-        AddPackageSource -Sources $sources -SourceName "$feedPrefix-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal-transport/nuget/v2" -Creds $creds -Username $userName -pwd $Password
+        AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "$feedPrefix-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal/nuget/$feedSuffix" -Creds $creds -Username $userName -credential $feedCredential
+        AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "$feedPrefix-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal-transport/nuget/$feedSuffix" -Creds $creds -Username $userName -credential $feedCredential
     }
 }
 

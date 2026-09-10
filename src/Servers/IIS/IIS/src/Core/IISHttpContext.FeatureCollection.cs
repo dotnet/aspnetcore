@@ -4,9 +4,11 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
@@ -36,6 +39,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                                         IHttpResponseTrailersFeature,
                                         IHttpResetFeature,
                                         IConnectionLifetimeNotificationFeature,
+                                        IConnectionEndPointFeature,
                                         IHttpSysRequestInfoFeature,
                                         IHttpSysRequestTimingFeature
 {
@@ -409,16 +413,22 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     string ITlsHandshakeFeature.HostName => SniHostName;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => CipherAlgorithm;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     int ITlsHandshakeFeature.CipherStrength => CipherStrength;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => HashAlgorithm;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     int ITlsHandshakeFeature.HashStrength => HashStrength;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => KeyExchangeAlgorithm;
 
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     int ITlsHandshakeFeature.KeyExchangeStrength => KeyExchangeStrength;
 
     IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
@@ -464,6 +474,37 @@ internal partial class IISHttpContext : IFeatureCollection,
     internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
     {
         return IsHttps ? this : null;
+    }
+
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        channelBindingToken = default;
+
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint
+        // binding (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return false;
+        }
+
+        if (!IsHttps)
+        {
+            return false;
+        }
+
+        // Whether http.sys actually populates HTTP_REQUEST_CHANNEL_BIND_STATUS is governed
+        // by IIS configuration (<system.webServer>/<security>/<authentication>/
+        // extendedProtection), not by managed code — IIS owns the URL group properties.
+        // If IIS has not enabled per-request channel binding, GetChannelBindingToken()
+        // will return null and we will report false to the caller.
+        var bytes = GetChannelBindingToken();
+        if (bytes is not null)
+        {
+            channelBindingToken = bytes;
+            return true;
+        }
+
+        return false;
     }
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
@@ -513,6 +554,48 @@ internal partial class IISHttpContext : IFeatureCollection,
         if (!HasResponseStarted)
         {
             ResponseHeaders.Connection = ConnectionClose;
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.LocalEndPoint
+    {
+        get
+        {
+            var localIp = ((IHttpConnectionFeature)this).LocalIpAddress;
+            if (localIp is not null)
+            {
+                return new IPEndPoint(localIp, ((IHttpConnectionFeature)this).LocalPort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint localIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).LocalIpAddress = localIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).LocalPort = localIPEndPoint.Port;
+            }
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.RemoteEndPoint
+    {
+        get
+        {
+            var remoteIp = ((IHttpConnectionFeature)this).RemoteIpAddress;
+            if (remoteIp is not null)
+            {
+                return new IPEndPoint(remoteIp, ((IHttpConnectionFeature)this).RemotePort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint remoteIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).RemoteIpAddress = remoteIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).RemotePort = remoteIPEndPoint.Port;
+            }
         }
     }
 }

@@ -135,7 +135,16 @@ public sealed class GridSort<TGridItem>
     // Not sure we really want this level of complexity, but it converts expressions like @(c => c.Medals.Gold) to "Medals.Gold"
     private static string ToPropertyName(LambdaExpression expression)
     {
-        if (expression.Body is not MemberExpression body)
+        var expressionBody = expression.Body;
+
+        // Handle UnaryExpressions that can occur due to implicit conversions, such as nullable value types
+        if (expressionBody.NodeType == ExpressionType.Convert ||
+            expressionBody.NodeType == ExpressionType.ConvertChecked)
+        {
+            expressionBody = ((UnaryExpression)expressionBody).Operand;
+        }
+
+        if (expressionBody is not MemberExpression body)
         {
             throw new ArgumentException(ExpressionNotRepresentableMessage);
         }

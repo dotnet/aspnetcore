@@ -114,6 +114,7 @@ internal class DuplexPipeStream : Stream
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
     {
         while (true)
@@ -152,21 +153,21 @@ internal class DuplexPipeStream : Stream
 
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(ReadAsync(buffer, offset, count), callback, state);
     }
 
     public override int EndRead(IAsyncResult asyncResult)
     {
-        return TaskToApm.End<int>(asyncResult);
+        return TaskToAsyncResult.End<int>(asyncResult);
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count), callback, state);
     }
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        TaskToApm.End(asyncResult);
+        TaskToAsyncResult.End(asyncResult);
     }
 }

@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
-
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
@@ -22,15 +25,15 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", pathParameter.Name);
             Assert.Equal(ParameterLocation.Path, pathParameter.In);
 
-            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters);
+            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", queryParameter.Name);
             Assert.Equal(ParameterLocation.Query, queryParameter.In);
 
-            var headerParameter = Assert.Single(document.Paths["/api"].Operations[OperationType.Get].Parameters);
+            var headerParameter = Assert.Single(document.Paths["/api"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("X-Header", headerParameter.Name);
             Assert.Equal(ParameterLocation.Header, headerParameter.In);
         });
@@ -51,13 +54,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", pathParameter.Name);
             Assert.True(pathParameter.Required);
-            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[OperationType.Get].Parameters);
+            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("guid", guidParameter.Name);
             Assert.True(guidParameter.Required);
-            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[OperationType.Get].Parameters);
+            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("isCompleted", isCompletedParameter.Name);
             Assert.True(isCompletedParameter.Required);
         });
@@ -77,13 +80,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters);
+            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", queryParameter.Name);
             Assert.True(queryParameter.Required);
-            var nullableQueryParameter = Assert.Single(document.Paths["/api/users"].Operations[OperationType.Get].Parameters);
+            var nullableQueryParameter = Assert.Single(document.Paths["/api/users"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", nullableQueryParameter.Name);
             Assert.False(nullableQueryParameter.Required);
-            var defaultQueryParameter = Assert.Single(document.Paths["/api/projects"].Operations[OperationType.Get].Parameters);
+            var defaultQueryParameter = Assert.Single(document.Paths["/api/projects"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", defaultQueryParameter.Name);
             Assert.False(defaultQueryParameter.Required);
         });
@@ -103,13 +106,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var headerParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters);
+            var headerParameter = Assert.Single(document.Paths["/api/todos"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", headerParameter.Name);
             Assert.True(headerParameter.Required);
-            var nullableHeaderParameter = Assert.Single(document.Paths["/api/users"].Operations[OperationType.Get].Parameters);
+            var nullableHeaderParameter = Assert.Single(document.Paths["/api/users"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", nullableHeaderParameter.Name);
             Assert.False(nullableHeaderParameter.Required);
-            var defaultHeaderParameter = Assert.Single(document.Paths["/api/projects"].Operations[OperationType.Get].Parameters);
+            var defaultHeaderParameter = Assert.Single(document.Paths["/api/projects"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", defaultHeaderParameter.Name);
             Assert.False(defaultHeaderParameter.Required);
         });
@@ -132,13 +135,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", pathParameter.Name);
             Assert.True(pathParameter.Required);
-            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[OperationType.Get].Parameters);
+            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("guid", guidParameter.Name);
             Assert.True(guidParameter.Required);
-            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[OperationType.Get].Parameters);
+            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("isCompleted", isCompletedParameter.Name);
             Assert.True(isCompletedParameter.Required);
         });
@@ -158,9 +161,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var usersOperation = document.Paths["/api/users"].Operations[OperationType.Post];
+            var usersOperation = document.Paths["/api/users"].Operations[HttpMethod.Post];
             Assert.Null(usersOperation.Parameters);
-            var todosOperation = document.Paths["/api/todos"].Operations[OperationType.Post];
+            var todosOperation = document.Paths["/api/todos"].Operations[HttpMethod.Post];
             Assert.Null(todosOperation.Parameters);
         });
     }
@@ -182,12 +185,394 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            Assert.Null(document.Paths["/api/accept"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/accept-lower"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/authorization"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/authorization-lower"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/content-type"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/content-type-lower"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/accept"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/accept-lower"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization-lower"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type-lower"].Operations[HttpMethod.Get].Parameters);
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_ToleratesCustomBindingSource()
+    {
+        var action = CreateActionDescriptor(nameof(ActionWithCustomBinder));
+
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = document.Paths["/custom-binding"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("model", parameter.Name);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
+        });
+    }
+
+    [Route("/custom-binding")]
+    private void ActionWithCustomBinder([ModelBinder(BinderType = typeof(CustomBinder))] Todo model) { }
+
+    public class CustomBinder : IModelBinder
+    {
+        public Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form", ([FromForm] FormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.4",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the item",
+                        "nullable": true
+                      },
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  "IFormFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormParameter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-param", ([FromForm, Description("The ID")] int id) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-param": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormComplexParameter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-complex", ([FromForm, Description("The Complex Object")] FormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-complex": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "description": "The Complex Object",
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "description": "The Complex Object",
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
+                      },
+                      "file": {
+                        "description": "The file to upload",
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  "IFormFile": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    private class FormWithDescription
+    {
+        [Description("The name of the item")]
+        public string Name { get; set; }
+
+        [Description("The file to upload")]
+        public IFormFile File { get; set; }
+    }
+
+#nullable enable
+    private class NullableFormWithDescription
+    {
+        [Description("The name of the item")]
+        public string? Name { get; set; }
+
+        [Description("The file to upload")]
+        public IFormFile? File { get; set; }
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnNullableFromFormProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-nullable", ([FromForm] NullableFormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-nullable": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "IFormFile": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
+                  },
+                  "NullableFormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
+                      },
+                      "file": {
+                        "oneOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "description": "The file to upload",
+                            "$ref": "#/components/schemas/IFormFile"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 }

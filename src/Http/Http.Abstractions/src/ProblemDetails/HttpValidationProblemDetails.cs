@@ -47,5 +47,5 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
     /// </summary>
     [JsonPropertyName("errors")]
-    public IDictionary<string, string[]> Errors { get; set; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
+    public IDictionary<string, string[]> Errors { get; set; }
 }

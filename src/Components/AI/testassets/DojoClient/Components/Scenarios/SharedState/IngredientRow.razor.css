@@ -1,0 +1,71 @@
+.ingredient-row {
+    align-items: center;
+    background: #fff;
+    border-radius: 11px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 9%);
+    box-sizing: border-box;
+    display: flex;
+    gap: 10px;
+    min-height: 67px;
+    min-width: 0;
+    padding: 10px 12px;
+    position: relative;
+}
+
+.ingredient-row__icon {
+    align-items: center;
+    background: #f5f5f7;
+    border-radius: 50%;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    height: 38px;
+    justify-content: center;
+    width: 38px;
+}
+
+.ingredient-row__fields {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.ingredient-row input {
+    background: transparent;
+    border: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+    min-width: 0;
+    outline: 0;
+    padding: 1px 0;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.ingredient-row__name {
+    color: #222;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.ingredient-row__amount {
+    color: #727278;
+    font-size: 0.78rem;
+}
+
+.ingredient-row input:focus {
+    box-shadow: 0 1px #ff6542;
+}
+
+.ingredient-row .recipe-editor__remove-btn {
+    opacity: 0;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+}
+
+.ingredient-row:hover .recipe-editor__remove-btn,
+.ingredient-row:focus-within .recipe-editor__remove-btn {
+    opacity: 1;
+}

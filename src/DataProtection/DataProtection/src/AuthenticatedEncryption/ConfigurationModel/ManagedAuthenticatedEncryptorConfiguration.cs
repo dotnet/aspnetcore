@@ -77,34 +77,4 @@ public sealed class ManagedAuthenticatedEncryptorConfiguration : AlgorithmConfig
         using var encryptor = factory.CreateAuthenticatedEncryptorInstance(secret, this);
         encryptor.PerformSelfTest();
     }
-
-    // Any changes to this method should also be be reflected
-    // in ManagedAuthenticatedEncryptorDescriptorDeserializer.FriendlyNameToType.
-    private static string TypeToFriendlyName(Type type)
-    {
-        if (type == typeof(Aes))
-        {
-            return nameof(Aes);
-        }
-        else if (type == typeof(HMACSHA1))
-        {
-            return nameof(HMACSHA1);
-        }
-        else if (type == typeof(HMACSHA256))
-        {
-            return nameof(HMACSHA256);
-        }
-        else if (type == typeof(HMACSHA384))
-        {
-            return nameof(HMACSHA384);
-        }
-        else if (type == typeof(HMACSHA512))
-        {
-            return nameof(HMACSHA512);
-        }
-        else
-        {
-            return type.AssemblyQualifiedName!;
-        }
-    }
 }

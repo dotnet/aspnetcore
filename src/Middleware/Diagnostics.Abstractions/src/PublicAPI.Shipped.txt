@@ -1,6 +1,6 @@
 #nullable enable
-~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages) -> void
 ~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages, string failureSummary) -> void
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages) -> void
 ~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompiledContent.get -> string
 ~Microsoft.AspNetCore.Diagnostics.CompilationFailure.FailureSummary.get -> string
 ~Microsoft.AspNetCore.Diagnostics.CompilationFailure.Messages.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage>

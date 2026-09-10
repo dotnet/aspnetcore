@@ -16,13 +16,18 @@ public class InitCommandFactory : ICommand
 {
     public CommandLineOptions Options { get; }
 
-    internal static void Configure(CommandLineApplication command, CommandLineOptions options)
+    internal static void Configure(CommandLineApplication command, CommandLineOptions options, CommandOption optionFile)
     {
         command.Description = "Set a user secrets ID to enable secret storage";
         command.HelpOption();
 
         command.OnExecute(() =>
         {
+            if (optionFile.HasValue())
+            {
+                throw new CommandParsingException(command, Resources.Error_InitNotSupportedForFileBasedApps);
+            }
+
             options.Command = new InitCommandFactory(options);
         });
     }

@@ -65,6 +65,7 @@ internal sealed class EndpointModelMetadata : ModelMetadata
             || underlyingType == typeof(TimeSpan)
             || underlyingType == typeof(decimal)
             || underlyingType == typeof(Guid)
-            || underlyingType == typeof(Uri) ? type : typeof(string);
+            || underlyingType == typeof(Uri)
+            || underlyingType.IsEnum ? type : typeof(string);
     }
 }

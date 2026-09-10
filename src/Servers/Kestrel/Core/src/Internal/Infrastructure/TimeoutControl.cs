@@ -16,7 +16,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
     private long _lastTimestamp;
     private long _timeoutTimestamp = long.MaxValue;
 
-    private readonly object _readTimingLock = new object();
+    private readonly Lock _readTimingLock = new();
     private MinDataRate? _minReadRate;
     private long _minReadRateGracePeriodTicks;
     private bool _readTimingEnabled;
@@ -28,7 +28,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
     private int _concurrentIncompleteRequestBodies;
     private int _concurrentAwaitingReads;
 
-    private readonly object _writeTimingLock = new object();
+    private readonly Lock _writeTimingLock = new();
     private int _concurrentAwaitingWrites;
     private long _writeTimingTimeoutTimestamp;
 
@@ -91,9 +91,9 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         // This isn't (currently) checked. Reasons:
         // - We're not sure how often people in the real-world run into this. If it
         //   becomes a problem then we'll need to revisit.
-        // - There isn't a way to get this information easily and efficently from msquic.
+        // - There isn't a way to get this information easily and efficiently from msquic.
         // - With QUIC, bytes can be received out of order. The connection window could
-        //   be filled up out of order so that availablility is low but there is still
+        //   be filled up out of order so that availability is low but there is still
         //   no data available to use. Would need a smarter way to handle this situation.
         if (_connectionInputFlowControl?.IsAvailabilityLow == true)
         {
@@ -142,8 +142,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 
     private void CheckForWriteDataRateTimeout(long timestamp)
     {
-        var timeout = false;
-
+        bool timeout;
         lock (_writeTimingLock)
         {
             // Assume overly long tick intervals are the result of server resource starvation.

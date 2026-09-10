@@ -284,8 +284,8 @@ public class CookieTempDataProviderTest
         Assert.Single(responseCookies);
         var cookie = responseCookies.Single();
         Assert.NotNull(cookie);
-        Assert.Equal(CookieTempDataProvider.CookieName, cookie.Name);
-        Assert.Equal(string.Empty, cookie.Value);
+        Assert.Equal(CookieTempDataProvider.CookieName, cookie.Name.AsSpan());
+        Assert.Equal(string.Empty, cookie.Value.AsSpan());
         Assert.NotNull(cookie.Expires);
         Assert.True(cookie.Expires.Value < DateTimeOffset.Now); // expired cookie
     }

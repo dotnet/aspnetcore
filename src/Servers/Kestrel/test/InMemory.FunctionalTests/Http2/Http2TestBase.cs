@@ -112,7 +112,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected static readonly byte[] _noData = new byte[0];
     protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-    private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+    private readonly MemoryPool<byte> _memoryPool = TestMemoryPoolFactory.Create();
 
     internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
     internal readonly HPackDecoder _hpackDecoder;
@@ -131,7 +131,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     protected readonly RequestFields _receivedRequestFields = new RequestFields();
     protected readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
-    protected readonly object _abortedStreamIdsLock = new object();
+    protected readonly Lock _abortedStreamIdsLock = new();
     protected readonly TaskCompletionSource _closingStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 

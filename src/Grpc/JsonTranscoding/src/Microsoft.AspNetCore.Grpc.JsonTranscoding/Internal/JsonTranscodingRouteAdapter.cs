@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 ///
 /// The purpose of this type is to add support for parameters spanning multiple segments and
 /// anonymous any or catch-all segments. This type transforms an HTTP route into an ASP.NET Core
-/// route by rewritting it to a compatible format and providing actions to reconstruct parameters
+/// route by rewriting it to a compatible format and providing actions to reconstruct parameters
 /// that span multiple segments.
 ///
 /// <para>

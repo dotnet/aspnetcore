@@ -477,8 +477,7 @@ public class ServerTests : LoggedTest
 
             run.SetResult();
 
-            string response = await responseTask;
-            Assert.Equal("Hello World", response);
+            await Assert.ThrowsAnyAsync<Exception>(() => responseTask);
         }
     }
 
@@ -514,8 +513,7 @@ public class ServerTests : LoggedTest
 
             run.SetResult();
 
-            string response = await responseTask;
-            Assert.Equal("Hello World", response);
+            await Assert.ThrowsAnyAsync<Exception>(() => responseTask);
         }
     }
 
@@ -551,8 +549,7 @@ public class ServerTests : LoggedTest
 
             run.SetResult();
 
-            string response = await responseTask;
-            Assert.Equal("Hello World", response);
+            await Assert.ThrowsAnyAsync<Exception>(() => responseTask);
         }
     }
 

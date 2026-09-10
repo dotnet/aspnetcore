@@ -52,6 +52,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".atom", "application/atom+xml" },
                 { ".au", "audio/basic" },
                 { ".avi", "video/x-msvideo" },
+                { ".avif", "image/avif" },
                 { ".axs", "application/olescript" },
                 { ".bas", "text/plain" },
                 { ".bcpio", "application/x-bcpio" },

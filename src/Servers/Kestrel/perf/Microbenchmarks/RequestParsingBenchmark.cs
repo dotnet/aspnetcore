@@ -24,7 +24,7 @@ public class RequestParsingBenchmark
     [IterationSetup]
     public void Setup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 

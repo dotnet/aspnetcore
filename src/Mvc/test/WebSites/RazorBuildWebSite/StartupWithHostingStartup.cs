@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.Extensions.Hosting;
 
 namespace RazorBuildWebSite;
 
@@ -14,7 +15,9 @@ public class StartupWithHostingStartup
         // RuntimeCompilation supports a hosting startup that adds services before AddRazorPagesServices is invoked. This startup simulates
         // this configuration by simply putting the call to AddRazorRuntimeCompilation ahead of AddControllersWithViews / AddRazorPages.
         var mvcBuilder = new MockMvcBuilder { Services = services, };
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         mvcBuilder.AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider));
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         services.AddSingleton(fileProvider);
         services.AddControllersWithViews();
@@ -34,17 +37,21 @@ public class StartupWithHostingStartup
 
     public static void Main(string[] args)
     {
-        var host = CreateWebHostBuilder(args)
+        using var host = CreateHostBuilder(args)
             .Build();
 
         host.Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-        .UseContentRoot(Directory.GetCurrentDirectory())
-        .UseStartup<Startup>()
-        .UseKestrel();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<Startup>()
+                    .UseKestrel();
+            });
 
     private class MockMvcBuilder : IMvcBuilder
     {

@@ -214,7 +214,7 @@ public class HeaderDictionaryTypeExtensionsTest
     public void GetListT_CookieHeaderValue_Success()
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers.Cookie = "cookie1=a,cookie2=b";
+        context.Request.Headers.Cookie = "cookie1=a;cookie2=b";
 
         var result = context.Request.GetTypedHeaders().GetList<CookieHeaderValue>(HeaderNames.Cookie);
 

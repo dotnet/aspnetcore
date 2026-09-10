@@ -33,12 +33,29 @@ internal static class HttpCharacters
     // HTAB, [VCHAR, SP]
     private static readonly SearchValues<char> _allowedFieldChars = SearchValues.Create("\t !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" + AlphaNumeric);
 
-    // Values are [0x00, 0x1F] without 0x09 (HTAB) and with 0x7F.
-    private static readonly SearchValues<char> _invalidFieldChars = SearchValues.Create(
+    // CTL characters (RFC 5234 appendix B.1: %x00-1F / %x7F) excluding HTAB (0x09).
+    private const string ControlCharsExceptHtab =
         "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
-        "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u007F");
+        "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u007F";
 
-    public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedAuthorityBytes) >= 0;
+    private const string Htab = "\u0009";
+    private const string Sp = "\u0020";
+
+    // Values are [0x00, 0x1F] without 0x09 (HTAB) and with 0x7F.
+    private static readonly SearchValues<char> _invalidFieldChars = SearchValues.Create(ControlCharsExceptHtab);
+
+    // The query component of a request target is a URI component, so it follows the URI generic syntax grammar:
+    //   HTTP/2  ":path" = absolute-path [ "?" query ]  - https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
+    //   HTTP/3  ":path" = path-absolute [ "?" query ]  - https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
+    //   query   = *( pchar / "/" / "?" )               - https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    //   pchar   = unreserved / pct-encoded / sub-delims / ":" / "@"
+    //
+    // Rejected values are CTL ([0x00, 0x1F] and 0x7F, including 0x09 HTAB) and 0x20 (SP).
+    // Everything else is allowed, which is laxer than RFC 3986: < > " \ ^ ` { | } and non-ASCII are
+    // not valid query characters but are accepted for compatibility with existing clients.
+    private static readonly SearchValues<char> _invalidQueryChars = SearchValues.Create(ControlCharsExceptHtab + Htab + Sp);
+
+    public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> span) => span.ContainsAnyExcept(_allowedAuthorityBytes);
 
     public static int IndexOfInvalidHostChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedHostChars);
 
@@ -46,10 +63,15 @@ internal static class HttpCharacters
 
     public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedTokenBytes);
 
+    public static bool IsValidTokenByte(byte b) => _allowedTokenBytes.Contains(b);
+
     // Follows field-value rules in https://tools.ietf.org/html/rfc7230#section-3.2
     // Disallows characters > 0x7E.
     public static int IndexOfInvalidFieldValueChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedFieldChars);
 
     // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
     public static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span) => span.IndexOfAny(_invalidFieldChars);
+
+    // Rejects CTL ([0x00, 0x1F] and 0x7F, including 0x09 HTAB) and 0x20 (SP).
+    public static bool ContainsInvalidQueryChar(ReadOnlySpan<char> span) => span.ContainsAny(_invalidQueryChars);
 }

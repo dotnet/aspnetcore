@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
+import { ComponentDescriptor, isMetadataComment } from '../Services/ComponentDescriptorDiscovery';
 
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
@@ -99,8 +99,9 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   }
 
   const childrenArray: LogicalElement[] = [];
+  const domContainer = getLogicalDomNodeContainer(element);
 
-  if (element.childNodes.length > 0) {
+  if (domContainer.childNodes.length > 0) {
     // Normally it's good to assert that the element has started empty, because that's the usual
     // situation and we probably have a bug if it's not. But for the elements that contain prerendered
     // root components, we want to let them keep their content until we replace it.
@@ -108,7 +109,13 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
       throw new Error('New logical elements must start empty, or allowExistingContents must be true');
     }
 
-    element.childNodes.forEach(child => {
+    domContainer.childNodes.forEach(child => {
+      // Skip metadata comments that will be consumed during discovery
+      // These are not components and should not be part of the logical tree
+      if (isMetadataComment(child)) {
+        return;
+      }
+
       const childLogicalElement = toLogicalElement(child, /* allowExistingContents */ true);
       childLogicalElement[logicalParentPropname] = element;
       childrenArray.push(childLogicalElement);
@@ -174,8 +181,22 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 
   const newSiblings = getLogicalChildrenArray(parent);
+
+  // Remove any orphaned nodes (disconnected from DOM) from the siblings array
+  // and adjust the insertion index accordingly. These can occur when metadata
+  // comments are stripped from the DOM but remain in the logical children array.
+  for (let i = newSiblings.length - 1; i >= 0; i--) {
+    const sibling = newSiblings[i] as any as Node;
+    if (!sibling.parentNode) {
+      newSiblings.splice(i, 1);
+      if (i < childIndex) {
+        childIndex--;
+      }
+    }
+  }
+
   if (childIndex < newSiblings.length) {
-    // Insert
+    // Insert - nextSibling is guaranteed to be connected after orphan cleanup
     const nextSibling = newSiblings[childIndex] as any as Node;
     nextSibling.parentNode!.insertBefore(nodeToInsert, nextSibling);
     newSiblings.splice(childIndex, 0, childAsLogicalElement);
@@ -236,6 +257,14 @@ export function isSvgElement(element: LogicalElement): boolean {
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 
+// MathML elements need to be created with the MathML namespace to render correctly.
+// Similar to SVG, MathML has its own namespace (http://www.w3.org/1998/Math/MathML)
+// and elements created without this namespace will not render properly in browsers.
+export function isMathMLElement(element: LogicalElement): boolean {
+  const closestElement = getClosestDomElement(element) as any;
+  return closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
+}
+
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
@@ -248,6 +277,16 @@ export function getLogicalNextSibling(element: LogicalElement): LogicalElement |
 
 export function isLogicalElement(element: Node): boolean {
   return logicalChildrenPropname in element;
+}
+
+// This function returns all the descendants of the logical element before yielding the element
+// itself.
+export function *depthFirstNodeTreeTraversal(element: LogicalElement): Iterable<LogicalElement> {
+  const children = getLogicalChildrenArray(element);
+  for (const child of children) {
+    yield* depthFirstNodeTreeTraversal(child);
+  }
+  yield element;
 }
 
 export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
@@ -330,7 +369,8 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
   if (parent instanceof Element || parent instanceof DocumentFragment) {
-    parent.appendChild(child);
+    const domContainer = getLogicalDomNodeContainer(parent);
+    domContainer.appendChild(child);
   } else if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
     if (parentLogicalNextSibling) {
@@ -345,6 +385,13 @@ function appendDomNode(child: Node, parent: LogicalElement) {
     // Should never happen
     throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);
   }
+}
+
+function getLogicalDomNodeContainer(parent: Node): Element | DocumentFragment {
+  if (parent instanceof HTMLTemplateElement) {
+    return parent.content;
+  }
+  return parent as Element | DocumentFragment;
 }
 
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
@@ -363,7 +410,7 @@ function findLastDomNodeInRange(element: LogicalElement): Node {
     // a logical ancestor that does have one, or a physical element
     const logicalParent = getLogicalParent(element)!;
     return logicalParent instanceof Element || logicalParent instanceof DocumentFragment
-      ? logicalParent.lastChild!
+      ? getLogicalDomNodeContainer(logicalParent).lastChild!
       : findLastDomNodeInRange(logicalParent);
   }
 }

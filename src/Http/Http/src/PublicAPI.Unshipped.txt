@@ -1,2 +1,1 @@
 #nullable enable
-override Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.ToString() -> string!

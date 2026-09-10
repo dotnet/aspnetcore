@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.slnx",
+    "projects": [
+      "src\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
+      "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj"
+    ]
+  }
+}

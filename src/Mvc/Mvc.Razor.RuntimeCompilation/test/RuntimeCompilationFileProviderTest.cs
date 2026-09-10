@@ -12,11 +12,13 @@ public class RuntimeCompilationFileProviderTest
     public void GetFileProvider_ThrowsIfNoConfiguredFileProviders()
     {
         // Arrange
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         var expected =
             $"'{typeof(MvcRazorRuntimeCompilationOptions).FullName}.{nameof(MvcRazorRuntimeCompilationOptions.FileProviders)}' must " +
             $"not be empty. At least one '{typeof(IFileProvider).FullName}' is required to locate a view for " +
             "rendering.";
         var options = Options.Create(new MvcRazorRuntimeCompilationOptions());
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         var fileProvider = new RuntimeCompilationFileProvider(options);
 

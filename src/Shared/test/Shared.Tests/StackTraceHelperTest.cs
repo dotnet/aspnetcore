@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.Internal;
 
 public class StackTraceHelperTest
 {
+    private static bool IsMono => Type.GetType("Mono.RuntimeStructs") != null;
+    
     [Fact]
     public void StackTraceHelper_IncludesLineNumbersForFiles()
     {
@@ -179,7 +181,30 @@ public class StackTraceHelperTest
         var methodNames = stackFrames.Select(stackFrame => stackFrame.MethodDisplayInfo.ToString()).ToArray();
 
         // Assert
-        Assert.Equal(expectedCallStack, methodNames);
+        Assert.Equal(expectedCallStack.Count, methodNames.Length);
+
+        if (IsMono)
+        {
+            // On Mono, verify key components are present but allow for runtime-specific formatting
+            Assert.Contains("Iterator()+MoveNext()", methodNames[0]);
+            Assert.Contains("string.Join", methodNames[1]);
+            Assert.Contains("GenericClass<T>.GenericMethod<V>", methodNames[2]);
+            Assert.Contains("MethodAsync(int value)", methodNames[3]);
+
+            // For async generic method on Mono, check for either resolved form or state machine form
+            var asyncGenericFrame = methodNames[4];
+            Assert.True(
+                asyncGenericFrame.Contains("MethodAsync<TValue>(TValue value)") ||  // Resolved form
+                asyncGenericFrame.Contains("MethodAsync") && asyncGenericFrame.Contains("TValue"), // State machine form
+                $"Expected async generic method info in: {asyncGenericFrame}");
+
+            Assert.Contains("Method(string value)", methodNames[5]);
+            Assert.Contains("StackTraceHelper_ProducesReadableOutput()", methodNames[6]);
+        }
+        else
+        {
+            Assert.Equal(expectedCallStack, methodNames);
+        }
     }
 
     [Fact]
@@ -242,9 +267,20 @@ public class StackTraceHelperTest
         // Assert
         var frame = frames[0];
         Assert.Null(frame.FilePath);
-        // lambda_method{RandomNumber}(Closure )
-        Assert.StartsWith("lambda_method", frame.MethodDisplayInfo.ToString());
-        Assert.EndsWith("(Closure )", frame.MethodDisplayInfo.ToString());
+        var methodDisplay = frame.MethodDisplayInfo.ToString();
+
+        if (IsMono)
+        {
+            // On Mono, lambda methods may include declaring type prefix (e.g., "object.lambda_method34")
+            Assert.Contains("lambda_method", methodDisplay);
+            Assert.EndsWith("(Closure )", methodDisplay);
+        }
+        else
+        {
+            // On CoreCLR, maintain strict check to prevent regressions
+            Assert.StartsWith("lambda_method", methodDisplay);
+            Assert.EndsWith("(Closure )", methodDisplay);
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]

@@ -3,9 +3,9 @@
 
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,11 +20,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
     private readonly ILogger _logger;
+    private readonly CircuitMetrics _circuitMetrics;
 
     public CircuitFactory(
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
+        CircuitMetrics circuitMetrics,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
@@ -32,6 +34,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         _circuitIdFactory = circuitIdFactory;
         _options = options.Value;
         _logger = _loggerFactory.CreateLogger<CircuitFactory>();
+
+        _circuitMetrics = circuitMetrics;
     }
 
     public async ValueTask<CircuitHost> CreateCircuitHostAsync(
@@ -50,6 +54,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
+
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
@@ -69,8 +75,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             // This is the case on Blazor Web scenarios, which will initialize the state
             // when the first set of components is provided via an UpdateRootComponents call.
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-            await appLifetime.RestoreStateAsync(store);
-            RestoreAntiforgeryToken(scope);
+            appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
+            await appLifetime.RestoreStateAsync(store, RestoreContext.InitialValue);
         }
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
@@ -85,6 +91,9 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             jsRuntime,
             jsComponentInterop,
             resourceCollection);
+
+        circuitActivitySource.Init(new Infrastructure.Server.ComponentsActivityLinkStore(renderer));
+        renderer.GetOrCreateWebRootComponentManager();
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to
@@ -104,6 +113,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             jsRuntime,
             navigationManager,
             circuitHandlers,
+            _circuitMetrics,
+            circuitActivitySource,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 
@@ -112,15 +123,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         circuitHost.SetCircuitUser(user);
 
         return circuitHost;
-    }
-
-    private static void RestoreAntiforgeryToken(AsyncServiceScope scope)
-    {
-        // GetAntiforgeryToken makes sure the antiforgery token is restored from persitent component
-        // state and is available on the circuit whether or not is used by a component on the first
-        // render.
-        var antiforgery = scope.ServiceProvider.GetService<AntiforgeryStateProvider>();
-        _ = antiforgery?.GetAntiforgeryToken();
     }
 
     private static partial class Log

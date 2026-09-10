@@ -1,0 +1,9 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\..\\AspNetCore.slnx",
+    "projects" : [
+      "src\\Features\\JsonPatch.SystemTextJson\\src\\Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj",
+      "src\\Features\\JsonPatch.SystemTextJson\\test\\Microsoft.AspNetCore.JsonPatch.SystemTextJson.Tests.csproj"
+    ]
+  }
+}

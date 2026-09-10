@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,12 +88,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
@@ -120,26 +121,64 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 });
         }
 
         Assert.Equal(0, authCount);
+    }
+
+    [Fact]
+    public void MapHubAppliesAuthMetadataToRefreshEndpoint()
+    {
+        var policy1 = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var req = new TestRequirement();
+        using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
+        {
+            options.EnableAuthenticationRefresh = true;
+        })
+        .RequireAuthorization(policy1)
+        .RequireAuthorization(policy => policy.AddRequirements(req))))
+        {
+            host.Start();
+
+            var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+            // We register 3 endpoints (/negotiate, /refresh and /)
+            Assert.Collection(dataSource.Endpoints,
+                endpoint =>
+                {
+                    Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                    AssertAuthMetadata(endpoint, policy1, req);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path/refresh", endpoint.DisplayName);
+                    AssertAuthMetadata(endpoint, policy1, req);
+                    Assert.NotNull(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path", endpoint.DisplayName);
+                    AssertAuthMetadata(endpoint, policy1, req);
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
+                });
+        }
     }
 
     [Fact]
@@ -159,12 +198,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
@@ -217,12 +256,12 @@ public class MapSignalRTests
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
-                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 });
         }
 
@@ -390,6 +429,16 @@ public class MapSignalRTests
 
     private class TestRequirement : IAuthorizationRequirement
     {
+    }
+
+    private static void AssertAuthMetadata(Endpoint endpoint, AuthorizationPolicy policy, TestRequirement requirement)
+    {
+        Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
+        var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
+        Assert.Equal(2, policies.Count);
+        Assert.Equal(policy, policies[0]);
+        Assert.Single(policies[1].Requirements);
+        Assert.Equal(requirement, policies[1].Requirements.First());
     }
 
     private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)

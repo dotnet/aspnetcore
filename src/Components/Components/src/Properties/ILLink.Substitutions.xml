@@ -1,7 +1,13 @@
 <linker>
   <assembly fullname="Microsoft.AspNetCore.Components">
     <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadManager" feature="System.Reflection.Metadata.MetadataUpdater.IsSupported" featurevalue="false">
-      <method signature="System.Boolean get_MetadataUpdateSupported()" body="stub" value="false"  />
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
+    </type>
+    <type fullname="Microsoft.AspNetCore.Components.ComponentsMetrics" feature="System.Diagnostics.Metrics.Meter.IsSupported" featurevalue="false">
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
+    </type>
+    <type fullname="Microsoft.AspNetCore.Components.ComponentsActivitySource" feature="System.Diagnostics.Metrics.Meter.IsSupported" featurevalue="false">
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
     </type>
     <type fullname="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport" feature="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport" featurevalue="false">
       <method signature="System.Boolean get_IsEnabled()" body="stub" value="false"  />

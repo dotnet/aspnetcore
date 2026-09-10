@@ -337,5 +337,20 @@ public partial class HubConnection
 
         [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
         public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
+
+        [LoggerMessage(94, LogLevel.Error, "Failed to bind argument received in stream '{StreamId}'.", EventName = "StreamBindingFailure")]
+        public static partial void StreamBindingFailure(ILogger logger, string? streamId, Exception exception);
+
+        [LoggerMessage(95, LogLevel.Debug, "Starting authentication token refresh.", EventName = "AuthenticationRefreshStarting")]
+        public static partial void AuthenticationRefreshStarting(ILogger logger);
+
+        [LoggerMessage(96, LogLevel.Debug, "Authentication token refresh completed. New TTL: {TokenLifetime}.", EventName = "AuthenticationRefreshCompleted")]
+        public static partial void AuthenticationRefreshCompleted(ILogger logger, TimeSpan? tokenLifetime);
+
+        [LoggerMessage(97, LogLevel.Error, "Authentication token refresh failed.", EventName = "AuthenticationRefreshFailed")]
+        public static partial void AuthenticationRefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(98, LogLevel.Error, "Authentication refresh user callback threw an exception.", EventName = "AuthenticationRefreshCallbackFailed")]
+        public static partial void AuthenticationRefreshCallbackFailed(ILogger logger, Exception exception);
     }
 }

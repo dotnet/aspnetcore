@@ -27,7 +27,7 @@ public class JumpTableMultipleEntryBenchmark
 
         for (var i = 0; i < _strings.Length; i++)
         {
-            _segments[i] = new PathSegment(0, _strings[i].Length);
+            _segments[i] = new PathSegment(1, _strings[i].Length - 2);
         }
 
         var samples = new int[Count];
@@ -39,7 +39,9 @@ public class JumpTableMultipleEntryBenchmark
         var entries = new List<(string text, int _)>();
         for (var i = 0; i < samples.Length; i++)
         {
-            entries.Add((_strings[samples[i]], i));
+            var sampleIndex = samples[i];
+            var segment = _segments[sampleIndex];
+            entries.Add((_strings[sampleIndex].Substring(segment.Start, segment.Length), i));
         }
 
         _linearSearch = new LinearSearchJumpTable(0, -1, entries.ToArray());

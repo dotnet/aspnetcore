@@ -33,7 +33,6 @@ public class StartupWithMapFallbackToClientSideBlazor
         // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
         app.Map("/subdir", subApp =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
             subApp.UseBlazorFrameworkFiles();
             subApp.UseStaticFiles();
 

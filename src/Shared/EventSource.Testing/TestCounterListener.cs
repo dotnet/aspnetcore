@@ -9,6 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Internal;
 
+internal sealed class CounterValues(string counterName, IAsyncEnumerator<double> values)
+{
+    public string CounterName { get; } = counterName;
+    public IAsyncEnumerator<double> Values { get; } = values;
+}
+
 internal sealed class TestCounterListener : EventListener
 {
     private readonly Dictionary<string, Channel<double>> _counters = new Dictionary<string, Channel<double>>();
@@ -30,9 +36,10 @@ internal sealed class TestCounterListener : EventListener
         _eventSourceName = eventSourceName;
     }
 
-    public IAsyncEnumerable<double> GetCounterValues(string counterName, CancellationToken cancellationToken = default)
+    public CounterValues GetCounterValues(string counterName, CancellationToken cancellationToken = default)
     {
-        return _counters[counterName].Reader.ReadAllAsync(cancellationToken);
+        var values = _counters[counterName].Reader.ReadAllAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
+        return new CounterValues(counterName, values);
     }
 
     protected override void OnEventWritten(EventWrittenEventArgs eventData)

@@ -1,0 +1,24 @@
+﻿@page "/persist-services-state"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>Persist Services State Components</h1>
+
+<TestContentPackage.PersistServicesState @rendermode="@_renderMode" />
+
+@code {
+    private IComponentRenderMode _renderMode;
+
+    [Parameter, SupplyParameterFromQuery(Name = "mode")]
+    public string Mode { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _renderMode = Mode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Invalid mode: {Mode}")
+        };
+    }
+}

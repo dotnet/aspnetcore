@@ -152,6 +152,25 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesIndexedHeaderField_DynamicTable_ReferencedEntryRemovedOnInsertion()
+        {
+            // Pre-populate the dynamic table so we'll have something to reference.
+            // This entry will have index 62 (0x3E).
+            _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
+            Assert.Equal(1, _dynamicTable.Count);
+
+            Assert.InRange(_dynamicTable.MaxSize, 1, _literalHeaderNameBytes.Length); // Assert that our string will be too big
+
+            byte[] encoded = (new byte[] { 0x40 | 0x3E }) // Indexing enabled (0x40) | dynamic table (62 = 0x3E) as a 6-integer, 
+                .Concat(_literalHeaderName) // A header value that's too large to fit in the dynamic table
+                .ToArray();
+
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+            Assert.Equal(0, _dynamicTable.Count); // The large entry caused the table to be wiped
+            Assert.Equal(_literalHeaderNameString, _handler.DecodedHeaders[_headerNameString]); // but we got the header anyway
+        }
+
+        [Fact]
         public void DecodesIndexedHeaderField_OutOfRange_Error()
         {
             HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
@@ -656,6 +675,45 @@ namespace System.Net.Http.Unit.Tests.HPack
 
             HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
             Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxHeaderFieldSize), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
+        public void HuffmanDecodedHeaderName_ExceedsLimitAfterDecoding_Throws()
+        {
+            // '0' (ASCII 48) has a 5-bit Huffman code (00000).
+            // 16 '0' characters = 80 Huffman bits = 10 encoded bytes, but decodes to 16 bytes.
+            // Encoded length (10) passes the pre-decode check (<= 10), but decoded length (16) exceeds the limit.
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, maxHeadersLength: 10);
+
+            byte[] encoded = [
+                0x00,       // Literal header field without indexing, new name
+                0x8a,       // Huffman flag set (0x80) + string length 10 (7-bit prefix)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10 bytes Huffman -> 16 '0' chars
+                0x01,       // String length = 1 (no Huffman)
+                0x61        // Value = "a"
+            ];
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
+        [Fact]
+        public void HuffmanDecodedHeaderValue_ExceedsLimitAfterDecoding_Throws()
+        {
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, maxHeadersLength: 10);
+
+            byte[] encoded = [
+                0x00,       // Literal header field without indexing, new name
+                0x01,       // String length = 1 (no Huffman)
+                0x61,       // Name = "a"
+                0x8a,       // Huffman flag set (0x80) + string length 10 (7-bit prefix)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // 10 bytes Huffman -> 16 '0' chars
+            ];
+
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
             Assert.Empty(_handler.DecodedHeaders);
         }
 

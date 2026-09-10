@@ -46,7 +46,7 @@ else
 @code {
     [Parameter] public DateTime? StartDate { get; set; }
 
-    WeatherForecast[] forecasts;
+    WeatherForecast[]? forecasts;
     DateTime startDate;
 
     protected override async Task OnParametersSetAsync()
@@ -57,17 +57,20 @@ else
 
         // Because StandaloneApp doesn't really have a server endpoint to get dynamic data from,
         // fake the DateFormatted values here. This would not apply in a real app.
-        for (var i = 0; i < forecasts.Length; i++)
+        if (forecasts is not null)
         {
-            forecasts[i].DateFormatted = startDate.AddDays(i).ToShortDateString();
+            for (var i = 0; i < forecasts.Length; i++)
+            {
+                forecasts[i].DateFormatted = startDate.AddDays(i).ToShortDateString();
+            }
         }
     }
 
     class WeatherForecast
     {
-        public string DateFormatted { get; set; }
+        public string? DateFormatted { get; set; }
         public int TemperatureC { get; set; }
         public int TemperatureF { get; set; }
-        public string Summary { get; set; }
+        public string? Summary { get; set; }
     }
 }

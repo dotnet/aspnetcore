@@ -33,6 +33,7 @@ internal sealed class MessageBuffer : IDisposable
 
 #if NET8_0_OR_GREATER
     private readonly PeriodicTimer _timer;
+    private readonly TimeProvider _timeProvider;
 #else
     private readonly TimerAwaitable _timer = new(AckRate, AckRate);
 #endif
@@ -68,8 +69,8 @@ internal sealed class MessageBuffer : IDisposable
     public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit, ILogger logger, TimeProvider timeProvider)
     {
 #if NET8_0_OR_GREATER
-        timeProvider ??= TimeProvider.System;
-        _timer = new(AckRate, timeProvider);
+        _timeProvider = timeProvider;
+        _timer = new(AckRate, _timeProvider);
 #endif
 
         _buffer = new LinkedBuffer();
@@ -121,21 +122,28 @@ internal sealed class MessageBuffer : IDisposable
 
     public ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
-        return WriteAsyncCore(hubMessage.Message!, hubMessage.GetSerializedMessage(_protocol), cancellationToken);
+        // Default to HubInvocationMessage as that's the only type we use SerializedHubMessage for currently when Message is null. Should harden this in the future.
+        return WriteAsyncCore(hubMessage.Message?.GetType() ?? typeof(HubInvocationMessage), hubMessage.GetSerializedMessage(_protocol), cancellationToken);
     }
 
     public ValueTask<FlushResult> WriteAsync(HubMessage hubMessage, CancellationToken cancellationToken)
     {
-        return WriteAsyncCore(hubMessage, _protocol.GetMessageBytes(hubMessage), cancellationToken);
+        return WriteAsyncCore(hubMessage.GetType(), _protocol.GetMessageBytes(hubMessage), cancellationToken);
     }
 
-    private async ValueTask<FlushResult> WriteAsyncCore(HubMessage hubMessage, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+    private async ValueTask<FlushResult> WriteAsyncCore(Type hubMessageType, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
         // TODO: Add backpressure based on message count
         if (_bufferedByteCount > _bufferLimit)
         {
+#if NET
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5), _timeProvider);
+#else
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+#endif
+            using var _ = CancellationTokenUtils.CreateLinkedToken(cts.Token, cancellationToken, out var linkedToken);
             // primitive backpressure if buffer is full
-            while (await _waitForAck.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            while (await _waitForAck.Reader.WaitToReadAsync(linkedToken).ConfigureAwait(false))
             {
                 if (_waitForAck.Reader.TryRead(out var count) && count < _bufferLimit)
                 {
@@ -158,7 +166,7 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
-            if (hubMessage is HubInvocationMessage invocationMessage)
+            if (typeof(HubInvocationMessage).IsAssignableFrom(hubMessageType))
             {
                 _totalMessageCount++;
                 _bufferedByteCount += messageBytes.Length;

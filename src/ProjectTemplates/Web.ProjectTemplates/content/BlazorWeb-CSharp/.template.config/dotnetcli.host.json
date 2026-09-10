@@ -53,6 +53,10 @@
     "UseProgramMain": {
       "longName": "use-program-main",
       "shortName": ""
+    },
+    "LocalhostTld": {
+      "longName": "localhost-tld",
+      "shortName": ""
     }
   },
   "usageExamples": [

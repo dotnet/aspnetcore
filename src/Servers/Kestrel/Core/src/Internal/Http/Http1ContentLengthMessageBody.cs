@@ -29,6 +29,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
     {
         VerifyIsNotReading();

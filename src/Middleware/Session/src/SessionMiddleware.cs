@@ -141,6 +141,7 @@ public class SessionMiddleware
             var cookieOptions = _options.Cookie.Build(_context);
 
             var response = _context.Response;
+            // codeql[SM02373] - By design the session cookie's SecurePolicy defaults to None so sessions work over HTTP; apps set CookiePolicy or SecurePolicy.Always to require Secure.
             response.Cookies.Append(_options.Cookie.Name!, _cookieValue, cookieOptions);
 
             var responseHeaders = response.Headers;

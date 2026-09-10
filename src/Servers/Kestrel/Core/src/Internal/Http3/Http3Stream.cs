@@ -35,6 +35,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> TransferEncodingBytes => "transfer-encoding"u8;
+    private static ReadOnlySpan<byte> KeepAliveBytes => "keep-alive"u8;
+    private static ReadOnlySpan<byte> ProxyConnectionBytes => "proxy-connection"u8;
+    private static ReadOnlySpan<byte> UpgradeBytes => "upgrade"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
@@ -54,17 +58,35 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private bool _isMethodConnect;
     private bool _isWebTransportSessionAccepted;
     private Http3MessageBody? _messageBody;
+    private bool _requestBodyStarted;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
-    private readonly object _completionLock = new();
+    private readonly Lock _completionLock = new();
+
+    // Published under _completionLock by the abort that first transitions the stream into the Aborted state. It is completed
+    // once that abort has finished running its side-effects (performed outside the lock). Request finalization waits on
+    // it before pooling the stream so a late abort can't tear down a transport that has been reused.
+    private TaskCompletionSource? _abortCompletedTcs;
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
-    protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
     private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
+
+    public bool CanReuse => !_connectionAborted && HasResponseCompleted;
+
+    public bool ReceivedEmptyRequestBody
+    {
+        get
+        {
+            lock (_completionLock)
+            {
+                return EndStreamReceived && !_requestBodyStarted;
+            }
+        }
+    }
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
     public long? InputRemaining { get; internal set; }
@@ -75,6 +97,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public long StreamId => _streamIdFeature.StreamId;
     public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
+    public bool IsReceivingTrailerHeaders { get; private set; }
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
     public bool IsRequestStream => true;
     public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
@@ -102,6 +125,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
+        _abortCompletedTcs = null;
+        IsReceivingTrailerHeaders = false;
         StreamTimeoutTimestamp = 0;
 
         if (_frameWriter == null)
@@ -148,8 +173,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void AbortCore(Exception exception, Http3ErrorCode errorCode)
     {
+        TaskCompletionSource abortCompleted;
+
         lock (_completionLock)
         {
+            // Only the completion-state transition is performed under _completionLock. The abort
+            // side-effects below must run *outside* the lock: _http3Output.Stop() (and the frame
+            // writer/transport teardown) acquire Http3OutputProducer._dataWriterLock, which is taken
+            // in the opposite order on the inline output path (Http3OutputProducer.FlushAsync holds
+            // _dataWriterLock and, via the inline data pipe pump -> QuicStreamContext.FireStreamClosed,
+            // calls back into AbortCore -> _completionLock). Holding _completionLock across Stop() would
+            // therefore create a _completionLock <-> _dataWriterLock deadlock. This mirrors Http2Stream.
             if (IsCompleted || IsAborted)
             {
                 return;
@@ -162,7 +196,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 return;
             }
 
-            if (!(exception is ConnectionAbortedException abortReason))
+            // Publish before releasing the lock so request finalization can observe this in-flight abort
+            // and wait for the side-effects below to finish before the stream is pooled and reused.
+            abortCompleted = _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        try
+        {
+            if (exception is not ConnectionAbortedException abortReason)
             {
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
@@ -187,6 +228,28 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             // Abort framewriter and underlying transport after stopping output.
             _frameWriter.Abort(abortReason);
         }
+        finally
+        {
+            abortCompleted.TrySetResult();
+        }
+    }
+
+    // Marks the stream Completed and waits for any in-flight abort's side-effects to finish. Called by
+    // request finalization before the transport is drained, disposed and pooled. Setting Completed under
+    // _completionLock closes the door: any abort arriving afterwards sees IsCompleted and no-ops, so it
+    // can't mutate a transport that has been reused. An abort that won the race before the door closed is
+    // captured here and awaited so its Stop()/frame writer Abort() land on this stream, not a reused one.
+    private ValueTask CompleteAndWaitForAbortAsync()
+    {
+        TaskCompletionSource? abortCompleted;
+
+        lock (_completionLock)
+        {
+            _completionState |= StreamCompletionFlags.Completed;
+            abortCompleted = _abortCompletedTcs;
+        }
+
+        return abortCompleted is null ? default : new ValueTask(abortCompleted.Task);
     }
 
     protected override void OnErrorAfterResponseStarted()
@@ -293,6 +356,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
+            if (IsConnectionSpecificHeaderField(name, value))
+            {
+                throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
+            }
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
                 // Just use name + value bytes and do full validation for request trailers.
@@ -359,11 +427,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        if (IsConnectionSpecificHeaderField(name, value))
-        {
-            throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
-        }
-
         // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
         // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
         for (var i = 0; i < name.Length; i++)
@@ -527,9 +590,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+    // https://www.rfc-editor.org/rfc/rfc9114#section-4.2
     private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
+        return name.SequenceEqual(ConnectionBytes)
+            || name.SequenceEqual(TransferEncodingBytes)
+            || name.SequenceEqual(KeepAliveBytes)
+            || name.SequenceEqual(ProxyConnectionBytes)
+            || name.SequenceEqual(UpgradeBytes)
+            || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
     }
 
     protected override void OnRequestProcessingEnded()
@@ -560,6 +629,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             TryClose();
         }
+
+        RequestBodyPipe.Reader.Complete();
+
+        _http3Output.Complete();
 
         // Stream will be pooled after app completed.
         // Wait to signal app completed after any potential aborts on the stream.
@@ -607,6 +680,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
+            var incomingFrame = new Http3RawFrame();
+            var isContinuedFrame = false;
             while (_isClosed == 0)
             {
                 var result = await Input.ReadAsync();
@@ -618,12 +693,19 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
+                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, incomingFrame, isContinuedFrame, out var framePayload))
                         {
-                            Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
+                            // Only log when parsing the beginning of the frame
+                            if (!isContinuedFrame)
+                            {
+                                Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, incomingFrame);
+                            }
 
                             consumed = examined = framePayload.End;
-                            await ProcessHttp3Stream(application, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
+                            await ProcessHttp3Stream(application, incomingFrame, isContinuedFrame, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
+
+                            incomingFrame.RemainingLength -= framePayload.Length;
+                            isContinuedFrame = incomingFrame.RemainingLength > 0 ? true : false;
                         }
                     }
 
@@ -693,11 +775,16 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             finally
             {
+                // Wait for any in-flight abort to finish mutating this stream's transport/output before
+                // we drain, dispose and pool it; otherwise a late abort could tear down a stream that has
+                // already been reused for another request. This also marks the stream Completed so any
+                // subsequent abort becomes a no-op.
+                await CompleteAndWaitForAbortAsync();
+
                 // Drain transports and dispose.
                 await _context.StreamContext.DisposeAsync();
 
                 // Tells the connection to remove the stream from its active collection.
-                ApplyCompletionFlag(StreamCompletionFlags.Completed);
                 _context.StreamLifetimeHandler.OnStreamCompleted(this);
 
                 // If we have a webtransport session on this stream, end it
@@ -746,22 +833,23 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return RequestBodyPipe.Writer.CompleteAsync();
     }
 
-    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, Http3RawFrame incomingFrame, bool isContinuedFrame,
+        in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
-        return _incomingFrame.Type switch
+        return incomingFrame.Type switch
         {
             Http3FrameType.Data => ProcessDataFrameAsync(payload),
-            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, payload, isCompleted),
+            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, incomingFrame, isContinuedFrame, payload, isCompleted),
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
             // These frames need to be on a control stream
             Http3FrameType.Settings or
             Http3FrameType.CancelPush or
             Http3FrameType.GoAway or
             Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             // The server should never receive push promise
             Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             _ => ProcessUnknownFrameAsync(),
         };
     }
@@ -773,11 +861,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return Task.CompletedTask;
     }
 
-    private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, Http3RawFrame incomingFrame, bool isContinuedFrame,
+        ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
         // HEADERS frame after trailing headers is invalid.
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
-        if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+        // Since we parse data as we get it, we can receive partial frames which means we need to check that we're in the middle of handling the trailers header frame
+        if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers && !isContinuedFrame)
         {
             throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
@@ -789,8 +879,19 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            QPackDecoder.Decode(payload, endHeaders: true, handler: this);
-            QPackDecoder.Reset();
+            var endHeaders = payload.Length == incomingFrame.RemainingLength;
+            QPackDecoder.Decode(payload, endHeaders, handler: this);
+            if (endHeaders)
+            {
+                QPackDecoder.Reset();
+                IsReceivingTrailerHeaders = false;
+            }
+            else
+            {
+                // Headers frame isn't complete, start trailer header timeout and return to read more of the frame.
+                IsReceivingTrailerHeaders = true;
+                return;
+            }
         }
         catch (QPackDecodingException ex)
         {
@@ -907,6 +1008,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 return Task.CompletedTask;
             }
 
+            _requestBodyStarted = true;
+
             foreach (var segment in payload)
             {
                 RequestBodyPipe.Writer.Write(segment.Span);
@@ -919,7 +1022,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     protected override void OnReset()
     {
         _keepAlive = true;
-        _connectionAborted = false;
         _userTrailers = null;
         _isWebTransportSessionAccepted = false;
         _isMethodConnect = false;
@@ -944,6 +1046,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     protected override MessageBody CreateMessageBody()
     {
+        if (ReceivedEmptyRequestBody)
+        {
+            return MessageBody.ZeroContentLengthClose;
+        }
+
         if (_messageBody != null)
         {
             _messageBody.Reset();
@@ -1056,8 +1163,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
+
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+            return false;
+        }
 
         var pathSegment = queryIndex == -1 ? path.AsSpan() : path.AsSpan(0, queryIndex);
 
@@ -1161,8 +1275,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                // The header parser should already be checking this
-                Debug.Assert(32 < ch && ch < 127);
+                if (ch > byte.MaxValue)
+                {
+                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                    return false;
+                }
                 pathBuffer[i] = (byte)ch;
             }
 

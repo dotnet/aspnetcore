@@ -4,7 +4,7 @@ We maintain several on-going releases at once and produce patches for them. An e
 
 See the [.NET Core release lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#lifecycle) for more details on the currently-supported .NET releases.
 
-The status of current servicing fixes can be found on the [Servicing Status](https://github.com/dotnet/aspnetcore/projects/11) GitHub project.
+The status of current servicing fixes can be found on the [Servicing Status](https://github.com/orgs/dotnet/projects/448) GitHub project.
 
 ## Servicing Bar
 
@@ -42,6 +42,10 @@ To request Shiproom approval for a fix, open a **Pull Request** to the target `r
 * The PR description contains the following template: [https://aka.ms/aspnet/servicing/template](https://aka.ms/aspnet/servicing/template)
 
 Once the above conditions are met, apply the `servicing-consider` label.
+
+## Submitting a fix for M2 approval
+
+During RC1 and RC2, PRs should go through M2 approval rather than full tactics/shiproom approval. For that case, follow the steps above, then request review from your M2 on the PR (currently [artl93](https://github.com/artl93)). No email is necessary. When not in M2 mode, follow the below instructions for getting tactics/shiproom approval. 
 
 ## Shiproom
 

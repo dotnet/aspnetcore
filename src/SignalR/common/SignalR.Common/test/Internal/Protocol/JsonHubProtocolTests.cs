@@ -286,6 +286,6 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
             PersonEqual(expectedPerson.Child, actualPerson.Child);
         }
 
-        Assert.False(true, "Passed in unexpected object(s)");
+        Assert.Fail("Passed in unexpected object(s)");
     }
 }

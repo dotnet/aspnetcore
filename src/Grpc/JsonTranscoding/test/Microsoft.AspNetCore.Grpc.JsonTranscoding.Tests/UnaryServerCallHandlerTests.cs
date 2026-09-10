@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Transcoding;
 using Xunit.Abstractions;
@@ -38,6 +39,12 @@ public class UnaryServerCallHandlerTests : LoggedTest
     private static RouteParameter CreateRouteParameter(List<FieldDescriptor> descriptorPath)
     {
         return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
+    }
+
+    private static RouteParameter CreateRouteParameterWithJsonPath(List<FieldDescriptor> descriptorPath)
+    {
+        var jsonPath = string.Join(".", descriptorPath.Select(d => d.JsonName));
+        return new RouteParameter(descriptorPath, new HttpRouteVariable(), jsonPath);
     }
 
     [Fact]
@@ -791,7 +798,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     [Theory]
     [InlineData(null)]
     [InlineData("text/html")]
-    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string contentType)
+    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string? contentType)
     {
         // Arrange
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
@@ -1505,6 +1512,115 @@ public class UnaryServerCallHandlerTests : LoggedTest
     }
 
     [Fact]
+    public async Task HandleCallAsync_UnmatchedQueryStringValues_NotCached()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo();
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["age"] = "10",
+            ["sub.subfield"] = "TestSubfield!",
+            ["unknown"] = "value",
+            ["sub.unknown"] = "value",
+            ["name.unknown"] = "value"
+        });
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(10, request!.Age);
+        Assert.Equal("TestSubfield!", request!.Sub.Subfield);
+        // matches query params
+        Assert.Equal(2, descriptorInfo.PathDescriptorsCache.Count);
+        Assert.True(descriptorInfo.PathDescriptorsCache.ContainsKey("age"));
+        Assert.True(descriptorInfo.PathDescriptorsCache.ContainsKey("sub.subfield"));
+        // not matched query params
+        Assert.False(descriptorInfo.PathDescriptorsCache.ContainsKey("unknown"));
+        Assert.False(descriptorInfo.PathDescriptorsCache.ContainsKey("sub.unknown"));
+        Assert.False(descriptorInfo.PathDescriptorsCache.ContainsKey("name.unknown"));
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_ManyDistinctQueryStringPaths_CacheSizeIsBounded()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo();
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        var query = new Dictionary<string, StringValues>();
+        var pathBuilder = new StringBuilder("recursive");
+        for (var i = 0; i < descriptorInfo.MaxPathDescriptorsCacheCount + 100; i++)
+        {
+            query[pathBuilder.ToString() + ".value"] = "value";
+            pathBuilder.Append(".child");
+        }
+        httpContext.Request.Query = new QueryCollection(query);
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_CacheAtCapacity_StillBindsUncachedQueryStringValues()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo();
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo);
+
+        var fillQuery = new Dictionary<string, StringValues>();
+        var pathBuilder = new StringBuilder("recursive");
+        for (var i = 0; i < descriptorInfo.MaxPathDescriptorsCacheCount + 10; i++)
+        {
+            fillQuery[pathBuilder.ToString() + ".value"] = "value";
+            pathBuilder.Append(".child");
+        }
+        var fillContext = TestHelpers.CreateHttpContext();
+        fillContext.Request.Query = new QueryCollection(fillQuery);
+        await unaryServerCallHandler.HandleCallAsync(fillContext);
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "QueryName"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("QueryName", request!.Name);
+        Assert.False(descriptorInfo.PathDescriptorsCache.ContainsKey("name"));
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+    }
+
+    [Fact]
     public async Task HandleCallAsync_DataTypes_SetOnRequestMessage()
     {
         // Arrange
@@ -1803,6 +1919,308 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(fieldmask, request!.FieldMaskValue);
     }
 
+    [Fact]
+    public async Task HandleCallAsync_QueryStringJsonNameAlias_DoesNotOverwriteRouteValue()
+    {
+        // message HelloRequest {
+        // string name = 1;                                           // proto name: "name",       JSON name: "name"
+        // int32 age = 13;                                            // proto name: "age",        JSON name: "age"
+        // string field_name = 22 [json_name="json_customized_name"]; // proto name: "field_name", JSON name: "json_customized_name"
+        // ... other fields
+        // }
+
+        // Arrange
+        // A query parameter using the JSON name should not overwrite a route-bound field.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var fieldDescriptor = HelloRequest.Descriptor.FindFieldByName("field_name");
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["field_name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { fieldDescriptor }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["field_name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["json_customized_name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.FieldName);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringProtoName_DoesNotOverwriteRouteValue()
+    {
+        // Arrange
+        // A query parameter using the proto name is not overwritting the route-bound field.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.Name);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringNonRouteField_StillBindsNormally()
+    {
+        // Arrange
+        // Query parameters for fields NOT bound via route should work.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["age"] = "30"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.Name);
+        Assert.Equal(30, request!.Age);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringBodyFieldJsonNameAlias_DoesNotOverwriteBodyValue()
+    {
+        // Arrange
+        // body: "sub" binds the sub field from JSON body.
+        // A query parameter using the JSON name of the body field should not overwrite it.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(
+            bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
+            bodyFieldDescriptor: HelloRequest.Descriptor.FindFieldByName("sub"));
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(new HelloRequest.Types.SubMessage
+        {
+            Subfield = "body_value"
+        })));
+        httpContext.Request.ContentType = "application/json";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["sub.subfield"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("body_value", request!.Sub.Subfield);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringBodyFieldJsonNamePrefix_DoesNotOverwriteBodyValue()
+    {
+        // Arrange
+        // body field: "sub_data" (proto name) has JSON name "subData".
+        // A query parameter using the JSON name prefix "subData.subfield" should be blocked.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(
+            bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
+            bodyFieldDescriptor: HelloRequest.Descriptor.FindFieldByName("sub_data"));
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(new HelloRequest.Types.SubMessage
+        {
+            Subfield = "body_value"
+        })));
+        httpContext.Request.ContentType = "application/json";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["subData.subfield"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("body_value", request!.SubData.Subfield);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringMixedNameNestedRoute_DoesNotOverwriteRouteValue()
+    {
+        // Route binds the nested field "sub_data.sub_field_name".
+        //   proto path: sub_data.sub_field_name
+        //   JSON path:  subData.subFieldNameJson
+        // A query parameter using a mixed spelling ("subData.sub_field_name") resolves to the
+        // same field and must not overwrite the route-bound value.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["sub_data.sub_field_name"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("sub_data"),
+                HelloRequest.Types.SubMessage.Descriptor.FindFieldByName("sub_field_name")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["sub_data.sub_field_name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["subData.sub_field_name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.SubData.SubFieldName);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringAncestorOfRoute_DoesNotOverwriteRouteValue()
+    {
+        // Route binds the nested field "timestamp_value.seconds". A query parameter targeting the
+        // ancestor "timestamp_value" would replace the whole Timestamp (well-known types serialize
+        // as a single scalar) and discard the route-bound child. It must be blocked.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["timestamp_value.seconds"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("timestamp_value"),
+                Timestamp.Descriptor.FindFieldByName("seconds")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["timestamp_value.seconds"] = "5";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["timestamp_value"] = "2020-01-01T00:00:00Z"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(5, request!.TimestampValue.Seconds);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringSiblingOfNestedRoute_StillBinds()
+    {
+        // Route binds "timestamp_value.seconds". A query parameter for the sibling field
+        // "timestamp_value.nanos" targets a different field and must still bind.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["timestamp_value.seconds"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("timestamp_value"),
+                Timestamp.Descriptor.FindFieldByName("seconds")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["timestamp_value.seconds"] = "5";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["timestamp_value.nanos"] = "10"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(5, request!.TimestampValue.Seconds);
+        Assert.Equal(10, request!.TimestampValue.Nanos);
+    }
+
     private UnaryServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply> CreateCallHandler(
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker,
         CallHandlerDescriptorInfo? descriptorInfo = null,
@@ -1842,7 +2260,8 @@ public class UnaryServerCallHandlerTests : LoggedTest
             invoker,
             method,
             MethodOptions.Create(new[] { serviceOptions }),
-            new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
+            new TestGrpcServiceActivator<JsonTranscodingGreeterService>(),
+            new InterceptorActivators(TestHelpers.CreateServiceProvider()));
 
         var descriptorRegistry = new DescriptorRegistry();
         descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);

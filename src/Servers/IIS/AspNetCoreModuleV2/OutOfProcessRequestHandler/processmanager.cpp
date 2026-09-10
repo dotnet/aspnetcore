@@ -13,8 +13,8 @@ PROCESS_MANAGER::Initialize(
     VOID
 )
 {
-    WSADATA                              wsaData;
-    int                                  result;
+    WSADATA                              wsaData{};
+    int                                  result = 0;
 
     if( !sm_fWSAStartupDone )
     {
@@ -32,12 +32,12 @@ PROCESS_MANAGER::Initialize(
 
     m_dwRapidFailTickStart = GetTickCount();
 
-    if( m_hNULHandle == NULL )
+    if( m_hNULHandle == nullptr )
     {
         SECURITY_ATTRIBUTES saAttr;
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
         saAttr.bInheritHandle = TRUE;
-        saAttr.lpSecurityDescriptor = NULL;
+        saAttr.lpSecurityDescriptor = nullptr;
 
         m_hNULHandle = CreateFileW( L"NUL",
                                     FILE_WRITE_DATA,
@@ -45,7 +45,7 @@ PROCESS_MANAGER::Initialize(
                                     &saAttr,
                                     CREATE_ALWAYS,
                                     FILE_ATTRIBUTE_NORMAL,
-                                    NULL );
+                                    nullptr );
         RETURN_LAST_ERROR_IF( m_hNULHandle == INVALID_HANDLE_VALUE );
     }
 
@@ -82,7 +82,7 @@ PROCESS_MANAGER::GetProcess(
 
             for (DWORD i = 0; i < m_dwProcessesPerApplication; ++i)
             {
-                m_ppServerProcessList[i] = NULL;
+                m_ppServerProcessList[i] = nullptr;
             }
         }
         m_fServerProcessListReady = TRUE;
@@ -97,7 +97,7 @@ PROCESS_MANAGER::GetProcess(
         dwProcessIndex = InterlockedIncrement(&m_dwRouteToProcessIndex);
         dwProcessIndex = dwProcessIndex % m_dwProcessesPerApplication;
 
-        if (m_ppServerProcessList[dwProcessIndex] != NULL &&
+        if (m_ppServerProcessList[dwProcessIndex] != nullptr &&
             m_ppServerProcessList[dwProcessIndex]->IsReady())
         {
             *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
@@ -106,12 +106,12 @@ PROCESS_MANAGER::GetProcess(
     }
 
     // should make the lock per process so that we can start processes simultaneously ?
-    if (m_ppServerProcessList[dwProcessIndex] == NULL ||
+    if (m_ppServerProcessList[dwProcessIndex] == nullptr ||
         !m_ppServerProcessList[dwProcessIndex]->IsReady())
     {
         auto lock = SRWExclusiveLock(m_srwLock);
 
-        if (m_ppServerProcessList[dwProcessIndex] != NULL)
+        if (m_ppServerProcessList[dwProcessIndex] != nullptr)
         {
             if (!m_ppServerProcessList[dwProcessIndex]->IsReady())
             {
@@ -143,7 +143,7 @@ PROCESS_MANAGER::GetProcess(
             RETURN_HR(HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED));
         }
 
-        if (m_ppServerProcessList[dwProcessIndex] == NULL)
+        if (m_ppServerProcessList[dwProcessIndex] == nullptr)
         {
 
             pSelectedServerProcess = std::make_unique<SERVER_PROCESS>();

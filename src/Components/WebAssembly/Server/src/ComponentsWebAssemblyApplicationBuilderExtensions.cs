@@ -110,7 +110,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
             var fileExtension = Path.GetExtension(requestPath.Value);
             if (string.Equals(fileExtension, ".gz") || string.Equals(fileExtension, ".br"))
             {
-                // When we are serving framework files (under _framework/ we perform content negotiation
+                // When we are serving framework files (under _framework/) we perform content negotiation
                 // on the accept encoding and replace the path with <<original>>.gz|br if we can serve gzip or brotli content
                 // respectively.
                 // Here we simply calculate the original content type by removing the extension and apply it

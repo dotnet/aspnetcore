@@ -493,11 +493,11 @@ internal class CommandLineApplication
 
             optionsBuilder.AppendLine();
             optionsBuilder.AppendLine("Options:");
-            var maxOptLen = options.Max(o => o.Template.Length);
+            var maxOptLen = options.Max(o => o.GetDisplayText().Length);
             var outputFormat = string.Format(CultureInfo.InvariantCulture, "  {{0, -{0}}}{{1}}", maxOptLen + 2);
             foreach (var opt in options)
             {
-                optionsBuilder.AppendFormat(CultureInfo.InvariantCulture, outputFormat, opt.Template, opt.Description);
+                optionsBuilder.AppendFormat(CultureInfo.InvariantCulture, outputFormat, opt.GetDisplayText(), opt.Description);
                 optionsBuilder.AppendLine();
             }
         }

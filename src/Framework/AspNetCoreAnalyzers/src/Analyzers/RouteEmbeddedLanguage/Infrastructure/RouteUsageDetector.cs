@@ -289,8 +289,8 @@ internal static class RouteUsageDetector
 
         var stringSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_String);
         var routeStringParameter = method.Parameters.FirstOrDefault(p => SymbolEqualityComparer.Default.Equals(stringSymbol, p.Type) &&
-            RouteStringSyntaxDetector.HasMatchingStringSyntaxAttribute(p, out var identifer) &&
-            identifer == "Route");
+            RouteStringSyntaxDetector.HasMatchingStringSyntaxAttribute(p, out var identifier) &&
+            identifier == "Route");
         if (routeStringParameter == null)
         {
             return null;
