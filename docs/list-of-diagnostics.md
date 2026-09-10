@@ -91,6 +91,7 @@
 |  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
 |  __`BL0019`__ | Virtualize uses an invalid spacer element |
 |  __`BL0020`__ | RazorComponentResult parameter does not match a component parameter |
+|  __`BL0021`__ | Code after NavigationManager.NavigateTo will still execute |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 

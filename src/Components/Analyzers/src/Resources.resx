@@ -228,6 +228,15 @@
   <data name="VirtualizeSpacerElementIsInvalid_Title" xml:space="preserve">
     <value>Virtualize uses an invalid spacer element</value>
   </data>
+  <data name="CodeAfterNavigateToWillExecute_Description" xml:space="preserve">
+    <value>In server-side (static SSR) contexts, NavigationManager.NavigateTo signals the navigation and stops rendering after the current batch, but it does not stop execution. Code placed after the NavigateTo call still runs. Add a return statement after NavigateTo if the following code should not execute.</value>
+  </data>
+  <data name="CodeAfterNavigateToWillExecute_Format" xml:space="preserve">
+    <value>Code after this 'NavigateTo' call will still execute because 'NavigateTo' does not stop execution. Add a 'return' statement after 'NavigateTo' if the following code should not run.</value>
+  </data>
+  <data name="CodeAfterNavigateToWillExecute_Title" xml:space="preserve">
+    <value>Code after NavigationManager.NavigateTo will still execute</value>
+  </data>
   <data name="UnnecessaryStateHasChangedCall_Description" xml:space="preserve">
     <value>StateHasChanged is unnecessary in synchronous component lifecycle methods or event handlers. In async lifecycle methods or event handlers, it is unnecessary before the first await and after the final await because ComponentBase already schedules renders at those points.</value>
   </data>
