@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ApiController",
-  "precedence": "11000",
-  "identity": "Microsoft.AspNetCore.Mvc.ApiController.11.0",
+  "precedence": "12000",
+  "identity": "Microsoft.AspNetCore.Mvc.ApiController.12.0",
   "shortName": "apicontroller",
   "sourceName": "ValueController",
   "primaryOutputs": [

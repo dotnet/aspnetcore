@@ -14,14 +14,14 @@ public sealed class UserJwtsTestFixture : IDisposable
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net12.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 </Project>";
 
     private const string FileBasedAppTemplate = @"#:sdk Microsoft.NET.Sdk.Web
-#:property TargetFramework=net11.0
+#:property TargetFramework=net12.0
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();

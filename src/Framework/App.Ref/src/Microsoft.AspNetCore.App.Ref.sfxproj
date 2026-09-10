@@ -183,8 +183,8 @@
     new project configuration that rebuilds the pack's assemblies a second time. See
     https://github.com/dotnet/msbuild/issues/12927.
 
-    We run AfterTargets="Build" and ask the project for its already-resolved file list via a nested
-    <MSBuild> call to _GetAllSharedFrameworkFiles. We do NOT depend on GetFilesToPublish directly, because
+    We run AfterTargets="Build" and call _GetAllSharedFrameworkFiles to retrieve its already-resolved file
+    list. We do NOT depend on GetFilesToPublish directly, because
     GetFilesToPublish populates the project-global FilesToPackage/_FilesToPackage items that arcade's Pack
     path (_AddFilesToNuGetPackage) also consumes; resolving them in this configuration adds every assembly
     to the package twice and trips NU5118. Capturing the file list through TargetOutputs into a private
@@ -193,9 +193,9 @@
     arcade's GetFilesToPublish for a TargetingPack.
   -->
   <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GetAllSharedFrameworkFiles">
+    <CallTarget Targets="_GetAllSharedFrameworkFiles">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackLayoutPackagedFile" />
-    </MSBuild>
+    </CallTarget>
 
     <ItemGroup>
       <_TargetingPackLayoutFileToPublish Include="@(_TargetingPackLayoutPackagedFile)"

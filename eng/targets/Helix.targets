@@ -30,6 +30,15 @@
     <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
   </ItemGroup>
 
+  <!-- Test assets that remain on the bootstrap shared framework need to run in the
+       repository's next-major testhost during early branding. -->
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+      '$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)' AND
+      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' == 'true'">
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="set %22DOTNET_ROLL_FORWARD=Major%22" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="export DOTNET_ROLL_FORWARD=Major" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TestDependsOnIIS)' == 'true' AND '$(IsWindowsOnlyTest)' == 'true'">
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />

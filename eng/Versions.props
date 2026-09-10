@@ -20,7 +20,7 @@
     <!--
       Label and iteration used by packages that intentionally never stabilize. Such projects set
       SuppressFinalPackageVersion=true and override PreReleaseVersionLabel/PreReleaseVersionIteration with these
-      values, so they keep producing dated prerelease versions (e.g. 11.0.0-preview.7.25580.1) even when the rest of
+      values, so they keep producing dated prerelease versions (e.g. 12.0.0-preview.7.25580.1) even when the rest of
       the repo builds RC or RTM versions. Overriding the label is required because Arcade builds the version suffix
       from PreReleaseVersionLabel, and because the suffix logic is skipped entirely when that label is empty.
     -->
@@ -56,11 +56,11 @@
       src\Components\WebAssembly\Sdk\testassets\Directory.Build.props, and
       src\Razor\test\testassets\Directory.Build.props when this changes.
     -->
-    <DefaultNetCoreTargetFramework>net11.0</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net12.0</DefaultNetCoreTargetFramework>
     <!-- this should usually match for LTS builds, and be off-by-one otherwise;
       example use-case here is OOB packages where Aspire wants to be able to consume
       new features specific to OOB -->
-    <CurrentLtsTargetFramework>net10.0</CurrentLtsTargetFramework>
+    <CurrentLtsTargetFramework>net12.0</CurrentLtsTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Label="Arcade settings">
@@ -68,7 +68,8 @@
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
-    <!-- Allow missing prune package data when not targeting the current .NET version -->
+    <!-- Use the current SDK's nearest pruning data when targeting a newer .NET version. -->
+    <LoadPrunePackageDataFromNearestFramework Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</LoadPrunePackageDataFromNearestFramework>
     <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
   </PropertyGroup>
 
