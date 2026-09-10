@@ -28,11 +28,6 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 builder.Services.AddSingleton<FunctionScenarioState>();
 builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,
     (sp, _) => FunctionScenarios.Create(sp.GetRequiredService<FunctionScenarioState>(), requiresApproval: true));
-builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
-    (sp, _) => DojoContentTransport.WrapServer(
-        FunctionScenarios.Create(sp.GetRequiredService<FunctionScenarioState>(), requiresApproval: false)));
-builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
-    (_, _) => DojoContentTransport.WrapServer(StructuredRichTextChatClient.Create()));
 builder.Services.AddKeyedSingleton<IChatClient>(
     ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
     (sp, _) => ChatClientAgentFactory.CreatePredictiveStateUpdates(
@@ -43,8 +38,6 @@ var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
 app.MapDojoEndpoint(DojoScenarioEndpoints.AgenticChatEndpoint);
 app.MapDojoEndpoint(FunctionScenarios.Approval, chatClientKey: FunctionScenarios.Approval);
-app.MapDojoEndpoint(FunctionScenarios.Invocation, chatClientKey: FunctionScenarios.Invocation);
-app.MapDojoEndpoint(StructuredRichTextChatClient.Endpoint, chatClientKey: StructuredRichTextChatClient.Endpoint);
 app.MapFunctionScenarioControls();
 app.MapDojoEndpoint(
     DojoScenarioEndpoints.BackendToolRenderingEndpoint,

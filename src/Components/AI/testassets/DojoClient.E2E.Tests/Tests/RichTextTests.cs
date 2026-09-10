@@ -14,10 +14,10 @@ namespace DojoClient.E2E.Tests.Tests;
 public partial class RichTextTests : DojoTestBase
 {
     [TestMethod]
-    [DojoBackends]
-    public async Task RichText_RendersTheStructuredContentMatrix(DojoBackendKind backend)
+    public async Task RichText_RendersTheStructuredContentMatrix()
     {
-        var dojo = await GetDojoAsync(backend);
+        // AG-UI has no standard representation for native RichTextNode snapshots.
+        var dojo = await GetDojoAsync(DojoBackendKind.Direct);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
         await page.GotoAsync(dojo.GetScenarioUrl("/rich-text"));

@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @implements IDisposable
 @inject IDojoScenarioBridge ScenarioBridge
-@inject FunctionScenarioControls Controls
+@inject FunctionScenarioState Controls
 
 <PageTitle>Built-in function invocation mapping</PageTitle>
 
@@ -32,7 +32,7 @@
                     {
                         <div class="function-invocation-card__status">Loading...</div>
                         <button class="release-function-result"
-                                @onclick="() => Controls.ReleaseResultAsync(_thread.ThreadId)">
+                                @onclick="() => Controls.ReleaseResult(_thread.ThreadId)">
                             Release function result
                         </button>
                     }

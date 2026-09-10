@@ -14,10 +14,10 @@ namespace DojoClient.E2E.Tests.Tests;
 public partial class FunctionInvocationTests : DojoTestBase
 {
     [TestMethod]
-    [DojoBackends]
-    public async Task BuiltInMapping_RendersLoadingThenMatchingResult(DojoBackendKind backend)
+    public async Task BuiltInMapping_RendersLoadingThenMatchingResult()
     {
-        var dojo = await GetDojoAsync(backend);
+        // AGUIChatClient buffers calls until a result or interrupt; this checks pre-result informational rendering.
+        var dojo = await GetDojoAsync(DojoBackendKind.Direct);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
         await page.GotoAsync(dojo.GetScenarioUrl("/function-invocation"));

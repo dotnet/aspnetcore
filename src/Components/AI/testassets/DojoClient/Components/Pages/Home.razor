@@ -1,4 +1,5 @@
 @page "/"
+@inject Microsoft.Extensions.DependencyInjection.IServiceProviderIsKeyedService ClientServices
 
 <PageTitle>Components.AI dojo</PageTitle>
 
@@ -15,6 +16,9 @@
     <li><a href="/shared_state" data-scenario="shared_state">Shared State</a></li>
     <li><a href="/predictive_state_updates" data-scenario="predictive_state_updates">Predictive State Updates</a></li>
     <li><a href="/function-approval">Server Function Approval</a></li>
-    <li><a href="/function-invocation">Built-In Function Invocation</a></li>
-    <li><a href="/rich-text">Structured Rich Text</a></li>
+    @if (ClientServices.IsKeyedService(typeof(IChatClient), FunctionScenarios.Invocation))
+    {
+        <li><a href="/function-invocation">Built-In Function Invocation (Direct only)</a></li>
+        <li><a href="/rich-text">Structured Rich Text (Direct only)</a></li>
+    }
 </ul>

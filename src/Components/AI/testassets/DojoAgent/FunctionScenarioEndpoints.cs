@@ -11,14 +11,12 @@ namespace DojoAgent;
 /// </summary>
 public static class FunctionScenarioEndpoints
 {
-    /// <summary>Maps invocation inspection, result release, and cleanup for browser tests.</summary>
+    /// <summary>Maps invocation inspection and cleanup for browser tests.</summary>
     /// <param name="endpoints">The scenario host's endpoints.</param>
     public static void MapFunctionScenarioControls(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/_test/functions/{threadId}/invocations",
             (string threadId, FunctionScenarioState state) => state.GetInvocationCount(threadId));
-        endpoints.MapPost("/_test/functions/{threadId}/release",
-            (string threadId, FunctionScenarioState state) => state.ReleaseResult(threadId));
         endpoints.MapDelete("/_test/functions/{threadId}",
             (string threadId, FunctionScenarioState state) => state.Remove(threadId));
     }

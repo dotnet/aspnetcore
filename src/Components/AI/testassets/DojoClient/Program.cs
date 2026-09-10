@@ -20,22 +20,12 @@ IDojoScenarioBridge scenarioBridge = backend == DojoBackendKind.Direct
     : new AGUIDojoScenarioBridge();
 builder.Services.AddSingleton(scenarioBridge);
 builder.Services.AddSingleton<FunctionScenarioState>();
-builder.Services.AddScoped(sp => new FunctionScenarioControls(async threadId =>
-{
-    if (backend == DojoBackendKind.Direct)
-    {
-        sp.GetRequiredService<FunctionScenarioState>().ReleaseResult(threadId);
-    }
-    else
-    {
-        using var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient(DojoScenarios.ApiHttpClientName);
-        using var response = await client.PostAsync(
-            $"/_test/functions/{Uri.EscapeDataString(threadId)}/release", content: null);
-        response.EnsureSuccessStatusCode();
-    }
-}));
 if (backend == DojoBackendKind.Direct)
 {
+    builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
+        (sp, _) => CreateChatClient(sp, FunctionScenarios.Invocation));
+    builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
+        (sp, _) => CreateChatClient(sp, StructuredRichTextChatClient.Endpoint));
     builder.Services.AddKeyedScoped<IChatClient>(
         ChatClientAgentFactory.ModelServiceKey,
         (sp, _) => ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
@@ -57,10 +47,6 @@ builder.Services.AddScoped<IChatClient>(sp =>
     CreateChatClient(sp, DojoScenarioEndpoints.AgenticChatEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,
     (sp, _) => CreateChatClient(sp, FunctionScenarios.Approval));
-builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
-    (sp, _) => CreateChatClient(sp, FunctionScenarios.Invocation));
-builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
-    (sp, _) => CreateChatClient(sp, StructuredRichTextChatClient.Endpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
     DojoScenarioEndpoints.BackendToolRenderingEndpoint,
     (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.BackendToolRenderingEndpoint));
@@ -89,8 +75,19 @@ if (backend == DojoBackendKind.Direct)
 }
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
+var components = app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+if (backend == DojoBackendKind.AGUI)
+{
+    components.Add(endpoint =>
+    {
+        if (endpoint is RouteEndpointBuilder route &&
+            route.RoutePattern.RawText is FunctionScenarios.Invocation or StructuredRichTextChatClient.Endpoint)
+        {
+            endpoint.Metadata.Add(new SuppressMatchingMetadata());
+        }
+    });
+}
 
 app.Run();
 
@@ -119,11 +116,7 @@ IChatClient CreateChatClient(IServiceProvider services, string endpoint)
 
     var httpClient = services.GetRequiredService<IHttpClientFactory>()
         .CreateClient(DojoScenarios.ApiHttpClientName);
-    IChatClient aguiClient = new AGUIChatClient(new AGUIChatClientOptions(httpClient, endpoint));
-    if (endpoint is StructuredRichTextChatClient.Endpoint or FunctionScenarios.Invocation)
-    {
-        aguiClient = new DojoContentAGUIChatClient(aguiClient);
-    }
+    var aguiClient = new AGUIChatClient(new AGUIChatClientOptions(httpClient, endpoint));
 
     return new FormattedChatClient(aguiClient);
 }

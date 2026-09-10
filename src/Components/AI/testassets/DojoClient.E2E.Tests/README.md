@@ -1,6 +1,8 @@
 # Dojo backend coverage
 
-DojoClient uses the same scenario pages with either backend, selected at app startup:
+DojoClient uses the same protocol-compatible scenario pages with either backend,
+selected at app startup. Native structured content and pre-result informational
+rendering are Direct-only scenarios.
 
 | `DOJO_BACKEND` | Model host | Pipeline |
 | --- | --- | --- |
@@ -62,21 +64,25 @@ dojo scenarios and the focused component scenarios previously hosted in AIApp:
   to distinguish approval from rejection.
 - `/function-invocation` exercises the generic `FunctionInvocationContentBlock`,
   including its informational flag and loading-to-result transition. The release
-  button unblocks the real server tool, regardless of which host executes it.
+  button unblocks the real tool in the UI process. This scenario is Direct-only.
 - `/rich-text` renders native `RichTextContent` snapshots, including tables,
   images, footnotes, task lists, and encoded HTML, rather than parsing Markdown.
+  This scenario is Direct-only.
 
 Function scenario controls use the page's conversation ID, so concurrent pages
 do not share invocation counters or result gates. The tests remove their control
 state when they finish.
 
-The structured-rich-text and informational-invocation scenarios use a dojo
-custom AG-UI event containing the serialized native chat update. This preserves
-typed rich-text trees and renders informational calls before their results;
-the standard AG-UI client buffers tool calls until a result or interrupt arrives.
-The payload crosses the real HTTP/SSE transport and is decoded by the UI adapter.
-Direct mode consumes the native update without that encoding. Approval scenarios
-continue to use the standard AG-UI approval protocol.
+AG-UI has no standard representation for the native rich-text node tree.
+The current `AGUIChatClient` also buffers tool calls until a result or interrupt
+arrives, so it cannot exercise the informational loading state before the tool
+result. That buffering is client behavior, not a prohibition on progressive
+tool-call events in the protocol. These two tests run once against Direct and
+retain their original in-process assertions without a custom serialization path.
+Their API endpoints and AG-UI UI routes are absent, and the home page lists them
+only in Direct mode. Approval remains covered on both backends through the
+standard AG-UI approval protocol. The Markdown-based agentic-chat rich-text case
+also remains covered on both backends.
 
 ## Adding a scenario
 
@@ -99,6 +105,11 @@ public async Task Scenario_ExercisesComponentBehavior(DojoBackendKind backend)
     // Interact and assert component behavior.
 }
 ```
+
+For a native-only component contract that cannot be exercised through the standard
+AG-UI client, omit `[DojoBackends]` and the backend parameter, call
+`GetDojoAsync(DojoBackendKind.Direct)`, and explain the limitation in the test.
+Do not serialize native types through custom events just to add an AG-UI row.
 
 Keep backend selection out of page markup and test assertions. `GetDojoAsync`
 acquires the API only for AG-UI rows. Always navigate with the session's
