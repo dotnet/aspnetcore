@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Components.AI
+
+<span class="agentic-chat__action-status" role="status">
+    @if (Block.IsComplete)
+    {
+        <text>Background updated</text>
+    }
+    else
+    {
+        <text>Updating background...</text>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public UIActionBlock Block { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Block.IsComplete)
+        {
+            await Block.InvokeAsync();
+        }
+    }
+}

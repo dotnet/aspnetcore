@@ -20,6 +20,14 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <!-- Components.TestServer publishes multiple referenced WebAssembly apps that all traverse this
+       project. Skip the redundant traversal on that publish path to avoid concurrent compression. -->
+  <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">
+    <StaticWebAssetsGetPublishAssetsTargets>_SkipGetPublishAssetsForTrimmedBuild</StaticWebAssetsGetPublishAssetsTargets>
+  </PropertyGroup>
+
+  <Target Name="_SkipGetPublishAssetsForTrimmedBuild" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />

@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -173,6 +174,35 @@ public class DisplayNameTest
         Assert.Equal("Localized Display Name", output);
     }
 
+    [Fact]
+    public async Task LocalizedDisplayNameFollowsCurrentUICulture()
+    {
+        var model = new TestModel();
+        RenderFragment innerContent = builder =>
+        {
+            builder.OpenComponent<DisplayName<string>>(0);
+            builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithCultureSensitiveDisplay));
+            builder.CloseComponent();
+        };
+
+        var originalCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+            var englishOutput = await RenderAndGetOutput(new TestHostComponent { InnerContent = innerContent });
+
+            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
+            var frenchOutput = await RenderAndGetOutput(new TestHostComponent { InnerContent = innerContent });
+
+            Assert.Equal("English Name", englishOutput);
+            Assert.Equal("Nom en francais", frenchOutput);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = originalCulture;
+        }
+    }
+
     private static async Task<string> RenderAndGetOutput(TestHostComponent rootComponent)
     {
         var testRenderer = new TestRenderer();
@@ -223,10 +253,21 @@ public class DisplayNameTest
 
         [Display(Name = nameof(TestResources.LocalizedDisplayName), ResourceType = typeof(TestResources))]
         public string PropertyWithResourceBasedDisplay { get; set; } = string.Empty;
+
+        [Display(Name = nameof(CultureSensitiveResources.DisplayName), ResourceType = typeof(CultureSensitiveResources))]
+        public string PropertyWithCultureSensitiveDisplay { get; set; } = string.Empty;
     }
 
     public static class TestResources
     {
         public static string LocalizedDisplayName => "Localized Display Name";
+    }
+
+    // Stands in for a ResourceManager backed resource class, whose generated properties
+    // resolve against CultureInfo.CurrentUICulture.
+    public static class CultureSensitiveResources
+    {
+        public static string DisplayName =>
+            CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fr" ? "Nom en francais" : "English Name";
     }
 }

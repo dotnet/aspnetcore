@@ -69,7 +69,7 @@ file abstract class ValidatableInfo
 
     private protected static string? ResolveAttributeErrorMessage(
         global::Microsoft.Extensions.Validation.ValidateContext context,
-        string memberName,
+        string? memberName,
         string displayName,
         global::System.Type declaringType,
         global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
@@ -85,52 +85,16 @@ file abstract class ValidatableInfo
             return result.ErrorMessage;
         }
 
-        var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
-            ? attribute.ErrorMessage
-            : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
-            {
-                ValidatorType = attribute.GetType(),
-                MemberName = memberName,
-                DeclaringType = declaringType,
-            });
-
-        if (string.IsNullOrEmpty(lookupKey))
-        {
-            return result.ErrorMessage;
-        }
-
         var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
 
-        var localizedTemplate = localizer[lookupKey!];
-        if (localizedTemplate.ResourceNotFound)
+        var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
+        if (localizedTemplate is null)
         {
             return result.ErrorMessage;
         }
 
-        return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
+        return attribute.FormatMessage(localizedTemplate, displayName);
     }
-
-    // Keep in sync with DataAnnotationsLocalizer.FormatMessage in
-    // src/Components/Endpoints/src/Forms/DataAnnotationsLocalizer.cs, which mirrors this switch for the
-    // Blazor SSR client-validation payload.
-    private static string FormatErrorMessage(
-        global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
-        global::System.Globalization.CultureInfo culture,
-        string messageTemplate,
-        string displayName)
-        => attribute switch
-        {
-            global::Microsoft.Extensions.Validation.IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
-            global::System.ComponentModel.DataAnnotations.CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
-            global::System.ComponentModel.DataAnnotations.FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
-            global::System.ComponentModel.DataAnnotations.LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
-            global::System.ComponentModel.DataAnnotations.MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-            global::System.ComponentModel.DataAnnotations.MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-            global::System.ComponentModel.DataAnnotations.RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
-            global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
-            global::System.ComponentModel.DataAnnotations.StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
-            _ => string.Format(culture, messageTemplate, displayName),
-        };
 
     private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
         global::Microsoft.Extensions.Validation.ValidateContext context,

@@ -51,6 +51,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepoRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.DirectTls\src\Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
@@ -140,11 +141,13 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepoRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticAssets" ProjectPath="$(RepoRoot)src\StaticAssets\src\Microsoft.AspNetCore.StaticAssets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.AI" ProjectPath="$(RepoRoot)src\Components\AI\src\Microsoft.AspNetCore.Components.AI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Endpoints" ProjectPath="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\src\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
@@ -163,7 +166,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization" ProjectPath="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepoRoot)src\ObjectPool\src\Microsoft.Extensions.ObjectPool.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />

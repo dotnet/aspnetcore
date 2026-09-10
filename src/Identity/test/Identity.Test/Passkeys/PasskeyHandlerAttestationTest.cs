@@ -11,6 +11,7 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -28,6 +29,23 @@ public class PasskeyHandlerAttestationTest
         var result = await test.RunAsync();
 
         Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task CanSucceed_UsesTimeProviderForCreatedAt()
+    {
+        var test = new AttestationTest();
+        var fakeTimeProvider = new FakeTimeProvider();
+        var expectedTime = new DateTimeOffset(2033, 1, 2, 3, 4, 5, TimeSpan.Zero);
+        fakeTimeProvider.SetUtcNow(expectedTime);
+
+        test.PasskeyOptions.TimeProvider = fakeTimeProvider;
+
+        var result = await test.RunAsync();
+
+        Assert.True(result.Succeeded);
+
+        Assert.Equal(expectedTime, result.Passkey.CreatedAt);
     }
 
     [Fact]
