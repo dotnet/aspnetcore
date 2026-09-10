@@ -1,0 +1,134 @@
+@using System.Text.Json
+
+@if (_responded)
+{
+    <div class="task-steps-card task-steps-card--responded">
+        @if (_accepted)
+        {
+            <span class="task-steps-status task-steps-status--accepted">Accepted</span>
+        }
+        else
+        {
+            <span class="task-steps-status task-steps-status--rejected">Rejected</span>
+        }
+    </div>
+}
+else
+{
+    <div class="task-steps-card">
+        <div class="task-steps-card__header">
+            <h2>Select steps</h2>
+            <span class="task-steps-card__count">@SelectedCount / @_steps.Count selected</span>
+        </div>
+
+        <div class="task-steps-card__progress">
+            <div class="task-steps-card__progress-bar" style="width: @ProgressPercent%"></div>
+        </div>
+
+        <ul class="task-steps-card__list">
+            @foreach (var step in _steps)
+            {
+                <li class="task-step-item @(step.IsSelected ? "task-step-item--selected" : "")">
+                    <label>
+                        <input type="checkbox"
+                               checked="@step.IsSelected"
+                               @onchange="() => ToggleStep(step)" />
+                        @step.Description
+                    </label>
+                </li>
+            }
+        </ul>
+
+        <div class="task-steps-card__actions">
+            <button type="button" class="task-steps-btn task-steps-btn--reject" @onclick="RejectAsync">
+                Reject
+            </button>
+            <button type="button" class="task-steps-btn task-steps-btn--confirm" @onclick="ConfirmAsync">
+                Confirm
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public UIActionBlock Block { get; set; } = default!;
+
+    private List<TaskStepItem> _steps = [];
+    private bool _responded;
+    private bool _accepted;
+
+    private int SelectedCount => _steps.Count(step => step.IsSelected);
+
+    private double ProgressPercent => _steps.Count == 0
+        ? 0
+        : (double)SelectedCount / _steps.Count * 100;
+
+    protected override void OnInitialized()
+    {
+        if (Block.Call.Arguments?.TryGetValue("steps", out var value) == true)
+        {
+            var steps = value switch
+            {
+                JsonElement { ValueKind: JsonValueKind.Array } element =>
+                    element.Deserialize<List<TaskStep>>(),
+                JsonElement { ValueKind: JsonValueKind.String } element =>
+                    JsonSerializer.Deserialize<List<TaskStep>>(element.GetString()!),
+                _ => JsonSerializer.Deserialize<List<TaskStep>>(value?.ToString() ?? "[]"),
+            };
+
+            if (steps is not null)
+            {
+                _steps = steps.Select(step => new TaskStepItem
+                {
+                    Description = step.Description,
+                    IsSelected = step.Status != "disabled",
+                }).ToList();
+            }
+        }
+    }
+
+    private void ToggleStep(TaskStepItem step)
+    {
+        step.IsSelected = !step.IsSelected;
+    }
+
+    private Task ConfirmAsync()
+    {
+        return RespondAsync(accepted: true);
+    }
+
+    private Task RejectAsync()
+    {
+        foreach (var step in _steps)
+        {
+            step.IsSelected = false;
+        }
+
+        return RespondAsync(accepted: false);
+    }
+
+    private async Task RespondAsync(bool accepted)
+    {
+        if (Block.Call.Arguments is not null)
+        {
+            Block.Call.Arguments["steps"] = JsonSerializer.SerializeToElement(
+                _steps.Select(step => new TaskStep
+                {
+                    Description = step.Description,
+                    Status = step.IsSelected ? "enabled" : "disabled",
+                }));
+        }
+
+        await Block.InvokeAsync();
+        _accepted = accepted;
+        _responded = true;
+    }
+
+    private sealed class TaskStepItem
+    {
+        public string Description { get; set; } = "";
+
+        public bool IsSelected { get; set; }
+    }
+}

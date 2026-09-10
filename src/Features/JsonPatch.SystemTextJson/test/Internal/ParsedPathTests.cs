@@ -16,6 +16,9 @@ public class ParsedPathTests
     [InlineData("foo/bar~1baz", new string[] { "foo", "bar/baz" })]
     [InlineData("foo/bar~0/~0/~1~1/~0~0/baz", new string[] { "foo", "bar~", "~", "//", "~~", "baz" })]
     [InlineData("~0~1foo", new string[] { "~/foo" })]
+    [InlineData("/foo/bar", new string[] { "foo", "bar" })]
+    [InlineData("/foo", new string[] { "foo" })]
+    [InlineData("", new string[] { })]
     public void ParsingValidPathShouldSucceed(string path, string[] expected)
     {
         // Arrange & Act
@@ -37,5 +40,20 @@ public class ParsedPathTests
         {
             var parsedPath = new ParsedPath(path);
         });
+    }
+
+    [Theory]
+    [InlineData("//isSmth", new string[] { "", "isSmth" })]
+    [InlineData("//", new string[] { "", "" })]
+    [InlineData("/", new string[] { "" })]
+    [InlineData("", new string[] { })]
+    [InlineData("/foo/", new string[] { "foo", "" })]
+    [InlineData("/foo//bar", new string[] { "foo", "", "bar" })]
+    [InlineData("foo//bar", new string[] { "foo", "", "bar" })]
+    [InlineData("foo/", new string[] { "foo", "" })]
+    public void PathWithEmptyReferenceTokenShouldNotFail(string path, string[] expectedSegments)
+    {
+        var parsedPath = new ParsedPath(path);
+        Assert.Equal(expectedSegments, parsedPath.Segments);
     }
 }

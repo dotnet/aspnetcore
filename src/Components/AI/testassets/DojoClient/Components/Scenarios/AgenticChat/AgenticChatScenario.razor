@@ -6,26 +6,52 @@
 
 <PageTitle>Agentic Chat</PageTitle>
 
-<ChatPage Agent="_agent"
-          Placeholder="Type a message..."
-          data-scenario="agentic_chat">
-    <Header>
-        <h1 class="dojo-scenario__title">Agentic Chat</h1>
-    </Header>
-    <WelcomeContent>
-        <p class="dojo-scenario__welcome">Ask the agent something to start the conversation.</p>
-    </WelcomeContent>
-</ChatPage>
+<div class="agentic-chat" data-background="@_background" style="@BackgroundStyle">
+    <ChatPage Agent="_agent"
+              Placeholder="Type a message..."
+              data-scenario="agentic_chat">
+        <Header>
+            <h1 class="dojo-scenario__title">Agentic Chat</h1>
+        </Header>
+        <WelcomeContent>
+            <p class="dojo-scenario__welcome">Ask the agent something to start the conversation.</p>
+        </WelcomeContent>
+        <MessageListContent>
+            <BlockRenderer TBlock="UIActionBlock"
+                           Context="action"
+                           When="@(action => action.ToolName == "change_background")">
+                <AutoInvokeAction Block="action" />
+            </BlockRenderer>
+        </MessageListContent>
+    </ChatPage>
+</div>
 
 @code {
     private UIAgent _agent = default!;
+    private string? _background;
 
     protected override void OnInitialized()
     {
         // The injected IChatClient is an AGUIChatClient pointed at AGUIDojoApi, so every
         // message crosses the real AG-UI HTTP + SSE boundary.
-        _agent = new UIAgent(ChatClient, configure: null, LoggerFactory);
+        _agent = new UIAgent(ChatClient, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                ChangeBackground,
+                name: "change_background",
+                description: "Change the chat background using a CSS color or gradient."));
+        }, LoggerFactory);
     }
+
+    private async Task<string> ChangeBackground(string background)
+    {
+        _background = background;
+        await InvokeAsync(StateHasChanged);
+        return "Background changed successfully.";
+    }
+
+    private string? BackgroundStyle =>
+        _background is null ? null : $"background: {_background};";
 
     public void Dispose() => _agent?.Dispose();
 }
