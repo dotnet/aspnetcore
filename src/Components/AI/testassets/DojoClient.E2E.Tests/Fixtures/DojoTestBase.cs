@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using AGUIDojoApi;
+using DojoAgent;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.AspNetCore.Components.Testing.Playwright;
@@ -22,16 +23,16 @@ public abstract class DojoTestBase : BrowserTest
     /// <param name="recording">The recording to use, or null for the offline scripted model.</param>
     /// <returns>The test session, including host routing and checkpoint controls.</returns>
     protected async Task<DojoTestSession> GetDojoAsync(
-        string backend,
+        DojoBackendKind backend,
         DojoRecording? recording = null)
     {
-        if (backend is not ("AGUI" or "Direct"))
+        if (backend is not (DojoBackendKind.AGUI or DojoBackendKind.Direct))
         {
             throw new ArgumentException($"Unknown dojo backend '{backend}'.", nameof(backend));
         }
 
         ServerInstance? api = null;
-        if (backend == "AGUI")
+        if (backend == DojoBackendKind.AGUI)
         {
             api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
             {
@@ -77,9 +78,9 @@ public abstract class DojoTestBase : BrowserTest
         }
     }
 
-    private static void ConfigureEnvironment(ServerStartOptions options, string backend)
+    private static void ConfigureEnvironment(ServerStartOptions options, DojoBackendKind backend)
     {
-        options.EnvironmentVariables["DOJO_BACKEND"] = backend;
+        options.EnvironmentVariables["DOJO_BACKEND"] = backend.ToString();
         options.EnvironmentVariables["OPENAI_BASE_URL"] = "";
         options.EnvironmentVariables["OPENAI_API_KEY"] = "";
     }

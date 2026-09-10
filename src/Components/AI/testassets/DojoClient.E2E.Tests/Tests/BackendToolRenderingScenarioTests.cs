@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -16,7 +17,7 @@ public partial class BackendToolRenderingScenarioTests : DojoTestBase
     private DojoTestSession _dojo = null!;
     private IPage _page = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
         _dojo = await GetDojoAsync(backend, DojoRecording.BackendToolRendering);
 
@@ -25,9 +26,8 @@ public partial class BackendToolRenderingScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task BackendToolRendering_RendersServerWeatherResult(string backend)
+    [DojoBackends]
+    public async Task BackendToolRendering_RendersServerWeatherResult(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         await _page.GotoAsync(_dojo.GetScenarioUrl("/backend_tool_rendering"));

@@ -3,7 +3,6 @@
 @implements IDisposable
 @using System.Text.Json
 @inject ILoggerFactory LoggerFactory
-@inject DojoBackend Backend
 
 <PageTitle>Agentic Generative UI</PageTitle>
 
@@ -62,12 +61,12 @@
     private UIAgent<PlanState> _agent = default!;
     private IDisposable? _stateChangedRegistration;
 
-    [Inject(Key = DojoScenarios.AgenticGenerativeUIEndpoint)]
+    [Inject(Key = DojoScenarioEndpoints.AgenticGenerativeUIEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
 
     protected override void OnInitialized()
     {
-        var stateUpdates = new DojoStateUpdates(Backend.IsDirect);
+        var stateUpdates = new DojoStateUpdates();
         _agent = new UIAgent<PlanState>(ChatClient, options =>
         {
             options.StateMapper = context =>

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.AspNetCore.Components.Testing.Playwright;
@@ -13,9 +14,8 @@ namespace DojoClient.E2E.Tests.Tests;
 public partial class FunctionInvocationTests : DojoTestBase
 {
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task BuiltInMapping_RendersLoadingThenMatchingResult(string backend)
+    [DojoBackends]
+    public async Task BuiltInMapping_RendersLoadingThenMatchingResult(DojoBackendKind backend)
     {
         var dojo = await GetDojoAsync(backend);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));

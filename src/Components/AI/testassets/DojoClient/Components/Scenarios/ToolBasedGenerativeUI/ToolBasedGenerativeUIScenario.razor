@@ -39,7 +39,7 @@
     private bool _hasGeneratedHaiku;
     private int _currentIndex;
 
-    [Inject(Key = DojoScenarios.ToolBasedGenerativeUIEndpoint)]
+    [Inject(Key = DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
 
     protected override void OnInitialized()

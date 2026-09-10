@@ -28,7 +28,7 @@
 @code {
     private UIAgent _agent = default!;
 
-    [Inject(Key = DojoScenarios.HumanInTheLoopEndpoint)]
+    [Inject(Key = DojoScenarioEndpoints.HumanInTheLoopEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
 
     protected override void OnInitialized()

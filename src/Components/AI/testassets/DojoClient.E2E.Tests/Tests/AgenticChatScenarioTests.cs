@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -22,12 +23,9 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
-    private string _runId = null!;
 
-    private async Task InitializeScenarioAsync(string backend, bool usesClientToolRecording = false)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend, bool usesClientToolRecording = false)
     {
-        _runId = Guid.NewGuid().ToString("N")[..8];
-
         _dojo = await GetDojoAsync(backend, usesClientToolRecording
             ? DojoRecording.AgenticChatClientTool
             : DojoRecording.AgenticChat);
@@ -38,13 +36,12 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_StreamsAssistantTextIncrementally(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_StreamsAssistantTextIncrementally(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         await GoToScenarioAsync();
-        var prompt = Prompt(FirstPrompt);
+        var prompt = FirstPrompt;
 
         await SendAsync(prompt);
 
@@ -56,13 +53,12 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_CompletesTheResponse(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_CompletesTheResponse(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         await GoToScenarioAsync();
-        var prompt = Prompt(FirstPrompt);
+        var prompt = FirstPrompt;
 
         await SendAsync(prompt);
         await Expect(AssistantMessage).ToContainTextAsync("Blazor renders");
@@ -75,14 +71,13 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_KeepsBothTurnsAfterASecondMessage(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_KeepsBothTurnsAfterASecondMessage(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         await GoToScenarioAsync();
-        var firstPrompt = Prompt(FirstPrompt);
-        var secondPrompt = Prompt(SecondPrompt);
+        var firstPrompt = FirstPrompt;
+        var secondPrompt = SecondPrompt;
 
         await SendAsync(firstPrompt);
         await Expect(AssistantMessage).ToContainTextAsync("Blazor renders");
@@ -99,13 +94,12 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_ClientToolExecutesAndContinuesWithOneResult(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_ClientToolExecutesAndContinuesWithOneResult(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend, usesClientToolRecording: true);
         await GoToScenarioAsync();
-        var prompt = Prompt(BackgroundPrompt);
+        var prompt = BackgroundPrompt;
 
         await SendAsync(prompt);
 
@@ -118,9 +112,8 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_ClientToolStateIsIsolatedPerCircuit(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_ClientToolStateIsIsolatedPerCircuit(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend, usesClientToolRecording: true);
         await GoToScenarioAsync();
@@ -131,7 +124,7 @@ public partial class AgenticChatScenarioTests : DojoTestBase
         await secondPage.GotoAsync(_dojo.GetScenarioUrl("/agentic_chat"));
         await secondPage.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
-        await SendAsync(Prompt(BackgroundPrompt));
+        await SendAsync(BackgroundPrompt);
 
         await Expect(_page.Locator(".agentic-chat"))
             .ToHaveAttributeAsync("data-background", Background);
@@ -144,8 +137,6 @@ public partial class AgenticChatScenarioTests : DojoTestBase
     private ILocator AssistantMessage => _page.Locator(".sc-ai-message--assistant .sc-ai-message__content");
 
     private ILocator TypingIndicator => _page.Locator(".sc-ai-typing");
-
-    private string Prompt(string prompt) => $"{prompt} ({_runId})";
 
     private async Task GoToScenarioAsync()
     {

@@ -119,7 +119,9 @@ internal sealed class DojoRunStore(IConfiguration configuration) : IAsyncDisposa
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync() => DisposeAsync(TimeSpan.FromSeconds(30));
+
+        internal async ValueTask DisposeAsync(TimeSpan timeout)
         {
             lock (_lock)
             {
@@ -130,8 +132,17 @@ internal sealed class DojoRunStore(IConfiguration configuration) : IAsyncDisposa
                 }
             }
 
-            await _cancellation.CancelAsync();
-            await _drained.Task;
+            try
+            {
+                await Task.WhenAll(_cancellation.CancelAsync(), _drained.Task).WaitAsync(timeout);
+            }
+            catch (TimeoutException exception)
+            {
+                throw new TimeoutException(
+                    $"Dojo test-session cleanup did not finish within {timeout}. " +
+                    "Outstanding response enumerators must be advanced or disposed.", exception);
+            }
+
             _client.Dispose();
             _predictiveClient?.Dispose();
             _cancellation.Dispose();

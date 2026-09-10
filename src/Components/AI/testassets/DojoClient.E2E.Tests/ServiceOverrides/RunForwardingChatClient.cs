@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AGUI.Abstractions;
+using DojoAgent;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.AI;
@@ -13,7 +14,7 @@ namespace DojoClient.E2E.Tests.ServiceOverrides;
 internal sealed class RunForwardingChatClient(
     IChatClient innerClient,
     NavigationManager navigation,
-    bool isDirect) : DelegatingChatClient(innerClient)
+    DojoBackendKind backend) : DelegatingChatClient(innerClient)
 {
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -28,7 +29,7 @@ internal sealed class RunForwardingChatClient(
         }
 
         var requestOptions = options?.Clone() ?? new ChatOptions();
-        if (isDirect)
+        if (backend == DojoBackendKind.Direct)
         {
             requestOptions.AdditionalProperties = options?.AdditionalProperties is { } properties
                 ? new(properties)
@@ -37,6 +38,14 @@ internal sealed class RunForwardingChatClient(
         }
         else
         {
+            // AGUIChatClient pins its generated thread ID in the supplied options. Preserve
+            // that shared metadata when wrapping the request factory.
+            if (options is not null)
+            {
+                options.AdditionalProperties ??= [];
+                requestOptions.AdditionalProperties = options.AdditionalProperties;
+            }
+
             var createInput = options?.RawRepresentationFactory;
             requestOptions.RawRepresentationFactory = client =>
             {

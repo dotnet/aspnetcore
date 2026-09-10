@@ -22,8 +22,8 @@ internal sealed class DojoModelOverrides
 
     public static void ConfigureUI(IServiceCollection services)
     {
-        var isDirect = Environment.GetEnvironmentVariable("DOJO_BACKEND") == "Direct";
-        if (isDirect)
+        var backend = DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
+        if (backend == DojoBackendKind.Direct)
         {
             if (!services.Any(service => service.ServiceType == typeof(IChatClient) &&
                 Equals(service.ServiceKey, ChatClientAgentFactory.ModelServiceKey)))
@@ -53,19 +53,19 @@ internal sealed class DojoModelOverrides
             if (descriptor.IsKeyedService)
             {
                 var factory = descriptor.KeyedImplementationFactory
-                    ?? throw new InvalidOperationException("Expected a factory for the dojo scenario client.");
+                    ?? throw UnsupportedRegistration(descriptor);
                 services[index] = ServiceDescriptor.DescribeKeyed(typeof(IChatClient), descriptor.ServiceKey,
                     (sp, key) => new RunForwardingChatClient(
-                        (IChatClient)factory(sp, key), sp.GetRequiredService<NavigationManager>(), isDirect),
+                        (IChatClient)factory(sp, key), sp.GetRequiredService<NavigationManager>(), backend),
                     descriptor.Lifetime);
             }
             else
             {
                 var factory = descriptor.ImplementationFactory
-                    ?? throw new InvalidOperationException("Expected a factory for the dojo chat client.");
+                    ?? throw UnsupportedRegistration(descriptor);
                 services[index] = ServiceDescriptor.Describe(typeof(IChatClient),
                     sp => new RunForwardingChatClient(
-                        (IChatClient)factory(sp), sp.GetRequiredService<NavigationManager>(), isDirect),
+                        (IChatClient)factory(sp), sp.GetRequiredService<NavigationManager>(), backend),
                     descriptor.Lifetime);
             }
         }
@@ -75,5 +75,17 @@ internal sealed class DojoModelOverrides
     {
         services.AddSingleton<DojoRunStore>();
         services.AddTransient<IStartupFilter, DojoRunStartupFilter>();
+    }
+
+    private static InvalidOperationException UnsupportedRegistration(ServiceDescriptor descriptor)
+    {
+        var implementationType = descriptor.IsKeyedService
+            ? descriptor.KeyedImplementationType ?? descriptor.KeyedImplementationInstance?.GetType()
+            : descriptor.ImplementationType ?? descriptor.ImplementationInstance?.GetType();
+
+        return new InvalidOperationException(
+            $"Cannot decorate {nameof(IChatClient)} registration with key '{descriptor.ServiceKey ?? "<default>"}', " +
+            $"implementation '{implementationType?.FullName ?? "<unknown>"}', lifetime '{descriptor.Lifetime}'. " +
+            "Dojo UI clients must use factory registrations.");
     }
 }

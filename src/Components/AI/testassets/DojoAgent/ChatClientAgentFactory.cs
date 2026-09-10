@@ -295,8 +295,7 @@ public static class ChatClientAgentFactory
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        string? lastEmittedDocument = null;
-        var hasEmittedConfirmation = false;
+        var documentUpdates = new PredictiveDocumentUpdates();
         var streamOptions = new AGUIStreamOptions();
         streamOptions.MapContent(content => content is DataContent data &&
             data.MediaType == PredictiveStateMediaType
@@ -307,25 +306,14 @@ public static class ChatClientAgentFactory
             : null);
         streamOptions.MapCall("write_document_local", call =>
         {
-            var document = call.Arguments?.TryGetValue("document", out var value) == true
-                ? value?.ToString()
-                : null;
-            if (document is null || document == lastEmittedDocument)
+            if (documentUpdates.Create(call) is not { } change)
             {
                 return [];
             }
 
             var events = new List<BaseEvent>();
-            var startIndex = lastEmittedDocument is not null &&
-                document.StartsWith(lastEmittedDocument, StringComparison.Ordinal)
-                    ? lastEmittedDocument.Length
-                    : 0;
-
-            const int chunkSize = 10;
-            for (var index = startIndex; index < document.Length; index += chunkSize)
+            foreach (var state in change.Snapshots)
             {
-                var length = Math.Min(chunkSize, document.Length - index);
-                var state = new DocumentState { Document = document[..(index + length)] };
                 events.Add(new StateSnapshotEvent
                 {
                     Snapshot = JsonSerializer.SerializeToElement(state, options),
@@ -340,25 +328,22 @@ public static class ChatClientAgentFactory
                 Role = "tool",
             });
 
-            if (!hasEmittedConfirmation)
+            if (change.Confirmation is { } confirmation)
             {
-                hasEmittedConfirmation = true;
-                var confirmationCallId = Guid.NewGuid().ToString("N");
                 events.Add(new ToolCallStartEvent
                 {
-                    ToolCallId = confirmationCallId,
-                    ToolCallName = "confirm_changes",
+                    ToolCallId = confirmation.CallId,
+                    ToolCallName = confirmation.Name,
                     ParentMessageId = Guid.NewGuid().ToString("N"),
                 });
                 events.Add(new ToolCallArgsEvent
                 {
-                    ToolCallId = confirmationCallId,
-                    Delta = "{}",
+                    ToolCallId = confirmation.CallId,
+                    Delta = JsonSerializer.Serialize(confirmation.Arguments, options),
                 });
-                events.Add(new ToolCallEndEvent { ToolCallId = confirmationCallId });
+                events.Add(new ToolCallEndEvent { ToolCallId = confirmation.CallId });
             }
 
-            lastEmittedDocument = document;
             return events;
         });
 

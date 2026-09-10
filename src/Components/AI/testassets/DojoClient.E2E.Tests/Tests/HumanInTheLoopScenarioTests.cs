@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -18,11 +19,9 @@ public partial class HumanInTheLoopScenarioTests : DojoTestBase
 
     private DojoTestSession _dojo = null!;
     private IPage _page = null!;
-    private string _runId = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
-        _runId = Guid.NewGuid().ToString("N")[..8];
         _dojo = await GetDojoAsync(backend, DojoRecording.HumanInTheLoop);
 
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
@@ -32,12 +31,11 @@ public partial class HumanInTheLoopScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task TaskSteps_SelectsAndApprovesBeforeContinuing(string backend)
+    [DojoBackends]
+    public async Task TaskSteps_SelectsAndApprovesBeforeContinuing(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
-        var prompt = Prompt(ApprovalPrompt);
+        var prompt = ApprovalPrompt;
 
         await SendAsync(prompt);
 
@@ -71,12 +69,11 @@ public partial class HumanInTheLoopScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task TaskSteps_RejectsBeforeContinuing(string backend)
+    [DojoBackends]
+    public async Task TaskSteps_RejectsBeforeContinuing(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
-        var prompt = Prompt(RejectionPrompt);
+        var prompt = RejectionPrompt;
 
         await SendAsync(prompt);
 
@@ -93,8 +90,6 @@ public partial class HumanInTheLoopScenarioTests : DojoTestBase
                 "No tasks were selected, so I won't move forward with any proposed steps.");
         await Expect(_page.Locator("button.sc-ai-input__send")).ToBeEnabledAsync();
     }
-
-    private string Prompt(string prompt) => $"{prompt} ({_runId})";
 
     private async Task SendAsync(string prompt)
     {

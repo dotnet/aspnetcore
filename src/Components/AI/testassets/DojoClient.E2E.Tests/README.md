@@ -15,6 +15,12 @@ configured with `OPENAI_BASE_URL` or `OPENAI_API_KEY` in the model host.
 The sibling `DojoAgent` library owns the shared models, tools, and prompts; neither
 web app references the other.
 
+Backend selection is represented by the shared `DojoBackendKind` enum. Scenario
+pages use the stateless `IDojoScenarioBridge` to construct request options without
+inspecting the backend. Each agent creates its own backend-neutral `DojoStateUpdates`
+mapper, so reset agents do not share mutable tool-correlation state.
+The original dojo endpoint names are shared through `DojoScenarioEndpoints`.
+
 ## Suite-wide hosts and per-test sessions
 
 The suite lazily starts at most three application processes: one AGUIDojoApi
@@ -38,7 +44,9 @@ The model host routes each request to that session's model. Missing or expired
 IDs fail rather than falling back to another recording. Checkpoint releases are
 session-scoped, so identical prompts in different sessions cannot unblock each
 other. Test cleanup cancels and drains pending requests, disposes the model, and
-removes its state without stopping shared hosts.
+removes its state without stopping shared hosts. Cancellation/draining has a
+30-second deadline: an abandoned enumerator fails cleanup explicitly instead of
+hanging the suite.
 
 Tests still create fresh browser contexts. `WithServerRouting` selects the
 appropriate shared UI instance through the proxy's `X-Test-Backend` header.
@@ -74,13 +82,13 @@ continue to use the standard AG-UI approval protocol.
 
 Create one page in DojoClient and one test in this project. Derive the test class
 from `DojoTestBase`, retain `[UITest]` on the partial class, and parameterize the
-test with `[DataRow("AGUI")]` and `[DataRow("Direct")]`:
+test with `[DojoBackends]`. The attribute supplies a separately reported row for
+each supported `DojoBackendKind`:
 
 ```csharp
 [TestMethod]
-[DataRow("AGUI")]
-[DataRow("Direct")]
-public async Task Scenario_ExercisesComponentBehavior(string backend)
+[DojoBackends]
+public async Task Scenario_ExercisesComponentBehavior(DojoBackendKind backend)
 {
     var dojo = await GetDojoAsync(backend, DojoRecording.AgenticChat);
     var checkpoints = dojo.Checkpoints;
@@ -104,3 +112,7 @@ the scenario client and transport intact. `DojoRunStore` owns per-session models
 The recordings and their request assertions are shared across both runs.
 Native tool results are compared in the recording's JSON representation, so
 transport encoding differences do not require separate recordings.
+
+The forwarding decorator preserves AG-UI's generated thread-ID metadata when it
+clones request options. Tests cover both generated IDs and explicit thread/state
+metadata through the real `UIAgent` and `AGUIChatClient` request builders.

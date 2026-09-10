@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.AspNetCore.Components.Testing.Playwright;
@@ -13,9 +14,8 @@ namespace DojoClient.E2E.Tests.Tests;
 public partial class FunctionApprovalTests : DojoTestBase
 {
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task ServerTool_ExecutesAfterApproval(string backend)
+    [DojoBackends]
+    public async Task ServerTool_ExecutesAfterApproval(DojoBackendKind backend)
     {
         var (page, control) = await OpenScenarioAsync(backend);
         await using var _ = control;
@@ -43,9 +43,8 @@ public partial class FunctionApprovalTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task ServerTool_DoesNotExecuteAfterRejection(string backend)
+    [DojoBackends]
+    public async Task ServerTool_DoesNotExecuteAfterRejection(DojoBackendKind backend)
     {
         var (page, control) = await OpenScenarioAsync(backend);
         await using var _ = control;
@@ -67,7 +66,7 @@ public partial class FunctionApprovalTests : DojoTestBase
         await Expect(page.Locator("button.sc-ai-input__send")).ToBeEnabledAsync();
     }
 
-    private async Task<(IPage Page, FunctionScenarioClient Control)> OpenScenarioAsync(string backend)
+    private async Task<(IPage Page, FunctionScenarioClient Control)> OpenScenarioAsync(DojoBackendKind backend)
     {
         var dojo = await GetDojoAsync(backend);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));

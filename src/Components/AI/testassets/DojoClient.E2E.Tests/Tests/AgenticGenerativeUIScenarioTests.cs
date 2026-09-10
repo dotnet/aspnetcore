@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -29,7 +30,7 @@ public partial class AgenticGenerativeUIScenarioTests : DojoTestBase
     private IPage _page = null!;
     private string _prompt = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
         _prompt = SimplePlanPrompt;
         _dojo = await GetDojoAsync(backend, DojoRecording.AgenticGenerativeUI);
@@ -42,9 +43,8 @@ public partial class AgenticGenerativeUIScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task PlanTask_StreamsSnapshotAndEachDeltaBeforeCompleting(string backend)
+    [DojoBackends]
+    public async Task PlanTask_StreamsSnapshotAndEachDeltaBeforeCompleting(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='agentic_generative_ui']");
@@ -134,7 +134,7 @@ public partial class AgenticGenerativeUISuggestionTests : DojoTestBase
     private DojoTestSession _dojo = null!;
     private IPage _page = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
         _dojo = await GetDojoAsync(backend);
 
@@ -145,9 +145,8 @@ public partial class AgenticGenerativeUISuggestionTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task ComplexPlanSuggestion_SubmitsTenStepPizzaPlan(string backend)
+    [DojoBackends]
+    public async Task ComplexPlanSuggestion_SubmitsTenStepPizzaPlan(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='agentic_generative_ui']");

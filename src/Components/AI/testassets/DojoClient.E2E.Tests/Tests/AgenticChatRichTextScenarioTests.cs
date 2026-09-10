@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -16,9 +17,8 @@ public partial class AgenticChatRichTextScenarioTests : DojoTestBase
     private const string PromptText = "Show a formatted Blazor overview";
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task AgenticChat_RendersFormattedAssistantResponse(string backend)
+    [DojoBackends]
+    public async Task AgenticChat_RendersFormattedAssistantResponse(DojoBackendKind backend)
     {
         var dojo = await GetDojoAsync(backend, DojoRecording.AgenticChatRichText);
         var checkpoints = dojo.Checkpoints;
@@ -27,7 +27,7 @@ public partial class AgenticChatRichTextScenarioTests : DojoTestBase
         await page.GotoAsync(dojo.GetScenarioUrl("/agentic_chat"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
-        var prompt = $"{PromptText} ({Guid.NewGuid():N})";
+        var prompt = PromptText;
         await page.FillAsync("textarea.sc-ai-input__textarea", prompt);
         await page.ClickAsync("button.sc-ai-input__send");
 

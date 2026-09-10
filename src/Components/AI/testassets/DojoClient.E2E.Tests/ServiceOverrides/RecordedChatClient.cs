@@ -19,7 +19,8 @@ internal sealed class RecordedChatClient : IChatClient
 {
     private readonly RecordedScript _script;
     private readonly TestLockProvider _locks;
-    private readonly bool _isDirect = Environment.GetEnvironmentVariable("DOJO_BACKEND") == "Direct";
+    private readonly DojoBackendKind _backend =
+        DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
 
     public RecordedChatClient(RecordedScript script, TestLockProvider locks)
     {
@@ -143,7 +144,7 @@ internal sealed class RecordedChatClient : IChatClient
                     {
                         CallId = result.CallId,
                         // Recordings store the AG-UI JSON encoding, not the native result value.
-                        Result = _isDirect
+                        Result = _backend == DojoBackendKind.Direct
                             ? JsonSerializer.Serialize(result.Result, AIJsonUtilities.DefaultOptions)
                             : result.Result?.ToString() ?? "",
                     })

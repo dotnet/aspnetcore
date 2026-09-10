@@ -19,7 +19,7 @@ public sealed class FunctionScenarioState
 
     /// <summary>Releases the pending informational tool result.</summary>
     /// <param name="threadId">The conversation's identifier.</param>
-    public void ReleaseResult(string threadId) => GetState(threadId).ResultGate.TrySetResult();
+    public void ReleaseResult(string threadId) => Volatile.Read(ref GetState(threadId).ResultGate).TrySetResult();
 
     /// <summary>Removes a completed test conversation's state.</summary>
     /// <param name="threadId">The conversation's identifier.</param>
@@ -38,7 +38,7 @@ public sealed class FunctionScenarioState
         Interlocked.Increment(ref state.InvocationCount);
         try
         {
-            await state.ResultGate.Task.WaitAsync(cancellationToken);
+            await Volatile.Read(ref state.ResultGate).Task.WaitAsync(cancellationToken);
         }
         finally
         {

@@ -14,12 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var backend = new DojoBackend(builder.Configuration["DOJO_BACKEND"]);
-builder.Services.AddSingleton(backend);
+var backend = DojoBackendConfiguration.Parse(builder.Configuration["DOJO_BACKEND"]);
+IDojoScenarioBridge scenarioBridge = backend == DojoBackendKind.Direct
+    ? new DirectDojoScenarioBridge()
+    : new AGUIDojoScenarioBridge();
+builder.Services.AddSingleton(scenarioBridge);
 builder.Services.AddSingleton<FunctionScenarioState>();
 builder.Services.AddScoped(sp => new FunctionScenarioControls(async threadId =>
 {
-    if (backend.IsDirect)
+    if (backend == DojoBackendKind.Direct)
     {
         sp.GetRequiredService<FunctionScenarioState>().ReleaseResult(threadId);
     }
@@ -31,7 +34,7 @@ builder.Services.AddScoped(sp => new FunctionScenarioControls(async threadId =>
         response.EnsureSuccessStatusCode();
     }
 }));
-if (backend.IsDirect)
+if (backend == DojoBackendKind.Direct)
 {
     builder.Services.AddKeyedScoped<IChatClient>(
         ChatClientAgentFactory.ModelServiceKey,
@@ -51,8 +54,11 @@ else
     });
 }
 
+// E2E tests decorate these registrations (see DojoModelOverrides.ConfigureUI); each must stay
+// a factory registration so the decorator can rebuild the scenario's CreateChatClient pipeline
+// around a replaced model, instead of wrapping a fixed instance.
 builder.Services.AddScoped<IChatClient>(sp =>
-    CreateChatClient(sp, DojoScenarios.AgenticChatEndpoint));
+    CreateChatClient(sp, DojoScenarioEndpoints.AgenticChatEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,
     (sp, _) => CreateChatClient(sp, FunctionScenarios.Approval));
 builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
@@ -60,28 +66,28 @@ builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
 builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
     (sp, _) => CreateChatClient(sp, StructuredRichTextChatClient.Endpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.BackendToolRenderingEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.BackendToolRenderingEndpoint));
+    DojoScenarioEndpoints.BackendToolRenderingEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.BackendToolRenderingEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.HumanInTheLoopEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.HumanInTheLoopEndpoint));
+    DojoScenarioEndpoints.HumanInTheLoopEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.HumanInTheLoopEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.ToolBasedGenerativeUIEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.ToolBasedGenerativeUIEndpoint));
+    DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.AgenticGenerativeUIEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.AgenticGenerativeUIEndpoint));
+    DojoScenarioEndpoints.AgenticGenerativeUIEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.AgenticGenerativeUIEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.SharedStateEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
+    DojoScenarioEndpoints.SharedStateEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.SharedStateEndpoint));
 builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.PredictiveStateUpdatesEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.PredictiveStateUpdatesEndpoint));
+    DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint));
 
 var app = builder.Build();
 
 app.UseAntiforgery();
-if (backend.IsDirect)
+if (backend == DojoBackendKind.Direct)
 {
     app.MapFunctionScenarioControls();
 }
@@ -92,9 +98,9 @@ app.MapRazorComponents<App>()
 
 app.Run();
 
-static IChatClient CreateChatClient(IServiceProvider services, string endpoint)
+IChatClient CreateChatClient(IServiceProvider services, string endpoint)
 {
-    if (services.GetRequiredService<DojoBackend>().IsDirect)
+    if (backend == DojoBackendKind.Direct)
     {
         if (endpoint == StructuredRichTextChatClient.Endpoint)
         {
@@ -108,7 +114,7 @@ static IChatClient CreateChatClient(IServiceProvider services, string endpoint)
                 requiresApproval: endpoint == FunctionScenarios.Approval));
         }
 
-        var key = endpoint == DojoScenarios.PredictiveStateUpdatesEndpoint
+        var key = endpoint == DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint
             ? ChatClientAgentFactory.PredictiveStateUpdatesServiceKey
             : ChatClientAgentFactory.ModelServiceKey;
         var model = services.GetRequiredKeyedService<IChatClient>(key);

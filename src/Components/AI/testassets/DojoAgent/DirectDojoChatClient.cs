@@ -20,22 +20,22 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
         var jsonOptions = AIJsonUtilities.DefaultOptions;
         (string? SystemPrompt, IList<AITool> Tools) scenario = endpoint switch
         {
-            "/agentic_chat" => (null, []),
-            "/backend_tool_rendering" => (null,
+            DojoScenarioEndpoints.AgenticChatEndpoint => (null, []),
+            DojoScenarioEndpoints.BackendToolRenderingEndpoint => (null,
                 ChatClientAgentFactory.CreateBackendToolRenderingTools(jsonOptions)),
-            "/human_in_the_loop" => (ChatClientAgentFactory.HumanInTheLoopSystemPrompt, []),
-            "/tool_based_generative_ui" => (ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt, []),
-            "/agentic_generative_ui" => (ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
+            DojoScenarioEndpoints.HumanInTheLoopEndpoint => (ChatClientAgentFactory.HumanInTheLoopSystemPrompt, []),
+            DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint => (ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt, []),
+            DojoScenarioEndpoints.AgenticGenerativeUIEndpoint => (ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
                 ChatClientAgentFactory.CreateAgenticGenerativeUITools(jsonOptions)),
-            "/shared_state" => (ChatClientAgentFactory.SharedStateSystemPrompt,
+            DojoScenarioEndpoints.SharedStateEndpoint => (ChatClientAgentFactory.SharedStateSystemPrompt,
                 ChatClientAgentFactory.CreateSharedStateTools(jsonOptions)),
-            "/predictive_state_updates" => (ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
+            DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint => (ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
                 ChatClientAgentFactory.CreatePredictiveStateUpdatesTools(jsonOptions)),
             _ => throw new ArgumentException($"Unknown dojo scenario '{endpoint}'.", nameof(endpoint)),
         };
         _systemPrompt = scenario.SystemPrompt;
         _serverTools = scenario.Tools;
-        _predictive = endpoint == "/predictive_state_updates";
+        _predictive = endpoint == DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint;
     }
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -67,8 +67,7 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
             .. _serverTools,
         ];
 
-        var hasEmittedConfirmation = false;
-        string? lastDocument = null;
+        var documentUpdates = new PredictiveDocumentUpdates();
         await foreach (var update in base.GetStreamingResponseAsync(
             requestMessages, requestOptions, cancellationToken).ConfigureAwait(false))
         {
@@ -81,20 +80,12 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
 
             foreach (var call in update.Contents.OfType<FunctionCallContent>())
             {
-                if (call.Name != "write_document_local" ||
-                    call.Arguments?.TryGetValue("document", out var value) != true ||
-                    value?.ToString() is not { } document ||
-                    document == lastDocument)
+                if (documentUpdates.Create(call) is not { } change)
                 {
                     continue;
                 }
 
-                var startIndex = lastDocument is not null &&
-                    document.StartsWith(lastDocument, StringComparison.Ordinal)
-                        ? lastDocument.Length
-                        : 0;
-                const int chunkSize = 10;
-                for (var index = startIndex; index < Math.Max(1, document.Length); index += chunkSize)
+                foreach (var state in change.Snapshots)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     yield return new ChatResponseUpdate
@@ -104,10 +95,7 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
                         Contents =
                         [
                             new DataContent(
-                                JsonSerializer.SerializeToUtf8Bytes(new DocumentState
-                                {
-                                    Document = document[..Math.Min(index + chunkSize, document.Length)],
-                                }, AIJsonUtilities.DefaultOptions),
+                                JsonSerializer.SerializeToUtf8Bytes(state, AIJsonUtilities.DefaultOptions),
                                 ChatClientAgentFactory.PredictiveStateMediaType),
                         ],
                     };
@@ -123,24 +111,16 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
                     Contents = [new FunctionResultContent(call.CallId, result)],
                 };
 
-                if (!hasEmittedConfirmation)
+                if (change.Confirmation is { } confirmation)
                 {
-                    hasEmittedConfirmation = true;
                     yield return new ChatResponseUpdate
                     {
                         Role = ChatRole.Assistant,
                         MessageId = Guid.NewGuid().ToString("N"),
-                        Contents =
-                        [
-                            new FunctionCallContent(
-                                Guid.NewGuid().ToString("N"), "confirm_changes",
-                                new Dictionary<string, object?>()),
-                        ],
+                        Contents = [confirmation],
                         FinishReason = ChatFinishReason.ToolCalls,
                     };
                 }
-
-                lastDocument = document;
             }
         }
     }

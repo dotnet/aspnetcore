@@ -51,15 +51,16 @@ public static class FunctionScenarios
             await foreach (var update in base.GetStreamingResponseAsync(
                 messages, requestOptions, cancellationToken).ConfigureAwait(false))
             {
-                var originalCalls = new List<(int Index, FunctionCallContent Call)>();
-                if (!requiresApproval)
+                var published = update;
+                if (!requiresApproval && update.Contents.Any(content => content is FunctionCallContent))
                 {
+                    published = update.Clone();
+                    published.Contents = [.. update.Contents];
                     for (var i = 0; i < update.Contents.Count; i++)
                     {
                         if (update.Contents[i] is FunctionCallContent call)
                         {
-                            originalCalls.Add((i, call));
-                            update.Contents[i] = new FunctionCallContent(call.CallId, call.Name, call.Arguments)
+                            published.Contents[i] = new FunctionCallContent(call.CallId, call.Name, call.Arguments)
                             {
                                 InformationalOnly = true,
                                 AdditionalProperties = call.AdditionalProperties,
@@ -71,17 +72,7 @@ public static class FunctionScenarios
                     }
                 }
 
-                try
-                {
-                    yield return update;
-                }
-                finally
-                {
-                    foreach (var (index, call) in originalCalls)
-                    {
-                        update.Contents[index] = call;
-                    }
-                }
+                yield return published;
             }
         }
 

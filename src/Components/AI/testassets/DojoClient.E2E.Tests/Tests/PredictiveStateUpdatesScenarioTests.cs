@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -30,7 +31,7 @@ public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
         _dojo = await GetDojoAsync(backend, DojoRecording.PredictiveStateUpdates);
         _checkpoints = _dojo.Checkpoints;
@@ -42,9 +43,8 @@ public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject(string backend)
+    [DojoBackends]
+    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='predictive_state_updates']");

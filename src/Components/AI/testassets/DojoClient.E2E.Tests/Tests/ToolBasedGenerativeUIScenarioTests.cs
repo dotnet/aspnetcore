@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -18,11 +19,9 @@ public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
     private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
-    private string _runId = null!;
 
-    private async Task InitializeScenarioAsync(string backend)
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
-        _runId = Guid.NewGuid().ToString("N")[..8];
         _dojo = await GetDojoAsync(backend, DojoRecording.ToolBasedGenerativeUI);
         _checkpoints = _dojo.Checkpoints;
 
@@ -33,9 +32,8 @@ public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
     }
 
     [TestMethod]
-    [DataRow("AGUI")]
-    [DataRow("Direct")]
-    public async Task GenerateHaiku_RendersWhileStreamingAndNavigatesCarousel(string backend)
+    [DojoBackends]
+    public async Task GenerateHaiku_RendersWhileStreamingAndNavigatesCarousel(DojoBackendKind backend)
     {
         await InitializeScenarioAsync(backend);
         Assert.AreEqual(
@@ -44,7 +42,7 @@ public partial class ToolBasedGenerativeUIScenarioTests : DojoTestBase
                 .HaikuData.NormalizeGradient(
                     "linear-gradient(135deg, #134e5e, #71b280); background: url(https://example.com)"));
 
-        var prompt = $"{HaikuPrompt} ({_runId})";
+        var prompt = HaikuPrompt;
         var carousel = _page.Locator(".tool-generative-ui__display .haiku-carousel");
 
         await AssertPlaceholderHaikuAsync(carousel.Locator(".haiku-card"));

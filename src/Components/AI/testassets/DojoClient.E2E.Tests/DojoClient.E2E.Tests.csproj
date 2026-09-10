@@ -20,7 +20,8 @@
          explicit one so the version is pinned to MSTest.TestFramework. -->
     <!-- MSTEST0001: Parallelism analyzer requires an explicit assembly-level declaration.
          This project intentionally retains MSTest's sequential default for now. -->
-    <!-- The test hooks intentionally use in-tree projects that share framework assembly names. -->
+    <!-- NU1511: intentional in-tree references to Components, Hosting.Abstractions,
+         Http.Abstractions, and WebUtilities share ASP.NET Core framework assembly names. -->
     <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
   </PropertyGroup>
 
