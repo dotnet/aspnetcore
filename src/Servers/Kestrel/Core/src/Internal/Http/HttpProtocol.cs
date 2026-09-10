@@ -566,7 +566,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IncrementRequestHeadersCount();
 
         string key = name.GetHeaderName();
-        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: false);
+        var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
         RequestTrailers.Append(key, valueStr);
     }
 
@@ -1251,6 +1251,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
             }
+        }
+
+        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
+        if (_httpVersion == Http.HttpVersion.Http11 &&
+            Method == HttpMethod.Connect &&
+            StatusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         responseHeaders.SetReadOnly();

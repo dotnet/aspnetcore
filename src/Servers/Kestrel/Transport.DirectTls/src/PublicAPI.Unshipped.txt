@@ -1,0 +1,8 @@
+#nullable enable
+Microsoft.AspNetCore.Hosting.WebHostBuilderDirectTlsExtensions
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions.DirectTlsTransportOptions() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions.WorkerCount.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions.WorkerCount.set -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderDirectTlsExtensions.UseDirectTls(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderDirectTlsExtensions.UseDirectTls(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

@@ -6,40 +6,40 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class RazorComponentsServiceOptionsTest
 {
     [Fact]
-    public void CacheBoundarySizeLimit_DefaultsTo100MiB()
+    public void CacheViewSizeLimit_DefaultsTo100MiB()
     {
         var options = new RazorComponentsServiceOptions();
 
-        Assert.Equal(100 * 1024 * 1024, options.CacheBoundarySizeLimit);
+        Assert.Equal(100 * 1024 * 1024, options.CacheViewSizeLimit);
     }
 
     [Fact]
-    public void CacheBoundarySizeLimit_PositiveValue_RoundTrips()
+    public void CacheViewSizeLimit_PositiveValue_RoundTrips()
     {
         var options = new RazorComponentsServiceOptions
         {
-            CacheBoundarySizeLimit = 1234,
+            CacheViewSizeLimit = 1234,
         };
 
-        Assert.Equal(1234, options.CacheBoundarySizeLimit);
+        Assert.Equal(1234, options.CacheViewSizeLimit);
     }
 
     [Fact]
-    public void CacheBoundarySizeLimit_Zero_IsAllowed_AndDisablesCaching()
+    public void CacheViewSizeLimit_Zero_IsAllowed_AndDisablesCaching()
     {
         var options = new RazorComponentsServiceOptions
         {
-            CacheBoundarySizeLimit = 0,
+            CacheViewSizeLimit = 0,
         };
 
-        Assert.Equal(0, options.CacheBoundarySizeLimit);
+        Assert.Equal(0, options.CacheViewSizeLimit);
     }
 
     [Fact]
-    public void CacheBoundarySizeLimit_Negative_Throws()
+    public void CacheViewSizeLimit_Negative_Throws()
     {
         var options = new RazorComponentsServiceOptions();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.CacheBoundarySizeLimit = -1);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.CacheViewSizeLimit = -1);
     }
 }

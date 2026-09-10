@@ -10,54 +10,64 @@ public class IsCacheableComponentTest
     [Fact]
     public void NoAttribute_IsCacheable()
     {
-        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
+        Assert.True(CacheViewService.IsCacheableComponent(typeof(ComponentBase), CacheVaryBy.None));
     }
 
     [Fact]
     public void Attribute_NoVaryBy_IsNotCacheable()
     {
-        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(UnconditionalLiveCachedComponent), CacheBoundaryVaryBy.None));
-        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(UnconditionalLiveCachedComponent), CacheBoundaryVaryBy.User));
+        Assert.False(CacheViewService.IsCacheableComponent(typeof(UnconditionalLiveCachedComponent), CacheVaryBy.None));
+        Assert.False(CacheViewService.IsCacheableComponent(typeof(UnconditionalLiveCachedComponent), CacheVaryBy.User));
     }
 
     [Fact]
     public void Attribute_Throw_ThrowsWhenNotCovered()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            CacheBoundaryService.IsCacheableComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheViewService.IsCacheableComponent(typeof(ThrowingComponent), CacheVaryBy.None));
     }
 
     [Fact]
     public void Attribute_VaryBy_NotCacheableWhenNotCovered_CacheableWhenCovered()
     {
-        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(ConditionalLiveCachedComponent), CacheBoundaryVaryBy.None));
-        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(ConditionalLiveCachedComponent), CacheBoundaryVaryBy.User));
+        Assert.False(CacheViewService.IsCacheableComponent(typeof(ConditionalLiveCachedComponent), CacheVaryBy.None));
+        Assert.True(CacheViewService.IsCacheableComponent(typeof(ConditionalLiveCachedComponent), CacheVaryBy.User));
     }
 
     [Fact]
     public void Attribute_MultipleVaryByFlags_RequiresFullMatch()
     {
-        var partial = CacheBoundaryVaryBy.User;
-        var full = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query;
+        var partial = CacheVaryBy.User;
+        var full = CacheVaryBy.User | CacheVaryBy.Query;
 
-        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(MultiDimensionLiveCachedComponent), partial));
-        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(MultiDimensionLiveCachedComponent), full));
+        Assert.False(CacheViewService.IsCacheableComponent(typeof(MultiDimensionLiveCachedComponent), partial));
+        Assert.True(CacheViewService.IsCacheableComponent(typeof(MultiDimensionLiveCachedComponent), full));
     }
 
     [Fact]
     public void Attribute_Inherited_AppliesToSubclass()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            CacheBoundaryService.IsCacheableComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheViewService.IsCacheableComponent(typeof(DerivedThrowingComponent), CacheVaryBy.None));
     }
 
-    [CacheBoundaryLiveComponent]
+    [Fact]
+    public void Attribute_ThrowWithMultiFlagCondition_MessageFormatsFlagsAsValidCSharp()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            CacheViewService.IsCacheableComponent(typeof(ThrowingMultiConditionComponent), CacheVaryBy.User));
+
+        Assert.Contains("[CacheCondition(CacheVaryBy.Query | CacheVaryBy.User)]", ex.Message);
+        Assert.DoesNotContain("CacheVaryBy.Query, User", ex.Message);
+    }
+
+    [CacheBehavior(CacheBehavior.Rerender)]
     private class UnconditionalLiveCachedComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
 
-    [CacheBoundaryLiveComponent(Disallow = true)]
+    [CacheBehavior(CacheBehavior.Throw)]
     private class ThrowingComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
@@ -65,13 +75,20 @@ public class IsCacheableComponentTest
 
     private sealed class DerivedThrowingComponent : ThrowingComponent { }
 
-    [CacheBoundaryLiveComponent(VaryBy = CacheBoundaryVaryBy.User)]
+    [CacheBehavior(CacheBehavior.Throw)]
+    [CacheCondition(CacheVaryBy.User | CacheVaryBy.Query)]
+    private class ThrowingMultiConditionComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+    }
+
+    [CacheCondition(CacheVaryBy.User)]
     private class ConditionalLiveCachedComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
 
-    [CacheBoundaryLiveComponent(VaryBy = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query)]
+    [CacheCondition(CacheVaryBy.User | CacheVaryBy.Query)]
     private class MultiDimensionLiveCachedComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }

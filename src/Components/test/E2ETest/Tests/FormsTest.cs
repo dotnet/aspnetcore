@@ -582,6 +582,18 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputNumberParsingErrorUsesDisplayNameAttribute()
+    {
+        var appElement = Browser.MountTestComponent<DisplayNameComponent>();
+        var priceInput = appElement.FindElement(By.Id("price-input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+        priceInput.SendKeys(Keys.Control + "a");
+        priceInput.SendKeys(Keys.Delete);
+        priceInput.SendKeys(Keys.Tab);
+        Browser.Equal(new[] { "The Unit Price field must be a number." }, messagesAccessor);
+    }
+
+    [Fact]
     public void InputComponentsCauseContainerToRerenderOnChange()
     {
         var appElement = MountTypicalValidationComponent();
@@ -1077,6 +1089,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     {
         return () => appElement.FindElements(By.CssSelector(messageSelector))
             .Select(x => x.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .OrderBy(x => x)
             .ToArray();
     }

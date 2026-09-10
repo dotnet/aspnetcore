@@ -165,7 +165,7 @@ Win32 error
 --*/
 {
     FILE_WATCHER* pFileMonitor = (FILE_WATCHER*)pvArg;
-    
+
     LOG_INFO(L"Starting file watcher thread");
     DBG_ASSERT(pFileMonitor != nullptr);
 
@@ -294,7 +294,7 @@ HRESULT
             //
             // check whether the monitored file got changed
             //
-            if (_strFileName.QuerySizeCCH() == (pNotificationInfo->FileNameLength / sizeof(WCHAR))
+            if (_strFileName.QueryCCH() == (pNotificationInfo->FileNameLength / sizeof(WCHAR))
                 && _wcsnicmp(pNotificationInfo->FileName,
                 _strFileName.QueryStr(),
                 pNotificationInfo->FileNameLength / sizeof(WCHAR)) == 0)

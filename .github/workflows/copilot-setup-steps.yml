@@ -27,7 +27,7 @@ jobs:
 
       # For MCP servers like nuget's
       - name: Install .NET 10.x
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             10.x
@@ -35,7 +35,7 @@ jobs:
 
       # for MCP servers
       - name: Install .NET 8.x
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             8.x

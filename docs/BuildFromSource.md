@@ -22,11 +22,11 @@ To get started, fork this repo and then clone it locally. This workflow assumes 
 
 1. If you're on Windows, update the PowerShell execution policy on your machine. For more information on execution policies, review [the execution policy docs](https://learn.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy). To do this, open a PowerShell prompt and issue the following command:
 
+    > :warning: All Windows commands below assume a PowerShell prompt.
+
     ```powershell
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
     ```
-
-    > :warning: All Windows commands below assume a PowerShell prompt.
 
 1. If you're on Windows, install Visual Studio (even if you aren't using it to build) to get the required C++ components and native tools. To install Visual Studio on your machine, use the official installer script in the repo.
 

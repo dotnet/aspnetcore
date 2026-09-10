@@ -11,13 +11,31 @@ namespace Company.RazorClassLibrary1;
 
 public class ExampleJsInterop(IJSRuntime jsRuntime) : IAsyncDisposable
 {
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js").AsTask());
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask = new(async () =>
+    {
+        try
+        {
+            return await jsRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js").AsTask();
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to import the JavaScript module.", ex);
+        }
+    });
 
     public async ValueTask<string> Prompt(string message)
     {
         var module = await moduleTask.Value;
-        return await module.InvokeAsync<string>("showPrompt", message);
+
+        try
+        {
+            return await module.InvokeAsync<string>("showPrompt", message);
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to invoke the showPrompt JavaScript function.", ex);
+        }
     }
 
     public async ValueTask DisposeAsync()

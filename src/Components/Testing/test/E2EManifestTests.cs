@@ -39,6 +39,7 @@ public class E2EManifestTests
         Assert.Equal("/path/to/MyApp", app.WorkingDirectory);
         Assert.Equal("https://localhost:5001", app.PublicUrl);
         Assert.Equal("Development", app.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"]);
+        Assert.Equal(E2EAppEntry.StartupHookHarnessMode, app.HarnessMode);
     }
 
     [Fact]
@@ -169,5 +170,62 @@ public class E2EManifestTests
         Assert.NotNull(manifest.GetApp("App1"));
         Assert.NotNull(manifest.GetApp("App2"));
         Assert.NotNull(manifest.GetApp("App3"));
+    }
+
+    [Fact]
+    public void Deserialize_CompiledHarness_PreservesBehaviorMode()
+    {
+        var json = """
+            {
+                "apps": {
+                    "NativeApp": {
+                        "executable": "NativeApp",
+                        "arguments": "",
+                        "workingDirectory": "e2e-apps/NativeApp",
+                        "environmentVariables": {},
+                        "harnessMode": "compiled"
+                    }
+                }
+            }
+            """;
+
+        var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
+
+        var app = Assert.Single(manifest!.Apps).Value;
+        Assert.Equal(E2EAppEntry.CompiledHarnessMode, app.HarnessMode);
+        Assert.Equal("NativeApp", app.Executable);
+    }
+
+    [Fact]
+    public void Validate_UnknownHarnessMode_Throws()
+    {
+        var manifest = new E2EManifest();
+        manifest.Apps["App"] = new E2EAppEntry
+        {
+            Executable = "App",
+            HarnessMode = "unknown",
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(manifest.Validate);
+
+        Assert.Contains("unsupported harnessMode 'unknown'", exception.Message);
+        Assert.Contains("startupHook", exception.Message);
+        Assert.Contains("compiled", exception.Message);
+    }
+
+    [Fact]
+    public void Validate_CompiledHarnessUsingDotnet_Throws()
+    {
+        var manifest = new E2EManifest();
+        manifest.Apps["App"] = new E2EAppEntry
+        {
+            Executable = "dotnet",
+            Arguments = "App.dll",
+            HarnessMode = E2EAppEntry.CompiledHarnessMode,
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(manifest.Validate);
+
+        Assert.Contains("does not point to a native executable", exception.Message);
     }
 }

@@ -3,14 +3,14 @@
 
 // ES module facade for the client-side validation library. Importing this module
 // has no side effects - the consumer is responsible for calling
-// `createValidationService()` to instantiate the service.
+// `createBlazorValidation()` to instantiate the service using the Blazor rules adapter.
 
-export { createValidationService } from './ValidationService';
 export type {
   ValidationService,
-  ValidationOptions,
   ValidationContext,
   ValidationResult,
   Validator,
   ValidatableElement,
 } from './ValidationTypes';
+
+export { createBlazorValidation, ensureNovalidateOnForms } from './Adapters/BlazorAdapter';

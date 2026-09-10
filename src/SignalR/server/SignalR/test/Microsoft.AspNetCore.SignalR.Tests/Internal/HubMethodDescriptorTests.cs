@@ -32,6 +32,7 @@ public class HubMethodDescriptorTests
         var second = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
         var third = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
 
+        Assert.NotNull(first);
         Assert.Equal(namedPolicy.Requirements.Concat(defaultPolicy.Requirements), first.Requirements);
         if (allowsCaching)
         {
@@ -48,6 +49,65 @@ public class HubMethodDescriptorTests
         provider.Verify(p => p.GetDefaultPolicyAsync(), Times.Exactly(allowsCaching ? 1 : 3));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CombinedAuthorizationPoliciesIncludeAllMetadata(bool allowsCaching)
+    {
+        var namedPolicy = new AuthorizationPolicyBuilder().RequireClaim("named").Build();
+        var explicitPolicy = new AuthorizationPolicyBuilder().RequireClaim("explicit").Build();
+        var requirement = new AuthorizationPolicyBuilder().RequireClaim("requirement").Build().Requirements[0];
+        var provider = CreateCachingProvider(namedPolicy);
+        provider.Setup(p => p.AllowsCachingPolicies).Returns(allowsCaching);
+        var descriptor = CreateDescriptor(
+            new AuthorizeAttribute("test"),
+            explicitPolicy,
+            new RequirementMetadata(requirement));
+
+        var first = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
+        var second = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.Equal(namedPolicy.Requirements.Concat(explicitPolicy.Requirements).Append(requirement), first.Requirements);
+        Assert.Equal(first.Requirements, second.Requirements);
+        if (allowsCaching)
+        {
+            Assert.Same(first, second);
+        }
+        else
+        {
+            Assert.NotSame(first, second);
+        }
+
+        provider.Verify(p => p.GetPolicyAsync("test"), Times.Exactly(allowsCaching ? 1 : 2));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task NonAuthorizationMetadataDoesNotCacheNullPolicy(bool allowsCaching)
+    {
+        var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+        var provider = new Mock<IAuthorizationPolicyProvider>();
+        provider.Setup(p => p.AllowsCachingPolicies).Returns(allowsCaching);
+        provider.SetupSequence(p => p.GetFallbackPolicyAsync())
+            .ReturnsAsync((AuthorizationPolicy?)null)
+            .ReturnsAsync((AuthorizationPolicy?)null)
+            .ReturnsAsync(policy);
+        var descriptor = CreateDescriptor(new HubMethodNameAttribute("RenamedMethod"));
+
+        Assert.Null(await descriptor.GetAuthorizationPolicyAsync(provider.Object));
+        Assert.Null(await descriptor.GetAuthorizationPolicyAsync(provider.Object));
+        Assert.Same(policy, await descriptor.GetAuthorizationPolicyAsync(provider.Object));
+        if (allowsCaching)
+        {
+            Assert.Same(policy, await descriptor.GetAuthorizationPolicyAsync(provider.Object));
+        }
+
+        provider.Verify(p => p.GetFallbackPolicyAsync(), Times.Exactly(3));
+    }
+
     [Fact]
     public async Task CachedAuthorizationPoliciesAreSeparateForEachProviderInstance()
     {
@@ -60,6 +120,8 @@ public class HubMethodDescriptorTests
         var first = await descriptor.GetAuthorizationPolicyAsync(firstProvider.Object);
         var second = await descriptor.GetAuthorizationPolicyAsync(secondProvider.Object);
 
+        Assert.NotNull(first);
+        Assert.NotNull(second);
         Assert.Equal(firstPolicy.Requirements, first.Requirements);
         Assert.Equal(secondPolicy.Requirements, second.Requirements);
         Assert.NotSame(first, second);
@@ -84,6 +146,8 @@ public class HubMethodDescriptorTests
         var first = await firstDescriptor.GetAuthorizationPolicyAsync(provider.Object);
         var second = await secondDescriptor.GetAuthorizationPolicyAsync(provider.Object);
 
+        Assert.NotNull(first);
+        Assert.NotNull(second);
         Assert.Equal(firstPolicy.Requirements, first.Requirements);
         Assert.Equal(secondPolicy.Requirements, second.Requirements);
         Assert.Same(first, await firstDescriptor.GetAuthorizationPolicyAsync(provider.Object));
@@ -110,6 +174,7 @@ public class HubMethodDescriptorTests
         allowsCaching = false;
         var second = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
 
+        Assert.NotNull(second);
         Assert.Equal(secondPolicy.Requirements, second.Requirements);
         Assert.NotSame(first, second);
         provider.Verify(p => p.GetPolicyAsync("test"), Times.Exactly(2));
@@ -145,6 +210,7 @@ public class HubMethodDescriptorTests
         }
 
         var combinedPolicy = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
+        Assert.NotNull(combinedPolicy);
         Assert.Equal(policy.Requirements, combinedPolicy.Requirements);
         Assert.Same(combinedPolicy, await descriptor.GetAuthorizationPolicyAsync(provider.Object));
         provider.Verify(p => p.GetPolicyAsync("test"), Times.Exactly(2));
@@ -208,7 +274,11 @@ public class HubMethodDescriptorTests
         }
 
         var combinedPolicies = await Task.WhenAll(pending).DefaultTimeout();
-        Assert.All(combinedPolicies, combined => Assert.Equal(policy.Requirements, combined.Requirements));
+        Assert.All(combinedPolicies, combined =>
+        {
+            Assert.NotNull(combined);
+            Assert.Equal(policy.Requirements, combined.Requirements);
+        });
         var cachedPolicy = await descriptor.GetAuthorizationPolicyAsync(provider.Object);
         Assert.Contains(cachedPolicy, combinedPolicies);
         Assert.Same(cachedPolicy, await descriptor.GetAuthorizationPolicyAsync(provider.Object));
@@ -244,11 +314,16 @@ public class HubMethodDescriptorTests
         return provider;
     }
 
-    private static HubMethodDescriptor CreateDescriptor(params IAuthorizeData[] policies)
+    private sealed class RequirementMetadata(IAuthorizationRequirement requirement) : IAuthorizationRequirementData
+    {
+        public IEnumerable<IAuthorizationRequirement> GetRequirements() => [requirement];
+    }
+
+    private static HubMethodDescriptor CreateDescriptor(params object[] authorizationMetadata)
     {
         var executor = ObjectMethodExecutor.Create(
             typeof(MethodHub).GetMethod(nameof(MethodHub.AuthMethod))!,
             typeof(MethodHub).GetTypeInfo());
-        return new HubMethodDescriptor(executor, serviceProviderIsService: null, policies);
+        return new HubMethodDescriptor(executor, serviceProviderIsService: null, authorizationMetadata);
     }
 }

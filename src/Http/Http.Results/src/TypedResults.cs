@@ -875,7 +875,9 @@ public static class TypedResults
         {
             foreach (var extension in extensions)
             {
-                problemDetails.Extensions.Add(extension);
+                // Use the indexer so duplicate keys overwrite earlier values instead of throwing,
+                // consistent with ControllerBase.Problem and ControllerBase.ValidationProblem.
+                problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
     }

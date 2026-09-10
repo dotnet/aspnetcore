@@ -31,7 +31,7 @@ internal sealed class HubMethodDescriptor
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
-    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
+    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
         MethodExecutor = methodExecutor;
 
@@ -142,7 +142,7 @@ internal sealed class HubMethodDescriptor
             OriginalParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
         }
 
-        Policies = policies.ToArray();
+        AuthorizationMetadata = authorizationMetadata.ToArray();
     }
 
     private bool MarkServiceParameter(int index)
@@ -173,11 +173,15 @@ internal sealed class HubMethodDescriptor
 
     public Type? StreamReturnType { get; }
 
-    public IList<IAuthorizeData> Policies { get; }
+    /// <summary>
+    /// Gets the authorization metadata (for example <see cref="IAuthorizeData"/> and
+    /// <see cref="IAuthorizationRequirementData"/>) associated with the hub method.
+    /// </summary>
+    public IReadOnlyList<object> AuthorizationMetadata { get; }
 
     public bool HasSyntheticArguments { get; private set; }
 
-    public async ValueTask<AuthorizationPolicy> GetAuthorizationPolicyAsync(IAuthorizationPolicyProvider policyProvider)
+    public async ValueTask<AuthorizationPolicy?> GetAuthorizationPolicyAsync(IAuthorizationPolicyProvider policyProvider)
     {
         // Keep policies separate by provider identity without retaining scoped or transient providers.
         var policies = policyProvider.AllowsCachingPolicies
@@ -188,11 +192,12 @@ internal sealed class HubMethodDescriptor
             return cachedPolicy;
         }
 
-        var policy = await AuthorizationPolicy.CombineAsync(policyProvider, Policies);
-        // The dispatcher skips authorization when there are no policies.
-        Debug.Assert(policy is not null);
+        var policy = await AuthorizationPolicy.CombineAsync(policyProvider, AuthorizationMetadata);
+        if (policy is not null)
+        {
+            policies?.TryAdd(policyProvider, policy);
+        }
 
-        policies?.TryAdd(policyProvider, policy);
         return policy;
     }
 

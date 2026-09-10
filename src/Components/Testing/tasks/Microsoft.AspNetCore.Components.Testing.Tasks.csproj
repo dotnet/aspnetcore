@@ -7,8 +7,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <!-- This is a build-time tool, not shipped to users. Suppress NuGet vulnerability warnings and public API tracking. -->
-    <NoWarn>$(NoWarn);NU1903;NU1902;NU1901;RS0016;RS0017;CA1852</NoWarn>
+    <!-- This is a build-time tool, not shipped to users. Suppress public API tracking. -->
+    <NoWarn>$(NoWarn);RS0016;RS0017;CA1852</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

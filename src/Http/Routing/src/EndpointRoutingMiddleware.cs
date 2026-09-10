@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -200,7 +199,7 @@ internal sealed partial class EndpointRoutingMiddleware
         // This check should be kept in sync with the one in EndpointMiddleware
         if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
         {
-            if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null)
+            if (AuthorizationMetadataHelper.HasAuthorizationMetadata(endpoint))
             {
                 ThrowCannotShortCircuitAnAuthRouteException(endpoint);
             }

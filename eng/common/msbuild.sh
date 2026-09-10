@@ -14,7 +14,9 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
 verbosity='minimal'
 warn_as_error=true
-node_reuse=true
+# Empty means "not specified"; tools.sh defaults these to on for local builds and off on CI.
+node_reuse=''
+msbuild_multi_threaded=''
 prepare_machine=false
 extra_args=''
 
@@ -33,6 +35,10 @@ while (($# > 0)); do
       node_reuse=$2
       shift 2
       ;;
+    --msbuildmultithreaded|--mt)
+      msbuild_multi_threaded=$2
+      shift 2
+      ;;
     --ci)
       ci=true
       shift 1
@@ -49,14 +55,6 @@ while (($# > 0)); do
 done
 
 . "$scriptroot/tools.sh"
-
-if [[ "$ci" == true ]]; then
-  # Disable node reuse on CI unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-  # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-  if [[ "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
-    node_reuse=false
-  fi
-fi
 
 MSBuild $extra_args
 ExitWithExitCode 0

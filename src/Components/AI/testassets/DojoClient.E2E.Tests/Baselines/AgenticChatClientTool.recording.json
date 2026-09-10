@@ -1,0 +1,42 @@
+{
+  "calls": [
+    {
+      "prompt": "Change the background to something new",
+      "messageCount": 1,
+      "toolNames": [
+        "change_background"
+      ],
+      "frames": [
+        {
+          "name": "background-action",
+          "functionCall": {
+            "callId": "agentic-chat-background-1",
+            "name": "change_background",
+            "arguments": {
+              "background": "linear-gradient(135deg, #ff9a9e, #fad0c4)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Change the background to something new",
+      "messageCount": 3,
+      "toolNames": [
+        "change_background"
+      ],
+      "toolResultCallIds": [
+        "agentic-chat-background-1"
+      ],
+      "frames": [
+        {
+          "name": "confirmation",
+          "chunks": [
+            "Background changed",
+            " to a sunset gradient."
+          ]
+        }
+      ]
+    }
+  ]
+}

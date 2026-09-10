@@ -42,6 +42,17 @@
     <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <!-- Exclude server-only tests since the CoreCLR job targets the WASM runtime path;
+       server-side Blazor already runs on CoreCLR by default and is covered by the Mono job. -->
+  <ItemGroup Condition="'$(UseMonoRuntime)' == 'false'">
+    <Compile Remove="ServerExecutionTests\**\*.cs" />
+    <Compile Remove="ServerRenderingTests\**\*.cs" />
+    <!-- ProtectedBrowserStorageInjectionTest is a server execution test placed in Tests/ folder -->
+    <Compile Remove="Tests\ProtectedBrowserStorageInjectionTest.cs" />
+    <!-- EnhancedNavigationTestUtil is used by Infrastructure and Tests that are not excluded -->
+    <Compile Include="ServerRenderingTests\EnhancedNavigationTestUtil.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />

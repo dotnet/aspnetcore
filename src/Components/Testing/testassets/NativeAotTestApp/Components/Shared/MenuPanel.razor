@@ -1,0 +1,14 @@
+<section id="menu-panel">
+    <h2>@Title</h2>
+    <button id="menu-action" @onclick="SelectResources">Open resources</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> OnSelect { get; set; }
+
+    private Task SelectResources() => OnSelect.InvokeAsync("resources");
+}

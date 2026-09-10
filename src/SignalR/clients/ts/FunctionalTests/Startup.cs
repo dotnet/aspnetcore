@@ -236,13 +236,13 @@ public class Startup
             endpoints.MapHub<TestHub>("/testhub");
             endpoints.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
             endpoints.MapHub<UncreatableHub>("/uncreatable");
-            endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
+            endpoints.MapHub<HubWithAuthorization>("/authorizedhub", options => options.EnableAuthenticationRefresh = true);
 
             endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
 
             endpoints.MapGet("/generateJwtToken", context =>
             {
-                return context.Response.WriteAsync(GenerateJwtToken());
+                return context.Response.WriteAsync(GenerateJwtToken(context.Request.Query["user"], context.Request.Query["scope"]));
             });
 
             endpoints.MapGet("/clientresult/{id}", async (IHubContext<TestHub> hubContext, string id) =>
@@ -292,9 +292,19 @@ public class Startup
         });
     }
 
-    private string GenerateJwtToken()
+    private string GenerateJwtToken(string userName, string scope)
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, "testuser") };
+        if (string.IsNullOrEmpty(userName))
+        {
+            userName = "testuser";
+        }
+
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, userName) };
+        if (!string.IsNullOrEmpty(scope))
+        {
+            claims.Add(new Claim("scope", scope));
+        }
+
         var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.Now.AddSeconds(5), signingCredentials: credentials);
         return JwtTokenHandler.WriteToken(token);
