@@ -256,6 +256,7 @@ class AudioRecorder {
         this.stopping = false;
         this.permissionStatus = undefined;
         this.permissionChangeHandler = undefined;
+        this.startGeneration = 0;
     }
 
     async start() {
@@ -263,7 +264,28 @@ class AudioRecorder {
             return;
         }
 
-        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const startGeneration = ++this.startGeneration;
+        let stream;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (error) {
+            if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+                return "denied";
+            }
+
+            if (error?.name === "NotFoundError" || error?.name === "DevicesNotFoundError") {
+                return "unavailable";
+            }
+
+            throw error;
+        }
+
+        if (startGeneration !== this.startGeneration) {
+            stream.getTracks().forEach(track => track.stop());
+            return null;
+        }
+
+        this.stream = stream;
         const mimeType = getPreferredAudioType();
         this.recorder = mimeType
             ? new MediaRecorder(this.stream, { mimeType })
@@ -289,9 +311,14 @@ class AudioRecorder {
                 }
             }, { once: true });
         });
-        await this.watchMicrophonePermission();
+        await this.watchMicrophonePermission(startGeneration);
+        if (startGeneration !== this.startGeneration) {
+            return null;
+        }
+
         this.startedAt = performance.now();
         this.recorder.start(250);
+        return null;
     }
 
     async stop() {
@@ -352,6 +379,7 @@ class AudioRecorder {
     }
 
     dispose() {
+        this.startGeneration++;
         this.stopping = true;
         if (this.permissionStatus && this.permissionChangeHandler) {
             this.permissionStatus.removeEventListener("change", this.permissionChangeHandler);
@@ -371,14 +399,15 @@ class AudioRecorder {
         });
     }
 
-    async watchMicrophonePermission() {
+    async watchMicrophonePermission(startGeneration) {
         try {
-            this.permissionStatus =
+            const permissionStatus =
                 await navigator.permissions?.query({ name: "microphone" });
-            if (!this.permissionStatus) {
+            if (!permissionStatus || startGeneration !== this.startGeneration) {
                 return;
             }
 
+            this.permissionStatus = permissionStatus;
             this.permissionChangeHandler = () => {
                 if (!this.stopping && this.permissionStatus.state === "denied") {
                     this.notifyError("permission-revoked");

@@ -1,4 +1,19 @@
 #nullable enable
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophonePermissionContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AI.MessageInputContext!>?
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophonePermissionContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophonePermissionDeniedMessage.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophonePermissionDeniedMessage.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophoneUnavailableMessage.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.MicrophoneUnavailableMessage.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.RequestingMicrophonePermissionMessage.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.RequestingMicrophonePermissionMessage.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInputContext.DismissMicrophonePermissionFeedback() -> void
+Microsoft.AspNetCore.Components.AI.MessageInputContext.MicrophonePermissionStatus.get -> Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
+Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
+Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus.Denied = 2 -> Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
+Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus.None = 0 -> Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
+Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus.Requesting = 1 -> Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
+Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus.Unavailable = 3 -> Microsoft.AspNetCore.Components.AI.MicrophonePermissionStatus
 Microsoft.AspNetCore.Components.AI.AgentBoundary
 Microsoft.AspNetCore.Components.AI.AgentBoundary.Agent.get -> Microsoft.AspNetCore.Components.AI.UIAgent!
 Microsoft.AspNetCore.Components.AI.AgentBoundary.Agent.set -> void

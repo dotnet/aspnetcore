@@ -59,8 +59,8 @@
                         {
                             var findingCount = FindingCountFor(photo.Name);
                             <figure class="@(findingCount > 0 ? "claim-photo--flagged" : null)">
-                                <MediaContent Content="photo.Content"
-                                              AlternativeText="@($"Vehicle evidence {photo.Name}")" />
+                                <Image Source="photo.Source"
+                                       alt="@($"Vehicle evidence {photo.Name}")" />
                                 @if (findingCount > 0)
                                 {
                                     <span class="claim-photo__badge">

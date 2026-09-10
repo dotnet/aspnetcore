@@ -29,6 +29,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     private bool _isRecording;
     private bool _isTranscribing;
     private bool _isDictating;
+    private bool _isRequestingPermission;
     private bool _isSupported = true;
     private bool _isDisposed;
 
@@ -213,8 +214,9 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             return;
         }
 
-        var isActive = _isEnabled || _isRecording || _isTranscribing;
-        var disabled = !_isSupported ||
+        var isActive = !_isRequestingPermission &&
+            (_isEnabled || _isRecording || _isTranscribing);
+        var disabled = _isRequestingPermission ||
             (!isActive && (Context.IsConversationBusy || Context.IsComposing));
         var label = isActive ? StopLabel : StartLabel;
         var ariaLabel = isActive
@@ -228,18 +230,19 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         builder.AddAttribute(4, "disabled", disabled);
         builder.AddAttribute(5, "aria-label", ariaLabel);
         builder.AddAttribute(6, "aria-pressed", isActive ? "true" : "false");
+        builder.AddAttribute(7, "aria-busy", _isRequestingPermission ? "true" : "false");
         builder.AddAttribute(
-            7,
+            8,
             "onclick",
             EventCallback.Factory.Create(this, ToggleRecordingAsync));
 
         if (ChildContent is not null)
         {
-            builder.AddContent(8, ChildContent(isActive));
+            builder.AddContent(9, ChildContent(isActive));
         }
         else
         {
-            builder.AddContent(9, label);
+            builder.AddContent(10, label);
         }
 
         builder.CloseElement();
@@ -271,6 +274,11 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
 
     private Task ToggleRecordingAsync()
     {
+        if (_isRequestingPermission)
+        {
+            return Task.CompletedTask;
+        }
+
         if (_isTranscribing)
         {
             CancelTranscription();
@@ -291,10 +299,17 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         var operationCts = new CancellationTokenSource();
         _operationCts = operationCts;
         Context.SetErrorMessage(null);
+        _isRequestingPermission = true;
+        Context.SetComposing(true);
+        Context.SetStatusMessage(null);
+        Context.SetMicrophonePermissionStatus(
+            this,
+            MicrophonePermissionStatus.Requesting);
+        await InvokeAsync(StateHasChanged);
 
         try
         {
-            await _interop!.StartRecordingAsync(
+            var permissionFailure = await _interop!.StartRecordingAsync(
                 MaximumBytes,
                 _speechCallbackReference!,
                 operationCts.Token);
@@ -305,6 +320,32 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 return;
             }
 
+            if (permissionFailure is not null)
+            {
+                _operationCts = null;
+                _isRequestingPermission = false;
+                Context.SetComposing(false);
+                if (permissionFailure is "denied" or "unavailable")
+                {
+                    Context.SetMicrophonePermissionStatus(
+                        this,
+                        permissionFailure is "unavailable"
+                            ? MicrophonePermissionStatus.Unavailable
+                            : MicrophonePermissionStatus.Denied);
+                }
+                else
+                {
+                    Context.ClearMicrophonePermissionStatus(this);
+                    Context.SetErrorMessage("Audio recording could not be initialized.");
+                }
+
+                operationCts.Dispose();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            _isRequestingPermission = false;
+            Context.ClearMicrophonePermissionStatus(this);
             _isRecording = true;
             _isEnabled = true;
             Context.SetComposing(true);
@@ -319,13 +360,17 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             if (ReferenceEquals(_operationCts, operationCts))
             {
                 _operationCts = null;
+                _isRequestingPermission = false;
                 _isRecording = false;
                 Context.SetComposing(false);
+                Context.SetStatusMessage(null);
+                Context.ClearMicrophonePermissionStatus(this);
                 Context.SetErrorMessage(
-                    $"Microphone access was not available. {exception.Message}");
+                    $"Audio recording could not be initialized. {exception.Message}");
             }
 
             operationCts.Dispose();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -541,6 +586,13 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         _operationCts?.Dispose();
         _operationCts = new CancellationTokenSource();
         var cancellationToken = _operationCts.Token;
+        _isRequestingPermission = true;
+        Context.SetComposing(true);
+        Context.SetStatusMessage(null);
+        Context.SetMicrophonePermissionStatus(
+            this,
+            MicrophonePermissionStatus.Requesting);
+        await InvokeAsync(StateHasChanged);
 
         try
         {
@@ -556,12 +608,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
         catch (JSException exception)
         {
-            _isEnabled = false;
-            _isListening = false;
-            _isDictating = false;
-            Context.SetComposing(false);
-            Context.SetErrorMessage(
-                $"Microphone speech recognition was not available. {exception.Message}");
+            HandleSpeechRecognitionInitializationFailure(exception);
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -577,17 +625,15 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         {
             await _interop!.StartSpeechRecognitionAsync(_operationCts?.Token ?? default);
             _isListening = true;
-            Context.SetComposing(true);
-            Context.SetStatusMessage("Listening for your next instruction.");
+            if (!_isRequestingPermission)
+            {
+                Context.SetComposing(true);
+                Context.SetStatusMessage("Listening for your next instruction.");
+            }
         }
         catch (JSException exception)
         {
-            _isEnabled = false;
-            _isListening = false;
-            _isDictating = false;
-            Context.SetComposing(false);
-            Context.SetErrorMessage(
-                $"Microphone speech recognition was not available. {exception.Message}");
+            HandleSpeechRecognitionInitializationFailure(exception);
         }
         finally
         {
@@ -596,8 +642,22 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
     }
 
+    private void HandleSpeechRecognitionInitializationFailure(JSException exception)
+    {
+        _isRequestingPermission = false;
+        _isEnabled = false;
+        _isListening = false;
+        _isDictating = false;
+        Context.SetComposing(false);
+        Context.SetStatusMessage(null);
+        Context.ClearMicrophonePermissionStatus(this);
+        Context.SetErrorMessage(
+            $"Voice input could not be initialized. {exception.Message}");
+    }
+
     private async Task StopBrowserRecognitionAsync()
     {
+        _isRequestingPermission = false;
         _isEnabled = false;
         _isListening = false;
         _isDictating = false;
@@ -642,6 +702,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 return;
             }
 
+            _isRequestingPermission = false;
             if (!string.IsNullOrWhiteSpace(finalTranscript))
             {
                 _committedTranscript =
@@ -712,6 +773,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 return;
             }
 
+            _isRequestingPermission = false;
+            Context.ClearMicrophonePermissionStatus(this);
             _isListening = true;
             _isDictating = true;
             Context.SetComposing(true);
@@ -744,6 +807,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
     {
         return InvokeAsync(async () =>
         {
+            _isRequestingPermission = false;
             _isListening = false;
             if (_isRecording)
             {
@@ -766,14 +830,32 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             _isDictating = false;
             Context.SetComposing(false);
             await OnInterimTranscript.InvokeAsync(string.Empty);
-            Context.SetErrorMessage(error switch
+            Context.SetStatusMessage(null);
+            if (error is "not-allowed" or "service-not-allowed")
             {
-                "not-allowed" or "service-not-allowed" =>
-                    "Microphone access was denied. Allow microphone access to use voice input.",
-                "language-not-supported" =>
+                Context.SetErrorMessage(null);
+                Context.SetMicrophonePermissionStatus(
+                    this,
+                    MicrophonePermissionStatus.Denied);
+            }
+            else if (error is "audio-capture")
+            {
+                Context.SetErrorMessage(null);
+                Context.SetMicrophonePermissionStatus(
+                    this,
+                    MicrophonePermissionStatus.Unavailable);
+            }
+            else
+            {
+                Context.ClearMicrophonePermissionStatus(this);
+                Context.SetErrorMessage(error switch
+                {
+                    "language-not-supported" =>
                     "The selected speech recognition language is not supported by this browser.",
-                _ => "Voice input could not continue because speech recognition is not configured correctly.",
-            });
+                    _ => "Voice input could not continue because speech recognition is not configured correctly.",
+                });
+            }
+
             StateHasChanged();
         });
     }
@@ -791,6 +873,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             _operationCts?.Dispose();
             _operationCts = null;
             _isEnabled = false;
+            _isRequestingPermission = false;
             _isRecording = false;
             _isTranscribing = false;
             _isDictating = false;
@@ -802,9 +885,21 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             }
 
             await OnInterimTranscript.InvokeAsync(string.Empty);
-            Context.SetErrorMessage(error is "permission-revoked" or "not-allowed"
-                ? "Microphone access was revoked. Allow microphone access to record audio."
-                : "Audio recording stopped because the microphone became unavailable.");
+            Context.SetStatusMessage(null);
+            if (error is "permission-revoked" or "not-allowed")
+            {
+                Context.SetErrorMessage(null);
+                Context.SetMicrophonePermissionStatus(
+                    this,
+                    MicrophonePermissionStatus.Denied);
+            }
+            else
+            {
+                Context.ClearMicrophonePermissionStatus(this);
+                Context.SetErrorMessage(
+                    "Audio recording stopped because the microphone became unavailable.");
+            }
+
             StateHasChanged();
         });
     }
@@ -874,6 +969,8 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         }
 
         _isDisposed = true;
+        _isRequestingPermission = false;
+        Context.ClearMicrophonePermissionStatus(this);
         _changeSubscription?.Dispose();
         _operationCts?.Cancel();
         if (!_isTranscribing)

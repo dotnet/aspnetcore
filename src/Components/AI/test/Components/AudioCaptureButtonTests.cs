@@ -75,10 +75,13 @@ public class AudioCaptureButtonTests
 
         Assert.False(input.IsComposing);
         Assert.Equal("unfinished", input.Text);
-        Assert.Equal(
-            "Microphone access was denied. Allow microphone access to use voice input.",
-            input.ErrorMessage);
+        Assert.Null(input.ErrorMessage);
+        Assert.Null(input.StatusMessage);
         Assert.Equal(1, speechRecognizer.StartCount);
+        Assert.Equal(MicrophonePermissionStatus.Denied, input.MicrophonePermissionStatus);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Contains("Microphone access is blocked.", cut.GetHtml());
+        Assert.DoesNotContain("Microphone unavailable", cut.GetHtml());
         Assert.Equal("false", GetAttribute(button, "aria-pressed"));
     }
 
@@ -93,9 +96,12 @@ public class AudioCaptureButtonTests
         await recorder.EmitErrorAsync("permission-revoked");
 
         Assert.False(input.IsComposing);
-        Assert.Equal(
-            "Microphone access was revoked. Allow microphone access to record audio.",
-            input.ErrorMessage);
+        Assert.Null(input.ErrorMessage);
+        Assert.Null(input.StatusMessage);
+        Assert.Equal(MicrophonePermissionStatus.Denied, input.MicrophonePermissionStatus);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Contains("Microphone access is blocked.", cut.GetHtml());
+        Assert.DoesNotContain("Microphone unavailable", cut.GetHtml());
         Assert.Equal("false", GetAttribute(button, "aria-pressed"));
     }
 
@@ -146,8 +152,198 @@ public class AudioCaptureButtonTests
         await cut.InvokeAsync(() => ClickAsync(button));
 
         Assert.Equal(
-            "Microphone access was not available. Permission denied by browser policy.",
+            "Audio recording could not be initialized. Permission denied by browser policy.",
             input.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task Recording_PermissionDeniedClearsPendingStatus()
+    {
+        var (cut, input, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+        recorder.FailStart();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.False(input.IsComposing);
+        Assert.Null(input.StatusMessage);
+        Assert.Null(input.ErrorMessage);
+        Assert.Equal(MicrophonePermissionStatus.Denied, input.MicrophonePermissionStatus);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Contains("Microphone access is blocked.", cut.GetHtml());
+        Assert.DoesNotContain("Microphone unavailable", cut.GetHtml());
+        Assert.Equal("false", GetAttribute(button, "aria-busy"));
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
+    }
+
+    [Fact]
+    public async Task Recording_NoMicrophoneShowsUnavailableNotice()
+    {
+        var (cut, input, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+        recorder.FailStart("unavailable");
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.False(input.IsComposing);
+        Assert.Equal(
+            MicrophonePermissionStatus.Unavailable,
+            input.MicrophonePermissionStatus);
+        Assert.Contains("No microphone is available.", cut.GetHtml());
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Equal("false", GetAttribute(button, "aria-busy"));
+    }
+
+    [Fact]
+    public async Task DisposingOneControl_DoesNotClearAnotherControlsPermissionFeedback()
+    {
+        var (cut, input, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var firstButton = cut.FindComponent<AudioCaptureButton>();
+        var secondButton = new AudioCaptureButton
+        {
+            Context = input,
+        };
+
+        await cut.InvokeAsync(() => input.SetMicrophonePermissionStatus(
+            secondButton,
+            MicrophonePermissionStatus.Denied));
+        await cut.InvokeAsync(() => firstButton.Instance.DisposeAsync().AsTask());
+
+        Assert.Equal(
+            MicrophonePermissionStatus.Denied,
+            input.MicrophonePermissionStatus);
+        Assert.Contains("Microphone access is blocked.", cut.GetHtml());
+    }
+
+    [Fact]
+    public async Task Recording_UnknownStartFailureShowsInitializationError()
+    {
+        var (cut, input, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+        recorder.FailStart("unexpected");
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.False(input.IsComposing);
+        Assert.Equal(
+            MicrophonePermissionStatus.None,
+            input.MicrophonePermissionStatus);
+        Assert.Equal(
+            "Audio recording could not be initialized.",
+            input.ErrorMessage);
+        Assert.DoesNotContain(
+            "sc-ai-input__microphone-permission",
+            cut.GetHtml());
+    }
+
+    [Fact]
+    public async Task Recording_PermissionPendingDescribesAndDisablesControl()
+    {
+        var (cut, input, recorder) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"));
+        var button = cut.FindComponent<AudioCaptureButton>();
+        var permissionRequested = recorder.PauseStart();
+
+        var clickTask = cut.InvokeAsync(() => ClickAsync(button));
+        await permissionRequested;
+
+        Assert.True(input.IsComposing);
+        Assert.Null(input.StatusMessage);
+        Assert.Equal(
+            MicrophonePermissionStatus.Requesting,
+            input.MicrophonePermissionStatus);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Equal(true, GetAttribute(button, "disabled"));
+        Assert.Equal("true", GetAttribute(button, "aria-busy"));
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
+        Assert.Contains("Waiting for microphone permission...", cut.GetHtml());
+        Assert.Contains(">Record audio</button>", cut.GetHtml());
+
+        recorder.CompleteStart();
+        await clickTask;
+
+        Assert.Equal("Recording audio.", input.StatusMessage);
+        Assert.Equal(MicrophonePermissionStatus.None, input.MicrophonePermissionStatus);
+        Assert.Equal("Stop recording", GetAttribute(button, "aria-label"));
+        Assert.Null(GetAttribute(button, "disabled"));
+        Assert.Equal("false", GetAttribute(button, "aria-busy"));
+        Assert.Equal("true", GetAttribute(button, "aria-pressed"));
+    }
+
+    [Fact]
+    public async Task BrowserRecognition_PermissionPendingUntilRecognitionStarts()
+    {
+        var speechRecognizer = new TestSpeechRecognizer();
+        var (cut, input, _) = RenderAudioCapture(
+            transcribe: null,
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognition,
+            speechRecognizer: speechRecognizer);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.True(input.IsComposing);
+        Assert.Null(input.StatusMessage);
+        Assert.Equal(
+            MicrophonePermissionStatus.Requesting,
+            input.MicrophonePermissionStatus);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+        Assert.Equal(true, GetAttribute(button, "disabled"));
+        Assert.Equal("true", GetAttribute(button, "aria-busy"));
+        Assert.Equal("false", GetAttribute(button, "aria-pressed"));
+        Assert.Contains("Waiting for microphone permission...", cut.GetHtml());
+        Assert.Contains(">Record audio</button>", cut.GetHtml());
+
+        await speechRecognizer.EmitStartedAsync();
+
+        Assert.Equal("Listening for your next instruction.", input.StatusMessage);
+        Assert.Equal(MicrophonePermissionStatus.None, input.MicrophonePermissionStatus);
+        Assert.Equal("Stop recording", GetAttribute(button, "aria-label"));
+        Assert.Null(GetAttribute(button, "disabled"));
+        Assert.Equal("false", GetAttribute(button, "aria-busy"));
+        Assert.Equal("true", GetAttribute(button, "aria-pressed"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BrowserRecognition_InitializationFailureShowsComposerError(
+        bool failsDuringCreation)
+    {
+        var speechRecognizer = new TestSpeechRecognizer();
+        if (failsDuringCreation)
+        {
+            speechRecognizer.FailCreation();
+        }
+        else
+        {
+            speechRecognizer.FailStart();
+        }
+
+        var (cut, input, _) = RenderAudioCapture(
+            transcribe: null,
+            recognitionMode: SpeechRecognitionMode.BrowserSpeechRecognition,
+            speechRecognizer: speechRecognizer);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.False(input.IsComposing);
+        Assert.Equal(
+            MicrophonePermissionStatus.None,
+            input.MicrophonePermissionStatus);
+        Assert.Equal(
+            failsDuringCreation
+                ? "Voice input could not be initialized. Speech recognition could not be created."
+                : "Voice input could not be initialized. Speech recognition failed to start.",
+            input.ErrorMessage);
+        Assert.DoesNotContain(
+            "sc-ai-input__microphone-permission",
+            cut.GetHtml());
     }
 
     [Fact]
@@ -416,7 +612,7 @@ public class AudioCaptureButtonTests
         var frames = button.GetFrames();
         return frames.Array
             .Take(frames.Count)
-            .Single(frame =>
+            .SingleOrDefault(frame =>
                 frame.FrameType == RenderTreeFrameType.Attribute &&
                 frame.AttributeName == attributeName)
             .AttributeValue;
@@ -479,6 +675,11 @@ public class AudioCaptureButtonTests
 
         private ValueTask<TValue> CreateSpeechRecognizer<TValue>(object?[]? args)
         {
+            if (speechRecognizer.CreationFails)
+            {
+                throw new JSException("Speech recognition could not be created.");
+            }
+
             speechRecognizer.SetCallbacks(args![0]!);
             return ValueTask.FromResult((TValue)(object)speechRecognizer);
         }
@@ -493,6 +694,9 @@ public class AudioCaptureButtonTests
     private sealed class TestAudioRecorder : IJSObjectReference
     {
         private object? _callbacks;
+        private string? _startFailure;
+        private TaskCompletionSource? _startCompletion;
+        private TaskCompletionSource? _startRequested;
 
         internal TestStreamReference StreamReference { get; } = new();
 
@@ -505,6 +709,23 @@ public class AudioCaptureButtonTests
         internal string MimeType { get; init; } = "audio/webm";
 
         internal JSException? StartException { get; init; }
+
+        internal Task PauseStart()
+        {
+            _startCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _startRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _startRequested.Task;
+        }
+
+        internal void CompleteStart()
+        {
+            _startCompletion?.SetResult();
+        }
+
+        internal void FailStart(string failure = "denied")
+        {
+            _startFailure = failure;
+        }
 
         internal void SetCallbacks(object callbacks)
         {
@@ -528,14 +749,7 @@ public class AudioCaptureButtonTests
         {
             if (identifier == "start")
             {
-                if (StartException is not null)
-                {
-                    throw StartException;
-                }
-
-                StartCount++;
-                StartToken = cancellationToken;
-                return ValueTask.FromResult(default(TValue)!);
+                return StartAsync<TValue>(cancellationToken);
             }
 
             if (identifier != "stop")
@@ -556,6 +770,30 @@ public class AudioCaptureButtonTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
+        private async ValueTask<TValue> StartAsync<TValue>(
+            CancellationToken cancellationToken)
+        {
+            if (StartException is not null)
+            {
+                throw StartException;
+            }
+
+            StartCount++;
+            StartToken = cancellationToken;
+            _startRequested?.SetResult();
+            if (_startCompletion is not null)
+            {
+                await _startCompletion.Task;
+            }
+
+            if (_startFailure is not null)
+            {
+                return (TValue)(object)_startFailure;
+            }
+
+            return default!;
+        }
+
         private Task InvokeCallbackAsync(string methodName, params object[] args)
         {
             var callbackReference = _callbacks
@@ -572,10 +810,23 @@ public class AudioCaptureButtonTests
     private sealed class TestSpeechRecognizer : IJSObjectReference
     {
         private object? _callbacks;
+        private bool _failStart;
+
+        internal bool CreationFails { get; private set; }
 
         internal int StartCount { get; private set; }
 
         internal int StopCount { get; private set; }
+
+        internal void FailCreation()
+        {
+            CreationFails = true;
+        }
+
+        internal void FailStart()
+        {
+            _failStart = true;
+        }
 
         internal void SetCallbacks(object callbacks)
         {
@@ -588,6 +839,11 @@ public class AudioCaptureButtonTests
                 "OnResultAsync",
                 finalTranscript,
                 interimTranscript);
+        }
+
+        internal Task EmitStartedAsync()
+        {
+            return InvokeCallbackAsync("OnStartedAsync");
         }
 
         internal Task EmitErrorAsync(string error, bool isFatal)
@@ -608,6 +864,10 @@ public class AudioCaptureButtonTests
             if (identifier == "start")
             {
                 StartCount++;
+                if (_failStart)
+                {
+                    throw new JSException("Speech recognition failed to start.");
+                }
             }
             else if (identifier == "stop")
             {

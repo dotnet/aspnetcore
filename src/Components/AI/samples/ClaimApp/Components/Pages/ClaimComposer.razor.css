@@ -297,6 +297,25 @@
     font-size: 0.7rem;
 }
 
+.claim-composer ::deep .sc-ai-input__microphone-permission {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--claim-border);
+    border-radius: 0.75rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.claim-composer ::deep .sc-ai-input__microphone-permission--requesting {
+    color: var(--claim-text);
+    background: var(--claim-surface-muted);
+}
+
+.claim-composer ::deep .sc-ai-input__microphone-permission--error {
+    border-color: color-mix(in oklab, var(--claim-danger) 45%, var(--claim-border));
+    color: var(--claim-danger);
+    background: var(--claim-danger-bg);
+}
+
 @keyframes claim-recording-pulse {
     0%,
     100% {

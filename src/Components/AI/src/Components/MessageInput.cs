@@ -16,8 +16,11 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
 {
     private readonly MessageInputContext _context;
     private readonly List<DataContent> _attachments = [];
+    private readonly string _microphonePermissionId =
+        $"sc-ai-input-microphone-permission-{Guid.NewGuid():N}";
     private readonly string _statusId = $"sc-ai-input-status-{Guid.NewGuid():N}";
     private readonly string _errorId = $"sc-ai-input-error-{Guid.NewGuid():N}";
+    private object? _microphonePermissionOwner;
     private AgentContext? _subscribedContext;
     private IDisposable? _statusSubscription;
     private MessageInputInterop? _interop;
@@ -72,6 +75,36 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     [Parameter]
     public RenderFragment<MessageInputContext>? TopContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets content that replaces the default microphone permission feedback.
+    /// Custom content is responsible for communicating status changes accessibly,
+    /// such as by providing appropriate live-region semantics.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<MessageInputContext>? MicrophonePermissionContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message displayed while the browser waits for a microphone
+    /// permission decision.
+    /// </summary>
+    [Parameter]
+    public string RequestingMicrophonePermissionMessage { get; set; } =
+        "Waiting for microphone permission...";
+
+    /// <summary>
+    /// Gets or sets the message displayed when microphone access is denied or revoked.
+    /// </summary>
+    [Parameter]
+    public string MicrophonePermissionDeniedMessage { get; set; } =
+        "Microphone access is blocked. Enable it in your browser settings to use voice input.";
+
+    /// <summary>
+    /// Gets or sets the message displayed when no microphone is available.
+    /// </summary>
+    [Parameter]
+    public string MicrophoneUnavailableMessage { get; set; } =
+        "No microphone is available.";
 
     /// <summary>
     /// Gets or sets the attachment content. The default is a
@@ -169,6 +202,8 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
 
     internal string? ErrorMessage { get; private set; }
 
+    internal MicrophonePermissionStatus CurrentMicrophonePermissionStatus { get; private set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -215,6 +250,20 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
             EventCallback.Factory.Create(this, SubmitAsync));
         builder.AddEventPreventDefaultAttribute(4, "onsubmit", true);
 
+        if (CurrentMicrophonePermissionStatus is not MicrophonePermissionStatus.None)
+        {
+            if (MicrophonePermissionContent is not null)
+            {
+                builder.AddContent(5, MicrophonePermissionContent(_context));
+            }
+            else
+            {
+                builder.OpenRegion(5);
+                RenderDefaultMicrophonePermission(builder);
+                builder.CloseRegion();
+            }
+        }
+
         if (TopContent is not null)
         {
             builder.AddContent(10, TopContent(_context));
@@ -255,7 +304,13 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
         builder.AddAttribute(45, "disabled", IsConversationBusy || IsComposing);
         builder.AddAttribute(46, "value", _text);
         builder.AddAttribute(47, "aria-label", Label ?? Placeholder ?? "Type a message...");
-        builder.AddAttribute(48, "aria-describedby", $"{_statusId} {_errorId}");
+        builder.AddAttribute(
+            48,
+            "aria-describedby",
+            CurrentMicrophonePermissionStatus is MicrophonePermissionStatus.None ||
+                MicrophonePermissionContent is not null
+                ? $"{_statusId} {_errorId}"
+                : $"{_microphonePermissionId} {_statusId} {_errorId}");
         builder.AddAttribute(
             49,
             "oninput",
@@ -478,6 +533,29 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
         Refresh();
     }
 
+    internal void SetMicrophonePermissionStatus(
+        object owner,
+        MicrophonePermissionStatus status)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+
+        _microphonePermissionOwner = owner;
+        CurrentMicrophonePermissionStatus = status;
+        Refresh();
+    }
+
+    internal void ClearMicrophonePermissionStatus(object? owner = null)
+    {
+        if (owner is not null && !ReferenceEquals(_microphonePermissionOwner, owner))
+        {
+            return;
+        }
+
+        _microphonePermissionOwner = null;
+        CurrentMicrophonePermissionStatus = MicrophonePermissionStatus.None;
+        Refresh();
+    }
+
     internal void SetComposing(bool value)
     {
         _isComposing = value;
@@ -488,6 +566,34 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
     {
         StateHasChanged();
         _context.NotifyChanged();
+    }
+
+    private void RenderDefaultMicrophonePermission(RenderTreeBuilder builder)
+    {
+        var isRequesting =
+            CurrentMicrophonePermissionStatus is MicrophonePermissionStatus.Requesting;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "id", _microphonePermissionId);
+        builder.AddAttribute(
+            2,
+            "class",
+            isRequesting
+                ? "sc-ai-input__microphone-permission sc-ai-input__microphone-permission--requesting"
+                : "sc-ai-input__microphone-permission sc-ai-input__microphone-permission--error");
+        builder.AddAttribute(3, "role", isRequesting ? "status" : "alert");
+        builder.AddAttribute(4, "aria-live", isRequesting ? "polite" : "assertive");
+        builder.AddAttribute(5, "aria-atomic", "true");
+        builder.AddContent(6, CurrentMicrophonePermissionStatus switch
+        {
+            MicrophonePermissionStatus.Requesting =>
+                RequestingMicrophonePermissionMessage,
+            MicrophonePermissionStatus.Denied =>
+                MicrophonePermissionDeniedMessage,
+            MicrophonePermissionStatus.Unavailable =>
+                MicrophoneUnavailableMessage,
+            _ => string.Empty,
+        });
+        builder.CloseElement();
     }
 
     private string CssClass()

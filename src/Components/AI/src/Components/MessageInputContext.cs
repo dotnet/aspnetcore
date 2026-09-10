@@ -69,6 +69,12 @@ public sealed class MessageInputContext
     public string? ErrorMessage => _owner.ErrorMessage;
 
     /// <summary>
+    /// Gets the current microphone permission feedback state.
+    /// </summary>
+    public MicrophonePermissionStatus MicrophonePermissionStatus =>
+        _owner.CurrentMicrophonePermissionStatus;
+
+    /// <summary>
     /// Adds binary content to the next message.
     /// </summary>
     /// <param name="content">The content to attach.</param>
@@ -134,6 +140,14 @@ public sealed class MessageInputContext
     }
 
     /// <summary>
+    /// Dismisses the current microphone permission feedback.
+    /// </summary>
+    public void DismissMicrophonePermissionFeedback()
+    {
+        _owner.ClearMicrophonePermissionStatus();
+    }
+
+    /// <summary>
     /// Registers a callback invoked when composer state changes.
     /// </summary>
     /// <param name="callback">The callback to invoke.</param>
@@ -148,6 +162,18 @@ public sealed class MessageInputContext
     internal void SetComposing(bool value)
     {
         _owner.SetComposing(value);
+    }
+
+    internal void SetMicrophonePermissionStatus(
+        object owner,
+        MicrophonePermissionStatus status)
+    {
+        _owner.SetMicrophonePermissionStatus(owner, status);
+    }
+
+    internal void ClearMicrophonePermissionStatus(object owner)
+    {
+        _owner.ClearMicrophonePermissionStatus(owner);
     }
 
     internal void NotifyChanged()

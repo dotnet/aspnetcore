@@ -948,9 +948,9 @@ public partial class ClaimAppJudgeTests : BrowserTest
             Object.defineProperty(navigator, "mediaDevices", {
                 configurable: true,
                 value: {
-                    getUserMedia: async () => {
-                        throw new DOMException("Permission denied", "NotAllowedError");
-                    },
+                    getUserMedia: () => new Promise((_, reject) => {
+                        globalThis.rejectMicrophonePermission = reject;
+                    }),
                 },
             });
             """);
@@ -966,9 +966,37 @@ public partial class ClaimAppJudgeTests : BrowserTest
 
         await _page.GetByRole(
             AriaRole.Button,
-            new() { Name = "Record voice", Exact = true }).ClickAsync();
-        await Expect(_page.GetByRole(AriaRole.Alert))
-            .ToContainTextAsync("Microphone access was not available");
+            new() { Name = "Record and transcribe", Exact = true }).ClickAsync();
+        var microphoneButton = _page.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Record and transcribe", Exact = true });
+        await Expect(microphoneButton).ToBeDisabledAsync();
+        await Expect(microphoneButton)
+            .ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(microphoneButton)
+            .ToHaveTextAsync("Record and transcribe");
+        var permissionNotice = _page.Locator(
+            ".sc-ai-input__microphone-permission");
+        await Expect(permissionNotice)
+            .ToHaveTextAsync("Waiting for microphone permission...");
+        await Expect(permissionNotice).ToHaveAttributeAsync("role", "status");
+        await Expect(_page.Locator(".sc-ai-input__status")).ToBeEmptyAsync();
+
+        await _page.EvaluateAsync(
+            """
+            globalThis.rejectMicrophonePermission(
+                new DOMException("Permission denied", "NotAllowedError"));
+            """);
+        await Expect(microphoneButton).ToBeEnabledAsync();
+        await Expect(microphoneButton)
+            .ToHaveTextAsync("Record and transcribe");
+        await Expect(microphoneButton)
+            .ToHaveAttributeAsync("aria-busy", "false");
+        await Expect(permissionNotice).ToHaveTextAsync(
+            "Microphone access is blocked. Enable it in your browser settings to use voice input.");
+        await Expect(permissionNotice).ToHaveAttributeAsync("role", "alert");
+        await Expect(_page.Locator(".sc-ai-input__status")).ToBeEmptyAsync();
+        await Expect(_page.Locator(".sc-ai-input__error")).ToBeEmptyAsync();
 
         await _page.GetByRole(
             AriaRole.Button,
@@ -976,6 +1004,47 @@ public partial class ClaimAppJudgeTests : BrowserTest
         await Expect(AppRoot).ToHaveAttributeAsync("data-theme", "contrast");
         await Expect(ClaimDescription).ToBeEnabledAsync();
         await Expect(_page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+        AssertNoBrowserErrors();
+    }
+
+    [TestMethod]
+    public async Task DisposedRecorder_StopsStreamFromLatePermissionGrant()
+    {
+        await GoToAppAsync();
+
+        var streamWasStopped = await _page.EvaluateAsync<bool>(
+            """
+            async () => {
+                let resolvePermission;
+                let streamWasStopped = false;
+                Object.defineProperty(navigator, "mediaDevices", {
+                    configurable: true,
+                    value: {
+                        getUserMedia: () => new Promise(resolve => {
+                            resolvePermission = resolve;
+                        }),
+                    },
+                });
+                const module = await import(
+                    "/_content/Microsoft.AspNetCore.Components.AI/MessageInput.js");
+                const recorder = module.createAudioRecorder(1024, {
+                    invokeMethodAsync: () => Promise.resolve(),
+                });
+                const startTask = recorder.start();
+                recorder.dispose();
+                resolvePermission({
+                    getTracks: () => [{
+                        stop: () => {
+                            streamWasStopped = true;
+                        },
+                    }],
+                });
+                await startTask;
+                return streamWasStopped;
+            }
+            """);
+
+        Assert.IsTrue(streamWasStopped);
         AssertNoBrowserErrors();
     }
 

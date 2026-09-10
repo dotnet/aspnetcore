@@ -533,6 +533,24 @@
     opacity: 0.75;
 }
 
+.sc-ai-input__microphone-permission {
+    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
+    border: 1px solid var(--sc-ai-color-border);
+    border-radius: var(--sc-ai-border-radius-sm);
+    font-size: var(--sc-ai-font-size-sm);
+}
+
+.sc-ai-input__microphone-permission--requesting {
+    color: var(--sc-ai-color-text-secondary);
+    background: var(--sc-ai-color-surface);
+}
+
+.sc-ai-input__microphone-permission--error {
+    border-color: var(--sc-ai-color-error);
+    color: var(--sc-ai-color-error);
+    background: var(--sc-ai-color-surface);
+}
+
 .sc-ai-input__status,
 .sc-ai-input__error {
     min-height: 1.25rem;
