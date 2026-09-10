@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Policy;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier<Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer>;
 
@@ -735,6 +734,29 @@ public class CommercialCustomer : ICustomer
 
 }
 """;
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Handler_Parameter_WithGenericTypeParameter_Works()
+    {
+        // Arrange
+        var source = """
+            using Microsoft.AspNetCore.Builder;
+
+            var webApp = WebApplication.Create();
+
+            static void UseEndpoint<TEndpointInput>(WebApplication app) where TEndpointInput : class
+            {
+                app.MapPost("/test", (TEndpointInput data) => { });
+            }
+
+            UseEndpoint<TestEndpointInput>(webApp);
+
+            public class TestEndpointInput { }
+            """;
 
         // Act
         await VerifyCS.VerifyAnalyzerAsync(source);

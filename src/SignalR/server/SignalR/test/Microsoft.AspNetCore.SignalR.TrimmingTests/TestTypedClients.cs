@@ -25,6 +25,11 @@ await app.StartAsync().ConfigureAwait(false);
 
 // connect a client and ensure we can invoke a method on the server
 var serverUrl = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.First();
+
+// replace IPv6Any/IPv4Any with localhost so that it's a valid address for the client connection
+serverUrl = serverUrl.Replace("[::]", "localhost");
+serverUrl = serverUrl.Replace("0.0.0.0", "localhost");
+
 var hubConnectionBuilder = new HubConnectionBuilder()
     .WithUrl(serverUrl + "/testhub");
 AppJsonSerializerContext.AddToJsonHubProtocol(hubConnectionBuilder.Services);

@@ -33,11 +33,11 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     }
 
     internal ListenOptions(ulong fileHandle)
-        : this(fileHandle, FileHandleType.Auto)
+        : this(fileHandle, Microsoft.AspNetCore.Connections.FileHandleType.Auto)
     {
     }
 
-    internal ListenOptions(ulong fileHandle, FileHandleType handleType)
+    internal ListenOptions(ulong fileHandle, Microsoft.AspNetCore.Connections.FileHandleType handleType)
     {
         EndPoint = new FileHandleEndPoint(fileHandle, handleType);
     }

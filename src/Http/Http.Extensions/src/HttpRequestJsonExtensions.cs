@@ -23,6 +23,10 @@ public static class HttpRequestJsonExtensions
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
     private const string RequiresDynamicCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed and need runtime code generation. " +
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext for native AOT applications.";
+    // Fallback to the stream-based overloads for JsonSerializer.DeserializeAsync
+    // This is to give users with custom JsonConverter implementations the chance to update their
+    // converters to support ReadOnlySequence<T> if needed while still keeping their apps working.
+    private static readonly bool _useStreamJsonOverload = AppContext.TryGetSwitch("Microsoft.AspNetCore.UseStreamBasedJsonParsing", out var isEnabled) && isEnabled;
 
     /// <summary>
     /// Read JSON from the request and deserialize to the specified type.
@@ -68,15 +72,33 @@ public static class HttpRequestJsonExtensions
         options ??= ResolveSerializerOptions(request.HttpContext);
 
         var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+        Stream? inputStream = null;
+        ValueTask<TValue?> deserializeTask;
 
         try
         {
-            return await JsonSerializer.DeserializeAsync<TValue>(inputStream, options, cancellationToken);
+            if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync<TValue>(request.Body, options, cancellationToken);
+                }
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync<TValue>(request.BodyReader, options, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync<TValue>(inputStream, options, cancellationToken);
+            }
+
+            return await deserializeTask;
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -106,15 +128,33 @@ public static class HttpRequestJsonExtensions
         }
 
         var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+        Stream? inputStream = null;
+        ValueTask<TValue?> deserializeTask;
 
         try
         {
-            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
+                }
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            }
+
+            return await deserializeTask;
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -144,15 +184,33 @@ public static class HttpRequestJsonExtensions
         }
 
         var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+        Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
-            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
+                }
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            }
+
+            return await deserializeTask;
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -206,15 +264,33 @@ public static class HttpRequestJsonExtensions
         options ??= ResolveSerializerOptions(request.HttpContext);
 
         var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+        Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
-            return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
+            if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, type, options, cancellationToken);
+                }
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, type, options, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
+            }
+
+            return await deserializeTask;
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -248,15 +324,33 @@ public static class HttpRequestJsonExtensions
         }
 
         var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+        Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
-            return await JsonSerializer.DeserializeAsync(inputStream, type, context, cancellationToken);
+            if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
+            {
+                if (_useStreamJsonOverload)
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, type, context, cancellationToken);
+                }
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, type, context, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, type, context, cancellationToken);
+            }
+
+            return await deserializeTask;
         }
         finally
         {
-            if (usesTranscodingStream)
+            if (inputStream is not null)
             {
                 await inputStream.DisposeAsync();
             }
@@ -310,17 +404,6 @@ public static class HttpRequestJsonExtensions
     private static void ThrowContentTypeError(HttpRequest request)
     {
         throw new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
-    }
-
-    private static (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding? encoding)
-    {
-        if (encoding == null || encoding.CodePage == Encoding.UTF8.CodePage)
-        {
-            return (httpContext.Request.Body, false);
-        }
-
-        var inputStream = Encoding.CreateTranscodingStream(httpContext.Request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-        return (inputStream, true);
     }
 
     private static Encoding? GetEncodingFromCharset(StringSegment charset)

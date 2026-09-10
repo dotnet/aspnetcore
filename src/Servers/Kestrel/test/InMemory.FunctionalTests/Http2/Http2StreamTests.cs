@@ -391,6 +391,73 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
+    public async Task HEADERS_Received_QueryWithInvalidCharacter_Reset(string path)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
+    public async Task HEADERS_Received_QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        await InitializeConnectionAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Theory]
     [InlineData("/", "/")]
     [InlineData("/a%5E", "/a^")]
     [InlineData("/a%E2%82%AC", "/a€")]
@@ -787,6 +854,31 @@ public class Http2StreamTests : Http2TestBase
         await StartStreamAsync(1, headers, endStream: true);
 
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_RequestLineTooLong);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Theory]
+    [InlineData("/\u0161")]
+    [InlineData("/a\u0161")]
+    [InlineData("/\u0161a")]
+    [InlineData("/a\u0161a")]
+    public async Task HEADERS_Received_CharacterLargerThanByte_Reset(string path)
+    {
+        var pathBytes = Encoding.UTF8.GetBytes(path);
+        var headerBlock = new byte[4 + pathBytes.Length];
+        headerBlock[0] = 0x82; // Indexed: :method GET (HPACK static index 2)
+        headerBlock[1] = 0x86; // Indexed: :scheme http (HPACK static index 6)
+        headerBlock[2] = 0x44; // Literal incremental indexing, name index 4 (:path)
+        headerBlock[3] = (byte)pathBytes.Length; // Value length, no Huffman
+        pathBytes.CopyTo(headerBlock.AsSpan(4));
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, headerBlock, endStream: true);
+
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
+            CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
@@ -5239,10 +5331,10 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.CompleteAsync().DefaultTimeout();
 
-                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
-
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
+
+                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
                 appTcs.SetResult();
             }
             catch (Exception ex)
@@ -5432,6 +5524,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task AbortAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5453,6 +5546,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5484,6 +5580,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         // Stream should return an INTERNAL_ERROR. If there is an unexpected exception from app TCS instead, then throw it here to avoid timeout waiting for the stream error.
         await Task.WhenAny(WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null), appTcs.Task).Unwrap();
 
@@ -5512,6 +5609,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task AbortAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5535,6 +5633,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5569,6 +5670,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null);
 
         clientTcs.SetResult();
@@ -5596,6 +5698,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task ResetAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5617,6 +5720,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5650,6 +5756,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
@@ -5678,6 +5785,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task ResetAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
         var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
@@ -5701,6 +5809,9 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
+                // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
+                // That something is the client side receiving the trailers.
+                await trailersTcs.Task;
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -5737,6 +5848,7 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+        trailersTcs.SetResult();
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
@@ -5924,5 +6036,32 @@ public class Http2StreamTests : Http2TestBase
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+    }
+
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task OnDynamicIndexedHeader_NewlineCharactersInValue_ThrowsConnectionError(string newlineCharacters)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        // Start a request header block without END_HEADERS so the connection has an active stream receiving headers.
+        await SendHeadersAsync(streamId: 1, flags: Http2HeadersFrameFlags.END_STREAM, headers: _browserRequestHeaders);
+
+        var value = Encoding.ASCII.GetBytes(newlineCharacters);
+
+        // Simulate HPackDecoder resolving a fully indexed dynamic-table entry.
+        var exception = Assert.Throws<Http2ConnectionErrorException>(() =>
+            _connection.OnDynamicIndexedHeader(index: null, name: "contains-newline"u8, value));
+
+        Assert.Equal(Http2ErrorCode.PROTOCOL_ERROR, exception.ErrorCode);
+        Assert.Equal(ConnectionEndReason.InvalidRequestHeaders, exception.Reason);
+        Assert.Contains(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, exception.Message);
+
+        // Finish the intentionally incomplete header block and shut down normally.
+        await SendEmptyContinuationFrameAsync(streamId: 1, flags: Http2ContinuationFrameFlags.END_HEADERS);
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+        AssertConnectionNoError();
     }
 }

@@ -9,7 +9,7 @@ public class StringWithQualityHeaderValueTest
     public void Ctor_StringOnlyOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token");
-        Assert.Equal("token", value.Value);
+        Assert.Equal("token", value.Value.AsSpan());
         Assert.Null(value.Quality);
 
         Assert.Throws<ArgumentException>(() => new StringWithQualityHeaderValue(null));
@@ -21,7 +21,7 @@ public class StringWithQualityHeaderValueTest
     public void Ctor_StringWithQualityOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token", 0.5);
-        Assert.Equal("token", value.Value);
+        Assert.Equal("token", value.Value.AsSpan());
         Assert.Equal(0.5, value.Quality);
 
         Assert.Throws<ArgumentException>(() => new StringWithQualityHeaderValue(null, 0.1));
@@ -156,7 +156,7 @@ public class StringWithQualityHeaderValueTest
     [InlineData("decimal_part_too_long;q=0.123456789")]
     [InlineData("decimal_part_too_long;q=0.123456789 ")]
     [InlineData("no_integer_part;q=.1")]
-    public void Parse_SetOfInvalidValueStrings_Throws(string input)
+    public void Parse_SetOfInvalidValueStrings_Throws(string? input)
     {
         Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.Parse(input));
     }
@@ -382,6 +382,19 @@ public class StringWithQualityHeaderValueTest
             }.ToList();
 
         Assert.Equal(expectedResults, results);
+    }
+
+    [Theory]
+    [InlineData(16)]
+    [InlineData(256)]
+    [InlineData(4096)]
+    public void ParseList_InvalidQualitySuffixRecoversFollowingValue(int tokenLength)
+    {
+        var input = $"{new string('a', tokenLength)};, valid;q=0.5";
+
+        var result = StringWithQualityHeaderValue.ParseList(new[] { input });
+
+        Assert.Equal(new[] { new StringWithQualityHeaderValue("valid", 0.5) }, result);
     }
 
     [Fact]

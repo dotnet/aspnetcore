@@ -75,6 +75,22 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZstdCompressedContent(byte[] uncompressedBytes)
+    {
+        static Stream compressorDelegate(Stream compressedContent) =>
+            new ZstandardStream(compressedContent, CompressionMode.Compress);
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
+    private static async Task<byte[]> GetZstdCompressedContentWithWindowLog(byte[] uncompressedBytes, int windowLog)
+    {
+        Stream compressorDelegate(Stream compressedContent) =>
+            new ZstandardStream(compressedContent, new ZstandardCompressionOptions { WindowLog2 = windowLog });
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     [Fact]
     public async Task Request_ContentEncodingBrotli_Decompressed()
     {
@@ -137,6 +153,37 @@ public class RequestDecompressionMiddlewareTests
         // Assert
         AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingZstd_Decompressed()
+    {
+        // Arrange
+        var contentEncoding = "zstd";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetZstdCompressedContent(uncompressedBytes);
+
+        // Act
+        var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
+
+        // Assert
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
+        Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingZstd_WindowExceedsMaxWindowLog_Throws()
+    {
+        // The middleware caps the Zstandard decompression window at 8 MB (windowLog 23) as
+        // required by RFC 9659, so a payload advertising a larger window must be rejected.
+
+        // Arrange
+        var contentEncoding = "zstd";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetZstdCompressedContentWithWindowLog(uncompressedBytes, windowLog: 24);
+
+        // Act/Assert
+        await Assert.ThrowsAsync<IOException>(async () => await InvokeMiddleware(compressedBytes, new[] { contentEncoding }));
     }
 
     [Fact]
@@ -319,7 +366,7 @@ public class RequestDecompressionMiddlewareTests
 
         if (isDecompressed)
         {
-            Assert.Empty(contentEncodingHeader);
+            Assert.Equal(0, contentEncodingHeader.Count);
 
             AssertDecompressedWithLog(logMessages, contentEncoding);
             Assert.Equal(uncompressedBytes, outputBytes);
@@ -499,8 +546,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {
@@ -583,8 +630,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {

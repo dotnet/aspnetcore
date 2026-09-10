@@ -61,7 +61,7 @@ public class RedirectHandler : DelegatingHandler
     }
 
     private static bool HasBody(HttpRequestMessage request) =>
-        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put;
+        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Patch;
 
     private static async Task<HttpContent?> DuplicateRequestContent(HttpRequestMessage request)
     {

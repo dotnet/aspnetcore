@@ -51,4 +51,11 @@ public static class WebDriverExtensions
 
         return false;
     }
+
+    public static void SetWindowSize(this IWebDriver driver, int width, int height)
+    {
+        ArgumentNullException.ThrowIfNull(driver);
+
+        driver.Manage().Window.Size = new System.Drawing.Size(width, height);
+    }
 }

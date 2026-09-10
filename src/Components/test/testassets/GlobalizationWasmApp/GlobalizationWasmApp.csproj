@@ -7,9 +7,11 @@
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
+
+    <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
@@ -18,5 +20,9 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+  </PropertyGroup>
 
 </Project>

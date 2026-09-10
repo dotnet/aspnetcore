@@ -302,7 +302,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 const receivePromise = new PromiseSource<string>();
                 hubConnection.on(methodName, (msg) => {
@@ -328,7 +328,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 let closeCount = 0;
                 let invocationCount = 0;
@@ -634,6 +634,41 @@ describe("hubConnection", () => {
                 }
             });
 
+            it("can refresh hub authentication", async () => {
+                try {
+                    let jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=first");
+
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
+                        accessTokenFactory: () => jwtToken,
+                    })
+                        .withAuthenticationRefresh({ enableAutoRefresh: false })
+                        .build();
+
+                    const closePromise = new PromiseSource();
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        closePromise.resolve();
+                    });
+
+                    await hubConnection.start();
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("first");
+
+                    jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=second");
+                    const tokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
+
+                    expect(tokenLifetimeInSeconds).toBeGreaterThan(0);
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("second");
+
+                    await hubConnection.stop();
+
+                    await closePromise;
+                } catch (err) {
+                    fail(err);
+                }
+            });
+
             it("can get error from unauthorized hub connection", async () => {
                 try {
                     const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub").build();
@@ -885,7 +920,7 @@ describe("hubConnection", () => {
         }
     });
 
-    it("connection id is alwys null is negotiation is skipped", async () => {
+    it("connection id is always null if negotiation is skipped", async () => {
         try {
             const hubConnection = getConnectionBuilder(
                     HttpTransportType.WebSockets,

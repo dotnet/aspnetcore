@@ -1,6 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.Caching.Hybrid;
+
 namespace Microsoft.AspNetCore.Components.Server;
 
 /// <summary>
@@ -45,6 +50,45 @@ public sealed class CircuitOptions
     public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
 
     /// <summary>
+    /// Gets or sets a value that determines the maximum number of persisted circuits state that
+    /// are retained in memory by the server when no distributed cache is configured.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When using a distributed cache like <see cref="HybridCache"/> this value is ignored
+    /// and the configuration from <see cref="Extensions.DependencyInjection.MemoryCacheServiceCollectionExtensions.AddMemoryCache(Extensions.DependencyInjection.IServiceCollection)"/>
+    /// is used instead.
+    /// </para>
+    /// <para>
+    /// To explicitly control the in memory cache limits when using a distributed cache. Setup a separate instance in <see cref="HybridPersistenceCache"/> with
+    /// the desired configuration.
+    /// </para>
+    /// </remarks>
+    public int PersistedCircuitInMemoryMaxRetained { get; set; } = 1000;
+
+    /// <summary>
+    /// Gets or sets the duration for which a persisted circuit is retained in memory.
+    /// </summary>
+    /// <remarks>
+    /// When using a <see cref="HybridCache"/> based implementation this value
+    /// is used for the local cache retention period.
+    /// </remarks>
+    public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(2);
+
+    /// <summary>
+    /// Gets or sets the duration for which a persisted circuit is retained in the distributed cache.
+    /// </summary>
+    /// <remarks>
+    /// This setting is ignored when using an in-memory cache implementation.
+    /// </remarks>
+    public TimeSpan? PersistedCircuitDistributedRetentionPeriod { get; set; } = TimeSpan.FromHours(8);
+
+    /// <summary>
+    /// Gets or sets the <see cref="HybridCache"/> instance to use for persisting circuit state across servers.
+    /// </summary>
+    public HybridCache? HybridPersistenceCache { get; set; }
+
+    /// <summary>
     /// Gets or sets a value that determines whether or not to send detailed exception messages to JavaScript when an unhandled exception
     /// happens on the circuit or when a .NET method invocation through JS interop results in an exception.
     /// </summary>
@@ -62,6 +106,16 @@ public sealed class CircuitOptions
     /// Defaults to <c>1 minute</c>.
     /// </value>
     public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Gets the JSON metadata resolvers used for application-owned circuit payloads.
+    /// </summary>
+    /// <remarks>
+    /// Resolvers are queried in registration order before the reflection-based fallback.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public IList<IJsonTypeInfoResolver> JsonTypeInfoResolvers { get; } = new List<IJsonTypeInfoResolver>();
 
     /// <summary>
     /// Gets or sets the maximum number of render batches that a circuit will buffer until an acknowledgement for the batch is

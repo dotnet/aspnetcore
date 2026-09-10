@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -51,6 +52,7 @@ public class AddressBinderTests
     [InlineData("randomhost")]
     [InlineData("+")]
     [InlineData("contoso.com")]
+    [InlineData(".localhost")]
     public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
     {
         var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
@@ -59,6 +61,36 @@ public class AddressBinderTests
         Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
         Assert.Equal(80, listenOptions.IPEndPoint.Port);
         Assert.False(https);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void ParseAddressOnOSWithoutIPv6()
+    {
+        var tmpDir = Directory.CreateTempSubdirectory();
+
+        try
+        {
+            var options = new RemoteInvokeOptions();
+            options.StartInfo.WorkingDirectory = tmpDir.FullName;
+            options.StartInfo.EnvironmentVariables["DOTNET_SYSTEM_NET_DISABLEIPV6"] = "1";
+
+            using var remoteHandle = RemoteExecutor.Invoke(static () =>
+            {
+                Assert.False(Socket.OSSupportsIPv6);
+
+                var listenOptions = AddressBinder.ParseAddress($"http://*:80", out var https);
+                Assert.IsType<AnyIPListenOptions>(listenOptions);
+                Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+                Assert.Equal(IPAddress.Any, listenOptions.IPEndPoint.Address);
+                Assert.Equal(80, listenOptions.IPEndPoint.Port);
+                Assert.False(https);
+            }, options);
+        }
+        finally
+        {
+            tmpDir.Delete(recursive: true);
+        }
     }
 
     [Fact]
@@ -70,6 +102,29 @@ public class AddressBinderTests
         Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
         Assert.Equal(80, listenOptions.IPEndPoint.Port);
         Assert.False(https);
+    }
+
+    [Theory]
+    [InlineData("http://sample.localhost:5000", 5000, false)]
+    [InlineData("http://SAMPLE.localhost:5000", 5000, false)]
+    [InlineData("http://SAMPLE.Localhost:5000", 5000, false, "http://SAMPLE.localhost:5000")]
+    [InlineData("HTTP://sample.localhost:5000", 5000, false, "http://sample.localhost:5000")]
+    [InlineData("https://sample.localhost:5001", 5001, true)]
+    [InlineData("http://multilevel.dev.localhost:5000", 5000, false)]
+    [InlineData("https://multilevel.dev.localhost:5001", 5001, true)]
+    public void ParseAddressWithLocalhostTld(string address, int expectedPort, bool expectedHttps, string expectedAddress = null)
+    {
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<LocalhostListenOptions>(listenOptions);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
+        Assert.Equal(expectedPort, listenOptions.IPEndPoint.Port);
+        Assert.Equal(expectedHttps, https);
+        if (https)
+        {
+            listenOptions.IsTls = true;
+        }
+        Assert.Equal(expectedAddress ?? address, listenOptions.GetDisplayName());
     }
 
     [Fact]

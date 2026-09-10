@@ -13,7 +13,7 @@ public class UsePathBaseExtensionsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("/")]
-    public void EmptyOrNullPathBase_DoNotAddMiddleware(string pathBase)
+    public void EmptyOrNullPathBase_DoNotAddMiddleware(string? pathBase)
     {
         // Arrange
         var useCalled = false;

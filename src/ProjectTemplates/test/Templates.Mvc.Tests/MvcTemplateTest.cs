@@ -7,6 +7,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class MvcTemplateTest : LoggedTest
 {
     public MvcTemplateTest(ProjectFactoryFixture projectFactory)

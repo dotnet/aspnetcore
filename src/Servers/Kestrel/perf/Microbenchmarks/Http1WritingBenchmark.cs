@@ -35,7 +35,7 @@ public class Http1WritingBenchmark
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         _http1Connection = MakeHttp1Connection();
         _consumeResponseBodyTask = ConsumeResponseBody();
     }

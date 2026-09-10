@@ -79,13 +79,9 @@ internal sealed class InvokeCommand : HelpCommandBase
                             projectName,
                             targetFramework.Version));
                     }
-                    else if (targetFramework.Version >= new Version(7, 0))
-                    {
-                        toolsDirectory = Path.Combine(thisPath, $"net{targetFramework.Version}");
-                    }
                     else
                     {
-                        toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
+                        toolsDirectory = Path.Combine(thisPath, $"net{targetFramework.Version}");
                     }
 
                     executable = DotNetMuxer.MuxerPathOrDefault();
@@ -144,6 +140,13 @@ internal sealed class InvokeCommand : HelpCommandBase
             args.Add(projectName);
             args.Add("--tools-directory");
             args.Add(toolsDirectory);
+
+            var environment = _projectOptions.Environment.Value();
+            if (!string.IsNullOrEmpty(environment))
+            {
+                args.Add("--environment");
+                args.Add(environment);
+            }
 
             if (ReporterExtensions.PrefixOutput)
             {

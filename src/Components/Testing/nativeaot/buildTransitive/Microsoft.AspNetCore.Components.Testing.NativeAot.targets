@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <_E2ENativeAotGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\tools\netstandard2.0\Microsoft.AspNetCore.Components.Testing.NativeAot.dll</_E2ENativeAotGeneratorAssembly>
+  </PropertyGroup>
+
+  <!-- The package can be referenced unconditionally. It affects compilation only for the nested E2E publish. -->
+  <ItemGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <Analyzer Include="$(_E2ENativeAotGeneratorAssembly)" />
+  </ItemGroup>
+</Project>

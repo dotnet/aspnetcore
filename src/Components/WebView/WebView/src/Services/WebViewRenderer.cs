@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
@@ -79,6 +81,16 @@ internal sealed class WebViewRenderer : WebRenderer
         }
 
         nextUnacknowledgedBatch.CompletionSource.SetResult();
+    }
+
+    protected override IComponent ResolveComponentForRenderMode(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode renderMode)
+    {
+        // Blazor Hybrid is always interactive, so all render modes are treated as no-ops.
+        return componentActivator.CreateInstance(componentType);
     }
 
     private sealed class UnacknowledgedRenderBatch

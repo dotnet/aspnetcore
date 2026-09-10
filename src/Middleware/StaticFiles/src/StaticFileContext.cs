@@ -407,11 +407,7 @@ internal struct StaticFileContext
     // Only called when we expect to serve the body.
     private void SetCompressionMode()
     {
-        var responseCompressionFeature = _context.Features.Get<IHttpsCompressionFeature>();
-        if (responseCompressionFeature != null)
-        {
-            responseCompressionFeature.Mode = _options.HttpsCompression;
-        }
+        _context.Features.Get<IHttpsCompressionFeature>()?.Mode = _options.HttpsCompression;
     }
 
     internal enum PreconditionState : byte

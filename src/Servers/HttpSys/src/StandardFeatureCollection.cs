@@ -27,9 +27,11 @@ internal sealed class StandardFeatureCollection : IFeatureCollection
         { typeof(IHttpBodyControlFeature), _identityFunc },
         { typeof(IHttpSysRequestInfoFeature), _identityFunc },
         { typeof(IHttpSysRequestTimingFeature), _identityFunc },
+        { typeof(IHttpSysRequestPropertyFeature), _identityFunc },
         { typeof(IHttpResponseTrailersFeature), ctx => ctx.GetResponseTrailersFeature() },
         { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         { typeof(IConnectionLifetimeNotificationFeature), ctx => ctx.GetConnectionLifetimeNotificationFeature() },
+        { typeof(IConnectionEndPointFeature), _identityFunc },
     };
 
     private readonly RequestContext _featureContext;

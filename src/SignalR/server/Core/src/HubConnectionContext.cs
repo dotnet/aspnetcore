@@ -50,8 +50,14 @@ public partial class HubConnectionContext
     private bool _receivedMessageTimeoutEnabled;
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
-    private ClaimsPrincipal? _user;
     private bool _useStatefulReconnect;
+    private DefaultHubCallerContext? _hubCallerContext;
+    private string? _userIdentifier;
+    // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
+    // lets that synchronous call see the pending principal before publishing the refreshed hub state, so we
+    // can reject identifier changes without briefly exposing the new user to concurrent hub code.
+    [ThreadStatic]
+    private static UserIdProviderUserState? t_userIdProviderUserState;
 
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
     internal bool UsingStatefulReconnect() => _useStatefulReconnect;
@@ -87,8 +93,6 @@ public partial class HubConnectionContext
             _closedRequestedRegistration = lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
         }
 
-        HubCallerContext = new DefaultHubCallerContext(this);
-
         _lastSendTick = _timeProvider.GetTimestamp();
 
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
@@ -109,7 +113,14 @@ public partial class HubConnectionContext
         }
     }
 
-    internal HubCallerContext HubCallerContext { get; }
+    internal HubCallerContext HubCallerContext
+    {
+        get
+        {
+            var hubCallerContext = Volatile.Read(ref _hubCallerContext);
+            return hubCallerContext ?? InitializeHubCallerContext();
+        }
+    }
 
     internal Exception? CloseException { get; private set; }
 
@@ -134,11 +145,13 @@ public partial class HubConnectionContext
     {
         get
         {
-            if (_user is null)
+            var userIdProviderState = t_userIdProviderUserState;
+            if (ReferenceEquals(userIdProviderState?.Connection, this))
             {
-                _user = Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
+                return userIdProviderState.User;
             }
-            return _user;
+
+            return HubCallerContext.User ?? new ClaimsPrincipal();
         }
     }
 
@@ -161,14 +174,78 @@ public partial class HubConnectionContext
     /// <summary>
     /// Gets or sets the user identifier for this connection.
     /// </summary>
-    public string? UserIdentifier { get; set; }
+    public string? UserIdentifier
+    {
+        get => Volatile.Read(ref _userIdentifier);
+        set
+        {
+            Volatile.Write(ref _userIdentifier, value);
+        }
+    }
+
+    private DefaultHubCallerContext InitializeHubCallerContext()
+    {
+        var hubCallerContext = new DefaultHubCallerContext(
+            this,
+            _connectionContext.Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal());
+        var existing = Interlocked.CompareExchange(ref _hubCallerContext, hubCallerContext, null);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        return hubCallerContext;
+    }
+
+    private void PublishHubCallerContext(DefaultHubCallerContext hubCallerContext)
+    {
+        Interlocked.Exchange(ref _hubCallerContext, hubCallerContext);
+    }
+
+    internal string? GetUserIdentifier(ClaimsPrincipal user, IUserIdProvider userIdProvider)
+    {
+        var previousState = t_userIdProviderUserState;
+        t_userIdProviderUserState = new UserIdProviderUserState(this, user);
+        try
+        {
+            return userIdProvider.GetUserId(this);
+        }
+        finally
+        {
+            t_userIdProviderUserState = previousState;
+        }
+    }
+
+    internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
+    {
+        Volatile.Write(ref _userIdentifier, userIdentifier);
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
+    }
+
+    internal void ApplyUser(ClaimsPrincipal user)
+    {
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
+    }
+
+    private sealed class UserIdProviderUserState
+    {
+        public UserIdProviderUserState(HubConnectionContext connection, ClaimsPrincipal user)
+        {
+            Connection = connection;
+            User = user;
+        }
+
+        public HubConnectionContext Connection { get; }
+
+        public ClaimsPrincipal User { get; }
+    }
 
     /// <summary>
     /// Gets the protocol used by this connection.
     /// </summary>
     public virtual IHubProtocol Protocol { get; set; } = default!;
 
-    // Currently used only for streaming methods
+    // Used to cancel hub invocations and streaming methods
     internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
     /// <summary>
@@ -205,7 +282,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -250,7 +327,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -271,7 +348,25 @@ public partial class HubConnectionContext
         {
             if (UsingStatefulReconnect())
             {
-                return _messageBuffer.WriteAsync(message, cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    HubMessage message, CancellationToken cancellationToken)
+                {
+                    var connectionToken = hubConnectionContext.ConnectionAborted;
+                    if (message is CloseMessage)
+                    {
+                        // If it's a CloseMessage, we might already have triggered the ConnectionAborted token
+                        // We would like to successfully send the CloseMessage for graceful close which means we can't use the ConnectionAborted token.
+                        connectionToken = CancellationToken.None;
+                    }
+
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(connectionToken, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -300,7 +395,17 @@ public partial class HubConnectionContext
             if (UsingStatefulReconnect())
             {
                 Debug.Assert(_messageBuffer is not null);
-                return _messageBuffer.WriteAsync(message, cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    SerializedHubMessage message, CancellationToken cancellationToken)
+                {
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(hubConnectionContext.ConnectionAborted, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -321,13 +426,16 @@ public partial class HubConnectionContext
         }
     }
 
-    private async Task CompleteWriteAsync(ValueTask<FlushResult> task)
+    private async Task CompleteWriteAsync(ValueTask<FlushResult> task, CancellationToken cancellationToken)
     {
         try
         {
             await task;
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -355,7 +463,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -381,7 +492,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -575,7 +689,8 @@ public partial class HubConnectionContext
 
                                 _cachedPingMessage = Protocol.GetMessageBytes(PingMessage.Instance);
 
-                                UserIdentifier = userIdProvider.GetUserId(this);
+                                var user = Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
+                                ApplyUserState(user, GetUserIdentifier(user, userIdProvider));
 
                                 // != true needed because it could be null (which we treat as false)
                                 if (Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)
@@ -784,6 +899,7 @@ public partial class HubConnectionContext
         _messageBuffer?.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
+        Interlocked.Exchange(ref _hubCallerContext, null);
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));

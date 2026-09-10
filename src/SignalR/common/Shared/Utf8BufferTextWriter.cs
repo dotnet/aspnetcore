@@ -35,6 +35,12 @@ internal sealed class Utf8BufferTextWriter : TextWriter
         _encoder = _utf8NoBom.GetEncoder();
     }
 
+    public Utf8BufferTextWriter(IFormatProvider formatProvider)
+        : base(formatProvider)
+    {
+        _encoder = _utf8NoBom.GetEncoder();
+    }
+
     public static Utf8BufferTextWriter Get(IBufferWriter<byte> bufferWriter)
     {
         var writer = _cachedInstance;

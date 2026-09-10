@@ -41,9 +41,7 @@ public class AccessTokenNotAvailableException : Exception
         }
         else
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            _navigation.NavigateTo(_tokenResult.RedirectUrl!);
-#pragma warning restore CS0618 // Type or member is obsolete
+            _navigation.NavigateTo(_tokenResult.InteractiveRequestUrl!);
         }
     }
 
@@ -51,7 +49,7 @@ public class AccessTokenNotAvailableException : Exception
     /// Navigates to <see cref="AccessTokenResult.InteractiveRequestUrl"/> using the given <see cref="AccessTokenResult.InteractionOptions"/>
     /// to allow refreshing the access token.
     /// </summary>
-    /// <param name="configureInteractionOptions">A callback to further configure the initial set of options to be passed during the interactive token adquisition flow.</param>
+    /// <param name="configureInteractionOptions">A callback to further configure the initial set of options to be passed during the interactive token acquisition flow.</param>
     public void Redirect(Action<InteractiveRequestOptions> configureInteractionOptions)
     {
         ArgumentNullException.ThrowIfNull(configureInteractionOptions);

@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -16,7 +19,7 @@ public class SSRRenderModeBoundaryTest
     public void DoesNotAssertAboutConfiguredRenderModesOnUnknownEndpoints()
     {
         // Arrange: an endpoint with no ConfiguredRenderModesMetadata
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(), null));
 
         // Act/Assert: no exception means we're OK
@@ -29,7 +32,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfServerRenderModeUsedAndNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new WebAssemblyRenderModeSubclass());
 
         // Act/Assert
@@ -43,7 +46,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfWebAssemblyRenderModeUsedAndNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new ServerRenderModeSubclass());
 
         // Act/Assert
@@ -57,7 +60,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfAutoRenderModeUsedAndServerNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new WebAssemblyRenderModeSubclass());
 
         // Act/Assert
@@ -71,7 +74,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfAutoRenderModeUsedAndWebAssemblyNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new ServerRenderModeSubclass());
 
         // Act/Assert
@@ -87,6 +90,16 @@ public class SSRRenderModeBoundaryTest
             new ConfiguredRenderModesMetadata(configuredModes)), null));
     }
 
+    private static DefaultHttpContext CreateHttpContext()
+    {
+        return new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .BuildServiceProvider(),
+        };
+    }
+
     class TestComponent : IComponent
     {
         public void Attach(RenderHandle renderHandle)
@@ -94,6 +107,33 @@ public class SSRRenderModeBoundaryTest
 
         public Task SetParametersAsync(ParameterView parameters)
             => throw new NotImplementedException();
+    }
+
+    public static IEnumerable<object[]> ComponentKeyTestData()
+    {
+        yield return new object[] { "test-string-key", "test-string-key" };
+        yield return new object[] { 42, "42" };
+        yield return new object[] { Guid.Parse("12345678-1234-1234-1234-123456789012"), "12345678-1234-1234-1234-123456789012" };
+        yield return new object[] { 123.45, "123.45" };
+        yield return new object[] { new DateTime(2023, 12, 25, 10, 30, 0, DateTimeKind.Utc), "12/25/2023 10:30:00" };
+        yield return new object[] { null, string.Empty };
+        yield return new object[] { new object(), string.Empty };
+    }
+
+    [Theory]
+    [MemberData(nameof(ComponentKeyTestData))]
+    public void GetComponentMarkerKey_WorksWithVariousKeyTypes(object componentKey, string expectedFormattedKey)
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, componentKey);
+
+        // Assert
+        Assert.Equal(expectedFormattedKey, markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
     }
 
     class ServerRenderModeSubclass : InteractiveServerRenderMode { }

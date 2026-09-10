@@ -10,10 +10,10 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.ge
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.FailureStatus.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.FailureStatus.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.get -> string!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.get -> System.TimeSpan?
@@ -40,8 +40,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Description.get 
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Duration.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Exception.get -> System.Exception?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry() -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data, System.Collections.Generic.IEnumerable<string!>? tags = null) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Tags.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus

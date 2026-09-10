@@ -63,7 +63,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         var routeValues = listener.BeforeAction?.RouteData?.Values;
         Assert.NotNull(routeValues);
 
-        Assert.Equal(1, routeValues.Count);
+        Assert.Single(routeValues);
         Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
     }
 
@@ -112,7 +112,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
         actionDescriptor.ControllerTypeInfo = typeof(TestController).GetTypeInfo();
 
-        var listener = new TestDiagnosticListener();        
+        var listener = new TestDiagnosticListener();
         var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
         resourceFilter
             .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
@@ -161,7 +161,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
         actionDescriptor.ControllerTypeInfo = typeof(TestController).GetTypeInfo();
 
-        var listener = new TestDiagnosticListener();        
+        var listener = new TestDiagnosticListener();
         var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
         resourceFilter
             .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
@@ -252,7 +252,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         // Assert
         var controllerContext = Assert.IsType<ControllerActionInvoker>(invoker).ControllerContext;
         Assert.NotNull(controllerContext);
-        Assert.Equal(1, controllerContext.ValueProviderFactories.Count);
+        Assert.Single(controllerContext.ValueProviderFactories);
         Assert.Same(valueProviderFactory2, controllerContext.ValueProviderFactories[0]);
     }
 
@@ -1432,7 +1432,9 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         var invoker = new ControllerActionInvoker(
             new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
             new DiagnosticListener("Microsoft.AspNetCore"),
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
             ActionContextAccessor.Null,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
             new ActionResultTypeMapper(),
             controllerContext,
             cacheEntry,
@@ -1769,7 +1771,9 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         var invoker = new ControllerActionInvoker(
             logger,
             diagnosticSource,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
             ActionContextAccessor.Null,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
             new ActionResultTypeMapper(),
             controllerContext,
             cacheEntry,

@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+
 using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 internal sealed partial class OpenApiJsonSchema
@@ -16,8 +19,9 @@ internal sealed partial class OpenApiJsonSchema
     /// </summary>
     /// <typeparam name="T">The type of the elements that will populate the list.</typeparam>
     /// <param name="reader">The <see cref="Utf8JsonReader"/> to consume the list from.</param>
+    /// <param name="context">The <see cref="OpenApiJsonSchemaContext"/> to use for reading.</param>
     /// <returns>A list parsed from the JSON array.</returns>
-    public static List<T>? ReadList<T>(ref Utf8JsonReader reader)
+    private static List<T>? ReadList<T>(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -30,7 +34,7 @@ internal sealed partial class OpenApiJsonSchema
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                values.Add((T)JsonSerializer.Deserialize(ref reader, typeof(T), OpenApiJsonSchemaContext.Default)!);
+                values.Add((T)JsonSerializer.Deserialize(ref reader, typeof(T), context)!);
                 reader.Read();
             }
 
@@ -50,9 +54,10 @@ internal sealed partial class OpenApiJsonSchema
     /// </summary>
     /// <typeparam name="T">The type associated with the values in the dictionary.</typeparam>
     /// <param name="reader">The <see cref="Utf8JsonReader"/> to consume the dictionary from.</param>
+    /// <param name="context">The <see cref="OpenApiJsonSchemaContext"/> to use for reading.</param>
     /// <returns>A dictionary parsed from the JSON object.</returns>
     /// <exception cref="JsonException">Thrown if JSON object is not valid.</exception>
-    public static Dictionary<string, T>? ReadDictionary<T>(ref Utf8JsonReader reader)
+    private static Dictionary<string, T>? ReadDictionary<T>(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -75,70 +80,72 @@ internal sealed partial class OpenApiJsonSchema
 
             var key = reader.GetString()!;
             reader.Read();
-            values[key] = (T)JsonSerializer.Deserialize(ref reader, typeof(T), OpenApiJsonSchemaContext.Default)!;
+            values[key] = (T)JsonSerializer.Deserialize(ref reader, typeof(T), context)!;
             reader.Read();
         }
 
         return values;
     }
 
-    internal static IOpenApiAny? ReadOpenApiAny(ref Utf8JsonReader reader)
-        => ReadOpenApiAny(ref reader, out _);
+    private static JsonNode? ReadJsonNode(ref Utf8JsonReader reader)
+        => ReadJsonNode(ref reader, out _);
 
-    internal static IOpenApiAny? ReadOpenApiAny(ref Utf8JsonReader reader, out string? type)
+    private static JsonNode? ReadJsonNode(ref Utf8JsonReader reader, out JsonSchemaType? type)
     {
         type = null;
         if (reader.TokenType == JsonTokenType.Null)
         {
-            return new OpenApiNull();
+            return null;
         }
 
         if (reader.TokenType == JsonTokenType.True || reader.TokenType == JsonTokenType.False)
         {
-            type = "boolean";
-            return new OpenApiBoolean(reader.GetBoolean());
+            type = JsonSchemaType.Boolean;
+            return reader.GetBoolean();
         }
 
         if (reader.TokenType == JsonTokenType.Number)
         {
             if (reader.TryGetInt32(out var intValue))
             {
-                type = "integer";
-                return new OpenApiInteger(intValue);
+                type = JsonSchemaType.Integer;
+                return intValue;
             }
 
             if (reader.TryGetInt64(out var longValue))
             {
-                type = "integer";
-                return new OpenApiLong(longValue);
+                type = JsonSchemaType.Integer;
+                return longValue;
             }
 
             if (reader.TryGetSingle(out var floatValue) && !float.IsInfinity(floatValue))
             {
-                type = "number";
-                return new OpenApiFloat(floatValue);
+                type = JsonSchemaType.Number;
+                return floatValue;
             }
 
             if (reader.TryGetDouble(out var doubleValue))
             {
-                type = "number";
-                return new OpenApiDouble(doubleValue);
+                type = JsonSchemaType.Number;
+                return doubleValue;
             }
         }
 
         if (reader.TokenType == JsonTokenType.String)
         {
-            type = "string";
-            return new OpenApiString(reader.GetString());
+            type = JsonSchemaType.String;
+            return reader.GetString();
         }
 
         if (reader.TokenType == JsonTokenType.StartArray)
         {
-            type = "array";
-            var array = new OpenApiArray();
+            type = JsonSchemaType.Array;
+            var array = new JsonArray();
+            // Read to process JsonTokenType.StartArray before advancing
+            reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                array.Add(ReadOpenApiAny(ref reader));
+                array.Add(ReadJsonNode(ref reader));
                 reader.Read();
             }
             return array;
@@ -146,8 +153,8 @@ internal sealed partial class OpenApiJsonSchema
 
         if (reader.TokenType == JsonTokenType.StartObject)
         {
-            type = "object";
-            var obj = new OpenApiObject();
+            type = JsonSchemaType.Object;
+            var obj = new JsonObject();
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndObject)
             {
@@ -158,7 +165,7 @@ internal sealed partial class OpenApiJsonSchema
 
                 var key = reader.GetString()!;
                 reader.Read();
-                obj[key] = ReadOpenApiAny(ref reader);
+                obj[key] = ReadJsonNode(ref reader);
                 reader.Read();
             }
             return obj;
@@ -167,6 +174,12 @@ internal sealed partial class OpenApiJsonSchema
         return default;
     }
 
+    private static int GetInt32(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
+        => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<int>)context.GetTypeInfo(typeof(int))!);
+
+    private static decimal GetDecimal(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
+        => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<decimal>)context.GetTypeInfo(typeof(decimal))!);
+
     /// <summary>
     /// Read a property node from the given JSON reader instance.
     /// </summary>
@@ -174,7 +187,8 @@ internal sealed partial class OpenApiJsonSchema
     /// <param name="propertyName">The name of the property the editor is currently consuming.</param>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to write the given values to.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> instance.</param>
-    public static void ReadProperty(ref Utf8JsonReader reader, string propertyName, OpenApiSchema schema, JsonSerializerOptions options)
+    /// <param name="context">The <see cref="OpenApiJsonSchemaContext"/> instance.</param>
+    public static void ReadProperty(ref Utf8JsonReader reader, string propertyName, OpenApiSchema schema, JsonSerializerOptions options, OpenApiJsonSchemaContext context)
     {
         switch (propertyName)
         {
@@ -182,49 +196,42 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 if (reader.TokenType == JsonTokenType.StartArray)
                 {
-                    var types = ReadList<string>(ref reader);
+                    var types = ReadList<string>(ref reader, context);
                     foreach (var type in types ?? [])
                     {
-                        // JSON Schema represents nullable types using an array consisting of
-                        // the target type and "null". Since OpenAPI Schema does not support
-                        // representing types within an array we must check for the "null" type
-                        // and map it to OpenAPI's `nullable` property for OpenAPI v3.
-                        if (type == "null")
+                        if (schema.Type is not null)
                         {
-                            schema.Nullable = true;
+                            schema.Type |= Enum.Parse<JsonSchemaType>(type, ignoreCase: true);
                         }
                         else
                         {
-                            schema.Type = type;
+                            schema.Type = Enum.Parse<JsonSchemaType>(type, ignoreCase: true);
                         }
                     }
                 }
                 else
                 {
                     var type = reader.GetString();
-                    schema.Type = type;
+                    Debug.Assert(type is not null);
+                    schema.Type = Enum.Parse<JsonSchemaType>(type, ignoreCase: true);
                 }
                 break;
             case OpenApiSchemaKeywords.EnumKeyword:
                 reader.Read();
-                var enumValues = ReadList<string>(ref reader);
+                var enumValues = ReadList<JsonNode>(ref reader, context);
                 if (enumValues is not null)
                 {
-                    schema.Enum = enumValues.Select(v => new OpenApiString(v)).ToList<IOpenApiAny>();
+                    schema.Enum = enumValues;
                 }
                 break;
             case OpenApiSchemaKeywords.DefaultKeyword:
                 reader.Read();
-                schema.Default = ReadOpenApiAny(ref reader);
+                schema.Default = ReadJsonNode(ref reader);
                 break;
             case OpenApiSchemaKeywords.ItemsKeyword:
                 reader.Read();
                 var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
-                break;
-            case OpenApiSchemaKeywords.NullableKeyword:
-                reader.Read();
-                schema.Nullable = reader.GetBoolean();
                 break;
             case OpenApiSchemaKeywords.DescriptionKeyword:
                 reader.Read();
@@ -236,37 +243,47 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.RequiredKeyword:
                 reader.Read();
-                schema.Required = ReadList<string>(ref reader)?.ToHashSet();
+                schema.Required = ReadList<string>(ref reader, context)?.ToHashSet();
                 break;
             case OpenApiSchemaKeywords.MinLengthKeyword:
                 reader.Read();
-                var minLength = reader.GetInt32();
+                var minLength = GetInt32(ref reader, context);
                 schema.MinLength = minLength;
                 break;
             case OpenApiSchemaKeywords.MinItemsKeyword:
                 reader.Read();
-                var minItems = reader.GetInt32();
+                var minItems = GetInt32(ref reader, context);
                 schema.MinItems = minItems;
                 break;
             case OpenApiSchemaKeywords.MaxLengthKeyword:
                 reader.Read();
-                var maxLength = reader.GetInt32();
+                var maxLength = GetInt32(ref reader, context);
                 schema.MaxLength = maxLength;
                 break;
             case OpenApiSchemaKeywords.MaxItemsKeyword:
                 reader.Read();
-                var maxItems = reader.GetInt32();
+                var maxItems = GetInt32(ref reader, context);
                 schema.MaxItems = maxItems;
                 break;
             case OpenApiSchemaKeywords.MinimumKeyword:
                 reader.Read();
-                var minimum = reader.GetDecimal();
-                schema.Minimum = minimum;
+                var minimum = GetDecimal(ref reader, context);
+                schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
+                break;
+            case OpenApiSchemaKeywords.ExclusiveMinimum:
+                reader.Read();
+                var exclusiveMinimum = GetDecimal(ref reader, context);
+                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
-                var maximum = reader.GetDecimal();
-                schema.Maximum = maximum;
+                var maximum = GetDecimal(ref reader, context);
+                schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                break;
+            case OpenApiSchemaKeywords.ExclusiveMaximum:
+                reader.Read();
+                var exclusiveMaximum = GetDecimal(ref reader, context);
+                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
@@ -275,19 +292,28 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.PropertiesKeyword:
                 reader.Read();
-                var props = ReadDictionary<OpenApiJsonSchema>(ref reader);
-                schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
+                var props = ReadDictionary<OpenApiJsonSchema>(ref reader, context);
+                schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema as IOpenApiSchema);
                 break;
             case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
                 reader.Read();
+                if (reader.TokenType == JsonTokenType.False)
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    break;
+                }
                 var additionalPropsConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.AdditionalProperties = additionalPropsConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
                 break;
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
-                schema.Type = "object";
-                var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema).ToList();
+                var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
+                schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
+            case OpenApiSchemaKeywords.OneOfKeyword:
+                reader.Read();
+                var oneOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
+                schema.OneOf = oneOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
@@ -299,27 +325,66 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.DiscriminatorMappingKeyword:
                 reader.Read();
-                var mappings = ReadDictionary<string>(ref reader);
+                var mappings = ReadDictionary<string>(ref reader, context);
                 if (mappings is not null)
                 {
-                    schema.Discriminator.Mapping = mappings;
+                    schema.Discriminator ??= new OpenApiDiscriminator();
+                    foreach (var kvp in mappings)
+                    {
+                        schema.Discriminator.Mapping ??= new Dictionary<string, OpenApiSchemaReference>();
+                        schema.Discriminator.Mapping[kvp.Key] = new OpenApiSchemaReference(kvp.Value);
+                    }
+                }
+                break;
+            case OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword:
+                reader.Read();
+                var defaultMapping = reader.GetString();
+                if (defaultMapping is not null)
+                {
+                    schema.Discriminator ??= new OpenApiDiscriminator();
+                    schema.Discriminator.DefaultMapping = new OpenApiSchemaReference(defaultMapping);
                 }
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
-                schema.Annotations ??= new Dictionary<string, object>();
-                schema.Annotations.Add(OpenApiConstants.SchemaId, reader.GetString());
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
+                break;
+            case OpenApiConstants.SchemaIsUnion:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsUnion, reader.GetBoolean());
+                break;
+            case OpenApiConstants.NullableProperty:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.NullableProperty, reader.GetBoolean());
                 break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
             case OpenApiSchemaKeywords.ConstKeyword:
                 reader.Read();
-                schema.Enum = [ReadOpenApiAny(ref reader, out var constType)];
+                schema.Enum = ReadJsonNode(ref reader, out var constType) is { } jsonNode ? [jsonNode] : [];
                 schema.Type = constType;
                 break;
-            case OpenApiSchemaKeywords.RefKeyword:
+            case OpenApiSchemaKeywords.DeprecatedKeyword:
                 reader.Read();
-                schema.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = reader.GetString() };
+                schema.Deprecated = reader.GetBoolean();
+                break;
+            case OpenApiConstants.RefDescriptionAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDescriptionAnnotation] = reader.GetString() ?? string.Empty;
+                break;
+            case OpenApiConstants.RefDefaultAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDefaultAnnotation] = ReadJsonNode(ref reader)!;
+                break;
+            case OpenApiConstants.RefDeprecatedAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDeprecatedAnnotation] = reader.GetBoolean();
                 break;
             default:
                 reader.Skip();

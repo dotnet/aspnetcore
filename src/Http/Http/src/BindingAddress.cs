@@ -161,8 +161,8 @@ public class BindingAddress
         }
         var schemeDelimiterEnd = schemeDelimiterStart + Uri.SchemeDelimiter.Length;
 
-        var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
-        var isNamedPipe = address.IndexOf(NamedPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+        var isUnixPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
+        var isNamedPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(NamedPipeHostPrefix, StringComparison.Ordinal);
 
         int pathDelimiterStart;
         int pathDelimiterEnd;

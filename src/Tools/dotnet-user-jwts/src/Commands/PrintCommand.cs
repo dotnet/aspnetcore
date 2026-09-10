@@ -26,9 +26,15 @@ internal sealed class PrintCommand
                     cmd.ShowHelp();
                     return 0;
                 }
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
                 return Execute(
                     cmd.Reporter,
-                    cmd.ProjectOption.Value(),
+                    projectPath,
+                    isFileBasedApp,
                     idArgument.Value,
                     showAllOption.HasValue(),
                     cmd.OutputOption.Value());
@@ -36,9 +42,9 @@ internal sealed class PrintCommand
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string id, bool showAll, string outputFormat)
+    private static int Execute(IReporter reporter, string projectPath, bool isFileBasedApp, string id, bool showAll, string outputFormat)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, reporter, out var _, out var userSecretsId))
         {
             return 1;
         }

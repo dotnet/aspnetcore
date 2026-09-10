@@ -139,6 +139,126 @@ public class AntiforgeryApplicationModelProviderTest
             exception.Message);
     }
 
+    [Fact]
+    public void IgnoreAntiforgeryTokenOnAction_AddsValidationNotRequiredEndpointMetadata()
+    {
+        var provider = new AntiforgeryApplicationModelProvider(
+            Options.Create(new MvcOptions()),
+            NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
+        var context = CreateProviderContext(typeof(IgnoreAntiforgeryTokenOnActionController));
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var controller = Assert.Single(context.Result.Controllers);
+        Assert.Collection(controller.Actions,
+            ignoredAction =>
+            {
+                Assert.Equal(nameof(IgnoreAntiforgeryTokenOnActionController.Ignored), ignoredAction.ActionName);
+                var selector = Assert.Single(ignoredAction.Selectors);
+                var metadata = selector.EndpointMetadata.OfType<IAntiforgeryMetadata>().LastOrDefault();
+                Assert.NotNull(metadata);
+                Assert.False(metadata.RequiresValidation);
+            },
+            normalAction =>
+            {
+                Assert.Equal(nameof(IgnoreAntiforgeryTokenOnActionController.Normal), normalAction.ActionName);
+                var selector = Assert.Single(normalAction.Selectors);
+                Assert.Empty(selector.EndpointMetadata.OfType<IAntiforgeryMetadata>());
+            });
+    }
+
+    [Fact]
+    public void IgnoreAntiforgeryTokenOnController_AddsValidationNotRequiredEndpointMetadataToControllerSelectors()
+    {
+        var provider = new AntiforgeryApplicationModelProvider(
+            Options.Create(new MvcOptions()),
+            NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
+        var context = CreateProviderContext(typeof(IgnoreAntiforgeryTokenOnControllerController));
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var controller = Assert.Single(context.Result.Controllers);
+        var controllerSelector = Assert.Single(controller.Selectors);
+        var metadata = controllerSelector.EndpointMetadata.OfType<IAntiforgeryMetadata>().LastOrDefault();
+        Assert.NotNull(metadata);
+        Assert.False(metadata.RequiresValidation);
+
+        // The action's own selectors should still be untouched; the framework's
+        // ActionAttributeRouteModel.FlattenSelectors merges controller metadata into them later.
+        var action = Assert.Single(controller.Actions);
+        var actionSelector = Assert.Single(action.Selectors);
+        Assert.Empty(actionSelector.EndpointMetadata.OfType<IAntiforgeryMetadata>());
+    }
+
+    [Fact]
+    public void IgnoreAntiforgeryTokenOnAction_OverridesAutoValidateAntiforgeryTokenOnController()
+    {
+        var provider = new AntiforgeryApplicationModelProvider(
+            Options.Create(new MvcOptions()),
+            NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
+        var context = CreateProviderContext(typeof(AutoValidateWithIgnoredActionController));
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert: action selector ends with a not-required IAntiforgeryMetadata so GetMetadata<T>()
+        // (last-wins) reports the action-level preference. Controller-level metadata is merged
+        // before action-level metadata by ActionAttributeRouteModel.FlattenSelectors.
+        var controller = Assert.Single(context.Result.Controllers);
+        var action = Assert.Single(controller.Actions);
+        var actionSelector = Assert.Single(action.Selectors);
+        var lastMetadata = actionSelector.EndpointMetadata.OfType<IAntiforgeryMetadata>().LastOrDefault();
+        Assert.NotNull(lastMetadata);
+        Assert.False(lastMetadata.RequiresValidation);
+    }
+
+    [Fact]
+    public void NoAntiforgeryAttributes_DoesNotAddEndpointMetadata()
+    {
+        var provider = new AntiforgeryApplicationModelProvider(
+            Options.Create(new MvcOptions()),
+            NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
+        var context = CreateProviderContext(typeof(EmptyController));
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var controller = Assert.Single(context.Result.Controllers);
+        foreach (var selector in controller.Selectors)
+        {
+            Assert.Empty(selector.EndpointMetadata.OfType<IAntiforgeryMetadata>());
+        }
+        var action = Assert.Single(controller.Actions);
+        foreach (var selector in action.Selectors)
+        {
+            Assert.Empty(selector.EndpointMetadata.OfType<IAntiforgeryMetadata>());
+        }
+    }
+
+    [Fact]
+    public void EnableEndpointRoutingDisabled_DoesNotAddEndpointMetadata()
+    {
+        var provider = new AntiforgeryApplicationModelProvider(
+            Options.Create(new MvcOptions { EnableEndpointRouting = false }),
+            NullLogger<AntiforgeryMiddlewareAuthorizationFilter>.Instance);
+        var context = CreateProviderContext(typeof(IgnoreAntiforgeryTokenOnControllerController));
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var controller = Assert.Single(context.Result.Controllers);
+        foreach (var selector in controller.Selectors)
+        {
+            Assert.Empty(selector.EndpointMetadata.OfType<IAntiforgeryMetadata>());
+        }
+    }
+
     private static ApplicationModelProviderContext CreateProviderContext(Type controllerType)
     {
         var defaultProvider = new DefaultApplicationModelProvider(
@@ -237,5 +357,30 @@ public class AntiforgeryApplicationModelProviderTest
         [HttpPost]
         [RequireAntiforgeryToken(false)]
         public IActionResult Post2() => null;
+    }
+
+    private class IgnoreAntiforgeryTokenOnActionController
+    {
+        [HttpPost("ignored")]
+        [IgnoreAntiforgeryToken]
+        public IActionResult Ignored() => null;
+
+        [HttpPost("normal")]
+        public IActionResult Normal() => null;
+    }
+
+    [IgnoreAntiforgeryToken]
+    private class IgnoreAntiforgeryTokenOnControllerController
+    {
+        [HttpPost]
+        public IActionResult Post() => null;
+    }
+
+    [AutoValidateAntiforgeryToken]
+    private class AutoValidateWithIgnoredActionController
+    {
+        [HttpPost("webhook")]
+        [IgnoreAntiforgeryToken]
+        public IActionResult Webhook() => null;
     }
 }

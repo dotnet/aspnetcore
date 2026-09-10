@@ -165,7 +165,7 @@ public class DefaultHttpRequestTests
     {
         var request = new DefaultHttpContext().Request;
         var cookieHeaders = request.Headers["Cookie"];
-        Assert.Empty(cookieHeaders);
+        Assert.Equal(0, cookieHeaders.Count);
         var cookies0 = request.Cookies;
         Assert.Empty(cookies0);
         Assert.Null(cookies0["key0"]);
@@ -180,7 +180,7 @@ public class DefaultHttpRequestTests
         Assert.Equal(2, cookies1.Count);
         Assert.Equal("value0,", cookies1["name0"]);
         Assert.Equal("value1", cookies1["name1"]);
-        Assert.Equal(newCookies, request.Headers["Cookie"]);
+        Assert.Equal(newCookies, request.Headers["Cookie"].ToArray());
 
         var cookies2 = new RequestCookieCollection(new Dictionary<string, string>()
             {
@@ -190,7 +190,7 @@ public class DefaultHttpRequestTests
         Assert.Equal(cookies2, request.Cookies);
         Assert.Equal("value2", request.Cookies["name2"]);
         cookieHeaders = request.Headers["Cookie"];
-        Assert.Equal(new[] { "name2=value2" }, cookieHeaders);
+        Assert.Equal(new[] { "name2=value2" }, cookieHeaders.ToArray());
     }
 
     [Fact]

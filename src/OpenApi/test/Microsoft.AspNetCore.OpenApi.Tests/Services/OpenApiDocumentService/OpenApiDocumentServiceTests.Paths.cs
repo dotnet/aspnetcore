@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -27,7 +29,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
                         operation =>
                         {
-                            Assert.Equal(OperationType.Get, operation.Key);
+                            Assert.Equal(HttpMethod.Get, operation.Key);
                         });
                 },
                 path =>
@@ -36,7 +38,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
                         operation =>
                         {
-                            Assert.Equal(OperationType.Get, operation.Key);
+                            Assert.Equal(HttpMethod.Get, operation.Key);
                         });
                 });
         });
@@ -68,6 +70,31 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
+    public async Task GetOpenApiPaths_RespectsShouldInclude_CaseInsensitive()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+        var openApiOptions = new OpenApiOptions { DocumentName = "firstgroup" };
+
+        // Act
+        builder.MapGet("/api/todos", () => { }).WithMetadata(new EndpointGroupNameAttribute("FirstGroup"));
+        builder.MapGet("/api/users", () => { }).WithMetadata(new EndpointGroupNameAttribute("SecondGroup"));
+
+        // Assert -- The default `ShouldInclude` implementation should include endpoints that
+        // match the document name case-insensitively. The document name is "firstgroup" (lowercase)
+        // but the endpoint group name is "FirstGroup" (mixed case), and it should still match.
+        await VerifyOpenApiDocument(builder, openApiOptions, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/api/todos", path.Key);
+                }
+            );
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiPaths_RespectsSamePaths()
     {
         // Arrange
@@ -84,15 +111,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        });
+                    Assert.Equal(2, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
                 }
             );
         });
@@ -116,23 +137,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos/{id}", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Put, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Patch, operation.Key);
-                        });
+                    Assert.Equal(4, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Put, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Patch, path.Value.Operations);
                 }
             );
         });
@@ -155,17 +164,101 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos/{id}", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        });
+                    Assert.Equal(2, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
                 }
             );
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/~health", () => "Healthy");
+        builder.MapGet("/~api/todos", () => { });
+        builder.MapGet("/~api/todos/{id}", () => { });
+        builder.MapGet("~/health2", () => "Healthy2");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~api/todos", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~api/todos/{id}", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/health2", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTildeBeforeSlash_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeBeforeSlashRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Route("/~health")]
+    private void ActionWithTildeRoute() { }
+
+    [Route("~/health")]
+    private void ActionWithTildeBeforeSlashRoute() { }
 }

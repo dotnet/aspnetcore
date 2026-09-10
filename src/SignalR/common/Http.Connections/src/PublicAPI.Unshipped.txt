@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.set -> void
+Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata
+Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata.AuthenticationRefreshMetadata() -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthenticationRefresh.get -> System.Func<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, System.Threading.Tasks.Task<bool>!>?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthenticationRefresh.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MaximumAuthenticationExpiration.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MaximumAuthenticationExpiration.set -> void

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost;
 
@@ -10,8 +11,15 @@ public class RequestBuilderTests
     [Fact]
     public void AddRequestHeader()
     {
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
+        var server = host.GetTestServer();
         server.CreateRequest("/")
             .AddHeader("Host", "MyHost:90")
             .And(request =>
@@ -23,8 +31,15 @@ public class RequestBuilderTests
     [Fact]
     public void AddContentHeaders()
     {
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
+        var server = host.GetTestServer();
         server.CreateRequest("/")
             .AddHeader("Content-Type", "Test/Value")
             .And(request =>
@@ -38,8 +53,15 @@ public class RequestBuilderTests
     public void TestServer_PropertyShouldHoldTestServerInstance()
     {
         // Arrange
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
+        var server = host.GetTestServer();
 
         // Act
         var requestBuilder = server.CreateRequest("/");

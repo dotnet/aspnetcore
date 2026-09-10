@@ -1,0 +1,87 @@
+.haiku-card {
+    align-items: center;
+    border: 1px solid rgb(255 255 255 / 28%);
+    border-radius: 1rem;
+    box-shadow: 0 1.5rem 3rem rgb(15 23 42 / 24%);
+    color: #f8fafc;
+    display: flex;
+    justify-content: center;
+    min-height: 28rem;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.haiku-card__overlay {
+    align-items: center;
+    backdrop-filter: blur(0.15rem);
+    background: linear-gradient(
+        145deg,
+        rgb(15 23 42 / 12%),
+        rgb(15 23 42 / 42%));
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    position: relative;
+    text-align: center;
+    text-shadow: 0 2px 12px rgb(0 0 0 / 45%);
+    z-index: 1;
+}
+
+.haiku-card__lines {
+    display: grid;
+    gap: 1.35rem;
+    width: 100%;
+}
+
+.haiku-card__line {
+    animation: haiku-line-enter 400ms ease-out both;
+}
+
+.haiku-card__line:nth-child(2) {
+    animation-delay: 100ms;
+}
+
+.haiku-card__line:nth-child(3) {
+    animation-delay: 200ms;
+}
+
+.haiku-card__japanese {
+    font-family: "Noto Serif JP", serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.haiku-card__english {
+    color: rgb(248 250 252 / 82%);
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0.3rem 0 0;
+}
+
+.haiku-card__image {
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 1.5rem rgb(15 23 42 / 35%);
+    height: clamp(10rem, 24vw, 16rem);
+    margin-top: 2rem;
+    object-fit: cover;
+    width: min(100%, 28rem);
+}
+
+@keyframes haiku-line-enter {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -98,7 +101,8 @@ internal sealed class Program
 
                 CommandOption trust = null;
                 trust = c.Option("-t|--trust",
-                    "Trust the certificate on the current platform. When combined with the --check option, validates that the certificate is trusted.",
+                    "When not combined with the --check option, trusts the certificate on the current platform, creating one if necessary.\n" +
+                    "                     When combined with the --check option, validates that there is a certificate and it is trusted.",
                     CommandOptionType.NoValue);
 
                 var verbose = c.Option("-v|--verbose",
@@ -109,21 +113,40 @@ internal sealed class Program
                     "Display warnings and errors only.",
                     CommandOptionType.NoValue);
 
+                var checkJsonOutput = c.Option("--check-trust-machine-readable",
+                    "Same as running --check --trust, but output the results in json.",
+                    CommandOptionType.NoValue);
+
                 c.HelpOption("-h|--help");
 
                 c.OnExecute(() =>
                 {
                     var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
 
+                    var listener = new ReporterEventListener(reporter);
                     if (verbose.HasValue())
                     {
-                        var listener = new ReporterEventListener(reporter);
                         listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Verbose);
+                    }
+                    else
+                    {
+                        listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Critical);
+                    }
+
+                    if (checkJsonOutput.HasValue())
+                    {
+                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || clean.HasValue() ||
+                           (!import.HasValue() && password.HasValue()) ||
+                           (import.HasValue() && !password.HasValue()))
+                        {
+                            reporter.Error(InvalidUsageErrorMessage);
+                            return CriticalError;
+                        }
                     }
 
                     if (clean.HasValue())
                     {
-                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() ||
+                        if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || checkJsonOutput.HasValue() ||
                            (!import.HasValue() && password.HasValue()) ||
                            (import.HasValue() && !password.HasValue()))
                         {
@@ -134,7 +157,7 @@ internal sealed class Program
 
                     if (check.HasValue())
                     {
-                        if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || format.HasValue() || import.HasValue())
+                        if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || format.HasValue() || import.HasValue() || checkJsonOutput.HasValue())
                         {
                             reporter.Error(InvalidUsageErrorMessage);
                             return CriticalError;
@@ -176,6 +199,11 @@ internal sealed class Program
                         }
 
                         return ImportCertificate(import, password, reporter);
+                    }
+
+                    if (checkJsonOutput.HasValue())
+                    {
+                        return CheckHttpsCertificateJsonOutput(reporter);
                     }
 
                     return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
@@ -334,6 +362,16 @@ internal sealed class Program
         });
     }
 
+    private static int CheckHttpsCertificateJsonOutput(IReporter reporter)
+    {
+        var availableCertificates = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
+
+        var certReports = availableCertificates.Select(CertificateReport.FromX509Certificate2).ToList();
+        reporter.Output(JsonSerializer.Serialize(certReports, DevCertsJsonSerializerContext.Default.ListCertificateReport));
+
+        return Success;
+    }
+
     private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
     {
         var now = DateTimeOffset.Now;
@@ -425,6 +463,10 @@ internal sealed class Program
             case EnsureCertificateResult.ErrorExportingTheCertificate:
                 reporter.Warn("There was an error exporting the HTTPS developer certificate to a file.");
                 return ErrorExportingTheCertificate;
+            case EnsureCertificateResult.ErrorExportingTheCertificateToNonExistentDirectory:
+                // A distinct warning is useful, but a distinct error code is probably not.
+                reporter.Warn("There was an error exporting the HTTPS developer certificate to a file. Please create the target directory before exporting. Choose permissions carefully when creating it.");
+                return ErrorExportingTheCertificate;
             case EnsureCertificateResult.PartiallyFailedToTrustTheCertificate:
                 // A distinct warning is useful, but a distinct error code is probably not.
                 reporter.Warn("There was an error trusting the HTTPS developer certificate. It will be trusted by some clients but not by others.");
@@ -446,4 +488,70 @@ internal sealed class Program
                 return CriticalError;
         }
     }
+}
+
+/// <summary>
+/// A Serializable friendly version of the cert report output
+/// </summary>
+internal sealed class CertificateReport
+{
+    public string Thumbprint { get; init; }
+    public string Subject { get; init; }
+    public List<string> X509SubjectAlternativeNameExtension { get; init; }
+    public int Version { get; init; }
+    public DateTime ValidityNotBefore { get; init; }
+    public DateTime ValidityNotAfter { get; init; }
+    public bool IsHttpsDevelopmentCertificate { get; init; }
+    public bool IsExportable { get; init; }
+    public string TrustLevel { get; init; }
+
+    public static CertificateReport FromX509Certificate2(X509Certificate2 cert)
+    {
+        var certificateManager = CertificateManager.Instance;
+        var status = certificateManager.CheckCertificateState(cert);
+        string statusString;
+        if (!status.Success)
+        {
+            statusString = "Invalid";
+        }
+        else
+        {
+            var trustStatus = certificateManager.GetTrustLevel(cert);
+            statusString = trustStatus.ToString();
+        }
+        return new CertificateReport
+        {
+            Thumbprint = cert.Thumbprint,
+            Subject = cert.Subject,
+            X509SubjectAlternativeNameExtension = GetSanExtension(cert),
+            Version = CertificateManager.GetCertificateVersion(cert),
+            ValidityNotBefore = cert.NotBefore,
+            ValidityNotAfter = cert.NotAfter,
+            IsHttpsDevelopmentCertificate = CertificateManager.IsHttpsDevelopmentCertificate(cert),
+            IsExportable = certificateManager.IsExportable(cert),
+            TrustLevel = statusString
+        };
+
+        static List<string> GetSanExtension(X509Certificate2 cert)
+        {
+            var dnsNames = new List<string>();
+            foreach (var extension in cert.Extensions)
+            {
+                if (extension is X509SubjectAlternativeNameExtension sanExtension)
+                {
+                    foreach (var dns in sanExtension.EnumerateDnsNames())
+                    {
+                        dnsNames.Add(dns);
+                    }
+                }
+            }
+            return dnsNames;
+        }
+    }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(List<CertificateReport>))]
+internal sealed partial class DevCertsJsonSerializerContext : JsonSerializerContext
+{
 }

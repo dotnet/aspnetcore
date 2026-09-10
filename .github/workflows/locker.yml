@@ -1,7 +1,7 @@
 name: Locker - Lock stale issues
 on:
   schedule:
-    - cron: '34 8 * * *' # Once per day, overnight PT, uncommon minute of hour
+    - cron: '34 12 * * 1-5' # Once per weekday, overnight PT, uncommon minute of hour
 
   workflow_dispatch:
     # Manual triggering through the GitHub UI, API, or CLI
@@ -23,7 +23,7 @@ jobs:
     if: ${{ github.repository_owner == 'dotnet' }}
     steps:
       - name: Checkout Actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: "microsoft/vscode-github-triage-actions"
           path: ./actions

@@ -36,6 +36,8 @@ abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserCl
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetUsersInRoleAsync(string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser!>!>!
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.IsInRoleAsync(TUser! user, string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.RemoveFromRoleAsync(TUser! user, string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.IdentityPasskeyData
+Microsoft.AspNetCore.Identity.IdentityPasskeyData.IdentityPasskeyData() -> void
 Microsoft.AspNetCore.Identity.IdentityRole
 Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole() -> void
 Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole(string! roleName) -> void
@@ -54,6 +56,8 @@ Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>
 Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.IdentityUserClaim() -> void
 Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>
 Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.IdentityUserLogin() -> void
+Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IdentityUserPasskey() -> void
 Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>
 Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.IdentityUserRole() -> void
 Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>
@@ -74,6 +78,26 @@ Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUse
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber! describer) -> void
 override Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ToString() -> string!
 override Microsoft.AspNetCore.Identity.IdentityUser<TKey>.ToString() -> string!
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.AttestationObject.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.AttestationObject.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.ClientDataJson.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.ClientDataJson.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.CreatedAt.get -> System.DateTimeOffset
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.CreatedAt.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsBackedUp.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsBackedUp.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsBackupEligible.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsBackupEligible.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsUserVerified.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.IsUserVerified.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Name.get -> string?
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Name.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.PublicKey.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.PublicKey.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.SignCount.get -> uint
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.SignCount.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Transports.get -> string![]?
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Transports.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ConcurrencyStamp.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ConcurrencyStamp.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRole<TKey>.Id.get -> TKey
@@ -140,6 +164,12 @@ virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.ProviderKey.get ->
 virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.ProviderKey.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.UserId.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.UserId.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Data.get -> Microsoft.AspNetCore.Identity.IdentityPasskeyData!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Data.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.RoleId.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.RoleId.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.UserId.get -> TKey

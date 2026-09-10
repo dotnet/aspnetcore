@@ -89,6 +89,7 @@ public static class IdentityServiceCollectionExtensions
 
         // Hosting doesn't add IHttpContextAccessor by default
         services.AddHttpContextAccessor();
+        services.AddMetrics();
         // Identity services
         services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
         services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
@@ -99,9 +100,11 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<IdentityErrorDescriber>();
         services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<IdentityPasskeyOptions>, PostConfigureIdentityPasskeyOptions>());
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
+        services.TryAddScoped<IPasskeyHandler<TUser>, PasskeyHandler<TUser>>();
         services.TryAddScoped<UserManager<TUser>>();
         services.TryAddScoped<SignInManager<TUser>>();
         services.TryAddScoped<RoleManager<TRole>>();
@@ -181,6 +184,21 @@ public static class IdentityServiceCollectionExtensions
         private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
+    }
+
+    private sealed class PostConfigureIdentityPasskeyOptions : IPostConfigureOptions<IdentityPasskeyOptions>
+    {
+        public PostConfigureIdentityPasskeyOptions(TimeProvider? timeProvider = null)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider? TimeProvider { get; }
+
+        public void PostConfigure(string? name, IdentityPasskeyOptions options)
         {
             options.TimeProvider ??= TimeProvider;
         }

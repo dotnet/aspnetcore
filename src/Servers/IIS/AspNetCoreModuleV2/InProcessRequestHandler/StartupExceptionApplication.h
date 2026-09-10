@@ -24,7 +24,7 @@ public:
         m_error(errorPageContent),
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
-        m_statusText(std::move(statusText)),
+        m_statusText(statusText),
         InProcessApplicationBase(pServer, pApplication)
     {
     }

@@ -21,6 +21,7 @@ public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
     protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         Factory = new MvcTestFixture<RazorBuildWebSite.StartupWithHostingStartup>(LoggerFactory)
             .WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.StartupWithHostingStartup>())
             .WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
@@ -34,6 +35,7 @@ public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
                 options.AdditionalReferencePaths.Add(path);
             }
         }
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         Client = Factory.CreateDefaultClient();
     }
 

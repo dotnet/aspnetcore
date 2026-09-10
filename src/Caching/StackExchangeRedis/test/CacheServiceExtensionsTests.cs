@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -120,5 +123,33 @@ public class CacheServiceExtensionsTests
         Assert.IsAssignableFrom<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
 
         loggerFactory.Verify();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddStackExchangeRedisCache_HybridCacheDetected(bool hybridCacheActive)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var hybridCacheResolved = false;
+
+        services.AddLogging();
+
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
+        if (hybridCacheActive)
+        {
+            services.TryAddSingleton<HybridCache>(_ =>
+            {
+                hybridCacheResolved = true;
+                throw new InvalidOperationException("HybridCache should not be resolved.");
+            });
+        }
+
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsAssignableFrom<RedisCache>(provider.GetRequiredService<IDistributedCache>());
+        Assert.Equal(hybridCacheActive, cache.IsHybridCacheActive());
+        Assert.False(hybridCacheResolved);
     }
 }

@@ -77,6 +77,8 @@ public class KestrelConfigurationLoader
     private CertificateConfig? DefaultCertificateConfig { get; set; }
     internal X509Certificate2? DefaultCertificate { get; set; }
 
+    internal X509Certificate2Collection? DefaultCertificateChain { get; set; }
+
     /// <summary>
     /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
     /// </summary>
@@ -345,12 +347,14 @@ public class KestrelConfigurationLoader
 
         DefaultCertificateConfig = null;
         DefaultCertificate = null;
+        DefaultCertificateChain = null;
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
         if (_httpsConfigurationService.IsInitialized && _httpsConfigurationService.LoadDefaultCertificate(ConfigurationReader) is CertificateAndConfig certPair)
         {
             DefaultCertificate = certPair.Certificate;
+            DefaultCertificateChain = certPair.CertificateChain;
             DefaultCertificateConfig = certPair.CertificateConfig;
         }
 

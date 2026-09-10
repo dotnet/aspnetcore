@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.Http" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

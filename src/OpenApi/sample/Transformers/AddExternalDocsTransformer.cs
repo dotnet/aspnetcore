@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
 
 namespace Sample.Transformers;
 
@@ -29,7 +28,7 @@ public sealed class AddExternalDocsTransformer(IConfiguration configuration) : I
     {
         if (Uri.TryCreate(configuration["DocumentationBaseUrl"], UriKind.Absolute, out var baseUri))
         {
-            var url = new Uri(baseUri, $"/api/docs/schemas/{Uri.EscapeDataString(schema.Type)}");
+            var url = new Uri(baseUri, $"/api/docs/schemas/{Uri.EscapeDataString(schema.Type.ToString()!.ToLowerInvariant())}");
 
             schema.ExternalDocs = new OpenApiExternalDocs
             {

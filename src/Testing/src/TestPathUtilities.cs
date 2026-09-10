@@ -22,7 +22,7 @@ public class TestPathUtilities
                 return projectFileInfo.DirectoryName;
             }
 
-            projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "AspNetCore.sln"));
+            projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "AspNetCore.slnx"));
             if (projectFileInfo.Exists)
             {
                 // Have reached the solution root. Work down through the src/ folder to find the solution filter.

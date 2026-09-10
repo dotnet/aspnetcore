@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
-using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -40,6 +38,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private bool _disposed;
     private bool _started;
     private WebAssemblyRenderer? _renderer;
+    private HostedServiceExecutor? _hostedServiceExecutor;
 
     internal WebAssemblyHost(
         WebAssemblyHostBuilder builder,
@@ -80,7 +79,20 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _disposed = true;
 
-        if (_renderer != null)
+        // Stop hosted services first
+        if (_hostedServiceExecutor is not null)
+        {
+            try
+            {
+                await _hostedServiceExecutor.StopAsync(CancellationToken.None);
+            }
+            catch
+            {
+                // Ignore errors when stopping hosted services during disposal
+            }
+        }
+
+        if (_renderer is not null)
         {
             await _renderer.DisposeAsync();
         }
@@ -123,27 +135,31 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
+        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
+        var store = !string.IsNullOrEmpty(_persistedState) ?
+            new PrerenderComponentApplicationStore(_persistedState) :
+            new PrerenderComponentApplicationStore();
+
+        manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
+        await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
         cultureProvider ??= WebAssemblyCultureProvider.Instance!;
         cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+        {
+            cultureStateProvider.ApplyStoredCulture();
+        }
 
         // Application developers might have configured the culture based on some ambient state
         // such as local storage, url etc as part of their Program.Main(Async).
         // This is the earliest opportunity to fetch satellite assemblies for this selection.
         await cultureProvider.LoadCurrentCultureResourcesAsync();
 
-        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
-        var store = !string.IsNullOrEmpty(_persistedState) ?
-            new PrerenderComponentApplicationStore(_persistedState) :
-            new PrerenderComponentApplicationStore();
-
-        await manager.RestoreStateAsync(store);
-
-        RestoreAntiforgeryToken();
-
-        if (MetadataUpdater.IsSupported)
-        {
-            await WebAssemblyHotReload.InitializeAsync();
-        }
+        // Start hosted services after culture is fully applied,
+        // so services that depend on culture see the correct values.
+        _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
+        await _hostedServiceExecutor.StartAsync(cancellationToken);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
@@ -152,7 +168,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
             var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
             var collection = await collectionProvider.GetResourceCollection();
-            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop);
+            var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
+            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
@@ -232,12 +249,5 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
 
         renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
-    }
-
-    private void RestoreAntiforgeryToken()
-    {
-        // The act of instantiating the DefaultAntiforgeryStateProvider will automatically
-        // retrieve the antiforgery token from the persistent state
-        _scope.ServiceProvider.GetRequiredService<AntiforgeryStateProvider>();
     }
 }

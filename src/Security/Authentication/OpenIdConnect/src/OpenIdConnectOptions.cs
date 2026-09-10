@@ -285,7 +285,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// Gets or sets the parameters used to validate identity tokens.
     /// </summary>
     /// <remarks>Contains the types and definitions required for validating a token.</remarks>
-    public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters();
+    public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters(); // codeql[SM04554] - Valid issuer is populated at runtime by the handler from the authority's discovery metadata, not statically here. codeql[SM04555] - Issuer validation runs in the handler; ValidateIssuer defaults to true in Microsoft.IdentityModel.
 
     /// <summary>
     /// Indicates that the authentication session lifetime (e.g. cookies) should match that of the authentication token.
@@ -410,7 +410,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public bool UseSecurityTokenValidator { get; set; }
 
     /// <summary>
-    /// Controls wether the handler should push authorization parameters on the
+    /// Controls whether the handler should push authorization parameters on the
     /// backchannel before redirecting to the identity provider. See <see
     /// href="https://tools.ietf.org/html/9126"/>.
     /// </summary>

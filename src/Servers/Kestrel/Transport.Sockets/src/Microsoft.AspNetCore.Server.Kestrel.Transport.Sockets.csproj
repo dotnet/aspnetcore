@@ -9,21 +9,25 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <!-- SocketTransportFactory.CanBind references the [Experimental] DirectTlsEndpoint (defined in
+         Kestrel.Core) to explicitly refuse it, so DirectTls endpoints can never fall through to the plaintext
+         socket transport regardless of transport registration order. Suppress the experimental-usage warning. -->
+    <NoWarn>$(NoWarn);ASPNETCORE_DIRECTTLS_001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\DefaultSimpleMemoryPoolFactory.cs" Link="Internal\DefaultSimpleMemoryPoolFactory.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,5 +48,6 @@
     <InternalsVisibleTo Include="IIS.Http.FunctionalTests" />
     <InternalsVisibleTo Include="IIS.LongTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+    <InternalsVisibleTo Include="Interop.FunctionalTests" />
   </ItemGroup>
 </Project>

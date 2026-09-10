@@ -12,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -215,6 +216,35 @@ app.MapGet("/", getHeaderWithDefault);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitHeaderParam_SharedDelegateSignature_PreservesBindingName()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/pull/67591#discussion_r3521138229.
+        // Two endpoints that share the same delegate signature (string) => string but differ only in
+        // their [FromHeader(Name = ...)] binding name must each get their own interceptor. Otherwise
+        // the second endpoint silently reuses the first endpoint's header name.
+        var source = """
+app.MapGet("/a", ([FromHeader(Name = "X-Custom-A")] string value) => value);
+app.MapGet("/b", ([FromHeader(Name = "X-Custom-B")] string value) => value);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        var httpContextA = CreateHttpContext();
+        httpContextA.Request.Headers["X-Custom-A"] = "from-a";
+        httpContextA.Request.Headers["X-Custom-B"] = "from-b";
+        await endpoints[0].RequestDelegate(httpContextA);
+        await VerifyResponseBodyAsync(httpContextA, "from-a");
+
+        var httpContextB = CreateHttpContext();
+        httpContextB.Request.Headers["X-Custom-A"] = "from-a";
+        httpContextB.Request.Headers["X-Custom-B"] = "from-b";
+        await endpoints[1].RequestDelegate(httpContextB);
+        await VerifyResponseBodyAsync(httpContextB, "from-b");
     }
 
     public static object[][] MapAction_ExplicitServiceParam_SimpleReturn_Data
@@ -564,6 +594,21 @@ app.MapFallback((HttpContext httpContext, int id) =>
     }
 
     [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback_UsesProvidedPattern()
+    {
+        var source = """
+app.MapFallback("{*path}", (HttpContext context) => "this is {*path}");
+app.MapFallback("{*path:nonfile}", (HttpContext context) => "this is {*path:nonfile}");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        Assert.Equal(2, endpoints.Length);
+        Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path}");
+        Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path:nonfile}");
+    }
+
+    [Fact]
     public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
     {
         var source = """
@@ -598,5 +643,31 @@ app.MapPost("/", (HttpContext context,
         Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
         Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
+    }
+
+    // See: https://github.com/dotnet/aspnetcore/issues/58633
+    [Fact]
+    public async Task RequestDelegateGeneratesCompilableCodeForServiceInNamespaceHttp()
+    {
+        var source = """
+app.MapGet("/hello", ([FromServices] ExampleService e) => e.Act("To be or not to be…"));
+""";
+        var (results, compilation) = await RunGeneratorAsync(source);
+
+        // Ironically, the same error this is testing would bite us here, so we must globally qualify the type name.
+        var serviceProvider = CreateServiceProvider((serviceCollection) => serviceCollection.AddSingleton<global::Http.ExampleService>());
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            var p = Assert.Single(endpointModel.Parameters);
+            Assert.Equal(EndpointParameterSource.Service, p.Source);
+            Assert.Equal("e", p.SymbolName);
+        });
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "To be or not to be…");
     }
 }

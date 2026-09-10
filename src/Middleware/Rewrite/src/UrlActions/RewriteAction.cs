@@ -58,6 +58,12 @@ internal sealed class RewriteAction : UrlAction
             pattern = Uri.EscapeDataString(pattern);
         }
 
+        // Defense in depth: this rule does not emit a Location header itself, but the rewritten value is
+        // assigned to Request.Path below and a downstream component (or a later rule) may issue a redirect
+        // from it. PathString does not reject a leading '//' or '/\', so neutralize the scheme-relative
+        // shape here rather than auditing every downstream consumer.
+        pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
+
         // TODO PERF, substrings, object creation, etc.
         if (pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
         {

@@ -183,6 +183,8 @@ public class StartLineTests : IDisposable
     [InlineData("/?q=123&w=xyz", "/", "?q=123&w=xyz")]
     [InlineData("/path?q=123&w=xyz", "/path", "?q=123&w=xyz")]
     [InlineData("/path%20with%20space?q=abc%20123", "/path with space", "?q=abc%20123")]
+    [InlineData("/a%2Fb", "/a%2Fb", "")]
+    [InlineData("/a%2Fb?q=1", "/a%2Fb", "?q=1")]
     public void OriginForms(string rawTarget, string path, string query)
     {
         Http1Connection.Reset();
@@ -277,6 +279,8 @@ public class StartLineTests : IDisposable
     [InlineData("http://localhost/?q=123&w=xyz", "/", "?q=123&w=xyz")]
     [InlineData("http://localhost/path?q=123&w=xyz", "/path", "?q=123&w=xyz")]
     [InlineData("http://localhost/path%20with%20space?q=abc%20123", "/path with space", "?q=abc%20123")]
+    [InlineData("http://localhost/a%2Fb", "/a%2Fb", "")]
+    [InlineData("http://localhost/a%2Fb?q=1", "/a%2Fb", "?q=1")]
     public void AbsoluteForms(string rawTarget, string path, string query)
     {
         Http1Connection.Reset();
@@ -515,7 +519,7 @@ public class StartLineTests : IDisposable
 
     public StartLineTests()
     {
-        MemoryPool = PinnedBlockMemoryPoolFactory.Create();
+        MemoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(MemoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
         Transport = pair.Transport;

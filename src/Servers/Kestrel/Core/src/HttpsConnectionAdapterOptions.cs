@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -95,6 +96,19 @@ public class HttpsConnectionAdapterOptions
     /// This is called after all of the other settings have already been applied.
     /// </summary>
     public Action<ConnectionContext, SslServerAuthenticationOptions>? OnAuthenticate { get; set; }
+
+    /// <summary>
+    /// A callback to be invoked to get the TLS client hello bytes. The client hello bytes are still wrapped in the record layer fragment.
+    /// Null by default.
+    /// If you want to store the bytes from the <see cref="ReadOnlySequence{T}"/>,
+    /// copy them into a buffer that you control rather than keeping a reference to the <see cref="ReadOnlySequence{T}"/> or <see cref="ReadOnlyMemory{T}"/> instances.
+    /// </summary>
+    /// <remarks>
+    /// If a client hello spans multiple record fragments then this callback only gets the first fragment.
+    /// Use <see cref="Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseTlsClientHelloListener"/> instead.
+    /// </remarks>
+    [Obsolete("Use ListenOptions.UseTlsClientHelloListener() instead.", error: false)]
+    public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>
     /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
@@ -22,16 +23,19 @@ public static class Program
             .AddEnvironmentVariables(prefix: "ASPNETCORE_")
             .Build();
 
-        var builder = new WebHostBuilder()
-            .UseServer(new NoopServer())
-            .UseConfiguration(config)
-            .SuppressStatusMessages(true)
-            .ConfigureLogging((_, factory) =>
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                factory.AddConsole();
-                factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
-            })
-            .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
+                webHostBuilder.UseServer(new NoopServer())
+                    .UseConfiguration(config)
+                    .SuppressStatusMessages(true)
+                    .ConfigureLogging((_, factory) =>
+                    {
+                        factory.AddConsole();
+                        factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
+                    })
+                    .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
+            });
 
         if (config["STARTMECHANIC"] == "Run")
         {

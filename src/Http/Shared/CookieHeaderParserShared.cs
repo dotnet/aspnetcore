@@ -89,6 +89,17 @@ internal static class CookieHeaderParserShared
 
         if (!TryGetCookieLength(value, ref current, out parsedName, out parsedValue))
         {
+            var separatorIndex = value.IndexOf(';', current);
+            if (separatorIndex > 0)
+            {
+                // Skip the invalid values and keep trying.
+                index = separatorIndex;
+            }
+            else
+            {
+                // No more separators, so we're done.
+                index = value.Length;
+            }
             return false;
         }
 
@@ -97,6 +108,17 @@ internal static class CookieHeaderParserShared
         // If we support multiple values and we've not reached the end of the string, then we must have a separator.
         if ((separatorFound && !supportsMultipleValues) || (!separatorFound && (current < value.Length)))
         {
+            var separatorIndex = value.IndexOf(';', current);
+            if (separatorIndex > 0)
+            {
+                // Skip the invalid values and keep trying.
+                index = separatorIndex;
+            }
+            else
+            {
+                // No more separators, so we're done.
+                index = value.Length;
+            }
             return false;
         }
 
@@ -112,7 +134,7 @@ internal static class CookieHeaderParserShared
         separatorFound = false;
         var current = startIndex + HttpRuleParser.GetWhitespaceLength(input, startIndex);
 
-        if ((current == input.Length) || (input[current] != ',' && input[current] != ';'))
+        if (current == input.Length || input[current] != ';')
         {
             return current;
         }
@@ -125,8 +147,8 @@ internal static class CookieHeaderParserShared
 
         if (skipEmptyValues)
         {
-            // Most headers only split on ',', but cookies primarily split on ';'
-            while ((current < input.Length) && ((input[current] == ',') || (input[current] == ';')))
+            // Cookies are split on ';'
+            while (current < input.Length && input[current] == ';')
             {
                 current++; // skip delimiter.
                 current = current + HttpRuleParser.GetWhitespaceLength(input, current);
@@ -136,6 +158,18 @@ internal static class CookieHeaderParserShared
         return current;
     }
 
+    /*
+     * https://www.rfc-editor.org/rfc/rfc6265#section-4.1.1
+     * cookie-pair       = cookie-name "=" cookie-value
+     * cookie-name       = token
+     * token          = 1*<any CHAR except CTLs or separators>
+       separators     = "(" | ")" | "<" | ">" | "@"
+                      | "," | ";" | ":" | "\" | <">
+                      | "/" | "[" | "]" | "?" | "="
+                      | "{" | "}" | SP | HT
+       CTL            = <any US-ASCII control character
+                        (octets 0 - 31) and DEL (127)>
+     */
     // name=value; name="value"
     internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
     {

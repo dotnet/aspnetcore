@@ -117,7 +117,7 @@ internal sealed class SniOptionsSelector
     {
         SniOptions? sniOptions = null;
 
-        if (!string.IsNullOrEmpty(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions))
+        if (!string.IsNullOrEmpty(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions) && IsValidSniServerName(serverName))
         {
             foreach (var (suffix, options) in _wildcardPrefixOptions)
             {
@@ -176,6 +176,13 @@ internal sealed class SniOptionsSelector
         return (sslOptions, sniOptions.ClientCertificateMode);
     }
 
+    // RFC 6066 §3 requires the SNI server_name to be a syntactically valid DNS hostname and
+    // forbids a trailing dot. Uri.CheckHostName already rejects empty labels, leading dots,
+    // non-LDH characters, embedded nulls, and IP literals, but it accepts a trailing dot as
+    // the DNS root, so that needs an explicit check. Callers check for null/empty first.
+    private static bool IsValidSniServerName(string serverName)
+        => !serverName.EndsWith('.') && Uri.CheckHostName(serverName) == UriHostNameType.Dns;
+
     public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(TlsHandshakeCallbackContext callbackContext)
     {
         var sniOptionsSelector = (SniOptionsSelector)callbackContext.State!;
@@ -200,6 +207,10 @@ internal sealed class SniOptionsSelector
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
             CertificateChainPolicy = sslOptions.CertificateChainPolicy,
             AllowTlsResume = sslOptions.AllowTlsResume,
+#pragma warning disable CA1416 // Ignore SupportedOSPlatform checks, we're just copying the value
+            AllowRsaPssPadding = sslOptions.AllowRsaPssPadding,
+            AllowRsaPkcs1Padding = sslOptions.AllowRsaPkcs1Padding,
+#pragma warning restore CA1416
         };
 
     private sealed class SniOptions

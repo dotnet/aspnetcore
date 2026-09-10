@@ -41,7 +41,7 @@ FILE_UTILITY::ConvertPathToFullPath(
 {
     HRESULT hr = S_OK;
     STRU strFileFullPath;
-    LPWSTR pszFullPath = NULL;
+    LPWSTR pszFullPath = nullptr;
 
     // if relative path, prefix with root path and then convert to absolute path.
     if ( PathIsRelative(pszPath) )
@@ -72,7 +72,7 @@ FILE_UTILITY::ConvertPathToFullPath(
 
     if(_wfullpath( pszFullPath,
                    strFileFullPath.QueryStr(),
-                   strFileFullPath.QueryCCH() + 1 ) == NULL )
+                   strFileFullPath.QueryCCH() + 1 ) == nullptr )
     {
         hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
         goto Finished;
@@ -87,10 +87,10 @@ FILE_UTILITY::ConvertPathToFullPath(
 
 Finished:
 
-    if ( pszFullPath != NULL )
+    if ( pszFullPath != nullptr )
     {
         delete[] pszFullPath;
-        pszFullPath = NULL;
+        pszFullPath = nullptr;
     }
 
     return hr;

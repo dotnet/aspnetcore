@@ -120,32 +120,21 @@ internal sealed partial class RequestStream : Stream
 
         if (_dataChunkIndex == -1 && dataRead == 0)
         {
-            uint statusCode = 0;
-            uint extraDataRead = 0;
-
             // the http.sys team recommends that we limit the size to 128kb
             if (size > MaxReadSize)
             {
                 size = MaxReadSize;
             }
 
-            fixed (byte* pBuffer = buffer)
-            {
-                // issue unmanaged blocking call
+            uint flags = 0;
+            var statusCode = PInvoke.HttpReceiveRequestEntityBody(
+                RequestQueueHandle,
+                RequestId,
+                flags,
+                buffer.AsSpan(offset, size),
+                out var extraDataRead);
 
-                uint flags = 0;
-
-                statusCode = PInvoke.HttpReceiveRequestEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    (pBuffer + offset),
-                    (uint)size,
-                    &extraDataRead,
-                    default);
-
-                dataRead += extraDataRead;
-            }
+            dataRead += extraDataRead;
 
             // Zero-byte reads
             if (statusCode == ErrorCodes.ERROR_MORE_DATA && size == 0)
@@ -181,10 +170,10 @@ internal sealed partial class RequestStream : Stream
     }
 
     public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
 
     public override int EndRead(IAsyncResult asyncResult)
-        => TaskToApm.End<int>(asyncResult);
+        => TaskToAsyncResult.End<int>(asyncResult);
 
     public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
     {

@@ -758,7 +758,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    public static TheoryData HiddenFor_UsesPropertyValueIfModelStateDoesNotContainValueData
+    public static TheoryData<Expression<Func<HiddenModel, string>>, string> HiddenFor_UsesPropertyValueIfModelStateDoesNotContainValueData
     {
         get
         {
@@ -819,7 +819,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    public static TheoryData HiddenFor_UsesModelStateValueForComplexExpressionsData
+    public static TheoryData<Expression<Func<HiddenModel, string>>, string> HiddenFor_UsesModelStateValueForComplexExpressionsData
     {
         get
         {

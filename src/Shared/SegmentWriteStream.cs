@@ -178,8 +178,8 @@ internal sealed class SegmentWriteStream : Stream
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
     public override void EndWrite(IAsyncResult asyncResult)
-        => TaskToApm.End(asyncResult);
+        => TaskToAsyncResult.End(asyncResult);
 }

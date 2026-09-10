@@ -66,7 +66,7 @@ Return Value:
     // Find the 3rd slash corresponding to the url
     //
     LPCWSTR pszSlash = wcschr(pszDestinationUrl, L'/');
-    if (pszSlash == NULL)
+    if (pszSlash == nullptr)
     {
         RETURN_IF_FAILED(pstrUrl->Copy(L"/", 1));
         RETURN_IF_FAILED(pstrDestination->Copy(pszDestinationUrl));
@@ -81,14 +81,6 @@ Return Value:
     return S_OK;
 }
 
-// Change a hexadecimal digit to its numerical equivalent
-#define TOHEX( ch )                                     \
-    ((ch) > L'9' ?                                      \
-        (ch) >= L'a' ?                                  \
-            (ch) - L'a' + 10 :                          \
-            (ch) - L'A' + 10                            \
-        : (ch) - L'0')
-
 HRESULT
 URL_UTILITY::EscapeAbsPath(
     IHttpRequest * pRequest,
@@ -96,8 +88,8 @@ URL_UTILITY::EscapeAbsPath(
 )
 {
     STRU    strAbsPath;
-    LPCWSTR pszAbsPath = NULL;
-    LPCWSTR pszFindStr = NULL;
+    LPCWSTR pszAbsPath = nullptr;
+    LPCWSTR pszFindStr = nullptr;
 
     RETURN_IF_FAILED(strAbsPath.Copy( pRequest->GetRawHttpRequest()->CookedUrl.pAbsPath,
         pRequest->GetRawHttpRequest()->CookedUrl.AbsPathLength / sizeof(WCHAR) ));
@@ -105,7 +97,7 @@ URL_UTILITY::EscapeAbsPath(
     pszAbsPath = strAbsPath.QueryStr();
     pszFindStr = wcschr(pszAbsPath, L'?');
 
-    while(pszFindStr != NULL)
+    while(pszFindStr != nullptr)
     {
         RETURN_IF_FAILED(strEscapedUrl->Append( pszAbsPath, pszFindStr - pszAbsPath));
         RETURN_IF_FAILED(strEscapedUrl->Append(L"%3F"));

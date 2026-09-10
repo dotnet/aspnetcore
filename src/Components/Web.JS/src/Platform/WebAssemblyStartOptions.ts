@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { DotnetHostBuilder, AssetBehaviors } from 'dotnet-runtime';
+import { DotnetHostBuilder, AssetBehaviors } from '@microsoft/dotnet-runtime';
 import { IBlazor } from '../GlobalExports';
 
 export interface WebAssemblyStartOptions {

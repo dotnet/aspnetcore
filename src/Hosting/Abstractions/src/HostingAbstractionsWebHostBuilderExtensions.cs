@@ -169,10 +169,12 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to start.</param>
     /// <param name="urls">The urls the hosted application will listen on.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     public static IWebHost Start(this IWebHostBuilder hostBuilder, [StringSyntax(StringSyntaxAttribute.Uri)] params string[] urls)
     {
         var host = hostBuilder.UseUrls(urls).Build();
         host.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
         return host;
     }
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
 }

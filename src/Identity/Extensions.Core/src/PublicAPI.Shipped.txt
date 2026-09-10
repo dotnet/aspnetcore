@@ -137,6 +137,12 @@ Microsoft.AspNetCore.Identity.IUserLoginStore<TUser>.AddLoginAsync(TUser! user, 
 Microsoft.AspNetCore.Identity.IUserLoginStore<TUser>.FindByLoginAsync(string! loginProvider, string! providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser?>!
 Microsoft.AspNetCore.Identity.IUserLoginStore<TUser>.GetLoginsAsync(TUser! user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo!>!>!
 Microsoft.AspNetCore.Identity.IUserLoginStore<TUser>.RemoveLoginAsync(TUser! user, string! loginProvider, string! providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.AddOrUpdatePasskeyAsync(TUser! user, Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.FindByPasskeyIdAsync(byte[]! credentialId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser?>!
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.FindPasskeyAsync(TUser! user, byte[]! credentialId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.UserPasskeyInfo?>!
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.GetPasskeysAsync(TUser! user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserPasskeyInfo!>!>!
+Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Identity.IUserPasswordStore<TUser>
 Microsoft.AspNetCore.Identity.IUserPasswordStore<TUser>.GetPasswordHashAsync(TUser! user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string?>!
 Microsoft.AspNetCore.Identity.IUserPasswordStore<TUser>.HasPasswordAsync(TUser! user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
@@ -304,7 +310,7 @@ Microsoft.AspNetCore.Identity.UserLoginInfo.ProviderDisplayName.get -> string?
 Microsoft.AspNetCore.Identity.UserLoginInfo.ProviderDisplayName.set -> void
 Microsoft.AspNetCore.Identity.UserLoginInfo.ProviderKey.get -> string!
 Microsoft.AspNetCore.Identity.UserLoginInfo.ProviderKey.set -> void
-Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? displayName) -> void
+Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? providerDisplayName) -> void
 Microsoft.AspNetCore.Identity.UserManager<TUser>
 Microsoft.AspNetCore.Identity.UserManager<TUser>.Dispose() -> void
 Microsoft.AspNetCore.Identity.UserManager<TUser>.ErrorDescriber.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber!
@@ -316,6 +322,7 @@ Microsoft.AspNetCore.Identity.UserManager<TUser>.Options.set -> void
 Microsoft.AspNetCore.Identity.UserManager<TUser>.PasswordHasher.get -> Microsoft.AspNetCore.Identity.IPasswordHasher<TUser!>!
 Microsoft.AspNetCore.Identity.UserManager<TUser>.PasswordHasher.set -> void
 Microsoft.AspNetCore.Identity.UserManager<TUser>.PasswordValidators.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser!>!>!
+Microsoft.AspNetCore.Identity.UserManager<TUser>.ServiceProvider.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Identity.UserManager<TUser>.Store.get -> Microsoft.AspNetCore.Identity.IUserStore<TUser!>!
 Microsoft.AspNetCore.Identity.UserManager<TUser>.Store.set -> void
 Microsoft.AspNetCore.Identity.UserManager<TUser>.ThrowIfDisposed() -> void
@@ -329,6 +336,23 @@ Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.set -> void
 Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.get -> bool
 Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.set -> void
 Microsoft.AspNetCore.Identity.UserOptions.UserOptions() -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.AttestationObject.get -> byte[]!
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.ClientDataJson.get -> byte[]!
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.CreatedAt.get -> System.DateTimeOffset
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.CredentialId.get -> byte[]!
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackupEligible.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.Name.get -> string?
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.Name.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.PublicKey.get -> byte[]!
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.SignCount.get -> uint
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.SignCount.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.Transports.get -> string![]?
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.UserPasskeyInfo(byte[]! credentialId, byte[]! publicKey, System.DateTimeOffset createdAt, uint signCount, string![]? transports, bool isUserVerified, bool isBackupEligible, bool isBackedUp, byte[]! attestationObject, byte[]! clientDataJson) -> void
 Microsoft.AspNetCore.Identity.UserValidator<TUser>
 Microsoft.AspNetCore.Identity.UserValidator<TUser>.Describer.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber!
 Microsoft.AspNetCore.Identity.UserValidator<TUser>.UserValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber? errors = null) -> void
@@ -348,11 +372,12 @@ static Microsoft.AspNetCore.Identity.SignInResult.NotAllowed.get -> Microsoft.As
 static Microsoft.AspNetCore.Identity.SignInResult.Success.get -> Microsoft.AspNetCore.Identity.SignInResult!
 static Microsoft.AspNetCore.Identity.SignInResult.TwoFactorRequired.get -> Microsoft.AspNetCore.Identity.SignInResult!
 static Microsoft.AspNetCore.Identity.UserManager<TUser>.GetChangeEmailTokenPurpose(string! newEmail) -> string!
-static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! setupAction) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Default -> System.Version!
 static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version1 -> System.Version!
 static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version2 -> System.Version!
+static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version3 -> System.Version!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultAuthenticatorProvider -> string!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultEmailProvider -> string!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultPhoneProvider -> string!
@@ -441,6 +466,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AccessFailedAsync(TUser
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddClaimAsync(TUser! user, System.Security.Claims.Claim! claim) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddClaimsAsync(TUser! user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim!>! claims) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddLoginAsync(TUser! user, Microsoft.AspNetCore.Identity.UserLoginInfo! login) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddOrUpdatePasskeyAsync(TUser! user, Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddPasswordAsync(TUser! user, string! password) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddToRoleAsync(TUser! user, string! role) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.AddToRolesAsync(TUser! user, System.Collections.Generic.IEnumerable<string!>! roles) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
@@ -451,8 +477,8 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.ChangePhoneNumberAsync(
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CheckPasswordAsync(TUser! user, string! password) -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.ConfirmEmailAsync(TUser! user, string! token) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CountRecoveryCodesAsync(TUser! user) -> System.Threading.Tasks.Task<int>!
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CreateAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CreateAsync(TUser! user, string! password) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CreateAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CreateSecurityTokenAsync(TUser! user) -> System.Threading.Tasks.Task<byte[]!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CreateTwoFactorRecoveryCode() -> string!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.DeleteAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
@@ -461,6 +487,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.FindByEmailAsync(string
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.FindByIdAsync(string! userId) -> System.Threading.Tasks.Task<TUser?>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.FindByLoginAsync(string! loginProvider, string! providerKey) -> System.Threading.Tasks.Task<TUser?>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.FindByNameAsync(string! userName) -> System.Threading.Tasks.Task<TUser?>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.FindByPasskeyIdAsync(byte[]! credentialId) -> System.Threading.Tasks.Task<TUser?>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GenerateChangeEmailTokenAsync(TUser! user, string! newEmail) -> System.Threading.Tasks.Task<string!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GenerateChangePhoneNumberTokenAsync(TUser! user, string! phoneNumber) -> System.Threading.Tasks.Task<string!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GenerateConcurrencyStampAsync(TUser! user) -> System.Threading.Tasks.Task<string!>!
@@ -478,6 +505,8 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetEmailAsync(TUser! us
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetLockoutEnabledAsync(TUser! user) -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetLockoutEndDateAsync(TUser! user) -> System.Threading.Tasks.Task<System.DateTimeOffset?>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetLoginsAsync(TUser! user) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo!>!>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeyAsync(TUser! user, byte[]! credentialId) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.UserPasskeyInfo?>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeysAsync(TUser! user) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserPasskeyInfo!>!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPhoneNumberAsync(TUser! user) -> System.Threading.Tasks.Task<string?>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetRolesAsync(TUser! user) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<string!>!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetSecurityStampAsync(TUser! user) -> System.Threading.Tasks.Task<string!>!
@@ -507,6 +536,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemoveClaimsAsync(TUser
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemoveFromRoleAsync(TUser! user, string! role) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemoveFromRolesAsync(TUser! user, System.Collections.Generic.IEnumerable<string!>! roles) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemoveLoginAsync(TUser! user, string! loginProvider, string! providerKey) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemovePasswordAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.ReplaceClaimAsync(TUser! user, System.Security.Claims.Claim! claim, System.Security.Claims.Claim! newClaim) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.ResetAccessFailedCountAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
@@ -526,6 +556,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserClaim.get -
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserEmail.get -> bool
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLockout.get -> bool
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLogin.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPasskey.get -> bool
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPassword.get -> bool
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPhoneNumber.get -> bool
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserRole.get -> bool

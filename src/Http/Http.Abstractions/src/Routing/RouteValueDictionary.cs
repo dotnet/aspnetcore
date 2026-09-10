@@ -122,7 +122,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
     /// property names are keys, and property values are the values, and copied into the dictionary.
     /// Only public instance non-index properties are considered.
     /// </remarks>
-    [RequiresUnreferencedCode("This constructor may perform reflection on the specificed value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")]
+    [RequiresUnreferencedCode("This constructor may perform reflection on the specified value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")]
     public RouteValueDictionary(object? values)
     {
         if (values is RouteValueDictionary dictionary)
@@ -208,7 +208,6 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
-#endif
 
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
@@ -222,20 +221,8 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
     }
 
     [MemberNotNull(nameof(_arrayStorage))]
-    private void Initialize(IEnumerable<KeyValuePair<string, object?>> keyValueEnumerable)
-    {
-        _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-
-        foreach (var kvp in keyValueEnumerable)
-        {
-            Add(kvp.Key, kvp.Value);
-        }
-    }
-
-    [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(RouteValueDictionary dictionary)
     {
-#if !COMPONENTS
         if (dictionary._propertyStorage != null)
         {
             // PropertyStorage is immutable so we can just copy it.
@@ -244,7 +231,6 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
             return;
         }
-#endif
 
         var count = dictionary._count;
         if (count > 0)
@@ -258,6 +244,18 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
         else
         {
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+        }
+    }
+#endif
+
+    [MemberNotNull(nameof(_arrayStorage))]
+    private void Initialize(IEnumerable<KeyValuePair<string, object?>> keyValueEnumerable)
+    {
+        _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+
+        foreach (var kvp in keyValueEnumerable)
+        {
+            Add(kvp.Key, kvp.Value);
         }
     }
 

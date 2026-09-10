@@ -58,10 +58,7 @@ public class DefaultHttpContextFactory : IHttpContextFactory
 
         httpContext.Initialize(featureCollection);
 
-        if (_httpContextAccessor != null)
-        {
-            _httpContextAccessor.HttpContext = httpContext;
-        }
+        _httpContextAccessor?.HttpContext = httpContext;
 
         httpContext.FormOptions = _formOptions;
         httpContext.ServiceScopeFactory = _serviceScopeFactory;
@@ -72,18 +69,12 @@ public class DefaultHttpContextFactory : IHttpContextFactory
     /// </summary>
     public void Dispose(HttpContext httpContext)
     {
-        if (_httpContextAccessor != null)
-        {
-            _httpContextAccessor.HttpContext = null;
-        }
+        _httpContextAccessor?.HttpContext = null;
     }
 
     internal void Dispose(DefaultHttpContext httpContext)
     {
-        if (_httpContextAccessor != null)
-        {
-            _httpContextAccessor.HttpContext = null;
-        }
+        _httpContextAccessor?.HttpContext = null;
 
         httpContext.Uninitialize();
     }

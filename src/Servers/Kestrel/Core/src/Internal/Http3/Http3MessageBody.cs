@@ -70,6 +70,7 @@ internal sealed class Http3MessageBody : MessageBody
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
     {
         await TryStartAsync();

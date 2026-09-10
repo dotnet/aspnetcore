@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Extensions.Hosting;
 
 namespace HtmlGenerationWebSite;
 
@@ -31,10 +32,14 @@ public class StartupWithCultureReplace
         Startup.Configure(app);
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseStartup<StartupWithCultureReplace>()
-            .UseKestrel()
-            .UseIISIntegration();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<StartupWithCultureReplace>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+            });
 }

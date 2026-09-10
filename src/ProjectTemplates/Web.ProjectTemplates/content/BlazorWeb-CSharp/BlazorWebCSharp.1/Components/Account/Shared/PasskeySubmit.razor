@@ -1,0 +1,29 @@
+﻿<button type="submit" name="__passkeySubmit" @attributes="AdditionalAttributes" formnovalidate>@ChildContent</button>
+<passkey-submit
+    operation="@Operation"
+    name="@Name"
+    email-name="@EmailName"
+    unknown-credential-signal-options="@UnknownCredentialSignalOptionsJson">
+</passkey-submit>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public PasskeyOperation Operation { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Name { get; set; } = default!;
+
+    [Parameter]
+    public string? EmailName { get; set; }
+
+    [Parameter]
+    public string? UnknownCredentialSignalOptionsJson { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

@@ -1,0 +1,22 @@
+﻿@if (_done)
+{
+    <p id="deferred-child-done">Deferred child done</p>
+}
+else
+{
+    <p id="deferred-child-waiting">Deferred child waiting...</p>
+}
+
+@code {
+    private bool _done;
+
+    [SupplyParameterFromSession]
+    public string? DeferredChildEmail { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(100);
+        DeferredChildEmail = "deferred-child-set-during-streaming";
+        _done = true;
+    }
+}

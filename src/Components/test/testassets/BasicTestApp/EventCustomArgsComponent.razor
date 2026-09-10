@@ -60,6 +60,15 @@
             onclick="Blazor.registerCustomEventType('custommouseover', { browserEventName: 'mouseover' })">
         Register custom mouseover event (which has no corresponding native listener)
     </button>
+
+    <button id="register-invalid-same-name-event"
+            onclick="try { Blazor.registerCustomEventType('scrolltop', { browserEventName: 'scrolltop' }); document.getElementById('same-name-event-error').textContent = 'No error thrown'; } catch (error) { document.getElementById('same-name-event-error').textContent = error.message; }">
+        Try to register event with same name as browserEventName (should throw error)
+    </button>
+</p>
+
+<p>
+    <span id="same-name-event-error"></span>
 </p>
 
 <p>

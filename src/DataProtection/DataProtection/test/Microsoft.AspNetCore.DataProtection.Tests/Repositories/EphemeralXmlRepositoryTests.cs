@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
 
@@ -99,7 +103,7 @@ public class EphemeralXmlRepositoryTests
             // Now that the repository has read the element from the registry, delete it out-of-band.
             repository.DeleteElements(deletableElements => deletableElements.First().DeletionOrder = 1);
 
-            Assert.Equal(1, deletableElements.Count);
+            Assert.Single(deletableElements);
 
             deletableElements.First().DeletionOrder = 1;
         }));

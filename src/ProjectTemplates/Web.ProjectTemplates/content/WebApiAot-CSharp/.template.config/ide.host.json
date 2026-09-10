@@ -9,6 +9,21 @@
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "DisableOpenAPI",
+      "name": {
+        "text": "Enable _OpenAPI support",
+        "overrideDefaultText": true
+      },
+      "description": {
+        "text": "Enables OpenAPI (Swagger) support",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": "true",
+      "persistenceScope": "templateGroup"
     }
   ]
 }

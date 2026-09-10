@@ -3,12 +3,13 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
 const elementsToClearOnRootComponentRender = new Set<LogicalElement>();
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
@@ -63,6 +64,7 @@ export class BrowserRenderer {
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     if (elementsToClearOnRootComponentRender.delete(element)) {
+      this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
       if (element instanceof Comment) {
@@ -107,6 +109,14 @@ export class BrowserRenderer {
 
   private attachComponentToElement(componentId: number, element: LogicalElement) {
     this.childComponentLocations[componentId] = element;
+  }
+
+  private detachEventHandlersFromElement(element: LogicalElement): void {
+    for (const childNode of depthFirstNodeTreeTraversal(element)) {
+      if (childNode instanceof Element) {
+        this.eventDelegator.removeListenersForElement(childNode as Element);
+      }
+    }
   }
 
   private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
@@ -257,9 +267,14 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
 
-    const newDomElementRaw = (tagName === 'svg' || isSvgElement(parent)) ?
-      document.createElementNS('http://www.w3.org/2000/svg', tagName) :
-      document.createElement(tagName);
+    let newDomElementRaw: Element;
+    if (tagName === 'svg' || isSvgElement(parent)) {
+      newDomElementRaw = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    } else if (tagName === 'math' || isMathMLElement(parent)) {
+      newDomElementRaw = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
+    } else {
+      newDomElementRaw = document.createElement(tagName);
+    }
     const newElement = toLogicalElement(newDomElementRaw);
 
     let inserted = false;
@@ -307,7 +322,7 @@ export class BrowserRenderer {
     const markupContainer = createAndInsertLogicalContainer(parent, childIndex);
 
     const markupContent = batch.frameReader.markupContent(markupFrame);
-    const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent));
+    const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent), isMathMLElement(parent));
     let logicalSiblingIndex = 0;
     while (parsedMarkup.firstChild) {
       insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
@@ -376,7 +391,7 @@ export class BrowserRenderer {
   }
 }
 
-function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
+export function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
   element[interactiveRootComponentPropname] = isInteractive;
 }
 
@@ -388,6 +403,10 @@ export function setShouldPreserveContentOnInteractiveComponentDisposal(element: 
   element[preserveContentOnDisposalPropname] = shouldPreserve;
 }
 
+export function setClearContentOnRootComponentRerender(element: LogicalElement): void {
+  elementsToClearOnRootComponentRender.add(element);
+}
+
 function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {
   return element[preserveContentOnDisposalPropname] === true;
 }
@@ -397,10 +416,13 @@ export interface ComponentDescriptor {
   end: Node;
 }
 
-function parseMarkup(markup: string, isSvg: boolean) {
+function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
   if (isSvg) {
     sharedSvgElemForParsing.innerHTML = markup || ' ';
     return sharedSvgElemForParsing;
+  } else if (isMathML) {
+    sharedMathMLElemForParsing.innerHTML = markup || ' ';
+    return sharedMathMLElemForParsing;
   } else {
     sharedTemplateElemForParsing.innerHTML = markup || ' ';
 

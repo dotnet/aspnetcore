@@ -109,5 +109,6 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

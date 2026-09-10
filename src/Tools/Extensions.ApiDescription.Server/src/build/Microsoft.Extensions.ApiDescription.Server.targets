@@ -51,8 +51,7 @@
         Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework." />
 
     <PropertyGroup>
-      <_DotNetGetDocumentOutputPath>$(OpenApiDocumentsDirectory.TrimEnd('\'))</_DotNetGetDocumentOutputPath>
-      <_DotNetGetDocumentOutputPath>$([System.IO.Path]::GetFullPath('$(_DotNetGetDocumentOutputPath)'))</_DotNetGetDocumentOutputPath>
+      <_DotNetGetDocumentOutputPath>$([System.IO.Path]::GetFullPath('$(OpenApiDocumentsDirectory)').TrimEnd('\'))</_DotNetGetDocumentOutputPath>
       <_DotNetGetDocumentCommand>dotnet "$(MSBuildThisFileDirectory)../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) --output "$(_DotNetGetDocumentOutputPath)" --project "$(MSBuildProjectName)"</_DotNetGetDocumentCommand>
@@ -60,6 +59,7 @@
       <_DotNetGetDocumentCommand Condition=" '$(PlatformTarget)' != '' ">$(_DotNetGetDocumentCommand) --platform "$(PlatformTarget)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_DotNetGetDocumentCommand) --platform "$(Platform)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand Condition=" '$(RuntimeIdentifier)' != '' ">$(_DotNetGetDocumentCommand) --runtime "$(RuntimeIdentifier) --self-contained"</_DotNetGetDocumentCommand>
+      <_DotNetGetDocumentCommand Condition=" '$(OpenApiGenerationEnvironment)' != '' ">$(_DotNetGetDocumentCommand) --environment "$(OpenApiGenerationEnvironment)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) $(OpenApiGenerateDocumentsOptions)</_DotNetGetDocumentCommand>
     </PropertyGroup>
 

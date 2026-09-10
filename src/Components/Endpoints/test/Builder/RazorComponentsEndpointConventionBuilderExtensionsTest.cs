@@ -74,7 +74,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -95,7 +95,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("default.css", list[0].Url);
         });
     }
@@ -117,7 +117,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("default.css", list[0].Url);
         });
     }
@@ -139,7 +139,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("default.css", list[0].Url);
         });
     }
@@ -162,7 +162,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -188,7 +188,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
             var metadata = e.Metadata.GetMetadata<ResourceAssetCollection>();
             Assert.NotNull(metadata);
             var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.Equal("named.css", list[0].Url);
         });
     }
@@ -217,7 +217,6 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     }
 
     [Theory]
-    [InlineData("/_framework/blazor.web.js")]
     [InlineData("/_framework/opaque-redirect")]
     public void MapRazorComponents_CanAddConventions_ToBlazorWebEndpoints(string frameworkEndpoint)
     {
@@ -246,7 +245,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)
     {
         var builder = endpointBuilder.MapRazorComponents<App>();
-        builder.ApplicationBuilder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+        builder.ComponentApplicationBuilderActions.Add(b => b.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App",
             [new PageComponentBuilder {
                 PageType = typeof(App),
@@ -254,7 +253,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
                 AssemblyName = "App",
             }],
             []
-        ));
+        )));
         return builder;
     }
 

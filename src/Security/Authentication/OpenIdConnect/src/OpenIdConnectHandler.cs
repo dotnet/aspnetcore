@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -88,19 +89,27 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <inheritdoc />
     public override Task<bool> HandleRequestAsync()
     {
+        // Both paths below are, like the sign-in callback, cross-site requests owned by this handler, and
+        // HandleRemoteSignOutAsync reads a form_post body, so they need the same antiforgery verdict handling
+        // that RemoteAuthenticationHandler applies to CallbackPath.
         if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
         {
-            return HandleRemoteSignOutAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleRemoteSignOutAsync);
         }
         else if (Options.SignedOutCallbackPath.HasValue && Options.SignedOutCallbackPath == Request.Path)
         {
-            return HandleSignOutCallbackAsync();
+            return RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleSignOutCallbackAsync);
         }
 
         return base.HandleRequestAsync();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Handles remote sign-out requests sent by the identity provider.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the request was handled by the OpenID Connect handler; otherwise, <see langword="false"/>.
+    /// </returns>
     protected virtual async Task<bool> HandleRemoteSignOutAsync()
     {
         OpenIdConnectMessage? message = null;
@@ -493,7 +502,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Push if endpoint is in disco
                 if (!string.IsNullOrEmpty(parEndpoint))
                 {
-                    await PushAuthorizationRequest(message, properties);
+                    await PushAuthorizationRequest(message, properties, parEndpoint);
                 }
 
                 break;
@@ -508,14 +517,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 break;
             case PushedAuthorizationBehavior.Require:
                 // Fail if required in options but unavailable in disco
-                var endpointIsConfigured = !string.IsNullOrEmpty(parEndpoint);
-                if (!endpointIsConfigured)
+                if (string.IsNullOrEmpty(parEndpoint))
                 {
                     throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
                 }
 
                 // Otherwise push
-                await PushAuthorizationRequest(message, properties);
+                await PushAuthorizationRequest(message, properties, parEndpoint);
                 break;
         }
 
@@ -550,8 +558,10 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
     }
 
-    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint)
     {
+        ArgumentException.ThrowIfNullOrEmpty(parEndpoint);
+
         // Build context and run event
         var parRequest = authorizeRequest.Clone();
         var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
@@ -579,20 +589,15 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             Logger.PushAuthorizationSkippedPush();
             return;
         }
+
         // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
-        else if (context.HandledPush)
+        if (context.HandledPush)
         {
             Logger.PushAuthorizationHandledPush();
             requestUri = context.RequestUri;
         }
         else
         {
-            var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
-            if (string.IsNullOrEmpty(parEndpoint))
-            {
-                new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
-            }
-
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
@@ -840,6 +845,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // no need to validate signature when token is received using "code flow" as per spec
                 // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+                // codeql[SM04387] - By design: in code flow the ID token is fetched from the token endpoint over the TLS back-channel, so OIDC Core 1.0 does not require signature validation.
                 validationParameters.RequireSignedTokens = false;
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
@@ -1161,6 +1167,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 
+        // codeql[SM02373] - The nonce cookie is Secure by default because NonceCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
             NonceProperty,

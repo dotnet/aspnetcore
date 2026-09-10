@@ -42,10 +42,11 @@ export interface ReconnectionOptions {
 export interface CircuitHandler {
   onCircuitOpened?: () => void;
   onCircuitClosed?: () => void;
+  onCircuitPausing?: (signal: AbortSignal) => void | Promise<void>;
 }
 
 export interface ReconnectionHandler {
-  onConnectionDown(options: ReconnectionOptions, error?: Error): void;
+  onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean, remotePause?: boolean): void;
   onConnectionUp(): void;
 }
 

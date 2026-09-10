@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
 public class MinimalFormTests
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
     [Fact]
     public async Task MapPost_WithForm_ValidToken_Works()
@@ -65,7 +64,7 @@ public class MinimalFormTests
         var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+        var result = JsonSerializer.Deserialize<Todo>(body, JsonSerializerOptions.Web);
         Assert.Equal("Test task", result.Name);
         Assert.False(result.IsCompleted);
         Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
@@ -125,7 +124,7 @@ public class MinimalFormTests
         var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+        var result = JsonSerializer.Deserialize<Todo>(body, JsonSerializerOptions.Web);
         Assert.Equal("Test task", result.Name);
         Assert.False(result.IsCompleted);
         Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
@@ -286,7 +285,7 @@ public class MinimalFormTests
         var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+        var result = JsonSerializer.Deserialize<Todo>(body, JsonSerializerOptions.Web);
         Assert.Equal("Test task", result.Name);
         Assert.False(result.IsCompleted);
         Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
@@ -333,7 +332,7 @@ public class MinimalFormTests
         var response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+        var result = JsonSerializer.Deserialize<Todo>(body, JsonSerializerOptions.Web);
         Assert.Equal("Test task", result.Name);
         Assert.False(result.IsCompleted);
         Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
@@ -427,7 +426,7 @@ public class MinimalFormTests
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(request));
-        Assert.Equal("This form is being accessed with an invalid anti-forgery token. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.", exception.Message);
+        Assert.Equal("This form is being accessed with a failed antiforgery validation. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.", exception.Message);
     }
 
     [Theory]
@@ -493,7 +492,7 @@ public class MinimalFormTests
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+            var result = JsonSerializer.Deserialize<Todo>(body, JsonSerializerOptions.Web);
             Assert.Equal("Test task", result.Name);
             Assert.False(result.IsCompleted);
             Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);

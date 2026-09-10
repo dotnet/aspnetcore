@@ -486,7 +486,7 @@ public class Http2HPackEncoderTests
             Assert.True(expectedPayload[i] == payload[i], $"{expectedPayload[i]} != {payload[i]} at {i} (len {length})");
         }
 
-        Assert.Equal(expectedPayload, new ArraySegment<byte>(payload, 0, length));
+        Assert.Equal(expectedPayload, new ArraySegment<byte>(payload, 0, length).ToArray());
     }
 
     [Theory]

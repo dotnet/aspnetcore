@@ -32,6 +32,13 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new OAuthOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ThrowsIfClientIdMissing()
     {
         using var host = await CreateHost(

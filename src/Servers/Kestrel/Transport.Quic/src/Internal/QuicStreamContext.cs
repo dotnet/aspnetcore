@@ -40,7 +40,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private bool _streamClosed;
     private bool _serverAborted;
     private bool _clientAbort;
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
 
     public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
     {
@@ -179,6 +179,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    [RuntimeAsyncMethodGeneration(false)]
     private async ValueTask WaitForWritesClosedAsync()
     {
         Debug.Assert(_stream != null);
@@ -199,6 +200,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    [RuntimeAsyncMethodGeneration(false)]
     private async ValueTask DoReceiveAsync()
     {
         Debug.Assert(_stream != null);
@@ -362,6 +364,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    [RuntimeAsyncMethodGeneration(false)]
     private async ValueTask DoSendAsync()
     {
         Debug.Assert(_stream != null);
@@ -543,6 +546,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask DisposeAsync()
     {
         if (_stream == null)

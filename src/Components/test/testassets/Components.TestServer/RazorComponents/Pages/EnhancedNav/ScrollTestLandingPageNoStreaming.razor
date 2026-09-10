@@ -1,0 +1,32 @@
+﻿@page "/nav/scroll-test-no-streaming"
+@inject NavigationManager NavigationManager
+@rendermode RenderMode.InteractiveServer
+@* This is a copy of ScrollTestLandingPage, without StreamRendering *@
+
+<PageTitle>Page for testing scroll position</PageTitle>
+
+<h1 id="test-info-1">Scroll tests landing page</h1>
+
+<div style="height: 2000px; border: 2px dashed red;">spacer top</div>
+
+<NavLink id="do-navigation-with-fragment" href="@(hashPageFragmentPath)">
+    Navigation to another page with fragment
+</NavLink>
+<NavLink id="do-navigation" href="@(hashPagePath)">
+    Navigation to another page
+</NavLink>
+<button id="do-programmatic-navigation-with-fragment" @onclick="@(() => NavigationManager.NavigateTo(hashPageFragmentPath))">
+    Programmatic navigation to another page with fragment
+</button>
+<button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(hashPagePath))">
+    Programmatic navigation to another page
+</button>
+
+<div style="height: 2000px; border: 2px dashed red;">spacer bottom</div>
+
+<h2 id="some-content">Some content</h2>
+
+@code {
+    string hashPagePath = "nav/scroll-test-next-no-streaming";
+    string hashPageFragmentPath = "nav/scroll-test-next-no-streaming#some-content";
+}

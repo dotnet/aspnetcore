@@ -129,7 +129,7 @@ internal sealed class ActionEndpointFactory
             var requestDelegate = CreateRequestDelegate(action) ?? _requestDelegate;
             var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
 
-            // Modify the route and required values to ensure required values can be successfully subsituted.
+            // Modify the route and required values to ensure required values can be successfully substituted.
             // Subsitituting required values into an attribute route pattern should always succeed.
             var (resolvedRoutePattern, resolvedRouteValues) = ResolveDefaultsAndRequiredValues(action, attributeRoutePattern);
 
@@ -542,13 +542,5 @@ internal sealed class ActionEndpointFactory
             var invoker = invokerFactory.CreateInvoker(actionContext);
             return invoker!.InvokeAsync();
         };
-    }
-
-    private sealed class InertEndpointBuilder : EndpointBuilder
-    {
-        public override Endpoint Build()
-        {
-            return new Endpoint(RequestDelegate, new EndpointMetadataCollection(Metadata), DisplayName);
-        }
     }
 }

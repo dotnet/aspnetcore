@@ -667,6 +667,123 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     public async Task AttemptingToWriteZeroContentLengthFor2xxResponsesOnConnect_ContentLengthRemoved(int statusCode)
         => await AttemptingToWriteZeroContentLength_ContentLengthRemoved(statusCode, HttpMethod.Connect).ConfigureAwait(true);
 
+    // RFC 9931 Section 8: In HTTP/1.1, a server that rejects a CONNECT request MUST close the
+    // underlying connection, regardless of whether the request carried "Connection: close".
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest)]
+    [InlineData(StatusCodes.Status407ProxyAuthenticationRequired)]
+    [InlineData(StatusCodes.Status500InternalServerError)]
+    [InlineData(StatusCodes.Status502BadGateway)]
+    public async Task RejectedConnectRequestClosesHttp11Connection(int statusCode)
+    {
+        await using (var server = new TestServer(httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "CONNECT no-such-destination.example:443 HTTP/1.1",
+                    "Host: no-such-destination.example:443",
+                    "",
+                    "");
+
+                await connection.ReceiveEnd(
+                    $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    // A CONNECT rejected with a keep-alive-carrying request header must still result in the
+    // connection being closed. RFC 9931 Section 8 explicitly overrides any "keep-alive" hint
+    // from the request.
+    [Fact]
+    public async Task RejectedConnectRequestWithKeepAliveRequestHeaderClosesHttp11Connection()
+    {
+        await using (var server = new TestServer(httpContext =>
+        {
+            httpContext.Response.StatusCode = StatusCodes.Status407ProxyAuthenticationRequired;
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "CONNECT no-such-destination.example:443 HTTP/1.1",
+                    "Host: no-such-destination.example:443",
+                    "Connection: keep-alive",
+                    "",
+                    "");
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 407 Proxy Authentication Required",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    // A 2xx CONNECT response accepts the tunnel. RFC 9931 Section 8's mandatory-close rule
+    // only applies to rejections, so keep-alive should not be forced off. Verify by sending a
+    // follow-up request on the same connection and confirming it is processed.
+    [Fact]
+    public async Task AcceptedConnectRequestDoesNotForceConnectionClose()
+    {
+        await using (var server = new TestServer(httpContext =>
+        {
+            if (httpContext.Request.Method == "CONNECT")
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status200OK;
+            }
+            else
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status204NoContent;
+            }
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "CONNECT server.example:443 HTTP/1.1",
+                    "Host: server.example:443",
+                    "",
+                    "");
+
+                // A 2xx response to CONNECT must not include Content-Length and must not
+                // carry a "Connection: close" header added by Kestrel.
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                // The connection should still be usable for subsequent requests.
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                await connection.Receive(
+                    "HTTP/1.1 204 No Content",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
     private async Task AttemptingToWriteNonzeroContentLengthFails(int statusCode, HttpMethod method)
     {
         var testMeterFactory = new TestMeterFactory();
@@ -1254,7 +1371,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
 
         // With the server disposed we know all connections were drained and all messages were logged.
-        Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationError"));
+        Assert.DoesNotContain(TestSink.Writes, c => c.EventId.Name == "ApplicationError");
     }
 
     [Fact]
@@ -1329,7 +1446,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1365,7 +1482,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1401,7 +1518,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     [Fact]
@@ -1426,12 +1543,15 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     $"Date: {server.Context.DateHeaderValue}",
                     "",
                     "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
             }
         }
     }
 
     [Fact]
-    public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
+    public async Task HeadResponseHeadersWrittenWithAsyncWriteBeforeAppCompletes()
     {
         var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1462,7 +1582,67 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
+    {
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.ContentLength = 12;
+            await httpContext.Response.WriteAsync("hello, world");
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 12",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
     public async Task HeadResponseBodyNotWrittenWithSyncWrite()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(httpContext =>
+        {
+            httpContext.Response.ContentLength = 12;
+            httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
+            return Task.CompletedTask;
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 12",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseHeadersWrittenWithSyncWriteBeforeAppCompletes()
     {
         var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1471,7 +1651,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             httpContext.Response.ContentLength = 12;
-            await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("hello, world"), 0, 12));
+            httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
             await flushed.Task;
         }, serviceContext))
         {
@@ -1490,6 +1670,131 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "");
 
                 flushed.SetResult();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeFlush()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            var span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    // Rough attempt at checking that a non-body response doesn't affect future body responses
+    [Fact]
+    public async Task GetRequestAfterHeadRequestWorks()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            await httpContext.Response.BodyWriter.WriteAsync(new byte[] { 35, 35, 35 });
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                await connection.Send(
+                    "GET /a HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "3",
+                    "###",
+                    "0",
+                    "",
+                    "");
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task HeadResponseBodyNotWrittenWithAdvanceBeforeAndAfterFlush()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            // Make response chunked
+            var span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+
+            // Send after headers flushed
+            span = httpContext.Response.BodyWriter.GetSpan(5);
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = (byte)'h';
+            }
+            httpContext.Response.BodyWriter.Advance(span.Length);
+            await httpContext.Response.BodyWriter.FlushAsync();
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "HEAD / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+                await connection.ReceiveEnd();
             }
         }
     }
@@ -2786,7 +3091,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
+        Assert.DoesNotContain(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
     [Fact]

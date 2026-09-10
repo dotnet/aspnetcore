@@ -43,6 +43,13 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new FacebookOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ThrowsIfAppIdMissing()
     {
         using var host = await CreateHost(
@@ -230,7 +237,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/base/login");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v22.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -263,7 +270,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/login");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v22.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -298,7 +305,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/challenge");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v22.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=", location);
@@ -388,7 +395,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
                         {
                             Sender = req =>
                             {
-                                if (req.RequestUri.AbsoluteUri == "https://graph.facebook.com/v14.0/oauth/access_token")
+                                if (req.RequestUri.AbsoluteUri == "https://graph.facebook.com/v22.0/oauth/access_token")
                                 {
                                     var body = req.Content.ReadAsStringAsync().Result;
                                     var form = new FormReader(body);
@@ -407,7 +414,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
                                         token_type = "Bearer",
                                     });
                                 }
-                                else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.facebook.com/v14.0/me")
+                                else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.facebook.com/v22.0/me")
                                 {
                                     return ReturnJsonResponse(new
                                     {
@@ -433,7 +440,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("https://example.com/challenge");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var locationUri = transaction.Response.Headers.Location;
-        Assert.StartsWith("https://www.facebook.com/v14.0/dialog/oauth", locationUri.AbsoluteUri);
+        Assert.StartsWith("https://www.facebook.com/v22.0/dialog/oauth", locationUri.AbsoluteUri);
 
         var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
         Assert.False(string.IsNullOrEmpty(queryParams["code_challenge"]));

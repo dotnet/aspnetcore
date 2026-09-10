@@ -18,8 +18,8 @@ public class XmlAssertTest
     public void Throws_WithMismatchedTextNodes(string input1, string input2)
     {
         var equalException = Assert.Throws<EqualException>(() => XmlAssert.Equal(input1, input2));
-        Assert.Equal(input1, equalException.Expected);
-        Assert.Equal(input2, equalException.Actual);
+        Assert.Contains(input1, equalException.Message);
+        Assert.Contains(input2, equalException.Message);
     }
 
     [Theory]
@@ -111,7 +111,7 @@ public class XmlAssertTest
 
         // Act and Assert
         var equalException = Assert.Throws<EqualException>(() => XmlAssert.Equal(expected, actual));
-        Assert.Equal(exceptionMessageForExpected, equalException.Expected);
-        Assert.Equal(exceptionMessageForActual, equalException.Actual);
+        Assert.Contains(exceptionMessageForExpected, equalException.Message);
+        Assert.Contains(exceptionMessageForActual, equalException.Message);
     }
 }

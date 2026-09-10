@@ -23,7 +23,7 @@ public class RouteConstraintBuilderTest
         var result = builder.Build();
 
         // Assert
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
         Assert.Equal("controller", result.First().Key);
 
         Assert.IsType<RegexRouteConstraint>(Assert.Single(result).Value);
@@ -42,7 +42,7 @@ public class RouteConstraintBuilderTest
         var result = builder.Build();
 
         // Assert
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
 
         var kvp = Assert.Single(result);
         Assert.Equal("controller", kvp.Key);
@@ -61,7 +61,7 @@ public class RouteConstraintBuilderTest
         var result = builder.Build();
 
         // Assert
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
 
         var kvp = Assert.Single(result);
         Assert.Equal("controller", kvp.Key);
@@ -107,7 +107,7 @@ public class RouteConstraintBuilderTest
         builder.AddResolvedConstraint("id", "int");
 
         var result = builder.Build();
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
         Assert.Equal("id", result.First().Key);
         Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
     }
@@ -120,7 +120,7 @@ public class RouteConstraintBuilderTest
         builder.SetOptional("id");
 
         var result = builder.Build();
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
         Assert.Equal("id", result.First().Key);
         Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
     }
@@ -135,7 +135,7 @@ public class RouteConstraintBuilderTest
         builder.AddConstraint("name", minLenConstraint);
 
         var result = builder.Build();
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
         Assert.Equal("name", result.First().Key);
         Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
         var optionalConstraint = (OptionalRouteConstraint)result.First().Value;

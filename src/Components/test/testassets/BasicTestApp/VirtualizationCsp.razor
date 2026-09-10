@@ -1,0 +1,38 @@
+@inject NavigationManager Nav
+
+@if (UseItemsProvider)
+{
+    <div id="csp-container-async">
+        <Virtualize ItemsProvider="@LoadItemsAsync" ItemSize="50" OverscanCount="3">
+            <ItemContent>
+                <div @key="context" class="csp-item-async">Async item @context</div>
+            </ItemContent>
+            <Placeholder>
+                <div class="csp-placeholder">Loading...</div>
+            </Placeholder>
+        </Virtualize>
+    </div>
+}
+else
+{
+    <div id="csp-container">
+        <Virtualize Items="@fixedItems" ItemSize="50" OverscanCount="3">
+            <div @key="context" class="csp-item">Item @context</div>
+        </Virtualize>
+    </div>
+}
+
+@code {
+    private List<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+
+    private bool UseItemsProvider => Nav.Uri.Contains("mode=items-provider", StringComparison.Ordinal);
+
+    private async ValueTask<ItemsProviderResult<int>> LoadItemsAsync(ItemsProviderRequest request)
+    {
+        // Delay so placeholders actually render and the placeholder
+        // data-blazor-virtualize-* path is exercised.
+        await Task.Delay(50, request.CancellationToken);
+        var items = Enumerable.Range(request.StartIndex, request.Count).ToArray();
+        return new ItemsProviderResult<int>(items, totalItemCount: 1000);
+    }
+}

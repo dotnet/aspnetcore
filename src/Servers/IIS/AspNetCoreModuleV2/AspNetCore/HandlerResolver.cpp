@@ -110,7 +110,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
-        hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
+        hRequestHandlerDll = LoadLibraryEx(handlerDllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
         RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
 
         if (preventUnload)

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Internal;
 
 public class ExceptionDetailsProviderTest
 {
-    public static TheoryData RelativePathsData
+    public static TheoryData<string> RelativePathsData
     {
         get
         {

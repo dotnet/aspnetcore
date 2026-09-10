@@ -204,8 +204,11 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+json; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsXMLContentType_BasedOnAcceptHeader()
+    [Theory]
+    [InlineData("text/plain")]
+    [InlineData("application/xml")]
+    [InlineData("application/json")]
+    public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsXMLContentType_BasedOnAcceptHeader(string resultContentTypes)
     {
         // Arrange
         var executor = CreateExecutor();
@@ -216,7 +219,7 @@ public class ObjectResultExecutorTest
 
         var result = new ObjectResult(new ProblemDetails())
         {
-            ContentTypes = { "text/plain" }, // This will not be used
+            ContentTypes = { resultContentTypes }, // This will not be used
         };
         result.Formatters.Add(new TestJsonOutputFormatter());
         result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the Accept Headers "application/xml"
@@ -227,6 +230,27 @@ public class ObjectResultExecutorTest
 
         // Assert
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ForProblemDetailsValue_UsesPlainTextContentType_WhenNoJsonOrXmlFormattersAreAvailable()
+    {
+        // Arrange
+        var executor = CreateExecutor();
+
+        var httpContext = new DefaultHttpContext();
+        var actionContext = new ActionContext() { HttpContext = httpContext };
+        httpContext.Request.Headers.Accept = "text/plain";
+        httpContext.Response.ContentType = "text/plain";
+
+        var result = new ObjectResult(new ProblemDetails());
+        result.Formatters.Add(new TestStringOutputFormatter());
+
+        // Act
+        await executor.ExecuteAsync(actionContext, result);
+
+        // Assert
+        MediaTypeAssert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
     }
 
     [Fact]

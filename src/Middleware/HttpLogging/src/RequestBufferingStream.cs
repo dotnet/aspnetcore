@@ -13,6 +13,7 @@ internal sealed class RequestBufferingStream : BufferingStream
     private readonly bool _logOnFinish;
     private readonly int _limit;
     private BodyStatus _status = BodyStatus.None;
+    private string? _bodyBeforeClose;
 
     public bool HasLogged { get; private set; }
 
@@ -116,7 +117,7 @@ internal sealed class RequestBufferingStream : BufferingStream
         if (!HasLogged && _logOnFinish)
         {
             HasLogged = true;
-            _logger.RequestBody(GetString(_encoding), GetStatus(showCompleted: false));
+            _logger.RequestBody(GetStringInternal(), GetStatus(showCompleted: false));
         }
     }
 
@@ -124,7 +125,7 @@ internal sealed class RequestBufferingStream : BufferingStream
     {
         if (logContext.IsAnyEnabled(HttpLoggingFields.RequestBody))
         {
-            logContext.AddParameter("RequestBody", GetString(_encoding));
+            logContext.AddParameter("RequestBody", GetStringInternal());
             logContext.AddParameter("RequestBodyStatus", GetStatus(showCompleted: true));
         }
     }
@@ -138,14 +139,33 @@ internal sealed class RequestBufferingStream : BufferingStream
         _ => throw new NotImplementedException(_status.ToString()),
     };
 
+    private string GetStringInternal()
+    {
+        var result = _bodyBeforeClose ?? GetString(_encoding);
+        // Reset the value after its consumption to preserve GetString(encoding) behavior
+        _bodyBeforeClose = null;
+        return result;
+    }
+
+    public override void Close()
+    {
+        if (!HasLogged)
+        {
+            // Subsequent middleware can close the request stream after reading enough bytes (guided by ContentLength).
+            // Preserving the body for the final GetStringInternal() call.
+            _bodyBeforeClose = GetString(_encoding);
+        }
+        base.Close();
+    }
+
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(ReadAsync(buffer, offset, count), callback, state);
     }
 
     public override int EndRead(IAsyncResult asyncResult)
     {
-        return TaskToApm.End<int>(asyncResult);
+        return TaskToAsyncResult.End<int>(asyncResult);
     }
 
     private enum BodyStatus

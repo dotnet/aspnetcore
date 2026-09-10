@@ -35,7 +35,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
-    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.AspNetCore.Http.Generated") });
+    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Generated") });
     private static readonly Project _baseProject = CreateProject();
     private static readonly string _interceptsLocationAttributeRegex = @"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\(\d+, "".*""\)\]";
 
@@ -229,6 +229,46 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return httpContext;
     }
 
+    internal HttpContext CreateHttpContextWithJson(string requestData, IServiceProvider serviceProvider = null)
+    {
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var requestBodyBytes = Encoding.UTF8.GetBytes(requestData);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        return httpContext;
+    }
+
+    internal HttpContext CreateHttpContextWithEmptyJsonBody(IServiceProvider serviceProvider = null)
+    {
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Request.Method = "POST";
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        httpContext.Request.Body = new MemoryStream(Array.Empty<byte>());
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+        return httpContext;
+    }
+
+    internal HttpContext CreateHttpContextWithCustomContentType(string payload, string contentType, IServiceProvider serviceProvider = null)
+    {
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Request.Method = "POST";
+        var bytes = Encoding.UTF8.GetBytes(payload);
+        var stream = new MemoryStream(bytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        if (contentType is not null)
+        {
+            httpContext.Request.Headers["Content-Type"] = contentType;
+        }
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        return httpContext;
+    }
+
     internal static async Task<string> GetResponseBodyAsync(HttpContext httpContext)
     {
         var httpResponse = httpContext.Response;
@@ -287,6 +327,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using Http;
 
 public static class {{className}}
 {
@@ -353,7 +394,7 @@ public static class {{className}}
         var baselineFilePathMetadataValue = typeof(RequestDelegateCreationTestBase).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>().Single(d => d.Key == "RequestDelegateGeneratorTestBaselines").Value;
         var baselineFilePathRoot = SkipOnHelixAttribute.OnHelix()
-            ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "RequestDelegateGenerator", "Baselines")
+            ? Path.Combine(AppContext.BaseDirectory, "RequestDelegateGenerator", "Baselines")
             : baselineFilePathMetadataValue;
         var baselineFilePath = Path.Combine(baselineFilePathRoot!, $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();

@@ -25,9 +25,29 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
+        return InternalCalls.InvokeJSJson(
+            identifier,
+            targetInstanceId,
+            (int)resultType,
+            argsJson ?? "[]",
+            0,
+            (int)JSCallType.FunctionCall
+        );
+    }
+
+    /// <inheritdoc />
+    protected override string InvokeJS(in JSInvocationInfo invocationInfo)
+    {
         try
         {
-            return InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
+            return InternalCalls.InvokeJSJson(
+                invocationInfo.Identifier,
+                invocationInfo.TargetInstanceId,
+                (int)invocationInfo.ResultType,
+                invocationInfo.ArgsJson,
+                invocationInfo.AsyncHandle,
+                (int)invocationInfo.CallType
+            );
         }
         catch (Exception ex)
         {
@@ -38,7 +58,27 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
+        InternalCalls.InvokeJSJson(
+            identifier,
+            targetInstanceId,
+            (int)resultType,
+            argsJson ?? "[]",
+            asyncHandle,
+            (int)JSCallType.FunctionCall
+        );
+    }
+
+    /// <inheritdoc />
+    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+    {
+        InternalCalls.InvokeJSJson(
+            invocationInfo.Identifier,
+            invocationInfo.TargetInstanceId,
+            (int)invocationInfo.ResultType,
+            invocationInfo.ArgsJson,
+            invocationInfo.AsyncHandle,
+            (int)invocationInfo.CallType
+        );
     }
 
     /// <inheritdoc />

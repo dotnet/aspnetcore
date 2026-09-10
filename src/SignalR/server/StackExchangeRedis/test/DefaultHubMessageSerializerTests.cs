@@ -46,7 +46,7 @@ public class DefaultHubMessageSerializerTests
         var serializer = new DefaultHubMessageSerializer(resolver, new List<string>() { "json" }, new List<string>() { "messagepack" });
         var serializedHubMessage = serializer.SerializeMessage(_testMessage);
 
-        Assert.Equal(1, serializedHubMessage.Count);
+        Assert.Single(serializedHubMessage);
 
         Assert.Equal(new List<byte>() { 0x0D,
                   0x96,

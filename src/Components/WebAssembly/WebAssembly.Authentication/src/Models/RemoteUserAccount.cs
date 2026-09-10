@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// A user account.
 /// </summary>
 /// <remarks>
-/// The information in this type will be use to produce a <see cref="System.Security.Claims.ClaimsPrincipal"/> for the application.
+/// The information in this type will be used to produce a <see cref="System.Security.Claims.ClaimsPrincipal"/> for the application.
 /// </remarks>
 public class RemoteUserAccount
 {

@@ -28,8 +28,8 @@ public class RequestLocalizationMiddleware
     /// </summary>
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <see cref="RequestLocalizationMiddleware"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);

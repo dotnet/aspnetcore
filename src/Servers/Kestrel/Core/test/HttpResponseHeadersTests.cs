@@ -21,7 +21,7 @@ public class HttpResponseHeadersTests
     [Fact]
     public void InitialDictionaryIsEmpty()
     {
-        using (var memoryPool = PinnedBlockMemoryPoolFactory.Create())
+        using (var memoryPool = TestMemoryPoolFactory.Create())
         {
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
@@ -46,7 +46,7 @@ public class HttpResponseHeadersTests
 
             IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
 
-            Assert.Equal(0, headers.Count);
+            Assert.Empty(headers);
             Assert.False(headers.IsReadOnly);
         }
     }

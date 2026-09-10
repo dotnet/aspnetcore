@@ -89,5 +89,4 @@ public class IdentityOptionsTest
         Assert.Equal("c", options.Get(IdentityConstants.TwoFactorRememberMeScheme).Cookie.Name);
         Assert.Equal("d", options.Get(IdentityConstants.TwoFactorUserIdScheme).Cookie.Name);
     }
-
 }

@@ -70,11 +70,12 @@ a, .btn-link {
     }
 
 .loading-progress {
-    position: relative;
+    position: absolute;
     display: block;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
 }
 
     .loading-progress circle {

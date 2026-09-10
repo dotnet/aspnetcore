@@ -32,6 +32,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
         SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
 #pragma warning restore CS0618 // Type or member is obsolete
         TokenHandlers = new List<TokenHandler> { _defaultTokenHandler };
+        Events = new JwtBearerEvents();
     }
 
     /// <summary>
@@ -126,7 +127,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// </summary>
     /// <remarks>Contains the types and definitions required for validating a token.</remarks>
     /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-    public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters();
+    public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters(); // codeql[SM04554] - Valid issuer is populated at runtime by the handler from the authority's discovery metadata, not statically here. codeql[SM04555] - Issuer validation runs in the handler; ValidateIssuer defaults to true in Microsoft.IdentityModel.
 
     /// <summary>
     /// Defines whether the bearer token should be stored in the

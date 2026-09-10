@@ -309,7 +309,9 @@ public class KestrelServerTests
             multiplexedFactories,
             httpsConfigurationService,
             loggerFactory ?? new LoggerFactory(new[] { new KestrelTestLoggerProvider() }),
-            metrics ?? new KestrelMetrics(new TestMeterFactory()));
+            diagnosticSource: null,
+            metrics ?? new KestrelMetrics(new TestMeterFactory()),
+            heartbeatHandlers: []);
     }
 
     [Fact]

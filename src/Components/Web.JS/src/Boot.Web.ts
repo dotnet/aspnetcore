@@ -8,24 +8,28 @@
 //  - The capabilities of Boot.Server.ts and Boot.WebAssembly.ts to handle insertion
 //    of interactive components
 
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { setCircuitOptions } from './Boot.Server.Common';
 import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
+import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
-import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
+import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -38,6 +42,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
   options = options || {};
   options.logLevel ??= LogLevel.Error;
+  Blazor._internal.isBlazorWeb = true;
 
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
@@ -47,15 +52,19 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     }
   };
 
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
+  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000, jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
+    beforeDomUpdate: (source) => {
+      updateOptionsFromBrowserConfiguration(options, source);
+    },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
+      resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
       jsEventRegistry.dispatchEvent('enhancedload', {});
     },
     enhancedNavigationCompleted() {
@@ -73,6 +82,13 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
+  Blazor.formValidation = createBlazorValidation();
+
+  jsEventRegistry.addEventListener('enhancedload', () => {
+    // An enhanced-navigation morph reuses forms in place and strips the JS-added novalidate, so re-add it.
+    ensureNovalidateOnForms();
+  });
+
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
   // components produced by the stream render actually get activated for interactivity.
@@ -86,20 +102,78 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 }
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
+  updateOptionsFromBrowserConfiguration(options);
+
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
   // so we do the same here.
   const initialCircuitOptions = resolveOptions(options?.circuit || {});
   options.circuit = initialCircuitOptions;
+  options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
   const initializersPromise = fetchAndInvokeInitializers(options, logger);
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
-  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options?.webAssembly || {}));
+  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
   registerAllComponentDescriptors(document);
+
   rootComponentManager.onDocumentUpdated();
 
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Node = document): void {
+  const browserConfig = discoverBrowserConfiguration(source);
+  if (browserConfig) {
+    if (browserConfig.logLevel !== undefined) {
+      options.logLevel = browserConfig.logLevel;
+    }
+
+    // SSR options
+    if (browserConfig.ssr) {
+      options.ssr = options.ssr || {};
+      if (browserConfig.ssr.disableDomPreservation !== undefined) {
+        options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+      }
+      if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
+        options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+      }
+    }
+
+    // Circuit/Server options
+    if (browserConfig.server) {
+      const circuitOpts: Partial<CircuitStartOptions> = options.circuit ?? {};
+      options.circuit = circuitOpts as CircuitStartOptions;
+
+      const reconnOpts: Partial<ReconnectionOptions> = circuitOpts.reconnectionOptions ?? {};
+      circuitOpts.reconnectionOptions = reconnOpts as ReconnectionOptions;
+      if (browserConfig.server.reconnectionMaxRetries !== undefined) {
+        reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
+      }
+      if (browserConfig.server.reconnectionRetryIntervalMilliseconds !== undefined) {
+        reconnOpts.retryIntervalMilliseconds = browserConfig.server.reconnectionRetryIntervalMilliseconds;
+      }
+      if (browserConfig.server.reconnectionDialogId !== undefined) {
+        reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
+      }
+
+      // Pass through library extension keys (server-side [JsonExtensionData]) to the circuit options.
+      for (const [key, value] of Object.entries(browserConfig.server)) {
+        if (value !== undefined) {
+          (circuitOpts as Record<string, unknown>)[key] = value;
+        }
+      }
+    }
+
+    // Apply WebAssembly server options before processing component descriptors, since
+    // registration can trigger platform loading that captures these options.
+    if (browserConfig.webAssembly) {
+      rootComponentManager.setWebAssemblyOptions({
+        environmentName: browserConfig.webAssembly.environmentName ?? '',
+        environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
+      });
+    }
+  }
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {

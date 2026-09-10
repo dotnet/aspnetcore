@@ -9,6 +9,3 @@ In order to prepare this repo to build a new servicing update, the following cha
     -  <AspNetCorePatchVersion>7</AspNetCorePatchVersion>
     +  <AspNetCorePatchVersion>8</AspNetCorePatchVersion>
     ```
-
-* Update the package baselines. This is used to ensure packages keep a consistent set of dependencies between releases.
-  See [eng/tools/BaselineGenerator/](/eng/tools/BaselineGenerator/README.md) for instructions on how to run this tool.

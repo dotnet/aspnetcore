@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Security.AccessControl;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -120,6 +121,21 @@ public class HttpSysOptions
     public bool EnableKernelResponseBuffering { get; set; }
 
     /// <summary>
+    /// Configures the Http.Sys authentication hardening level. Non-<see cref="HttpAuthenticationHardeningLevel.Legacy"/>
+    /// values instruct Http.Sys to validate the RFC 5929 TLS channel binding token (CBT) against
+    /// authenticated requests and to expose the per-request CBT to the application via
+    /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
+    /// The default is <see cref="HttpAuthenticationHardeningLevel.Medium"/>.
+    /// </summary>
+    /// <remarks>
+    /// Setting this to <see cref="HttpAuthenticationHardeningLevel.Medium"/> or
+    /// <see cref="HttpAuthenticationHardeningLevel.Strict"/> both raises the hardening
+    /// level and sets the <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> flag on the URL
+    /// group's <c>HttpServerChannelBindProperty</c>.
+    /// </remarks>
+    public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; } = HttpAuthenticationHardeningLevel.Medium;
+
+    /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
     /// Set to `null` to use the registry's machine-wide setting.
     /// The default value is `null` (machine-wide setting).
@@ -166,6 +182,14 @@ public class HttpSysOptions
             _requestQueueLength = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets the security descriptor for the request queue.
+    /// </summary>
+    /// <remarks>
+    /// Only applies when creating a new request queue, see <see cref="RequestQueueMode" />.
+    /// </remarks>
+    public GenericSecurityDescriptor? RequestQueueSecurityDescriptor { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum allowed size of any request body in bytes.
@@ -237,7 +261,7 @@ public class HttpSysOptions
     /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
     /// </summary>
     /// <remarks>
-    /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
+    /// Defaults to <c>false</c>, in which case <see cref="Encoding.UTF8"/> will be used. />.
     /// </remarks>
     public bool UseLatin1RequestHeaders { get; set; }
 
@@ -267,5 +291,6 @@ public class HttpSysOptions
 
         Authentication.SetUrlGroupSecurity(urlGroup);
         Timeouts.SetUrlGroupTimeouts(urlGroup);
+        urlGroup.SetChannelBindingProperty(HttpAuthenticationHardeningLevel);
     }
 }

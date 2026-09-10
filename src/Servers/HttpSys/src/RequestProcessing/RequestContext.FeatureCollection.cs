@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -36,7 +39,9 @@ internal partial class RequestContext :
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
-    IConnectionLifetimeNotificationFeature
+    IHttpSysRequestPropertyFeature,
+    IConnectionLifetimeNotificationFeature,
+    IConnectionEndPointFeature
 {
     private IFeatureCollection? _features;
     private bool _enableResponseCaching;
@@ -382,6 +387,38 @@ internal partial class RequestContext :
         return Request.IsHttps ? this : null;
     }
 
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        channelBindingToken = default;
+
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint binding
+        // (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return false;
+        }
+
+        if (!Request.IsHttps)
+        {
+            return false;
+        }
+
+        // disabled via settings
+        if (Server.Options.HttpAuthenticationHardeningLevel == HttpAuthenticationHardeningLevel.Legacy)
+        {
+            return false;
+        }
+
+        var bytes = GetChannelBindingToken();
+        if (bytes is not null)
+        {
+            channelBindingToken = bytes;
+            return true;
+        }
+
+        return false;
+    }
+
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
         if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
@@ -592,6 +629,9 @@ internal partial class RequestContext :
 
     SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
 
+    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite => Request.NegotiatedCipherSuite;
+
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
 
     int ITlsHandshakeFeature.CipherStrength => Request.CipherStrength;
@@ -603,6 +643,7 @@ internal partial class RequestContext :
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
     string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
@@ -749,6 +790,58 @@ internal partial class RequestContext :
         if (!Response.HasStarted)
         {
             Response.Headers[HeaderNames.Connection] = "close";
+        }
+    }
+
+    public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
+    {
+        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
+    }
+
+    public bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned)
+    {
+        return TryGetRequestPropertyCore((HTTP_REQUEST_PROPERTY)propertyId, qualifier, output, out bytesReturned);
+    }
+
+    EndPoint? IConnectionEndPointFeature.LocalEndPoint
+    {
+        get
+        {
+            var localIp = ((IHttpConnectionFeature)this).LocalIpAddress;
+            if (localIp is not null)
+            {
+                return new IPEndPoint(localIp, ((IHttpConnectionFeature)this).LocalPort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint localIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).LocalIpAddress = localIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).LocalPort = localIPEndPoint.Port;
+            }
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.RemoteEndPoint
+    {
+        get
+        {
+            var remoteIp = ((IHttpConnectionFeature)this).RemoteIpAddress;
+            if (remoteIp is not null)
+            {
+                return new IPEndPoint(remoteIp, ((IHttpConnectionFeature)this).RemotePort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint remoteIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).RemoteIpAddress = remoteIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).RemotePort = remoteIPEndPoint.Port;
+            }
         }
     }
 }

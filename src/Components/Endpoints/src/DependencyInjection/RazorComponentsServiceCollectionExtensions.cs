@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -62,7 +63,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
         services.TryAddScoped<IScrollToLocationHash, UnsupportedScrollToLocationHash>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
-        services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
@@ -70,15 +71,43 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         services.AddSupplyValueFromQueryProvider();
+        services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.TryAddScoped<ResourcePreloadService>();
+        services.AddTempData();
+        services.TryAddSingleton<ICacheViewStore>(static sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
+            var hybridCache = options.CacheViewHybridCache ?? sp.GetService<HybridCache>();
+            return hybridCache is not null
+                ? new HybridCacheViewStore(hybridCache)
+                : ActivatorUtilities.CreateInstance<MemoryCacheViewStore>(sp);
+        });
+        services.TryAddSingleton<CacheViewService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHybridCacheSerializer<SerializedRenderFragment>>(
+            SerializedRenderFragmentHybridCacheSerializer.Instance));
+        services.TryAddScoped<TempDataCascadingValueSupplier>();
+        services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
+            sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
+        services.TryAddScoped<SessionCascadingValueSupplier>();
+        services.TryAddCascadingValueSupplier<SupplyParameterFromSessionAttribute>(
+            sp => sp.GetRequiredService<SessionCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
+
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped(sp => (EndpointAntiforgeryStateProvider)sp.GetRequiredService<AntiforgeryStateProvider>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(services, RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
+        services.TryAddSingleton<ClientValidationCache>();
+        services.TryAddScoped<ClientValidationProvider, DataAnnotationsClientValidationProvider>();
 
         if (configure != null)
         {

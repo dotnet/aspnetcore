@@ -12,6 +12,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class WebApiTemplateTest : LoggedTest
 {
     public WebApiTemplateTest(ProjectFactoryFixture factoryFixture)
@@ -96,7 +98,7 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
-    [ConditionalTheory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/58957")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
@@ -275,5 +277,45 @@ public class WebApiTemplateTest : LoggedTest
             await aspNetProcess.AssertNotFound("openapi/v1.json");
             await aspNetProcess.AssertNotFound("/");
         }
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task WebApiTemplateCSharp_HttpFileIncludesOpenApiEndpoint()
+    {
+        var project = await FactoryFixture.CreateProject(Output);
+
+        await project.RunDotNetNewAsync("webapi");
+
+        var httpFilePath = $"{project.ProjectName}.http";
+        var httpFileContent = project.ReadFile(httpFilePath);
+
+        // Verify OpenAPI endpoint is included
+        Assert.Contains("/openapi/v1.json", httpFileContent);
+        // Verify no template directives remain
+        Assert.DoesNotContain("#if", httpFileContent);
+        Assert.DoesNotContain("#endif", httpFileContent);
+        // Verify weatherforecast endpoint is included
+        Assert.Contains("/weatherforecast/", httpFileContent);
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task WebApiTemplateCSharp_HttpFileExcludesOpenApiEndpointWhenDisabled()
+    {
+        var project = await FactoryFixture.CreateProject(Output);
+
+        await project.RunDotNetNewAsync("webapi", args: new[] { ArgConstants.NoOpenApi });
+
+        var httpFilePath = $"{project.ProjectName}.http";
+        var httpFileContent = project.ReadFile(httpFilePath);
+
+        // Verify OpenAPI endpoint is NOT included
+        Assert.DoesNotContain("/openapi/v1.json", httpFileContent);
+        // Verify no template directives remain
+        Assert.DoesNotContain("#if", httpFileContent);
+        Assert.DoesNotContain("#endif", httpFileContent);
+        // Verify weatherforecast endpoint is still included
+        Assert.Contains("/weatherforecast/", httpFileContent);
     }
 }

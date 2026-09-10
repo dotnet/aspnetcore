@@ -53,7 +53,6 @@ deactivate () {
     fi
 
     unset DOTNET_ROOT
-    unset DOTNET_MULTILEVEL_LOOKUP
     if [ ! "${1:-}" = "init" ] ; then
         # Remove the deactivate function
         unset -f deactivate
@@ -67,8 +66,6 @@ DIR="$( cd "$( dirname "$THIS_SCRIPT" )" && pwd )"
 _OLD_PATH="$PATH"
 # Tell dotnet where to find itself
 export DOTNET_ROOT="$DIR/.dotnet"
-# Tell dotnet not to look beyond the DOTNET_ROOT folder for more dotnet things
-export DOTNET_MULTILEVEL_LOOKUP=0
 # Put dotnet first on PATH
 export PATH="$DOTNET_ROOT:$PATH"
 

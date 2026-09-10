@@ -37,7 +37,7 @@ public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
 
                 var outputBufferedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-#pragma warning disable 0618 // TODO: Repalce OnWriterCompleted
+#pragma warning disable 0618 // TODO: Replace OnWriterCompleted
                 transportConnection.Output.OnWriterCompleted((ex, state) =>
                 {
                     ((TaskCompletionSource)state).SetResult();

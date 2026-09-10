@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -19,31 +18,35 @@ public class Program
     {
         string responseMessage = null;
 
-        WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-            .ConfigureServices((context, service) => responseMessage = responseMessage ?? GetResponseMessage(context))
-            .ConfigureKestrel(options => options
-                .Configure(options.ConfigurationLoader.Configuration)
-                .Endpoint("HTTP", endpointOptions =>
-                {
-                    if (responseMessage == null
-                        && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
-                    {
-                        responseMessage = "Default Kestrel configuration not read.";
-                    }
-                }))
-            .Configure(app => app.Run(context =>
+        Host.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
+            .ConfigureWebHostDefaults(webBuilder =>
             {
-                // Verify allowed hosts were loaded
-                var hostFilteringOptions = app.ApplicationServices.GetRequiredService<IOptions<HostFilteringOptions>>();
-                var hosts = string.Join(',', hostFilteringOptions.Value.AllowedHosts);
-                if (responseMessage == null && !string.Equals("example.com,127.0.0.1", hosts, StringComparison.Ordinal))
-                {
-                    responseMessage = "AllowedHosts not loaded into Options.";
-                }
+                webBuilder
+                    .ConfigureServices((context, service) => responseMessage = responseMessage ?? GetResponseMessage(context))
+                    .ConfigureKestrel(options => options
+                        .Configure(options.ConfigurationLoader.Configuration)
+                        .Endpoint("HTTP", endpointOptions =>
+                        {
+                            if (responseMessage == null
+                                && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
+                            {
+                                responseMessage = "Default Kestrel configuration not read.";
+                            }
+                        }))
+                    .Configure(app => app.Run(context =>
+                    {
+                        // Verify allowed hosts were loaded
+                        var hostFilteringOptions = app.ApplicationServices.GetRequiredService<IOptions<HostFilteringOptions>>();
+                        var hosts = string.Join(',', hostFilteringOptions.Value.AllowedHosts);
+                        if (responseMessage == null && !string.Equals("example.com,127.0.0.1", hosts, StringComparison.Ordinal))
+                        {
+                            responseMessage = "AllowedHosts not loaded into Options.";
+                        }
 
-                var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
-                return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
-            }))
+                        var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
+                        return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
+                    }));
+            })
             .Build()
             .Run();
     }

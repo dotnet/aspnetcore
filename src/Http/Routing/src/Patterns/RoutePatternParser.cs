@@ -425,7 +425,7 @@ internal static class RoutePatternParser
 
     private static bool IsValidParameterName(Context context, string parameterName)
     {
-        if (parameterName.Length == 0 || parameterName.AsSpan().IndexOfAny(InvalidParameterNameChars) >= 0)
+        if (parameterName.Length == 0 || parameterName.ContainsAny(InvalidParameterNameChars))
         {
             context.Error = Resources.FormatTemplateRoute_InvalidParameterName(parameterName);
             return false;

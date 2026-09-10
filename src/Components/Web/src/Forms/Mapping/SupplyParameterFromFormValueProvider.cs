@@ -46,7 +46,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         return false;
     }
 
-    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         // We supply a FormMappingContext
         if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(FormMappingContext))
@@ -78,7 +78,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         var restrictToFormName = attribute.FormName;
         Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(restrictToFormName) ?
             mappingContext.AddError :
-            (name, message, value) => mappingContext.AddError(restrictToFormName, parameterName, message, value);
+            (name, message, value) => mappingContext.AddError(restrictToFormName, name, message, value);
 
         var context = new FormValueMappingContext(mappingContext.MappingScopeName, restrictToFormName, parameterInfo.PropertyType, parameterName)
         {

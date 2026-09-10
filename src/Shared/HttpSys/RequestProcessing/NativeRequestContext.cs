@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
+using Windows.Win32.Networking.WinSock;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -33,8 +34,10 @@ internal unsafe class NativeRequestContext : IDisposable
     private MemoryHandle _memoryHandle;
     private readonly int _bufferAlignment;
     private readonly bool _permanentlyPinned;
-    private bool _disposed;
     private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
+
+    private bool _disposed;
+    private bool _pinsReleased;
 
     [MemberNotNullWhen(false, nameof(_backingBuffer))]
     private bool PermanentlyPinned => _permanentlyPinned;
@@ -170,6 +173,11 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
+    /// <summary>
+    /// Shows whether <see cref="ReleasePins"/> was already invoked on this native request context
+    /// </summary>
+    internal bool PinsReleased => _pinsReleased;
+
     // ReleasePins() should be called exactly once.  It must be called before Dispose() is called, which means it must be called
     // before an object (Request) which closes the RequestContext on demand is returned to the application.
     internal void ReleasePins()
@@ -179,6 +187,7 @@ internal unsafe class NativeRequestContext : IDisposable
         _memoryHandle.Dispose();
         _memoryHandle = default;
         _nativeRequest = null;
+        _pinsReleased = true;
     }
 
     public bool TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)
@@ -656,7 +665,8 @@ internal unsafe class NativeRequestContext : IDisposable
         {
             return null;
         }
-        var address = (IntPtr)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
+
+        var address = (SOCKADDR*)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
         return SocketAddress.CopyOutAddress(address);
     }
 
@@ -766,6 +776,83 @@ internal unsafe class NativeRequestContext : IDisposable
         }
 
         return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
+    }
+
+    /// <summary>
+    /// Reads the per-request TLS channel binding token (CBT) produced by http.sys when
+    /// the URL group has <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> enabled.
+    /// </summary>
+    /// <returns>
+    /// A freshly-allocated byte array containing the SEC_CHANNEL_BINDINGS structure
+    /// http.sys produced for this request, or <see langword="null"/> if no channel
+    /// binding info is attached to the request.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// The <c>HTTP_REQUEST_CHANNEL_BIND_STATUS.ChannelToken</c> field is an embedded
+    /// pointer into the original http.sys request buffer. After <see cref="ReleasePins"/>
+    /// the buffer has been unpinned and may be moved by the GC, so the absolute address
+    /// is no longer valid. This method translates it back into a current-address span
+    /// within <c>_backingBuffer</c> using the same <c>baseAddress</c> fixup logic the
+    /// rest of this class uses, then copies the bytes into a managed array.
+    /// </para>
+    /// </remarks>
+    internal byte[]? GetChannelBindingToken()
+    {
+        if (PermanentlyPinned)
+        {
+            return GetChannelBindingToken((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
+        }
+
+        fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+        {
+            var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+            return GetChannelBindingToken(_originalBufferAddress, request);
+        }
+    }
+
+    private byte[]? GetChannelBindingToken(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
+    {
+        var count = nativeRequest->RequestInfoCount;
+        if (count == 0)
+        {
+            return null;
+        }
+
+        var fixup = (byte*)nativeRequest - (byte*)baseAddress;
+        var pRequestInfo = (HTTP_REQUEST_INFO*)((byte*)nativeRequest->pRequestInfo + fixup);
+
+        for (var i = 0; i < count; i++)
+        {
+            var entry = pRequestInfo[i];
+            if (entry.InfoType != HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeChannelBind)
+            {
+                continue;
+            }
+
+            // entry.pInfo is an original-buffer address; translate to current.
+            var pStatus = (HTTP_REQUEST_CHANNEL_BIND_STATUS*)
+                (PermanentlyPinned
+                    ? (byte*)entry.pInfo
+                    : (byte*)entry.pInfo + fixup);
+
+            var tokenSize = (int)pStatus->ChannelTokenSize;
+            if (pStatus->ChannelToken == null || tokenSize <= 0)
+            {
+                return null;
+            }
+
+            // ChannelToken is itself an original-buffer address; translate again.
+            var pToken = PermanentlyPinned
+                ? (byte*)pStatus->ChannelToken
+                : (byte*)pStatus->ChannelToken + fixup;
+
+            var token = new byte[tokenSize];
+            new ReadOnlySpan<byte>(pToken, tokenSize).CopyTo(token);
+            return token;
+        }
+
+        return null;
     }
 
     internal X509Certificate2? GetClientCertificate()

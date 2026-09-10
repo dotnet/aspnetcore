@@ -248,12 +248,7 @@ public class ValidationVisitor
         {
             // If the field has an entry in ModelState, then record it as valid. Don't create
             // extra entries if they don't exist already.
-            var entry = ModelState[Key];
-            if (entry != null)
-            {
-                entry.ValidationState = ModelValidationState.Valid;
-            }
-
+            ModelState[Key]?.ValidationState = ModelValidationState.Valid;
             return true;
         }
     }
@@ -448,9 +443,9 @@ public class ValidationVisitor
     }
 
     /// <summary>
-    /// Supress validation for a given key.
+    /// Suppress validation for a given key.
     /// </summary>
-    /// <param name="key">The key to supress.</param>
+    /// <param name="key">The key to suppress.</param>
     protected virtual void SuppressValidation(string key)
     {
         if (key == null)

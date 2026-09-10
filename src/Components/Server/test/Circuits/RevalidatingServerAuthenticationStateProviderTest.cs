@@ -173,9 +173,11 @@ public class RevalidatingServerAuthenticationStateProviderTest
         Assert.Equal("different user", (await provider.GetAuthenticationStateAsync()).User.Identity.Name);
 
         // Subsequent revalidation can complete successfully
+        // We are checking all new logs because the revalidation loop iteration
+        // may happen multiple times (this made the test flaky in the past)
         await provider.NextValidateAuthenticationStateAsyncCall;
-        Assert.Collection(provider.RevalidationCallLog.Skip(1),
-             call => Assert.Equal("different user", call.AuthenticationState.User.Identity.Name));
+        Assert.All(provider.RevalidationCallLog.Skip(1),
+            call => Assert.Equal("different user", call.AuthenticationState.User.Identity.Name));
     }
 
     [Fact]
