@@ -15,6 +15,56 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite;
 
 public class MiddlewareTests
 {
+    [Theory]
+    [InlineData("/foo", "", "^/foo$", "https://example.com/redirected", HttpStatusCode.MovedPermanently, "https://example.com/redirected")]
+    [InlineData("/foo?ignored=1", "", "^/foo$", "https://example.com/redirected", HttpStatusCode.MovedPermanently, "https://example.com/redirected")]
+    [InlineData("/app/foo?ignored=1", "/app", "^/app/foo$", "/redirected", HttpStatusCode.MovedPermanently, "/app/redirected")]
+    [InlineData("/caf%C3%A9%20menu?ignored=1", "", "^/café menu$", "https://example.com/redirected", HttpStatusCode.MovedPermanently, "https://example.com/redirected")]
+    [InlineData("/other", "", "^/foo$", "https://example.com/redirected", HttpStatusCode.NoContent, null)]
+    public async Task Invoke_RedirectBasedOnPathInfo(
+        string requestPath,
+        string pathBase,
+        string pattern,
+        string redirectUrl,
+        HttpStatusCode expectedStatusCode,
+        string expectedLocation)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader($@"<rewrite>
+                <rules>
+                <rule name=""Redirect based on path info"" stopProcessing=""true"">
+                <match url="".*"" />
+                <conditions>
+                <add input=""{{PATH_INFO}}"" pattern=""{pattern}"" />
+                </conditions>
+                <action type=""Redirect"" url=""{redirectUrl}"" appendQueryString=""false"" />
+                </rule>
+                </rules>
+                </rewrite>"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UsePathBase(pathBase);
+                    app.UseRewriter(options);
+                    app.Run(context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
+                        return Task.CompletedTask;
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var response = await host.GetTestClient().GetAsync(requestPath);
+
+        Assert.Equal(expectedStatusCode, response.StatusCode);
+        Assert.Equal(expectedLocation, response.Headers.Location?.OriginalString);
+    }
+
     [Fact]
     public async Task Invoke_RedirectPathToPathAndQuery()
     {
