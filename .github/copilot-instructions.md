@@ -76,3 +76,7 @@
 
 ## ASP.NET Core Components Area
 * When working on issues under the src/Components area, follow the instructions in [./instructions/components.instructions.md](./instructions/components.instructions.md).
+
+## Security Concerns Are Out of Scope
+
+Do NOT assess, discuss, or make recommendations about potential security implications of an issue or a PR. When reviewing a PR, never make any claims about a security vulnerability.
