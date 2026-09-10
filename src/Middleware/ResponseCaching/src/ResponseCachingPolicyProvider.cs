@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.ResponseCaching;
 
 internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
 {
+    private static readonly char[] HeaderDelimiters = [','];
+
     public bool AttemptResponseCaching(ResponseCachingContext context)
     {
         var request = context.HttpContext.Request;
@@ -99,10 +101,23 @@ internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProv
 
         // Do not cache responses varying by *
         var varyHeader = response.Headers.Vary;
-        if (varyHeader.Count == 1 && string.Equals(varyHeader, "*", StringComparison.OrdinalIgnoreCase))
+        for (var i = 0; i < varyHeader.Count; i++)
         {
-            context.Logger.ResponseWithVaryStarNotCacheable();
-            return false;
+            var rawHeader = varyHeader[i];
+            if (string.IsNullOrEmpty(rawHeader))
+            {
+                continue;
+            }
+
+            var tokenizer = new StringTokenizer(rawHeader, HeaderDelimiters);
+            foreach (var segment in tokenizer)
+            {
+                if (segment.Trim().Equals("*", StringComparison.Ordinal))
+                {
+                    context.Logger.ResponseWithVaryStarNotCacheable();
+                    return false;
+                }
+            }
         }
 
         // Check private
