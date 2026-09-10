@@ -9,9 +9,11 @@ tags:
   area: pull-requests
   repo: aspnetcore
 
-config:
+defaults:
   runs: 1
-  timeout: 10m
+  timeout: 600s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
 
 # Tag conventions:
 #   network: live | none  - whether the stimulus queries GitHub.
