@@ -13,6 +13,9 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'ch.qos.logback:logback-classic:1.2.3'
+    // ':core' declares okhttp as 'implementation', so it is not on this module's compile classpath.
+    // OkHttpWebSocketWrapperTest drives the real wrapper, which needs an OkHttpClient.
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation project(':core')
     implementation project(':messagepack')
     antJUnit 'org.apache.ant:ant-junit:1.10.15'
