@@ -138,6 +138,29 @@ public class Http1OutputProducerTests : IDisposable
     }
 
     [Fact]
+    public void GetMemoryAndGetSpanWithZeroSizeHintReturnNonEmptyBuffers()
+    {
+        using var output = CreateOutputProducer(memoryPool: MemoryPool<byte>.Shared);
+
+        var beforeStartMemoryLength = output.GetMemory(0).Length;
+        var beforeStartSpanLength = output.GetSpan(0).Length;
+
+        output.Stop();
+
+        var completedMemoryLength = output.GetMemory(0).Length;
+        var completedSpanLength = output.GetSpan(0).Length;
+
+        Assert.All(
+            [
+                (Operation: "GetMemory before response start", Length: beforeStartMemoryLength),
+                (Operation: "GetSpan before response start", Length: beforeStartSpanLength),
+                (Operation: "GetMemory after completion", Length: completedMemoryLength),
+                (Operation: "GetSpan after completion", Length: completedSpanLength),
+            ],
+            result => Assert.True(result.Length > 0, $"{result.Operation} returned an empty buffer."));
+    }
+
+    [Fact]
     public void AllocatesFakeMemorySmallerThanMaxBufferSize()
     {
         var pipeOptions = new PipeOptions
@@ -223,7 +246,8 @@ public class Http1OutputProducerTests : IDisposable
     private TestHttpOutputProducer CreateOutputProducer(
         PipeOptions pipeOptions = null,
         ConnectionContext connectionContext = null,
-        ConnectionMetricsContext metricsContext = null)
+        ConnectionMetricsContext metricsContext = null,
+        MemoryPool<byte> memoryPool = null)
     {
         pipeOptions = pipeOptions ?? new PipeOptions();
         connectionContext = connectionContext ?? Mock.Of<ConnectionContext>();
@@ -234,7 +258,7 @@ public class Http1OutputProducerTests : IDisposable
             pipe,
             "0",
             connectionContext,
-            _memoryPool,
+            memoryPool ?? _memoryPool,
             serviceContext.Log,
             Mock.Of<ITimeoutControl>(),
             Mock.Of<IHttpMinResponseDataRateFeature>(),
