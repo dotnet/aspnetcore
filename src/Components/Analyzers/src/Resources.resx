@@ -291,4 +291,13 @@
   <data name="ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title" xml:space="preserve">
     <value>Component has 'DisposeAsync()' but does not implement 'IAsyncDisposable'</value>
   </data>
+  <data name="RazorComponentResultParameterDoesNotExist_Description" xml:space="preserve">
+    <value>Parameters passed to RazorComponentResult&lt;TComponent&gt; are matched by name to [Parameter] properties on the component when it renders. Supplying a name that does not correspond to a component parameter throws an InvalidOperationException at runtime.</value>
+  </data>
+  <data name="RazorComponentResultParameterDoesNotExist_Format" xml:space="preserve">
+    <value>Component '{0}' does not have a [Parameter] property matching the name '{1}'.</value>
+  </data>
+  <data name="RazorComponentResultParameterDoesNotExist_Title" xml:space="preserve">
+    <value>RazorComponentResult parameter does not match a component parameter</value>
+  </data>
 </root>
