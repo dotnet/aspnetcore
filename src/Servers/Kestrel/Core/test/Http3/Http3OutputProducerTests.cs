@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -19,12 +18,11 @@ public class Http3OutputProducerTests
     [Fact]
     public void GetFakeMemoryWithZeroSizeHintReturnsNonEmptyMemory()
     {
-        var memoryPool = CreateMemoryPool();
         var connectionFeatures = new TestConnectionFeatures().FeatureCollection;
         var streamContext = TestContextFactory.CreateHttp3StreamContext(
             transport: DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application,
             connectionFeatures: connectionFeatures,
-            memoryPool: memoryPool.Object);
+            memoryPool: MemoryPool<byte>.Shared);
         var stream = new TestHttp3Stream();
         stream.Initialize(streamContext);
         var output = Assert.IsType<Http3OutputProducer>(stream.Output);
@@ -39,22 +37,6 @@ public class Http3OutputProducerTests
         {
             output.Dispose();
         }
-    }
-
-    private static Mock<MemoryPool<byte>> CreateMemoryPool()
-    {
-        var memoryPool = new Mock<MemoryPool<byte>>();
-        memoryPool.SetupGet(pool => pool.MaxBufferSize).Returns(MemoryPool<byte>.Shared.MaxBufferSize);
-        memoryPool.Setup(pool => pool.Rent(0)).Returns(Mock.Of<IMemoryOwner<byte>>());
-        memoryPool.Setup(pool => pool.Rent(It.Is<int>(size => size > 0)))
-            .Returns((int size) =>
-            {
-                var memoryOwner = new Mock<IMemoryOwner<byte>>();
-                memoryOwner.SetupGet(owner => owner.Memory).Returns(new byte[size]);
-                return memoryOwner.Object;
-            });
-
-        return memoryPool;
     }
 
     private sealed class TestHttp3Stream : Http3Stream

@@ -140,13 +140,7 @@ public class Http1OutputProducerTests : IDisposable
     [Fact]
     public void GetMemoryAndGetSpanWithZeroSizeHintReturnNonEmptyBuffers()
     {
-        var memoryPool = new Mock<MemoryPool<byte>>();
-        memoryPool.SetupGet(pool => pool.MaxBufferSize).Returns(MemoryPool<byte>.Shared.MaxBufferSize);
-        memoryPool.Setup(pool => pool.Rent(0)).Returns(Mock.Of<IMemoryOwner<byte>>());
-        memoryPool.Setup(pool => pool.Rent(It.Is<int>(size => size > 0)))
-            .Returns((int size) => MemoryPool<byte>.Shared.Rent(size));
-
-        using var output = CreateOutputProducer(memoryPool: memoryPool.Object);
+        using var output = CreateOutputProducer(memoryPool: MemoryPool<byte>.Shared);
 
         var beforeStartMemoryLength = output.GetMemory(0).Length;
         var beforeStartSpanLength = output.GetSpan(0).Length;
