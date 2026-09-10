@@ -8,7 +8,7 @@
 //  - The capabilities of Boot.Server.ts and Boot.WebAssembly.ts to handle insertion
 //    of interactive components
 
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { setCircuitOptions } from './Boot.Server.Common';
 import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
