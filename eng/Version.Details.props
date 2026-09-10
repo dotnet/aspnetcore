@@ -5,9 +5,6 @@ This file should be imported by eng/Versions.props
 -->
 <Project>
   <PropertyGroup>
-    <!-- dotnet-arcade dependencies -->
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>10.0.0-beta.26456.2</MicrosoftDotNetHelixJobMonitorPackageVersion>
-    <!-- dotnet-dotnet dependencies -->
     <dotnetefPackageVersion>10.0.13</dotnetefPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.13</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBclCryptographyPackageVersion>10.0.13</MicrosoftBclCryptographyPackageVersion>
@@ -16,6 +13,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetBuildTasksArchivesPackageVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetHelixSdkPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetRemoteExecutorPackageVersion>
     <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.26454.107</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
