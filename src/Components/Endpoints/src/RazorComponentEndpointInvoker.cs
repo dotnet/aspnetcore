@@ -130,7 +130,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // but there are no navigation updates left to send through the streaming writer.
         var navigationExceptionWasHandled = navigationExceptionHandledInPendingTasks
             && quiesceTask is { IsFaulted: true, Exception: { } exception }
-            && ContainsOnlyNavigationExceptions(exception);
+            && EndpointHtmlRenderer.GetFirstNonNavigationException(exception) is null;
 
         if (_renderer.NotFoundEventArgs != null)
         {
@@ -278,25 +278,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
         return null;
-    }
-
-    private static bool ContainsOnlyNavigationExceptions(AggregateException aggregateException)
-    {
-        var flattened = aggregateException.Flatten();
-        if (flattened.InnerExceptions.Count == 0)
-        {
-            return false;
-        }
-
-        foreach (var innerException in flattened.InnerExceptions)
-        {
-            if (innerException is not NavigationException)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]

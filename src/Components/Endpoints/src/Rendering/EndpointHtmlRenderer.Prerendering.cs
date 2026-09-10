@@ -230,7 +230,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static Exception? GetFirstNonNavigationException(AggregateException? aggregateException)
+    internal static Exception? GetFirstNonNavigationException(AggregateException? aggregateException)
     {
         if (aggregateException is null)
         {
