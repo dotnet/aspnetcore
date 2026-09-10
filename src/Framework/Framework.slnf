@@ -50,7 +50,7 @@
       "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
       "src\\Identity\\Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
       "src\\Identity\\Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
-      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\Components\\JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",

@@ -1,0 +1,45 @@
+<div class="ingredient-row">
+    <span class="ingredient-row__icon" aria-hidden="true">@Ingredient.Icon</span>
+    <span class="ingredient-row__fields">
+        <input type="text"
+               class="ingredient-row__name"
+               aria-label="Ingredient name"
+               value="@Ingredient.Name"
+               @oninput="args => UpdateAsync(nameof(Ingredient.Name), args)"
+               placeholder="Ingredient name" />
+        <input type="text"
+               class="ingredient-row__amount"
+               aria-label="Ingredient amount"
+               value="@Ingredient.Amount"
+               @oninput="args => UpdateAsync(nameof(Ingredient.Amount), args)"
+               placeholder="Amount" />
+    </span>
+    <button class="recipe-editor__remove-btn"
+            aria-label="Remove ingredient"
+            @onclick="OnRemove">&times;</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Ingredient Ingredient { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback<Ingredient> IngredientChanged { get; set; }
+
+    private Task UpdateAsync(string propertyName, ChangeEventArgs args)
+    {
+        var value = args.Value?.ToString() ?? "";
+        var ingredient = propertyName switch
+        {
+            nameof(Ingredient.Name) => Ingredient with { Name = value },
+            nameof(Ingredient.Amount) => Ingredient with { Amount = value },
+            _ => throw new InvalidOperationException(
+                $"Unknown ingredient property '{propertyName}'."),
+        };
+
+        return IngredientChanged.InvokeAsync(ingredient);
+    }
+}

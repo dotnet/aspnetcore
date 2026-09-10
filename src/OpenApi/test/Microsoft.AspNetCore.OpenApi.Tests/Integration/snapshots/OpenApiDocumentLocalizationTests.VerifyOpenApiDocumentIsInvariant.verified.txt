@@ -1831,6 +1831,45 @@
         }
       }
     },
+    "/schemas-by-ref/nullable-and-non-nullable-reference-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/schemas-by-ref/response-array-with-nullable-element": {
       "get": {
         "tags": [

@@ -6317,25 +6317,46 @@ public class Http2ConnectionTests : Http2TestBase
         get
         {
             // We can't use HPackEncoder here because it will convert header names to lowercase
-            var data = new TheoryData<byte[], string>();
+            var data = new TheoryData<byte[], string>
+            {
+                // Indexed Header Field - :method: GET
+                { new byte[] { 0x82 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField },
 
-            // Indexed Header Field - :method: GET
-            data.Add(new byte[] { 0x82 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
+                // Indexed Header Field - :path: /
+                { new byte[] { 0x84 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField },
 
-            // Indexed Header Field - :path: /
-            data.Add(new byte[] { 0x84 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
+                // Indexed Header Field - :scheme: http
+                { new byte[] { 0x86 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField },
 
-            // Indexed Header Field - :scheme: http
-            data.Add(new byte[] { 0x86 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
+                // Literal Header Field without Indexing - Indexed Name - :authority: 127.0.0.1
+                {
+                    new byte[] { 0x01, 0x09 }.Concat(Encoding.ASCII.GetBytes("127.0.0.1")).ToArray(),
+                    CoreStrings.HttpErrorTrailersContainPseudoHeaderField
+                },
 
-            // Literal Header Field without Indexing - Indexed Name - :authority: 127.0.0.1
-            data.Add(new byte[] { 0x01, 0x09 }.Concat(Encoding.ASCII.GetBytes("127.0.0.1")).ToArray(), CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
+                // Literal Header Field without Indexing - New Name - contains-Uppercase: 0
+                {
+                    new byte[] { 0x00, 0x12 }.Concat(Encoding.ASCII.GetBytes("contains-Uppercase")).Concat(new byte[] { 0x01, (byte)'0' }).ToArray(),
+                    CoreStrings.HttpErrorTrailerNameUppercase
+                },
 
-            // Literal Header Field without Indexing - New Name - contains-Uppercase: 0
-            data.Add(new byte[] { 0x00, 0x12 }
-                .Concat(Encoding.ASCII.GetBytes("contains-Uppercase"))
-                .Concat(new byte[] { 0x01, (byte)'0' })
-                .ToArray(), CoreStrings.HttpErrorTrailerNameUppercase);
+                //Invalid header CR - contains-cr: \r
+                {
+                    new byte[]{0x00, 0x0B}.Concat(Encoding.ASCII.GetBytes("contains-cr")).Concat(new byte[]{0x01, 0x0D}).ToArray(),
+                    CoreStrings.BadRequest_MalformedRequestInvalidHeaders
+                },
+
+                //Invalid header LF - contains-lf: \n
+                {
+                    new byte[]{0x00, 0x0B}.Concat(Encoding.ASCII.GetBytes("contains-lf")).Concat(new byte[]{0x01, 0x0A}).ToArray(),
+                    CoreStrings.BadRequest_MalformedRequestInvalidHeaders
+                },
+                //Invalid header CR and LF - contains-crlf: \r\n
+                {
+                    new byte[]{0x00, 0x0D}.Concat(Encoding.ASCII.GetBytes("contains-crlf")).Concat(new byte[]{0x02, 0x0D, 0x0A}).ToArray(),
+                    CoreStrings.BadRequest_MalformedRequestInvalidHeaders
+                }
+            };
 
             return data;
         }

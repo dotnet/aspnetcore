@@ -169,7 +169,7 @@ if [ "$?" == "0" ]; then
     EnableMaestroInternalPackageSources
 fi
 
-DotNetVersions=('5' '6' '7' '8' '9' '10')
+DotNetVersions=('5' '6' '7' '8' '9' '10' '11')
 
 for DotNetVersion in ${DotNetVersions[@]} ; do
     FeedPrefix="dotnet${DotNetVersion}";

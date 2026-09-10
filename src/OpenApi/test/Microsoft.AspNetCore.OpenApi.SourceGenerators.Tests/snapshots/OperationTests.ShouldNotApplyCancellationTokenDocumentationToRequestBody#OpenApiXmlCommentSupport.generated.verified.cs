@@ -15,8 +15,8 @@
 namespace System.Runtime.CompilerServices
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -26,24 +26,6 @@ namespace System.Runtime.CompilerServices
 
 namespace Microsoft.AspNetCore.OpenApi.Generated
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
-    using System.Text.Json;
-    using System.Text.Json.Nodes;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.OpenApi;
-    using Microsoft.AspNetCore.Mvc.Controllers;
-    using Microsoft.AspNetCore.Mvc.ModelBinding;
-    using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OpenApi;
-
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlComment(
         string? Summary,
@@ -52,9 +34,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         string? Returns,
         string? Value,
         bool Deprecated,
-        List<string>? Examples,
-        List<XmlParameterComment>? Parameters,
-        List<XmlResponseComment>? Responses);
+        global::System.Collections.Generic.List<string>? Examples,
+        global::System.Collections.Generic.List<XmlParameterComment>? Parameters,
+        global::System.Collections.Generic.List<XmlResponseComment>? Responses);
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlParameterComment(string? Name, string? Description, string? Example, bool Deprecated);
@@ -65,12 +47,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class XmlCommentCache
     {
-        private static Dictionary<string, XmlComment>? _cache;
-        public static Dictionary<string, XmlComment> Cache => _cache ??= GenerateCacheEntries();
+        private static global::System.Collections.Generic.Dictionary<string, XmlComment>? _cache;
+        public static global::System.Collections.Generic.Dictionary<string, XmlComment> Cache => _cache ??= GenerateCacheEntries();
 
-        private static Dictionary<string, XmlComment> GenerateCacheEntries()
+        private static global::System.Collections.Generic.Dictionary<string, XmlComment> GenerateCacheEntries()
         {
-            var cache = new Dictionary<string, XmlComment>();
+            var cache = new global::System.Collections.Generic.Dictionary<string, XmlComment>();
 
             cache.Add(@"M:TestController.Create(Person,System.Threading.CancellationToken)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"cancellationToken", @"The cancellation token.", null, false)], null));
 
@@ -85,11 +67,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         /// Generates a documentation comment ID for a type.
         /// Example: T:Namespace.Outer+Inner`1 becomes T:Namespace.Outer.Inner`1
         /// </summary>
-        public static string CreateDocumentationId(this Type type)
+        public static string CreateDocumentationId(this global::System.Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException(nameof(type));
+                throw new global::System.ArgumentNullException(nameof(type));
             }
 
             return "T:" + GetTypeDocId(type, includeGenericArguments: false, omitGenericArity: false);
@@ -99,14 +81,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         /// Generates a documentation comment ID for a property.
         /// Example: P:Namespace.ContainingType.PropertyName or for an indexer P:Namespace.ContainingType.Item(System.Int32)
         /// </summary>
-        public static string CreateDocumentationId(this PropertyInfo property)
+        public static string CreateDocumentationId(this global::System.Reflection.PropertyInfo property)
         {
             if (property == null)
             {
-                throw new ArgumentNullException(nameof(property));
+                throw new global::System.ArgumentNullException(nameof(property));
             }
 
-            var sb = new StringBuilder();
+            var sb = new global::System.Text.StringBuilder();
             sb.Append("P:");
 
             if (property.DeclaringType != null)
@@ -143,14 +125,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         ///   M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
         ///   M:Namespace.ContainingType.#ctor(ParamType)
         /// </summary>
-        public static string CreateDocumentationId(this MethodInfo method)
+        public static string CreateDocumentationId(this global::System.Reflection.MethodInfo method)
         {
             if (method == null)
             {
-                throw new ArgumentNullException(nameof(method));
+                throw new global::System.ArgumentNullException(nameof(method));
             }
 
-            var sb = new StringBuilder();
+            var sb = new global::System.Text.StringBuilder();
             sb.Append("M:");
 
             // Append the fully qualified name of the declaring type.
@@ -172,7 +154,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 if (method.IsGenericMethod)
                 {
                     sb.Append("``");
-                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", method.GetGenericArguments().Length);
+                    sb.AppendFormat(global::System.Globalization.CultureInfo.InvariantCulture, "{0}", method.GetGenericArguments().Length);
                 }
             }
 
@@ -213,7 +195,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         /// constructed generic type arguments are emitted, while <paramref name="omitGenericArity"/>
         /// controls whether the generic arity marker (e.g. "`1") is appended.
         /// </summary>
-        private static string GetTypeDocId(Type type, bool includeGenericArguments, bool omitGenericArity)
+        private static string GetTypeDocId(global::System.Type type, bool includeGenericArguments, bool omitGenericArity)
         {
             if (type.IsGenericParameter)
             {
@@ -234,10 +216,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
             if (type.IsGenericType)
             {
-                Type genericDef = type.GetGenericTypeDefinition();
+                global::System.Type genericDef = type.GetGenericTypeDefinition();
                 string fullName = genericDef.FullName ?? genericDef.Name;
 
-                var sb = new StringBuilder(fullName.Length);
+                var sb = new global::System.Text.StringBuilder(fullName.Length);
 
                 // Replace '+' with '.' for nested types
                 for (var i = 0; i < fullName.Length; i++)
@@ -261,7 +243,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 {
                     int arity = genericDef.GetGenericArguments().Length;
                     sb.Append('`');
-                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", arity);
+                    sb.AppendFormat(global::System.Globalization.CultureInfo.InvariantCulture, "{0}", arity);
                 }
 
                 if (includeGenericArguments && !type.IsGenericTypeDefinition)
@@ -318,17 +300,17 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file class XmlCommentOperationTransformer : IOpenApiOperationTransformer
+    file class XmlCommentOperationTransformer : global::Microsoft.AspNetCore.OpenApi.IOpenApiOperationTransformer
     {
-        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        public global::System.Threading.Tasks.Task TransformAsync(global::Microsoft.OpenApi.OpenApiOperation operation, global::Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext context, global::System.Threading.CancellationToken cancellationToken)
         {
-            var methodInfo = context.Description.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor
+            var methodInfo = context.Description.ActionDescriptor is global::Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor controllerActionDescriptor
                 ? controllerActionDescriptor.MethodInfo
-                : context.Description.ActionDescriptor.EndpointMetadata.OfType<MethodInfo>().SingleOrDefault();
+                : global::System.Linq.Enumerable.SingleOrDefault(global::System.Linq.Enumerable.OfType<global::System.Reflection.MethodInfo>(context.Description.ActionDescriptor.EndpointMetadata));
 
             if (methodInfo is null)
             {
-                return Task.CompletedTask;
+                return global::System.Threading.Tasks.Task.CompletedTask;
             }
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
@@ -348,7 +330,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 {
                     foreach (var parameterComment in methodComment.Parameters)
                     {
-                        var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
+                        var parameterInfo = global::System.Linq.Enumerable.SingleOrDefault(methodInfo.GetParameters(), info => info.Name == parameterComment.Name);
                         var modelName = GetModelName(parameterInfo, parameterComment.Name);
                         var operationParameter = GetOperationParameter(operation, modelName);
                         if (operationParameter is not null)
@@ -377,7 +359,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     {
                                         continue;
                                     }
-                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
+                                    foreach (var mediaType in global::System.Linq.Enumerable.OfType<global::Microsoft.OpenApi.OpenApiMediaType>(content))
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -389,7 +371,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 // Applies `<returns>` on XML comments for operation with single response value.
                 if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
                 {
-                    var response = operation.Responses.First();
+                    var response = global::System.Linq.Enumerable.First(operation.Responses);
                     response.Value.Description = returns;
                 }
                 // Applies `<response>` on XML comments for operation with multiple response values.
@@ -397,7 +379,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 {
                     foreach (var response in operation.Responses)
                     {
-                        var responseComment = methodComment.Responses.SingleOrDefault(xmlResponse => xmlResponse.Code == response.Key);
+                        var responseComment = global::System.Linq.Enumerable.SingleOrDefault(methodComment.Responses, xmlResponse => xmlResponse.Code == response.Key);
                         if (responseComment is not null)
                         {
                             response.Value.Description = responseComment.Description;
@@ -409,7 +391,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 var metadata = parameterDescription.ModelMetadata;
                 if (metadata is not null
-                    && metadata.MetadataKind == ModelMetadataKind.Property
+                    && metadata.MetadataKind == global::Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind.Property
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
@@ -437,7 +419,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                             if (IsRequestBodyParameter(parameterDescription.Source) && operation.RequestBody is not null)
                             {
                                 operation.RequestBody.Description = description;
-                                if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                                if (propertyComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
                                     if (content is null)
@@ -445,7 +427,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                         continue;
                                     }
                                     var parsedExample = jsonString.Parse();
-                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
+                                    foreach (var mediaType in global::System.Linq.Enumerable.OfType<global::Microsoft.OpenApi.OpenApiMediaType>(content))
                                     {
                                         mediaType.Example = parsedExample;
                                     }
@@ -457,7 +439,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         if (targetOperationParameter is not null)
                         {
                             targetOperationParameter.Description = description;
-                            if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                            if (propertyComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
                             {
                                 targetOperationParameter.Example = jsonString.Parse();
                             }
@@ -466,10 +448,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
             }
 
-            return Task.CompletedTask;
+            return global::System.Threading.Tasks.Task.CompletedTask;
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, string? modelName)
+        private static global::Microsoft.OpenApi.IOpenApiParameter? GetOperationParameter(global::Microsoft.OpenApi.OpenApiOperation operation, string? modelName)
         {
             if (string.IsNullOrEmpty(modelName))
             {
@@ -484,7 +466,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
             foreach (var parameter in parameters)
             {
-                if (string.Equals(parameter.Name, modelName, StringComparison.Ordinal))
+                if (string.Equals(parameter.Name, modelName, global::System.StringComparison.Ordinal))
                 {
                     return parameter;
                 }
@@ -493,7 +475,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, string? modelName)
+        private static bool IsRequestBodyParameter(global::Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext context, string? modelName)
         {
             if (string.IsNullOrEmpty(modelName))
             {
@@ -503,7 +485,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
                 if (IsRequestBodyParameter(parameterDescription.Source)
-                    && string.Equals(parameterDescription.Name, modelName, StringComparison.Ordinal))
+                    && string.Equals(parameterDescription.Name, modelName, global::System.StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -512,21 +494,21 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return false;
         }
 
-        private static bool IsRequestBodyParameter(BindingSource? source)
-            => source == BindingSource.Body
-                || source == BindingSource.Form
-                || source == BindingSource.FormFile;
+        private static bool IsRequestBodyParameter(global::Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? source)
+            => source == global::Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Body
+                || source == global::Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Form
+                || source == global::Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.FormFile;
 
-        [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
-        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
-        private static PropertyInfo? GetPropertyInfo(Type containerType, string propertyName)
+        [global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
+        [global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
+        private static global::System.Reflection.PropertyInfo? GetPropertyInfo(global::System.Type containerType, string propertyName)
         {
             // Walk the type hierarchy explicitly with `DeclaredOnly` so that a property shadowing a
             // base member (via `new`) doesn't throw an `AmbiguousMatchException`, while still
             // resolving properties that are inherited from a base type.
             for (var type = containerType; type is not null; type = type.BaseType)
             {
-                var propertyInfo = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                var propertyInfo = type.GetProperty(propertyName, global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.DeclaredOnly);
                 if (propertyInfo is not null)
                 {
                     return propertyInfo;
@@ -536,13 +518,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static string? GetModelName(ICustomAttributeProvider? attributeProvider, string? name)
+        private static string? GetModelName(global::System.Reflection.ICustomAttributeProvider? attributeProvider, string? name)
         {
             if (attributeProvider is not null)
             {
                 foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: true))
                 {
-                    if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                    if (attribute is global::Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
                     {
                         return modelNameProvider.Name;
                     }
@@ -552,46 +534,46 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return name;
         }
 
-        private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
+        private static global::Microsoft.OpenApi.OpenApiParameter UnwrapOpenApiParameter(global::Microsoft.OpenApi.IOpenApiParameter sourceParameter)
         {
-            if (sourceParameter is OpenApiParameterReference parameterReference)
+            if (sourceParameter is global::Microsoft.OpenApi.OpenApiParameterReference parameterReference)
             {
-                if (parameterReference.Target is OpenApiParameter target)
+                if (parameterReference.Target is global::Microsoft.OpenApi.OpenApiParameter target)
                 {
                     return target;
                 }
                 else
                 {
-                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                    throw new global::System.InvalidOperationException($"The input schema must be an {nameof(global::Microsoft.OpenApi.OpenApiParameter)} or {nameof(global::Microsoft.OpenApi.OpenApiParameterReference)}.");
                 }
             }
-            else if (sourceParameter is OpenApiParameter directParameter)
+            else if (sourceParameter is global::Microsoft.OpenApi.OpenApiParameter directParameter)
             {
                 return directParameter;
             }
             else
             {
-                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                throw new global::System.InvalidOperationException($"The input schema must be an {nameof(global::Microsoft.OpenApi.OpenApiParameter)} or {nameof(global::Microsoft.OpenApi.OpenApiParameterReference)}.");
             }
         }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file class XmlCommentSchemaTransformer : IOpenApiSchemaTransformer
+    file class XmlCommentSchemaTransformer : global::Microsoft.AspNetCore.OpenApi.IOpenApiSchemaTransformer
     {
-        public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
+        public global::System.Threading.Tasks.Task TransformAsync(global::Microsoft.OpenApi.OpenApiSchema schema, global::Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext context, global::System.Threading.CancellationToken cancellationToken)
         {
             // Apply comments from the type
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                if (typeComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
                 {
                     schema.Examples = [jsonString.Parse()!];
                 }
             }
 
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            if (context.JsonPropertyInfo is { AttributeProvider: global::System.Reflection.PropertyInfo propertyInfo })
             {
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
@@ -611,7 +593,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         // Inlined schema
                         schema.Description = description;
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
                         {
                             schema.Examples = [jsonString.Parse()!];
                         }
@@ -623,21 +605,21 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         {
                             schema.Metadata["x-ref-description"] = description;
                         }
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples is { } examples && global::System.Linq.Enumerable.FirstOrDefault(examples) is { } jsonString)
                         {
                             schema.Metadata["x-ref-example"] = jsonString.Parse()!;
                         }
                     }
                 }
             }
-            return Task.CompletedTask;
+            return global::System.Threading.Tasks.Task.CompletedTask;
         }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
-        public static JsonNode? Parse(this string? json)
+        public static global::System.Text.Json.Nodes.JsonNode? Parse(this string? json)
         {
             if (json is null)
             {
@@ -646,16 +628,16 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
             try
             {
-                return JsonNode.Parse(json);
+                return global::System.Text.Json.Nodes.JsonNode.Parse(json);
             }
-            catch (JsonException)
+            catch (global::System.Text.Json.JsonException)
             {
                 try
                 {
                     // If parsing fails, try wrapping in quotes to make it a valid JSON string
-                    return JsonNode.Parse($"\"{json.Replace("\"", "\\\"")}\"");
+                    return global::System.Text.Json.Nodes.JsonNode.Parse($"\"{json.Replace("\"", "\\\"")}\"");
                 }
-                catch (JsonException)
+                catch (global::System.Text.Json.JsonException)
                 {
                     return null;
                 }
@@ -667,9 +649,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services)
+        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            return services.AddOpenApi("v1", options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
