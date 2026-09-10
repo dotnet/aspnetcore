@@ -51,8 +51,16 @@ internal sealed class RemoteJSDataStream : Stream
 
         var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
         var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, chunkSize, jsInteropDefaultCallTimeout, cancellationToken);
-        await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
-        return remoteJSDataStream;
+        try
+        {
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
+            return remoteJSDataStream;
+        }
+        catch
+        {
+            remoteJSDataStream.Dispose();
+            throw;
+        }
     }
 
     private RemoteJSDataStream(
