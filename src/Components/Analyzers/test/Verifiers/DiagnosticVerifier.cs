@@ -25,6 +25,15 @@ public abstract partial class DiagnosticVerifier
     }
 
     /// <summary>
+    /// Get multiple CSharp analyzers being tested - to be implemented in non-abstract class.
+    /// To be used in combination with `VerifyMultipleCSharpDiagnostic` only.
+    /// </summary>
+    protected virtual DiagnosticAnalyzer[] GetMultipleCSharpDiagnosticAnalyzers()
+    {
+        return null;
+    }
+
+    /// <summary>
     /// Get the Visual Basic analyzer being tested (C#) - to be implemented in non-abstract class
     /// </summary>
     protected virtual DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
@@ -44,6 +53,29 @@ public abstract partial class DiagnosticVerifier
     protected void VerifyCSharpDiagnostic(string source, params DiagnosticResult[] expected)
     {
         VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
+    }
+
+    /// <summary>
+    /// Called to test multiple C# DiagnosticAnalyzers when applied on the single inputted string as a source
+    /// Note: input a DiagnosticResult for each Diagnostic expected
+    /// </summary>
+    /// <param name="source">A class in the form of a string to run the analyzers on</param>
+    /// <param name="expected"> DiagnosticResults that should appear after the analyzers are run on the source</param>
+    protected void VerifyMultipleCSharpDiagnostic(string source, params DiagnosticResult[] expected)
+    {
+        var mappedDiagnostics = GetMappedDiagnostics(GetMultipleCSharpDiagnosticAnalyzers());
+        var mappedResults = GetMappedResults(expected);
+        foreach (var diagnostic in mappedDiagnostics)
+        {
+            if (mappedResults.TryGetValue(diagnostic.Key, out var results))
+            {
+                VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, diagnostic.Value, results);
+            }
+            else
+            {
+                VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, diagnostic.Value, Array.Empty<DiagnosticResult>());
+            }
+        }
     }
 
     /// <summary>
@@ -113,7 +145,8 @@ public abstract partial class DiagnosticVerifier
             string diagnosticsOutput = actualResults.Any() ? FormatDiagnostics(analyzer, actualResults.ToArray()) : "    NONE.";
 
             Assert.Fail(
-                string.Format(CultureInfo.InvariantCulture, "Mismatch between number of diagnostics returned, expected \"{0}\" actual \"{1}\"\r\n\r\nDiagnostics:\r\n{2}\r\n", expectedCount, actualCount, diagnosticsOutput));
+                string.Format(CultureInfo.InvariantCulture, "Mismatch between number of diagnostics returned for \"{0}\", expected \"{1}\" actual \"{2}\"\r\n\r\nDiagnostics:\r\n{3}\r\n",
+                    analyzer.SupportedDiagnostics.FirstOrDefault()?.Id, expectedCount, actualCount, diagnosticsOutput));
         }
 
         for (int i = 0; i < expectedResults.Length; i++)
@@ -282,6 +315,51 @@ public abstract partial class DiagnosticVerifier
             }
         }
         return builder.ToString();
+    }
+
+    /// <summary>
+    /// Helper method to map diagnostics to their corresponding analyzers
+    /// </summary>
+    /// <param name="analyzers">The analyzers to be mapped</param>
+    /// <returns>A dictionary mapping diagnostic IDs to their analyzers</returns>
+    /// <exception cref="ArgumentException">Thrown if a duplicate diagnostic ID is found</exception>
+    private Dictionary<string, DiagnosticAnalyzer> GetMappedDiagnostics(DiagnosticAnalyzer[] analyzers)
+    {
+        var mappedDiagnostics = new Dictionary<string, DiagnosticAnalyzer>();
+        foreach (var analyzer in analyzers)
+        {
+            foreach (var supportedDiagnostic in analyzer.SupportedDiagnostics)
+            {
+                if (!mappedDiagnostics.ContainsKey(supportedDiagnostic.Id))
+                {
+                    mappedDiagnostics.Add(supportedDiagnostic.Id, analyzer);
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Analyzer {0} already has a diagnostic with id {1}.", mappedDiagnostics[supportedDiagnostic.Id].GetType().Name, supportedDiagnostic.Id));
+                }
+            }
+        }
+        return mappedDiagnostics;
+    }
+
+    /// <summary>
+    /// Helper method to map diagnostic results to their corresponding diagnostic IDs.
+    /// </summary>
+    /// <param name="expected">The diagnostic results to be mapped</param>
+    /// <returns>A dictionary mapping diagnostic IDs to their corresponding diagnostic results</returns>
+    private Dictionary<string, DiagnosticResult[]> GetMappedResults(DiagnosticResult[] expected)
+    {
+        var mappedResults = new Dictionary<string, List<DiagnosticResult>>();
+        foreach (var result in expected)
+        {
+            if (!mappedResults.ContainsKey(result.Id))
+            {
+                mappedResults.Add(result.Id, new List<DiagnosticResult>());
+            }
+            mappedResults[result.Id].Add(result);
+        }
+        return mappedResults.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray());
     }
     #endregion
 }
