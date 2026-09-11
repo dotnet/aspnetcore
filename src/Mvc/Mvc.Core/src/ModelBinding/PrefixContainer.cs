@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class PrefixContainer
 {
-    private readonly ICollection<string> _originalValues;
     private readonly string[] _sortedValues;
 
     /// <summary>
@@ -25,16 +24,14 @@ public class PrefixContainer
     {
         ArgumentNullException.ThrowIfNull(values);
 
-        _originalValues = values;
-
-        if (_originalValues.Count == 0)
+        if (values.Count == 0)
         {
             _sortedValues = Array.Empty<string>();
         }
         else
         {
-            _sortedValues = new string[_originalValues.Count];
-            _originalValues.CopyTo(_sortedValues, 0);
+            _sortedValues = new string[values.Count];
+            values.CopyTo(_sortedValues, 0);
             Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
         }
     }
@@ -75,29 +72,59 @@ public class PrefixContainer
     public IDictionary<string, string> GetKeysFromPrefix(string prefix)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var start = prefix.Length == 0 ? 0 : FindFirstValueWithPrefix(prefix);
 
-        foreach (var entry in _originalValues)
+        for (var i = start; i < _sortedValues.Length; i++)
         {
-            if (entry != null)
+            var entry = _sortedValues[i];
+            if (entry is null)
             {
-                if (entry.Length == prefix.Length)
-                {
-                    // No key in this entry
-                    continue;
-                }
+                continue;
+            }
 
-                if (prefix.Length == 0)
-                {
-                    GetKeyFromEmptyPrefix(entry, result);
-                }
-                else if (entry.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    GetKeyFromNonEmptyPrefix(prefix, entry, result);
-                }
+            if (prefix.Length != 0 && !entry.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
+            if (entry.Length == prefix.Length)
+            {
+                // No key in this entry
+                continue;
+            }
+
+            if (prefix.Length == 0)
+            {
+                GetKeyFromEmptyPrefix(entry, result);
+            }
+            else
+            {
+                GetKeyFromNonEmptyPrefix(prefix, entry, result);
             }
         }
 
         return result;
+    }
+
+    private int FindFirstValueWithPrefix(string prefix)
+    {
+        var start = 0;
+        var end = _sortedValues.Length;
+
+        while (start < end)
+        {
+            var pivot = start + ((end - start) / 2);
+            if (StringComparer.OrdinalIgnoreCase.Compare(_sortedValues[pivot], prefix) < 0)
+            {
+                start = pivot + 1;
+            }
+            else
+            {
+                end = pivot;
+            }
+        }
+
+        return start;
     }
 
     private static void GetKeyFromEmptyPrefix(string entry, IDictionary<string, string> results)
