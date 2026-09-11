@@ -1,0 +1,15 @@
+﻿@rendermode RenderMode.InteractiveWebAssembly
+
+<div id="wasm-counter-test">
+    <div>WebAssembly Counter: @_count</div>
+    <button class="btn btn-primary" @onclick="IncrementCount">Increment</button>
+</div>
+
+@code {
+    int _count = 0;
+
+    void IncrementCount()
+    {
+        _count++;
+    }
+}

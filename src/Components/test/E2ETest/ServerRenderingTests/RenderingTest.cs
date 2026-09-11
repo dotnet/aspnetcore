@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Collections.ObjectModel;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -113,6 +114,72 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
+        }
+    }
+
+    [Theory]
+    [InlineData("/hydration-error", "Server", new[] { "invalid markup", "Ensure valid HTML structure" })]
+    [InlineData("/hydration-error-auto", "Auto", new[] { "invalid markup", "Ensure valid HTML structure" })]
+    [InlineData("/hydration-error-webassembly", "WebAssembly", new[] { "invalid markup", "Ensure valid HTML structure" })]
+    public void HydrationFails_WhenInteractiveComponentInsideParagraph(string path, string renderMode, string[] expectedKeywords)
+    {
+        Navigate($"{ServerPathBase}{path}");
+
+        WaitAssert.True(Browser, () =>
+        {
+            var errors = GetCapturedErrors();
+            return errors.Count > 0;
+        }, TimeSpan.FromSeconds(10));
+
+        var errors = GetCapturedErrors();
+        Assert.NotEmpty(errors);
+
+        var message = errors.First().ToString();
+        Output.WriteLine($"{renderMode} Mode Error: {message}");
+
+        Assert.Contains("hydration", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("malformed", message, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var keyword in expectedKeywords)
+        {
+            Assert.Contains(keyword, message, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void HydrationSucceeds_WhenInteractiveServerComponentFollowsSelfClosingParagraph()
+    {
+        Navigate($"{ServerPathBase}/hydration-valid-self-closing-server");
+
+        var errors = (ReadOnlyCollection<object>)((IJavaScriptExecutor)Browser)
+            .ExecuteScript("return window.__e2eErrors || []");
+
+        Assert.Empty(errors);
+
+        var serverCounterElement = Browser.FindElement(By.TagName("strong"));
+        Assert.NotNull(serverCounterElement);
+        Assert.Equal("Server counter", serverCounterElement.Text);
+    }
+
+    private ReadOnlyCollection<object> GetCapturedErrors()
+    {
+        try
+        {
+            var result = (ReadOnlyCollection<object>)((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window.__e2eErrors || []");
+
+            if (result == null)
+            {
+                throw new InvalidOperationException(
+                    "window.__e2eErrors is not initialized. Ensure the ErrorCapture component is loaded on the test page.");
+            }
+
+            return result;
+        }
+        catch (WebDriverException ex)
+        {
+            Output.WriteLine($"WebDriver error retrieving errors: {ex.Message}");
+            throw;
         }
     }
 }
