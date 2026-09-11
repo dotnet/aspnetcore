@@ -59,12 +59,16 @@ public static class ControllerEndpointRouteBuilderExtensions
             dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
         }
 
-        return dataSource.AddRoute(
+        var builder = dataSource.AddRoute(
             "default",
             "{controller=Home}/{action=Index}/{id?}",
             defaults: null,
             constraints: null,
             dataTokens: null);
+
+        builder.Items[EndpointRouteBuilderKey] = endpoints;
+
+        return builder;
     }
 
     /// <summary>
@@ -108,12 +112,16 @@ public static class ControllerEndpointRouteBuilderExtensions
             dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
         }
 
-        return dataSource.AddRoute(
+        var builder = dataSource.AddRoute(
             name,
             pattern,
             new RouteValueDictionary(defaults),
             new RouteValueDictionary(constraints),
             new RouteValueDictionary(dataTokens));
+
+        builder.Items[EndpointRouteBuilderKey] = endpoints;
+
+        return builder;
     }
 
     /// <summary>
