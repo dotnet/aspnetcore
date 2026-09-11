@@ -2216,11 +2216,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData("2", true)]
+    [InlineData("2", true)]
     public virtual void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
-        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider, delay: useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2677,8 +2676,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (WASM leg: Start mode converges to bottom after large append; scrollTop==scrollHeight-clientHeight, gap 0):
-    // [InlineData(false)]
+    [InlineData(false)]
     [InlineData(true)]
     public void QuickGrid_AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool useItemsProvider)
     {
@@ -2688,16 +2686,27 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         ScrollToBottomAndWait(container, js);
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightBefore = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
 
         QuickGridMutate(js, "qg-append-many-items", "Appended 100 items", useItemsProvider);
-        // Start mode: no convergence to chase the new bottom.
-        var st2 = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        var sh2 = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-        var ch2 = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-        var gap = sh2 - st2 - ch2;
-        Assert.True(gap > 2000,
-            $"QuickGrid Start mode: should not converge to bottom after large append. " +
-            $"scrollTop: {st2}, scrollHeight: {sh2}, gap: {gap}");
+
+        long scrollTopAfter = 0;
+        long scrollHeightAfter = 0;
+        long clientHeight = 0;
+        Browser.True(() =>
+        {
+            scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            scrollHeightAfter = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            var gap = scrollHeightAfter - scrollTopAfter - clientHeight;
+            return scrollHeightAfter - scrollHeightBefore > 2000
+                && Math.Abs(scrollTopAfter - scrollTopBefore) < 5
+                && gap > 2000;
+        }, TimeSpan.FromSeconds(10),
+            $"QuickGrid Start mode should preserve the viewport instead of converging to the new bottom. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter}, " +
+            $"scrollHeight before: {scrollHeightBefore}, after: {scrollHeightAfter}, clientHeight: {clientHeight}");
     }
 
     [Theory]
@@ -2791,8 +2800,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (End mode converges to bottom on mount before the "start near top" precondition; scrollTop 54776 ≈ scrollHeight 55076. Flake on slow Linux Mono CI leg, build 1514924):
-    // [InlineData("2", true)]
+    [InlineData("2", true)]
     public void QuickGrid_AnchorMode_EndKeyJumpsToBottom(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider, delay: useItemsProvider);
