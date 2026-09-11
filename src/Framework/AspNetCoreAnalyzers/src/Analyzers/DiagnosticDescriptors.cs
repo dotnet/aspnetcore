@@ -222,6 +222,14 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true);
 
+    internal static readonly DiagnosticDescriptor ConfigureCertificateValidationForHttp3 = CreateDiagnosticDescriptor(
+        "ASP0040",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ConfigureCertificateValidationForHttp3_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ConfigureCertificateValidationForHttp3_Message)),
+        Security,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static DiagnosticDescriptor CreateDiagnosticDescriptor(
         string id,
         LocalizableString title,
