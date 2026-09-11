@@ -359,6 +359,23 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(infoRequest.NewEmail)));
             }
 
+            var email = await userManager.GetEmailAsync(user);
+            var isChangingEmail = !string.IsNullOrEmpty(infoRequest.NewEmail) && email != infoRequest.NewEmail;
+
+            // Require proof of current control of the account before re-pointing the email, which is
+            // frequently used as an account recovery channel. Users without a password (for example,
+            // external logins) cannot be challenged this way, so the check only applies when a password
+            // is set. This runs before the password change below so the old password is still valid to check.
+            if (isChangingEmail && await userManager.HasPasswordAsync(user))
+            {
+                if (string.IsNullOrEmpty(infoRequest.OldPassword) ||
+                    !await userManager.CheckPasswordAsync(user, infoRequest.OldPassword))
+                {
+                    return CreateValidationProblem("OldPasswordRequired",
+                        "The old password is required to change the email address.");
+                }
+            }
+
             if (!string.IsNullOrEmpty(infoRequest.NewPassword))
             {
                 if (string.IsNullOrEmpty(infoRequest.OldPassword))
@@ -374,14 +391,9 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            if (!string.IsNullOrEmpty(infoRequest.NewEmail))
+            if (isChangingEmail)
             {
-                var email = await userManager.GetEmailAsync(user);
-
-                if (email != infoRequest.NewEmail)
-                {
-                    await SendConfirmationEmailAsync(user, userManager, context, infoRequest.NewEmail, isChange: true);
-                }
+                await SendConfirmationEmailAsync(user, userManager, context, infoRequest.NewEmail!, isChange: true);
             }
 
             return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));

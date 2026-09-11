@@ -1054,7 +1054,7 @@ public class MapIdentityApiTests : LoggedTest
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/info", new { NewEmail = "invalid" }),
             "InvalidEmail");
 
-        var infoPostResponse = await client.PostAsJsonAsync("/identity/manage/info", new { newEmail });
+        var infoPostResponse = await client.PostAsJsonAsync("/identity/manage/info", new { OldPassword = Password, newEmail });
         var infoPostContent = await infoPostResponse.Content.ReadFromJsonAsync<JsonElement>();
         // The email isn't updated until the new email is confirmed.
         Assert.Equal(Email, infoPostContent.GetProperty("email").GetString());
@@ -1145,7 +1145,7 @@ public class MapIdentityApiTests : LoggedTest
         var originalNameIdentifier = GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier);
         var newEmail = $"NewEmailPrefix-{Email}";
 
-        var infoPostResponse = await client.PostAsJsonAsync("/identity/manage/info", new { newEmail });
+        var infoPostResponse = await client.PostAsJsonAsync("/identity/manage/info", new { OldPassword = Password, newEmail });
         // There are no cookie updates because nothing has changed yet.
         Assert.False(infoPostResponse.Headers.Contains(HeaderNames.SetCookie));
 
@@ -1274,6 +1274,47 @@ public class MapIdentityApiTests : LoggedTest
 
         // We can now login with the new email too.
         AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email = newEmail, Password = newPassword }));
+    }
+
+    [Fact]
+    public async Task CannotChangeEmailWithoutTheCurrentPassword()
+    {
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        // The registration confirmation email should have been sent. We don't need to confirm it.
+        Assert.Single(emailSender.Emails);
+        emailSender.Emails.Clear();
+
+        await LoginAsync(client);
+
+        var newEmail = $"New-{Email}";
+
+        // The email cannot be changed without providing the current password.
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/info", new { newEmail }),
+            "OldPasswordRequired");
+
+        // An incorrect current password is also rejected.
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/info", new { OldPassword = $"{Password}!", newEmail }),
+            "OldPasswordRequired");
+
+        // Since the requests were rejected, no change email confirmation was sent.
+        Assert.Empty(emailSender.Emails);
+
+        // With the correct current password, the change email confirmation is sent.
+        AssertOk(await client.PostAsJsonAsync("/identity/manage/info", new { OldPassword = Password, newEmail }));
+
+        var changeEmail = Assert.Single(emailSender.Emails);
+        Assert.Equal(newEmail, changeEmail.Address);
+        Assert.Equal("Confirm your email", changeEmail.Subject);
     }
 
     [Fact]

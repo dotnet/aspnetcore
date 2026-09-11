@@ -23,7 +23,8 @@ public sealed class InfoRequest
     public string? NewPassword { get; init; }
 
     /// <summary>
-    /// The old password for the authenticated user. This is only required if a <see cref="NewPassword"/> is provided.
+    /// The old password for the authenticated user. This is required if a <see cref="NewPassword"/> is provided,
+    /// or if a <see cref="NewEmail"/> that differs from the current email is provided and the user has a password set.
     /// </summary>
     public string? OldPassword { get; init; }
 }
