@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+#include <utility>
+
 #include "requesthandler.h"
 #include "file_utility.h"
 #include "Environment.h"
@@ -9,14 +11,14 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, std::string& responseContent) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, std::string responseContent) noexcept
         : REQUEST_HANDLER(pContext),
         m_HR(hr),
         m_disableStartupPage(disableStartupPage),
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
         m_statusText(statusText),
-        m_ExceptionInfoContent(responseContent)
+        m_ExceptionInfoContent(std::move(responseContent))
     {
     }
 
@@ -57,5 +59,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    std::string& m_ExceptionInfoContent;
+    std::string m_ExceptionInfoContent;
 };
