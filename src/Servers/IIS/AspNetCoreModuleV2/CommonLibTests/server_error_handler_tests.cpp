@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-#include "ServerErrorHandler.h"
+#include "ServerErrorApplication.h"
 
 using ::testing::_;
 using ::testing::NiceMock;
@@ -88,15 +88,22 @@ public:
     MOCK_METHOD(HRESULT, GetExtendedInterface, (HTTP_CONTEXT_INTERFACE_VERSION, PVOID*), (override));
 };
 
-TEST(ServerErrorHandlerTest, OwnsResponseContent)
+TEST(ServerErrorHandlerTest, PreservesResponseContentAfterApplicationDestroyed)
 {
     NiceMock<MockHttpResponse> response;
     NiceMock<MockHttpContext> context;
-    std::unique_ptr<ServerErrorHandler> handler;
+    NiceMock<MockHttpApplication> httpApplication;
+    IREQUEST_HANDLER* handler = nullptr;
     std::string responseContent;
     USHORT statusCode = 0;
     USHORT subStatusCode = 0;
 
+    ON_CALL(httpApplication, GetApplicationPhysicalPath())
+        .WillByDefault(Return(L"C:\\TestApp"));
+    ON_CALL(httpApplication, GetAppConfigPath())
+        .WillByDefault(Return(L"MACHINE/WEBROOT/APPHOST/TestApp"));
+    ON_CALL(httpApplication, GetApplicationId())
+        .WillByDefault(Return(L"/TestApp"));
     EXPECT_CALL(context, GetResponse())
         .WillOnce(Return(&response));
     EXPECT_CALL(response, SetStatus(_, _, _, _, _, _))
@@ -115,22 +122,24 @@ TEST(ServerErrorHandlerTest, OwnsResponseContent)
             return S_OK;
         });
 
-    {
-        std::string ownerContent = "original page";
-        handler = std::make_unique<ServerErrorHandler>(
-            context,
-            503,
-            7,
-            "Service Unavailable",
-            E_FAIL,
-            false,
-            ownerContent);
-        ownerContent = "modified page";
-    }
+    const std::string ownerContent = "original page content that is not stored inline";
+    auto* application = new ServerErrorApplication(
+        httpApplication,
+        E_FAIL,
+        false,
+        ownerContent,
+        503,
+        7,
+        "Service Unavailable");
 
-    EXPECT_EQ(RQ_NOTIFICATION_FINISH_REQUEST, handler->ExecuteRequestHandler());
+    ASSERT_EQ(S_OK, application->CreateHandler(&context, &handler));
+    application->DereferenceApplication();
+
+    EXPECT_EQ(RQ_NOTIFICATION_FINISH_REQUEST, handler->OnExecuteRequestHandler());
     EXPECT_EQ(503, statusCode);
     EXPECT_EQ(7, subStatusCode);
-    EXPECT_EQ("original page", responseContent);
+    EXPECT_EQ(ownerContent, responseContent);
+
+    handler->DereferenceRequestHandler();
 }
 }
