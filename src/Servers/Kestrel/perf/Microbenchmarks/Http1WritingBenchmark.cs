@@ -49,8 +49,8 @@ public class Http1WritingBenchmark
     [Params(Startup.None, Startup.Sync, Startup.Async)]
     public Startup OnStarting { get; set; }
 
-    [IterationSetup]
-    public void Setup()
+    [Benchmark]
+    public Task WriteAsync()
     {
         _http1Connection.Reset();
         if (Chunked)
@@ -67,11 +67,6 @@ public class Http1WritingBenchmark
             _http1Connection.FlushAsync().GetAwaiter().GetResult();
         }
 
-        ResetState();
-    }
-
-    private void ResetState()
-    {
         if (WithHeaders)
         {
             _http1Connection.ResetState();
@@ -86,12 +81,6 @@ public class Http1WritingBenchmark
                     break;
             }
         }
-    }
-
-    [Benchmark]
-    public Task WriteAsync()
-    {
-        ResetState();
 
         return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
     }
