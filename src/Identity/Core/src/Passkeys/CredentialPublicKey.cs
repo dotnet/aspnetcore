@@ -143,7 +143,41 @@ internal sealed class CredentialPublicKey
 
         reader.ReadEndMap();
 
+        ValidateRSAParameters(rsaParams);
+
         return RSA.Create(rsaParams);
+    }
+
+    private static void ValidateRSAParameters(in RSAParameters parameters)
+    {
+        const int MinimumModulusSizeInBytes = 2048 / 8;
+
+        var modulus = parameters.Modulus.AsSpan();
+        var exponent = parameters.Exponent.AsSpan();
+
+        if (modulus.IsEmpty || modulus[0] == 0)
+        {
+            throw new CborContentException("The RSA modulus is not minimally encoded.");
+        }
+
+        if (modulus.Length < MinimumModulusSizeInBytes ||
+            (modulus.Length == MinimumModulusSizeInBytes && modulus[0] < 0x80))
+        {
+            throw new CborContentException("The RSA modulus must be at least 2048 bits.");
+        }
+
+        if (exponent.IsEmpty || exponent[0] == 0)
+        {
+            throw new CborContentException("The RSA exponent is not minimally encoded.");
+        }
+
+        if ((exponent[^1] & 1) == 0 ||
+            (exponent.Length == 1 && exponent[0] < 3) ||
+            exponent.Length > modulus.Length ||
+            (exponent.Length == modulus.Length && exponent.SequenceCompareTo(modulus) >= 0))
+        {
+            throw new CborContentException("The RSA exponent must be an odd integer between 3 and the modulus.");
+        }
     }
 
     private static ECDsa ParseECDsa(COSEKeyType kty, Ctap2CborReader reader)
