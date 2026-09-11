@@ -1,62 +1,138 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>blazor-gateway</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.Gateway.Cli</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>blazor-gateway</ToolCommandName>
     <Description>Command line tool (blazor-gateway) for hosting Blazor applications.</Description>
     <PackageTags>blazor;gateway;dotnettool</PackageTags>
-    <!-- This project only repackages the gateway binaries as a dotnet tool; it has no code of its own. -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- NativeAOT symbols remain in the publish output for official symbol collection. Tool symbol
+         packages otherwise duplicate the complete native payload and still cannot separate the
+         native debug file from the runtime package. -->
+    <IncludeSymbols>false</IncludeSymbols>
     <Nullable>enable</Nullable>
-    <NuspecFile>Microsoft.AspNetCore.Components.Gateway.Cli.nuspec</NuspecFile>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+    <_GatewayToolRuntimeIdentifiers>linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;win-x64;win-x86;win-arm64;osx-x64;osx-arm64;any</_GatewayToolRuntimeIdentifiers>
+    <_GatewayNativeAotSupported Condition="
+        '$(DotNetBuildUseMonoRuntime)' != 'true' and
+        '$(DotNetBuildSourceOnly)' != 'true' and
+        '$(NativeAotSupported)' == 'true'">true</_GatewayNativeAotSupported>
+    <RuntimeIdentifiers Condition="'$(_GatewayNativeAotSupported)' == 'true'">$(_GatewayToolRuntimeIdentifiers)</RuntimeIdentifiers>
+    <ToolPackageRuntimeIdentifiers Condition="'$(_GatewayNativeAotSupported)' == 'true'">$(_GatewayToolRuntimeIdentifiers)</ToolPackageRuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(_GatewayNativeAotSupported)' != 'true'">any</RuntimeIdentifiers>
+    <ToolPackageRuntimeIdentifiers Condition="'$(_GatewayNativeAotSupported)' != 'true'">any</ToolPackageRuntimeIdentifiers>
+    <RuntimeIdentifier Condition="
+        '$(OnlyPackPlatformSpecificPackages)' == 'true' and
+        '$(RuntimeIdentifier)' == '' and
+        '$(_GatewayNativeAotSupported)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="
+        '$(OnlyPackPlatformSpecificPackages)' == 'true' and
+        '$(RuntimeIdentifier)' == '' and
+        '$(_GatewayNativeAotSupported)' != 'true'">any</RuntimeIdentifier>
+    <PublishAot Condition="'$(_GatewayNativeAotSupported)' == 'true' and '$(RuntimeIdentifier)' != 'any'">true</PublishAot>
+    <SelfContained Condition="'$(RuntimeIdentifier)' == 'any'">false</SelfContained>
+    <!-- The tool consumes its static assets from publish output; it is not a static-web-assets
+         library and must not add build-time static asset manifests to the tool package. -->
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <DisableStaticWebAssetEndpointsBuildPropsFileGeneration>true</DisableStaticWebAssetEndpointsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <_GatewayProject>$(MSBuildThisFileDirectory)..\src\Microsoft.AspNetCore.Components.Gateway.csproj</_GatewayProject>
-    <!-- Arcade lays projects out under artifacts/bin/<ProjectName>/<Configuration>/<TargetFramework>/.
-         The gateway publishes into the "publish" subfolder of that output directory. -->
-    <_GatewayOutputDir>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_GatewayOutputDir>
-    <_GatewayPublishDir>$(_GatewayOutputDir)publish\</_GatewayPublishDir>
-    <_DotnetToolSettings>$(MSBuildThisFileDirectory)DotnetToolSettings.xml</_DotnetToolSettings>
-  </PropertyGroup>
-
-  <!-- Reference the gateway project purely to establish restore and build ordering. Its output
-       assembly is not referenced; the binaries are consumed from the published output below. -->
   <ItemGroup>
-    <ProjectReference Include="$(_GatewayProject)"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      Private="false"
-                      PrivateAssets="All" />
+    <Compile Include="..\src\BlazorGateway.cs" Link="BlazorGateway.cs" />
+    <Compile Include="..\src\BlazorGatewayOptions.cs" Link="BlazorGatewayOptions.cs" />
+    <Compile Include="..\src\TelemetryFilters.cs" Link="TelemetryFilters.cs" />
   </ItemGroup>
 
-  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec.
-       No Properties override: Gateway.csproj is also built as a top-level project elsewhere in the
-       build, and forcing TargetFramework here made MSBuild treat the two as separate, racing builds
-       (see https://github.com/dotnet/dotnet/issues/8005). -->
-  <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(_GatewayProject)"
-             Targets="Publish" />
+  <ItemGroup>
+    <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsServiceDiscoveryVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsServiceDiscoveryYarpVersion)" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
+  </ItemGroup>
 
-    <Error Condition="!Exists('$(_GatewayPublishDir)blazor-gateway.dll')"
-           Text="Expected the gateway to publish 'blazor-gateway.dll' to '$(_GatewayPublishDir)' but it was not found." />
-    <Error Condition="!Exists('$(_GatewayOutputDir)blazor-gateway.runtimeconfig.json')"
-           Text="Expected the gateway build to produce 'blazor-gateway.runtimeconfig.json' in '$(_GatewayOutputDir)' but it was not found." />
+  <Target Name="PreserveGatewayCliRuntimeConfigPolicy"
+          AfterTargets="GenerateBuildRuntimeConfigurationFiles"
+          Condition="'$(RuntimeIdentifier)' == 'any'">
+    <PropertyGroup>
+      <_GatewayCliRuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_GatewayCliRuntimeConfigProperties>
+      <_GatewayCliRuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
+      </_GatewayCliRuntimeConfigProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)..\src\blazor-gateway.runtimeconfig.json.in"
+      Properties="$(_GatewayCliRuntimeConfigProperties)"
+      SkipUnchanged="true"
+      OutputPath="$(ProjectRuntimeConfigFilePath)" />
   </Target>
 
-  <ItemGroup>
-    <NuspecProperty Include="publishDir=$(_GatewayPublishDir)" />
-    <NuspecProperty Include="binDir=$(_GatewayOutputDir)" />
-    <NuspecProperty Include="toolTfm=$(DefaultNetCoreTargetFramework)" />
-    <NuspecProperty Include="dotnetToolSettings=$(_DotnetToolSettings)" />
-    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
-  </ItemGroup>
+  <Target Name="RemoveGatewayCliStaticWebAssetsPackItems" AfterTargets="IncludeStaticWebAssetsPackItems">
+    <ItemGroup>
+      <Content Remove="@(_StaticWebAssetsFilesToPack)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveGatewayCliSymbolsFromToolPackage" AfterTargets="PackTool">
+    <ItemGroup>
+      <TfmSpecificPackageFile Remove="@(TfmSpecificPackageFile)"
+                              Condition="
+                                '%(TfmSpecificPackageFile.Extension)' == '.pdb' or
+                                '%(TfmSpecificPackageFile.Extension)' == '.dbg' or
+                                $([System.String]::Copy('%(TfmSpecificPackageFile.Identity)').Contains('.dSYM'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Official builds create the any fallback and host RID package before the pointer package.
+       Platform-specific CI legs set OnlyPackPlatformSpecificPackages and produce their target RID. -->
+  <Target Name="PackGatewayCliPrimaryRuntimePackages"
+          BeforeTargets="GenerateNuspec"
+          Condition="
+            '$(_GatewayNativeAotSupported)' == 'true' and
+            '$(RuntimeIdentifier)' == '' and
+            '$(OnlyPackPlatformSpecificPackages)' != 'true' and
+            '$(_PackingGatewayCliRuntimePackage)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Pack"
+             BuildInParallel="false"
+             Properties="
+               Configuration=$(Configuration);
+               RuntimeIdentifier=any;
+               PublishAot=false;
+               _PackingGatewayCliRuntimePackage=true;
+               PackageOutputPath=$(PackageOutputPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Pack"
+             BuildInParallel="false"
+             Properties="
+               Configuration=$(Configuration);
+               RuntimeIdentifier=$(TargetRuntimeIdentifier);
+               _PackingGatewayCliRuntimePackage=true;
+               PackageOutputPath=$(PackageOutputPath)" />
+  </Target>
 
 </Project>

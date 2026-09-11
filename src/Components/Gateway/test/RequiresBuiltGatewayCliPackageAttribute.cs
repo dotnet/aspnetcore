@@ -13,9 +13,11 @@ namespace Microsoft.AspNetCore.Components.Gateway;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
 public sealed class RequiresBuiltGatewayCliPackageAttribute : Attribute, ITestCondition
 {
-    public bool IsMet => GatewayCliTestData.TryGetPackagePath(GatewayCliTestData.PackageId) is not null;
+    public bool IsMet =>
+        GatewayCliTestData.TryGetPackagePath(GatewayCliTestData.PackageId) is not null &&
+        GatewayCliTestData.TryGetPackagePath(GatewayCliTestData.AnyPackageId) is not null;
 
     public string SkipReason =>
-        $"The '{GatewayCliTestData.PackageId}' package was not built. " +
-        "Pack the project (e.g. './eng/build.sh -pack') before running these tests.";
+        $"The '{GatewayCliTestData.PackageId}' pointer and fallback packages were not built. " +
+        "Pack the project without a RID and for 'any' before running these tests.";
 }
