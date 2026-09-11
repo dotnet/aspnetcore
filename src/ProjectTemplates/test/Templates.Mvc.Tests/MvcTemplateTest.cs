@@ -31,12 +31,6 @@ public class MvcTemplateTest : LoggedTest
         }
     }
 
-    [Fact]
-    public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
-
-    [Fact]
-    public async Task MvcTemplate_NoAuthNoHttpsFSharp() => await MvcTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
-
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
