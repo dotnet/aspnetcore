@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -20,10 +21,10 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -34,15 +35,17 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     private static KestrelServerOptions CreateServerOptions()
     {
-        var env = new Mock<IHostEnvironment>();
-        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+        var env = new TestHostEnvironment
+        {
+            ContentRootPath = Directory.GetCurrentDirectory()
+        };
 
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
             .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
-            .AddSingleton(env.Object)
+            .AddSingleton<IHostEnvironment>(env)
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;

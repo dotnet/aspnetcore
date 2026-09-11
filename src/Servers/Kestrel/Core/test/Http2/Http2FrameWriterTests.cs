@@ -5,7 +5,6 @@ using System.Buffers;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -15,20 +14,7 @@ public class Http2FrameWriterTests
 
     public Http2FrameWriterTests()
     {
-        var memoryBlock = new Mock<IMemoryOwner<byte>>();
-        memoryBlock.Setup(block => block.Memory).Returns(() =>
-        {
-            var blockArray = new byte[4096];
-            for (int i = 0; i < 4096; i++)
-            {
-                blockArray[i] = 0xff;
-            }
-            return new Memory<byte>(blockArray);
-        });
-
-        var dirtyMemoryPool = new Mock<MemoryPool<byte>>();
-        dirtyMemoryPool.Setup(pool => pool.Rent(It.IsAny<int>())).Returns(memoryBlock.Object);
-        _dirtyMemoryPool = dirtyMemoryPool.Object;
+        _dirtyMemoryPool = new TestMemoryPool();
     }
 
     [Fact]

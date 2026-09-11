@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Connections.Features;
 
@@ -36,7 +35,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -61,7 +60,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -89,7 +88,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -117,22 +116,23 @@ public class Http1OutputProducerTests : IDisposable
     [Fact]
     public void AbortsTransportEvenAfterDispose()
     {
-        var mockConnectionContext = new Mock<ConnectionContext>();
-        var metricsContext = new ConnectionMetricsContext { ConnectionContext = mockConnectionContext.Object };
+        var connectionContext = new TestConnectionContext();
+        var metricsContext = new ConnectionMetricsContext { ConnectionContext = connectionContext };
 
-        var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object, metricsContext: metricsContext);
+        var outputProducer = CreateOutputProducer(connectionContext: connectionContext, metricsContext: metricsContext);
 
         outputProducer.Dispose();
 
-        mockConnectionContext.Verify(f => f.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never());
+        Assert.Empty(connectionContext.AbortReasons);
 
         outputProducer.Abort(null, ConnectionEndReason.AbortedByApp);
 
-        mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
+        Assert.Single(connectionContext.AbortReasons);
+        Assert.Null(connectionContext.AbortReasons[0]);
 
         outputProducer.Abort(null, ConnectionEndReason.AbortedByApp);
 
-        mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
+        Assert.Single(connectionContext.AbortReasons);
 
         Assert.Equal(ConnectionEndReason.AbortedByApp, metricsContext.ConnectionEndReason);
     }
@@ -166,7 +166,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -186,7 +186,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -206,7 +206,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -228,7 +228,7 @@ public class Http1OutputProducerTests : IDisposable
         var pipeOptions = new PipeOptions
         (
             pool: _memoryPool,
-            readerScheduler: Mock.Of<PipeScheduler>(),
+            readerScheduler: new TestPipeScheduler(),
             writerScheduler: PipeScheduler.Inline,
             useSynchronizationContext: false
         );
@@ -250,7 +250,7 @@ public class Http1OutputProducerTests : IDisposable
         MemoryPool<byte> memoryPool = null)
     {
         pipeOptions = pipeOptions ?? new PipeOptions();
-        connectionContext = connectionContext ?? Mock.Of<ConnectionContext>();
+        connectionContext = connectionContext ?? new TestConnectionContext();
 
         var pipe = new Pipe(pipeOptions);
         var serviceContext = new TestServiceContext();
@@ -260,17 +260,12 @@ public class Http1OutputProducerTests : IDisposable
             connectionContext,
             memoryPool ?? _memoryPool,
             serviceContext.Log,
-            Mock.Of<ITimeoutControl>(),
-            Mock.Of<IHttpMinResponseDataRateFeature>(),
+            new TestTimeoutControl(),
+            new TestMinResponseDataRateFeature(),
             metricsContext ?? new ConnectionMetricsContext { ConnectionContext = connectionContext },
-            Mock.Of<IHttpOutputAborter>());
+            new TestHttpOutputAborter());
 
         return socketOutput;
-    }
-
-    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
-    {
-        public ConnectionMetricsContext MetricsContext { get; }
     }
 
     private class TestHttpOutputProducer : Http1OutputProducer

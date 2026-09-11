@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -19,20 +18,7 @@ public class Http3FrameWriterTests
 
     public Http3FrameWriterTests()
     {
-        var memoryBlock = new Mock<IMemoryOwner<byte>>();
-        memoryBlock.Setup(block => block.Memory).Returns(() =>
-        {
-            var blockArray = new byte[4096];
-            for (int i = 0; i < 4096; i++)
-            {
-                blockArray[i] = 0xff;
-            }
-            return new Memory<byte>(blockArray);
-        });
-
-        var dirtyMemoryPool = new Mock<MemoryPool<byte>>();
-        dirtyMemoryPool.Setup(pool => pool.Rent(It.IsAny<int>())).Returns(memoryBlock.Object);
-        _dirtyMemoryPool = dirtyMemoryPool.Object;
+        _dirtyMemoryPool = new TestMemoryPool();
     }
 
     [Fact]
@@ -88,7 +74,7 @@ public class Http3FrameWriterTests
 
     private Http3FrameWriter CreateFrameWriter(Pipe pipe)
     {
-        var frameWriter = new Http3FrameWriter(null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>(), new Http3PeerSettings(), null);
+        var frameWriter = new Http3FrameWriter(null, null, null, _dirtyMemoryPool, null, new TestStreamIdFeature(), new Http3PeerSettings(), null);
         frameWriter.Reset(pipe.Writer, null);
 
         return frameWriter;

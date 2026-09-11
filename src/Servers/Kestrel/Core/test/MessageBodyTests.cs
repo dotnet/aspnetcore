@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Xunit;
 using Xunit.Sdk;
 
@@ -31,10 +30,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -160,7 +158,7 @@ public class MessageBodyTests : LoggedTest
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -184,10 +182,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
 
             input.Add("5\r\nHello\r\n");
@@ -213,10 +210,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
             var buffer = new byte[1024];
             var task = stream.ReadAsync(buffer, 0, buffer.Length);
@@ -238,10 +234,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
             var buffer = new byte[1024];
             var task = stream.ReadAsync(buffer, 0, buffer.Length);
@@ -266,10 +261,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
             var buffer = new byte[1024];
 
@@ -308,7 +302,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("5\r\nHello\r\n");
@@ -335,7 +329,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("5;a\r");
@@ -369,7 +363,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("5;a=b\r");
@@ -403,7 +397,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // The quoted-string extension value is split before its closing DQUOTE.
@@ -433,7 +427,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add(firstSegment);
@@ -460,7 +454,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("80000000\r\n");
@@ -482,7 +476,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("012345678\r");
@@ -506,7 +500,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             const string chunkSizePrefix = "0000000A";
@@ -538,10 +532,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -568,7 +561,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -594,10 +587,9 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
-            var mockBodyControl = new Mock<IHttpBodyControlFeature>();
-            mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+            var bodyControl = new TestBodyControlFeature { AllowSynchronousIO = true };
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+            var stream = new HttpRequestStream(bodyControl, reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -619,7 +611,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -638,7 +630,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "8197" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
@@ -716,7 +708,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -778,7 +770,7 @@ public class MessageBodyTests : LoggedTest
             // note the http1connection request body pipe reader should be the same.
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -805,7 +797,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection, ContentLength = 0 }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             input.Add("Hello");
@@ -827,7 +819,7 @@ public class MessageBodyTests : LoggedTest
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // Add some input and consume it to ensure PumpAsync is running
@@ -849,9 +841,8 @@ public class MessageBodyTests : LoggedTest
     {
         using (var input = new TestInput())
         {
-            var mockTimeoutControl = new Mock<ITimeoutControl>();
-
-            input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+            var timeoutControl = new TestTimeoutControl();
+            input.Http1ConnectionContext.TimeoutControl = timeoutControl;
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
@@ -876,9 +867,9 @@ public class MessageBodyTests : LoggedTest
     [Fact]
     public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
     {
-        var mockTimeoutControl = new Mock<ITimeoutControl>();
+        var timeoutControl = new TestTimeoutControl();
 
-        using (var input = new TestInput(log: new KestrelTrace(LoggerFactory), timeoutControl: mockTimeoutControl.Object))
+        using (var input = new TestInput(log: new KestrelTrace(LoggerFactory), timeoutControl: timeoutControl))
         {
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
@@ -911,13 +902,12 @@ public class MessageBodyTests : LoggedTest
     {
         using (var input = new TestInput())
         {
-            var mockTimeoutControl = new Mock<ITimeoutControl>();
-
-            input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+            var timeoutControl = new TestTimeoutControl();
+            input.Http1ConnectionContext.TimeoutControl = timeoutControl;
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // Add some input and read it to start PumpAsync
@@ -948,7 +938,7 @@ public class MessageBodyTests : LoggedTest
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // Add some input and consume it to ensure PumpAsync is running
@@ -985,7 +975,7 @@ public class MessageBodyTests : LoggedTest
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
             var reader = new HttpRequestPipeReader();
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            var stream = new HttpRequestStream(new TestBodyControlFeature(), reader);
             reader.StartAcceptingReads(body);
 
             // Add some input and consume it to ensure PumpAsync is running
@@ -1005,8 +995,8 @@ public class MessageBodyTests : LoggedTest
     {
         using (var input = new TestInput())
         {
-            var mockTimeoutControl = new Mock<ITimeoutControl>();
-            input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+            var timeoutControl = new TestTimeoutControl();
+            input.Http1ConnectionContext.TimeoutControl = timeoutControl;
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "12" }, input.Http1Connection);
 
@@ -1024,8 +1014,8 @@ public class MessageBodyTests : LoggedTest
             body.AdvanceTo(readResult.Buffer.End);
 
             // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Exactly(2));
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Exactly(2));
+            Assert.Equal(2, timeoutControl.StopTimingReadCount);
+            Assert.Equal(2, timeoutControl.StartTimingReadCount);
         }
     }
 
@@ -1034,24 +1024,19 @@ public class MessageBodyTests : LoggedTest
     {
         using (var input = new TestInput())
         {
-            var startRequestBodyCalled = false;
-
             var minReadRate = input.Http1Connection.MinRequestBodyDataRate;
-            var mockTimeoutControl = new Mock<ITimeoutControl>();
-            mockTimeoutControl
-                .Setup(timeoutControl => timeoutControl.StartRequestBody(minReadRate))
-                .Callback(() => startRequestBodyCalled = true);
+            var timeoutControl = new TestTimeoutControl();
 
-            input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+            input.Http1ConnectionContext.TimeoutControl = timeoutControl;
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
-            Assert.False(startRequestBodyCalled);
+            Assert.DoesNotContain(minReadRate, timeoutControl.StartRequestBodyCalls);
 
             // Add some input and read it to start PumpAsync
             var readTask = body.ReadAsync();
 
-            Assert.True(startRequestBodyCalled);
+            Assert.Contains(minReadRate, timeoutControl.StartRequestBodyCalls);
 
             input.Add("a");
             await readTask;
@@ -1066,8 +1051,8 @@ public class MessageBodyTests : LoggedTest
         using (var input = new TestInput())
         {
             var minReadRate = input.Http1Connection.MinRequestBodyDataRate;
-            var mockTimeoutControl = new Mock<ITimeoutControl>();
-            input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+            var timeoutControl = new TestTimeoutControl();
+            input.Http1ConnectionContext.TimeoutControl = timeoutControl;
 
             var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
 
@@ -1083,14 +1068,14 @@ public class MessageBodyTests : LoggedTest
 
             Assert.True((await body.ReadAsync()).IsCompleted);
 
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartRequestBody(minReadRate), Times.Never);
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopRequestBody(), Times.Never);
+            Assert.DoesNotContain(minReadRate, timeoutControl.StartRequestBodyCalls);
+            Assert.Equal(0, timeoutControl.StopRequestBodyCount);
 
             // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every
             // write to that pipe. Verify that read timing pause and resume are not called on upgrade
             // requests.
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Never);
-            mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Never);
+            Assert.Equal(0, timeoutControl.StopTimingReadCount);
+            Assert.Equal(0, timeoutControl.StartTimingReadCount);
 
             await body.StopAsync();
         }
@@ -1620,3 +1605,4 @@ public class MessageBodyTests : LoggedTest
         public override long Position { get; set; }
     }
 }
+

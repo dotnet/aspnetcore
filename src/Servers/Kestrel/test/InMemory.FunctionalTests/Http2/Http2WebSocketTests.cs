@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -181,16 +180,18 @@ public class Http2WebSocketTests : Http2TestBase
 
         var originalHandler = _connection._streamLifetimeHandler;
         var tcs = new TaskCompletionSource();
-        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
-        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        var streamLifetimeHandler = new TestHttp2StreamLifetimeHandler
         {
-            // Add stream to Http2Connection._completedStreams.
-            originalHandler.OnStreamCompleted(stream);
+            OnStreamCompletedCallback = stream =>
+            {
+                // Add stream to Http2Connection._completedStreams.
+                originalHandler.OnStreamCompleted(stream);
 
-            // Unblock test code that will call TriggerTick and return the stream to the pool
-            tcs.TrySetResult();
-        });
-        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
+                // Unblock test code that will call TriggerTick and return the stream to the pool
+                tcs.TrySetResult();
+            }
+        };
+        _connection._streamLifetimeHandler = streamLifetimeHandler;
 
         // HEADERS + END_HEADERS
         // :method = CONNECT
@@ -352,7 +353,7 @@ public class Http2WebSocketTests : Http2TestBase
         // Don't send any more data and advance just to and then past the grace period.
         AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
 
@@ -620,19 +621,21 @@ public class Http2WebSocketTests : Http2TestBase
 
         var originalHandler = _connection._streamLifetimeHandler;
         var tcs = new TaskCompletionSource();
-        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
-        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        var streamLifetimeHandler = new TestHttp2StreamLifetimeHandler
         {
-            // Add stream to Http2Connection._completedStreams.
-            originalHandler.OnStreamCompleted(stream);
-
-            if (requestCount == 1)
+            OnStreamCompletedCallback = stream =>
             {
-                // Unblock test code that will call TriggerTick and return the stream to the pool
-                tcs.TrySetResult();
+                // Add stream to Http2Connection._completedStreams.
+                originalHandler.OnStreamCompleted(stream);
+
+                if (requestCount == 1)
+                {
+                    // Unblock test code that will call TriggerTick and return the stream to the pool
+                    tcs.TrySetResult();
+                }
             }
-        });
-        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
+        };
+        _connection._streamLifetimeHandler = streamLifetimeHandler;
 
         // HEADERS + END_HEADERS
         // :method = CONNECT

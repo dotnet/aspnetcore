@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -83,16 +82,17 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         {
             var bufferLengths = new List<int>();
 
-            var mockStream = new Mock<Stream>();
-
-            mockStream.Setup(s => s.CanRead).Returns(true);
-            mockStream.Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Returns<Memory<byte>, CancellationToken>((buffer, token) =>
+            var stream = new TestStream
             {
-                bufferLengths.Add(buffer.Length);
-                return ValueTask.FromResult(0);
-            });
+                CanReadValue = true,
+                ReadAsyncCallback = (buffer, token) =>
+                {
+                    bufferLengths.Add(buffer.Length);
+                    return ValueTask.FromResult(0);
+                }
+            };
 
-            context.Request.Body = mockStream.Object;
+            context.Request.Body = stream;
             var data = await context.Request.BodyReader.ReadAsync();
 
             Assert.Equal(2, bufferLengths.Count);
@@ -2366,5 +2366,41 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     private class IntAsClass
     {
         public int Value;
+    }
+
+    private sealed class TestStream : Stream
+    {
+        public bool CanReadValue { get; set; }
+
+        public Func<Memory<byte>, CancellationToken, ValueTask<int>> ReadAsyncCallback { get; set; }
+
+        public override bool CanRead => CanReadValue;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => 0;
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            => ReadAsyncCallback?.Invoke(buffer, cancellationToken) ?? ValueTask.FromResult(0);
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

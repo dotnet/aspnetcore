@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -24,15 +23,15 @@ public class Http2TimeoutTests : Http2TestBase
 
         AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.KeepAlive, 1);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -44,15 +43,15 @@ public class Http2TimeoutTests : Http2TestBase
 
         AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.KeepAlive, 1);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -65,13 +64,13 @@ public class Http2TimeoutTests : Http2TestBase
         AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval);
 
         // keep-alive timeout set but not fired.
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutControl.AssertSetTimeoutCount(TimeoutReason.KeepAlive, 1);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         // The KeepAlive timeout is set when the stream completes processing on a background thread, so we need to hook the
         // keep-alive set afterwards to make a reliable test.
         var setTimeoutTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _mockTimeoutControl.Setup(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive)).Callback<TimeSpan, TimeoutReason>((t, r) =>
+        _mockTimeoutControl.ConfigureSetTimeoutCallback(TimeoutReason.KeepAlive, (t, r) =>
         {
             _timeoutControl.SetTimeout(t, r);
             setTimeoutTcs.SetResult();
@@ -81,7 +80,7 @@ public class Http2TimeoutTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _browserRequestHeaders);
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.END_HEADERS);
 
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutControl.AssertSetTimeoutCount(TimeoutReason.RequestHeaders, 1);
 
         await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 36,
@@ -92,16 +91,16 @@ public class Http2TimeoutTests : Http2TestBase
 
         AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.KeepAlive, 1);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         AssertConnectionEndReason(ConnectionEndReason.KeepAliveTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -114,8 +113,8 @@ public class Http2TimeoutTests : Http2TestBase
         await InitializeConnectionAsync(_noopApplication);
 
         // Connection starts and sets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
+        _mockTimeoutControl.AssertSetTimeoutCount(TimeoutReason.KeepAlive, 1);
+        _mockTimeoutControl.AssertResetTimeoutCount(TimeoutReason.KeepAlive, 0);
 
         await SendPingAsync(Http2PingFrameFlags.NONE);
         await ExpectAsync(Http2FrameType.PING,
@@ -124,7 +123,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 0);
 
         // Server resets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutControl.AssertResetTimeoutCount(TimeoutReason.KeepAlive, 1);
     }
 
     [Fact]
@@ -137,15 +136,15 @@ public class Http2TimeoutTests : Http2TestBase
         await InitializeConnectionAsync(_echoApplication);
 
         // Connection starts and sets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
-        _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Never);
+        _mockTimeoutControl.AssertSetTimeoutCount(TimeoutReason.KeepAlive, 1);
+        _mockTimeoutControl.AssertResetTimeoutCount(TimeoutReason.KeepAlive, 0);
+        _mockTimeoutControl.AssertCancelTimeoutCount(0);
 
         // Stream will stay open because it is waiting for request body to end
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
         // Starting a stream cancels the keep alive timeout
-        _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Once);
+        _mockTimeoutControl.AssertCancelTimeoutCount(1);
 
         await SendPingAsync(Http2PingFrameFlags.NONE);
         await ExpectAsync(Http2FrameType.PING,
@@ -154,7 +153,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 0);
 
         // Server doesn't reset keep alive timeout because it isn't running
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
+        _mockTimeoutControl.AssertResetTimeoutCount(TimeoutReason.KeepAlive, 0);
 
         // End stream
         await SendDataAsync(1, _helloWorldBytes, endStream: true);
@@ -181,13 +180,13 @@ public class Http2TimeoutTests : Http2TestBase
 
         AdvanceTime(limits.RequestHeadersTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.RequestHeaders, 1);
 
         await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
             ignoreNonGoAwayFrames: false,
@@ -196,11 +195,11 @@ public class Http2TimeoutTests : Http2TestBase
             CoreStrings.BadRequest_RequestHeadersTimeout);
         AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -218,18 +217,18 @@ public class Http2TimeoutTests : Http2TestBase
         AdvanceTime(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
-        _mockConnectionContext.Verify(c => c.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
+        _mockConnectionContext.AssertAbortCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
     }
@@ -375,11 +374,11 @@ public class Http2TimeoutTests : Http2TestBase
         AdvanceTime(TimeSpan.FromSeconds((_bytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         // The "hello, world" bytes are buffered from before the timeout, but not an END_STREAM data frame.
         await ExpectAsync(Http2FrameType.DATA,
@@ -390,11 +389,11 @@ public class Http2TimeoutTests : Http2TestBase
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
         AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -430,11 +429,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't read data frame to induce "socket" backpressure.
         AdvanceTime(timeToWriteMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         // The _maxData bytes are buffered from before the timeout, but not an END_STREAM data frame.
         await ExpectAsync(Http2FrameType.DATA,
@@ -445,11 +444,11 @@ public class Http2TimeoutTests : Http2TestBase
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
         AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -484,11 +483,11 @@ public class Http2TimeoutTests : Http2TestBase
         AdvanceTime(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -497,11 +496,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -538,11 +537,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send WINDOW_UPDATE to induce flow-control backpressure
         AdvanceTime(timeToWriteMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -551,11 +550,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -604,11 +603,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send WINDOW_UPDATE to induce flow-control backpressure
         AdvanceTime(timeToWriteMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.WriteDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -617,11 +616,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -651,11 +650,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send any more data and advance just to and then past the grace period.
         AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -664,11 +663,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestBodyTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -702,11 +701,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -715,11 +714,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestBodyTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -769,11 +768,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -782,11 +781,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestBodyTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -837,11 +836,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send any more data and advance just to and then past the rate timeout.
         AdvanceTime(timeToReadMaxData);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -850,11 +849,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestBodyTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -889,11 +888,11 @@ public class Http2TimeoutTests : Http2TestBase
         // Don't send any more data and advance just to and then past the grace period.
         AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         await SendDataAsync(1, _helloWorldBytes, endStream: true);
 
@@ -905,8 +904,8 @@ public class Http2TimeoutTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         AssertConnectionNoError();
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -958,7 +957,7 @@ public class Http2TimeoutTests : Http2TestBase
         // No matter how much time elapses there is no read timeout because the connection window is too small.
         AdvanceTime(TimeSpan.FromDays(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         // Opening the connection window starts the read rate timeout enforcement after that point.
         backpressureTcs.SetResult();
@@ -978,11 +977,11 @@ public class Http2TimeoutTests : Http2TestBase
 
         AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.ReadDataRate, 1);
 
         await WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
@@ -991,11 +990,11 @@ public class Http2TimeoutTests : Http2TestBase
             null);
         AssertConnectionEndReason(ConnectionEndReason.MinRequestBodyDataRate);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestBodyTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -1024,14 +1023,14 @@ public class Http2TimeoutTests : Http2TestBase
         // Advance time past RequestHeadersTimeout
         AdvanceTime(limits.RequestHeadersTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         // Send an empty CONTINUATION without END_HEADERS to trigger the tick
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.RequestHeaders, 1);
 
         await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
             ignoreNonGoAwayFrames: false,
@@ -1040,11 +1039,11 @@ public class Http2TimeoutTests : Http2TestBase
             CoreStrings.BadRequest_RequestHeadersTimeout);
         AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 
     [Fact]
@@ -1064,13 +1063,13 @@ public class Http2TimeoutTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
 
         // Verify timeout was armed for the trailer header block
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutControl.AssertSetTimeoutCount(TimeoutReason.RequestHeaders, 1);
 
         // Complete the trailer block with CONTINUATION + END_HEADERS
         await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
 
         // Verify timeout was cancelled
-        _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.AtLeastOnce);
+        _mockTimeoutControl.AssertCancelTimeoutAtLeastOnce();
 
         // The stream should complete normally
         await ExpectAsync(Http2FrameType.HEADERS,
@@ -1109,14 +1108,14 @@ public class Http2TimeoutTests : Http2TestBase
         // Not yet timed out
         AdvanceTime(limits.RequestHeadersTimeout + Heartbeat.Interval);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.AssertOnTimeoutCount(0);
 
         // Send another empty continuation to trigger the next tick
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
         AdvanceTime(TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutHandler.AssertOnTimeoutCount(TimeoutReason.RequestHeaders, 1);
 
         await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
             ignoreNonGoAwayFrames: false,
@@ -1125,10 +1124,10 @@ public class Http2TimeoutTests : Http2TestBase
             CoreStrings.BadRequest_RequestHeadersTimeout);
         AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
 
-        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
-             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+        _mockConnectionContext.AssertAbortCount(1, e =>
+             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout);
 
-        _mockTimeoutHandler.VerifyNoOtherCalls();
-        _mockConnectionContext.VerifyNoOtherCalls();
+        _mockTimeoutHandler.AssertNoOtherCalls();
+        _mockConnectionContext.AssertNoOtherCalls();
     }
 }
