@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.InternalTesting;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +17,7 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfCannotDecrypt()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
+        using var testCert1 = TestCertificateFactory.CreateRsaCertificate();
         var encryptor = new CertificateXmlEncryptor(testCert1, NullLoggerFactory.Instance);
         var data = new XElement("SampleData", "Lorem ipsum");
         var encryptedXml = encryptor.Encrypt(data);
@@ -32,8 +31,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfProvidedCertificateDoesNotMatch()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var testCert2 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
+        using var testCert1 = TestCertificateFactory.CreateRsaCertificate();
+        using var testCert2 = TestCertificateFactory.CreateRsaCertificate();
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o => o.AddKeyDecryptionCertificate(testCert2))
             .BuildServiceProvider();
@@ -50,8 +49,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfProvidedCertificateDoesHavePrivateKey()
     {
-        var fullCert = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var publicKeyOnly = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.PublicKeyOnly.cer"), "");
+        using var fullCert = TestCertificateFactory.CreateRsaCertificate();
+        using var publicKeyOnly = TestCertificateFactory.CreatePublicKeyOnlyCertificate(fullCert);
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o => o.AddKeyDecryptionCertificate(publicKeyOnly))
             .BuildServiceProvider();
@@ -68,8 +67,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void XmlCanRoundTrip()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var testCert2 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
+        using var testCert1 = TestCertificateFactory.CreateRsaCertificate();
+        using var testCert2 = TestCertificateFactory.CreateRsaCertificate();
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o =>
             {
