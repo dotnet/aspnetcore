@@ -50,6 +50,9 @@ internal sealed class ConsumerBuild : IDisposable
         // fallback so the exact transitive package versions the repo restored (which may not be
         // published to public feeds yet) can still be resolved.
         var repoCache = StaticWebAssetsTestData.NuGetPackageRoot.TrimEnd('\\', '/');
+        var nonShippingSource = Directory.Exists(StaticWebAssetsTestData.NonShippingPackagesDir)
+            ? $"""<add key="local-nonshipping" value="{StaticWebAssetsTestData.NonShippingPackagesDir.TrimEnd('\\', '/')}" />"""
+            : "";
         File.WriteAllText(Path.Combine(_root, "NuGet.config"), $"""
             <configuration>
               <config>
@@ -62,7 +65,7 @@ internal sealed class ConsumerBuild : IDisposable
               <packageSources>
                 <clear />
                 <add key="local-shipping" value="{StaticWebAssetsTestData.ShippingPackagesDir.TrimEnd('\\', '/')}" />
-                <add key="local-nonshipping" value="{StaticWebAssetsTestData.NonShippingPackagesDir.TrimEnd('\\', '/')}" />
+                {nonShippingSource}
                 <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
                 <add key="nuget" value="https://api.nuget.org/v3/index.json" />
               </packageSources>
@@ -201,9 +204,9 @@ internal sealed record ProcessResult(int ExitCode, string Output, string BinlogP
     /// </summary>
     public bool LooksLikeNetworkFailure
         => !Succeeded &&
+           !Output.Contains("The local source", StringComparison.OrdinalIgnoreCase) &&
            (Output.Contains("Unable to load the service index", StringComparison.OrdinalIgnoreCase) ||
             Output.Contains("NU1301", StringComparison.OrdinalIgnoreCase) ||
-            Output.Contains("Unable to resolve", StringComparison.OrdinalIgnoreCase) && Output.Contains("nuget", StringComparison.OrdinalIgnoreCase) ||
             Output.Contains("The remote name could not be resolved", StringComparison.OrdinalIgnoreCase) ||
             Output.Contains("No such host is known", StringComparison.OrdinalIgnoreCase));
 }
