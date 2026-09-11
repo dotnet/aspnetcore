@@ -12,14 +12,19 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class WebAssemblyComponentParameterDeserializer
 {
     private readonly ComponentParametersTypeCache _parametersCache;
+    private readonly JsonSerializerOptions _jsonSerializationOptions;
 
     public WebAssemblyComponentParameterDeserializer(
-        ComponentParametersTypeCache parametersCache)
+        ComponentParametersTypeCache parametersCache,
+        JsonSerializerOptions jsonSerializationOptions)
     {
         _parametersCache = parametersCache;
+        _jsonSerializationOptions = jsonSerializationOptions;
     }
 
-    public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
+    public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(
+        new ComponentParametersTypeCache(),
+        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
     [DynamicDependency(JsonSerialized, typeof(SerializedRenderFragment))]
     [DynamicDependency(JsonSerialized, typeof(RenderTreeNode))]
@@ -59,8 +64,8 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                     var value = (JsonElement)parameterValues[i];
                     var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
                         value.GetRawText(),
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes, WebAssemblyComponentSerializationSettings.JsonSerializationOptions, _parametersCache);
+                        _jsonSerializationOptions);
+                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes, _jsonSerializationOptions, _parametersCache);
                 }
                 catch (Exception e)
                 {
@@ -77,8 +82,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                 try
                 {
                     object? parameterValue;
-                    if (parameterValues[i] is null &&
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union)
+                    if (parameterValues[i] is null && IsUnion(parameterType))
                     {
                         // A union whose active case serializes to JSON null (for example a Union(int?, string)
                         // holding a null int?) is still a non-null box, so the prerender protocol records its
@@ -89,7 +93,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                         parameterValue = JsonSerializer.Deserialize(
                             "null",
                             parameterType,
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                            _jsonSerializationOptions);
                     }
                     else
                     {
@@ -97,7 +101,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                         parameterValue = JsonSerializer.Deserialize(
                             value.GetRawText(),
                             parameterType,
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                            _jsonSerializationOptions);
                     }
 
                     parametersDictionary[definition.Name] = parameterValue;
@@ -110,6 +114,14 @@ internal sealed class WebAssemblyComponentParameterDeserializer
         }
 
         return ParameterView.FromDictionary(parametersDictionary);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
+    private bool IsUnion(Type parameterType)
+    {
+        // GetTypeInfo can run before the first deserialization and does not populate the default resolver.
+        _jsonSerializationOptions.MakeReadOnly(populateMissingResolver: true);
+        return _jsonSerializationOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union;
     }
 
     [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]

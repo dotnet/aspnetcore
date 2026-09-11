@@ -8,7 +8,9 @@ namespace Microsoft.AspNetCore.Components;
 
 internal static class WebAssemblyComponentSerializationSettings
 {
-    public static readonly JsonSerializerOptions JsonSerializationOptions =
+    public static readonly JsonSerializerOptions JsonSerializationOptions = CreateOptions();
+
+    public static JsonSerializerOptions CreateOptions() =>
         new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

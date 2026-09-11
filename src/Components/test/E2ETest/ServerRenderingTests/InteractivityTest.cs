@@ -152,6 +152,82 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("4", () => countWasmElem.Text);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUseCallSiteRenderMode_WebAssembly_WithInitiallyNullUnionParameter(bool prerender)
+    {
+        // Keep the union as the first and only typed parameter in a fresh WebAssembly runtime.
+        // Deserializing another parameter first can initialize the shared JSON options.
+        Navigate($"{InteractiveCallsiteUrl(prerender)}&union=true");
+        Browser.Equal("Call-site interactive components", () => Browser.FindElement(By.TagName("h1")).Text);
+
+        if (prerender)
+        {
+            Browser.Equal("active null", () => Browser.FindElement(By.Id("value-union")).Text);
+            Browser.Equal("Static", () => Browser.FindElement(By.Id("render-mode-union")).Text);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-union")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-union")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("value-union"));
+            Browser.DoesNotExist(By.Id("count-union"));
+        }
+
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-union")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-union")).Text);
+        Browser.Equal("active null", () => Browser.FindElement(By.Id("value-union")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("increment-union"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("set-union-value"));
+        Browser.Equal("int:42", () => Browser.FindElement(By.Id("value-union")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("increment-union"));
+        Browser.Equal("2", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("clear-union-value"));
+        Browser.Equal("active null", () => Browser.FindElement(By.Id("value-union")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("increment-union"));
+        Browser.Equal("3", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [InlineData("server", "", "active null")]
+    [InlineData("server", "&unionValue=42", "int:42")]
+    [InlineData("server", "&unionText=hello", "string:hello")]
+    [InlineData("wasm", "", "active null")]
+    [InlineData("wasm", "&unionValue=42", "int:42")]
+    [InlineData("wasm", "&unionText=hello", "string:hello")]
+    public void CanUseCallSiteRenderMode_WithUnionParameter(string mode, string valueQuery, string expectedValue)
+    {
+        Navigate($"{InteractiveCallsiteUrl(prerender: true)}&union=true&unionMode={mode}{valueQuery}");
+
+        Browser.Equal("Static", () => Browser.FindElement(By.Id("render-mode-union")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-union")).Text);
+        Browser.Equal(expectedValue, () => Browser.FindElement(By.Id("value-union")).Text);
+
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal(mode == "server" ? "Server" : "WebAssembly", () => Browser.FindElement(By.Id("render-mode-union")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-union")).Text);
+        Browser.Equal(expectedValue, () => Browser.FindElement(By.Id("value-union")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        Browser.Click(By.Id("increment-union"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-union")).Text);
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
     [Fact]
     public void SurfacesExceptionThrownDuringWebAssemblyRootComponentActivation()
     {
