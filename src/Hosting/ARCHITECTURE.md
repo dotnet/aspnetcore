@@ -90,15 +90,17 @@ The builder variants intentionally compose different defaults:
 
 | Builder | Composition |
 | --- | --- |
-| `CreateBuilder` | Generic Host defaults plus the full ASP.NET Core web defaults, including Kestrel, routing, host filtering, forwarded-header setup, IIS integration, static web assets in Development, and development-time service-provider validation. |
-| `CreateSlimBuilder` | Generic Host application configuration and essential logging plus Kestrel Core and routing core. It retains host filtering, forwarded-header setup, cross-origin CSRF protection, the Development exception page, and development-time service-provider validation while omitting IIS integration, static web assets, and full Kestrel. |
-| `CreateEmptyBuilder` | The host and web integration scaffolding with a default content root, but no default server, routing, host filtering, forwarded headers, developer exception page, default service-provider validation, or `ASPNETCORE_` environment configuration. |
+| `CreateBuilder` | Generic Host defaults plus the full ASP.NET Core web defaults, including Kestrel, routing, host filtering, forwarded-header setup, IIS integration, static web assets in Development, development-time service-provider validation, and assembly-discovered `IHostingStartup` support. |
+| `CreateSlimBuilder` | Generic Host application configuration and essential logging plus Kestrel Core and routing core. It retains host filtering, forwarded-header setup, cross-origin CSRF protection, the Development exception page, and development-time service-provider validation while omitting IIS integration, static web assets, full Kestrel, and assembly-discovered `IHostingStartup` support. |
+| `CreateEmptyBuilder` | The host and web integration scaffolding with a default content root, but no default server, routing, host filtering, forwarded headers, developer exception page, default service-provider validation, `ASPNETCORE_` environment configuration, or assembly-discovered `IHostingStartup` support. |
 
 Slim and empty builders are not required to behave as if omitted services were registered. Shared behavior is tested across variants where the abstraction promises it; differences in default composition are deliberate.
 
 ### Generic Host with ConfigureWebHost
 
 `ConfigureWebHost` adapts an existing `IHostBuilder` to an ASP.NET Core web workload. `GenericWebHostBuilder` translates web settings and callbacks into Generic Host configuration and service registrations. `ConfigureWebHostDefaults` additionally selects common web defaults.
+
+This full Generic Host integration discovers `IHostingStartup` assemblies. It records their application-configuration and service callbacks before invoking the direct callbacks registered through `ConfigureWebHost`, so hosting-startup contributions run first in this model.
 
 The resulting web runtime is `GenericWebHostService`, an `IHostedService` inside the Generic Host. The Generic Host remains responsible for the root provider, hosted-service lifecycle, `HostOptions`, process lifetime, and final disposal. ASP.NET Core is responsible for what the web hosted service builds and for its handoff to `IServer`.
 
@@ -111,6 +113,7 @@ The legacy implementation must not be described as a thin alias for the modern p
 - It creates a hosting service provider and a separate application service provider.
 - It owns a legacy hosted-service executor and application-lifetime implementation.
 - It supports `IStartup` and a `ConfigureServices` method that returns `IServiceProvider`.
+- It discovers `IHostingStartup` assemblies during `Build`; their callbacks are appended after callbacks already registered directly on the builder, but still run before conventional `Startup.ConfigureServices`.
 - It applies `WebHostOptions.ShutdownTimeout` directly during shutdown.
 
 Generic Host integration instead composes one host-owned provider, rejects those terminal Startup provider patterns, and delegates general hosted-service and lifetime policy to dotnet/runtime.
@@ -162,7 +165,9 @@ Generic Host web integration supports `UseStartup` and conventional `Startup` me
 
 Reflection-based Startup is a compatibility boundary. Its public methods are annotated for trimming, and some container patterns require dynamic code. In particular, value-type custom container builders are rejected when dynamic code is unavailable. These annotations and checks preserve specific supported paths; they are not a blanket guarantee that every Startup pattern or application dependency is Native AOT compatible.
 
-`IStartupFilter` wraps the final application configuration delegate. Filters are applied in reverse registration order so each filter can add behavior before or after the next delegate. `IHostingStartup` is a separate assembly-discovery extension point that can contribute configuration and services before direct web-host configuration. Both mechanisms can affect startup ordering and must remain distinguishable from application middleware execution.
+`IStartupFilter` wraps the final application configuration delegate. Filters are applied in reverse registration order so each filter can add behavior before or after the next delegate.
+
+`IHostingStartup` is a separate assembly-discovery extension point with model-specific support and ordering. Full Generic Host integration schedules discovered hosting-startup configuration before direct web-host configuration. Legacy `WebHostBuilder` appends discovered callbacks after callbacks already registered directly on the builder, while still applying them before conventional `Startup.ConfigureServices`. The slim integration used by `CreateSlimBuilder` and `CreateEmptyBuilder` does not perform assembly discovery. These distinctions must remain separate from application middleware execution.
 
 The modern `WebApplicationBuilder.WebHost` adapter deliberately rejects `UseStartup` and `Configure`; minimal-hosting applications configure the returned `WebApplication` directly.
 
@@ -205,7 +210,7 @@ The default builders use options to configure integrations such as host filterin
 
 Hosting startup assemblies, startup filters, custom service-provider factories, custom `IHttpContextFactory` implementations, and alternate `IServer` implementations are distinct extension points:
 
-- Hosting startup assemblies enrich builder configuration before direct application configuration.
+- Hosting startup assemblies enrich full or legacy builder composition with model-specific ordering; slim and empty builders do not discover them.
 - Startup filters wrap request-pipeline construction.
 - Service-provider factories replace container construction while retaining the host composition.
 - `IHttpContextFactory` controls creation and disposal hooks for request contexts.
@@ -247,6 +252,8 @@ A lower-level test establishes only the boundary it exercises. TestHost coverage
 - [Hosting README](README.md) - area contents, development setup, and product documentation links.
 - [Hosting samples](samples/README.md) - focused development samples, not production templates.
 - [TestHost package documentation](TestHost/src/PACKAGE.md) - in-memory middleware testing.
+- [Trimming validation guidance](../../docs/Trimming.md#validate-trimming-behavior) - published trimming and Native AOT test boundaries.
+- [EventSource testing guidance](../../docs/EventSourceAndCounters.md#automated-testing-of-eventsources) - event-ID consistency and isolated EventSource validation.
 - [ASP.NET Core Generic Host documentation](https://learn.microsoft.com/aspnet/core/fundamentals/host/generic-host) - consumer guidance for Generic Host web applications.
 - [ASP.NET Core Web Host documentation](https://learn.microsoft.com/aspnet/core/fundamentals/host/web-host) - compatibility guidance for the legacy Web Host.
 - [.NET Generic Host documentation](https://learn.microsoft.com/dotnet/core/extensions/generic-host) - externally owned host defaults and lifetime.
@@ -282,7 +289,7 @@ A lower-level test establishes only the boundary it exercises. TestHost coverage
 - **Web-host setting** - An ASP.NET Core setting such as web root, server URLs, hosting startup assemblies, or startup error behavior.
 - **Startup** - The compatibility convention that discovers and invokes service, container, and application configuration methods.
 - **Startup filter** - An ordered wrapper around application request-pipeline configuration.
-- **Hosting startup assembly** - An assembly-discovered extension that contributes web-host configuration before direct application configuration.
+- **Hosting startup assembly** - An extension discovered by full Generic Host and legacy Web Host paths. Its ordering is model-specific, and slim or empty builders do not perform this discovery.
 - **Request pipeline** - The composed `RequestDelegate` chain that processes an `HttpContext`.
 - **HostingApplication** - The adapter between `IServer` request features and the ASP.NET Core request pipeline.
 - **Server** - An `IServer` implementation that owns listening, HTTP protocol handling, connections, and transport shutdown.
