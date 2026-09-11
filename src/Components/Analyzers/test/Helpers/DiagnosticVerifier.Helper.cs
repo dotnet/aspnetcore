@@ -41,6 +41,11 @@ public abstract partial class DiagnosticVerifier
         return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources, language));
     }
 
+    private static Diagnostic[] GetSortedDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, AnalyzerOptions analyzerOptions)
+    {
+        return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources, language), analyzerOptions);
+    }
+
     /// <summary>
     /// Given an analyzer and a document to apply it to, run the analyzer and gather an array of diagnostics found in it.
     /// The returned diagnostics are then ordered by location in the source document.
@@ -48,7 +53,7 @@ public abstract partial class DiagnosticVerifier
     /// <param name="analyzer">The analyzer to run on the documents</param>
     /// <param name="documents">The Documents that the analyzer will be run on</param>
     /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-    protected static Diagnostic[] GetSortedDiagnosticsFromDocuments(DiagnosticAnalyzer analyzer, Document[] documents)
+    protected static Diagnostic[] GetSortedDiagnosticsFromDocuments(DiagnosticAnalyzer analyzer, Document[] documents, AnalyzerOptions analyzerOptions = null)
     {
         var projects = new HashSet<Project>();
         foreach (var document in documents)
@@ -59,7 +64,10 @@ public abstract partial class DiagnosticVerifier
         var diagnostics = new List<Diagnostic>();
         foreach (var project in projects)
         {
-            var compilationWithAnalyzers = project.GetCompilationAsync().Result.WithAnalyzers(ImmutableArray.Create(analyzer));
+            var compilation = project.GetCompilationAsync().Result;
+            var compilationWithAnalyzers = analyzerOptions is null
+                ? compilation.WithAnalyzers(ImmutableArray.Create(analyzer))
+                : compilation.WithAnalyzers(ImmutableArray.Create(analyzer), analyzerOptions);
             var diags = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result;
             foreach (var diag in diags)
             {
@@ -168,4 +176,3 @@ public abstract partial class DiagnosticVerifier
     }
     #endregion
 }
-

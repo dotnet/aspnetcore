@@ -67,7 +67,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0019`)
+### BL  (`BL0001-BL0020`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -90,6 +90,7 @@
 |  __`BL0017`__ | Component declares `Dispose()` but does not implement `IDisposable`  |
 |  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
 |  __`BL0019`__ | Virtualize uses an invalid spacer element |
+|  __`BL0020`__ | Code after NavigationManager.NavigateTo will still execute |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
