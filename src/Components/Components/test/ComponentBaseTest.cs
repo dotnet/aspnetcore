@@ -388,6 +388,7 @@ public class ComponentBaseTest
             {
                 childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
                 childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnInitializedAsync), true);
+                childBuilder.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
                 childBuilder.CloseComponent();
             }));
             builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
@@ -420,6 +421,7 @@ public class ComponentBaseTest
             {
                 childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
                 childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnParametersSetAsync), true);
+                childBuilder.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
                 childBuilder.CloseComponent();
             }));
             builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
@@ -768,6 +770,7 @@ public class ComponentBaseTest
         [Parameter] public bool ThrowOnInitialized { get; set; } = false;
         [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
         [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
+        [Parameter] public bool ThrowDuringRender { get; set; } = false;
 
         public int StateHasChangedCalled { get; set; } = 0;
 
@@ -782,6 +785,14 @@ public class ComponentBaseTest
             if (ThrowOnInitialized)
             {
                 throw new InvalidOperationException("Error in OnInitialized");
+            }
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (ThrowDuringRender)
+            {
+                throw new InvalidOperationException("Error in BuildRenderTree");
             }
         }
 
