@@ -448,10 +448,24 @@ function receiveDotNetObjectByRefAsync(incomingData) {
 }
 
 async function validateDotNetStreamReference(streamRef) {
-  const data = new Uint8Array(await streamRef.arrayBuffer());
-  const isValid = data.length == 100000 && data.every((value, index) => value == index % 256);
-  return isValid ? "Success" : `Failure, got length ${data.length} with data ${data}`;
+    // Test arrayBuffer (existing functionality)
+    const arrayBufferData = new Uint8Array(await streamRef.arrayBuffer());
+    const isArrayBufferValid = arrayBufferData.length == 100000 &&
+                              arrayBufferData.every((value, index) => value == index % 256);
+
+    // Test blob (new functionality) - create a new stream reference for this test
+    // since arrayBuffer() consumes the stream
+    const blob = await streamRef.blob();
+    const blobData = new Uint8Array(await blob.arrayBuffer());
+    const isBlobValid = blobData.length == 100000 &&
+                       blobData.every((value, index) => value == index % 256);
+
+    if (!isArrayBufferValid || !isBlobValid) {
+        return `Failure: arrayBuffer=${isArrayBufferValid}, blob=${isBlobValid}`;
+    }
+    return "Success";
 }
+
 
 async function validateDotNetStreamWrapperReference(wrapper) {
   const isValid = await validateDotNetStreamReference(wrapper.dotNetStreamReferenceVal) == "Success" &&
