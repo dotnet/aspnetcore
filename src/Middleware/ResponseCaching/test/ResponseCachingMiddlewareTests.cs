@@ -1120,4 +1120,200 @@ public class ResponseCachingMiddlewareTests
         var subsequentContent = await subsequentResponse.Content.ReadAsStringAsync();
         Assert.NotEqual(initialContent, subsequentContent);
     }
+
+    [Fact]
+    public async Task KeyDrivenRejection_UnvariedResponse_AdmittedWhenKeyShort_RejectedWhenKeyLong()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddResponseCaching(options =>
+                        {
+                            options.SizeLimit = 350;
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCaching();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.CacheControl = new CacheControlHeaderValue
+                            {
+                                Public = true,
+                                MaxAge = TimeSpan.FromSeconds(10)
+                            }.ToString();
+                            await context.Response.WriteAsync(Guid.NewGuid().ToString());
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        // 1. Short path: fits within SizeLimit (350 bytes)
+        var shortInitial = await client.GetAsync("/short");
+        var shortSubsequent = await client.GetAsync("/short");
+
+        shortInitial.EnsureSuccessStatusCode();
+        shortSubsequent.EnsureSuccessStatusCode();
+        Assert.True(shortSubsequent.Headers.Contains(HeaderNames.Age));
+        Assert.Equal(await shortInitial.Content.ReadAsStringAsync(), await shortSubsequent.Content.ReadAsStringAsync());
+
+        // 2. Long path: response body and headers are identical, but key bytes push total size over SizeLimit
+        var longPath = "/long/" + new string('a', 150);
+        var longInitial = await client.GetAsync(longPath);
+        var longSubsequent = await client.GetAsync(longPath);
+
+        longInitial.EnsureSuccessStatusCode();
+        longSubsequent.EnsureSuccessStatusCode();
+        Assert.False(longSubsequent.Headers.Contains(HeaderNames.Age));
+        Assert.NotEqual(await longInitial.Content.ReadAsStringAsync(), await longSubsequent.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task DecoupledVaryBy_BaseKeyAdmitted_VariedResponseRejectedDueToSize()
+    {
+        using var memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 350 });
+        var responseCache = new MemoryResponseCache(memoryCache);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddResponseCaching(options =>
+                        {
+                            options.SizeLimit = 350;
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.Use((context, next) =>
+                        {
+                            var middleware = TestUtils.CreateTestMiddleware(
+                                next,
+                                cache: responseCache,
+                                options: new ResponseCachingOptions { SizeLimit = 350 },
+                                policyProvider: new ResponseCachingPolicyProvider());
+                            return middleware.Invoke(context);
+                        });
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.CacheControl = new CacheControlHeaderValue
+                            {
+                                Public = true,
+                                MaxAge = TimeSpan.FromSeconds(10)
+                            }.ToString();
+                            context.Response.Headers.Vary = "X-Custom";
+                            // Large payload (500 bytes) ensures response size exceeds SizeLimit (350),
+                            // while base key + CachedVaryByRules fits (~160 bytes)
+                            await context.Response.WriteAsync(Guid.NewGuid().ToString() + new string('x', 500));
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Custom", "value1");
+
+        // Initial request: base key + CachedVaryByRules is admitted, but varied response is rejected
+        var initialResponse = await client.GetAsync("/vary-short");
+        initialResponse.EnsureSuccessStatusCode();
+
+        // Exactly one entry in the cache: CachedVaryByRules under the base key
+        Assert.Equal(1, memoryCache.Count);
+
+        // Subsequent request with the same vary header:
+        // Decoupled admission failure must not throw or terminate the pipeline
+        var subsequentResponse = await client.GetAsync("/vary-short");
+        subsequentResponse.EnsureSuccessStatusCode();
+
+        // Fresh response served because the varied response was rejected due to size
+        Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+        Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task DecoupledVaryBy_BaseKeyRejectedDueToSize_VariedResponseAdmitted()
+    {
+        using var memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 350 });
+        var responseCache = new MemoryResponseCache(memoryCache);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddResponseCaching(options =>
+                        {
+                            options.SizeLimit = 350;
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.Use((context, next) =>
+                        {
+                            var middleware = TestUtils.CreateTestMiddleware(
+                                next,
+                                cache: responseCache,
+                                options: new ResponseCachingOptions { SizeLimit = 350 },
+                                policyProvider: new ResponseCachingPolicyProvider());
+                            return middleware.Invoke(context);
+                        });
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.CacheControl = new CacheControlHeaderValue
+                            {
+                                Public = true,
+                                MaxAge = TimeSpan.FromSeconds(10)
+                            }.ToString();
+                            context.Response.Headers.Vary = "X-Custom";
+                            // Small payload ensures varied response + short storage vary key fits in SizeLimit (350),
+                            // while the long base key (> 180 chars -> > 360 bytes) pushes CachedVaryByRules over SizeLimit
+                            await context.Response.WriteAsync(Guid.NewGuid().ToString());
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Custom", "value1");
+
+        // Long path makes base key (> 360 bytes) exceed SizeLimit (350), so CachedVaryByRules is rejected.
+        // But storage vary key (which does not include the path) + small response body fits in SizeLimit, so CachedResponse is admitted.
+        var longPath = "/vary-long/" + new string('k', 180);
+
+        var initialResponse = await client.GetAsync(longPath);
+        initialResponse.EnsureSuccessStatusCode();
+
+        // Exactly one entry in the cache: the varied CachedResponse (CachedVaryByRules was rejected)
+        Assert.Equal(1, memoryCache.Count);
+
+        // Subsequent request:
+        // Middleware does not find CachedVaryByRules under base key, so it cannot look up the varied response.
+        // Independent admission failure must not throw or terminate the pipeline.
+        var subsequentResponse = await client.GetAsync(longPath);
+        subsequentResponse.EnsureSuccessStatusCode();
+
+        // Fresh response served because CachedVaryByRules was rejected
+        Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+        Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+    }
 }
