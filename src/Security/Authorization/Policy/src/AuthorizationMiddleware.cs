@@ -32,7 +32,6 @@ public class AuthorizationMiddleware
 
     // Property key is used by Endpoint routing to determine if Authorization has run
     private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";
-    private static readonly object AuthorizationMiddlewareWithEndpointInvokedValue = new object();
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
@@ -98,9 +97,9 @@ public class AuthorizationMiddleware
         var endpoint = context.GetEndpoint();
         if (endpoint != null)
         {
-            // EndpointRoutingMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
+            // EndpointMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
             // The Authorization middleware can only make this claim if it observes an actual endpoint.
-            context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = AuthorizationMiddlewareWithEndpointInvokedValue;
+            context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = endpoint;
         }
 
         // Use the computed policy for this endpoint if we can
