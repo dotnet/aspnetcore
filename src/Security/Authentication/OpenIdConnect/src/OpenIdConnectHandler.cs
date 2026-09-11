@@ -455,6 +455,12 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             message.Nonce = Options.ProtocolValidator.GenerateNonce();
             WriteNonceCookie(message.Nonce);
+
+            // Remember the nonce in the protected state so the matching nonce cookie can still be
+            // deleted when the authorization response comes back as an error. Error responses carry
+            // no id_token, which is what ReadNonceCookie normally uses to locate the cookie.
+            // See https://github.com/dotnet/aspnetcore/issues/53048.
+            properties.Items[NonceProperty] = message.Nonce;
         }
 
         GenerateCorrelationId(properties);
@@ -734,9 +740,23 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 return HandleRequestResult.Fail("Correlation failed.", properties);
             }
 
+            // Recover the nonce stored in the protected state during the challenge and drop it from
+            // the properties so it never flows into the authentication ticket. It is only needed to
+            // clean up the nonce cookie on error responses below, and stays null when absent.
+            properties.Items.Remove(NonceProperty, out var challengeNonce);
+
             // if any of the error fields are set, throw error null
             if (!string.IsNullOrEmpty(authorizationResponse.Error))
             {
+                // An error response carries no id_token or code, so ReadNonceCookie cannot match the
+                // cookie against a returned nonce. Delete the specific nonce cookie recorded in the
+                // state instead, otherwise repeated failed sign-ins leave nonce cookies behind until
+                // they expire. See https://github.com/dotnet/aspnetcore/issues/53048.
+                if (!string.IsNullOrEmpty(challengeNonce))
+                {
+                    ReadNonceCookie(challengeNonce);
+                }
+
                 // Note: access_denied errors are special protocol errors indicating the user didn't
                 // approve the authorization demand requested by the remote authorization server.
                 // Since it's a frequent scenario (that is not caused by incorrect configuration),
