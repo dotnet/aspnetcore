@@ -11,3 +11,4 @@ ASP0035 | Usage | Warning | ValidationsDiagnosticAnalyzer
 ASP0036 | Usage | Warning | ValidationsDiagnosticAnalyzer
 ASP0037 | Usage | Warning | ValidatableTypeInGeneratedCodeDiagnosticAnalyzer
 ASP0038 | Usage | Warning | ValidationsDiagnosticAnalyzer
+ASP0040 | Usage | Warning | ValidationsDiagnosticAnalyzer

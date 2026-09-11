@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0039`)
+### ASP (`ASP0000-ASP0040`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -45,6 +45,7 @@
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
 |  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
+|  __`ASP0040`__ | \[ValidatableType] is applied to an open generic type |
 
 ### API (`API1000-API1003`)
 
