@@ -102,7 +102,7 @@ internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProv
         for (var i = 0; i < varyHeader.Count; i++)
         {
             var rawHeader = varyHeader[i].AsSpan();
-            if (rawHeader.Length == 0)
+            if (rawHeader.IsEmpty)
             {
                 continue;
             }
