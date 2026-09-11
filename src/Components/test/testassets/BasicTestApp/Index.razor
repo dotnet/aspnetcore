@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
 @using System.Web
 @inject NavigationManager NavigationManager
+<p id="non-js-root-parameter">@NonJSRootParameter</p>
 
 <p id="session-storage-marker"></p>
 <div id="test-selector">
@@ -173,6 +174,9 @@
 </app>
 
 @code {
+    [Parameter]
+    public string NonJSRootParameter { get; set; } = "Initial non-JS root value";
+
     string SelectedComponentTypeName { get; set; } = "none";
 
     Type SelectedComponentType
