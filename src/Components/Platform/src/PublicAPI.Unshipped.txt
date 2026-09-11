@@ -11,7 +11,9 @@ Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) ->
 Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Window
 Microsoft.AspNetCore.Components.Platform.Window.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Platform.Window.LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
-Microsoft.AspNetCore.Components.Platform.Window.SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
+Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions
+Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
+Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
+Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
 Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
