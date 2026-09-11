@@ -2099,7 +2099,7 @@ public class Http3StreamTests : Http3TestBase
             new KeyValuePair<string, string>("contains-newlines", newlineChars),
         };
 
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: false);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers, endStream: false);
         await requestStream.SendHeadersAsync(trailerWithNewlines, endStream: true);
 
         await requestStream.WaitForStreamErrorAsync(
