@@ -1728,44 +1728,75 @@ function Add-PullRequestDetails {
         throw "Repository must use the owner/name format."
     }
 
-    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
-        $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
+    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 5) {
+        $chunk = @($Candidates | Select-Object -Skip $offset -First 5)
         $aliases = @(
             foreach ($candidate in $chunk) {
                 $number = [int]$candidate.PullRequest.number
                 @"
 pr$number`: pullRequest(number: $number) {
   number
+  headRefOid
+  isDraft
+  author { __typename login }
   mergeable
   mergeStateStatus
   reviewDecision
   reviews(last: 50) {
+    totalCount
+    pageInfo { hasPreviousPage }
     nodes {
-      author { login }
+      id
+      url
+      body
+      author { __typename login }
       state
       submittedAt
+      updatedAt
       commit { oid }
     }
   }
   reviewRequests(first: 20) {
+    totalCount
+    pageInfo { hasNextPage }
     nodes {
       requestedReviewer {
+        __typename
         ... on User { login }
         ... on Team { name }
       }
     }
   }
   comments(last: 50) {
+    totalCount
+    pageInfo { hasPreviousPage }
     nodes {
-      author { login }
+      id
+      url
+      body
+      author { __typename login }
+      authorAssociation
       createdAt
+      updatedAt
     }
   }
+  reviewThreads(last: 1) {
+    totalCount
+    pageInfo { hasPreviousPage }
+    nodes { id }
+  }
   timelineItems(itemTypes: [REVIEW_REQUESTED_EVENT], last: 50) {
+    totalCount
+    filteredCount
+    pageInfo { hasPreviousPage }
     nodes {
+      __typename
       ... on ReviewRequestedEvent {
+        id
+        actor { __typename login }
         createdAt
         requestedReviewer {
+          __typename
           ... on User { login }
           ... on Team { name }
         }
@@ -1775,6 +1806,11 @@ pr$number`: pullRequest(number: $number) {
   commits(last: 1) {
     nodes {
       commit {
+        oid
+        url
+        committedDate
+        author { user { __typename login } }
+        committer { user { __typename login } }
         statusCheckRollup { state }
       }
     }
@@ -1797,14 +1833,33 @@ pr$number`: pullRequest(number: $number) {
             "-F",
             "name=$($repositoryParts[1])"
         )
+        $errors = @(ConvertTo-Array (Get-PropertyValue $result "errors"))
+        if ($errors.Count -gt 0) {
+            throw "GitHub shared detail query failed: $(($errors | ForEach-Object { Get-PropertyValue $_ 'message' }) -join '; ')"
+        }
 
         foreach ($candidate in $chunk) {
             $pullRequest = $candidate.PullRequest
             $number = [int]$pullRequest.number
-            $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$number"
+            $repositoryData = Get-PropertyValue (Get-PropertyValue $result "data") "repository"
+            $detail = Get-PropertyValue -Object $repositoryData -Name "pr$number"
             if ($null -eq $detail) {
-                throw "GitHub did not return details for pull request #$number."
+                throw "GitHub did not return shared details for pull request #$number."
             }
+            foreach ($name in @("reviews", "comments", "reviewRequests", "timelineItems", "commits")) {
+                $connection = Get-PropertyValue $detail $name
+                $nodesProperty = if ($connection) { $connection.PSObject.Properties["nodes"] } else { $null }
+                if ($null -eq $nodesProperty -or $null -eq $nodesProperty.Value) {
+                    throw "GitHub shared details for pull request #$number are missing $name nodes."
+                }
+            }
+            foreach ($name in @("mergeable", "mergeStateStatus", "reviewDecision")) {
+                if ($null -eq $detail.PSObject.Properties[$name] -or
+                    ($name -ne "reviewDecision" -and $null -eq $detail.PSObject.Properties[$name].Value)) {
+                    throw "GitHub shared details for pull request #$number are missing $name."
+                }
+            }
+            $pullRequest | Add-Member -NotePropertyName "lifecycleDetails" -NotePropertyValue $detail -Force
 
             $reviews = @(
                 ConvertTo-Array (Get-PropertyValue `
@@ -1910,20 +1965,30 @@ function Add-DiscussionEvidenceDetails {
         throw "Repository must use the owner/name format."
     }
 
-    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 20) {
-        $chunk = @($Candidates | Select-Object -Skip $offset -First 20)
+    for ($offset = 0; $offset -lt $Candidates.Count; $offset += 5) {
+        $chunk = @($Candidates | Select-Object -Skip $offset -First 5)
         $aliases = @(
             foreach ($candidate in $chunk) {
                 $number = [int]$candidate.PullRequest.number
                 @"
 pr$number`: pullRequest(number: $number) {
+  number
+  headRefOid
+  isDraft
+  author { __typename login }
+  reviewDecision
+  reviews { totalCount }
   comments(last: 50) {
     totalCount
     pageInfo { hasPreviousPage }
     nodes {
-      author { login }
+      id
+      url
+      author { __typename login }
       authorAssociation
       createdAt
+      updatedAt
+      body
       bodyText
     }
   }
@@ -1931,8 +1996,28 @@ pr$number`: pullRequest(number: $number) {
     totalCount
     pageInfo { hasPreviousPage }
     nodes {
+      id
       isResolved
       isOutdated
+      path
+      comments(last: 20) {
+        totalCount
+        pageInfo { hasPreviousPage }
+        nodes {
+          id
+          url
+          state
+          author { __typename login }
+          authorAssociation
+          createdAt
+          updatedAt
+          body
+          replyTo { id }
+          commit { oid }
+          originalCommit { oid }
+          pullRequestReview { id state submittedAt url }
+        }
+      }
     }
   }
 }
@@ -1943,7 +2028,10 @@ pr$number`: pullRequest(number: $number) {
         $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
             ($aliases -join [Environment]::NewLine) +
             '}}'
-        $result = Invoke-GhJson -Arguments @(
+        $result = $null
+        $discussionError = $null
+        try {
+            $result = Invoke-GhJson -Arguments @(
             "api",
             "graphql",
             "-f",
@@ -1952,14 +2040,27 @@ pr$number`: pullRequest(number: $number) {
             "owner=$($repositoryParts[0])",
             "-F",
             "name=$($repositoryParts[1])"
-        )
+            )
+        }
+        catch {
+            $discussionError = $_.Exception.Message
+        }
 
         foreach ($candidate in $chunk) {
             $pullRequest = $candidate.PullRequest
             $number = [int]$pullRequest.number
-            $detail = Get-PropertyValue -Object $result.data.repository -Name "pr$number"
-            if ($null -eq $detail) {
-                throw "GitHub did not return discussion evidence for pull request #$number."
+            $repositoryData = Get-PropertyValue (Get-PropertyValue $result "data") "repository"
+            $detail = Get-PropertyValue -Object $repositoryData -Name "pr$number"
+            $pullRequest | Add-Member -NotePropertyName "lifecycleDiscussion" -NotePropertyValue $detail -Force
+            $errors = @(ConvertTo-Array (Get-PropertyValue $result "errors") | Where-Object {
+                $path = @(Get-PropertyValue $_ "path")
+                $null -eq (Get-PropertyValue $_ "path") -or $path.Count -eq 0 -or $path -contains "pr$number"
+            })
+            if ($discussionError -or $errors.Count -gt 0 -or $null -eq $detail) {
+                $pullRequest | Add-Member -NotePropertyName "lifecycleDiscussionError" -NotePropertyValue $(
+                    if ($discussionError) { $discussionError }
+                    elseif ($errors.Count -gt 0) { ($errors | ForEach-Object { Get-PropertyValue $_ "message" }) -join "; " }
+                    else { "GitHub did not return discussion evidence for pull request #$number." }) -Force
             }
 
             $commentsConnection = Get-PropertyValue -Object $detail -Name "comments"
@@ -2047,7 +2148,7 @@ function Resolve-UnknownMergeable {
 
         Start-Sleep -Milliseconds $DelayMilliseconds
 
-        # Add-PullRequestDetails chunks at 20 because its query is heavy. This query
+        # Add-PullRequestDetails uses small batches because its query is heavy. This query
         # is small, but an UNKNOWN mergeable is the expensive case server-side, so
         # this stays well below that to avoid provoking a GraphQL timeout.
         for ($offset = 0; $offset -lt $pending.Count; $offset += 25) {
@@ -2055,7 +2156,7 @@ function Resolve-UnknownMergeable {
             $aliases = @(
                 foreach ($candidate in $chunk) {
                     $number = [int]$candidate.PullRequest.number
-                    "pr$number`: pullRequest(number: $number) { number mergeable }"
+                    "pr$number`: pullRequest(number: $number) { number headRefOid isDraft mergeable }"
                 }
             )
             $query = 'query($owner:String!,$name:String!){repository(owner:$owner,name:$name){' +
@@ -2078,6 +2179,10 @@ function Resolve-UnknownMergeable {
             catch {
                 # This pass only refines an already-complete queue, so a failed chunk
                 # must not discard the chunks that already resolved.
+                foreach ($candidate in $chunk) {
+                    $candidate.PullRequest | Add-Member -NotePropertyName "lifecycleMergeError" `
+                        -NotePropertyValue $_.Exception.Message -Force
+                }
                 $result = $null
             }
 
@@ -2092,6 +2197,16 @@ function Resolve-UnknownMergeable {
                     continue
                 }
 
+                if ((Get-PropertyValue $detail "headRefOid") -and
+                    ((Get-PropertyValue $detail "headRefOid") -ne $candidate.PullRequest.headRefOid -or
+                    (Get-PropertyValue $detail "isDraft") -ne $candidate.PullRequest.isDraft)) {
+                    $candidate.PullRequest | Add-Member -NotePropertyName "lifecycleIdentityMismatch" -NotePropertyValue $true -Force
+                }
+                $candidate.PullRequest.PSObject.Properties.Remove("lifecycleMergeError")
+                $candidate.PullRequest | Add-Member `
+                    -NotePropertyName "lifecycleMergeIdentity" `
+                    -NotePropertyValue $detail `
+                    -Force
                 $candidate.PullRequest | Add-Member `
                     -NotePropertyName "mergeable" `
                     -NotePropertyValue (Get-PropertyValue -Object $detail -Name "mergeable" -DefaultValue "UNKNOWN") `
@@ -2442,8 +2557,406 @@ function Get-Classification {
     }
 }
 
+function Get-LifecycleConnectionCoverage {
+    param([object]$Connection, [string]$PageFlag = "hasPreviousPage", [string]$CountField = "totalCount")
+
+    $nodes = @(ConvertTo-Array (Get-PropertyValue $Connection "nodes"))
+    $count = Get-PropertyValue $Connection $CountField
+    $hasMore = Get-PropertyValue (Get-PropertyValue $Connection "pageInfo") $PageFlag
+    $nodesProperty = if ($Connection) { $Connection.PSObject.Properties["nodes"] } else { $null }
+    $state = if ($null -eq $Connection) { "not-collected" }
+    elseif ($null -ne $count -and $null -ne $hasMore -and -not $hasMore -and
+        $null -ne $nodesProperty -and $null -ne $nodesProperty.Value -and $count -eq $nodes.Count) { "complete" }
+    else { "partial" }
+    return [pscustomobject]@{
+        state = $state
+        totalCount = $count
+        returnedCount = if ($null -ne $Connection) { $nodes.Count } else { $null }
+        hasMore = $hasMore
+    }
+}
+
+function Get-LifecycleActor {
+    param([object]$Actor, [string]$AuthorLogin, [string[]]$KnownBotPatterns)
+
+    $login = [string](Get-PropertyValue $Actor "login")
+    $type = Get-PropertyValue $Actor "__typename"
+    if (-not $login -or $type -notin @("User", "Bot")) { return "unknown" }
+    if ($type -eq "Bot" -or (Test-IsBotLogin $login $false $KnownBotPatterns)) { return "automation" }
+    # A User-typed service-looking identity is not a new exclusion or an ownership policy.
+    if ($login -like "*-bot") { return "unestablished-service" }
+    if ($login -eq $AuthorLogin) { return "author" }
+    return "human"
+}
+
+function Get-LifecycleEvent {
+    param([object]$Event, [string]$Kind, [object]$Thread, [string]$AuthorLogin, [string[]]$KnownBotPatterns)
+
+    $publication = if ($Kind -eq "review") { $Event } else { Get-PropertyValue $Event "pullRequestReview" }
+    $state = Get-PropertyValue $publication "state"
+    if ($state -eq "PENDING" -or (Get-PropertyValue $Event "state") -eq "PENDING") { return }
+    $createdAt = ConvertTo-UtcDateTime (Get-PropertyValue $Event "createdAt")
+    $submittedAt = ConvertTo-UtcDateTime (Get-PropertyValue $publication "submittedAt")
+    $updatedAt = ConvertTo-UtcDateTime (Get-PropertyValue $Event "updatedAt")
+    $actor = Get-LifecycleActor (Get-PropertyValue $Event "author") $AuthorLogin $KnownBotPatterns
+    $published = if ($Kind -eq "top-level-comment") { $null -ne $createdAt }
+        else { $submittedAt -and $state -in @("APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED") }
+    if ($Kind -eq "inline-comment") {
+        $published = $published -and $createdAt -and (Get-PropertyValue $Event "state") -eq "SUBMITTED"
+    }
+    $publishedAt = @($createdAt, $submittedAt | Where-Object { $null -ne $_ } | Sort-Object -Descending | Select-Object -First 1)
+    $publishedAt = if ($publishedAt.Count -gt 0) { $publishedAt[0] } else { $null }
+    $observedAt = if ($publishedAt -and $updatedAt -gt $publishedAt) { $updatedAt } else { $publishedAt }
+    return [pscustomobject]@{
+        kind = $Kind; id = Get-PropertyValue $Event "id"; url = Get-PropertyValue $Event "url"
+        actor = $actor; author = Get-PropertyValue (Get-PropertyValue $Event "author") "login"
+        published = [bool]$published; publishedAt = $publishedAt; updatedAt = $updatedAt; observedAt = $observedAt
+        state = Get-PropertyValue $Event "state"; reviewState = $state
+        reviewId = Get-PropertyValue $publication "id"; commitSha = Get-PropertyValue (Get-PropertyValue $Event "commit") "oid"
+        threadId = Get-PropertyValue $Thread "id"; isResolved = Get-PropertyValue $Thread "isResolved"
+        isOutdated = Get-PropertyValue $Thread "isOutdated"; replyTo = Get-PropertyValue (Get-PropertyValue $Event "replyTo") "id"
+        body = Get-PropertyValue $Event "body"
+    }
+}
+
+function Get-ReviewLifecycleAssessment {
+    param([object]$PullRequest, [object]$Item, [object]$Settings)
+
+    $detail = Get-PropertyValue $PullRequest "lifecycleDetails"
+    $discussion = Get-PropertyValue $PullRequest "lifecycleDiscussion"
+    $patterns = @($Settings.knownBotPatterns)
+    $author = [string](Get-PropertyValue (Get-PropertyValue $PullRequest "author") "login")
+    $head = Get-PropertyValue $PullRequest "headRefOid"
+    $draft = Get-PropertyValue $PullRequest "isDraft"
+    $reviewsConnection = Get-PropertyValue $detail "reviews"
+    $commentsConnection = Get-PropertyValue $(if ($discussion) { $discussion } else { $detail }) "comments"
+    $threadsConnection = Get-PropertyValue $(if ($discussion) { $discussion } else { $detail }) "reviewThreads"
+    $coverage = [ordered]@{
+        identity = [pscustomobject]@{ state = "not-collected" }
+        reviews = Get-LifecycleConnectionCoverage $reviewsConnection
+        comments = Get-LifecycleConnectionCoverage $commentsConnection
+        threads = Get-LifecycleConnectionCoverage $threadsConnection
+        threadComments = [pscustomobject]@{ state = "not-collected"; totalCount = $null; returnedCount = $null }
+        reviewRequests = Get-LifecycleConnectionCoverage (Get-PropertyValue $detail "reviewRequests") "hasNextPage"
+        timeline = Get-LifecycleConnectionCoverage (Get-PropertyValue $detail "timelineItems") -CountField "filteredCount"
+        commit = [pscustomobject]@{ state = "not-collected" }
+        merge = [pscustomobject]@{ state = "not-collected" }
+    }
+    $threads = @(ConvertTo-Array (Get-PropertyValue $threadsConnection "nodes"))
+    $nestedCount = 0; $nestedReturned = 0; $nestedCollected = 0
+    $nestedComplete = $coverage.threads.state -eq "complete"
+    foreach ($thread in $threads) {
+        $nested = Get-LifecycleConnectionCoverage (Get-PropertyValue $thread "comments")
+        if ($nested.state -ne "not-collected") { $nestedCollected++ }
+        if ($nested.state -ne "complete") { $nestedComplete = $false }
+        if ($null -ne $nested.totalCount) { $nestedCount += $nested.totalCount }
+        if ($null -ne $nested.returnedCount) { $nestedReturned += $nested.returnedCount }
+    }
+    $coverage.threadComments.state = if ($nestedComplete) { "complete" }
+        elseif ($nestedCollected -eq 0) { "not-collected" } else { "partial" }
+    $coverage.threadComments.totalCount = if ($nestedComplete) { $nestedCount } else { $null }
+    $coverage.threadComments.returnedCount = if ($nestedComplete -or $nestedCollected -gt 0) { $nestedReturned } else { $null }
+    $reasons = [System.Collections.Generic.List[string]]::new()
+    $events = @(
+        foreach ($review in @(ConvertTo-Array (Get-PropertyValue $reviewsConnection "nodes"))) {
+            Get-LifecycleEvent $review "review" $null $author $patterns
+        }
+        foreach ($comment in @(ConvertTo-Array (Get-PropertyValue $commentsConnection "nodes"))) {
+            Get-LifecycleEvent $comment "top-level-comment" $null $author $patterns
+        }
+        foreach ($thread in $threads) {
+            foreach ($comment in @(ConvertTo-Array (Get-PropertyValue (Get-PropertyValue $thread "comments") "nodes"))) {
+                Get-LifecycleEvent $comment "inline-comment" $thread $author $patterns
+            }
+        }
+    )
+    $decision = Get-PropertyValue $detail "reviewDecision"
+    $commitNodes = @(ConvertTo-Array (Get-PropertyValue (Get-PropertyValue $detail "commits") "nodes"))
+    $commit = if ($commitNodes.Count -eq 1) { Get-PropertyValue $commitNodes[0] "commit" } else { $null }
+    $commitAt = ConvertTo-UtcDateTime (Get-PropertyValue $commit "committedDate")
+    $commitOid = Get-PropertyValue $commit "oid"
+    $coverage.commit.state = if ($null -eq $commit) { "not-collected" }
+        elseif ($commitOid -eq $head -and $commitAt) { "complete" } else { "partial" }
+    $assessment = [pscustomobject]@{
+        group = $null; status = "verification-needed"; rank = $null
+        reasons = @(); caveats = @(); primaryUncertaintyReason = $null; coverage = [pscustomobject]$coverage
+        evidence = [pscustomobject]@{
+            headSha = $head; detailHeadSha = Get-PropertyValue $detail "headRefOid"
+            discussionHeadSha = Get-PropertyValue $discussion "headRefOid"
+            isDraft = $draft; reviewDecision = $decision
+            mergeable = Get-PropertyValue $detail "mergeable"
+            mergeStateStatus = Get-PropertyValue $detail "mergeStateStatus"
+            checkState = $Item.checkState
+            headCommit = [pscustomobject]@{
+                sha = $commitOid; committedAt = $commitAt; author = Get-PropertyValue (Get-PropertyValue (Get-PropertyValue $commit "author") "user") "login"
+                url = Get-PropertyValue $commit "url"
+            }
+            author = [pscustomobject]@{ login = $author; type = Get-PropertyValue (Get-PropertyValue $detail "author") "__typename" }
+            events = $events
+            reviewRequestEvents = @(ConvertTo-Array (Get-PropertyValue (Get-PropertyValue $detail "timelineItems") "nodes"))
+            currentReviewRequests = @(ConvertTo-Array (Get-PropertyValue (Get-PropertyValue $detail "reviewRequests") "nodes"))
+            humanFeedbackCount = $null; latestHumanFeedbackAt = $null
+            latestAuthorActivityAt = $null; laterReviewRequests = @()
+            sourceErrors = @(
+                foreach ($name in @("lifecycleDetailsError", "lifecycleDiscussionError", "lifecycleMergeError")) {
+                    $errorValue = Get-PropertyValue $PullRequest $name
+                    if ($errorValue) { [pscustomobject]@{ source = $name; message = $errorValue } }
+                }
+            )
+        }
+    }
+    $finish = {
+        param($status, $group, $reason)
+        if ($reason) { $reasons.Add($reason) }
+        $assessment.status = $status; $assessment.group = $group
+        $assessment.reasons = @($reasons | Select-Object -Unique)
+        $assessment.primaryUncertaintyReason = if ($status -eq "verification-needed") {
+            if ($reason) { $reason } else { $assessment.reasons[0] }
+        } else { $null }
+        return $assessment
+    }
+
+    $identityMissing = -not $head -or $null -eq $draft -or -not $detail
+    $identityMismatch = [bool](Get-PropertyValue $PullRequest "lifecycleIdentityMismatch" $false)
+    if ($commitOid -and $head -and $commitOid -ne $head) { $identityMismatch = $true }
+    foreach ($source in @($detail, $discussion, (Get-PropertyValue $PullRequest "lifecycleMergeIdentity"))) {
+        if ($null -eq $source) { continue }
+        if (-not (Get-PropertyValue $source "headRefOid") -or $null -eq (Get-PropertyValue $source "isDraft")) {
+            $identityMissing = $true
+        }
+        elseif ($head -ne $source.headRefOid -or $draft -ne $source.isDraft) { $identityMismatch = $true }
+        $sourceAuthor = Get-PropertyValue (Get-PropertyValue $source "author") "login"
+        if ($sourceAuthor -and $sourceAuthor -ne $author) { $identityMismatch = $true }
+    }
+    if ($discussion -and $detail -and
+        ((Get-PropertyValue $discussion "reviewDecision") -ne $decision -or
+        (Get-PropertyValue (Get-PropertyValue $discussion "reviews") "totalCount") -ne $coverage.reviews.totalCount)) {
+        $identityMismatch = $true
+    }
+    $mergeIdentity = Get-PropertyValue $PullRequest "lifecycleMergeIdentity"
+    $mergeable = if ($mergeIdentity -and -not $identityMismatch) { Get-PropertyValue $mergeIdentity "mergeable" }
+        else { Get-PropertyValue $detail "mergeable" }
+    $assessment.evidence.mergeable = $mergeable
+    $coverage.identity.state = if (-not $detail) { "not-collected" }
+        elseif ($identityMissing -or $identityMismatch) { "partial" } else { "complete" }
+    $coverage.merge.state = if (-not $detail) { "not-collected" }
+        elseif ($coverage.identity.state -eq "complete" -and $null -ne $decision -and $mergeable -and
+        (Get-PropertyValue $detail "mergeStateStatus") -and $commitOid -eq $head) { "complete" } else { "partial" }
+    if ($identityMismatch) { return & $finish "verification-needed" $null "source-identity-mismatch" }
+
+    $explicitExclusions = @($Item.digestExclusionReasons | Where-Object { $_ -in @("excluded-author", "stacked-on-unhealthy-pr") })
+    if ($explicitExclusions.Count -gt 0) {
+        foreach ($reason in $explicitExclusions) { $reasons.Add($reason) }
+        return & $finish "blocked" $null "explicit-queue-exclusion"
+    }
+    $unknownMergeGate = $Item.bucket -eq "WaitingOnCI" -and $decision -eq "APPROVED" -and
+        $Item.checkState -eq "Passing" -and $mergeable -eq "MERGEABLE" -and
+        (Get-PropertyValue $detail "mergeStateStatus") -eq "UNKNOWN" -and
+        $Item.reasonCodes -contains "merge-state-not-clean" -and
+        @($Item.reasonCodes | Where-Object { $_ -notin @("merge-state-not-clean", "community-contribution") }).Count -eq 0
+    if ($Item.bucket -notin @("ReviewNow", "ReadyToMerge") -and -not $unknownMergeGate) {
+        foreach ($reason in $Item.reasonCodes) { $reasons.Add($reason) }
+        return & $finish "blocked" $null "existing-actionability-gate"
+    }
+    if ($assessment.evidence.sourceErrors.Count -gt 0) { $reasons.Add("source-error") }
+    if ($identityMissing) { $reasons.Add("identity-not-collected") }
+    $ownerKind = Get-LifecycleActor (Get-PropertyValue $detail "author") $author $patterns
+    if ($ownerKind -eq "unknown") { $reasons.Add("author-metadata-incomplete") }
+    elseif ($ownerKind -ne "author") { $reasons.Add("author-policy-unestablished") }
+    if ($Item.bucket -eq "ReadyToMerge" -or $unknownMergeGate) {
+        $checkRollup = Get-PropertyValue $commit "statusCheckRollup"
+        if ($reasons.Count -eq 0 -and $coverage.merge.state -eq "complete" -and
+            $decision -eq "APPROVED" -and -not $draft -and $mergeable -eq "MERGEABLE" -and
+            $Item.checkState -eq "Passing" -and (Get-PropertyValue $checkRollup "state") -eq "SUCCESS" -and
+            (Get-PropertyValue $detail "mergeStateStatus") -in @("CLEAN", "UNKNOWN")) {
+            if ($unknownMergeGate) {
+                $assessment.caveats = @("merge-state-unknown")
+                $reasons.Add("merge-state-unknown")
+            }
+            return & $finish "grouped" "merge-candidates" "approval-and-passing-checks-observed"
+        }
+        return & $finish "verification-needed" $null "merge-evidence-incomplete"
+    }
+
+    foreach ($name in @("reviews", "comments", "threads")) {
+        if ($coverage[$name].state -ne "complete") { $reasons.Add("$name-incomplete") }
+    }
+    if (-not $nestedComplete) { $reasons.Add("thread-comments-incomplete") }
+    foreach ($event in $events) {
+        if (-not $event.published -or $event.actor -in @("unknown", "unestablished-service")) {
+            $reasons.Add("event-publication-or-actor-unknown")
+        }
+    }
+    if ($Item.checkState -eq "Unknown") { $reasons.Add("checks-not-collected") }
+    if ($reasons.Count -gt 0) { return & $finish "verification-needed" $null $null }
+
+    $feedback = @($events | Where-Object { $_.actor -eq "human" } | Sort-Object observedAt -Descending)
+    $authorActivity = @($events | Where-Object { $_.actor -eq "author" } | Sort-Object observedAt -Descending)
+    $assessment.evidence.humanFeedbackCount = $feedback.Count
+    $assessment.evidence.latestAuthorActivityAt = if ($authorActivity.Count -gt 0) { $authorActivity[0].observedAt } else { $null }
+    if ($Item.checkState -eq "Pending") { $assessment.caveats = @("checks-pending") }
+    if ($feedback.Count -eq 0) {
+        return & $finish "grouped" "initial-review-candidates" "no-human-feedback-observed"
+    }
+    $latestFeedbackAt = $feedback[0].observedAt
+    $assessment.evidence.latestHumanFeedbackAt = $latestFeedbackAt
+    $reasons.Add("human-feedback-observed")
+    if ($authorActivity.Count -gt 0 -and $authorActivity[0].observedAt -gt $latestFeedbackAt) {
+        $reasons.Add("author-activity-after-feedback")
+    }
+    if ($coverage.commit.state -eq "complete" -and $commitAt -gt $latestFeedbackAt) {
+        $reasons.Add("head-commit-after-feedback")
+    }
+    $requestEvidenceIncomplete = $false
+    $laterRequests = @(
+        foreach ($event in @(ConvertTo-Array (Get-PropertyValue (Get-PropertyValue $detail "timelineItems") "nodes"))) {
+            $requested = Get-PropertyValue $event "requestedReviewer"
+            $at = ConvertTo-UtcDateTime (Get-PropertyValue $event "createdAt")
+            $requestActor = Get-LifecycleActor (Get-PropertyValue $event "actor") $author $patterns
+            $targetActor = Get-LifecycleActor $requested $author $patterns
+            $team = (Get-PropertyValue $requested "__typename") -eq "Team" -and (Get-PropertyValue $requested "name")
+            if (-not $at -or $requestActor -in @("unknown", "unestablished-service") -or
+                ($targetActor -in @("unknown", "unestablished-service") -and -not $team) -or
+                (Get-PropertyValue $event "__typename") -ne "ReviewRequestedEvent") {
+                $requestEvidenceIncomplete = $true
+            }
+            if ((Get-PropertyValue $event "__typename") -eq "ReviewRequestedEvent" -and
+                $requestActor -in @("author", "human") -and ($targetActor -eq "human" -or $team) -and
+                $at -and $at -gt $latestFeedbackAt) {
+                [pscustomobject]@{
+                    id = Get-PropertyValue $event "id"; createdAt = $at
+                    actor = Get-PropertyValue (Get-PropertyValue $event "actor") "login"
+                    requestedReviewer = $requested
+                }
+            }
+        }
+    )
+    $assessment.evidence.laterReviewRequests = $laterRequests
+    if ($laterRequests.Count -gt 0) { $reasons.Add("review-request-after-feedback") }
+    if ($reasons.Count -gt 1) {
+        return & $finish "grouped" "review-follow-up-candidates" $null
+    }
+    if ($requestEvidenceIncomplete -or $coverage.timeline.state -ne "complete" -or $coverage.commit.state -ne "complete") {
+        return & $finish "verification-needed" $null "follow-up-activity-incomplete"
+    }
+    return & $finish "not-grouped" $null "no-later-follow-up-observed"
+}
+
+function Get-LifecycleCoverageSummary {
+    param([object[]]$Items)
+
+    $grouped = @($Items | Where-Object { $_.reviewLifecycle.status -eq "grouped" }).Count
+    $notGrouped = @($Items | Where-Object { $_.reviewLifecycle.status -eq "not-grouped" }).Count
+    $blocked = @($Items | Where-Object { $_.reviewLifecycle.status -eq "blocked" }).Count
+    $verificationNeeded = @($Items | Where-Object { $_.reviewLifecycle.status -eq "verification-needed" }).Count
+    $causes = [ordered]@{}
+    foreach ($item in @($Items | Where-Object { $_.reviewLifecycle.status -eq "verification-needed" } | Sort-Object number)) {
+        $reason = $item.reviewLifecycle.primaryUncertaintyReason
+        $causes[$reason] = [int]$causes[$reason] + 1
+    }
+    $sourceCounts = [ordered]@{}
+    foreach ($source in @("identity", "reviews", "comments", "threads", "threadComments", "reviewRequests", "timeline", "commit", "merge")) {
+        $sourceCounts[$source] = [pscustomobject]@{
+            complete = @($Items | Where-Object { $_.reviewLifecycle.coverage.$source.state -eq "complete" }).Count
+            partial = @($Items | Where-Object { $_.reviewLifecycle.coverage.$source.state -eq "partial" }).Count
+            'not-collected' = @($Items | Where-Object { $_.reviewLifecycle.coverage.$source.state -eq "not-collected" }).Count
+        }
+    }
+    return [pscustomobject]@{
+        denominator = $Items.Count; grouped = $grouped; notGrouped = $notGrouped
+        blocked = $blocked; verificationNeeded = $verificationNeeded
+        groupedFraction = if ($Items.Count -gt 0) { $grouped / $Items.Count } else { $null }
+        groupCounts = [pscustomobject]@{
+            'merge-candidates' = @($Items | Where-Object { $_.reviewLifecycle.group -eq "merge-candidates" }).Count
+            'review-follow-up-candidates' = @($Items | Where-Object { $_.reviewLifecycle.group -eq "review-follow-up-candidates" }).Count
+            'initial-review-candidates' = @($Items | Where-Object { $_.reviewLifecycle.group -eq "initial-review-candidates" }).Count
+        }
+        primaryUncertaintyReasons = [pscustomobject]$causes
+        sources = [pscustomobject]$sourceCounts
+    }
+}
+
+function Get-ReviewLifecycleIndex {
+    param([object[]]$Items, [int[]]$ReviewNumbers, [int[]]$DiscussionNumbers, [int[]]$MergeNumbers)
+
+    $order = @("merge-candidates", "review-follow-up-candidates", "initial-review-candidates")
+    $groups = @(
+        foreach ($id in $order) {
+            $members = @($Items | Where-Object { $_.reviewLifecycle.group -eq $id })
+            if ($id -eq "merge-candidates") {
+                $members = @($members | Sort-Object @{ Expression = { $_.idleDays }; Descending = $true },
+                    @{ Expression = { $_.ageDays }; Descending = $true }, number)
+            }
+            else {
+                $members = @($members | Sort-Object @{ Expression = { $_.idleDays }; Descending = $true },
+                    @{ Expression = { if ($_.authorClass -eq "Community") { 1 } else { 0 } }; Descending = $true },
+                    @{ Expression = { $_.ageDays }; Descending = $true }, changedFiles, number)
+            }
+            for ($i = 0; $i -lt $members.Count; $i++) { $members[$i].reviewLifecycle.rank = $i + 1 }
+            [pscustomobject]@{ id = $id; count = $members.Count; numbers = @($members | ForEach-Object number) }
+        }
+    )
+    $reviewItems = @($Items | Where-Object { $_.number -in $ReviewNumbers })
+    $reviewCoverage = Get-LifecycleCoverageSummary $reviewItems
+    $reviewCoverage | Add-Member -NotePropertyName "insideDiscussionBudget" -NotePropertyValue (
+        Get-LifecycleCoverageSummary @($reviewItems | Where-Object { $_.number -in $DiscussionNumbers }))
+    $reviewCoverage | Add-Member -NotePropertyName "outsideDiscussionBudget" -NotePropertyValue (
+        Get-LifecycleCoverageSummary @($reviewItems | Where-Object { $_.number -notin $DiscussionNumbers }))
+    $counts = [ordered]@{}
+    foreach ($status in @("grouped", "not-grouped", "blocked", "verification-needed")) {
+        $counts[$status] = @($Items | Where-Object { $_.reviewLifecycle.status -eq $status }).Count
+    }
+    return [pscustomobject]@{
+        kind = "review-candidates"; groupOrder = $order; groups = $groups; statusCounts = [pscustomobject]$counts
+        coverage = [pscustomobject]@{
+            inventory = Get-LifecycleCoverageSummary $Items
+            reviewWork = $reviewCoverage
+            mergeWork = Get-LifecycleCoverageSummary @($Items | Where-Object { $_.number -in $MergeNumbers })
+        }
+    }
+}
+
 function Get-DisplayMetadata {
     return [pscustomobject]@{
+        reviewLifecycle = [pscustomobject]@{
+            groups = [pscustomobject][ordered]@{
+                'merge-candidates' = [pscustomobject]@{ label = "Merge candidates"; description = "GitHub approval, passing checks and conflict-free evidence are observed. An UNKNOWN merge state is an explicit unresolved gate, not clearance to merge." }
+                'review-follow-up-candidates' = [pscustomobject]@{ label = "Review follow-up candidates"; description = "Human feedback is followed by recorded author, head or review-request activity. This does not establish that feedback was addressed or who must act next." }
+                'initial-review-candidates' = [pscustomobject]@{ label = "Initial review candidates"; description = "Complete collected history contains no non-author human submitted review, inline comment or top-level comment. Comment intent is not interpreted." }
+            }
+            statuses = [pscustomobject][ordered]@{
+                grouped = [pscustomobject]@{ label = "Grouped"; description = "Observable facts meet a candidate-group rule, not a readiness or accuracy certification." }
+                'not-grouped' = [pscustomobject]@{ label = "Existing feedback"; description = "Human feedback is recorded without observed later follow-up activity; no next actor or author obligation is inferred." }
+                blocked = [pscustomobject]@{ label = "Existing gate"; description = "An existing author, draft, rescue, design, CI or exclusion gate prevents candidate grouping." }
+                'verification-needed' = [pscustomobject]@{ label = "Verification needed"; description = "Required identity, publication, actor or source evidence is missing or inconsistent." }
+            }
+            reasons = [pscustomobject]@{
+                'approval-and-passing-checks-observed' = [pscustomobject]@{ label = "Approval and passing checks observed"; description = "GitHub reports APPROVED and MERGEABLE with passing checks on the observed head." }
+                'merge-state-unknown' = [pscustomobject]@{ label = "Merge gate unresolved"; description = "GitHub reports UNKNOWN merge state. The candidate is not cleared to merge; the legacy CLEAN requirement is unchanged." }
+                'human-feedback-observed' = [pscustomobject]@{ label = "Human feedback observed"; description = "A non-author human submitted review or published top-level or inline comment is recorded." }
+                'no-human-feedback-observed' = [pscustomobject]@{ label = "No human feedback observed"; description = "Complete feedback histories contain only author or automation activity, or are empty." }
+                'author-activity-after-feedback' = [pscustomobject]@{ label = "Later author activity"; description = "Published author review/comment activity follows the latest observed human feedback. Its intent is not interpreted." }
+                'head-commit-after-feedback' = [pscustomobject]@{ label = "Later head commit"; description = "The current head commit's recorded date follows the latest human feedback. This is not proof of a fix or of who pushed." }
+                'review-request-after-feedback' = [pscustomobject]@{ label = "Later review request"; description = "A recorded human-originated request for human or team review follows the latest human feedback." }
+                'no-later-follow-up-observed' = [pscustomobject]@{ label = "No later follow-up observed"; description = "No collected author response, head commit or human review request follows the latest human feedback." }
+                'follow-up-activity-incomplete' = [pscustomobject]@{ label = "Follow-up activity incomplete"; description = "No later activity was established, but missing commit or request-history evidence prevents an absence conclusion." }
+                'event-publication-or-actor-unknown' = [pscustomobject]@{ label = "Publication or actor unknown"; description = "A feedback-history record lacks a known publication state, date or typed actor." }
+                'checks-not-collected' = [pscustomobject]@{ label = "Checks unknown"; description = "Missing check evidence is not treated as passing." }
+                'checks-pending' = [pscustomobject]@{ label = "Checks pending"; description = "Existing rules allow concurrent review activity, but pending checks are not reported as passing." }
+                'source-identity-mismatch' = [pscustomobject]@{ label = "Evidence changed"; description = "Collection stages disagree about required head, draft, author or review identity." }
+                'author-policy-unestablished' = [pscustomobject]@{ label = "Ownership policy uncertain"; description = "Typed actor metadata does not establish service-account ownership policy; the PR remains visible." }
+                'author-metadata-incomplete' = [pscustomobject]@{ label = "Author metadata incomplete"; description = "The author's typed actor identity was not collected or is unavailable." }
+                'identity-not-collected' = [pscustomobject]@{ label = "Identity unavailable"; description = "Required head or draft identity was not collected at every required stage." }
+                'source-error' = [pscustomobject]@{ label = "Source failure"; description = "A required per-PR source failed; the original API error is retained in evidence.sourceErrors." }
+                'explicit-queue-exclusion' = [pscustomobject]@{ label = "Explicit exclusion"; description = "A caller-excluded author or unhealthy ancestor prevents queue action without removing the PR record." }
+                'existing-actionability-gate' = [pscustomobject]@{ label = "Existing actionability gate"; description = "The existing draft, design, rescue, author, CI or automation gate applies; its original reasons are retained." }
+                'merge-evidence-incomplete' = [pscustomobject]@{ label = "Merge evidence incomplete"; description = "Current approval, consistent identity or explicit merge facts cannot establish readiness." }
+                'reviews-incomplete' = [pscustomobject]@{ label = "Review history incomplete"; description = "The published review connection lacks complete counts, pages or records." }
+                'comments-incomplete' = [pscustomobject]@{ label = "Comment history incomplete"; description = "Top-level comment counts, pages or records are missing or truncated." }
+                'threads-incomplete' = [pscustomobject]@{ label = "Thread history incomplete"; description = "Inline thread counts, pages or records are missing or truncated." }
+                'thread-comments-incomplete' = [pscustomobject]@{ label = "Thread comments incomplete"; description = "Relevant inline conversations were not fully collected within the bounded source window." }
+            }
+        }
         buckets = [pscustomobject][ordered]@{
             ReviewNow = [pscustomobject]@{
                 label = "Review now"
@@ -3955,6 +4468,25 @@ function Invoke-PRAttentionQueue {
 
     $discussionStopwatch.Stop()
 
+    foreach ($item in $matchedItems) {
+        $item | Add-Member -NotePropertyName "reviewLifecycle" -NotePropertyValue (
+            Get-ReviewLifecycleAssessment `
+                -PullRequest $candidatesByNumber[[int]$item.number].PullRequest `
+                -Item $item `
+                -Settings $configuration.settings
+        )
+    }
+    $lifecycle = Get-ReviewLifecycleIndex `
+        -Items @($matchedItems) `
+        -ReviewNumbers @($reviewNow | ForEach-Object number) `
+        -DiscussionNumbers @($discussionItems | ForEach-Object number) `
+        -MergeNumbers @($matchedItems | Where-Object {
+            ($_.bucket -eq "ReadyToMerge" -or (
+                $_.bucket -eq "WaitingOnCI" -and $_.mergeStateStatus -eq "UNKNOWN" -and
+                $_.checkState -eq "Passing" -and $_.reasonCodes -contains "merge-state-not-clean"
+            )) -and $_.digestExclusionReasons.Count -eq 0
+        } | ForEach-Object number)
+
     $needsRescue = @(
         $matchedItems |
             Where-Object { $_.bucket -eq "NeedsRescue" -and $_.digestExclusionReasons.Count -eq 0 } |
@@ -4096,6 +4628,7 @@ function Invoke-PRAttentionQueue {
     $result = [pscustomobject]@{
         schemaVersion = "1.0.0"
         display = Get-DisplayMetadata
+        reviewLifecycle = $lifecycle
         generatedAt = $Now.ToUniversalTime().ToString("o")
         repository = $Repository
         filter = [pscustomobject]@{
