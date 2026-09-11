@@ -68,4 +68,13 @@ public static class DiagnosticDescriptors
             Usage,
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor MVC1007_ActionResultOfTTypeMismatch =
+        new DiagnosticDescriptor(
+            "MVC1007",
+            "The action result object type does not match the declared ActionResult type parameter",
+            "The type '{0}' is not assignable to the ActionResult type parameter '{1}'.",
+            Usage,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
 }
