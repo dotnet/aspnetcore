@@ -18,6 +18,15 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// </summary>
 public sealed class RenderTreeBuilder : IDisposable
 {
+    /// <summary>
+    /// The marker attribute name that is emitted on an &lt;option&gt; element when the
+    /// developer writes <c>value="@null"</c>. The Blazor client-side change handler
+    /// recognizes this attribute on the selected &lt;option&gt; and reports <c>null</c>
+    /// in the change event so that nullable bound values receive <c>null</c> instead of
+    /// an empty string. The value of the attribute is the same as its name.
+    /// </summary>
+    private const string NullValueOptionMarkerAttributeName = "data-blazor-null-option";
+
     private static readonly object BoxedTrue = true;
     private static readonly object BoxedFalse = false;
 
@@ -227,6 +236,12 @@ public sealed class RenderTreeBuilder : IDisposable
         {
             _entries.AppendAttribute(sequence, name, value);
         }
+        else if (IsOptionElementValueAttribute(name))
+        {
+            _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
+            _entries.AppendAttribute(sequence, name, string.Empty);
+            TrackAttributeName(name);
+        }
         else
         {
             TrackAttributeName(name);
@@ -364,6 +379,11 @@ public sealed class RenderTreeBuilder : IDisposable
             if (value == null)
             {
                 // Treat 'null' attribute values for elements as a conditional attribute.
+                if (IsOptionElementValueAttribute(name))
+                {
+                    _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
+                    _entries.AppendAttribute(sequence, name, string.Empty);
+                }
                 TrackAttributeName(name);
             }
             else if (value is bool boolValue)
@@ -805,6 +825,25 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         frame.AttributeValueField = value;
+    }
+
+    // Returns true when the current open element is an <option> and the attribute
+    // being added is the "value" attribute. Used to detect the value="@null" case
+    // so we can emit a marker attribute on the <option> instead of dropping the frame.
+    private bool IsOptionElementValueAttribute(string name)
+    {
+        if (!string.Equals(name, "value", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (_openElementIndices.Count == 0)
+        {
+            return false;
+        }
+
+        ref var parentFrame = ref _entries.Buffer[_openElementIndices.Peek()];
+        return string.Equals(parentFrame.ElementNameField, "option", StringComparison.OrdinalIgnoreCase);
     }
 
     internal void AssertTreeIsValid(IComponent component)
