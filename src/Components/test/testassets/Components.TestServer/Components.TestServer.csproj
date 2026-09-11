@@ -97,6 +97,8 @@
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\Components.WasmMinimal\Components.WasmMinimal.csproj" />
     <ProjectReference Include="..\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj" />
+    <ProjectReference Include="..\Components.WasmRemoteAuthenticationTokenStorage\Components.WasmRemoteAuthenticationTokenStorage.csproj" />
+    <ProjectReference Include="..\Components.WasmRemoteAuthenticationSessionStorage\Components.WasmRemoteAuthenticationSessionStorage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
