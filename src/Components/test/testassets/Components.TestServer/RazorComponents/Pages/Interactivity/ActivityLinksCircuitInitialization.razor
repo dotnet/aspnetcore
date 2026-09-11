@@ -1,0 +1,17 @@
+@page "/activity-links/{Mode}/circuit-initialization"
+
+<h1>Activity links circuit initialization</h1>
+
+@if (Mode == "server")
+{
+    <TestContentPackage.ActivityLinksTestTrigger @rendermode="RenderMode.InteractiveServer" />
+}
+else if (Mode == "webassembly")
+{
+    <TestContentPackage.ActivityLinksTestTrigger @rendermode="RenderMode.InteractiveWebAssembly" />
+}
+
+@code {
+    [Parameter]
+    public string Mode { get; set; } = "";
+}
