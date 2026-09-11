@@ -150,11 +150,20 @@ final class DefaultHttpClient extends HttpClient {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response) {
+                HttpResponse httpResponse;
                 try (ResponseBody body = response.body()) {
-                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
-                    responseSubject.onSuccess(httpResponse);
+                    httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
+                } catch (Throwable ex) {
+                    // OkHttp marks the callback as signalled before invoking onResponse, so it never calls
+                    // onFailure for anything thrown from here. Reading the body can still fail, for example when
+                    // the connection drops mid-response, so terminate the Single ourselves. Otherwise callers
+                    // such as negotiate would wait on it forever.
+                    responseSubject.onError(ex);
+                    return;
                 }
+
+                responseSubject.onSuccess(httpResponse);
             }
         });
 
