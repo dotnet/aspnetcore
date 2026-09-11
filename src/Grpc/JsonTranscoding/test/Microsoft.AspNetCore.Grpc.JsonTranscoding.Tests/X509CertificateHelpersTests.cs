@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests;
 
 public class X509CertificateHelpersTests
 {
+    private const string SubjectAlternativeNameOid = "2.5.29.17";
+
     [Fact]
     public void GetDnsFromExtensions_NoSubjectAlternativeName_ReturnsEmpty()
     {
@@ -79,6 +81,6 @@ public class X509CertificateHelpersTests
             }
         }
 
-        return new X509Extension(X509CertificateHelpers.X509SubjectAlternativeNameId, writer.Encode(), critical: false);
+        return new X509Extension(SubjectAlternativeNameOid, writer.Encode(), critical: false);
     }
 }
