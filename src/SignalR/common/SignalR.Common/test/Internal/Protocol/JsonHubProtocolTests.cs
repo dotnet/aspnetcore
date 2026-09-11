@@ -45,6 +45,8 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
     [InlineData("{\"type\":3,\"invocationId\":\"42\",\"result\":true", "Error reading JSON.")]
     [InlineData("{\"type\":8,\"sequenceId\":true}", "Expected 'sequenceId' to be of type Number.")]
     [InlineData("{\"type\":9,\"sequenceId\":\"value\"}", "Expected 'sequenceId' to be of type Number.")]
+    [InlineData("{\"type\":1,\"target\":\"first\",\"arguments\":[],\"target\":\"second\"}", "Duplicate 'target' property is not allowed.")]
+    [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"first\",\"arguments\":[],\"target\":\"second\"}", "Duplicate 'target' property is not allowed.")]
     public void CustomInvalidMessages(string input, string expectedMessage)
     {
         input = Frame(input);
