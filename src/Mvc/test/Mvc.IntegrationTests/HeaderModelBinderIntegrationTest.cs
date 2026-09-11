@@ -439,6 +439,42 @@ public class HeaderModelBinderIntegrationTest
         return ModelBindingTestHelper.GetTestContext(updateRequest, updateOptions);
     }
 
+    private class HeaderParamsDTO
+    {
+        public string Authorization { get; set; }
+
+        public string ContentType { get; set; }
+    }
+
+    [Fact]
+    public async Task BindTopLevelComplexParameterFromHeader_BindsSimpleProperties()
+    {
+        var parameter = new ParameterDescriptor
+        {
+            Name = "headerParams",
+            BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.Header,
+            },
+            ParameterType = typeof(HeaderParamsDTO),
+        };
+
+        var testContext = GetModelBindingTestContext(request =>
+        {
+            request.Headers.Add("Authorization", "Bearer token123");
+            request.Headers.Add("ContentType", "application/json");
+        });
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        Assert.True(modelBindingResult.IsModelSet);
+
+        var boundDto = Assert.IsType<HeaderParamsDTO>(modelBindingResult.Model);
+        Assert.Equal("Bearer token123", boundDto.Authorization);
+        Assert.Equal("application/json", boundDto.ContentType);
+    }
+
     private class Product
     {
         public Manufacturer Manufacturer { get; set; }

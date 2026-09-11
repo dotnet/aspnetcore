@@ -1109,10 +1109,6 @@ public class ApiExplorerTest : LoggedTest
     [Fact]
     public async Task ApiExplorer_Parameters_ComplexModelFromHeader()
     {
-        // Regression test for https://github.com/dotnet/aspnetcore/issues/29931
-        // Verify that complex types bound with [FromHeader] are decomposed into individual
-        // header parameters in ApiExplorer, not treated as a single greedy parameter.
-
         // Arrange & Act
         var response = await Client.GetAsync("http://localhost/ApiExplorerParameters/ComplexModelFromHeader");
 
