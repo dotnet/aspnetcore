@@ -284,7 +284,7 @@ public class FormDataMapperTests
 #nullable disable
 
     [Fact]
-    public void Deserialize_Collections_NoElements_ReturnsNull()
+    public void Deserialize_Collections_NoElements_ReturnsEmptyCollection()
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { };
@@ -296,7 +296,8 @@ public class FormDataMapperTests
         var result = FormDataMapper.Map<List<int>>(reader, options);
 
         // Assert
-        Assert.Null(result);
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -1038,7 +1039,7 @@ public class FormDataMapperTests
     }
 
     [Fact]
-    public void Deserialize_EmptyDictionary_ReturnsNull()
+    public void Deserialize_EmptyDictionary_ReturnsEmptyDictionary()
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
@@ -1049,7 +1050,8 @@ public class FormDataMapperTests
         var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
 
         // Assert
-        Assert.Null(result);
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 
     [Theory]
@@ -1942,7 +1944,7 @@ public class FormDataMapperTests
         var expected = new RecursiveTree()
         {
             Value = 10,
-            Children = null
+            Children = new List<RecursiveTree>()
         };
 
         for (var i = 10 - 1; i >= 0; i--)
@@ -1990,7 +1992,8 @@ public class FormDataMapperTests
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
-            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.NotNull(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.Empty(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
         });
     }
 
@@ -2001,7 +2004,7 @@ public class FormDataMapperTests
         var expected = new RecursiveDictionaryTree()
         {
             Value = 10,
-            Children = null
+            Children = new Dictionary<int, RecursiveDictionaryTree>()
         };
 
         for (var i = 10 - 1; i >= 0; i--)
@@ -2049,7 +2052,8 @@ public class FormDataMapperTests
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
             Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
-            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.NotNull(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+            Assert.Empty(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
         });
     }
 
