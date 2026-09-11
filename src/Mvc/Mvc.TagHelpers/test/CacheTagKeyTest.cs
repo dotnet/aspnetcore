@@ -414,6 +414,45 @@ public class CacheTagKeyTest
     }
 
     [Fact]
+    public void GetEstimatedSize_ReturnsSizeOfRetainedStrings()
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
+        {
+            ViewContext = GetViewContext(),
+            VaryBy = "vary-by-value",
+            VaryByCookie = "cookie-name",
+            VaryByHeader = "header-name",
+            VaryByQuery = "query-name",
+            VaryByRoute = "route-name",
+            VaryByUser = true,
+        };
+        cacheTagHelper.ViewContext.HttpContext.Request.Headers.Cookie = "cookie-name=cookie-value";
+        cacheTagHelper.ViewContext.HttpContext.Request.Headers["header-name"] = "header-value";
+        cacheTagHelper.ViewContext.HttpContext.Request.QueryString = new QueryString("?query-name=query-value");
+        cacheTagHelper.ViewContext.RouteData.Values["route-name"] = "route-value";
+        var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "user-name") });
+        cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
+        var expectedCharacterCount = CacheTagHelper.CacheKeyPrefix.Length +
+            "testid".Length +
+            "vary-by-value".Length +
+            "cookie-name".Length +
+            "cookie-value".Length +
+            "header-name".Length +
+            "header-value".Length +
+            "query-name".Length +
+            "query-value".Length +
+            "route-name".Length +
+            "route-value".Length +
+            "user-name".Length;
+
+        var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
+        var size = cacheTagKey.GetEstimatedSize();
+
+        Assert.Equal(expectedCharacterCount * sizeof(char), size);
+    }
+
+    [Fact]
     [ReplaceCulture("zh", "zh-Hans")]
     public void GenerateKey_WithVaryByCulture_ComposesWithOtherOptions()
     {
