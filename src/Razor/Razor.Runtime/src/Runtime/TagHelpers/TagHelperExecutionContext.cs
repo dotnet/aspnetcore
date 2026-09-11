@@ -220,7 +220,19 @@ public class TagHelperExecutionContext
 
         Debug.Assert(!Output.IsContentModified);
 
-        Output.Content.SetHtmlContent(childContent);
+        if (Output.Content.IsModified)
+        {
+            // A tag helper appended to Content without replacing it.
+            // Prepend the child content so the original markup appears before the appended content.
+            var combined = new DefaultTagHelperContent();
+            combined.AppendHtml(childContent);
+            combined.AppendHtml(Output.Content);
+            Output.Content = combined;
+        }
+        else
+        {
+            Output.Content.SetHtmlContent(childContent);
+        }
     }
 
     // Internal for testing.

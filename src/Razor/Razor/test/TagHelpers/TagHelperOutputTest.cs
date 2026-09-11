@@ -1133,4 +1133,123 @@ public class TagHelperOutputTest
 
         return output;
     }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_WhenContentNotTouched()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act & Assert
+        Assert.False(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_WhenContentOnlyAppendedTo()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act
+        output.Content.AppendHtml("<span>appended</span>");
+
+        // Assert
+        Assert.False(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentSetViaSetHtmlContent()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act
+        output.Content.SetHtmlContent("replaced");
+
+        // Assert
+        Assert.True(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentSetViaSetContent()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act
+        output.Content.SetContent("replaced");
+
+        // Assert
+        Assert.True(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentCleared()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act
+        output.Content.Clear();
+
+        // Assert
+        Assert.True(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenSuppressOutputCalled()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+
+        // Act
+        output.SuppressOutput();
+
+        // Assert
+        Assert.True(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_AfterReinitialize()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+        output.Content.SetHtmlContent("replaced");
+        Assert.True(output.IsContentModified);
+
+        // Act
+        output.Reinitialize("p", TagMode.StartTagAndEndTag);
+
+        // Assert
+        Assert.False(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsTrue_WhenContentPropertySetToExternalInstance()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+        var externalContent = new DefaultTagHelperContent();
+        externalContent.AppendHtml("external");
+
+        // Act
+        output.Content = externalContent;
+
+        // Assert - falls back to IsModified for non-tracked content
+        Assert.True(output.IsContentModified);
+    }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_WhenContentPropertySetToUnmodifiedExternalInstance()
+    {
+        // Arrange
+        var output = new TagHelperOutput("p");
+        var externalContent = new DefaultTagHelperContent();
+
+        // Act
+        output.Content = externalContent;
+
+        // Assert
+        Assert.False(output.IsContentModified);
+    }
 }

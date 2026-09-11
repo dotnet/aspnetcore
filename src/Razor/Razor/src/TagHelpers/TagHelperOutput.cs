@@ -103,7 +103,7 @@ public class TagHelperOutput : IHtmlContentContainer
         {
             if (_content == null)
             {
-                _content = new DefaultTagHelperContent();
+                _content = new TagHelperOutputContent();
             }
 
             return _content;
@@ -151,13 +151,28 @@ public class TagHelperOutput : IHtmlContentContainer
     }
 
     /// <summary>
-    /// <c>true</c> if <see cref="Content"/> has been set, <c>false</c> otherwise.
+    /// <c>true</c> if <see cref="Content"/> has been set or replaced, <c>false</c> otherwise.
     /// </summary>
+    /// <remarks>
+    /// Appending to <see cref="Content"/> (via <see cref="TagHelperContent.AppendHtml(string)"/> and similar)
+    /// without first clearing or setting it does not count as modifying. This allows the tag helper infrastructure
+    /// to prepend the original child content before the appended content.
+    /// </remarks>
     public bool IsContentModified
     {
         get
         {
-            return _wasSuppressOutputCalled || _content?.IsModified == true;
+            if (_wasSuppressOutputCalled)
+            {
+                return true;
+            }
+
+            if (_content is TagHelperOutputContent tracked)
+            {
+                return tracked.WasContentReplaced;
+            }
+
+            return _content?.IsModified == true;
         }
     }
 
@@ -427,5 +442,28 @@ public class TagHelperOutput : IHtmlContentContainer
         }
 
         _postElement?.WriteTo(writer, encoder);
+    }
+
+    /// <summary>
+    /// Tracks whether content was explicitly replaced (via <see cref="TagHelperContent.Clear"/> or
+    /// a Set* method) versus merely appended to.
+    /// </summary>
+    internal sealed class TagHelperOutputContent : DefaultTagHelperContent
+    {
+        internal bool WasContentReplaced { get; private set; }
+
+        /// <inheritdoc />
+        public override TagHelperContent Clear()
+        {
+            WasContentReplaced = true;
+            return base.Clear();
+        }
+
+        /// <inheritdoc />
+        public override void Reinitialize()
+        {
+            base.Reinitialize();
+            WasContentReplaced = false;
+        }
     }
 }
