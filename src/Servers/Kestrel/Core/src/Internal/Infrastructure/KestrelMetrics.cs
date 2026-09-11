@@ -289,20 +289,31 @@ internal sealed class KestrelMetrics
         _currentUpgradedRequestsCounter.Add(-1, tags);
     }
 
+    public bool TlsHandshakeMetricsEnabled
+        => _activeTlsHandshakesCounter.Enabled || _tlsHandshakeDuration.Enabled;
+
     public void TlsHandshakeStart(ConnectionMetricsContext metricsContext)
     {
         if (metricsContext.CurrentTlsHandshakesCounterEnabled)
         {
-            TlsHandshakeStartCore(metricsContext);
+            TlsHandshakeStartCore(metricsContext.ConnectionContext);
+        }
+    }
+
+    public void TlsHandshakeStart(TlsHandshakeMetricsContext metricsContext)
+    {
+        if (metricsContext.CurrentTlsHandshakesCounterEnabled)
+        {
+            TlsHandshakeStartCore(metricsContext.ConnectionContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStartCore(ConnectionMetricsContext metricsContext)
+    private void TlsHandshakeStartCore(BaseConnectionContext connectionContext)
     {
         // Tags must match TLS handshake end.
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, metricsContext);
+        ConnectionEndpointTags.AddConnectionEndpointTags(ref tags, connectionContext);
         _activeTlsHandshakesCounter.Add(1, tags);
     }
 
@@ -310,17 +321,43 @@ internal sealed class KestrelMetrics
     {
         if (metricsContext.CurrentTlsHandshakesCounterEnabled || _tlsHandshakeDuration.Enabled)
         {
-            TlsHandshakeStopCore(metricsContext, startTimestamp, currentTimestamp, protocol, exception);
+            TlsHandshakeStopCore(
+                metricsContext.ConnectionContext,
+                metricsContext.CurrentTlsHandshakesCounterEnabled,
+                startTimestamp,
+                currentTimestamp,
+                protocol,
+                exception);
+        }
+    }
+
+    public void TlsHandshakeStop(TlsHandshakeMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    {
+        if (metricsContext.CurrentTlsHandshakesCounterEnabled || _tlsHandshakeDuration.Enabled)
+        {
+            TlsHandshakeStopCore(
+                metricsContext.ConnectionContext,
+                metricsContext.CurrentTlsHandshakesCounterEnabled,
+                startTimestamp,
+                currentTimestamp,
+                protocol,
+                exception);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStopCore(ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    private void TlsHandshakeStopCore(
+        BaseConnectionContext connectionContext,
+        bool currentTlsHandshakesCounterEnabled,
+        long startTimestamp,
+        long currentTimestamp,
+        SslProtocols? protocol,
+        Exception? exception)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, metricsContext);
+        ConnectionEndpointTags.AddConnectionEndpointTags(ref tags, connectionContext);
 
-        if (metricsContext.CurrentTlsHandshakesCounterEnabled)
+        if (currentTlsHandshakesCounterEnabled)
         {
             // Tags must match TLS handshake start.
             _activeTlsHandshakesCounter.Add(-1, tags);
@@ -328,7 +365,6 @@ internal sealed class KestrelMetrics
 
         if (protocol != null && TryGetHandshakeProtocol(protocol.Value, out var protocolName, out var protocolVersion))
         {
-            // Protocol name should always be TLS. Have logic to a tls.protocol.name tag if not TLS just in case.
             if (protocolName != "tls")
             {
                 tags.Add("tls.protocol.name", protocolName);
@@ -337,7 +373,6 @@ internal sealed class KestrelMetrics
         }
         if (exception != null)
         {
-            // Set exception name as error.type if there isn't already a value.
             tags.TryAddTag(ErrorTypeAttributeName, exception.GetType().FullName);
         }
 
@@ -364,6 +399,9 @@ internal sealed class KestrelMetrics
             CurrentTlsHandshakesCounterEnabled = _activeTlsHandshakesCounter.Enabled
         };
     }
+
+    public TlsHandshakeMetricsContext CreateTlsHandshakeContext(BaseConnectionContext connection)
+        => new(connection, _activeTlsHandshakesCounter.Enabled);
 
     public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {

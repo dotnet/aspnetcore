@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -167,13 +168,17 @@ internal sealed class KestrelEventSource : EventSource
 
     [NonEvent]
     public void TlsHandshakeStart(BaseConnectionContext connectionContext, SslServerAuthenticationOptions sslOptions)
+        => TlsHandshakeStart(connectionContext, sslOptions.EnabledSslProtocols);
+
+    [NonEvent]
+    public void TlsHandshakeStart(BaseConnectionContext connectionContext, SslProtocols sslProtocols)
     {
         Interlocked.Increment(ref _currentTlsHandshakes);
         Interlocked.Increment(ref _totalTlsHandshakes);
 
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
-            TlsHandshakeStart(connectionContext.ConnectionId, sslOptions.EnabledSslProtocols.ToString());
+            TlsHandshakeStart(connectionContext.ConnectionId, sslProtocols.ToString());
         }
     }
 
@@ -186,16 +191,18 @@ internal sealed class KestrelEventSource : EventSource
 
     [NonEvent]
     public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature? feature)
+        => TlsHandshakeStop(connectionContext, feature?.Protocol, feature?.ApplicationProtocol ?? default, feature?.HostName);
+
+    [NonEvent]
+    public void TlsHandshakeStop(BaseConnectionContext connectionContext, SslProtocols? protocol, ReadOnlyMemory<byte> applicationProtocol, string? hostName)
     {
         Interlocked.Decrement(ref _currentTlsHandshakes);
 
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
             // TODO: Write this without a string allocation using WriteEventData
-            var applicationProtocol = feature == null ? string.Empty : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
-            var sslProtocols = feature?.Protocol.ToString() ?? string.Empty;
-            var hostName = feature?.HostName ?? string.Empty;
-            TlsHandshakeStop(connectionContext.ConnectionId, sslProtocols, applicationProtocol, hostName);
+            var applicationProtocolString = applicationProtocol.IsEmpty ? string.Empty : Encoding.UTF8.GetString(applicationProtocol.Span);
+            TlsHandshakeStop(connectionContext.ConnectionId, protocol?.ToString() ?? string.Empty, applicationProtocolString, hostName ?? string.Empty);
         }
     }
 

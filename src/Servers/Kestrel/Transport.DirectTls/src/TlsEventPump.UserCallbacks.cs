@@ -93,6 +93,8 @@ internal partial class TlsEventPump
     {
         foreach (var conn in _handshakesAwaitingCallback)
         {
+            StopTlsHandshakeTelemetry(conn, failed: true);
+            ConnectionReleased();
             ReleaseHandshakeResources(conn);
         }
 
@@ -255,7 +257,7 @@ internal partial class TlsEventPump
             // The ClientHello listener, the certificate selector, or the client-certificate validation callback
             // threw. Fail this one connection (matching the socket-transport TlsListener) and log it.
             _logger.LogDebug(failure, "A TLS handshake callback failed for fd={Fd}; dropping connection.", fd);
-            DropHandshake(fd, conn);
+            DropHandshake(fd, conn, failure);
             return;
         }
 
@@ -280,7 +282,7 @@ internal partial class TlsEventPump
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "Installing the resolved TLS context failed for fd={Fd}", fd);
-                    DropHandshake(fd, conn);
+                    DropHandshake(fd, conn, ex);
                     return;
                 }
 
@@ -311,7 +313,7 @@ internal partial class TlsEventPump
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "Recording the client certificate verdict failed for fd={Fd}; dropping connection.", fd);
-                    DropHandshake(fd, conn);
+                    DropHandshake(fd, conn, ex);
                     return;
                 }
 
