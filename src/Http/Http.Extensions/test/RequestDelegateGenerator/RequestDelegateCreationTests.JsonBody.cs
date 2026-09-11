@@ -431,6 +431,29 @@ app.MapPost("/", TestAction);
     }
 
     [Fact]
+    public async Task RequestDelegateAllowsEmptyBodyNullableValueTypeGivenFromBodyParameter()
+    {
+        var source = """
+        void TestAction(HttpContext httpContext, [FromBody] int? bodyValue)
+        {
+            httpContext.Items["body"] = bodyValue;
+            httpContext.Items["invoked"] = true;
+        }
+        app.MapPost("/", TestAction);
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithEmptyJsonBody();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True((bool?)httpContext.Items["invoked"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Null(httpContext.Items["body"]);
+    }
+
+    [Fact]
     public async Task RequestDelegateHandlesRequiredBodyStruct()
     {
         var targetStruct = new BodyStruct
