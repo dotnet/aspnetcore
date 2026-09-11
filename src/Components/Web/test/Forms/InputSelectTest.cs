@@ -169,6 +169,26 @@ public class InputSelectTest
         Assert.Equal(42, inputSelectComponent.CurrentValue);
     }
 
+    // See: https://github.com/dotnet/aspnetcore/pull/54565
+    [Fact]
+    public async Task ParsesNullWhenUsingNullableBool()
+    {
+        // Arrange
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<bool?, TestInputSelect<bool?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NullableBool
+        };
+        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = null;
+
+        // Assert
+        Assert.Null(inputSelectComponent.CurrentValue);
+    }
+
     [Fact]
     public async Task ValidationErrorUsesExplicitDisplayName()
     {
@@ -296,6 +316,7 @@ public class InputSelectTest
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }
+        public bool? NullableBool { get; set; }
     }
 
     class TestInputSelect<TValue> : InputSelect<TValue>
