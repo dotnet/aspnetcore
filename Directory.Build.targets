@@ -171,6 +171,14 @@
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
 
+  <!-- Make build properties available to test processes via runtimeconfig.json,
+       so that subprocess dotnet invocations can forward them and avoid recompiling
+       framework projects with different properties. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <RuntimeHostConfigurationOption Include="DotNetBuildUseMonoRuntime" Value="$(DotNetBuildUseMonoRuntime)" Condition="'$(DotNetBuildUseMonoRuntime)' != ''" />
+    <RuntimeHostConfigurationOption Include="ContinuousIntegrationBuild" Value="$(ContinuousIntegrationBuild)" Condition="'$(ContinuousIntegrationBuild)' != ''" />
+  </ItemGroup>
+
   <!-- Properties for Package Validation -->
   <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
