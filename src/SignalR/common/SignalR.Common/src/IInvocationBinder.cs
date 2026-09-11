@@ -17,6 +17,9 @@ public interface IInvocationBinder
     /// </summary>
     /// <param name="invocationId">The ID of the invocation being received.</param>
     /// <returns>The <see cref="Type"/> the invocation is expected to contain.</returns>
+    /// <remarks>
+    /// Implementations should throw if no invocation with the specified ID exists.
+    /// </remarks>
     Type GetReturnType(string invocationId);
 
     /// <summary>
@@ -24,6 +27,10 @@ public interface IInvocationBinder
     /// </summary>
     /// <param name="methodName">The name of the method being called.</param>
     /// <returns>A list of <see cref="Type"/>s the method takes as arguments.</returns>
+    /// <remarks>
+    /// Implementations should throw if no method with the specified name exists. Returning an empty list instead
+    /// causes argument binding to fail with a misleading argument-count mismatch when the invocation has arguments.
+    /// </remarks>
     IReadOnlyList<Type> GetParameterTypes(string methodName);
 
     /// <summary>
