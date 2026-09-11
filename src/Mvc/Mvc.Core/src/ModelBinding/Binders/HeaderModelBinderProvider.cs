@@ -27,26 +27,20 @@ public partial class HeaderModelBinderProvider : IModelBinderProvider
 
         var modelMetadata = context.Metadata;
         var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger(typeof(HeaderModelBinderProvider));
 
-        if (!IsSimpleType(modelMetadata))
+        // Complex non-enumerable types are decomposed so each property binds from its own header.
+        var canDecomposeComplexType = modelMetadata.IsComplexType &&
+            !modelMetadata.IsEnumerableType &&
+            modelMetadata.Properties.Count > 0;
+
+        if (!IsSimpleType(modelMetadata) && !canDecomposeComplexType)
         {
+            var logger = loggerFactory.CreateLogger(typeof(HeaderModelBinderProvider));
             Log.CannotCreateHeaderModelBinder(logger, modelMetadata.ModelType);
             return null;
         }
 
-        // Since we are delegating the binding of the current model type to other binders, modify the
-        // binding source of the current model type to a non-FromHeader binding source in order to avoid an
-        // infinite recursion into this binder provider.
-        var nestedBindingInfo = new BindingInfo(bindingInfo)
-        {
-            BindingSource = BindingSource.ModelBinding
-        };
-
-        var innerModelBinder = context.CreateBinder(
-            modelMetadata.GetMetadataForType(modelMetadata.ModelType),
-            nestedBindingInfo);
-
+        var innerModelBinder = CreateInnerModelBinder(context, bindingInfo, modelMetadata);
         if (innerModelBinder == null)
         {
             return null;
@@ -55,7 +49,24 @@ public partial class HeaderModelBinderProvider : IModelBinderProvider
         return new HeaderModelBinder(loggerFactory, innerModelBinder);
     }
 
-    // Support binding only to simple types or collection of simple types.
+    // Since we are delegating the binding of the current model type to other binders, modify the
+    // binding source of the current model type to a non-FromHeader binding source in order to avoid an
+    // infinite recursion into this binder provider.
+    private static IModelBinder? CreateInnerModelBinder(
+        ModelBinderProviderContext context,
+        BindingInfo bindingInfo,
+        ModelMetadata modelMetadata)
+    {
+        var nestedBindingInfo = new BindingInfo(bindingInfo)
+        {
+            BindingSource = BindingSource.ModelBinding,
+        };
+
+        return context.CreateBinder(modelMetadata.GetMetadataForType(modelMetadata.ModelType), nestedBindingInfo);
+    }
+
+    // Support binding only to simple types, a collection of simple types, or a complex type that can be
+    // decomposed into per-property headers.
     private static bool IsSimpleType(ModelMetadata modelMetadata)
     {
         var metadata = modelMetadata.ElementMetadata ?? modelMetadata;
