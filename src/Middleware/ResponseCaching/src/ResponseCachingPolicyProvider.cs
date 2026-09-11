@@ -109,7 +109,7 @@ internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProv
 
             foreach (var segment in rawHeader.Split(','))
             {
-                if (rawHeader[segment].Trim().SequenceEqual("*"))
+                if (rawHeader[segment].Trim() is ['*'])
                 {
                     context.Logger.ResponseWithVaryStarNotCacheable();
                     return false;
