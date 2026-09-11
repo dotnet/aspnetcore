@@ -140,6 +140,25 @@ public class ResponseCachingKeyProviderTests
     }
 
     [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_EmptyHeaderValueDoesNotCollideWithAbsentHeader()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CachedVaryByRules = new CachedVaryByRules()
+        {
+            Headers = new string[] { "HeaderA" }
+        };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.Headers["HeaderA"] = string.Empty;
+        emptyContext.CachedVaryByRules = new CachedVaryByRules()
+        {
+            Headers = new string[] { "HeaderA" }
+        };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageVaryByKey(absentContext), cacheKeyProvider.CreateStorageVaryByKey(emptyContext));
+    }
+
+    [Fact]
     public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesListedQueryKeysOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -223,6 +242,25 @@ public class ResponseCachingKeyProviderTests
         // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA",
             cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_EmptyQueryValueDoesNotCollideWithAbsentQuery()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "QueryA" }
+        };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.QueryString = new QueryString("?QueryA=");
+        emptyContext.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "QueryA" }
+        };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageVaryByKey(absentContext), cacheKeyProvider.CreateStorageVaryByKey(emptyContext));
     }
 
     [Fact]
