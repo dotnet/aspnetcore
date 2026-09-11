@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 
 internal sealed class WebViewRenderer : WebRenderer
 {
+    // Matches the default of CircuitOptions.MaxBufferedUnacknowledgedRenderBatches, which
+    // RemoteRenderer uses for the equivalent backpressure in Blazor Server.
+    internal const int MaxBufferedUnacknowledgedRenderBatches = 10;
+
     private static readonly RendererInfo _componentPlatform = new("WebView", isInteractive: true);
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
@@ -44,6 +48,22 @@ internal sealed class WebViewRenderer : WebRenderer
         _ipcSender.NotifyUnhandledException(exception);
     }
 
+    protected override void ProcessPendingRender()
+    {
+        // Like RemoteRenderer, don't produce new batches while the client has too many
+        // unacknowledged ones. The WebView may have stopped processing messages entirely
+        // (e.g., the OS suspended it while the app is backgrounded), and rendering without
+        // bound would accumulate unbounded retained state per unacknowledged batch. Pending
+        // renders stay queued, and rendering resumes from NotifyRenderCompleted once a batch
+        // gets acknowledged.
+        if (_unacknowledgedRenderBatches.Count >= MaxBufferedUnacknowledgedRenderBatches)
+        {
+            return;
+        }
+
+        base.ProcessPendingRender();
+    }
+
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         var batchId = nextRenderBatchId++;
@@ -74,13 +94,34 @@ internal sealed class WebViewRenderer : WebRenderer
 
     public void NotifyRenderCompleted(long batchId)
     {
-        var nextUnacknowledgedBatch = _unacknowledgedRenderBatches.Dequeue();
-        if (nextUnacknowledgedBatch.BatchId != batchId)
+        // The client acknowledges every batch it receives, in the order it receives them, but the
+        // transport gives no delivery guarantee in either direction (e.g., the OS can suspend the
+        // WebView's renderer process while the host keeps sending). An acknowledgement for a later
+        // batch therefore confirms that every earlier batch was either applied or lost in
+        // transport, and a missing acknowledgement must not leave its batch waiting forever.
+        // This mirrors RemoteRenderer.OnRenderCompletedAsync.
+        if (!_unacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || batchId < nextUnacknowledgedBatch.BatchId)
         {
-            throw new InvalidOperationException($"Received unexpected acknowledgement for render batch {batchId} (next batch should be {nextUnacknowledgedBatch.BatchId})");
+            // An acknowledgement for an already-confirmed batch carries no new information.
+            return;
         }
 
-        nextUnacknowledgedBatch.CompletionSource.SetResult();
+        var lastConfirmedBatchId = nextUnacknowledgedBatch.BatchId;
+        while (_unacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= batchId)
+        {
+            lastConfirmedBatchId = nextUnacknowledgedBatch.BatchId;
+            _unacknowledgedRenderBatches.Dequeue();
+            nextUnacknowledgedBatch.CompletionSource.SetResult();
+        }
+
+        if (lastConfirmedBatchId != batchId)
+        {
+            throw new InvalidOperationException($"Received an acknowledgement for render batch {batchId}, which was never produced (the last produced batch was {nextRenderBatchId - 1}).");
+        }
+
+        // The acknowledgement freed slots in the unacknowledged-batch queue, so produce any
+        // renders that were deferred while it was full.
+        ProcessPendingRender();
     }
 
     protected override IComponent ResolveComponentForRenderMode(
