@@ -2,7 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.CommandLine;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.FileProviders;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -23,6 +28,8 @@ public static class BlazorGateway
 
     internal static WebApplication BuildWebHost(WebApplicationBuilder builder)
     {
+        AddAppProjectConfiguration(builder);
+
         var options = new BlazorGatewayOptions();
         builder.Configuration.GetSection(BlazorGatewayOptions.SectionName).Bind(options);
 
@@ -118,6 +125,58 @@ public static class BlazorGateway
         }
 
         return app;
+    }
+
+    // The Gateway runs as a separate process whose content root is the Gateway package's
+    // tools folder, so by default it does not read the Blazor app project's configuration
+    // files. When the app project directory is provided (via the "AppSettingsDirectory"
+    // key set by the MSBuild targets), load the project's appsettings.json and
+    // appsettings.{Environment}.json so users can configure the reverse proxy using the
+    // standard YARP "ReverseProxy" section instead of flattened environment variables.
+    private static void AddAppProjectConfiguration(WebApplicationBuilder builder)
+    {
+        var appSettingsDirectory = builder.Configuration["AppSettingsDirectory"];
+        if (string.IsNullOrEmpty(appSettingsDirectory) || !Directory.Exists(appSettingsDirectory))
+        {
+            return;
+        }
+
+        var fileProvider = new PhysicalFileProvider(Path.GetFullPath(appSettingsDirectory));
+        var environmentName = builder.Environment.EnvironmentName;
+
+        var sources = ((IConfigurationBuilder)builder.Configuration).Sources;
+
+        // Insert the app project's configuration files just before the environment variable
+        // and command-line sources so those higher-precedence sources continue to win, while
+        // still overriding the Gateway's own (typically absent) appsettings files.
+        var insertIndex = sources.Count;
+        for (var i = 0; i < sources.Count; i++)
+        {
+            if (sources[i] is EnvironmentVariablesConfigurationSource or CommandLineConfigurationSource)
+            {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        var appSettings = new JsonConfigurationSource
+        {
+            FileProvider = fileProvider,
+            Path = "appsettings.json",
+            Optional = true,
+            ReloadOnChange = true,
+        };
+        var environmentAppSettings = new JsonConfigurationSource
+        {
+            FileProvider = fileProvider,
+            Path = $"appsettings.{environmentName}.json",
+            Optional = true,
+            ReloadOnChange = true,
+        };
+
+        // Base file first, then the environment-specific file so it overrides the base.
+        sources.Insert(insertIndex, appSettings);
+        sources.Insert(insertIndex + 1, environmentAppSettings);
     }
 
     private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder, BlazorGatewayOptions.TelemetryOptions telemetry)

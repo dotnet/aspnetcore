@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -96,6 +98,108 @@ public class BlazorGatewayProxyTests
                 or HttpStatusCode.GatewayTimeout
                 or HttpStatusCode.InternalServerError,
             $"Expected gateway error, got {response.StatusCode}.");
+    }
+
+    [Fact]
+    public async Task ReverseProxy_ForwardsRequest_WhenConfiguredInAppSettingsJson()
+    {
+        await using var upstream = await GatewayTestHelpers.StartUpstreamAsync(app =>
+            app.MapGet("/api/echo", () => "hello from upstream"));
+
+        var appDirectory = Directory.CreateTempSubdirectory("blazor-gateway-tests").FullName;
+        try
+        {
+            WriteReverseProxyAppSettings(
+                Path.Combine(appDirectory, "appsettings.json"),
+                "upstream",
+                upstream.BaseUrl,
+                route: "/api/{**catch-all}");
+
+            await using var gateway = await GatewayTestHelpers.StartGatewayAsync(
+                Environments.Development,
+                new Dictionary<string, string?> { ["AppSettingsDirectory"] = appDirectory });
+
+            var response = await gateway.Client.GetAsync("/api/echo");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("hello from upstream", await response.Content.ReadAsStringAsync());
+        }
+        finally
+        {
+            Directory.Delete(appDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ReverseProxy_EnvironmentAppSettings_OverridesBaseAppSettings()
+    {
+        await using var upstream = await GatewayTestHelpers.StartUpstreamAsync(app =>
+            app.MapGet("/api/echo", () => "hello from upstream"));
+
+        var appDirectory = Directory.CreateTempSubdirectory("blazor-gateway-tests").FullName;
+        try
+        {
+            // The base file points at an unreachable destination; the environment-specific
+            // file overrides it with the real upstream, so the environment file must win.
+            WriteReverseProxyAppSettings(
+                Path.Combine(appDirectory, "appsettings.json"),
+                "upstream",
+                "http://127.0.0.1:1/",
+                route: "/api/{**catch-all}");
+            WriteReverseProxyAppSettings(
+                Path.Combine(appDirectory, "appsettings.Development.json"),
+                "upstream",
+                upstream.BaseUrl,
+                route: "/api/{**catch-all}");
+
+            await using var gateway = await GatewayTestHelpers.StartGatewayAsync(
+                Environments.Development,
+                new Dictionary<string, string?> { ["AppSettingsDirectory"] = appDirectory });
+
+            var response = await gateway.Client.GetAsync("/api/echo");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("hello from upstream", await response.Content.ReadAsStringAsync());
+        }
+        finally
+        {
+            Directory.Delete(appDirectory, recursive: true);
+        }
+    }
+
+    private static void WriteReverseProxyAppSettings(
+        string path,
+        string clusterId,
+        string destinationAddress,
+        string route)
+    {
+        var routeId = $"{clusterId}-route";
+        var json = JsonSerializer.Serialize(new
+        {
+            ReverseProxy = new
+            {
+                Routes = new Dictionary<string, object>
+                {
+                    [routeId] = new
+                    {
+                        ClusterId = clusterId,
+                        Match = new { Path = route },
+                    },
+                },
+                Clusters = new Dictionary<string, object>
+                {
+                    [clusterId] = new
+                    {
+                        Destinations = new Dictionary<string, object>
+                        {
+                            ["dest1"] = new { Address = destinationAddress },
+                        },
+                    },
+                },
+            },
+        });
+
+        File.WriteAllText(path, json);
     }
 
     private static Dictionary<string, string?> ProxyConfig(
