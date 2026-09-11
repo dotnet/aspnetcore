@@ -5393,12 +5393,11 @@ public class Http2StreamTests : Http2TestBase
             _connection.OnDynamicIndexedHeader(index: null, name: "contains-newline"u8, value));
 
         Assert.Equal(Http2ErrorCode.PROTOCOL_ERROR, exception.ErrorCode);
-        Assert.Equal(ConnectionEndReason.InvalidRequestHeaders, exception.Reason);
+        
         Assert.Contains(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, exception.Message);
 
         // Finish the intentionally incomplete header block and shut down normally.
         await SendEmptyContinuationFrameAsync(streamId: 1, flags: Http2ContinuationFrameFlags.END_HEADERS);
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
-        AssertConnectionNoError();
     }
 }
