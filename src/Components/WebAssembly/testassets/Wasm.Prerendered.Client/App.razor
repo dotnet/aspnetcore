@@ -1,6 +1,9 @@
 ﻿<h3>WebAssembly prerendered app with page title</h3>
 
-<PageTitle>Current count: @_counter</PageTitle>
+@if (_showTitle)
+{
+    <PageTitle>Current count: @_counter</PageTitle>
+}
 
 <p>
     <span>Current count: @_counter</span><br>
@@ -9,9 +12,12 @@
 
 @code {
     private int _counter = 0;
+    // Omit PageTitle from the first browser render so the test isolates HeadOutlet's prerendered-title fallback.
+    private bool _showTitle = !OperatingSystem.IsBrowser();
 
     private void IncrementCounter()
     {
         _counter++;
+        _showTitle = true;
     }
 }
