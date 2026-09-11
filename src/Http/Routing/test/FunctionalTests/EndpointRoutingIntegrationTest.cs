@@ -123,6 +123,46 @@ public class EndpointRoutingIntegrationTest
     }
 
     [Fact]
+    public async Task AuthorizationMiddleware_EndpointChangedAfterAuthorization_Throws()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAuthorization();
+                        app.Use((context, next) =>
+                        {
+                            context.SetEndpoint(new Endpoint(
+                                TestDelegate,
+                                new EndpointMetadataCollection(new AuthorizeAttribute()),
+                                "Changed endpoint"));
+
+                            return next(context);
+                        });
+                        app.UseEndpoints(b => b.Map("/", TestDelegate).RequireAuthorization());
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddAuthorization(options => options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+                services.AddRouting();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+
+        await host.StartAsync();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => server.CreateRequest("/").SendAsync("GET"));
+        Assert.StartsWith("Endpoint Changed endpoint contains authorization metadata, but a middleware was not found that supports authorization.", ex.Message);
+    }
+
+    [Fact]
     public async Task AuthorizationMiddleware_NotConfigured_Throws()
     {
         // Arrange

@@ -218,7 +218,7 @@ public class EndpointMiddlewareTest
     }
 
     [Fact]
-    public async Task Invoke_WithEndpoint_WorksIfAuthAttributesWereFound_AndAuthMiddlewareInvoked()
+    public async Task Invoke_WithEndpoint_WorksIfAuthAttributesWereFound_AndAuthMiddlewareInvokedForEndpoint()
     {
         // Arrange
         var httpContext = new DefaultHttpContext
@@ -233,9 +233,10 @@ public class EndpointMiddlewareTest
             return Task.CompletedTask;
         };
 
-        httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"));
+        var endpoint = new Endpoint(endpointFunc, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test");
+        httpContext.SetEndpoint(endpoint);
 
-        httpContext.Items[EndpointMiddleware.AuthorizationMiddlewareInvokedKey] = true;
+        httpContext.Items[EndpointMiddleware.AuthorizationMiddlewareInvokedKey] = endpoint;
 
         RequestDelegate next = (c) =>
         {

@@ -37,7 +37,8 @@ internal sealed partial class EndpointMiddleware
             if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
             {
                 if (AuthorizationMetadataHelper.HasAuthorizationMetadata(endpoint) &&
-                    !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+                    (!httpContext.Items.TryGetValue(AuthorizationMiddlewareInvokedKey, out var authorizationEndpoint) ||
+                        !ReferenceEquals(authorizationEndpoint, endpoint)))
                 {
                     ThrowMissingAuthMiddlewareException(endpoint);
                 }
