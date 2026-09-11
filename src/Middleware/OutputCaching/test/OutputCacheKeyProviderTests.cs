@@ -208,6 +208,19 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EmptyHeaderValueDoesNotCollideWithAbsentHeader()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.Headers["HeaderA"] = string.Empty;
+        emptyContext.CacheVaryByRules.HeaderNames = new string[] { "HeaderA" };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(absentContext), cacheKeyProvider.CreateStorageKey(emptyContext));
+    }
+
+    [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedQueryKeysOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -289,6 +302,19 @@ public class OutputCacheKeyProviderTests
         // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA",
             cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_EmptyQueryValueDoesNotCollideWithAbsentQuery()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var absentContext = TestUtils.CreateTestContext();
+        absentContext.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+        var emptyContext = TestUtils.CreateTestContext();
+        emptyContext.HttpContext.Request.QueryString = new QueryString("?QueryA=");
+        emptyContext.CacheVaryByRules.QueryKeys = new string[] { "QueryA" };
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(absentContext), cacheKeyProvider.CreateStorageKey(emptyContext));
     }
 
     [Fact]
