@@ -134,7 +134,7 @@ JSON and MessagePack express the same logical message families: invocation, stre
 
 Text messages end with the record separator. Binary messages have a length prefix. Transport reads and hub-message boundaries need not align: a read may contain part of one message or several complete messages. Framing owns identifying complete messages from segmented input and rejecting invalid lengths; protocol parsing owns interpreting the framed payload.
 
-Forward-compatible parsing is part of the encoding contract. The .NET protocol parsers tolerate unknown JSON properties and unknown hub-message types, and their MessagePack parser permits additional trailing array elements. These tolerances must not be assumed across all client implementations. This extensibility is different from accepting malformed required fields or invalid framing. Tightening parsing can break an older implementation's ability to communicate with a newer peer even when the messages it understands have not changed.
+The normative Hub Protocol treats unrecognized fields as protocol errors. Some .NET parser implementations are deliberately more permissive: they ignore unknown JSON properties and unknown hub-message types, and the MessagePack parser permits additional trailing array elements. These are implementation behaviors, not wire-contract guarantees, and they must not be assumed across client implementations. Tightening them can still break scenarios that rely on the current .NET behavior even when the messages they understand have not changed.
 
 ## Server Dispatch and Lifetime
 
