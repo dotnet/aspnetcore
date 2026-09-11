@@ -24,4 +24,8 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authorization.Test" />
+  </ItemGroup>
+
 </Project>
