@@ -565,6 +565,8 @@ public abstract class RazorPageBase : IRazorPage
         {
             WritePositionTaggedLiteral(_attributeInfo.Suffix, _attributeInfo.SuffixOffset);
         }
+
+        _attributeInfo = default;
     }
 
     /// <summary>
