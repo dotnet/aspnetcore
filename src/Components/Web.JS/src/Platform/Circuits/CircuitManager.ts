@@ -617,6 +617,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._disposePromise !== undefined;
   }
 
+  public isConnected(): boolean {
+    return this._connection?.state === HubConnectionState.Connected;
+  }
+
   public sendDisconnectBeacon() {
     if (this._disposed) {
       return;
