@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Net.Http.Headers;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -19,7 +22,9 @@ public static class BlazorGateway
     /// Reads ClientApps config section for endpoint manifests and YARP reverse proxy configuration.
     /// </summary>
     public static WebApplication BuildWebHost(string[] args) =>
-        BuildWebHost(WebApplication.CreateSlimBuilder(args));
+        BuildWebHost(RuntimeFeature.IsDynamicCodeSupported
+            ? WebApplication.CreateBuilder(args)
+            : WebApplication.CreateSlimBuilder(args));
 
     internal static WebApplication BuildWebHost(WebApplicationBuilder builder)
     {
@@ -113,11 +118,55 @@ public static class BlazorGateway
 
             if (!string.IsNullOrEmpty(appConfig.EndpointsManifest))
             {
-                app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest);
+                var staticAssets = app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest);
+                if (app.Environment.IsDevelopment())
+                {
+                    staticAssets.Add(DisableSpaFallbackCaching);
+                }
             }
         }
 
         return app;
+    }
+
+    private static void DisableSpaFallbackCaching(EndpointBuilder endpointBuilder)
+    {
+        if (endpointBuilder is not RouteEndpointBuilder { Order: int.MaxValue, RequestDelegate: { } next } ||
+            GetStaticAssetDescriptor(endpointBuilder) is not { Route: var route } ||
+            !route.StartsWith("{**", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        endpointBuilder.RequestDelegate = context =>
+        {
+            // The dotnet-watch middleware injects its browser refresh script into the response body.
+            // A conditional response has no body, so preserve the old DevServer's no-store behavior.
+            context.Request.Headers.Remove(HeaderNames.IfNoneMatch);
+            context.Request.Headers.Remove(HeaderNames.IfModifiedSince);
+            context.Response.OnStarting(static state =>
+            {
+                var response = (HttpResponse)state;
+                response.Headers[HeaderNames.CacheControl] = "no-store";
+
+                return Task.CompletedTask;
+            }, context.Response);
+
+            return next(context);
+        };
+    }
+
+    private static StaticAssetDescriptor? GetStaticAssetDescriptor(EndpointBuilder endpointBuilder)
+    {
+        foreach (var metadata in endpointBuilder.Metadata)
+        {
+            if (metadata is StaticAssetDescriptor descriptor)
+            {
+                return descriptor;
+            }
+        }
+
+        return null;
     }
 
     private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder, BlazorGatewayOptions.TelemetryOptions telemetry)
