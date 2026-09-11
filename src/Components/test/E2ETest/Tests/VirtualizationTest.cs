@@ -2185,7 +2185,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true)]
     [InlineData("1", true)]
     [InlineData("2", true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68726")]
     public void QuickGrid_AnchorMode_NearTop_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
