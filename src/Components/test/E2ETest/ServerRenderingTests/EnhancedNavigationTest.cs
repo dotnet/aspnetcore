@@ -961,6 +961,24 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
+    [Fact]
+    public void ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation()
+    {
+        Navigate($"{ServerPathBase}/authorize-home");
+        Browser.Equal("Authorize Home Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Exists(By.Id("interactive-ready"));
+
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Weather")).Click();
+
+        Browser.Equal("Login Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        var expectedReturnUrl = $"{ServerPathBase}/weather";
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+        Browser.Contains($"ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}", () => Browser.Exists(By.Id("login-nav-uri")).Text);
+    }
+
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
     {
         // from some reason, scroll position sometimes differs by 1 pixel between enhanced and browser's navigation
