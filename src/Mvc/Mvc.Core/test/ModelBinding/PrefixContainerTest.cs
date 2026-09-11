@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
+
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class PrefixContainerTest
@@ -295,5 +297,40 @@ public class PrefixContainerTest
                 Assert.Equal("1", item.Key);
                 Assert.Equal("person[0].address[1]", item.Value);
             });
+    }
+
+    [Fact]
+    public void GetKeysFromPrefix_DoesNotEnumerateOriginalCollection()
+    {
+        var keys = new CopyOnlyCollection("unrelated.value", "prefix.child");
+        var container = new PrefixContainer(keys);
+
+        var result = container.GetKeysFromPrefix("prefix");
+
+        var item = Assert.Single(result);
+        Assert.Equal("child", item.Key);
+        Assert.Equal("prefix.child", item.Value);
+    }
+
+    private sealed class CopyOnlyCollection(params string[] values) : ICollection<string>
+    {
+        public int Count => values.Length;
+
+        public bool IsReadOnly => true;
+
+        public void CopyTo(string[] array, int arrayIndex) => values.CopyTo(array, arrayIndex);
+
+        public IEnumerator<string> GetEnumerator() =>
+            throw new InvalidOperationException("The source collection should only be copied during construction.");
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Add(string item) => throw new NotSupportedException();
+
+        public void Clear() => throw new NotSupportedException();
+
+        public bool Contains(string item) => values.Contains(item);
+
+        public bool Remove(string item) => throw new NotSupportedException();
     }
 }
