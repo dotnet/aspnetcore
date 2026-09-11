@@ -92,7 +92,13 @@ class LongPollingTransport implements Transport {
 
                 return Completable.complete();
             });
-        }));
+        })).doOnError(e -> {
+            // The receive loop only starts once the first poll succeeds, so nothing will ever complete
+            // receiveLoopSubject when start fails. stop() waits on that subject after sending DELETE,
+            // so complete it here to keep a stop() that races with a failed start from waiting forever.
+            this.active = false;
+            receiveLoopSubject.onComplete();
+        });
     }
 
     private void poll(String url) {
