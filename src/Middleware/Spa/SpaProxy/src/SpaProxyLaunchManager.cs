@@ -177,10 +177,17 @@ internal sealed class SpaProxyLaunchManager : IDisposable
             var arguments = _options.LaunchCommand[++space..];
             if (OperatingSystem.IsWindows() && !Path.HasExtension(command))
             {
-                // On windows we transform npm/yarn to npm.cmd/yarn.cmd so that the command
-                // can actually be found when we start the process. This is overridable if
-                // necessary by explicitly setting up the extension on the command.
-                command = $"{command}.cmd";
+                // On Windows, package-manager shims are typically registered with a
+                // `.cmd` extension by installers like `npm install -g` (npm, yarn).
+                // Tools installed via a standalone script may ship only as `.exe`
+                // (e.g. pnpm via https://pnpm.io/installation#using-a-standalone-script),
+                // in which case `${command}.cmd` does not exist on PATH and the launch fails.
+                //
+                // Probe PATH for `.cmd` first to preserve the existing behavior, and
+                // fall back to `.exe` if no `.cmd` shim is found. If neither resolves,
+                // keep the original `.cmd` so the existing diagnostic message is unchanged.
+                // This is overridable by explicitly setting an extension on the command.
+                command = ResolveWindowsLaunchCommand(command);
             }
 
             var info = new ProcessStartInfo(command, arguments)
@@ -373,5 +380,52 @@ rm {scriptPath};
     {
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    // Resolves a bare command (e.g. "pnpm") to the most likely Windows shim
+    // (`.cmd` for npm/yarn, `.exe` for tools installed via standalone script
+    // like pnpm).
+    private static string ResolveWindowsLaunchCommand(string command)
+    {
+        if (ExistsOnPath($"{command}.cmd"))
+        {
+            return $"{command}.cmd";
+        }
+
+        if (ExistsOnPath($"{command}.exe"))
+        {
+            return $"{command}.exe";
+        }
+
+        // Preserve the historical default so the existing diagnostic message
+        // ("can't find <command>.cmd") is unchanged when nothing resolves.
+        return $"{command}.cmd";
+    }
+
+    private static bool ExistsOnPath(string fileName)
+    {
+        var pathVar = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrEmpty(pathVar))
+        {
+            return false;
+        }
+
+        foreach (var dir in pathVar.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            try
+            {
+                if (File.Exists(Path.Combine(dir, fileName)))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // PATH may contain invalid characters or unreachable entries;
+                // skip and keep probing the remaining directories.
+            }
+        }
+
+        return false;
     }
 }
