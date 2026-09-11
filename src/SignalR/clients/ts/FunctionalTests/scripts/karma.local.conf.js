@@ -49,7 +49,13 @@ try {
     tryAddBrowser("ChromiumHeadlessIgnoreCert", ChromiumHeadlessBrowser.prototype);
 
     if (os.platform() !== 'darwin') {
-      if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
+      // On Linux CI agents Firefox is distributed as a snap which cannot launch under the confined
+      // build agents (fails with "is not a snap cgroup for tag snap.firefox.firefox"). Chrome and
+      // Chromium provide the Linux browser coverage there, so skip Firefox on Linux in CI. Local
+      // Linux runs (no TF_BUILD) still try Firefox.
+      if (process.platform === "linux" && process.env.TF_BUILD) {
+        console.log("Skipping Firefox on Linux CI; the snap-packaged Firefox cannot launch on the build agents.");
+      } else if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
         tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
       }
     } else {
