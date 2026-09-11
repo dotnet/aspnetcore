@@ -38,7 +38,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.9.0",
             "Microsoft.DotNet.Web.ProjectTemplates.10.0",
             "Microsoft.DotNet.Web.ProjectTemplates.11.0",
-            "Microsoft.DotNet.Web.ProjectTemplates.12.0",
+            "Microsoft.DotNet.Web.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
             "Microsoft.McpServer.ProjectTemplates",
         };
@@ -88,7 +88,7 @@ internal static class TemplatePackageInstaller
         {
             packagesDir = typeof(TemplatePackageInstaller).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value;
+                .Single(a => a.Key == "ArtifactsNonShippingPackagesDir").Value;
         }
 
         var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")
