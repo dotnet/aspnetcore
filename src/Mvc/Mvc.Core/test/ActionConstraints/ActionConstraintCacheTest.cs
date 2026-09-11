@@ -156,7 +156,9 @@ public class ActionConstraintCacheTest
 
     private static ActionConstraintCache CreateCache(params IActionConstraintProvider[] providers)
     {
-        var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
+        // it is safe to dispose descriptorProvider here while returning a dependent object
+        // because only change tracking is disabled by dispose
+        using var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
             Enumerable.Empty<IActionDescriptorProvider>(),
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
