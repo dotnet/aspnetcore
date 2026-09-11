@@ -388,6 +388,7 @@ public class ComponentBaseTest
             {
                 childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
                 childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnInitializedAsync), true);
+                childBuilder.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
                 childBuilder.CloseComponent();
             }));
             builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
@@ -420,6 +421,7 @@ public class ComponentBaseTest
             {
                 childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
                 childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnParametersSetAsync), true);
+                childBuilder.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
                 childBuilder.CloseComponent();
             }));
             builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
@@ -434,6 +436,43 @@ public class ComponentBaseTest
         Assert.NotNull(capturedBoundary);
         Assert.NotNull(capturedBoundary!.ReceivedException);
         Assert.Equal(typeof(InvalidTimeZoneException), capturedBoundary!.ReceivedException.GetType());
+    }
+
+    [Fact]
+    public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowDuringInitialization()
+    {
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.ThrowOnInitialized), true);
+                childBuilder.CloseComponent();
+
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(2);
+                childBuilder.AddComponentParameter(3, nameof(TestComponentErrorBuildRenderTree.ThrowOnInitialized), true);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, instance => capturedBoundary = (TestErrorBoundary)instance);
+            builder.CloseComponent();
+        };
+
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        Assert.NotNull(capturedBoundary);
+        Assert.Equal(2, capturedBoundary!.ExceptionCount);
+
+        var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.True(frames.Count > 0);
+        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
+        Assert.Equal("div", frames.Array[0].ElementName);
     }
 
     [Fact]
@@ -703,9 +742,11 @@ public class ComponentBaseTest
     private class TestErrorBoundary : ErrorBoundaryBase
     {
         public Exception ReceivedException => CurrentException;
+        public int ExceptionCount { get; private set; }
 
         protected override Task OnErrorAsync(Exception exception)
         {
+            ExceptionCount++;
             return Task.CompletedTask;
         }
 
@@ -726,8 +767,10 @@ public class ComponentBaseTest
 
     private class TestComponentErrorBuildRenderTree : ComponentBase
     {
+        [Parameter] public bool ThrowOnInitialized { get; set; } = false;
         [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
         [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
+        [Parameter] public bool ThrowDuringRender { get; set; } = false;
 
         public int StateHasChangedCalled { get; set; } = 0;
 
@@ -737,9 +780,20 @@ public class ComponentBaseTest
             base.StateHasChanged();
         }
 
+        protected override void OnInitialized()
+        {
+            if (ThrowOnInitialized)
+            {
+                throw new InvalidOperationException("Error in OnInitialized");
+            }
+        }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            throw new InvalidOperationException("Error in BuildRenderTree");
+            if (ThrowDuringRender)
+            {
+                throw new InvalidOperationException("Error in BuildRenderTree");
+            }
         }
 
         protected override Task OnInitializedAsync()

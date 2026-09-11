@@ -1212,6 +1212,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // operate, which would be a whole new kind of edge case to support forever.
                 AddToRenderQueue(candidate.ComponentId, builder => { });
 
+                // The render we just queued replaces whatever the boundary had queued for itself, so it
+                // has to be free to queue its ErrorContent again when HandleException calls
+                // StateHasChanged. Otherwise a second error in the same batch leaves the boundary blank.
+                if (candidate.Component is ComponentBase errorBoundaryComponentBase)
+                {
+                    errorBoundaryComponentBase.NotifyQueuedRenderSuperseded();
+                }
+
                 try
                 {
                     errorBoundary.HandleException(error);

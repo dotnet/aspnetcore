@@ -144,6 +144,12 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
+    /// Notifies the component that its pending render has been superseded, allowing another render to be queued.
+    /// </summary>
+    internal void NotifyQueuedRenderSuperseded()
+        => _hasPendingQueuedRender = false;
+
+    /// <summary>
     /// Returns a flag to indicate whether the component should render.
     /// </summary>
     /// <returns></returns>
