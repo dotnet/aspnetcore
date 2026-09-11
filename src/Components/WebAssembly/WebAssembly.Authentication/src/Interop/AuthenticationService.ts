@@ -272,7 +272,10 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
 
-            return this.error('There was an error signing in.');
+            const rawMessage = this.getExceptionMessage(error);
+            const errorCode = this.getUrlParameter(url, 'error');
+            this.debug(`Complete sign in error '${rawMessage}'`);
+            return this.error(this.getSafeErrorMessage(error, errorCode));
         }
     }
 
@@ -326,8 +329,41 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
+    // Maps known OIDC callback error codes (RFC 6749 §4.1.2.1 + OpenID Connect Core §3.1.2.6)
+    // to safe user-facing messages. Unknown codes and non-OIDC exceptions return a generic
+    // message; the original error is still written to the debug log for diagnostics.
+    private getSafeErrorMessage(error: any, fallbackCode?: string | null): string {
+        const genericMessage = 'There was an error signing in.';
+        const code: string | undefined = error && typeof error.error === 'string' ? error.error : fallbackCode ?? undefined;
+        if (!code) {
+            return genericMessage;
+        }
+        switch (code) {
+            case 'access_denied': return 'Access was denied during sign-in.';
+            case 'login_required': return 'Sign-in is required to continue.';
+            case 'consent_required': return 'User consent is required to continue.';
+            case 'interaction_required': return 'User interaction is required to complete sign-in.';
+            case 'account_selection_required': return 'Please select an account to continue.';
+            case 'invalid_request':
+            case 'invalid_request_uri':
+            case 'invalid_request_object':
+            case 'invalid_scope':
+            case 'unauthorized_client':
+            case 'unsupported_response_type':
+            case 'request_not_supported':
+            case 'request_uri_not_supported':
+            case 'registration_not_supported':
+                return 'The sign-in request was not valid.';
+            case 'server_error':
+            case 'temporarily_unavailable':
+                return 'The sign-in service is temporarily unavailable. Please try again.';
+            default:
+                return genericMessage;
+        }
+    }
+
     private async stateExists(url: string) {
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
+        const stateParam = this.getUrlParameter(url, 'state');
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {
@@ -336,13 +372,49 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async loginRequired(url: string) {
-        const errorParameter = new URLSearchParams(new URL(url).search).get('error');
+        const errorParameter = this.getUrlParameter(url, 'error');
         if (errorParameter && this._userManager.settings.stateStore) {
             const error = await this._userManager.settings.stateStore.get(errorParameter);
             return error === 'login_required';
         } else {
             return false;
         }
+    }
+
+    // Determines where the authorization server places the callback parameters for the
+    // configured flow, per OAuth 2.0 Multiple Response Type Encoding Practices §2 and §2.1.
+    // The response mode is authoritative when it is explicitly configured; otherwise the
+    // default is defined by the response type. This is deterministic: it never depends on
+    // what happens to be present in the callback URL.
+    private getCallbackParameterLocation(): 'query' | 'fragment' {
+        const { response_mode, response_type } = this._userManager.settings;
+
+        if (response_mode) {
+            // 'form_post' delivers the parameters in a POST body rather than in the URL, so
+            // there is nothing to read from the fragment; treat it like 'query'.
+            return response_mode === 'fragment' ? 'fragment' : 'query';
+        }
+
+        if (!response_type) {
+            return 'query';
+        }
+
+        // 'code' (authorization code flow) defaults to 'query'. Any response type that
+        // returns a token directly from the authorization endpoint (implicit and hybrid
+        // flows) defaults to 'fragment'.
+        const responseTypes = response_type.trim().split(/\s+/);
+        return responseTypes.some(type => type === 'token' || type === 'id_token')
+            ? 'fragment'
+            : 'query';
+    }
+
+    private getUrlParameter(url: string, parameterName: string): string | null {
+        const parsedUrl = new URL(url);
+        if (this.getCallbackParameterLocation() === 'fragment') {
+            return new URLSearchParams(parsedUrl.hash.substring(1)).get(parameterName);
+        }
+
+        return parsedUrl.searchParams.get(parameterName);
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
