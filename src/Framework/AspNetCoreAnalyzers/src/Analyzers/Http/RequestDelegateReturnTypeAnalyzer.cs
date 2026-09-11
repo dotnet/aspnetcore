@@ -55,6 +55,13 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                         if (item is IReturnOperation returnOperation &&
                             returnOperation.ReturnedValue is { } returnedValue)
                         {
+                            // Descendants() includes the bodies of nested lambdas and local functions.
+                            // Their returns belong to the nested function, not the RequestDelegate.
+                            if (IsReturnFromNestedFunction(returnOperation, anonymousFunction))
+                            {
+                                continue;
+                            }
+
                             var resolvedOperation = WalkDownConversion(returnedValue);
                             var returnType = resolvedOperation.Type;
 
@@ -79,6 +86,30 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DoNotReturnValueFromRequestDelegate,
             location,
             ((INamedTypeSymbol)returnType).TypeArguments[0].ToString()));
+    }
+
+    private static bool IsReturnFromNestedFunction(IReturnOperation returnOperation, IAnonymousFunctionOperation targetAnonymousFunction)
+    {
+        // Walk up from the return operation. If we hit a nested function before reaching the
+        // RequestDelegate lambda, the return belongs to that nested function instead.
+        for (var current = returnOperation.Parent; current is not null; current = current.Parent)
+        {
+            if (ReferenceEquals(current, targetAnonymousFunction))
+            {
+                return false;
+            }
+
+            if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            {
+                return true;
+            }
+        }
+
+        // Unreachable: every operation from Body.Descendants() has the lambda as an ancestor,
+        // so the walk always terminates at the target or at a nested function. Fall back to the
+        // old behavior rather than silently suppressing, so a broken assumption surfaces as a
+        // reported false positive instead of a missing diagnostic.
+        return false;
     }
 
     private static IOperation WalkDownConversion(IOperation operation)

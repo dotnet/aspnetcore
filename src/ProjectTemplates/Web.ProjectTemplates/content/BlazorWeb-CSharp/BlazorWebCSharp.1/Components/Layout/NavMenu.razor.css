@@ -1,3 +1,7 @@
+nav-menu {
+    display: contents;
+}
+
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
@@ -92,6 +96,12 @@
         line-height: 3rem;
         width: 100%;
     }
+
+.nav-item ::deep .nav-link:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+    box-shadow: none;
+}
 
 .nav-item ::deep a.active {
     background-color: rgba(255,255,255,0.37);

@@ -70,11 +70,11 @@ public class TestingInfrastructureInheritanceTests
     public void TestingInfrastructure_GenericHost_WithConfigureHostConfigurationOverride_Should_Throw()
     {
         // Act
-        using var factory = new CustomizedFactoryWithConfigureHostApplicationBuilder<GenericHostWebSite.Startup>();
+        using var factory = new CustomizedFactoryWithConfigureWebApplicationBuilder<GenericHostWebSite.Startup>();
 
         // Assert
         var ex = Assert.Throws<InvalidOperationException>(() => factory.Services);
-        Assert.Equal("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.", ex.Message);
+        Assert.Equal("Overriding 'ConfigureWebApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.", ex.Message);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class TestingInfrastructureInheritanceTests
     public async Task TestingInfrastructure_WebApplicationBuilder_EarlyConfiguration()
     {
         // Arrange
-        using var factory = new CustomizedFactoryWithConfigureHostApplicationBuilder<SimpleWebSiteWithWebApplicationBuilder.Program>();
+        using var factory = new CustomizedFactoryWithConfigureWebApplicationBuilder<SimpleWebSiteWithWebApplicationBuilder.Program>();
         var client = factory.CreateClient();
 
         // Assert
@@ -176,12 +176,12 @@ public class TestingInfrastructureInheritanceTests
         }
     }
 
-    private class CustomizedFactoryWithConfigureHostApplicationBuilder<TEntryPoint> : CustomizedFactory<TEntryPoint> where TEntryPoint : class
+    private class CustomizedFactoryWithConfigureWebApplicationBuilder<TEntryPoint> : CustomizedFactory<TEntryPoint> where TEntryPoint : class
     {
-        protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+        protected override void ConfigureWebApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
         {
             hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
-            base.ConfigureHostApplicationBuilder(hostApplicationBuilder);
+            base.ConfigureWebApplicationBuilder(hostApplicationBuilder);
         }
 
         protected override IHost CreateHost(IHostBuilder builder)

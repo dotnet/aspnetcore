@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
@@ -11,8 +13,58 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 
 public class Operation : OperationBase
 {
-    [JsonPropertyName(nameof(value))]
+    internal struct ValueHolder : IEquatable<ValueHolder>
+    {
+        // While ShouldSerializeValue appears unread. Be careful if you remove it.
+        // It decides whether or not the value property is serialized.
+        // It's used by STJ for deciding the JsonIgnore (WhenWritingDefault)
+        public bool ShouldSerializeValue { get; set; }
+
+        public object Value { get; set; }
+
+        public ValueHolder(bool shouldSerializeValue, object value)
+        {
+            ShouldSerializeValue = shouldSerializeValue;
+            Value = value;
+        }
+
+        public bool Equals(ValueHolder other)
+            => ShouldSerializeValue == other.ShouldSerializeValue && Equals(Value, other.Value);
+
+        public override bool Equals([NotNullWhen(true)] object obj)
+            => obj is ValueHolder other && Equals(other);
+
+        public override int GetHashCode()
+            => ShouldSerializeValue ? Value?.GetHashCode() ?? 0 : 0;
+    }
+
+    private sealed class ValueHolderConverter : JsonConverter<ValueHolder>
+    {
+        public override ValueHolder Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var value = JsonSerializer.Deserialize<object>(ref reader, options);
+            return new ValueHolder(true, value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, ValueHolder value, JsonSerializerOptions options)
+            => JsonSerializer.Serialize(writer, value.Value, options);
+    }
+
+    [JsonIgnore]
     public object value { get; set; }
+
+    [JsonPropertyName(nameof(value))]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonConverter(typeof(ValueHolderConverter))]
+    [JsonInclude]
+    internal ValueHolder Holder
+    {
+        get => OperationType is OperationType.Add or OperationType.Replace or OperationType.Test
+              ? new ValueHolder(true, value)
+              : default;
+
+        set => this.value = value.Value;
+    }
 
     public Operation()
     {

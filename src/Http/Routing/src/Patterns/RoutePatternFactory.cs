@@ -642,7 +642,7 @@ internal static class RoutePatternFactory
 
 #if !COMPONENTS
     /// <summary>
-    /// String policy references are infered to be regex constraints. Creating them is moved here to its own method so apps can
+    /// String policy references are inferred to be regex constraints. Creating them is moved here to its own method so apps can
     /// trim away the regex dependency when RoutePatternFactory.Parse(string) is used. This is the method typically used by the various Map methods.
     /// </summary>
     private static Dictionary<string, List<RoutePatternParameterPolicyReference>>? CreateRoutePatternPolicyReferences(RouteValueDictionary? parameterPolicies)
@@ -935,7 +935,7 @@ internal static class RoutePatternFactory
     }
 
     /// <summary>
-    /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided contraint.
+    /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided constraint.
     /// </summary>
     /// <param name="constraint">
     /// The constraint object, which must be of type <see cref="IRouteConstraint"/>
@@ -1026,7 +1026,7 @@ internal static class RoutePatternFactory
     /// Creates a <see cref="RoutePattern"/> that combines the specified patterns.
     /// </summary>
     /// <param name="left">A string representing the first part of the route.</param>
-    /// <param name="right">A stirng representing the second part of the route.</param>
+    /// <param name="right">A string representing the second part of the route.</param>
     /// <returns>The combined <see cref="RoutePattern"/>.</returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="RoutePatternException"></exception>

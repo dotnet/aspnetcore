@@ -63,6 +63,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse, options.RefreshOnIssuerKeyNotFound);
         options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RequireHttpsMetadata)], bool.Parse, options.RequireHttpsMetadata);
         options.SaveToken = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveToken)], bool.Parse, options.SaveToken);
+        // codeql[SM04554] - Valid issuer and audience are bound from app configuration into TokenValidationParameters at runtime. codeql[SM04555] - ValidateIssuer/ValidateAudience are bound from configuration (defaulting to the existing option values); the handler still validates at runtime.
         options.TokenValidationParameters = new()
         {
             ValidateIssuer = validateIssuer,

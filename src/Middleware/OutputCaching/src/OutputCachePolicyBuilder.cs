@@ -250,7 +250,7 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to tag the cached response.
     /// </summary>
-    /// <param name="tags">The tags to add to the cached reponse.</param>
+    /// <param name="tags">The tags to add to the cached response.</param>
     public OutputCachePolicyBuilder Tag(params string[] tags)
     {
         ArgumentNullException.ThrowIfNull(tags);
@@ -261,7 +261,7 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to change the cached response expiration.
     /// </summary>
-    /// <param name="expiration">The expiration of the cached reponse.</param>
+    /// <param name="expiration">The expiration of the cached response.</param>
     public OutputCachePolicyBuilder Expire(TimeSpan expiration)
     {
         return AddPolicy(new ExpirationPolicy(expiration));

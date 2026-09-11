@@ -75,8 +75,10 @@ public class DefaultCsrfProtectionTests
     [InlineData("HEAD")]
     [InlineData("OPTIONS")]
     [InlineData("TRACE")]
+    [InlineData("QUERY")]
     [InlineData("get")]
     [InlineData("Get")]
+    [InlineData("query")]
     public async Task SafeMethods_AlwaysAllowed(string method)
     {
         var context = CreateContext(method: method, secFetchSite: "cross-site", origin: "https://evil.com");

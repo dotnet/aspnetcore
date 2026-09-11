@@ -9,14 +9,21 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
 
     public static async Task<WebWorkerClient> CreateAsync(IJSRuntime jsRuntime, int timeoutMs = DefaultTimeoutMs, string? assemblyName = null, CancellationToken cancellationToken = default)
     {
-        await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", cancellationToken, "./_content/Company.WebWorker1/dotnet-web-worker-client.js");
+        try
+        {
+            await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
+                "import", cancellationToken, "./_content/Company.WebWorker1/dotnet-web-worker-client.js");
 
-        var resolvedName = assemblyName ?? DefaultAssemblyName;
-        var options = new { assemblyName = resolvedName };
-        var workerRef = await module.InvokeAsync<IJSObjectReference>("create", cancellationToken, timeoutMs, options);
+            var resolvedName = assemblyName ?? DefaultAssemblyName;
+            var options = new { assemblyName = resolvedName };
+            var workerRef = await module.InvokeAsync<IJSObjectReference>("create", cancellationToken, timeoutMs, options);
 
-        return new WebWorkerClient(workerRef);
+            return new WebWorkerClient(workerRef);
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to create the web worker JavaScript object.", ex);
+        }
     }
 
     // Invokes a [JSExport] method from the web worker.
@@ -24,12 +31,26 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
     // Arguments and return values must be primitive types or strings.
     public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
     {
-        return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args, timeoutMs]);
+        try
+        {
+            return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args, timeoutMs]);
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to invoke the web worker JavaScript function.", ex);
+        }
     }
 
     public async Task InvokeVoidAsync(string method, object[] args, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
     {
-        await worker.InvokeVoidAsync("invoke", cancellationToken, [method, args, timeoutMs]);
+        try
+        {
+            await worker.InvokeVoidAsync("invoke", cancellationToken, [method, args, timeoutMs]);
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to invoke the web worker JavaScript function.", ex);
+        }
     }
 
     public async ValueTask DisposeAsync()

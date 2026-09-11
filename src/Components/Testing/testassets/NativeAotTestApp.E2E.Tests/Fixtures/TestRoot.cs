@@ -1,0 +1,23 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace NativeAotTestApp.E2E.Tests.Fixtures;
+
+[TestClass]
+public static class TestRoot
+{
+    public static ServerFactory<E2ETestAssembly> Servers { get; private set; } = null!;
+
+    [AssemblyInitialize]
+    public static async Task Init(TestContext _)
+    {
+        Servers = new ServerFactory<E2ETestAssembly>();
+        await Servers.InitializeAsync();
+    }
+
+    [AssemblyCleanup]
+    public static Task Cleanup() => Servers.DisposeAsync().AsTask();
+}

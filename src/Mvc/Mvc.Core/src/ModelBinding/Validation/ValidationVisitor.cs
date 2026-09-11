@@ -443,9 +443,9 @@ public class ValidationVisitor
     }
 
     /// <summary>
-    /// Supress validation for a given key.
+    /// Suppress validation for a given key.
     /// </summary>
-    /// <param name="key">The key to supress.</param>
+    /// <param name="key">The key to suppress.</param>
     protected virtual void SuppressValidation(string key)
     {
         if (key == null)

@@ -65,6 +65,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     internal HttpContext? HttpContext => _httpContext;
     internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
 
+    internal ArrayRange<RenderTreeFrame> GetRenderTreeFrames(int componentId)
+        => GetCurrentRenderTreeFrames(componentId);
+
     internal void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)

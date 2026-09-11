@@ -48,7 +48,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             RouteAttributes = RouteAttributes.None,
             Conventions = conventions,
             FinallyConventions = finallyConventions,
-            InferMetadataFunc = null, // Metadata isn't infered from RequestDelegate endpoints
+            InferMetadataFunc = null, // Metadata isn't inferred from RequestDelegate endpoints
             CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc,
             Method = methodInfo // MethodInfo needed to resolve attributes for RequestDelegate endpoints
         });

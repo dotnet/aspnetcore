@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing;
 public sealed class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata
 {
     /// <summary>
-    /// Gets a value indicating whether the assocated endpoint should be used for link generation.
+    /// Gets a value indicating whether the associated endpoint should be used for link generation.
     /// </summary>
     public bool SuppressLinkGeneration => true;
 

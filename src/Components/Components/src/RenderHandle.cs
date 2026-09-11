@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -23,6 +24,7 @@ public readonly struct RenderHandle
 
     internal ComponentsMetrics? ComponentMetrics => _renderer?.ComponentMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
+    internal SectionRegistry SectionRegistry => _renderer?.SectionRegistry ?? throw new InvalidOperationException("No renderer has been initialized.");
 
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
