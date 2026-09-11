@@ -574,10 +574,48 @@ internal static class JsonNodeSchemaExtensions
             }
         }
 
+        if (propertyInfo.PropertyType != typeof(object) &&
+            propertyInfo.AttributeProvider is PropertyInfo reflectionPropertyInfo)
+        {
+            var nullabilityInfoContext = new NullabilityInfoContext();
+            var nullabilityInfo = nullabilityInfoContext.Create(reflectionPropertyInfo);
+            if (schema[OpenApiSchemaKeywords.ItemsKeyword] is { } itemsSchema &&
+                IsNullable(nullabilityInfo.ElementType ?? (nullabilityInfo.GenericTypeArguments is [var genericElementType] ? genericElementType : null)))
+            {
+                ApplyNullableSchema(itemsSchema);
+            }
+            if (schema[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] is { } additionalPropertiesSchema &&
+                IsNullable(nullabilityInfo.GenericTypeArguments is [_, var valueType] ? valueType : null))
+            {
+                ApplyNullableSchema(additionalPropertiesSchema);
+            }
+        }
+
         if (schema.WillBeComponentized() &&
             propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
         {
             schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    private static bool IsNullable(NullabilityInfo? nullabilityInfo)
+    {
+        return nullabilityInfo is not null &&
+            (nullabilityInfo.ReadState == NullabilityState.Nullable || nullabilityInfo.WriteState == NullabilityState.Nullable);
+    }
+
+    private static void ApplyNullableSchema(JsonNode schema)
+    {
+        if (schema.WillBeComponentized())
+        {
+            schema[OpenApiConstants.NullableProperty] = true;
+            return;
+        }
+
+        if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+            !schemaTypes.HasFlag(JsonSchemaType.Null))
+        {
+            schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
         }
     }
 

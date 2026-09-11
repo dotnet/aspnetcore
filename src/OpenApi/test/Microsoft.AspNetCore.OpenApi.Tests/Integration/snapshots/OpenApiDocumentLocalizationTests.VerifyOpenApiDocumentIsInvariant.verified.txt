@@ -3047,7 +3047,14 @@
               "array"
             ],
             "items": {
-              "$ref": "#/components/schemas/NestedModel"
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/components/schemas/NestedModel"
+                }
+              ]
             }
           }
         }
@@ -3205,7 +3212,14 @@
           "listOfNullableEnums": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TestEnum"
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/components/schemas/TestEnum"
+                }
+              ]
             }
           }
         }
@@ -3429,7 +3443,10 @@
           "listWithNullableElements": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": [
+                "null",
+                "string"
+              ]
             }
           },
           "nullableDictionaryWithNullableValues": {
@@ -3438,7 +3455,10 @@
               "object"
             ],
             "additionalProperties": {
-              "type": "string"
+              "type": [
+                "null",
+                "string"
+              ]
             }
           }
         }
@@ -3473,7 +3493,10 @@
               "object"
             ],
             "additionalProperties": {
-              "type": "string"
+              "type": [
+                "null",
+                "string"
+              ]
             }
           }
         }
