@@ -173,15 +173,8 @@ internal sealed class SpaProxyLaunchManager : IDisposable
             // Launch command is going to be something like `npm/yarn <<verb>> <<options>>`
             // We split it into two to separate the tool (command) from the verb and the rest of the arguments.
             var space = _options.LaunchCommand.IndexOf(' ');
-            var command = _options.LaunchCommand[0..space];
+            var command = ResolveLaunchCommand(_options.LaunchCommand[0..space]);
             var arguments = _options.LaunchCommand[++space..];
-            if (OperatingSystem.IsWindows() && !Path.HasExtension(command))
-            {
-                // On windows we transform npm/yarn to npm.cmd/yarn.cmd so that the command
-                // can actually be found when we start the process. This is overridable if
-                // necessary by explicitly setting up the extension on the command.
-                command = $"{command}.cmd";
-            }
 
             var info = new ProcessStartInfo(command, arguments)
             {
@@ -213,6 +206,94 @@ internal sealed class SpaProxyLaunchManager : IDisposable
         {
             _logger.LogError(exception, $"Failed to launch the SPA development server '{_options.LaunchCommand}'.");
         }
+    }
+
+    internal static string ResolveLaunchCommand(string command)
+    {
+        if (string.Equals(command, "pnpm", StringComparison.OrdinalIgnoreCase) &&
+            TryGetStandalonePnpmCommand(command, out var standaloneCommand))
+        {
+            return standaloneCommand!;
+        }
+
+        if (OperatingSystem.IsWindows() && !Path.HasExtension(command))
+        {
+            // On windows we transform npm/yarn to npm.cmd/yarn.cmd so that the command
+            // can actually be found when we start the process. This is overridable if
+            // necessary by explicitly setting up the extension on the command.
+            return $"{command}.cmd";
+        }
+
+        return command;
+    }
+
+    private static bool TryGetStandalonePnpmCommand(string command, out string? standaloneCommand)
+    {
+        standaloneCommand = null;
+
+        if (Path.HasExtension(command) || IsCommandAvailableOnPath(OperatingSystem.IsWindows() ? $"{command}.cmd" : command))
+        {
+            return false;
+        }
+
+        var executableName = OperatingSystem.IsWindows() ? "pnpm.exe" : "pnpm";
+        foreach (var directory in GetPnpmStandaloneDirectories())
+        {
+            var candidate = Path.Combine(directory, executableName);
+            if (File.Exists(candidate))
+            {
+                standaloneCommand = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> GetPnpmStandaloneDirectories()
+    {
+        var pnpmHome = Environment.GetEnvironmentVariable("PNPM_HOME");
+        if (!string.IsNullOrWhiteSpace(pnpmHome))
+        {
+            yield return pnpmHome;
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            var localAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+            if (!string.IsNullOrWhiteSpace(localAppData))
+            {
+                yield return Path.Combine(localAppData, "pnpm");
+            }
+        }
+        else
+        {
+            var home = Environment.GetEnvironmentVariable("HOME");
+            if (!string.IsNullOrWhiteSpace(home))
+            {
+                yield return Path.Combine(home, ".local", "share", "pnpm");
+            }
+        }
+    }
+
+    private static bool IsCommandAvailableOnPath(string command)
+    {
+        var searchPaths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+        foreach (var searchPath in searchPaths)
+        {
+            var trimmedPath = searchPath.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(trimmedPath))
+            {
+                continue;
+            }
+
+            if (File.Exists(Path.Combine(trimmedPath, command)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void LaunchStopScriptWindows(int spaProcessId)
