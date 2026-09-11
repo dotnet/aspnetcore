@@ -170,6 +170,7 @@ internal class TestUtils
                         {
                             if (options != null)
                             {
+                                responseCachingOptions.SizeLimit = options.SizeLimit;
                                 responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
                                 responseCachingOptions.TimeProvider = options.TimeProvider;
