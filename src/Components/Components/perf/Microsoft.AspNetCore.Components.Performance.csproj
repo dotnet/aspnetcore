@@ -10,6 +10,8 @@
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
