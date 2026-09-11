@@ -47,6 +47,17 @@ public abstract partial class DiagnosticVerifier
     }
 
     /// <summary>
+    /// Called to test a C# DiagnosticAnalyzer with the specified analyzer options.
+    /// </summary>
+    /// <param name="source">A class in the form of a string to run the analyzer on</param>
+    /// <param name="analyzerOptions">The analyzer options to use</param>
+    /// <param name="expected">DiagnosticResults that should appear after the analyzer is run on the source</param>
+    protected void VerifyCSharpDiagnostic(string source, AnalyzerOptions analyzerOptions, params DiagnosticResult[] expected)
+    {
+        VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), analyzerOptions, expected);
+    }
+
+    /// <summary>
     /// Called to test a VB DiagnosticAnalyzer when applied on the single inputted string as a source
     /// Note: input a DiagnosticResult for each Diagnostic expected
     /// </summary>
@@ -90,6 +101,12 @@ public abstract partial class DiagnosticVerifier
     private void VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expected)
     {
         var diagnostics = GetSortedDiagnostics(sources, language, analyzer);
+        VerifyDiagnosticResults(diagnostics, analyzer, expected);
+    }
+
+    private void VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, AnalyzerOptions analyzerOptions, params DiagnosticResult[] expected)
+    {
+        var diagnostics = GetSortedDiagnostics(sources, language, analyzer, analyzerOptions);
         VerifyDiagnosticResults(diagnostics, analyzer, expected);
     }
 
