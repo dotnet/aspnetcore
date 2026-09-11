@@ -47,7 +47,10 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         var audience = configSection[nameof(TokenValidationParameters.ValidAudience)];
         var audiences = configSection.GetSection(nameof(TokenValidationParameters.ValidAudiences)).GetChildren().Select(aud => aud.Value).ToList();
 
-        options.Authority = configSection[nameof(options.Authority)] ?? options.Authority;
+        if (!string.IsNullOrWhiteSpace(configSection[nameof(options.Authority)]))
+        {
+            options.Authority = configSection[nameof(options.Authority)];
+        }
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
         options.Challenge = configSection[nameof(options.Challenge)] ?? options.Challenge;
         options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)] ?? options.ForwardAuthenticate;
@@ -58,7 +61,10 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)] ?? options.ForwardSignOut;
         options.IncludeErrorDetails = StringHelpers.ParseValueOrDefault(configSection[nameof(options.IncludeErrorDetails)], bool.Parse, options.IncludeErrorDetails);
         options.MapInboundClaims = StringHelpers.ParseValueOrDefault( configSection[nameof(options.MapInboundClaims)], bool.Parse, options.MapInboundClaims);
-        options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;
+        if (!string.IsNullOrWhiteSpace(configSection[nameof(options.MetadataAddress)]))
+        {
+            options.MetadataAddress = configSection[nameof(options.MetadataAddress)]!;
+        }
         options.RefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse, options.RefreshInterval);
         options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse, options.RefreshOnIssuerKeyNotFound);
         options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RequireHttpsMetadata)], bool.Parse, options.RequireHttpsMetadata);
