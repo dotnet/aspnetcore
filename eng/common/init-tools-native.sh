@@ -60,8 +60,8 @@ while (($# > 0)); do
       echo "                                          - (default) %USERPROFILE%/.netcoreeng/native"
       echo ""
       echo "  --clean                             Switch specifying not to install anything, but cleanup native asset folders"
-      echo "  --donotabortonfailure               Switch specifiying whether to abort native tools installation on failure"
-      echo "  --donotdisplaywarnings              Switch specifiying whether to display warnings during native tools installation on failure"
+      echo "  --donotabortonfailure               Switch specifying whether to abort native tools installation on failure"
+      echo "  --donotdisplaywarnings              Switch specifying whether to display warnings during native tools installation on failure"
       echo "  --force                             Clean and then install tools"
       echo "  --help                              Print help and exit"
       echo ""
@@ -83,7 +83,7 @@ function ReadGlobalJsonNativeTools {
     #   KEY="<entry-key>" VALUE="<entry-value>"
     # followed by a null byte.
     #
-    # bash: read line with null byte delimeter and push to array (for later `eval`uation).
+    # bash: read line with null byte delimiter and push to array (for later `eval`uation).
 
     while IFS= read -rd '' line; do
       native_assets+=("$line")

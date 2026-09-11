@@ -33,9 +33,32 @@ internal sealed class ConsumerBuild : IDisposable
         Directory.CreateDirectory(_root);
         _packagesFolder = Path.Combine(_root, ".nuget-packages");
 
-        // Isolate the build from the repo and from any other test run.
-        File.WriteAllText(Path.Combine(_root, "Directory.Build.props"), "<Project />");
-        File.WriteAllText(Path.Combine(_root, "Directory.Build.targets"), "<Project />");
+        // Isolate the build from the repo and from any other test run while carrying the minimum
+        // bootstrap SDK workarounds needed to build the repo's future target framework.
+        File.WriteAllText(Path.Combine(_root, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+                <LoadPrunePackageDataFromNearestFramework>true</LoadPrunePackageDataFromNearestFramework>
+                <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(_root, "Directory.Build.targets"), """
+            <Project>
+              <ItemGroup>
+                <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                  TargetFramework="$(TargetFramework)"
+                                  Condition="!(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+                <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                  TargetFramework="$(TargetFramework)"
+                                  Condition="!(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+                <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                         TargetFramework="$(TargetFramework)"
+                                         Condition="!(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+              </ItemGroup>
+            </Project>
+            """);
 
         if (!isolateNuGetFeeds)
         {
@@ -92,7 +115,7 @@ internal sealed class ConsumerBuild : IDisposable
     /// <param name="projectRelativePath">Project to build, relative to the working folder.</param>
     public ProcessResult Run(string verb, string projectRelativePath)
     {
-        // The package version under test is constant (e.g. 11.0.0-dev). Make sure a previously
+        // The package version under test is constant (e.g. 12.0.0-dev). Make sure a previously
         // extracted copy in the shared repo cache (used as a fallback folder) can't shadow the
         // freshly built package; restore will then pull it from the local feed.
         EvictFromFallbackCache("Microsoft.AspNetCore.Components.WebView");
@@ -122,34 +145,72 @@ internal sealed class ConsumerBuild : IDisposable
 
         _output.WriteLine($"> dotnet {arguments}");
 
-        var output = new StringBuilder();
-        using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        if (!process.WaitForExit(milliseconds: 5 * 60 * 1000))
+        DateTime? packageWaitDeadline = null;
+        while (true)
         {
-            try { process.Kill(entireProcessTree: true); } catch { }
-            _preserve = true;
-            throw new TimeoutException($"'dotnet {verb}' timed out. Binlog: {binlogPath}\n{output}");
+            var output = new StringBuilder();
+            using var process = new Process { StartInfo = psi };
+            process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
+            process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            if (!process.WaitForExit(milliseconds: 5 * 60 * 1000))
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                _preserve = true;
+                throw new TimeoutException($"'dotnet {verb}' timed out. Binlog: {binlogPath}\n{output}");
+            }
+
+            process.WaitForExit();
+            var result = new ProcessResult(process.ExitCode, output.ToString(), binlogPath);
+
+            var missingPackages = GetMissingLocallyBuiltPackages(result.Output);
+            if (result.Succeeded || missingPackages.Count == 0)
+            {
+                _output.WriteLine(result.Output);
+                _output.WriteLine($"Exit code: {result.ExitCode}. Binlog: {binlogPath}");
+                if (!result.Succeeded)
+                {
+                    // Leave the working folder in place so the failure can be investigated locally.
+                    _preserve = true;
+                }
+
+                return result;
+            }
+
+            // The repository build packs projects in parallel with running tests. A generated
+            // consumer can therefore restore the WebView package before one of its repo-versioned
+            // dependencies has reached the local package folder. Wait for those packages and retry
+            // instead of racing the pack targets.
+            _output.WriteLine(
+                $"Waiting for locally-built package(s): {string.Join(", ", missingPackages)}.");
+
+            packageWaitDeadline ??= DateTime.UtcNow.AddMinutes(10);
+            while (DateTime.UtcNow < packageWaitDeadline.Value &&
+                   missingPackages.Any(package => StaticWebAssetsTestData.TryGetPackagePath(package) is null))
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+
+            var unavailablePackages = missingPackages
+                .Where(package => StaticWebAssetsTestData.TryGetPackagePath(package) is null)
+                .ToArray();
+            if (unavailablePackages.Length > 0)
+            {
+                _output.WriteLine(result.Output);
+                _output.WriteLine(
+                    $"Exit code: {result.ExitCode}. Timed out waiting for locally-built package(s): " +
+                    $"{string.Join(", ", unavailablePackages)}. Binlog: {binlogPath}");
+                _preserve = true;
+                return result;
+            }
+
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+            _output.WriteLine("Required packages are available; retrying the consumer build.");
         }
-
-        process.WaitForExit();
-        var result = new ProcessResult(process.ExitCode, output.ToString(), binlogPath);
-
-        _output.WriteLine(result.Output);
-        _output.WriteLine($"Exit code: {result.ExitCode}. Binlog: {binlogPath}");
-        if (!result.Succeeded)
-        {
-            // Leave the working folder in place so the failure can be investigated locally.
-            _preserve = true;
-        }
-
-        return result;
     }
 
     public void Dispose()
@@ -188,6 +249,42 @@ internal sealed class ConsumerBuild : IDisposable
         {
             // Best effort; if it can't be removed restore may still succeed from the local feed.
         }
+    }
+
+    private static List<string> GetMissingLocallyBuiltPackages(string output)
+    {
+        const string errorMarker = "error NU1102: Unable to find package ";
+        const string versionMarker = " with version (>= ";
+
+        var missingPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in output.Split('\n'))
+        {
+            var packageStart = line.IndexOf(errorMarker, StringComparison.OrdinalIgnoreCase);
+            if (packageStart < 0)
+            {
+                continue;
+            }
+
+            packageStart += errorMarker.Length;
+            var versionStart = line.IndexOf(versionMarker, packageStart, StringComparison.OrdinalIgnoreCase);
+            if (versionStart < 0)
+            {
+                continue;
+            }
+
+            var versionEnd = line.IndexOf(')', versionStart + versionMarker.Length);
+            if (versionEnd < 0 ||
+                !line.AsSpan(versionStart + versionMarker.Length, versionEnd - versionStart - versionMarker.Length)
+                    .Trim()
+                    .Equals(StaticWebAssetsTestData.PackageVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            missingPackages.Add(line[packageStart..versionStart].Trim());
+        }
+
+        return missingPackages.ToList();
     }
 }
 
