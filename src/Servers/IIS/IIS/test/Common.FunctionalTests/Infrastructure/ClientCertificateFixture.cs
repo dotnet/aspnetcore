@@ -53,7 +53,7 @@ public class ClientCertificateFixture : IDisposable
             var imported = parentCert;
 
             var export = parentCert.Export(X509ContentType.Pkcs12, "");
-            imported = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+            imported = X509CertificateLoader.LoadPkcs12(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
 
             // Add the cert to the cert store

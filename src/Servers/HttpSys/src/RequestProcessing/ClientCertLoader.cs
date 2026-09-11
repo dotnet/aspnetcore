@@ -277,7 +277,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                         {
                             var certEncoded = new byte[pClientCertInfo->CertEncodedSize];
                             Marshal.Copy((IntPtr)pClientCertInfo->pCertEncoded, certEncoded, 0, certEncoded.Length);
-                            asyncResult.Complete((int)pClientCertInfo->CertFlags, new X509Certificate2(certEncoded));
+                            asyncResult.Complete((int)pClientCertInfo->CertFlags, X509CertificateLoader.LoadCertificate(certEncoded));
                         }
                         catch (CryptographicException exception)
                         {

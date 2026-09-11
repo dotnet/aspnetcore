@@ -24,5 +24,5 @@ public class CertificateForwardingOptions
     /// <remarks>
     /// This defaults to a conversion from a base64 encoded string.
     /// </remarks>
-    public Func<string, X509Certificate2> HeaderConverter = (headerValue) => new X509Certificate2(Convert.FromBase64String(headerValue));
+    public Func<string, X509Certificate2> HeaderConverter = (headerValue) => X509CertificateLoader.LoadCertificate(Convert.FromBase64String(headerValue));
 }
