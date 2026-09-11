@@ -2084,6 +2084,7 @@ public class Http3StreamTests : Http3TestBase
     [InlineData("\r")]
     [InlineData("\n")]
     [InlineData("\r\n")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69224")]
     public async Task RequestTrailers_ContainsNewlines(string newlineChars)
     {
 
