@@ -23,12 +23,37 @@ For implementation work:
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
   - Components and template files move. Resolve historical paths with `git log --follow --name-status` or `git ls-tree` before using `git show <commit>:<path>`.
 - Implement the fix or feature in the sample project first.
-- Test the fix or feature interactively using Playwright.
-- Once the fix or feature is validated in the sample, implement E2E tests for it.
-  - When you create an E2E test. First execute it interactively with Playwright.
+- Exercise a new feature, or reproduce a behavioral failure, interactively in the real browser using Playwright.
+- For a browser regression or reproduced browser failure, reduce the reproduction to the smallest temporary JavaScript diagnostic probe and assertion that observes the same failure in that page. Keep the probe outside the production change; it is not permanent Jest or `.test.ts` coverage.
+- For that regression, repeat the unchanged browser scenario and probe a recorded, bounded number of times. Ten runs is a reasonable default confidence sample when repository evidence does not suggest another count, not proof across environments. Treat the issue as deterministic only when every run fails the same assertion for the same reason.
+- If the result is not deterministic, investigate the owning producer and timing before selecting permanent coverage. Use a faithful lower-boundary test when that boundary owns the final observable, or add an explicit test-controlled gate when managed timing must be controlled. Do not stabilize a regression assertion with an arbitrary fixed sleep.
+- Once the fix or feature is validated in the sample, select its permanent test surface using the boundary below.
+  - For browser-owned behavior, translate the validated browser scenario and final observable into the real-browser suite selected by the boundary below; for a regression, preserve the diagnostic assertion.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
-- Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
-  - Use `git checkout` and `git clean -fd` to remove the sample code.
+- Only after the selected permanent tests are passing, remove any temporary JavaScript probe and the sample code you added in the Samples projects.
+  - Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
+
+### Permanent regression test boundary
+
+Before selecting a permanent test surface, record these five fields:
+
+- **Behavior owner**: the subsystem that owns the behavior.
+- **Production producer**: the real mechanism that creates the disputed preconditions.
+- **Final observable**: the material result the regression test must assert.
+- **Selected permanent surface**: the test suite that exercises that producer and observable.
+- **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
+
+Browser-owned user-visible behavior requires permanent coverage in the repository's real-browser suite that owns the production path. For Components-owned behavior, use C# Selenium under `src/Components/test/E2ETest`. When generated template content owns the behavior, use the existing Playwright tests under `src/ProjectTemplates/test/Templates.Blazor.Tests` instead of duplicating the scenario in Components E2E. This boundary includes claims that depend on real DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser scheduling or event ordering, browser-dependent JS interop, navigation, focus and selection, and rendering or rehydration. Extend existing test assets and classes when practical.
+
+Do not add or retain Jest or `.test.ts` coverage in the production change as proof of the same browser scenario, whether described as primary, supplemental, faster, or more precise. When synthetic geometry, mocked observers or events, or direct state mutation or callback invocation stand in for that browser scenario's real producer, they are temporary diagnostic probes outside the production change and must be removed after the selected real-browser test supersedes them.
+
+Permanent JavaScript or TypeScript unit tests remain appropriate when the JavaScript module's deterministic contract is the final observable and the harness faithfully supplies that contract's inputs. Examples include pure helpers, structural DOM algorithms that operate on ordinary nodes and assert identity or document structure, manager callback or timer-state contracts, and validation-engine contracts. Such tests do not establish that real browser scheduling, layout, observers, or user-visible producer paths are reachable; a claim about those behaviors still requires Selenium. Managed or service behavior that is fully owned and observable below the browser likewise remains at its faithful lower boundary.
+
+If WebDriver cannot perform or observe one operation, keep the permanent C# Selenium scenario, name the exact WebDriver limitation, and use only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep scenario orchestration and the final user-visible assertion in C#.
+
+For browser fixes, require strict red/green evidence: the identical assertion in the selected real-browser suite must fail for the expected reason without the fix and pass with it. Include a nearest-opposite control, meaning the closest scenario that must remain green, and, when meaningful, an adjacent control driven by the same production producer. The fix remains blocked while Jest is its only regression proof.
+
+In Components Selenium tests, synchronize assertions with observable conditions through existing waits such as `Browser.True` and `Browser.Equal`, which poll with `WebDriverWait`, or with explicit test-controlled gates such as `TaskCompletionSource` when managed timing must be controlled. Do not use an arbitrary `Thread.Sleep` as the synchronization mechanism for the regression assertion. Existing bounded polling helpers may sleep between checks when they repeatedly observe the condition and enforce a timeout.
 
 ### Cross-runtime design checkpoint
 
@@ -95,7 +120,7 @@ Before expanding validation across this full matrix, state the render modes and 
 **Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
 - Test the feature interactively in a real browser
-- Verify the feature works before writing formal E2E tests
+- Verify the feature works before writing its selected permanent tests
 - Debug issues more easily with full logging capabilities
 
 3. **Debug when needed**:
@@ -106,9 +131,9 @@ Before expanding validation across this full matrix, state the render modes and 
 
 4. **Validate the sample works** - You must have a validated, working sample in the Samples folder before proceeding. Use Playwright to confirm the feature works end-to-end in the browser.
 
-5. **Implement E2E tests** - Only after the sample is validated, implement E2E tests for it.
+5. **Implement permanent tests** - Only after the sample is validated, select the permanent test surface using the boundary above. Browser-owned behavior requires the owning real-browser suite identified there.
 
-6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
+6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
 ## Build Tips
 
