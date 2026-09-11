@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Extensions;
 
@@ -16,7 +14,6 @@ public static class UriHelper
     private const char Hash = '#';
     private const char QuestionMark = '?';
     private static readonly string SchemeDelimiter = Uri.SchemeDelimiter;
-    private static readonly SpanAction<char, (string scheme, string host, string pathBase, string path, string query, string fragment)> InitializeAbsoluteUriStringSpanAction = new(InitializeAbsoluteUriString);
 
     /// <summary>
     /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
@@ -57,11 +54,26 @@ public static class UriHelper
     {
         ArgumentNullException.ThrowIfNull(scheme);
 
-        var hostText = host.ToUriComponent();
-        var pathBaseText = pathBase.ToUriComponent();
-        var pathText = path.ToUriComponent();
-        var queryText = query.ToUriComponent();
-        var fragmentText = fragment.ToUriComponent();
+        var hostText = host.ToUriComponent().AsSpan();
+        var pathBaseText = pathBase.ToUriComponent().AsSpan();
+        var pathText = path.ToUriComponent().AsSpan();
+        var queryText = query.ToUriComponent().AsSpan();
+        var fragmentText = fragment.ToUriComponent().AsSpan();
+
+        if (pathText.IsEmpty)
+        {
+            if (pathBaseText.IsEmpty)
+            {
+                pathText = "/".AsSpan();
+            }
+        }
+        else if (pathBaseText.EndsWith('/'))
+        {
+            // If the path string has a trailing slash and the other string has a leading slash, we need
+            // to trim one of them.
+            // Just decrement the total length, for now.
+            pathBaseText = pathBaseText[..^1];
+        }
 
         // PERF: Calculate string length to allocate correct buffer size for string.Create.
         var length =
@@ -73,23 +85,31 @@ public static class UriHelper
             queryText.Length +
             fragmentText.Length;
 
-        if (string.IsNullOrEmpty(pathText))
-        {
-            if (string.IsNullOrEmpty(pathBaseText))
+        return string.Create(
+            length,
+            new UriComponents(scheme, hostText, pathBaseText, pathText, queryText, fragmentText),
+            static (buffer, uriComponents) =>
             {
-                pathText = "/";
-                length++;
-            }
-        }
-        else if (pathBaseText.EndsWith('/'))
-        {
-            // If the path string has a trailing slash and the other string has a leading slash, we need
-            // to trim one of them.
-            // Just decrement the total length, for now.
-            length--;
-        }
+                uriComponents.Scheme.CopyTo(buffer);
+                buffer = buffer[uriComponents.Scheme.Length..];
 
-        return string.Create(length, (scheme, hostText, pathBaseText, pathText, queryText, fragmentText), InitializeAbsoluteUriStringSpanAction);
+                Uri.SchemeDelimiter.CopyTo(buffer);
+                buffer = buffer[Uri.SchemeDelimiter.Length..];
+
+                uriComponents.Host.CopyTo(buffer);
+                buffer = buffer[uriComponents.Host.Length..];
+
+                uriComponents.PathBase.CopyTo(buffer);
+                buffer = buffer[uriComponents.PathBase.Length..];
+
+                uriComponents.Path.CopyTo(buffer);
+                buffer = buffer[uriComponents.Path.Length..];
+
+                uriComponents.Query.CopyTo(buffer);
+                buffer = buffer[uriComponents.Query.Length..];
+
+                uriComponents.Fragment.CopyTo(buffer);
+            });
     }
 
     /// <summary>
@@ -170,7 +190,7 @@ public static class UriHelper
         }
         else
         {
-            return uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            return uri.GetComponents(System.UriComponents.SerializationInfoString, UriFormat.UriEscaped);
         }
     }
 
@@ -206,45 +226,23 @@ public static class UriHelper
         return string.Concat([request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
     }
 
-    /// <summary>
-    /// Copies the specified <paramref name="text"/> to the specified <paramref name="buffer"/> starting at the specified <paramref name="index"/>.
-    /// </summary>
-    /// <param name="buffer">The buffer to copy text to.</param>
-    /// <param name="index">The buffer start index.</param>
-    /// <param name="text">The text to copy.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int CopyTextToBuffer(Span<char> buffer, int index, ReadOnlySpan<char> text)
+    private readonly ref struct UriComponents
     {
-        text.CopyTo(buffer.Slice(index, text.Length));
-        return index + text.Length;
-    }
+        public readonly ReadOnlySpan<char> Scheme;
+        public readonly ReadOnlySpan<char> Host;
+        public readonly ReadOnlySpan<char> PathBase;
+        public readonly ReadOnlySpan<char> Path;
+        public readonly ReadOnlySpan<char> Query;
+        public readonly ReadOnlySpan<char> Fragment;
 
-    /// <summary>
-    /// Initializes the URI <see cref="string"/> for <see cref="BuildAbsolute(string, HostString, PathString, PathString, QueryString, FragmentString)"/>.
-    /// </summary>
-    /// <param name="buffer">The URI <see cref="string"/>'s <see cref="char"/> buffer.</param>
-    /// <param name="uriParts">The URI parts.</param>
-    private static void InitializeAbsoluteUriString(Span<char> buffer, (string scheme, string host, string pathBase, string path, string query, string fragment) uriParts)
-    {
-        var index = 0;
-
-        var pathBaseSpan = uriParts.pathBase.AsSpan();
-
-        if (uriParts.path.Length > 0 && pathBaseSpan.Length > 0 && pathBaseSpan[^1] == '/')
+        public UriComponents(ReadOnlySpan<char> scheme, ReadOnlySpan<char> host, ReadOnlySpan<char> pathBase, ReadOnlySpan<char> path, ReadOnlySpan<char> query, ReadOnlySpan<char> fragment)
         {
-            // If the path string has a trailing slash and the other string has a leading slash, we need
-            // to trim one of them.
-            // Trim the last slahs from pathBase. The total length was decremented before the call to string.Create.
-            pathBaseSpan = pathBaseSpan[..^1];
+            Scheme = scheme;
+            Host = host;
+            PathBase = pathBase;
+            Path = path;
+            Query = query;
+            Fragment = fragment;
         }
-
-        index = CopyTextToBuffer(buffer, index, uriParts.scheme.AsSpan());
-        index = CopyTextToBuffer(buffer, index, Uri.SchemeDelimiter.AsSpan());
-        index = CopyTextToBuffer(buffer, index, uriParts.host.AsSpan());
-        index = CopyTextToBuffer(buffer, index, pathBaseSpan);
-        index = CopyTextToBuffer(buffer, index, uriParts.path.AsSpan());
-        index = CopyTextToBuffer(buffer, index, uriParts.query.AsSpan());
-        _ = CopyTextToBuffer(buffer, index, uriParts.fragment.AsSpan());
     }
 }
