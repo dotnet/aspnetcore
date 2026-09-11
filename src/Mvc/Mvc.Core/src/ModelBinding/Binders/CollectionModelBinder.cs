@@ -343,8 +343,12 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
 
         var boundCollection = new List<TElement?>();
 
+        // Track explicit index names for normalization when using finite indices.
+        List<string>? explicitIndexNames = indexNamesIsFinite ? new List<string>() : null;
+
         foreach (var indexName in indexNames)
         {
+            explicitIndexNames?.Add(indexName);
             var fullChildName = ModelNames.CreateIndexModelName(bindingContext.ModelName, indexName);
 
             ModelBindingResult? result;
@@ -394,18 +398,85 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                 bindingContext.ModelMetadata.ElementType));
         }
 
+        // Normalize ModelState keys from explicit indices to sequential indices so that
+        // re-rendered views (which iterate collections sequentially) look up the correct
+        // ModelState values. Without this, non-sequential explicit indices like [0],[10],[1],[2]
+        // cause data corruption when the page is re-rendered after a validation failure.
+        if (indexNamesIsFinite && explicitIndexNames is not null)
+        {
+            NormalizeCollectionModelStateKeys(bindingContext.ModelState, bindingContext.ModelName, explicitIndexNames);
+        }
+
         return new CollectionResult(boundCollection)
         {
-            // If we're working with a fixed set of indexes then this is the format like:
-            //
-            //  ?parameter.index=zero&parameter.index=one&parameter.index=two&parameter[zero]=0&parameter[one]=1&parameter[two]=2...
-            //
-            // We need to provide this data to the validation system so it can 'replay' the keys.
-            // But we can't just set ValidationState here, because it needs the 'real' model.
-            ValidationStrategy = indexNamesIsFinite ?
-                new ExplicitIndexCollectionValidationStrategy(indexNames) :
-                null,
+            // After normalizing explicit indices to sequential indices, the default
+            // sequential validation strategy is correct. For non-finite (sequential) indices,
+            // the default strategy is also used.
+            ValidationStrategy = null,
         };
+    }
+
+    /// <summary>
+    /// Remaps ModelState entries from explicit (potentially non-sequential) collection indices
+    /// to sequential indices (0, 1, 2, ...) so that rendered views can correctly look up
+    /// ModelState values for collection elements.
+    /// </summary>
+    private static void NormalizeCollectionModelStateKeys(
+        ModelStateDictionary modelState,
+        string modelName,
+        List<string> explicitIndexNames)
+    {
+        // Check if any index differs from its sequential position.
+        var needsNormalization = false;
+        for (var i = 0; i < explicitIndexNames.Count; i++)
+        {
+            if (!string.Equals(explicitIndexNames[i], i.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
+            {
+                needsNormalization = true;
+                break;
+            }
+        }
+
+        if (!needsNormalization)
+        {
+            return;
+        }
+
+        // Collect all entries that need remapping. We snapshot the data before making any
+        // changes to avoid issues with overlapping indices (e.g., swapping [0] and [1]).
+        var entriesToRemap = new List<(string OldKey, string NewKey, object? RawValue, string? AttemptedValue)>();
+
+        for (var i = 0; i < explicitIndexNames.Count; i++)
+        {
+            var explicitIndex = explicitIndexNames[i];
+            var sequentialIndex = i.ToString(CultureInfo.InvariantCulture);
+
+            if (string.Equals(explicitIndex, sequentialIndex, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var explicitPrefix = ModelNames.CreateIndexModelName(modelName, explicitIndex);
+            var sequentialPrefix = ModelNames.CreateIndexModelName(modelName, sequentialIndex);
+
+            foreach (var kvp in modelState.FindKeysWithPrefix(explicitPrefix))
+            {
+                var oldKey = kvp.Key;
+                var newKey = string.Concat(sequentialPrefix, oldKey.AsSpan(explicitPrefix.Length));
+                entriesToRemap.Add((oldKey, newKey, kvp.Value!.RawValue, kvp.Value.AttemptedValue));
+            }
+        }
+
+        // Remove old entries first, then add new ones to avoid key conflicts.
+        foreach (var (oldKey, _, _, _) in entriesToRemap)
+        {
+            modelState.Remove(oldKey);
+        }
+
+        foreach (var (_, newKey, rawValue, attemptedValue) in entriesToRemap)
+        {
+            modelState.SetModelValue(newKey, rawValue, attemptedValue);
+        }
     }
 
     // Internal for testing.
