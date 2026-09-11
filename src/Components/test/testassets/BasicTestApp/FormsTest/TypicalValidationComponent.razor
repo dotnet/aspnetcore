@@ -24,6 +24,10 @@
     <p class="height">
         Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
     </p>
+    <p class="required-number">
+        Required number: <InputNumber @bind-Value="person.RequiredNumber" />
+        <span class="required-number-value">@person.RequiredNumber</span>
+    </p>
     <p class="description">
         Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
     </p>
@@ -184,6 +188,9 @@
         public int AgeInYears { get; set; }
 
         public float? OptionalHeight { get; set; }
+
+        [Required(ErrorMessage = "Enter a required number")]
+        public int? RequiredNumber { get; set; }
 
         public DateTime RenewalDate { get; set; } = DateTime.Now;
 

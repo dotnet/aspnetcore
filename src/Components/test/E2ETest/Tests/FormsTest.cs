@@ -187,6 +187,43 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputNumberParsingFailureDoesNotTriggerModelValidation()
+    {
+        var appElement = MountTypicalValidationComponent();
+        var input = appElement.FindElement(By.ClassName("required-number")).FindElement(By.TagName("input"));
+        var value = appElement.FindElement(By.ClassName("required-number-value"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        input.SendKeys("1e+10\t");
+
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
+        Browser.Equal("", () => value.Text);
+        Browser.Equal(new[] { "The RequiredNumber field must be a number." }, messagesAccessor);
+
+        input.Clear();
+        input.SendKeys("5\t");
+
+        Browser.Equal("modified valid", () => input.GetDomAttribute("class"));
+        Browser.Equal("5", () => value.Text);
+        Browser.Empty(messagesAccessor);
+
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys("1e+10\t");
+
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
+        Browser.Equal("5", () => value.Text);
+        Browser.Equal(new[] { "The RequiredNumber field must be a number." }, messagesAccessor);
+
+        input.Clear();
+        input.SendKeys("\t");
+
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
+        Browser.Equal("", () => value.Text);
+        Browser.Equal(new[] { "Enter a required number" }, messagesAccessor);
+    }
+
+    [Fact]
     public void InputTextAreaInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
