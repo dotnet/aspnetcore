@@ -138,18 +138,18 @@ public class TagHelpersTest : LoggedTest
                         @"<root>root-content</root>
 
 
-<nested>nested-content</nested>"
+<nested>some-contentnested-content</nested>"
                     },
                     {
                         "ViewWithLayoutAndNestedTagHelper",
                         @"layout:<root>root-content</root>
-<nested>nested-content</nested>"
+<nested>some-contentnested-content</nested>"
                     },
                     {
                         "ViewWithInheritedRemoveTagHelper",
                         @"layout:<root>root-content</root>
 page:<root/>
-<nested>nested-content</nested>"
+<nested>some-contentnested-content</nested>"
                     },
                     {
                         "ViewWithInheritedTagHelperPrefix",
