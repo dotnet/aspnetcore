@@ -156,7 +156,9 @@ public class TagHelperOutput : IHtmlContentContainer
     /// <remarks>
     /// Appending to <see cref="Content"/> (via <see cref="TagHelperContent.AppendHtml(string)"/> and similar)
     /// without first clearing or setting it does not count as modifying. This allows the tag helper infrastructure
-    /// to prepend the original child content before the appended content.
+    /// to prepend the original child content before the appended content. Tag helpers that need to check whether
+    /// <see cref="Content"/> was written to at all (including appends) should check
+    /// <see cref="TagHelperContent.IsModified"/> on the <see cref="Content"/> property instead.
     /// </remarks>
     public bool IsContentModified
     {
@@ -204,7 +206,14 @@ public class TagHelperOutput : IHtmlContentContainer
 
         _preElement?.Reinitialize();
         _preContent?.Reinitialize();
-        _content?.Reinitialize();
+        if (_content is TagHelperOutputContent tracked)
+        {
+            tracked.Reinitialize();
+        }
+        else
+        {
+            _content = null;
+        }
         _postContent?.Reinitialize();
         _postElement?.Reinitialize();
 

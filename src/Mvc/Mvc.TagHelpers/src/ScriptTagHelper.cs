@@ -243,7 +243,7 @@ public class ScriptTagHelper : UrlResolutionTagHelper
         if (string.Equals(Type, "importmap", StringComparison.OrdinalIgnoreCase))
         {
             // Do not update the content if another tag helper targeting this element has already done so.
-            if (output.IsContentModified)
+            if (output.Content.IsModified)
             {
                 return;
             }

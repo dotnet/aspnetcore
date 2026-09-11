@@ -1252,4 +1252,24 @@ public class TagHelperOutputTest
         // Assert
         Assert.False(output.IsContentModified);
     }
+
+    [Fact]
+    public void IsContentModified_ReturnsFalse_AfterReinitialize_WhenContentWasExternalInstance()
+    {
+        // Arrange - simulate SetOutputContentAsync setting Content to a DefaultTagHelperContent
+        var output = new TagHelperOutput("p");
+        var externalContent = new DefaultTagHelperContent();
+        externalContent.AppendHtml("combined");
+        output.Content = externalContent;
+        Assert.True(output.IsContentModified);
+
+        // Act - Reinitialize (as happens when execution context is reused from pool)
+        output.Reinitialize("p", TagMode.StartTagAndEndTag);
+
+        // Append (as a tag helper would) — should NOT count as "content modified"
+        output.Content.AppendHtml("appended");
+
+        // Assert - append-only after reinitialize should return false
+        Assert.False(output.IsContentModified);
+    }
 }

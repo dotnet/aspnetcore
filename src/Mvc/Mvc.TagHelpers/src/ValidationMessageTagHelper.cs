@@ -71,7 +71,7 @@ public class ValidationMessageTagHelper : TagHelper
             }
 
             string message = null;
-            if (!output.IsContentModified)
+            if (!output.Content.IsModified)
             {
                 var tagHelperContent = await output.GetChildContentAsync();
 
@@ -96,7 +96,7 @@ public class ValidationMessageTagHelper : TagHelper
                 output.MergeAttributes(tagBuilder);
 
                 // Do not update the content if another tag helper targeting this element has already done so.
-                if (!output.IsContentModified && tagBuilder.HasInnerHtml)
+                if (!output.Content.IsModified && tagBuilder.HasInnerHtml)
                 {
                     output.Content.SetHtmlContent(tagBuilder.InnerHtml);
                 }

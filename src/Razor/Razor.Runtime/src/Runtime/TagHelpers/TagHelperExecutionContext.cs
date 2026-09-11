@@ -222,12 +222,20 @@ public class TagHelperExecutionContext
 
         if (Output.Content.IsModified)
         {
-            // A tag helper appended to Content without replacing it.
-            // Prepend the child content so the original markup appears before the appended content.
-            var combined = new DefaultTagHelperContent();
-            combined.AppendHtml(childContent);
-            combined.AppendHtml(Output.Content);
-            Output.Content = combined;
+            if (ChildContentRetrieved)
+            {
+                // A tag helper already read child content and appended processed results.
+                // The content is already correct; don't overwrite it.
+            }
+            else
+            {
+                // A tag helper appended to Content without reading child content first.
+                // Prepend the child content so the original markup appears before the appended content.
+                var combined = new DefaultTagHelperContent();
+                combined.AppendHtml(childContent);
+                combined.AppendHtml(Output.Content);
+                Output.Content = combined;
+            }
         }
         else
         {
