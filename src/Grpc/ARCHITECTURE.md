@@ -14,7 +14,7 @@ This document is not an API reference, a general introduction to gRPC, an exhaus
 
 An ASP.NET Core gRPC application combines independently owned layers:
 
-- An ASP.NET Core server, normally Kestrel, accepts HTTP connections and produces an `HttpContext` for each request.
+- An ASP.NET Core server, for example Kestrel, accepts HTTP connections and produces an `HttpContext` for each request.
 - ASP.NET Core routing selects an endpoint.
 - The external `Grpc.AspNetCore.Server` package discovers generated service methods, creates native gRPC endpoints, and invokes application services.
 - The in-repository `Microsoft.AspNetCore.Grpc.JsonTranscoding` package extends that discovery process with additional HTTP endpoints for methods annotated with `google.api.http`.
