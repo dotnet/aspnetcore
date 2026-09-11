@@ -2056,9 +2056,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         if (useItemsProvider)
         {
-            Browser.Exists(By.Id("qg-toggle-provider")).Click();
-            Browser.True(() => GetElementCount(container, ".item[data-index]") > 0);
-
             if (delay)
             {
                 // Real life providers come with at least a small delay
@@ -2066,6 +2063,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 Browser.Contains("Provider delay for QuickGrid on", () => Browser.Exists(By.Id("qg-status")).Text);
             }
 
+            Browser.Exists(By.Id("qg-toggle-provider")).Click();
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("qg-status")).Text);
+            Browser.True(() => GetElementCount(container, ".item[data-index]") > 0);
             WaitForRenderToSettle(container, (IJavaScriptExecutor)Browser);
         }
 
@@ -2185,7 +2185,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true)]
     [InlineData("1", true)]
     [InlineData("2", true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68726")]
     public void QuickGrid_AnchorMode_NearTop_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2216,11 +2215,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData("2", true)]
+    [InlineData("2", true)]
     public virtual void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
-        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider, delay: useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2334,7 +2332,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68730")]
     public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider, delay: useItemsProvider);
@@ -2428,7 +2425,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68775")]
     public void QuickGrid_AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
@@ -2677,8 +2673,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (WASM leg: Start mode converges to bottom after large append; scrollTop==scrollHeight-clientHeight, gap 0):
-    // [InlineData(false)]
+    [InlineData(false)]
     [InlineData(true)]
     public void QuickGrid_AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool useItemsProvider)
     {
@@ -2688,16 +2683,30 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         ScrollToBottomAndWait(container, js);
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightBefore = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
 
         QuickGridMutate(js, "qg-append-many-items", "Appended 100 items", useItemsProvider);
-        // Start mode: no convergence to chase the new bottom.
-        var st2 = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        var sh2 = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-        var ch2 = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-        var gap = sh2 - st2 - ch2;
-        Assert.True(gap > 2000,
-            $"QuickGrid Start mode: should not converge to bottom after large append. " +
-            $"scrollTop: {st2}, scrollHeight: {sh2}, gap: {gap}");
+
+        long scrollHeightAfter = 0;
+        Browser.True(() =>
+        {
+            scrollHeightAfter = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            return scrollHeightAfter - scrollHeightBefore > 2000;
+        }, TimeSpan.FromSeconds(10),
+            $"QuickGrid should reflect the appended rows in its scroll geometry. " +
+            $"scrollHeight before: {scrollHeightBefore}, after: {scrollHeightAfter}");
+
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        scrollHeightAfter = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var gap = scrollHeightAfter - scrollTopAfter - clientHeight;
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5 && gap > 2000,
+            $"QuickGrid Start mode should preserve the viewport instead of converging to the new bottom. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter}, " +
+            $"scrollHeight before: {scrollHeightBefore}, after: {scrollHeightAfter}, clientHeight: {clientHeight}");
     }
 
     [Theory]
@@ -2791,8 +2800,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (End mode converges to bottom on mount before the "start near top" precondition; scrollTop 54776 ≈ scrollHeight 55076. Flake on slow Linux Mono CI leg, build 1514924):
-    // [InlineData("2", true)]
+    [InlineData("2", true)]
     public void QuickGrid_AnchorMode_EndKeyJumpsToBottom(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider, delay: useItemsProvider);
@@ -5001,9 +5009,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
     /// </summary>
-    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
+    private void WaitForRenderToSettle(
+        IWebElement container,
+        IJavaScriptExecutor js,
+        string itemSelector = ".item[data-index]",
+        bool trackScrollHeight = false)
     {
         long lastScrollTop = -1;
+        long lastScrollHeight = -1;
         int lastItemCount = -1;
         string lastFirstIndex = "";
         int stableCount = 0;
@@ -5023,10 +5036,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         break;
                     }
                 }
-                return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
+                return { scrollTop: Math.round(c.scrollTop), scrollHeight: c.scrollHeight, itemCount: items.length, firstIndex: firstIdx };
             ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToInt64(result["scrollHeight"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
             var firstIndex = result["firstIndex"]?.ToString() ?? "";
 
@@ -5037,7 +5051,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 // item to reappear rather than reporting this moment as stable.
                 stableCount = 0;
             }
-            else if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
+            else if (scrollTop == lastScrollTop
+                && (!trackScrollHeight || scrollHeight == lastScrollHeight)
+                && itemCount == lastItemCount
+                && firstIndex == lastFirstIndex)
             {
                 stableCount++;
             }
@@ -5047,6 +5064,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }
 
             lastScrollTop = scrollTop;
+            lastScrollHeight = scrollHeight;
             lastItemCount = itemCount;
             lastFirstIndex = firstIndex;
 
@@ -6494,7 +6512,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68559")]
     public void QuickGrid_ScrollToItem_NegativeIndex_ScrollsToTop(bool useItemsProvider)
     {
         MountQuickGridForScrollToItem(useItemsProvider);
