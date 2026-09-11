@@ -110,6 +110,20 @@ public class CacheTagKey : IEquatable<CacheTagKey>
     // Internal for unit testing.
     internal string Key { get; }
 
+    internal long GetEstimatedSize()
+    {
+        var characterCount = GetStringLength(_prefix) +
+            GetStringLength(Key) +
+            GetStringLength(_varyBy) +
+            GetStringLength(_username) +
+            GetStringCollectionLength(_cookies) +
+            GetStringCollectionLength(_headers) +
+            GetStringCollectionLength(_queries) +
+            GetStringCollectionLength(_routeValues);
+
+        return characterCount * sizeof(char);
+    }
+
     /// <summary>
     /// Creates a <see cref="string"/> representation of the key.
     /// </summary>
@@ -323,6 +337,26 @@ public class CacheTagKey : IEquatable<CacheTagKey>
 
         builder.Append(')');
     }
+
+    private static long GetStringCollectionLength(IList<KeyValuePair<string, string>> values)
+    {
+        if (values is null)
+        {
+            return 0;
+        }
+
+        long length = 0;
+        for (var i = 0; i < values.Count; i++)
+        {
+            length += GetStringLength(values[i].Key);
+            length += GetStringLength(values[i].Value);
+        }
+
+        return length;
+    }
+
+    private static long GetStringLength(string value)
+        => value?.Length ?? 0;
 
     private static void CombineCollectionHashCode(
         ref HashCode hashCode,
