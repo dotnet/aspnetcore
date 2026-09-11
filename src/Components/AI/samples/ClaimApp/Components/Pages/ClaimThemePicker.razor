@@ -1,0 +1,64 @@
+@inject IJSRuntime JS
+@inject ILogger<ClaimThemePicker> Logger
+
+<div class="claim-theme-picker" role="group" aria-label="Color theme">
+    @foreach (var option in s_options)
+    {
+        <button type="button"
+                aria-pressed="@((Theme == option.Value).ToString().ToLowerInvariant())"
+                @onclick="() => SelectThemeAsync(option.Value)">
+            @option.Label
+        </button>
+    }
+</div>
+
+@code {
+    private static readonly (string Value, string Label)[] s_options =
+    [
+        ("light", "Light"),
+        ("dark", "Dark"),
+        ("contrast", "High contrast"),
+    ];
+    private bool _initialized;
+
+    [Parameter]
+    public string Theme { get; set; } = "light";
+
+    [Parameter]
+    public EventCallback<string> ThemeChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+        try
+        {
+            var theme = await JS.InvokeAsync<string>("claimApp.getTheme");
+            await ThemeChanged.InvokeAsync(IsSupported(theme) ? theme : "light");
+        }
+        catch (JSException exception)
+        {
+            Logger.LogWarning(exception, "Could not restore the saved claim theme.");
+        }
+    }
+
+    private async Task SelectThemeAsync(string theme)
+    {
+        await ThemeChanged.InvokeAsync(theme);
+        try
+        {
+            await JS.InvokeVoidAsync("claimApp.setTheme", theme);
+        }
+        catch (JSException exception)
+        {
+            Logger.LogWarning(exception, "Could not persist claim theme {Theme}.", theme);
+        }
+    }
+
+    private static bool IsSupported(string theme)
+        => s_options.Any(option => option.Value == theme);
+}

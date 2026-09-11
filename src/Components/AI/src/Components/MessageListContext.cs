@@ -47,24 +47,29 @@ public class MessageListContext
                 var role = block.Role == ChatRole.User ? "user" : "assistant";
                 builder.OpenElement(0, "div");
                 builder.AddAttribute(1, "class", $"sc-ai-message sc-ai-message--{role}");
-                builder.OpenElement(2, "div");
-                builder.AddAttribute(3, "class", "sc-ai-message__bubble");
-                builder.OpenElement(4, "div");
+                builder.AddAttribute(2, "aria-label", role == "user" ? "You" : "Assistant");
+                builder.OpenElement(3, "div");
+                builder.AddAttribute(4, "class", "sc-ai-message__bubble");
+                builder.OpenElement(5, "div");
                 var contentClass = block.LifecycleState == BlockLifecycleState.Active
                     ? "sc-ai-message__content sc-ai-message__content--streaming"
                     : "sc-ai-message__content";
-                builder.AddAttribute(5, "class", contentClass);
+                builder.AddAttribute(6, "class", contentClass);
                 if (rich.Content.Count > 0)
                 {
                     RenderRichTextNodes(builder, rich.Content);
                 }
                 else
                 {
-                    builder.AddContent(6, rich.RawText);
+                    builder.AddContent(7, rich.RawText);
                 }
                 builder.CloseElement(); // content div
                 builder.CloseElement(); // bubble div
                 builder.CloseElement(); // message div
+            }
+            else if (block is MediaContentBlock media)
+            {
+                RenderMediaContentBlock(builder, media);
             }
             else if (block is FunctionApprovalBlock approval)
             {
@@ -92,6 +97,32 @@ public class MessageListContext
     {
         _registrations.Remove(registration);
         OnRegistrationsChanged?.Invoke();
+    }
+
+    private static void RenderMediaContentBlock(
+        RenderTreeBuilder builder,
+        MediaContentBlock block)
+    {
+        var role = block.Role == ChatRole.User ? "user" : "assistant";
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", $"sc-ai-message sc-ai-message--{role}");
+        builder.AddAttribute(2, "aria-label", role == "user" ? "You" : "Assistant");
+
+        builder.OpenElement(3, "div");
+        builder.AddAttribute(4, "class", "sc-ai-message__bubble sc-ai-message__bubble--media");
+
+        builder.AddContent(5, block.Content);
+
+        if (!string.IsNullOrWhiteSpace(block.Name))
+        {
+            builder.OpenElement(6, "span");
+            builder.AddAttribute(7, "class", "sc-ai-message__media-name");
+            builder.AddContent(8, block.Name);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+        builder.CloseElement();
     }
 
     private static void RenderRichTextNodes(

@@ -243,6 +243,78 @@ public class AgentContextUIActionTests
     }
 
     [Fact]
+    public async Task RetryAsync_AfterContinuationFailure_RetriesToolResultRound()
+    {
+        var callCount = 0;
+        List<ChatMessage>? retryMessages = null;
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            callCount++;
+            return callCount switch
+            {
+                1 => EmitUIActionCall(
+                    "call-1",
+                    "get_client_value",
+                    cancellationToken),
+                2 => ResponseEmitters.EmitErrorAfterTokens(
+                    ["partial"],
+                    new InvalidOperationException("boom")),
+                _ => CaptureAndRespond(),
+            };
+
+            IAsyncEnumerable<ChatResponseUpdate> CaptureAndRespond()
+            {
+                retryMessages = messages.ToList();
+                return ResponseEmitters.EmitTextResponse(
+                    "Client value received.",
+                    cancellationToken);
+            }
+        });
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                () => "client-value",
+                "get_client_value",
+                "Gets a value from the client."));
+        });
+        using var context = new AgentContext(agent);
+        using var subscription = context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                _ = context.Turns[^1].ResponseBlocks
+                    .OfType<UIActionBlock>()
+                    .Single()
+                    .InvokeAsync();
+            }
+        });
+
+        await context.SendMessageAsync("Get the value");
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        var turn = Assert.Single(context.Turns);
+        Assert.Single(turn.RequestBlocks);
+        Assert.Single(turn.ResponseBlocks.OfType<UIActionBlock>());
+        Assert.Empty(turn.ResponseBlocks.OfType<RichContentBlock>());
+
+        await context.RetryAsync();
+
+        Assert.Equal(3, callCount);
+        Assert.Equal(
+            [ChatRole.User, ChatRole.Assistant, ChatRole.Tool],
+            retryMessages?.Select(message => message.Role));
+        Assert.Equal(
+            "client-value",
+            Assert.IsType<FunctionResultContent>(
+                Assert.Single(retryMessages![^1].Contents)).Result?.ToString());
+        Assert.Single(turn.RequestBlocks);
+        Assert.Single(turn.ResponseBlocks.OfType<UIActionBlock>());
+        Assert.Equal(
+            "Client value received.",
+            Assert.Single(turn.ResponseBlocks.OfType<RichContentBlock>()).RawText);
+    }
+
+    [Fact]
     public async Task UIAction_NameMatchingIsOrdinal()
     {
         var invoked = false;

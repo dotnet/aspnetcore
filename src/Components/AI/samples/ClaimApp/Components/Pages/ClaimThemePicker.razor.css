@@ -1,0 +1,38 @@
+.claim-theme-picker {
+    display: flex;
+    gap: 0.15rem;
+    padding: 0.18rem;
+    border: 1px solid var(--claim-border);
+    border-radius: 0.7rem;
+    background: var(--claim-surface-alpha);
+}
+
+.claim-theme-picker button {
+    min-height: 1.85rem;
+    padding: 0.3rem 0.55rem;
+    border: 0;
+    border-radius: 0.5rem;
+    color: var(--claim-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.66rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.claim-theme-picker button:hover {
+    color: var(--claim-text);
+    background: var(--claim-surface-muted);
+}
+
+.claim-theme-picker button[aria-pressed="true"] {
+    color: var(--claim-text);
+    background: var(--claim-surface-muted);
+    box-shadow: 0 0.1rem 0.35rem var(--claim-shadow);
+}
+
+@media (max-width: 640.98px) {
+    .claim-theme-picker button {
+        padding-inline: 0.42rem;
+    }
+}

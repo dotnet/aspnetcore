@@ -26,6 +26,8 @@ internal sealed class TestRenderer : Renderer
 
     public override Dispatcher Dispatcher { get; }
 
+    protected override RendererInfo RendererInfo => new("Test", isInteractive: false);
+
     public IReadOnlyList<CapturedBatch> Batches => _batches;
 
     public ComponentTree Tree => _tree;
