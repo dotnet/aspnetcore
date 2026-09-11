@@ -139,7 +139,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {
         var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
-        var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+        var propertyAttributes = GetPropertyCustomAttributes(attributeType, inherit);
 
         // We don't have constructor attributes, so we can safely return the property attributes.
         if (constructorAttributes == null || constructorAttributes.Length == 0)
@@ -165,7 +165,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override object[] GetCustomAttributes(bool inherit)
     {
         var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
-        var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+        var propertyAttributes = Attribute.GetCustomAttributes(_underlyingProperty, inherit);
 
         // We don't have constructor attributes, so we can safely return the property attributes.
         if (constructorAttributes == null || constructorAttributes.Length == 0)
@@ -206,7 +206,22 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override bool IsDefined(Type attributeType, bool inherit)
     {
         return (_constructionParameterInfo is not null && _constructionParameterInfo.IsDefined(attributeType, inherit)) ||
-            _underlyingProperty.IsDefined(attributeType, inherit);
+            Attribute.IsDefined(_underlyingProperty, attributeType, inherit);
+    }
+
+    private object[] GetPropertyCustomAttributes(Type attributeType, bool inherit)
+    {
+        var declaredAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit: false);
+        if (!inherit)
+        {
+            return declaredAttributes;
+        }
+
+        var attributes = Attribute.GetCustomAttributes(_underlyingProperty, attributeType, inherit);
+        var typedAttributes = Array.CreateInstanceFromArrayType(declaredAttributes.GetType(), attributes.Length);
+        Array.Copy(attributes, typedAttributes, attributes.Length);
+
+        return (object[])typedAttributes;
     }
 
     public new bool IsOptional => NullabilityInfo.ReadState switch

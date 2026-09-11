@@ -156,12 +156,27 @@ public class PropertyAsParameterInfoTests
     [Fact]
     public void PropertyAsParameterInfoTests_ContainsPropertyInheritedCustomAttributes()
     {
-        // Arrange & Act
         var propertyInfo = GetProperty(typeof(DerivedArgumentList), nameof(DerivedArgumentList.WithTestAttribute));
         var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
-        // Assert
-        Assert.Single(parameterInfo.GetCustomAttributes(typeof(TestAttribute), true));
+        var attributes = parameterInfo.GetCustomAttributes(typeof(TestAttribute), true);
+
+        Assert.IsType<TestAttribute>(Assert.Single(attributes));
+        Assert.Single(parameterInfo.GetCustomAttributes<TestAttribute>(inherit: true));
+        Assert.Empty(parameterInfo.GetCustomAttributes(typeof(TestAttribute), false));
+        Assert.True(parameterInfo.IsDefined(typeof(TestAttribute), true));
+        Assert.False(parameterInfo.IsDefined(typeof(TestAttribute), false));
+    }
+
+    [Theory]
+    [InlineData(typeof(DerivedArgumentList), nameof(DerivedArgumentList.NotInherited), true)]
+    [InlineData(typeof(ArgumentListWithHiddenProperty), nameof(ArgumentListWithHiddenProperty.WithTestAttribute), false)]
+    public void PropertyAsParameterInfoTests_DoesNotInheritCustomAttributes(Type containerType, string propertyName, bool inherit)
+    {
+        var propertyInfo = GetProperty(containerType, propertyName);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
+
+        Assert.Empty(parameterInfo.GetCustomAttributes(typeof(TestAttribute), inherit));
     }
 
     [Fact]
@@ -223,6 +238,9 @@ public class PropertyAsParameterInfoTests
         [Sample]
         public int WithSampleAttribute { get; set; }
 
+        [NotInheritedTest]
+        public virtual int NotInherited { get; set; }
+
         public void DefaultMethod(
             int noAttribute,
             [Test] int withTestAttribute,
@@ -233,12 +251,22 @@ public class PropertyAsParameterInfoTests
 
     private class DerivedArgumentList : ArgumentList
     {
-        [DerivedTest]
         public override int WithTestAttribute
         {
             get => base.WithTestAttribute;
             set => base.WithTestAttribute = value;
         }
+
+        public override int NotInherited
+        {
+            get => base.NotInherited;
+            set => base.NotInherited = value;
+        }
+    }
+
+    private class ArgumentListWithHiddenProperty : ArgumentList
+    {
+        public new int WithTestAttribute { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = true)]
@@ -249,6 +277,7 @@ public class PropertyAsParameterInfoTests
     private class TestAttribute : Attribute
     { }
 
-    private class DerivedTestAttribute : TestAttribute
+    [AttributeUsage(AttributeTargets.Property, Inherited = false)]
+    private class NotInheritedTestAttribute : TestAttribute
     { }
 }
