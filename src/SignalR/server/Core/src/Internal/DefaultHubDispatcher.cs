@@ -609,6 +609,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             {
                 Log.InvocationIdInUse(_logger, invocationId);
                 error = $"Invocation ID '{invocationId}' is already in use.";
+                streamCts.Dispose();
                 return;
             }
             ctsRegistered = true;
