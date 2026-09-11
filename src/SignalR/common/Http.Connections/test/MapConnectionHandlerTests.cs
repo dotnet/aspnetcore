@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -10,13 +11,16 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests;
@@ -496,6 +500,47 @@ public class MapConnectionHandlerTests
             });
     }
 
+    [Fact]
+    public async Task ConnectionTokenCanOnlyBeUsedOnEndpointThatNegotiatedIt()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddConnections())
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapConnectionHandler<CompletingConnectionHandler>("/a", options =>
+                                options.CloseOnAuthenticationExpiration = false);
+                            endpoints.MapConnectionHandler<CompletingConnectionHandler>("/b", options =>
+                                options.CloseOnAuthenticationExpiration = true);
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        var negotiateResponse = await client.PostAsync("/a/negotiate?negotiateVersion=1", new StringContent(string.Empty));
+        var payload = JObject.Parse(await negotiateResponse.Content.ReadAsStringAsync());
+        var connectionToken = Assert.IsType<string>((string)payload["connectionToken"]);
+
+        var wrongEndpointResponse = await client.GetAsync($"/b?id={connectionToken}");
+
+        Assert.Equal(StatusCodes.Status404NotFound, (int)wrongEndpointResponse.StatusCode);
+        var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+        Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+        Assert.False(connection.IsAuthenticationExpirationEnabled);
+
+        var originalEndpointResponse = await client.GetAsync($"/a?id={connectionToken}");
+
+        Assert.Equal(StatusCodes.Status200OK, (int)originalEndpointResponse.StatusCode);
+    }
+
     private class MyConnectionHandler : ConnectionHandler
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
@@ -512,6 +557,15 @@ public class MapConnectionHandlerTests
                 // Consume nothing
                 connection.Transport.Input.AdvanceTo(result.Buffer.Start);
             }
+        }
+    }
+
+    private sealed class CompletingConnectionHandler : ConnectionHandler
+    {
+        public override Task OnConnectedAsync(ConnectionContext connection)
+        {
+            connection.Transport.Output.Complete();
+            return Task.CompletedTask;
         }
     }
 

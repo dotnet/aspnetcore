@@ -144,6 +144,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
     internal AsyncServiceScope? ServiceScope { get; set; }
 
+    internal HttpConnectionEndpoint? Endpoint { get; init; }
+
     internal DateTimeOffset AuthenticationExpiration { get; set; }
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
