@@ -115,9 +115,40 @@ FILE_UTILITY::EnsureDirectoryPathExists(
     }
 
     // Initialize position based on the type of the path.
-    DWORD position = isUnc ? 8 // Skip "\\?\UNC\"
-                   : (struPath.IndexOf(L'?', 0) != -1) ? 4 // Skip "\\?\"
-                   : 0; // Skip nothing
+    DWORD position = 0;
+    if (isUnc)
+    {
+        // For UNC paths of the form \\?\UNC\server\share\subfolder\...,
+        // we must skip the server name and the share name because they cannot be created.
+        // First backslash after "\\?\UNC\" (index 8) is the end of the server name.
+        DWORD serverBackslash = struPath.IndexOf(L'\\', 8);
+        if (serverBackslash != -1)
+        {
+            // Second backslash after the server name is the end of the share name.
+            DWORD shareBackslash = struPath.IndexOf(L'\\', serverBackslash + 1);
+            if (shareBackslash != -1)
+            {
+                position = shareBackslash;
+            }
+            else
+            {
+                // Only "\\?\UNC\server\share" without any subdirectories.
+                // Nothing to create.
+                return S_OK;
+            }
+        }
+        else
+        {
+            // Only "\\?\UNC\server" or invalid path.
+            // Nothing to create.
+            return S_OK;
+        }
+    }
+    else
+    {
+        position = (struPath.IndexOf(L'?', 0) != -1) ? 4 // Skip "\\?\"
+                 : 0; // Skip nothing
+    }
 
     // Traverse the path string, creating directories as we go.
     while (true)
