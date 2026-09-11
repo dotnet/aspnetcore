@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.AuthenticationService.AuthenticationService(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider! schemes, Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider! handlers, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.IClaimsTransformation!>! transforms, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions!>! options) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationService.Transforms.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.IClaimsTransformation!>!
