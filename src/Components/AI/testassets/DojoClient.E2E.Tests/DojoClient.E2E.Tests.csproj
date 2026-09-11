@@ -12,15 +12,8 @@
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
     <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
     <IsPackable>false</IsPackable>
-    <!-- MSTest.TestAdapter must be listed as an explicit PackageReference (not Reference) so
-         the version is pinned to MSTest.TestFramework; DisablePackageReferenceRestrictions
-         allows that explicit PackageReference. -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <!-- NETSDK1023: SDK warns about explicit MSTest.TestAdapter PackageReference; we want the
-         explicit one so the version is pinned to MSTest.TestFramework. -->
-    <!-- MSTEST0001: Parallelism analyzer requires an explicit assembly-level declaration.
-         This project intentionally retains MSTest's sequential default for now. -->
-    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,9 +28,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.AI" />
-    <!-- Both dojo applications are launched by the tests: the browser drives DojoClient, which
-         reaches AGUIDojoApi over HTTP + SSE. -->
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <ProjectReference Include="../AGUIDojoApi/AGUIDojoApi.csproj">
       <E2EApp>true</E2EApp>
     </ProjectReference>
@@ -46,11 +42,6 @@
     </ProjectReference>
   </ItemGroup>
 
-  <!--
-    Development layout: apply the source generator as an analyzer from the local project.
-    When the library is consumed via NuGet the generator is picked up automatically from
-    the package's analyzers/dotnet/cs/ folder instead.
-  -->
   <ItemGroup>
     <ProjectReference Include="../../../Testing/gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
                       OutputItemType="Analyzer"

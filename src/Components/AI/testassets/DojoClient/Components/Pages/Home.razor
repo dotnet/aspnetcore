@@ -1,10 +1,11 @@
 @page "/"
+@inject Microsoft.Extensions.DependencyInjection.IServiceProviderIsKeyedService ClientServices
 
 <PageTitle>Components.AI dojo</PageTitle>
 
 <h1>Components.AI dojo</h1>
 
-<p>Scenarios backed by the AG-UI dojo API.</p>
+<p>Scenarios backed by AG-UI or a direct chat client.</p>
 
 <ul class="dojo-scenarios">
     <li><a href="/agentic_chat" data-scenario="agentic_chat">Agentic Chat</a></li>
@@ -14,4 +15,10 @@
     <li><a href="/agentic_generative_ui" data-scenario="agentic_generative_ui">Agentic Generative UI</a></li>
     <li><a href="/shared_state" data-scenario="shared_state">Shared State</a></li>
     <li><a href="/predictive_state_updates" data-scenario="predictive_state_updates">Predictive State Updates</a></li>
+    <li><a href="/function-approval">Server Function Approval</a></li>
+    @if (ClientServices.IsKeyedService(typeof(IChatClient), FunctionScenarios.Invocation))
+    {
+        <li><a href="/function-invocation">Built-In Function Invocation (Direct only)</a></li>
+        <li><a href="/rich-text">Structured Rich Text (Direct only)</a></li>
+    }
 </ul>

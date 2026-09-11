@@ -3,22 +3,7 @@
 
 namespace DojoClient;
 
-// Endpoints of AGUIDojoApi that the dojo scenarios post to.
 internal static class DojoScenarios
 {
     internal const string ApiHttpClientName = "agui-dojo-api";
-
-    internal const string AgenticChatEndpoint = "/agentic_chat";
-
-    internal const string BackendToolRenderingEndpoint = "/backend_tool_rendering";
-
-    internal const string HumanInTheLoopEndpoint = "/human_in_the_loop";
-
-    internal const string ToolBasedGenerativeUIEndpoint = "/tool_based_generative_ui";
-
-    internal const string AgenticGenerativeUIEndpoint = "/agentic_generative_ui";
-
-    internal const string SharedStateEndpoint = "/shared_state";
-
-    internal const string PredictiveStateUpdatesEndpoint = "/predictive_state_updates";
 }

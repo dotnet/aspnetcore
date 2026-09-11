@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -12,28 +12,22 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DojoClient.E2E.Tests.Tests;
 
 [UITest]
-public partial class AgenticChatRichTextScenarioTests : BrowserTest
+public partial class AgenticChatRichTextScenarioTests : DojoTestBase
 {
     private const string PromptText = "Show a formatted Blazor overview";
 
     [TestMethod]
-    public async Task AgenticChat_RendersFormattedAssistantResponseOverAgui()
+    [DojoBackends]
+    public async Task AgenticChat_RendersFormattedAssistantResponse(DojoBackendKind backend)
     {
-        var api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.AgenticChatRichText));
-        });
-        var ui = await StartServerAsync<global::DojoClient.Components.App>(
-            TestRoot.Servers,
-            options => options.EnvironmentVariables["AGUI_DOJO_API_URL"] = api.AppUrl);
-        var checkpoints = new ApiCheckpointClient(api);
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(ui));
+        var dojo = await GetDojoAsync(backend, DojoRecording.AgenticChatRichText);
+        var checkpoints = dojo.Checkpoints;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(dojo.UI));
         var page = await context.NewPageAsync();
-        await page.GotoAsync($"{ui.TestUrl}/agentic_chat");
+        await page.GotoAsync(dojo.GetScenarioUrl("/agentic_chat"));
         await page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
 
-        var prompt = $"{PromptText} ({Guid.NewGuid():N})";
+        var prompt = PromptText;
         await page.FillAsync("textarea.sc-ai-input__textarea", prompt);
         await page.ClickAsync("button.sc-ai-input__send");
 

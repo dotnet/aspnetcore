@@ -5,10 +5,6 @@ using System.Text.Json;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// A recorded model response, replayed by AGUIDojoApi so browser tests are deterministic.
-//
-// A call is selected by the text of the last user message, so a test can pick its own script
-// and give every run a unique lock namespace by appending a run id to the message it types.
 internal sealed class RecordedScript
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -60,7 +56,7 @@ internal sealed class RecordedScript
             if (_threadId != threadId)
             {
                 throw new InvalidOperationException(
-                    $"Expected AG-UI thread '{_threadId}', received '{threadId}'.");
+                    $"Expected dojo thread '{_threadId}', received '{threadId}'.");
             }
         }
     }
@@ -68,43 +64,31 @@ internal sealed class RecordedScript
 
 internal sealed class RecordedCall
 {
-    /// <summary>The prefix of the last user message this call answers.</summary>
     public required string Prompt { get; init; }
 
-    /// <summary>The message count that distinguishes continuations of the same prompt.</summary>
     public int? MessageCount { get; init; }
 
-    /// <summary>The tool declarations expected on this model request.</summary>
     public List<string>? ToolNames { get; init; }
 
-    /// <summary>The function result call IDs expected on this model request.</summary>
     public List<string>? ToolResultCallIds { get; init; }
 
-    /// <summary>The function results expected on this model request.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
 
-    /// <summary>The AG-UI state expected on this model request.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>Whether this call must use the same non-empty AG-UI thread as prior calls.</summary>
     public bool RequireStableThread { get; init; }
 
-    /// <summary>The response, split into the checkpoints a test can stop at.</summary>
     public required List<RecordedFrame> Frames { get; init; }
 }
 
 internal sealed class RecordedFrame
 {
-    /// <summary>Name of the checkpoint, used to build the lock key that gates it.</summary>
     public required string Name { get; init; }
 
-    /// <summary>The text chunks streamed for this checkpoint.</summary>
     public List<string> Chunks { get; init; } = [];
 
-    /// <summary>A predictive state snapshot emitted at this checkpoint.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>A function call emitted at this checkpoint.</summary>
     public RecordedFunctionCall? FunctionCall { get; init; }
 }
 

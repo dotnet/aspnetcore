@@ -1,0 +1,37 @@
+@page "/function-approval"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject IDojoScenarioBridge ScenarioBridge
+
+<PageTitle>Server function approval</PageTitle>
+
+<div class="function-approval-scenario" data-thread-id="@_thread.ThreadId">
+    <ChatPage Agent="_agent" Placeholder="Request an approved server tool">
+        <Header>
+            <h1>Server function approval</h1>
+        </Header>
+        <WelcomeContent>
+            <p>Send a message, then approve or reject the server weather tool.</p>
+        </WelcomeContent>
+    </ChatPage>
+</div>
+
+@code {
+    private readonly DojoConversationThread _thread = new(Guid.NewGuid().ToString("N"));
+    private UIAgent _agent = default!;
+
+    [Inject(Key = FunctionScenarios.Approval)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(ChatClient, options =>
+        {
+            options.Thread = _thread;
+            options.ChatOptions = ScenarioBridge.CreateStateOptions(
+                () => new DojoRequestContext { ThreadId = _thread.ThreadId });
+        });
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

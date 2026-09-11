@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-    <!-- This test asset intentionally references projects whose names match shared-framework packages. -->
     <NoWarn>$(NoWarn);NU1511</NoWarn>
   </PropertyGroup>
 
@@ -31,14 +30,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The dojo UI talks to AGUIDojoApi over the AG-UI protocol. AGUI.Client brings
-         AGUI.Abstractions and AGUI.Formatting transitively. -->
     <Reference Include="AGUI.Client" />
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+    <ProjectReference Include="..\DojoAgent\DojoAgent.csproj" />
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
                      OutputItemType="Analyzer"
                      ReferenceOutputAssembly="false" />

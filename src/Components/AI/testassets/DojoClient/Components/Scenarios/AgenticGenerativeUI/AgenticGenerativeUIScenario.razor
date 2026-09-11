@@ -61,30 +61,27 @@
     private UIAgent<PlanState> _agent = default!;
     private IDisposable? _stateChangedRegistration;
 
-    [Inject(Key = DojoScenarios.AgenticGenerativeUIEndpoint)]
+    [Inject(Key = DojoScenarioEndpoints.AgenticGenerativeUIEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
 
     protected override void OnInitialized()
     {
+        var stateUpdates = new DojoStateUpdates();
         _agent = new UIAgent<PlanState>(ChatClient, options =>
         {
             options.StateMapper = context =>
             {
-                if (context.Update.RawRepresentation is StateDeltaEvent delta)
+                foreach (var (value, isDelta) in stateUpdates.Read(
+                    context, snapshotTool: "create_plan", deltaTool: "update_plan_step"))
                 {
-                    context.SetState(ApplyPlanDelta(_agent.State.Value, delta.Delta));
-                    return;
-                }
-
-                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
-                {
-                    return;
-                }
-
-                var state = snapshot.Snapshot.Deserialize<PlanState>(_jsonOptions);
-                if (state is not null)
-                {
-                    context.SetState(state);
+                    if (isDelta)
+                    {
+                        context.SetState(ApplyPlanDelta(_agent.State.Value, value));
+                    }
+                    else if (value.Deserialize<PlanState>(_jsonOptions) is { } state)
+                    {
+                        context.SetState(state);
+                    }
                 }
             };
         }, LoggerFactory);

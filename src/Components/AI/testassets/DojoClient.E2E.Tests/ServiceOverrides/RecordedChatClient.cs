@@ -4,23 +4,18 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AGUI.Abstractions;
+using DojoAgent;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Extensions.AI;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Replaces the model client inside AGUIDojoApi. The rest of the stack — the AG-UI request
-// serialization, the SSE response, AGUIChatClient in DojoClient, and Components.AI — is the
-// real one, which is what these tests exist to cover.
-//
-// Between checkpoints the client waits on a test-controlled gate, so a test can assert the
-// partially streamed UI before letting the response finish.
 internal sealed class RecordedChatClient : IChatClient
 {
-    private const string PredictiveStateMediaType =
-        "application/vnd.aspnetcore.ai.predictive-state+json";
     private readonly RecordedScript _script;
     private readonly TestLockProvider _locks;
+    private readonly DojoBackendKind _backend =
+        DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
 
     public RecordedChatClient(RecordedScript script, TestLockProvider locks)
     {
@@ -57,7 +52,7 @@ internal sealed class RecordedChatClient : IChatClient
                     [
                         new DataContent(
                             JsonSerializer.SerializeToUtf8Bytes(state),
-                            PredictiveStateMediaType),
+                            ChatClientAgentFactory.PredictiveStateMediaType),
                     ],
                 };
             }
@@ -143,7 +138,9 @@ internal sealed class RecordedChatClient : IChatClient
                     .Select(result => new RecordedToolResult
                     {
                         CallId = result.CallId,
-                        Result = result.Result?.ToString() ?? "",
+                        Result = _backend == DojoBackendKind.Direct
+                            ? JsonSerializer.Serialize(result.Result, AIJsonUtilities.DefaultOptions)
+                            : result.Result?.ToString() ?? "",
                     })
                     .ToList();
                 if (!actualResults.Select(result => (result.CallId, result.Result))
@@ -161,21 +158,28 @@ internal sealed class RecordedChatClient : IChatClient
         {
             var input = options?.AdditionalProperties?.Values
                 .OfType<RunAgentInput>()
-                .SingleOrDefault()
-                ?? throw new InvalidOperationException("Expected an AG-UI RunAgentInput.");
+                .SingleOrDefault();
+            var directContext = options?.AdditionalProperties?.Values
+                .OfType<DojoRequestContext>()
+                .SingleOrDefault();
+            if (input is null && directContext is null)
+            {
+                throw new InvalidOperationException("Expected dojo state and thread metadata.");
+            }
 
+            var actualState = input?.State ?? directContext?.State;
             if (call.State is { } expectedState &&
-                (input.State is not { } actualState ||
-                    !JsonElement.DeepEquals(expectedState, actualState)))
+                (actualState is not { } state ||
+                    !JsonElement.DeepEquals(expectedState, state)))
             {
                 throw new InvalidOperationException(
                     $"Expected state {expectedState.GetRawText()}, received " +
-                    $"{input.State?.GetRawText() ?? "<null>"}.");
+                    $"{actualState?.GetRawText() ?? "<null>"}.");
             }
 
             if (call.RequireStableThread)
             {
-                _script.AssertStableThread(input.ThreadId);
+                _script.AssertStableThread(input?.ThreadId ?? directContext!.ThreadId);
             }
         }
     }

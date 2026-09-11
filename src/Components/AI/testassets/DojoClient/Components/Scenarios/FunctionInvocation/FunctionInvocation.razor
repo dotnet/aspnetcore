@@ -1,0 +1,63 @@
+@page "/function-invocation"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject IDojoScenarioBridge ScenarioBridge
+@inject FunctionScenarioState Controls
+
+<PageTitle>Built-in function invocation mapping</PageTitle>
+
+<div class="function-invocation-scenario" data-thread-id="@_thread.ThreadId">
+    <ChatPage Agent="_agent" Placeholder="Request a server tool">
+        <Header>
+            <h1>Built-in function invocation mapping</h1>
+        </Header>
+        <WelcomeContent>
+            <p>Send a message to render a generic function invocation block.</p>
+        </WelcomeContent>
+        <MessageListContent>
+            <BlockRenderer TBlock="FunctionInvocationContentBlock"
+                           Context="invocation"
+                           When="@(block => block.GetType() == typeof(FunctionInvocationContentBlock))">
+                <div class="function-invocation-card @(invocation.HasResult
+                    ? "function-invocation-card--complete"
+                    : "function-invocation-card--loading")"
+                     data-informational="@((invocation.Call?.InformationalOnly).ToString())">
+                    <div class="function-invocation-card__tool">@invocation.ToolName</div>
+                    <div class="function-invocation-card__location">@invocation.Arguments?["location"]</div>
+                    @if (invocation.HasResult)
+                    {
+                        <div class="function-invocation-card__result">@invocation.Result?.Result</div>
+                    }
+                    else
+                    {
+                        <div class="function-invocation-card__status">Loading...</div>
+                        <button class="release-function-result"
+                                @onclick="() => Controls.ReleaseResult(_thread.ThreadId)">
+                            Release function result
+                        </button>
+                    }
+                </div>
+            </BlockRenderer>
+        </MessageListContent>
+    </ChatPage>
+</div>
+
+@code {
+    private readonly DojoConversationThread _thread = new(Guid.NewGuid().ToString("N"));
+    private UIAgent _agent = default!;
+
+    [Inject(Key = FunctionScenarios.Invocation)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(ChatClient, options =>
+        {
+            options.Thread = _thread;
+            options.ChatOptions = ScenarioBridge.CreateStateOptions(
+                () => new DojoRequestContext { ThreadId = _thread.ThreadId });
+        });
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

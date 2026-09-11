@@ -6,19 +6,16 @@ using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Releases the checkpoint gates held by RecordedChatClient inside the API process.
-//
-// The gates cannot be driven through TestLockClient because the browser never talks to the
-// API directly: DojoClient calls it server to server, so no test session cookie reaches it.
-// Keys are namespaced by the message the test typed, which makes them unique per run.
 internal sealed class ApiCheckpointClient
 {
-    private readonly ServerInstance _api;
+    private readonly ServerInstance _server;
+    private readonly string _runId;
 
-    public ApiCheckpointClient(ServerInstance api)
+    public ApiCheckpointClient(ServerInstance server, string runId)
     {
-        ArgumentNullException.ThrowIfNull(api);
-        _api = api;
+        ArgumentNullException.ThrowIfNull(server);
+        _server = server;
+        _runId = runId;
     }
 
     public async Task ReleaseAsync(string lastUserMessage, string frameName)
@@ -26,8 +23,18 @@ internal sealed class ApiCheckpointClient
         var key = RecordedChatClient.GetLockKey(lastUserMessage, frameName);
         using var client = new HttpClient();
         using var response = await client.PostAsync(
-            $"{_api.AppUrl}/_test/lock/release?key={Uri.EscapeDataString(key)}",
+            $"{_server.AppUrl}{DojoRunStore.ControlPath}/{_runId}/release?key={Uri.EscapeDataString(key)}",
             content: null);
         response.EnsureSuccessStatusCode();
+    }
+
+    internal async Task<bool> IsReleasedAsync(string lastUserMessage, string frameName)
+    {
+        var key = RecordedChatClient.GetLockKey(lastUserMessage, frameName);
+        using var client = new HttpClient();
+        var value = await client.GetStringAsync(
+            $"{_server.AppUrl}{DojoRunStore.ControlPath}/{_runId}/checkpoint?key={Uri.EscapeDataString(key)}");
+
+        return bool.Parse(value);
     }
 }

@@ -1,67 +1,89 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// Service override methods applied to AGUIDojoApi (never to DojoClient: replacing the UI's
-// AGUIChatClient would remove the AG-UI transport from the test).
-// Registered via options.ConfigureServices<DojoModelOverrides>(nameof(...)).
-internal class DojoModelOverrides
+internal sealed class DojoModelOverrides
 {
-    public static void AgenticChat(IServiceCollection services)
-        => AddRecordedModel(services, "AgenticChat.recording.json");
-
-    public static void AgenticChatRichText(IServiceCollection services)
-        => AddRecordedModel(services, "AgenticChatRichText.recording.json");
-
-    public static void AgenticChatClientTool(IServiceCollection services)
-        => AddRecordedModel(services, "AgenticChatClientTool.recording.json");
-
-    public static void BackendToolRendering(IServiceCollection services)
+    public static void ConfigureApi(IServiceCollection services)
     {
-        services.AddSingleton(_ => RecordedScript.Load("BackendToolRendering.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
-
-    public static void HumanInTheLoop(IServiceCollection services)
-        => AddRecordedModel(services, "HumanInTheLoop.recording.json");
-
-    public static void ToolBasedGenerativeUI(IServiceCollection services)
-        => AddRecordedModel(services, "ToolBasedGenerativeUI.recording.json");
-
-    public static void AgenticGenerativeUI(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("AgenticGenerativeUI.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
-
-    public static void SharedState(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("SharedState.recording.json"));
-        services.AddScoped<RecordedChatClient>();
-        services.AddScoped<IChatClient>(sp =>
-            new FunctionInvokingChatClient(sp.GetRequiredService<RecordedChatClient>()));
-    }
-
-    public static void PredictiveStateUpdates(IServiceCollection services)
-    {
-        services.AddSingleton(_ => RecordedScript.Load("PredictiveStateUpdates.recording.json"));
-        services.AddScoped<RecordedChatClient>();
+        AddRunStore(services);
+        services.AddScoped<IChatClient, RunSelectedChatClient>();
         services.AddKeyedScoped<IChatClient>(
-            "predictive-state-updates-model",
-            (sp, _) => sp.GetRequiredService<RecordedChatClient>());
+            ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+            (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>(), predictive: true));
     }
 
-    private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
+    public static void ConfigureUI(IServiceCollection services)
     {
-        services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
-        services.AddScoped<IChatClient, RecordedChatClient>();
+        var backend = DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
+        if (backend == DojoBackendKind.Direct)
+        {
+            if (!services.Any(service => service.ServiceType == typeof(IChatClient) &&
+                Equals(service.ServiceKey, ChatClientAgentFactory.ModelServiceKey)))
+            {
+                throw new InvalidOperationException("The direct dojo model registration is missing.");
+            }
+
+            AddRunStore(services);
+            services.AddKeyedScoped<IChatClient>(ChatClientAgentFactory.ModelServiceKey,
+                (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>()));
+            services.AddKeyedScoped<IChatClient>(ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+                (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>(), predictive: true));
+        }
+
+        for (var index = 0; index < services.Count; index++)
+        {
+            var descriptor = services[index];
+            if (descriptor.ServiceType != typeof(IChatClient) ||
+                descriptor.ServiceKey is ChatClientAgentFactory.ModelServiceKey or
+                    ChatClientAgentFactory.PredictiveStateUpdatesServiceKey)
+            {
+                continue;
+            }
+
+            if (descriptor.IsKeyedService)
+            {
+                var factory = descriptor.KeyedImplementationFactory
+                    ?? throw UnsupportedRegistration(descriptor);
+                services[index] = ServiceDescriptor.DescribeKeyed(typeof(IChatClient), descriptor.ServiceKey,
+                    (sp, key) => new RunForwardingChatClient(
+                        (IChatClient)factory(sp, key), sp.GetRequiredService<NavigationManager>(), backend),
+                    descriptor.Lifetime);
+            }
+            else
+            {
+                var factory = descriptor.ImplementationFactory
+                    ?? throw UnsupportedRegistration(descriptor);
+                services[index] = ServiceDescriptor.Describe(typeof(IChatClient),
+                    sp => new RunForwardingChatClient(
+                        (IChatClient)factory(sp), sp.GetRequiredService<NavigationManager>(), backend),
+                    descriptor.Lifetime);
+            }
+        }
+    }
+
+    private static void AddRunStore(IServiceCollection services)
+    {
+        services.AddSingleton<DojoRunStore>();
+        services.AddTransient<IStartupFilter, DojoRunStartupFilter>();
+    }
+
+    private static InvalidOperationException UnsupportedRegistration(ServiceDescriptor descriptor)
+    {
+        var implementationType = descriptor.IsKeyedService
+            ? descriptor.KeyedImplementationType ?? descriptor.KeyedImplementationInstance?.GetType()
+            : descriptor.ImplementationType ?? descriptor.ImplementationInstance?.GetType();
+
+        return new InvalidOperationException(
+            $"Cannot decorate {nameof(IChatClient)} registration with key '{descriptor.ServiceKey ?? "<default>"}', " +
+            $"implementation '{implementationType?.FullName ?? "<unknown>"}', lifetime '{descriptor.Lifetime}'. " +
+            "Dojo UI clients must use factory registrations.");
     }
 }
