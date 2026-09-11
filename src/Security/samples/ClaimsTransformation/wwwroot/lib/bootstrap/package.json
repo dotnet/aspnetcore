@@ -1,0 +1,8 @@
+{
+  "name": "bootstrap-sample-tests",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test ./test/carousel-href.spec.js ./test/collapse-href.spec.js"
+  }
+}
