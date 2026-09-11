@@ -33,6 +33,7 @@
   <Compile Include="$(RoutingSourceRoot)Constraints\**\*.cs" LinkBase="Routing\Constraints" />
 
   <Compile Remove="$(RoutingSourceRoot)Constraints\HttpMethodRouteConstraint.cs" />
+  <Compile Remove="$(RoutingSourceRoot)Constraints\OptionalOutboundParameterTransformerRouteConstraint.cs" />
   <Compile Remove="$(RoutingSourceRoot)Constraints\RequiredRouteConstraint.cs" />
   <Compile Remove="$(RoutingSourceRoot)Constraints\StringRouteConstraint.cs" />
 </ItemGroup>
