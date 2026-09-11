@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -631,6 +633,111 @@ public class CorsMiddlewareTests
                     Assert.Equal(CorsConstants.AccessControlExposeHeaders, kvp.Key);
                     Assert.Equal("AllowedHeader", Assert.Single(kvp.Value));
                 });
+        }
+    }
+
+    [Theory]
+    [InlineData("Allow", "TargetHeader")]
+    [InlineData("Deny", null)]
+    [InlineData("Disable", null)]
+    public Task CorsRequest_ReExecutedPipeline_UsesLatestExplicitPolicy(
+        string targetBehavior,
+        string expectedExposedHeader)
+        => AssertReExecutedPipelineAsync(targetBehavior, expectedExposedHeader);
+
+    [Fact]
+    public Task CorsRequest_ReExecutedPipeline_WithNoPolicy_InheritsEarlierHeaders()
+        => AssertReExecutedPipelineAsync("NoPolicy", "SourceHeader");
+
+    private static async Task AssertReExecutedPipelineAsync(
+        string targetBehavior,
+        string expectedExposedHeader)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseStatusCodePagesWithReExecute("/error");
+                        app.UseRouting();
+                        app.UseCors();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.Map("/source", context =>
+                            {
+                                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                                return Task.CompletedTask;
+                            }).RequireCors("Source");
+
+                            var errorEndpoint = endpoints.Map("/error", context =>
+                                context.Response.WriteAsync("Error endpoint"));
+
+                            _ = targetBehavior switch
+                            {
+                                "Allow" => errorEndpoint.RequireCors("Target"),
+                                "Deny" => errorEndpoint.RequireCors("Deny"),
+                                "Disable" => errorEndpoint.WithMetadata(new DisableCorsAttribute()),
+                                "NoPolicy" => errorEndpoint,
+                                _ => throw new InvalidOperationException($"Unexpected target behavior '{targetBehavior}'."),
+                            };
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("Source", policy => policy
+                                .WithOrigins(OriginUrl, "http://source.example.com")
+                                .AllowCredentials()
+                                .WithExposedHeaders("SourceHeader"));
+                            options.AddPolicy("Target", policy => policy
+                                .WithOrigins(OriginUrl, "http://target.example.com")
+                                .AllowCredentials()
+                                .WithExposedHeaders("TargetHeader"));
+                            options.AddPolicy("Deny", policy => policy
+                                .WithOrigins("http://denied.example.com")
+                                .AllowCredentials());
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateRequest("/source")
+            .AddHeader(CorsConstants.Origin, OriginUrl)
+            .GetAsync();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("Error endpoint", await response.Content.ReadAsStringAsync());
+        AssertCorsHeaders(response, expectedExposedHeader);
+
+        var directResponse = await server.CreateRequest("/error")
+            .AddHeader(CorsConstants.Origin, OriginUrl)
+            .GetAsync();
+
+        directResponse.EnsureSuccessStatusCode();
+        Assert.Equal("Error endpoint", await directResponse.Content.ReadAsStringAsync());
+        AssertCorsHeaders(directResponse, targetBehavior == "Allow" ? "TargetHeader" : null);
+
+        static void AssertCorsHeaders(HttpResponseMessage response, string exposedHeader)
+        {
+            if (exposedHeader is null)
+            {
+                Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowOrigin));
+                Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowCredentials));
+                Assert.False(response.Headers.Contains(CorsConstants.AccessControlExposeHeaders));
+                Assert.False(response.Headers.Contains("Vary"));
+                return;
+            }
+
+            Assert.Equal(OriginUrl, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin)));
+            Assert.Equal("true", Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowCredentials)));
+            Assert.Equal(exposedHeader, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlExposeHeaders)));
+            Assert.Equal(CorsConstants.Origin, Assert.Single(response.Headers.GetValues("Vary")));
         }
     }
 

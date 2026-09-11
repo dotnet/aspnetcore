@@ -13,6 +13,7 @@ public class CorsMiddleware
 {
     // Property key is used by other systems, e.g. MVC, to check if CORS middleware has run
     private const string CorsMiddlewareWithEndpointInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
+    private const string CorsResultKey = "__CorsMiddlewareResult";
     private static readonly object CorsMiddlewareWithEndpointInvokedValue = new object();
 
     private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
@@ -115,6 +116,11 @@ public class CorsMiddleware
 
         if (corsMetadata is IDisableCorsAttribute)
         {
+            if (context.Items[CorsResultKey] is CorsResultState corsResultState)
+            {
+                corsResultState.Result = null;
+            }
+
             var isOptionsRequest = HttpMethods.IsOptions(context.Request.Method);
 
             var isCorsPreflightRequest = isOptionsRequest && context.Request.Headers.ContainsKey(CorsConstants.AccessControlRequestMethod);
@@ -185,22 +191,44 @@ public class CorsMiddleware
         }
         else
         {
-            context.Response.OnStarting(OnResponseStartingDelegate, Tuple.Create(this, context, corsResult));
+            if (context.Items[CorsResultKey] is not CorsResultState corsResultState)
+            {
+                corsResultState = new CorsResultState(this, context);
+                context.Items[CorsResultKey] = corsResultState;
+                context.Response.OnStarting(OnResponseStartingDelegate, corsResultState);
+            }
+
+            corsResultState.Result = corsResult;
             return _next(context);
         }
     }
 
     private static Task OnResponseStarting(object state)
     {
-        var (middleware, context, result) = (Tuple<CorsMiddleware, HttpContext, CorsResult>)state;
+        var corsResultState = (CorsResultState)state;
+        var result = corsResultState.Result;
+        if (result is null)
+        {
+            return Task.CompletedTask;
+        }
+
         try
         {
-            middleware.CorsService.ApplyResult(result, context.Response);
+            corsResultState.Middleware.CorsService.ApplyResult(result, corsResultState.Context.Response);
         }
         catch (Exception exception)
         {
-            middleware.Logger.FailedToSetCorsHeaders(exception);
+            corsResultState.Middleware.Logger.FailedToSetCorsHeaders(exception);
         }
         return Task.CompletedTask;
+    }
+
+    private sealed class CorsResultState(CorsMiddleware middleware, HttpContext context)
+    {
+        public CorsMiddleware Middleware { get; } = middleware;
+
+        public HttpContext Context { get; } = context;
+
+        public CorsResult? Result { get; set; }
     }
 }
