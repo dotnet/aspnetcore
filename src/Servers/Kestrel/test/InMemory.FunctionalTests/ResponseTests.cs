@@ -571,6 +571,37 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(HttpMethod.Get, StatusCodes.Status204NoContent)]
+    [InlineData(HttpMethod.Get, StatusCodes.Status205ResetContent)]
+    [InlineData(HttpMethod.Get, StatusCodes.Status304NotModified)]
+    [InlineData(HttpMethod.Head, StatusCodes.Status200OK)]
+    public async Task InvalidTransferEncodingOnCompletedNonBodyResponseProduces500(HttpMethod httpMethod, int statusCode)
+    {
+        await using var server = new TestServer(httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.Headers.TransferEncoding = "chunked";
+
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory));
+
+        using var connection = server.CreateConnection();
+
+        await connection.Send(
+            $"{HttpUtilities.MethodToString(httpMethod)} / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await connection.Receive(
+            "HTTP/1.1 500 Internal Server Error",
+            "Content-Length: 0",
+            $"Date: {server.Context.DateHeaderValue}",
+            "",
+            "");
+    }
+
     [Fact]
     public async Task ContentLengthZeroSetOn205Response()
     {
