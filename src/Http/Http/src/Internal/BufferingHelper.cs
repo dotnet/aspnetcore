@@ -25,16 +25,17 @@ internal static class BufferingHelper
     }
 
     public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
-        int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
+        int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null, bool forceBuffering = false)
     {
         ArgumentNullException.ThrowIfNull(section);
         ArgumentNullException.ThrowIfNull(registerForDispose);
 
         var body = section.Body;
-        if (!body.CanSeek)
+        if (!body.CanSeek || forceBuffering)
         {
             var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
             section.Body = fileStream;
+            section.BaseStreamOffset = null;
             registerForDispose(fileStream);
         }
         return section;
