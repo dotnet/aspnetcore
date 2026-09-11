@@ -52,6 +52,6 @@ public class StringOutputFormatter : TextOutputFormatter
         }
 
         var response = context.HttpContext.Response;
-        return response.WriteAsync(valueAsString, encoding);
+        return response.WriteAsync(valueAsString, encoding, context.HttpContext.RequestAborted);
     }
 }
