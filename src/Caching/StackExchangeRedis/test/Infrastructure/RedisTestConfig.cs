@@ -30,6 +30,16 @@ public static class RedisTestConfig
         });
     }
 
+    public static IDistributedCache CreateCacheInstance(string instanceName, bool disableSlidingExpirationRefresh)
+    {
+        return new RedisCache(new RedisCacheOptions()
+        {
+            Configuration = "localhost:" + RedisPort,
+            InstanceName = instanceName,
+            DisableSlidingExpirationRefresh = disableSlidingExpirationRefresh,
+        });
+    }
+
     public static void GetOrStartServer()
     {
         if (UserHasStartedOwnRedisServer())

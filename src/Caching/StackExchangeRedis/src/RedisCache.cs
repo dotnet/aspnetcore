@@ -411,7 +411,7 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            if (sldExpr.HasValue)
+            if (sldExpr.HasValue && !_options.DisableSlidingExpirationRefresh)
             {
                 Refresh(cache, key, absExpr, sldExpr.GetValueOrDefault());
             }
@@ -450,7 +450,7 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            if (sldExpr.HasValue)
+            if (sldExpr.HasValue && !_options.DisableSlidingExpirationRefresh)
             {
                 await RefreshAsync(cache, key, absExpr, sldExpr.GetValueOrDefault(), token).ConfigureAwait(false);
             }
@@ -729,7 +729,7 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
             if (metadata.Length >= 2)
             {
                 MapMetadata(metadata, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-                if (sldExpr.HasValue)
+                if (sldExpr.HasValue && !_options.DisableSlidingExpirationRefresh)
                 {
                     Refresh(cache, key, absExpr, sldExpr.GetValueOrDefault());
                 }
@@ -776,7 +776,7 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
             if (metadata.Length >= 2)
             {
                 MapMetadata(metadata, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-                if (sldExpr.HasValue)
+                if (sldExpr.HasValue && !_options.DisableSlidingExpirationRefresh)
                 {
                     await RefreshAsync(cache, key, absExpr, sldExpr.GetValueOrDefault(), token).ConfigureAwait(false);
                 }
