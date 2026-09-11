@@ -101,6 +101,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
         Task quiesceTask;
+        var navigationExceptionHandledInPendingTasks = false;
         if (!result.IsPost || isReExecuted)
         {
             quiesceTask = htmlContent.QuiescenceTask;
@@ -116,7 +117,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                     return;
                 }
 
-                await _renderer.WaitForNonStreamingPendingTasks();
+                navigationExceptionHandledInPendingTasks = await _renderer.WaitForNonStreamingPendingTasks();
             }
             catch (NavigationException ex)
             {
@@ -124,6 +125,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 quiesceTask = Task.CompletedTask;
             }
         }
+
+        // A handled non-streaming navigation leaves the full quiescence task faulted,
+        // but there are no navigation updates left to send through the streaming writer.
+        var navigationExceptionWasHandled = navigationExceptionHandledInPendingTasks
+            && quiesceTask is { IsFaulted: true, Exception: { } exception }
+            && EndpointHtmlRenderer.GetFirstNonNavigationException(exception) is null;
 
         if (_renderer.NotFoundEventArgs != null)
         {
@@ -160,7 +167,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // renderer sync context and cause a batch that would get missed.
         htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
-        if (!quiesceTask.IsCompletedSuccessfully)
+        if (!quiesceTask.IsCompletedSuccessfully && !navigationExceptionWasHandled)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
             if (_renderer.NotFoundEventArgs != null)
