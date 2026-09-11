@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
+    private IWebElement _appElement;
+
     public SectionsWithCascadingParametersTest
         (BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -25,7 +27,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-        Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithCascadingParameters>();
+        _appElement = Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithCascadingParameters>();
     }
 
     [Fact]
@@ -35,7 +37,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
         Browser.FindElement(By.Id("render-section-outlet")).Click();
         Browser.FindElement(By.Id("render-second-section-content")).Click();
 
-        Browser.Equal("Second Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Second Section with additional text for second section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -46,7 +48,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
 
         Browser.FindElement(By.Id("change-cascading-value")).Click();
 
-        Browser.Equal("First Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("First Section with additional text for second section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -56,7 +58,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
         Browser.FindElement(By.Id("render-first-section-content")).Click();
         Browser.FindElement(By.Id("render-section-outlet")).Click();
 
-        Browser.Equal("First Section with additional text for first section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("First Section with additional text for first section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -68,7 +70,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
 
         Browser.FindElement(By.Id("change-second-section-content-id")).Click();
 
-        Browser.Equal("First Section with additional text for first section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("First Section with additional text for first section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -80,7 +82,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
 
         Browser.FindElement(By.Id("dispose-second-section-content")).Click();
 
-        Browser.Equal("First Section with additional text for first section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("First Section with additional text for first section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -92,7 +94,7 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
         Browser.FindElement(By.Id("dispose-first-section-content")).Click();
         Browser.FindElement(By.Id("render-second-section-content")).Click();
 
-        Browser.Equal("Second Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Second Section with additional text for second section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 
     [Fact]
@@ -105,6 +107,6 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
 
         Browser.FindElement(By.Id("change-section-outlet-id")).Click();
 
-        Browser.Equal("Second Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Second Section with additional text for second section", () => _appElement.FindElement(By.TagName("p")).Text);
     }
 }
