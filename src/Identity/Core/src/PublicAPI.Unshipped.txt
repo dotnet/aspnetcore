@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, bool isConditionallyMediated, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptionsResult!>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.SupportsConditionalCreation.get -> bool
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, bool isConditionallyMediated, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptionsResult!>!
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.SupportsConditionalCreation.get -> bool
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakePasskeyCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, bool isConditionallyMediated) -> System.Threading.Tasks.Task<string!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SupportsPasskeyConditionalCreation.get -> bool
 Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult
 Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult.AllAcceptedCredentialsSignalOptionsResult() -> void
 Microsoft.AspNetCore.Identity.AllAcceptedCredentialsSignalOptionsResult.SignalOptionsJson.get -> string!
