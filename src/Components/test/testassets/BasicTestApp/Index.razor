@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 
 <p id="session-storage-marker"></p>
+<p id="non-js-root-parameter">@NonJSRootParameter</p>
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -173,6 +174,9 @@
 </app>
 
 @code {
+    [Parameter]
+    public string NonJSRootParameter { get; set; } = "Initial non-JS root value";
+
     string SelectedComponentTypeName { get; set; } = "none";
 
     Type SelectedComponentType
