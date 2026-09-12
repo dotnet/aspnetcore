@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "defaultPreset": "blazor",
+  "settings": {
+    "rescueAfterDays": 14,
+    "reviewerRescueAfterDays": 30,
+    "pathMatchMinimumShare": 0.25,
+    "mergeableResolveAttempts": 3,
+    "discussionCandidateLimit": 20,
+    "maxDiscussionVerification": 5,
+    "communityLabels": [
+      "community-contribution"
+    ],
+    "blockedLabels": [
+      "blocked",
+      "do-not-merge"
+    ],
+    "blockedLabelsExact": [
+      "* NO MERGE *"
+    ],
+    "pendingCiLabels": [
+      "pending-ci-rerun"
+    ],
+    "designGateLabels": [
+      "api-ready-for-review",
+      "needs-api-approval",
+      "needs-design"
+    ],
+    "knownBotPatterns": [
+      "dependabot",
+      "dotnet-maestro",
+      "dotnet-maestro-bot",
+      "github-actions",
+      "copilot-pull-request-reviewer",
+      "azure-pipelines"
+    ]
+  },
+  "presets": {
+    "blazor": {
+      "description": "Blazor and Components pull requests",
+      "labelsAny": [
+        "area-blazor",
+        "feature-blazor-*",
+        "Blazor \u2665 *"
+      ],
+      "pathsAny": [
+        "src/Components/**"
+      ],
+      "excludeLabels": []
+    },
+    "all-repo": {
+      "description": "Every open pull request in the repository",
+      "allRepositoryPullRequests": true,
+      "labelsAny": [],
+      "pathsAny": [],
+      "excludeLabels": []
+    }
+  }
+}
