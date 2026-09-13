@@ -32,6 +32,14 @@ internal static partial class NativeTls
     // Reporting EAGAIN/EBADF/EINTR as errno return values lets the accept loop drain without exceptions.
     [LibraryImport(LIBC, SetLastError = true)] public static partial int accept4(int sockfd, IntPtr addr, IntPtr addrlen, int flags);
 
+    // eventfd: the pump's cross-thread wakeup. A thread pool thread may write to same fd and make it wake up on epoll_wait.
+    // The counter is drained with a single 8-byte read (EFD_NONBLOCK makes an empty read return EAGAIN rather than block the pump).
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int eventfd(uint initval, int flags);
+
+    [LibraryImport(LIBC, SetLastError = true)] public static partial nint read(int fd, ref long buf, nuint count);
+
+    [LibraryImport(LIBC, SetLastError = true)] public static partial nint write(int fd, ref long buf, nuint count);
+
     [LibraryImport(LIBC, SetLastError = true)]
     private static partial int epoll_ctl(int epfd, int op, int fd, ref EpollEventPacked ev);
 
@@ -108,6 +116,10 @@ internal static partial class NativeTls
     public const int SOCK_NONBLOCK = 0x800;    // Linux O_NONBLOCK
     public const int SOCK_CLOEXEC = 0x80000;   // Linux O_CLOEXEC
     public const int EPOLL_CLOEXEC = 0x80000;  // Linux O_CLOEXEC
+
+    // eventfd flags (Linux eventfd2). Same values as O_NONBLOCK / O_CLOEXEC.
+    public const int EFD_NONBLOCK = 0x800;
+    public const int EFD_CLOEXEC = 0x80000;
 
     // errno values the accept loop distinguishes (Linux asm-generic/errno-base.h). EWOULDBLOCK == EAGAIN on Linux.
     public const int EINTR = 4;    // interrupted by a signal before a connection was accepted - retry

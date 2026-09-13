@@ -1,7 +1,4 @@
 #if (IndividualLocalAuth)
-#if (UseServer)
-using Microsoft.AspNetCore.Components.Authorization;
-#endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -41,9 +38,6 @@ builder.Services.AddRazorComponents()
 #if (IndividualLocalAuth)
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
-#if (UseServer)
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-#endif
 
 builder.Services.AddAuthentication(options =>
     {
@@ -103,11 +97,19 @@ app.UseHttpsRedirection();
 app.MapStaticAssets();
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
+#if (IndividualLocalAuth)
+    .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh())
+#else
     .AddInteractiveServerRenderMode()
+#endif
     .AddInteractiveWebAssemblyRenderMode()
 #elif (UseServer)
 app.MapRazorComponents<App>()
+#if (IndividualLocalAuth)
+    .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh());
+#else
     .AddInteractiveServerRenderMode();
+#endif
 #elif (UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()

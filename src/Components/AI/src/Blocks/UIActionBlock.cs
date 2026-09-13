@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// &lt;/BlockRenderer&gt;
 /// </code>
 /// </example>
-public class UIActionBlock : ContentBlock
+public class UIActionBlock : ContentBlock, IInteractiveBlock
 {
     private readonly AIFunction _function;
     private readonly TaskCompletionSource<AIContent> _resultSource =
@@ -71,7 +71,8 @@ public class UIActionBlock : ContentBlock
         }
     }
 
-    internal Task<AIContent> GetResultAsync(CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public Task<AIContent> GetResultAsync(CancellationToken cancellationToken = default)
         => _resultSource.Task.WaitAsync(cancellationToken);
 
     private async Task InvokeCoreAsync(CancellationToken cancellationToken)

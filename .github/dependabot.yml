@@ -99,7 +99,7 @@ updates:
   - dependency-name: "Microsoft.CodeAnalysis.CSharp"
   - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
   - dependency-name: "Microsoft.CodeAnalysis.Common"
-  - dependency-name: "Microsoft.CodeAnalysis.ExternalAccess.AspNetCore"
+  - dependency-name: "Microsoft.CodeAnalysis.Features.ExternalAccess"
   - dependency-name: "Microsoft.DotNet.Arcade.Sdk"
   - dependency-name: "Microsoft.DotNet.Build.Tasks.Archives"
   - dependency-name: "Microsoft.DotNet.Build.Tasks.Installers"

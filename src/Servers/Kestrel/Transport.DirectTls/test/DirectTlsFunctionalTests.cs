@@ -268,7 +268,7 @@ public class DirectTlsFunctionalTests
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task ClientCertificateValidation_ThrowingCallback_DropsConnection_AndKeepsPumpHealthy()
     {
-        // The endpoint's client-certificate validation callback runs on the pump thread right after the fd-path
+        // The endpoint's client-certificate validation callback is dispatched off the pump once the fd-path
         // handshake reports Complete. If it throws, the transport must drop the connection - dispose the session
         // and de-register the fd - rather than leaving the fd epoll-registered but in neither the handshaking nor
         // the connection table, which would spin the pump on the level-triggered socket and hang the request. The

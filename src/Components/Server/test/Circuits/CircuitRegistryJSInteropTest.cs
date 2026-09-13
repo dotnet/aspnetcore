@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -66,6 +67,57 @@ public class CircuitRegistryJSInteropTest
         await Assert.ThrowsAsync<JSDisconnectedException>(() => pendingCallFromReplacementConnection);
     }
 
+    [Fact]
+    public async Task ConnectAsync_DoesNotDispatchInFlightInvocationToReplacementConnection()
+    {
+        var registry = CreateRegistry();
+        var logger = new PausingRemoteJSRuntimeLogger();
+        var oldClient = new Mock<ISingleClientProxy>(MockBehavior.Strict);
+        oldClient
+            .Setup(c => c.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var replacementClient = new Mock<ISingleClientProxy>(MockBehavior.Strict);
+        var clientProxy = new CircuitClientProxy(oldClient.Object, "old-connection");
+        var jsRuntime = new PausingRemoteJSRuntime(logger);
+        var circuitHost = TestCircuitHost.Create(clientProxy: clientProxy, jsRuntime: jsRuntime);
+        jsRuntime.Initialize(clientProxy);
+        registry.Register(circuitHost);
+
+        Task<string> pendingCall = null;
+        var invokeTask = Task.Run(() =>
+        {
+            pendingCall = jsRuntime.InvokeAsync<string>("in-flight-call").AsTask();
+        });
+        await logger.InvocationReachedDispatch.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var reconnectTask = Task.Run(() => registry.ConnectAsync(
+            circuitHost.CircuitId,
+            replacementClient.Object,
+            "new-connection",
+            default));
+
+        await jsRuntime.PendingTaskCaptureStarted.WaitAsync(TimeSpan.FromSeconds(10));
+
+        try
+        {
+            Assert.False(reconnectTask.IsCompleted);
+        }
+        finally
+        {
+            logger.ResumeDispatch();
+        }
+
+        await invokeTask;
+        Assert.Same(circuitHost, await reconnectTask);
+        await Assert.ThrowsAsync<JSDisconnectedException>(() => pendingCall);
+        oldClient.Verify(
+            c => c.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        replacementClient.Verify(
+            c => c.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     private static CircuitRegistry CreateRegistry()
     {
         return new CircuitRegistry(
@@ -91,5 +143,61 @@ public class CircuitRegistryJSInteropTest
 
         public Task<PersistedCircuitState> RestoreCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)
             => throw new NotImplementedException();
+    }
+
+    private sealed class PausingRemoteJSRuntimeLogger : ILogger<RemoteJSRuntime>
+    {
+        private readonly TaskCompletionSource _invocationReachedDispatch = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _resumeDispatch = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task InvocationReachedDispatch => _invocationReachedDispatch.Task;
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (eventId.Id == 1)
+            {
+                _invocationReachedDispatch.TrySetResult();
+                if (!_resumeDispatch.Task.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    throw new TimeoutException("Timed out waiting to resume JS dispatch.");
+                }
+            }
+        }
+
+        public void ResumeDispatch() => _resumeDispatch.TrySetResult();
+
+        private sealed class NullScope : IDisposable
+        {
+            public static NullScope Instance { get; } = new();
+
+            public void Dispose()
+            {
+            }
+        }
+    }
+
+    private sealed class PausingRemoteJSRuntime : RemoteJSRuntime
+    {
+        private readonly TaskCompletionSource _pendingTaskCaptureStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public PausingRemoteJSRuntime(ILogger<RemoteJSRuntime> logger)
+            : base(
+                  Options.Create(new CircuitOptions()),
+                  Options.Create(new HubOptions<ComponentHub>()),
+                  logger)
+        {
+        }
+
+        public Task PendingTaskCaptureStarted => _pendingTaskCaptureStarted.Task;
+
+        internal override Action CapturePendingTasksForDisconnect()
+        {
+            _pendingTaskCaptureStarted.TrySetResult();
+            return base.CapturePendingTasksForDisconnect();
+        }
     }
 }

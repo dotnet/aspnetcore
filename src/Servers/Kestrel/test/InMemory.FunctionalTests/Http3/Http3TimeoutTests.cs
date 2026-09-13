@@ -730,7 +730,6 @@ public class Http3TimeoutTests : Http3TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67346")]
     public async Task HEADERS_TrailerIncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
     {
         // Verifies that a fragmented trailer HEADERS frame (payload spans multiple reads)

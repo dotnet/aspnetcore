@@ -21,17 +21,17 @@ internal static class ClientCertificateValidator
     /// <see cref="SslStream"/>'s default server-side client-certificate validation policy.
     /// </summary>
     /// <remarks>
-    /// The returned chain is configured for use on the pump thread:
+    /// The chain build and the endpoint callback run on the thread pool, never on the pump thread.
     /// <list type="bullet">
     /// <item>
-    /// <see cref="X509RevocationMode.NoCheck"/> avoids blocking the pump thread on CRL/OCSP network I/O and
-    /// matches the transport default (<c>CheckCertificateRevocation == false</c>).
+    /// <see cref="X509RevocationMode.NoCheck"/> avoids blocking on CRL/OCSP network I/O and matches the
+    /// transport default (<c>CheckCertificateRevocation == false</c>).
     /// </item>
     /// <item>
     /// <see cref="X509ChainPolicy.DisableCertificateDownloads"/> is <see langword="true"/> so the chain
-    /// engine never makes synchronous AIA fetches for missing intermediates. <see cref="X509Chain.Build"/>
-    /// runs on the pump thread, so an attacker-supplied leaf whose Authority Information Access extension
-    /// points at an unreachable or slow URL could otherwise stall every connection this pump owns.
+    /// engine never makes synchronous AIA fetches for missing intermediates. Otherwise a supplied
+    /// leaf whose Authority Information Access extension points at an unreachable or slow URL would occupy a
+    /// thread pool thread for the lifetime of that fetch, one per connection.
     /// <see cref="SslStream"/> sets the same flag on the server side for this reason.
     /// Legitimate clients send their intermediates in the handshake, which are supplied here via <paramref name="intermediates"/>.
     /// </item>

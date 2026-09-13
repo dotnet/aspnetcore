@@ -244,7 +244,7 @@ internal partial class RemoteJSRuntime : JSRuntime
         completePendingTasks();
     }
 
-    public Action CapturePendingTasksForDisconnect()
+    internal virtual Action CapturePendingTasksForDisconnect()
     {
         return CapturePendingTasks(new JSDisconnectedException(
             "JavaScript interop calls cannot complete because the circuit disconnected."));

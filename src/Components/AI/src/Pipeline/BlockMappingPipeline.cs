@@ -35,6 +35,9 @@ internal class BlockMappingPipeline
                 new UIActionHandler(options.UIActions)));
         }
 
+        _handlers.Add(new HandlerEntry<FunctionApprovalHandler.State>(
+            new FunctionApprovalHandler()));
+
         _handlers.Add(new HandlerEntry<FunctionInvocationContentBlock>(
             new FunctionInvocationHandler()));
 
@@ -54,7 +57,7 @@ internal class BlockMappingPipeline
         var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
         BlockMappingPipelineLog.ProcessingUpdate(_logger, update.Role?.Value, update.Contents.Count, contentTypes);
 
-        var context = new BlockMappingContext(update);
+        var context = new BlockMappingContext(update, _handlers);
 
         // Phase 1: Active entries get priority (most recent first)
         for (var i = _activeStack.Count - 1; i >= 0; i--)
