@@ -68,10 +68,10 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
 
     private static CollationDbContext CreateCollationContext(SqliteConnection connection)
     {
+        connection.Open();
         connection.CreateCollation(
             "IdentityTestCollation",
             (left, right) => string.Compare(left?.TrimEnd(), right?.TrimEnd(), StringComparison.OrdinalIgnoreCase));
-        connection.Open();
 
         var context = new CollationDbContext(
             new DbContextOptionsBuilder<CollationDbContext>()
