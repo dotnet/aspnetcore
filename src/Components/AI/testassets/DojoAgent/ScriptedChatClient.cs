@@ -10,6 +10,8 @@ using Microsoft.Extensions.AI;
 
 namespace DojoAgent;
 
+// Offline model used when no live endpoint or API key is explicitly configured.
+// Keeps manual dojo scenarios usable without credentials or paid service calls.
 internal sealed class ScriptedChatClient : IChatClient
 {
     private static JsonElement? GetState(ChatOptions? options)

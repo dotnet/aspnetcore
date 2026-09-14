@@ -12,7 +12,12 @@
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
     <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
     <IsPackable>false</IsPackable>
+    <!-- Pin MSTest.TestAdapter explicitly to the same version as MSTest.TestFramework. -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- NETSDK1023: the explicit adapter PackageReference is intentional.
+         MSTEST0001: retain MSTest's sequential default; suite parallelism is not enabled.
+         NU1511: in-tree Components, Hosting.Abstractions, Http.Abstractions, and WebUtilities
+         project references intentionally overlap ASP.NET Core framework assembly names. -->
     <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
   </PropertyGroup>
 

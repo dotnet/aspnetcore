@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- NU1511: this test app intentionally references in-tree framework projects. -->
     <NoWarn>$(NoWarn);NU1511</NoWarn>
   </PropertyGroup>
 

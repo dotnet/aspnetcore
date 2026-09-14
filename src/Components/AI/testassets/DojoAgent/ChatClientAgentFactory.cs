@@ -145,6 +145,8 @@ public static class ChatClientAgentFactory
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
+        // Live model access is opt-in. An unconfigured dojo must not reach a paid service
+        // or acquire ambient credentials; the fallback is entirely local.
         var baseUrl = configuration["OPENAI_BASE_URL"];
         var apiKey = configuration["OPENAI_API_KEY"];
 

@@ -64,31 +64,43 @@ internal sealed class RecordedScript
 
 internal sealed class RecordedCall
 {
+    /// <summary>The latest user message must start with this prompt.</summary>
     public required string Prompt { get; init; }
 
+    /// <summary>Optional message count used to distinguish continuations of the same prompt.</summary>
     public int? MessageCount { get; init; }
 
+    /// <summary>Expected tool declarations, in request order; null skips this check.</summary>
     public List<string>? ToolNames { get; init; }
 
+    /// <summary>Expected result call IDs from tool-role messages, in order.</summary>
     public List<string>? ToolResultCallIds { get; init; }
 
+    /// <summary>Expected JSON-encoded results, checked when ToolResultCallIds is supplied.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
 
+    /// <summary>Optional UI state that must be present in the model request.</summary>
     public JsonElement? State { get; init; }
 
+    /// <summary>Requires one nonempty thread identity across this recording session's calls.</summary>
     public bool RequireStableThread { get; init; }
 
+    /// <summary>Ordered response frames, separated by test-controlled checkpoint gates.</summary>
     public required List<RecordedFrame> Frames { get; init; }
 }
 
 internal sealed class RecordedFrame
 {
+    /// <summary>Checkpoint name released after this frame to allow the next frame to stream.</summary>
     public required string Name { get; init; }
 
+    /// <summary>Text chunks emitted after any state and function call in this frame.</summary>
     public List<string> Chunks { get; init; } = [];
 
+    /// <summary>Optional predictive-state snapshot emitted before other frame content.</summary>
     public JsonElement? State { get; init; }
 
+    /// <summary>Optional native tool call emitted before this frame's text chunks.</summary>
     public RecordedFunctionCall? FunctionCall { get; init; }
 }
 

@@ -51,10 +51,13 @@ public abstract class DojoTestBase : BrowserTest
             }
             else
             {
+                // Expose accidental transport usage instead of reaching an ambient API.
                 options.EnvironmentVariables["AGUI_DOJO_API_URL"] = "http://127.0.0.1:1";
             }
         });
 
+        // Keep recording selection out of ServerStartOptions: it is a host-cache key.
+        // Per-test sessions must reuse the same API and two UI processes.
         var session = new DojoTestSession(ui, api ?? ui);
         _sessions.Add(session);
         await session.InitializeAsync(recording);

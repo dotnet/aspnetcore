@@ -124,16 +124,25 @@ public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
         await Expect(editor).ToHaveClassAsync("document-editor__surface");
         await Expect(editor).ToHaveAttributeAsync("aria-readonly", "true");
         await Expect(editor.Locator("em").First).ToBeVisibleAsync();
-        var proposedDocument = await editor.Locator(".document-editor__diff")
-            .EvaluateAsync<string>(
-                """
-                element => {
-                    const clone = element.cloneNode(true);
-                    clone.querySelectorAll('s').forEach(item => item.remove());
-                    return clone.textContent;
+        await using var editorElement = await editor.ElementHandleAsync();
+        Assert.IsNotNull(editorElement);
+        // Releasing the model checkpoint does not wait for the circuit's render batch.
+        // Retry the candidate-only projection, not the already-visible previous diff.
+        await using var candidate = await editor.Page.WaitForFunctionAsync(
+            """
+            ({ editor, expected }) => {
+                const diff = editor.querySelector('.document-editor__diff');
+                if (!diff) {
+                    return false;
                 }
-                """);
-        StringAssert.Contains(proposedDocument, expected);
+
+                const clone = diff.cloneNode(true);
+                clone.querySelectorAll('s').forEach(item => item.remove());
+                return clone.textContent.includes(expected);
+            }
+            """,
+            new { editor = editorElement, expected },
+            new() { Timeout = 5_000 });
         Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
         await AssertNoInternalMetadataAsync(editor);
     }

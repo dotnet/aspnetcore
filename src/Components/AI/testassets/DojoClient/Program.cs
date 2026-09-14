@@ -20,12 +20,12 @@ IDojoScenarioBridge scenarioBridge = backend == DojoBackendKind.Direct
     : new AGUIDojoScenarioBridge();
 builder.Services.AddSingleton(scenarioBridge);
 builder.Services.AddSingleton<FunctionScenarioState>();
+builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
+    (sp, _) => FunctionScenarios.Create(sp.GetRequiredService<FunctionScenarioState>(), requiresApproval: false));
+builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
+    (_, _) => StructuredRichTextChatClient.Create());
 if (backend == DojoBackendKind.Direct)
 {
-    builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
-        (sp, _) => CreateChatClient(sp, FunctionScenarios.Invocation));
-    builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
-        (sp, _) => CreateChatClient(sp, StructuredRichTextChatClient.Endpoint));
     builder.Services.AddKeyedScoped<IChatClient>(
         ChatClientAgentFactory.ModelServiceKey,
         (sp, _) => ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
@@ -75,19 +75,8 @@ if (backend == DojoBackendKind.Direct)
 }
 
 app.MapStaticAssets();
-var components = app.MapRazorComponents<App>()
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-if (backend == DojoBackendKind.AGUI)
-{
-    components.Add(endpoint =>
-    {
-        if (endpoint is RouteEndpointBuilder route &&
-            route.RoutePattern.RawText is FunctionScenarios.Invocation or StructuredRichTextChatClient.Endpoint)
-        {
-            endpoint.Metadata.Add(new SuppressMatchingMetadata());
-        }
-    });
-}
 
 app.Run();
 
@@ -95,16 +84,11 @@ IChatClient CreateChatClient(IServiceProvider services, string endpoint)
 {
     if (backend == DojoBackendKind.Direct)
     {
-        if (endpoint == StructuredRichTextChatClient.Endpoint)
-        {
-            return StructuredRichTextChatClient.Create();
-        }
-
-        if (endpoint is FunctionScenarios.Approval or FunctionScenarios.Invocation)
+        if (endpoint == FunctionScenarios.Approval)
         {
             return new FormattedChatClient(FunctionScenarios.Create(
                 services.GetRequiredService<FunctionScenarioState>(),
-                requiresApproval: endpoint == FunctionScenarios.Approval));
+                requiresApproval: true));
         }
 
         var key = endpoint == DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint

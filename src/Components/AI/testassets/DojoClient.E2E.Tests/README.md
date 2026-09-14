@@ -2,7 +2,8 @@
 
 DojoClient uses the same protocol-compatible scenario pages with either backend,
 selected at app startup. Native structured content and pre-result informational
-rendering are Direct-only scenarios.
+rendering always use in-process clients, regardless of host configuration; their
+tests run once with Direct.
 
 | `DOJO_BACKEND` | Model host | Pipeline |
 | --- | --- | --- |
@@ -64,10 +65,10 @@ dojo scenarios and the focused component scenarios previously hosted in AIApp:
   to distinguish approval from rejection.
 - `/function-invocation` exercises the generic `FunctionInvocationContentBlock`,
   including its informational flag and loading-to-result transition. The release
-  button unblocks the real tool in the UI process. This scenario is Direct-only.
+  button unblocks the real tool in the UI process in either host configuration.
 - `/rich-text` renders native `RichTextContent` snapshots, including tables,
   images, footnotes, task lists, and encoded HTML, rather than parsing Markdown.
-  This scenario is Direct-only.
+  It always uses an in-process client.
 
 Function scenario controls use the page's conversation ID, so concurrent pages
 do not share invocation counters or result gates. The tests remove their control
@@ -79,8 +80,9 @@ arrives, so it cannot exercise the informational loading state before the tool
 result. That buffering is client behavior, not a prohibition on progressive
 tool-call events in the protocol. These two tests run once against Direct and
 retain their original in-process assertions without a custom serialization path.
-Their API endpoints and AG-UI UI routes are absent, and the home page lists them
-only in Direct mode. Approval remains covered on both backends through the
+These pages are registered and linked unconditionally in DojoClient; selecting
+AGUI for the other scenarios does not turn them into AG-UI clients. They have no
+API endpoints and no custom transport. Approval remains covered on both backends through the
 standard AG-UI approval protocol. The Markdown-based agentic-chat rich-text case
 also remains covered on both backends.
 
@@ -125,5 +127,10 @@ Native tool results are compared in the recording's JSON representation, so
 transport encoding differences do not require separate recordings.
 
 The forwarding decorator preserves AG-UI's generated thread-ID metadata when it
-clones request options. Tests cover both generated IDs and explicit thread/state
+clones request options by sharing `AdditionalProperties` with the caller. Copying
+that dictionary discards the thread ID pinned by `AGUIChatClient`. Tests cover both generated IDs and explicit thread/state
 metadata through the real `UIAgent` and `AGUIChatClient` request builders.
+
+A checkpoint release acknowledges the model gate, not the subsequent browser
+render. Predictive-document assertions wait for the rendered candidate text
+(excluding deleted `<s>` text) rather than reading the previous diff once.

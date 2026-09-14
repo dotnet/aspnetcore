@@ -38,9 +38,13 @@ internal sealed class RunForwardingChatClient(
         }
         else
         {
-            requestOptions.AdditionalProperties = options?.AdditionalProperties is { } properties
-                ? new(properties)
-                : [];
+            // AGUIChatClient pins its generated thread ID in the supplied options.
+            // Share that metadata so the caller retains it for subsequent turns.
+            if (options is not null)
+            {
+                options.AdditionalProperties ??= [];
+                requestOptions.AdditionalProperties = options.AdditionalProperties;
+            }
 
             var createInput = options?.RawRepresentationFactory;
             requestOptions.RawRepresentationFactory = client =>
