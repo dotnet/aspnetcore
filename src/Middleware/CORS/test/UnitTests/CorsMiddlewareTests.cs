@@ -649,6 +649,65 @@ public class CorsMiddlewareTests
     public Task CorsRequest_ReExecutedPipeline_WithNoPolicy_InheritsEarlierHeaders()
         => AssertReExecutedPipelineAsync("NoPolicy", "SourceHeader");
 
+    [Theory]
+    [InlineData("Disable", null)]
+    [InlineData("NoPolicy", "SourceHeader")]
+    public async Task CorsRequest_ExceptionHandlerReExecutedPipeline_UsesTargetPolicy(
+        string targetBehavior,
+        string expectedExposedHeader)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler("/error");
+                        app.UseRouting();
+                        app.UseCors();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.Map("/source", _ =>
+                                throw new InvalidOperationException("Test exception"))
+                                .RequireCors("Source");
+
+                            var errorEndpoint = endpoints.Map("/error", context =>
+                                context.Response.WriteAsync("Error endpoint"));
+
+                            _ = targetBehavior switch
+                            {
+                                "Disable" => errorEndpoint.WithMetadata(new DisableCorsAttribute()),
+                                "NoPolicy" => errorEndpoint,
+                                _ => throw new InvalidOperationException($"Unexpected target behavior '{targetBehavior}'."),
+                            };
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("Source", policy => policy
+                                .WithOrigins(OriginUrl)
+                                .AllowCredentials()
+                                .WithExposedHeaders("SourceHeader"));
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateRequest("/source")
+            .AddHeader(CorsConstants.Origin, OriginUrl)
+            .GetAsync();
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("Error endpoint", await response.Content.ReadAsStringAsync());
+        AssertCorsHeaders(response, expectedExposedHeader);
+    }
+
     private static async Task AssertReExecutedPipelineAsync(
         string targetBehavior,
         string expectedExposedHeader)
@@ -713,7 +772,7 @@ public class CorsMiddlewareTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal("Error endpoint", await response.Content.ReadAsStringAsync());
-        AssertCorsHeaders(response, expectedExposedHeader);
+        AssertCorsHeaders(response, expectedExposedHeader, variesByOrigin: expectedExposedHeader is not null);
 
         var directResponse = await server.CreateRequest("/error")
             .AddHeader(CorsConstants.Origin, OriginUrl)
@@ -721,23 +780,36 @@ public class CorsMiddlewareTests
 
         directResponse.EnsureSuccessStatusCode();
         Assert.Equal("Error endpoint", await directResponse.Content.ReadAsStringAsync());
-        AssertCorsHeaders(directResponse, targetBehavior == "Allow" ? "TargetHeader" : null);
+        AssertCorsHeaders(
+            directResponse,
+            targetBehavior == "Allow" ? "TargetHeader" : null,
+            variesByOrigin: targetBehavior == "Allow");
+    }
 
-        static void AssertCorsHeaders(HttpResponseMessage response, string exposedHeader)
+    private static void AssertCorsHeaders(
+        HttpResponseMessage response,
+        string exposedHeader,
+        bool variesByOrigin = false)
+    {
+        if (exposedHeader is null)
         {
-            if (exposedHeader is null)
-            {
-                Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowOrigin));
-                Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowCredentials));
-                Assert.False(response.Headers.Contains(CorsConstants.AccessControlExposeHeaders));
-                Assert.False(response.Headers.Contains("Vary"));
-                return;
-            }
+            Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowOrigin));
+            Assert.False(response.Headers.Contains(CorsConstants.AccessControlAllowCredentials));
+            Assert.False(response.Headers.Contains(CorsConstants.AccessControlExposeHeaders));
+            Assert.False(response.Headers.Contains("Vary"));
+            return;
+        }
 
-            Assert.Equal(OriginUrl, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin)));
-            Assert.Equal("true", Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowCredentials)));
-            Assert.Equal(exposedHeader, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlExposeHeaders)));
+        Assert.Equal(OriginUrl, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin)));
+        Assert.Equal("true", Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlAllowCredentials)));
+        Assert.Equal(exposedHeader, Assert.Single(response.Headers.GetValues(CorsConstants.AccessControlExposeHeaders)));
+        if (variesByOrigin)
+        {
             Assert.Equal(CorsConstants.Origin, Assert.Single(response.Headers.GetValues("Vary")));
+        }
+        else
+        {
+            Assert.False(response.Headers.Contains("Vary"));
         }
     }
 

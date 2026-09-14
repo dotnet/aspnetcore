@@ -13,8 +13,8 @@ public class CorsMiddleware
 {
     // Property key is used by other systems, e.g. MVC, to check if CORS middleware has run
     private const string CorsMiddlewareWithEndpointInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
-    private const string CorsResultKey = "__CorsMiddlewareResult";
     private static readonly object CorsMiddlewareWithEndpointInvokedValue = new object();
+    private static readonly object CorsResultKey = new object();
 
     private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
     private readonly RequestDelegate _next;
