@@ -470,27 +470,8 @@ namespace Microsoft.Extensions.Validation.Generated
                 return result.ErrorMessage;
             }
 
-            return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate, displayName);
+            return attribute.FormatMessage(localizedTemplate, displayName);
         }
-
-        private static string FormatErrorMessage(
-            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
-            global::System.Globalization.CultureInfo culture,
-            string messageTemplate,
-            string displayName)
-            => attribute switch
-            {
-                global::Microsoft.Extensions.Validation.IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
-                global::System.ComponentModel.DataAnnotations.CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
-                global::System.ComponentModel.DataAnnotations.FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
-                global::System.ComponentModel.DataAnnotations.LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
-                global::System.ComponentModel.DataAnnotations.MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-                global::System.ComponentModel.DataAnnotations.MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
-                global::System.ComponentModel.DataAnnotations.RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
-                global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
-                global::System.ComponentModel.DataAnnotations.StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
-                _ => string.Format(culture, messageTemplate, displayName),
-            };
 
         private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
             global::Microsoft.Extensions.Validation.ValidateContext context,

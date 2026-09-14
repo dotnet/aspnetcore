@@ -707,6 +707,46 @@ public class SignInManagerTest
     }
 
     [Fact]
+    public async Task MakePasskeyCreationOptionsAsyncPassesConditionalMediationToHandler()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo" };
+        var expectedOptionsJson = "<some-options-json>";
+        PasskeyUserEntity receivedUserEntity = null;
+        bool? receivedIsConditionallyMediated = null;
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeCreationOptionsAsync(It.IsAny<PasskeyUserEntity>(), It.IsAny<bool>(), It.IsAny<HttpContext>()))
+            .Callback((PasskeyUserEntity userEntity, bool isConditionallyMediated, HttpContext _) =>
+            {
+                receivedUserEntity = userEntity;
+                receivedIsConditionallyMediated = isConditionallyMediated;
+            })
+            .Returns(Task.FromResult(new PasskeyCreationOptionsResult
+            {
+                AttestationState = "<some-attestation-state>",
+                CreationOptionsJson = expectedOptionsJson,
+            }));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // Act
+        var optionsJson = await helper.MakePasskeyCreationOptionsAsync(userEntity, isConditionallyMediated: true);
+
+        // Assert
+        Assert.Equal(expectedOptionsJson, optionsJson);
+        Assert.Same(userEntity, receivedUserEntity);
+        Assert.True(receivedIsConditionallyMediated);
+        auth.Verify(
+            a => a.SignInAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
+            Times.Once());
+    }
+
+    [Fact]
     public async Task CanMakeAllAcceptedCredentialsSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
@@ -751,6 +791,126 @@ public class SignInManagerTest
 
         Assert.Equal(expectedOptionsJson, optionsJson);
         passkeyHandler.Verify();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SupportsPasskeyConditionalCreationMatchesHandler(bool supportsConditionalCreation)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.SupportsConditionalCreation)
+            .Returns(supportsConditionalCreation);
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var helper = SetupSignInManager(manager.Object, new DefaultHttpContext());
+
+        // Act & Assert
+        Assert.Equal(supportsConditionalCreation, helper.SupportsPasskeyConditionalCreation);
+    }
+
+    [Fact]
+    public void SupportsPasskeyConditionalCreationIsFalseWithoutHandler()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var manager = SetupUserManager(user);
+        var helper = SetupSignInManager(manager.Object, new DefaultHttpContext());
+
+        // Act & Assert
+        Assert.False(helper.SupportsPasskeyConditionalCreation);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MakePasskeyCreationOptionsAsyncUsesOriginalHandlerOverload(bool useConditionalOverload)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo" };
+        var expectedOptionsJson = "<some-options-json>";
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeCreationOptionsAsync(userEntity, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyCreationOptionsResult
+            {
+                AttestationState = "<some-attestation-state>",
+                CreationOptionsJson = expectedOptionsJson,
+            }));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // Act
+        var optionsJson = useConditionalOverload
+            ? await helper.MakePasskeyCreationOptionsAsync(userEntity, isConditionallyMediated: false)
+            : await helper.MakePasskeyCreationOptionsAsync(userEntity);
+
+        // Assert
+        Assert.Equal(expectedOptionsJson, optionsJson);
+        passkeyHandler.Verify(
+            h => h.MakeCreationOptionsAsync(userEntity, context),
+            Times.Once());
+        passkeyHandler.Verify(
+            h => h.MakeCreationOptionsAsync(
+                It.IsAny<PasskeyUserEntity>(),
+                It.IsAny<bool>(),
+                It.IsAny<HttpContext>()),
+            Times.Never());
+        auth.Verify(
+            a => a.SignInAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
+            Times.Once());
+    }
+
+    [Fact]
+    public async Task MakePasskeyCreationOptionsAsyncThrowsForConditionalMediationOnUnsupportedHandler()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo" };
+        var manager = SetupUserManager(user, passkeyHandler: new NonConditionalPasskeyHandler());
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // Act & Assert
+        Assert.False(helper.SupportsPasskeyConditionalCreation);
+
+        var optionsJson = await helper.MakePasskeyCreationOptionsAsync(userEntity, isConditionallyMediated: false);
+        Assert.Equal(NonConditionalPasskeyHandler.CreationOptionsJson, optionsJson);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+            () => helper.MakePasskeyCreationOptionsAsync(userEntity, isConditionallyMediated: true));
+        Assert.Contains("does not support conditionally mediated passkey creation", exception.Message);
+    }
+
+    // Represents a handler written before conditional mediation was supported,
+    // which therefore relies on the default interface implementation.
+    private sealed class NonConditionalPasskeyHandler : IPasskeyHandler<PocoUser>
+    {
+        public const string CreationOptionsJson = "<some-options-json>";
+
+        public Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
+            => Task.FromResult(new PasskeyCreationOptionsResult
+            {
+                AttestationState = "<some-attestation-state>",
+                CreationOptionsJson = CreationOptionsJson,
+            });
+
+        public Task<PasskeyRequestOptionsResult> MakeRequestOptionsAsync(PocoUser user, HttpContext httpContext)
+            => throw new NotImplementedException();
+
+        public Task<PasskeyAttestationResult> PerformAttestationAsync(PasskeyAttestationContext context)
+            => throw new NotImplementedException();
+
+        public Task<PasskeyAssertionResult<PocoUser>> PerformAssertionAsync(PasskeyAssertionContext context)
+            => throw new NotImplementedException();
     }
 
     [Theory]
@@ -968,7 +1128,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         SetupSignIn(context, auth, user.Id, isPersistent);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
@@ -986,6 +1146,39 @@ public class SignInManagerTest
 
         // Assert
         Assert.True(result.Succeeded);
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task TwoFactorAuthenticatorSignInFailsAfterSecurityStampChanges()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        const string code = "3123";
+        var manager = SetupUserManager(user);
+        manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true);
+        var stamp = "old-stamp";
+        manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync(() => stamp);
+        manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, code)).Throws(new Exception("Should not get called"));
+
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // The two-factor cookie is issued while the current (old) security stamp is in effect.
+        var id = await helper.StoreTwoFactorInfo(user, null);
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+        // Simulate a password reset changing the security stamp before the 2FA code is submitted.
+        stamp = "new-stamp";
+
+        // Act
+        var result = await helper.TwoFactorAuthenticatorSignInAsync(code, isPersistent: false, rememberClient: false);
+
+        // Assert
+        Assert.Same(SignInResult.Failed, result);
         manager.Verify();
         auth.Verify();
     }
@@ -1010,7 +1203,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -1049,7 +1242,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -1125,7 +1318,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { User = user };
         var loginProvider = "loginprovider";
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = await helper.StoreTwoFactorInfo(user, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,
@@ -1377,7 +1570,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { User = user };
         var loginProvider = "loginprovider";
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = await helper.StoreTwoFactorInfo(user, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,
@@ -1437,7 +1630,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, loginProvider: null);
+        var id = await helper.StoreTwoFactorInfo(user, loginProvider: null);
 
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
@@ -1996,7 +2189,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -2062,7 +2255,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
