@@ -28,7 +28,6 @@ module Program =
         builder
             .Services
             .AddControllersWithViews()
-            .AddRazorRuntimeCompilation()
 
         builder.Services.AddRazorPages()
 

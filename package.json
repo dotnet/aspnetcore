@@ -7,7 +7,7 @@
     "src/SignalR/clients/ts/signalr-protocol-msgpack",
     "src/SignalR/clients/ts/FunctionalTests",
     "src/SignalR/clients/ts",
-    "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/Web.JS/JSInterop",
     "src/Components/dotnet-runtime-js",
     "src/Components/Web.JS/",
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
