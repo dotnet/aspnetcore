@@ -1627,7 +1627,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                         {
                             UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
-                            _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: false);
+                            _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: true);
                         }
                         break;
                     case HeaderType.NameAndValue:
