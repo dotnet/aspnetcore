@@ -67,9 +67,9 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
                 return AuthenticateResult.NoResult();
             }
 
-            // Captured before any await: an application event callback below may run another
-            // certificate scheme's handler, which overwrites the shared Context.Items slot that
-            // the cache key is derived from.
+            // Captured before any application event callback runs: a callback below may run
+            // another certificate scheme's handler, which overwrites the shared Context.Items
+            // slot that the cache key is derived from.
             var schemeName = Scheme.Name;
 
             if (_cache != null)
@@ -94,7 +94,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
                 }
             }
 
-            if (_cache != null)
+            if (_cache is not null)
             {
                 // Re-establish the slot: a callback above may have overwritten it while
                 // running another certificate scheme's handler.
