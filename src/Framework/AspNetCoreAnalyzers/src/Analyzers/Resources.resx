@@ -337,6 +337,6 @@
     <value>Configure client certificate validation for HTTP/3</value>
   </data>
   <data name="Analyzer_ConfigureCertificateValidationForHttp3_Message" xml:space="preserve">
-    <value>SslCertificateTrust does not restrict client certificates accepted over HTTP/3. Configure RemoteCertificateValidationCallback or CertificateChainPolicy to validate client certificates.</value>
+    <value>SslCertificateTrust does not restrict client certificates accepted over HTTP/3. Configure RemoteCertificateValidationCallback or a CertificateChainPolicy that uses CustomRootTrust with a populated CustomTrustStore.</value>
   </data>
 </root>

@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -29,19 +30,24 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             var tlsHandshakeCallbackOptions = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions");
             var listenOptions = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions");
             var httpProtocols = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols");
+            var x509ChainPolicy = context.Compilation.GetTypeByMetadataName("System.Security.Cryptography.X509Certificates.X509ChainPolicy");
+            var x509ChainTrustMode = context.Compilation.GetTypeByMetadataName("System.Security.Cryptography.X509Certificates.X509ChainTrustMode");
 
             if (sslServerAuthenticationOptions is null ||
                 sslStreamCertificateContext is null ||
                 sslCertificateTrust is null ||
                 tlsHandshakeCallbackOptions is null ||
                 listenOptions is null ||
-                httpProtocols is null)
+                httpProtocols is null ||
+                x509ChainPolicy is null ||
+                x509ChainTrustMode is null)
             {
                 return;
             }
 
             var http3 = httpProtocols.GetMembers("Http3").OfType<IFieldSymbol>().SingleOrDefault()?.ConstantValue;
-            if (http3 is null)
+            var customRootTrust = x509ChainTrustMode.GetMembers("CustomRootTrust").OfType<IFieldSymbol>().SingleOrDefault()?.ConstantValue;
+            if (http3 is null || customRootTrust is null)
             {
                 return;
             }
@@ -54,7 +60,9 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                     sslCertificateTrust,
                     tlsHandshakeCallbackOptions,
                     listenOptions,
-                    Convert.ToInt64(http3, CultureInfo.InvariantCulture)),
+                    x509ChainPolicy,
+                    Convert.ToInt64(http3, CultureInfo.InvariantCulture),
+                    Convert.ToInt64(customRootTrust, CultureInfo.InvariantCulture)),
                 OperationKind.ObjectCreation);
         });
     }
@@ -66,7 +74,9 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         INamedTypeSymbol sslCertificateTrust,
         INamedTypeSymbol tlsHandshakeCallbackOptions,
         INamedTypeSymbol listenOptions,
-        long http3)
+        INamedTypeSymbol x509ChainPolicy,
+        long http3,
+        long customRootTrust)
     {
         var objectCreation = (IObjectCreationOperation)context.Operation;
         if (!SymbolEqualityComparer.Default.Equals(objectCreation.Type, sslServerAuthenticationOptions) ||
@@ -77,7 +87,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
 
         ISimpleAssignmentOperation? serverCertificateContextAssignment = null;
         var clientCertificateRequired = false;
-        var hasCustomValidation = false;
+        var hasEffectiveValidation = false;
 
         foreach (var initializer in objectCreation.Initializer.Initializers.OfType<ISimpleAssignmentOperation>())
         {
@@ -93,8 +103,10 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                     clientCertificateRequired = initializer.Value.ConstantValue is { HasValue: true, Value: true };
                     break;
                 case "RemoteCertificateValidationCallback":
+                    hasEffectiveValidation |= HasEffectiveValidationCallback(initializer.Value);
+                    break;
                 case "CertificateChainPolicy":
-                    hasCustomValidation |= !IsNull(initializer.Value);
+                    hasEffectiveValidation |= HasEffectiveChainPolicy(initializer.Value, x509ChainPolicy, customRootTrust);
                     break;
                 case "ServerCertificateContext" when UsesCertificateTrust(initializer.Value, sslStreamCertificateContext, sslCertificateTrust):
                     serverCertificateContextAssignment = initializer;
@@ -103,7 +115,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         }
 
         if (!clientCertificateRequired ||
-            hasCustomValidation ||
+            hasEffectiveValidation ||
             serverCertificateContextAssignment is null ||
             !TryGetKestrelUseHttpsInvocation(objectCreation, tlsHandshakeCallbackOptions, out var useHttpsInvocation) ||
             !IsHttp3EnabledInContainingScope(useHttpsInvocation, listenOptions, http3))
@@ -114,6 +126,107 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.ConfigureCertificateValidationForHttp3,
             serverCertificateContextAssignment.Target.Syntax.GetLocation()));
+    }
+
+    private static bool HasEffectiveValidationCallback(IOperation value)
+    {
+        value = UnwrapConversion(value);
+        if (IsNull(value))
+        {
+            return false;
+        }
+
+        var callback = value.DescendantsAndSelf().OfType<IAnonymousFunctionOperation>().FirstOrDefault();
+        if (callback is null)
+        {
+            // Method groups, delegate references, and other opaque values might perform validation.
+            return true;
+        }
+
+        if (callback.Syntax is not LambdaExpressionSyntax lambda)
+        {
+            return true;
+        }
+
+        // Only a visibly unconditional accept-all callback is ineffective. Any other callback
+        // shape remains outside this diagnostic rather than being audited for correctness.
+        if (lambda.Body is LiteralExpressionSyntax { Token.Value: true })
+        {
+            return false;
+        }
+
+        if (lambda.Body is not BlockSyntax block)
+        {
+            return true;
+        }
+
+        var returns = block.DescendantNodes(node => node is not AnonymousFunctionExpressionSyntax)
+            .OfType<ReturnStatementSyntax>()
+            .ToArray();
+
+        return returns.Length is 0 ||
+            returns.Any(returnStatement => returnStatement.Expression is not LiteralExpressionSyntax { Token.Value: true });
+    }
+
+    private static bool HasEffectiveChainPolicy(
+        IOperation value,
+        INamedTypeSymbol x509ChainPolicy,
+        long customRootTrust)
+    {
+        value = UnwrapConversion(value);
+        if (IsNull(value))
+        {
+            return false;
+        }
+
+        if (value is not IObjectCreationOperation policyCreation ||
+            !SymbolEqualityComparer.Default.Equals(policyCreation.Type, x509ChainPolicy))
+        {
+            // A policy configured elsewhere might use custom root trust. Avoid claiming it is unsafe.
+            return true;
+        }
+
+        if (policyCreation.Initializer is null)
+        {
+            return false;
+        }
+
+        var hasCustomRootTrust = false;
+        var hasPopulatedCustomTrustStore = false;
+        var hasUnknownTrustMode = false;
+
+        foreach (var initializer in policyCreation.Initializer.Initializers)
+        {
+            if (initializer is ISimpleAssignmentOperation
+                {
+                    Target: IPropertyReferenceOperation { Property.Name: "TrustMode" }
+                } trustModeAssignment &&
+                UnwrapConversion(trustModeAssignment.Value).ConstantValue is { HasValue: true, Value: var trustMode })
+            {
+                hasCustomRootTrust = Convert.ToInt64(trustMode, CultureInfo.InvariantCulture) == customRootTrust;
+            }
+            else if (initializer is ISimpleAssignmentOperation
+            {
+                Target: IPropertyReferenceOperation { Property.Name: "TrustMode" }
+            })
+            {
+                hasUnknownTrustMode = true;
+            }
+            else if (initializer is IMemberInitializerOperation
+            {
+                InitializedMember: IPropertyReferenceOperation { Property.Name: "CustomTrustStore" },
+                Initializer: var customTrustStoreInitializer
+            } &&
+                customTrustStoreInitializer.DescendantsAndSelf().OfType<IInvocationOperation>().Any(
+                    invocation => invocation.TargetMethod.Name == "Add" &&
+                        invocation.Arguments.Length is 1 &&
+                        !IsNull(invocation.Arguments[0].Value)))
+            {
+                hasPopulatedCustomTrustStore = true;
+            }
+        }
+
+        return hasUnknownTrustMode || (hasCustomRootTrust && hasPopulatedCustomTrustStore);
     }
 
     private static bool UsesCertificateTrust(
@@ -147,7 +260,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         useHttpsInvocation = null!;
 
         var callback = GetAncestors(sslOptionsCreation).OfType<IAnonymousFunctionOperation>().FirstOrDefault();
-        if (callback is null)
+        if (callback is null || !IsDirectlyReturned(sslOptionsCreation, callback))
         {
             return false;
         }
@@ -158,7 +271,8 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                 Property.Name: "OnConnection",
                 Property.ContainingType: var containingType
             } ||
-            !SymbolEqualityComparer.Default.Equals(containingType, tlsHandshakeCallbackOptions))
+            !SymbolEqualityComparer.Default.Equals(containingType, tlsHandshakeCallbackOptions) ||
+            onConnectionAssignment.Value.DescendantsAndSelf().OfType<IAnonymousFunctionOperation>().FirstOrDefault() != callback)
         {
             return false;
         }
@@ -178,6 +292,80 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
 
         useHttpsInvocation = invocation;
         return true;
+    }
+
+    private static bool IsDirectlyReturned(
+        IObjectCreationOperation sslOptionsCreation,
+        IAnonymousFunctionOperation callback)
+    {
+        var returnOperation = GetAncestors(sslOptionsCreation).OfType<IReturnOperation>().FirstOrDefault();
+        if (returnOperation?.ReturnedValue is null ||
+            GetAncestors(returnOperation).OfType<IAnonymousFunctionOperation>().FirstOrDefault() != callback)
+        {
+            return false;
+        }
+
+        var returnedValue = UnwrapConversion(returnOperation.ReturnedValue);
+        if (returnedValue == sslOptionsCreation)
+        {
+            return true;
+        }
+
+        if (returnedValue is IInvocationOperation
+            {
+                TargetMethod:
+                {
+                    Name: "FromResult",
+                    ContainingType:
+                    {
+                        Name: "ValueTask",
+                        ContainingNamespace:
+                        {
+                            Name: "Tasks",
+                            ContainingNamespace:
+                            {
+                                Name: "Threading",
+                                ContainingNamespace:
+                                {
+                                    Name: "System",
+                                    ContainingNamespace.IsGlobalNamespace: true
+                                }
+                            }
+                        }
+                    }
+                }
+            } invocation &&
+            invocation.Arguments.Length is 1)
+        {
+            return UnwrapConversion(invocation.Arguments[0].Value) == sslOptionsCreation;
+        }
+
+        if (returnedValue is IObjectCreationOperation
+            {
+                Type:
+                {
+                    Name: "ValueTask",
+                    ContainingNamespace:
+                    {
+                        Name: "Tasks",
+                        ContainingNamespace:
+                        {
+                            Name: "Threading",
+                            ContainingNamespace:
+                            {
+                                Name: "System",
+                                ContainingNamespace.IsGlobalNamespace: true
+                            }
+                        }
+                    }
+                }
+            } constructor &&
+            constructor.Arguments.Length is 1)
+        {
+            return UnwrapConversion(constructor.Arguments[0].Value) == sslOptionsCreation;
+        }
+
+        return false;
     }
 
     private static bool IsHttp3EnabledInContainingScope(
@@ -200,7 +388,8 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             return false;
         }
 
-        foreach (var assignment in containingBlock.Descendants().OfType<ISimpleAssignmentOperation>())
+        ISimpleAssignmentOperation? finalAssignment = null;
+        foreach (var assignment in containingBlock.Descendants().OfType<IAssignmentOperation>())
         {
             if (assignment.Target is not IPropertyReferenceOperation
                 {
@@ -208,18 +397,24 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                     Instance: var instance
                 } propertyReference ||
                 !SymbolEqualityComparer.Default.Equals(propertyReference.Property.ContainingType, listenOptions) ||
-                !SymbolEqualityComparer.Default.Equals(GetReferencedSymbol(instance), receiverSymbol) ||
-                assignment.Parent?.Parent != containingBlock ||
-                assignment.Value.ConstantValue is not { HasValue: true, Value: var value } ||
-                (Convert.ToInt64(value, CultureInfo.InvariantCulture) & http3) == 0)
+                !SymbolEqualityComparer.Default.Equals(GetReferencedSymbol(instance), receiverSymbol))
             {
                 continue;
             }
 
-            return true;
+            if (assignment is not ISimpleAssignmentOperation simpleAssignment ||
+                assignment.Parent?.Parent != containingBlock ||
+                assignment.Value.ConstantValue is not { HasValue: true })
+            {
+                // Conditional, compound, and nonconstant protocol configuration is unresolved.
+                return false;
+            }
+
+            finalAssignment = simpleAssignment;
         }
 
-        return false;
+        return finalAssignment?.Value.ConstantValue is { HasValue: true, Value: var value } &&
+            (Convert.ToInt64(value, CultureInfo.InvariantCulture) & http3) != 0;
     }
 
     private static ISymbol? GetReferencedSymbol(IOperation? operation)
