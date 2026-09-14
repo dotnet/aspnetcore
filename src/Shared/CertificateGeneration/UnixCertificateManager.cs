@@ -705,7 +705,6 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// </remarks>
     private static bool TryAddCertificateToNssDb(string certificatePath, string nickname, NssDb nssDb)
     {
-        // Firefox doesn't seem to respect the more correct "trusted peer" (P) usage, so we use "trusted CA" (C) instead.
         // This silently clobbers an existing entry, so there's no need to check for existence first.
         using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} -A -i {certificatePath} -t \"{nssDb.TrustUsage},,\"")
@@ -1083,6 +1082,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         public override string CheckOperation => "-L";
 
+        // Firefox doesn't seem to respect the more correct "trusted peer" (P) usage.
         public override string TrustUsage => "C";
 
         public static bool TryRemoveOverridePrefix(string path, out string unprefixedPath)
