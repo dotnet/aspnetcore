@@ -61,11 +61,7 @@ internal sealed partial class HttpConnectionDispatcher
         _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
     }
 
-    public async Task ExecuteAsync(
-        HttpContext context,
-        HttpConnectionDispatcherOptions options,
-        ConnectionDelegate connectionDelegate,
-        HttpConnectionEndpoint? endpoint = null)
+    public async Task ExecuteAsync(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionDelegate connectionDelegate)
     {
         // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
         // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
@@ -73,6 +69,7 @@ internal sealed partial class HttpConnectionDispatcher
 
         HttpConnectionContext? connectionContext = null;
         var connectionToken = GetConnectionToken(context);
+        var endpoint = GetConnectionEndpoint(context);
 
         if (!StringValues.IsNullOrEmpty(connectionToken))
         {
@@ -106,11 +103,10 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    public async Task ExecuteNegotiateAsync(
-        HttpContext context,
-        HttpConnectionDispatcherOptions options,
-        HttpConnectionEndpoint? endpoint = null)
+    public async Task ExecuteNegotiateAsync(HttpContext context, HttpConnectionDispatcherOptions options)
     {
+        var endpoint = GetConnectionEndpoint(context);
+
         // Create the log scope and the scope connectionId param will be set when the connection is created.
         var logScope = new ConnectionLogScope(connectionId: string.Empty);
         using (_logger.BeginScope(logScope))
@@ -128,11 +124,10 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    public async Task ExecuteRefreshAsync(
-        HttpContext context,
-        HttpConnectionDispatcherOptions options,
-        HttpConnectionEndpoint? endpoint = null)
+    public async Task ExecuteRefreshAsync(HttpContext context, HttpConnectionDispatcherOptions options)
     {
+        var endpoint = GetConnectionEndpoint(context);
+
         var logScope = new ConnectionLogScope(connectionId: string.Empty);
         using (_logger.BeginScope(logScope))
         {
@@ -635,6 +630,9 @@ internal sealed partial class HttpConnectionDispatcher
     }
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
+
+    private static HttpConnectionEndpoint? GetConnectionEndpoint(HttpContext context) =>
+        context.GetEndpoint()?.Metadata.GetMetadata<HttpConnectionEndpoint>();
 
     private async Task ProcessSend(HttpContext context, HttpConnectionEndpoint? endpoint)
     {

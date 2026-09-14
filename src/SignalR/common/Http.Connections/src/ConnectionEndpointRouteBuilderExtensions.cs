@@ -99,7 +99,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // Build the negotiate application
         var app = endpoints.CreateApplicationBuilder();
         app.UseWebSockets();
-        app.Run(c => dispatcher.ExecuteNegotiateAsync(c, options, connectionEndpoint));
+        app.Run(c => dispatcher.ExecuteNegotiateAsync(c, options));
         var negotiateHandler = app.Build();
 
         var negotiateBuilder = endpoints.Map(pattern + "/negotiate", negotiateHandler);
@@ -112,7 +112,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         if (options.EnableAuthenticationRefresh)
         {
             var refreshApp = endpoints.CreateApplicationBuilder();
-            refreshApp.Run(c => dispatcher.ExecuteRefreshAsync(c, options, connectionEndpoint));
+            refreshApp.Run(c => dispatcher.ExecuteRefreshAsync(c, options));
             var refreshHandler = refreshApp.Build();
 
             var refreshBuilder = endpoints.Map(pattern + "/refresh", refreshHandler);
@@ -125,7 +125,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // build the execute handler part of the protocol
         app = endpoints.CreateApplicationBuilder();
         app.UseWebSockets();
-        app.Run(c => dispatcher.ExecuteAsync(c, options, connectionDelegate, connectionEndpoint));
+        app.Run(c => dispatcher.ExecuteAsync(c, options, connectionDelegate));
         var executehandler = app.Build();
 
         var executeBuilder = endpoints.Map(pattern, executehandler);
@@ -137,6 +137,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // Add metadata to all of Endpoints
         compositeConventionBuilder.Add(e =>
         {
+            e.Metadata.Add(connectionEndpoint);
+
             // Add the authorization data as metadata
             foreach (var data in options.AuthorizationData)
             {
