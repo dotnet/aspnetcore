@@ -14,8 +14,8 @@ public class CorsMiddleware
     // Property key is used by other systems, e.g. MVC, to check if CORS middleware has run
     private const string CorsMiddlewareWithEndpointInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
     private static readonly object CorsMiddlewareWithEndpointInvokedValue = new object();
-    private static readonly object CorsResultKey = new object();
 
+    private readonly object _corsResultKey = new object();
     private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
     private readonly RequestDelegate _next;
     private readonly CorsPolicy? _policy;
@@ -116,7 +116,7 @@ public class CorsMiddleware
 
         if (corsMetadata is IDisableCorsAttribute)
         {
-            if (context.Items[CorsResultKey] is CorsResultState corsResultState)
+            if (context.Items[_corsResultKey] is CorsResultState corsResultState)
             {
                 corsResultState.Result = null;
             }
@@ -191,10 +191,10 @@ public class CorsMiddleware
         }
         else
         {
-            if (context.Items[CorsResultKey] is not CorsResultState corsResultState)
+            if (context.Items[_corsResultKey] is not CorsResultState corsResultState)
             {
                 corsResultState = new CorsResultState(this, context);
-                context.Items[CorsResultKey] = corsResultState;
+                context.Items[_corsResultKey] = corsResultState;
                 context.Response.OnStarting(OnResponseStartingDelegate, corsResultState);
             }
 

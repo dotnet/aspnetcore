@@ -6,6 +6,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -649,6 +650,44 @@ public class CorsMiddlewareTests
     public Task CorsRequest_ReExecutedPipeline_WithNoPolicy_InheritsEarlierHeaders()
         => AssertReExecutedPipelineAsync("NoPolicy", "SourceHeader");
 
+    [Fact]
+    public async Task CorsRequest_MultipleMiddlewareInstances_ApplyTheirOwnResults()
+    {
+        var firstResult = new CorsResult();
+        var secondResult = new CorsResult();
+        var firstService = new Mock<ICorsService>();
+        var secondService = new Mock<ICorsService>();
+        var policy = new CorsPolicy();
+        var policyProvider = Mock.Of<ICorsPolicyProvider>();
+
+        firstService.Setup(service => service.EvaluatePolicy(It.IsAny<HttpContext>(), policy))
+            .Returns(firstResult);
+        secondService.Setup(service => service.EvaluatePolicy(It.IsAny<HttpContext>(), policy))
+            .Returns(secondResult);
+
+        var secondMiddleware = new CorsMiddleware(
+            _ => Task.CompletedTask,
+            secondService.Object,
+            policy,
+            NullLoggerFactory.Instance);
+        var firstMiddleware = new CorsMiddleware(
+            context => secondMiddleware.Invoke(context, policyProvider),
+            firstService.Object,
+            policy,
+            NullLoggerFactory.Instance);
+
+        var responseFeature = new TestResponseFeature();
+        var context = new DefaultHttpContext();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.Headers.Add(CorsConstants.Origin, OriginUrl);
+
+        await firstMiddleware.Invoke(context, policyProvider);
+        await responseFeature.FireOnStartingAsync();
+
+        firstService.Verify(service => service.ApplyResult(firstResult, context.Response), Times.Once);
+        secondService.Verify(service => service.ApplyResult(secondResult, context.Response), Times.Once);
+    }
+
     [Theory]
     [InlineData("Disable", null)]
     [InlineData("NoPolicy", "SourceHeader")]
@@ -1215,5 +1254,21 @@ public class CorsMiddlewareTests
 
         // Assert
         Assert.DoesNotContain(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareWithEndpointInvoked"));
+    }
+
+    private sealed class TestResponseFeature : HttpResponseFeature
+    {
+        private readonly Stack<(Func<object, Task> Callback, object State)> _callbacks = new();
+
+        public override void OnStarting(Func<object, Task> callback, object state)
+            => _callbacks.Push((callback, state));
+
+        public async Task FireOnStartingAsync()
+        {
+            while (_callbacks.TryPop(out var callback))
+            {
+                await callback.Callback(callback.State);
+            }
+        }
     }
 }
