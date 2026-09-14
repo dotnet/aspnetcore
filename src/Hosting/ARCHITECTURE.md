@@ -91,7 +91,7 @@ The builder variants intentionally compose different defaults:
 | Builder | Composition |
 | --- | --- |
 | `CreateBuilder` | Generic Host defaults plus the full ASP.NET Core web defaults, including Kestrel, routing, host filtering, forwarded-header setup, IIS integration, static web assets in Development, development-time service-provider validation, and assembly-discovered `IHostingStartup` support. |
-| `CreateSlimBuilder` | Generic Host application configuration and essential logging plus Kestrel Core and routing core. It retains host filtering, forwarded-header setup, cross-origin CSRF protection, the Development exception page, and development-time service-provider validation while omitting IIS integration, static web assets, full Kestrel, and assembly-discovered `IHostingStartup` support. |
+| `CreateSlimBuilder` | An ASP.NET Core-curated set of application-configuration and logging defaults layered over an empty runtime builder, plus Kestrel Core and routing core. It retains host filtering, forwarded-header setup, cross-origin CSRF protection, the Development exception page, and development-time service-provider validation while omitting IIS integration, static web assets, full Kestrel, and assembly-discovered `IHostingStartup` support. |
 | `CreateEmptyBuilder` | The host and web integration scaffolding with a default content root, but no default server, routing, host filtering, forwarded headers, developer exception page, default service-provider validation, `ASPNETCORE_` environment configuration, or assembly-discovered `IHostingStartup` support. |
 
 Slim and empty builders are not required to behave as if omitted services were registered. Shared behavior is tested across variants where the abstraction promises it; differences in default composition are deliberate.
@@ -100,7 +100,7 @@ Slim and empty builders are not required to behave as if omitted services were r
 
 `ConfigureWebHost` adapts an existing `IHostBuilder` to an ASP.NET Core web workload. `GenericWebHostBuilder` translates web settings and callbacks into Generic Host configuration and service registrations. `ConfigureWebHostDefaults` additionally selects common web defaults.
 
-This full Generic Host integration discovers `IHostingStartup` assemblies. It records their application-configuration and service callbacks before invoking the direct callbacks registered through `ConfigureWebHost`, so hosting-startup contributions run first in this model.
+This full Generic Host integration discovers `IHostingStartup` assemblies. It buffers `ConfigureAppConfiguration` and `ConfigureServices` callbacks contributed by those assemblies and runs them before direct callbacks in the corresponding phases. Other calls, including `UseSetting`, `Configure`, `UseStartup`, and `UseDefaultServiceProvider`, are forwarded to the underlying builder and do not have the same precedence guarantee.
 
 The resulting web runtime is `GenericWebHostService`, an `IHostedService` inside the Generic Host. The Generic Host remains responsible for the root provider, hosted-service lifecycle, `HostOptions`, process lifetime, and final disposal. ASP.NET Core is responsible for what the web hosted service builds and for its handoff to `IServer`.
 
@@ -126,11 +126,11 @@ Application name, environment name, content root, and web root influence configu
 
 `WebApplicationOptions` supplies these values at construction time. The `WebApplicationBuilder.Host` and `.WebHost` adapters run configuration and service callbacks immediately so imperative code can observe their effects, but reject later changes to identity values whose consequences have already been applied. The adapters are configuration views over one build; they are not independently buildable hosts.
 
-The runtime Generic Host owns its default configuration sources. ASP.NET Core injects `ASPNETCORE_`-prefixed environment variables early as baseline web-host configuration, allowing later Generic Host sources such as `DOTNET_`-prefixed variables, non-prefixed variables, and command-line arguments to override them. `ConfigurationManager` remains a live, ordered collection of sources, so later sources override earlier values. Exact defaults differ by builder:
+Configuration source ordering is model-specific. In the default and slim `WebApplicationBuilder` paths, ASP.NET Core injects `ASPNETCORE_`-prefixed environment variables as baseline configuration before `DOTNET_`-prefixed variables, application configuration, and command-line arguments; later sources can override earlier values.
 
-- The default builder uses the runtime Generic Host defaults and then applies full web defaults.
-- The slim builder recreates the required application configuration and essential logging around an empty runtime builder before applying slim web defaults.
-- The empty builder intentionally omits the normal `ASPNETCORE_` environment source and most framework defaults.
+The default builder receives the runtime `HostApplicationBuilder` defaults. The slim builder instead starts from an empty runtime builder and explicitly adds an ASP.NET Core-curated subset: `appsettings.json`, the environment-specific appsettings file, Development user secrets, non-prefixed environment variables, command-line arguments, and essential logging. It does not automatically inherit every runtime default as that set evolves, including the application-name-specific `{ApplicationName}.settings.json` files. The empty builder intentionally omits these normal sources and most framework defaults.
+
+An explicit `HostBuilder` combined with `ConfigureWebHost` or `ConfigureWebHostDefaults` uses registration-ordered host and application configuration phases, so its effective precedence can differ. Application name, environment, and content root are established from host configuration before application configuration runs; adding later application sources does not recompute those identity values.
 
 The effective environment is shared with web hosting through `IWebHostEnvironment`. Content-root and web-root paths are normalized before consumers use their file providers. A missing default `wwwroot` produces a `NullFileProvider`; a nonexistent configured content root is an error.
 
@@ -167,7 +167,7 @@ Reflection-based Startup is a compatibility boundary. Its public methods are ann
 
 `IStartupFilter` wraps the final application configuration delegate. Filters are applied in reverse registration order so each filter can add behavior before or after the next delegate.
 
-`IHostingStartup` is a separate assembly-discovery extension point with model-specific support and ordering. Full Generic Host integration schedules discovered hosting-startup configuration before direct web-host configuration. Legacy `WebHostBuilder` appends discovered callbacks after callbacks already registered directly on the builder, while still applying them before conventional `Startup.ConfigureServices`. The slim integration used by `CreateSlimBuilder` and `CreateEmptyBuilder` does not perform assembly discovery. These distinctions must remain separate from application middleware execution.
+`IHostingStartup` is a separate assembly-discovery extension point with model-specific support and ordering. Full Generic Host integration buffers discovered `ConfigureAppConfiguration` and `ConfigureServices` callbacks ahead of direct callbacks in those phases, but forwards `UseSetting`, `Configure`, `UseStartup`, and `UseDefaultServiceProvider` without that guarantee. Legacy `WebHostBuilder` appends discovered callbacks after callbacks already registered directly on the builder, while still applying them before conventional `Startup.ConfigureServices`. The slim integration used by `CreateSlimBuilder` and `CreateEmptyBuilder` does not perform assembly discovery. These distinctions must remain separate from application middleware execution.
 
 The modern `WebApplicationBuilder.WebHost` adapter deliberately rejects `UseStartup` and `Configure`; minimal-hosting applications configure the returned `WebApplication` directly.
 
@@ -210,7 +210,7 @@ The default builders use options to configure integrations such as host filterin
 
 Hosting startup assemblies, startup filters, custom service-provider factories, custom `IHttpContextFactory` implementations, and alternate `IServer` implementations are distinct extension points:
 
-- Hosting startup assemblies enrich full or legacy builder composition with model-specific ordering; slim and empty builders do not discover them.
+- Hosting startup assemblies enrich full or legacy builder composition; support and callback ordering depend on the hosting model and builder method, while slim and empty builders do not discover them.
 - Startup filters wrap request-pipeline construction.
 - Service-provider factories replace container construction while retaining the host composition.
 - `IHttpContextFactory` controls creation and disposal hooks for request contexts.
@@ -289,7 +289,7 @@ A lower-level test establishes only the boundary it exercises. TestHost coverage
 - **Web-host setting** - An ASP.NET Core setting such as web root, server URLs, hosting startup assemblies, or startup error behavior.
 - **Startup** - The compatibility convention that discovers and invokes service, container, and application configuration methods.
 - **Startup filter** - An ordered wrapper around application request-pipeline configuration.
-- **Hosting startup assembly** - An extension discovered by full Generic Host and legacy Web Host paths. Its ordering is model-specific, and slim or empty builders do not perform this discovery.
+- **Hosting startup assembly** - An extension discovered by full Generic Host and legacy Web Host paths. Support and callback ordering depend on the hosting model and builder method; slim and empty builders do not perform this discovery.
 - **Request pipeline** - The composed `RequestDelegate` chain that processes an `HttpContext`.
 - **HostingApplication** - The adapter between `IServer` request features and the ASP.NET Core request pipeline.
 - **Server** - An `IServer` implementation that owns listening, HTTP protocol handling, connections, and transport shutdown.
