@@ -129,6 +129,34 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     }
 
     [Theory]
+    [InlineData("LoginProvider", "ProviderKey", true)]
+    [InlineData("loginprovider", "ProviderKey", false)]
+    [InlineData("LoginProvider", "providerkey", false)]
+    public async Task FindByLoginAsyncMatchesInMemoryStore(
+        string loginProvider,
+        string providerKey,
+        bool expected)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await using var context = CreateCollationContext(connection);
+        var efStore = CreateLoginStore(context, userOnlyStore: false);
+        await AddUserLoginAsync(context, efStore);
+
+        var inMemoryStore = new InMemory.InMemoryUserStore<PocoUser>();
+        var inMemoryUser = new PocoUser();
+        await inMemoryStore.AddLoginAsync(
+            inMemoryUser,
+            new UserLoginInfo("LoginProvider", "ProviderKey", "DisplayName"));
+
+        Assert.Equal(
+            expected,
+            await efStore.FindByLoginAsync(loginProvider, providerKey, default) is not null);
+        Assert.Equal(
+            expected,
+            await inMemoryStore.FindByLoginAsync(loginProvider, providerKey) is not null);
+    }
+
+    [Theory]
     [InlineData(false, "loginprovider", "ProviderKey")]
     [InlineData(false, "LoginProvider", "providerkey")]
     [InlineData(false, "LoginProvider", "ProviderKey ")]
