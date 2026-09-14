@@ -35,11 +35,13 @@ internal sealed class DojoStateUpdates
             if (content is FunctionCallContent call &&
                 (call.Name == snapshotTool || call.Name == deltaTool))
             {
+                context.MarkHandled(call);
                 _toolNames[call.CallId] = call.Name;
             }
             else if (content is FunctionResultContent result &&
                 _toolNames.Remove(result.CallId, out var name))
             {
+                context.MarkHandled(result);
                 yield return (
                     JsonSerializer.SerializeToElement(result.Result, AIJsonUtilities.DefaultOptions),
                     name == deltaTool);

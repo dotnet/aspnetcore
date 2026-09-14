@@ -38,11 +38,9 @@ internal sealed class RunForwardingChatClient(
         }
         else
         {
-            if (options is not null)
-            {
-                options.AdditionalProperties ??= [];
-                requestOptions.AdditionalProperties = options.AdditionalProperties;
-            }
+            requestOptions.AdditionalProperties = options?.AdditionalProperties is { } properties
+                ? new(properties)
+                : [];
 
             var createInput = options?.RawRepresentationFactory;
             requestOptions.RawRepresentationFactory = client =>
