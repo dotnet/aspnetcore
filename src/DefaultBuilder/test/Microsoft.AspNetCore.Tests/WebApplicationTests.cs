@@ -2584,6 +2584,7 @@ public class WebApplicationTests
     public async Task Authentication_RunsOnce_AfterReroute(bool explicitUseRouting)
     {
         PathString observedOriginalPath = default;
+        PathString observedOriginalPathBase = default;
         var state = new AuthenticationRequestHandlerState();
         var builder = WebApplication.CreateBuilder();
 
@@ -2602,20 +2603,29 @@ public class WebApplicationTests
         app.UseStatusCodePagesWithReExecute("/protected");
         app.MapGet("/source", (HttpContext context) =>
         {
+            context.Request.PathBase = "/rerouted-base";
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.CompletedTask;
         }).AllowAnonymous();
         app.MapGet("/protected", (HttpContext context) =>
         {
-            observedOriginalPath = context.Features.Get<IAuthenticationFeature>()?.OriginalPath ?? default;
+            var authenticationFeature = context.Features.Get<IAuthenticationFeature>();
+            observedOriginalPath = authenticationFeature?.OriginalPath ?? default;
+            observedOriginalPathBase = authenticationFeature?.OriginalPathBase ?? default;
             return "protected";
         }).RequireAuthorization();
 
         await app.StartAsync();
-        var response = await app.GetTestClient().GetAsync("/source");
+        var response = await app.GetTestServer().SendAsync(context =>
+        {
+            context.Request.Method = HttpMethods.Get;
+            context.Request.PathBase = "/base";
+            context.Request.Path = "/source";
+        });
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(StatusCodes.Status404NotFound, response.Response.StatusCode);
         Assert.Equal("/source", observedOriginalPath);
+        Assert.Equal("/base", observedOriginalPathBase);
         Assert.Equal(1, state.CallCount);
     }
 
