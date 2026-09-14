@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" AllowExplicitReference="true" />
     <Reference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
