@@ -119,32 +119,76 @@ public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
         await Expect(send).ToBeEnabledAsync();
     }
 
+    [TestMethod]
+    [TestCategory("BrowserInfrastructure")]
+    public async Task CandidateTimeout_ReportsExpectedAndRenderedDocument()
+    {
+        var context = await NewContext();
+        var page = await context.NewPageAsync();
+        await page.SetContentAsync(
+            """<div id="editor"><pre class="document-editor__diff">kept <s>removed</s><em>candidate</em></pre></div>""");
+
+        var exception = await Assert.ThrowsAsync<TimeoutException>(
+            () => WaitForCandidateAsync(page.Locator("#editor"), "missing document", timeout: 50));
+
+        StringAssert.Contains(exception.Message, "Expected:\nmissing document");
+        StringAssert.Contains(exception.Message, "Actual:\nkept candidate");
+        Assert.IsInstanceOfType<TimeoutException>(exception.InnerException);
+    }
+
     private static async Task AssertReadOnlyDiffAsync(ILocator editor, string expected)
     {
         await Expect(editor).ToHaveClassAsync("document-editor__surface");
         await Expect(editor).ToHaveAttributeAsync("aria-readonly", "true");
         await Expect(editor.Locator("em").First).ToBeVisibleAsync();
+        await WaitForCandidateAsync(editor, expected, TestRoot.ExpectTimeout);
+        Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
+        await AssertNoInternalMetadataAsync(editor);
+    }
+
+    private static async Task WaitForCandidateAsync(ILocator editor, string expected, float timeout)
+    {
         await using var editorElement = await editor.ElementHandleAsync();
         Assert.IsNotNull(editorElement);
         // Releasing the model checkpoint does not wait for the circuit's render batch.
         // Retry the candidate-only projection, not the already-visible previous diff.
-        await using var candidate = await editor.Page.WaitForFunctionAsync(
-            """
-            ({ editor, expected }) => {
-                const diff = editor.querySelector('.document-editor__diff');
-                if (!diff) {
-                    return false;
-                }
+        try
+        {
+            await using var candidate = await editor.Page.WaitForFunctionAsync(
+                """
+                ({ editor, expected }) => {
+                    const diff = editor.querySelector('.document-editor__diff');
+                    if (!diff) {
+                        return false;
+                    }
 
-                const clone = diff.cloneNode(true);
-                clone.querySelectorAll('s').forEach(item => item.remove());
-                return clone.textContent.includes(expected);
-            }
-            """,
-            new { editor = editorElement, expected },
-            new() { Timeout = 5_000 });
-        Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
-        await AssertNoInternalMetadataAsync(editor);
+                    const clone = diff.cloneNode(true);
+                    clone.querySelectorAll('s').forEach(item => item.remove());
+                    return clone.textContent.includes(expected);
+                }
+                """,
+                new { editor = editorElement, expected },
+                new() { Timeout = timeout });
+        }
+        catch (TimeoutException exception)
+        {
+            var actual = await editor.EvaluateAsync<string>(
+                """
+                editor => {
+                    const diff = editor.querySelector('.document-editor__diff');
+                    if (!diff) {
+                        return '<candidate diff unavailable>';
+                    }
+
+                    const clone = diff.cloneNode(true);
+                    clone.querySelectorAll('s').forEach(item => item.remove());
+                    return clone.textContent;
+                }
+                """);
+            throw new TimeoutException(
+                $"The rendered candidate did not contain the expected document.\nExpected:\n{expected}\nActual:\n{actual}",
+                exception);
+        }
     }
 
     private static async Task AssertNoInternalMetadataAsync(ILocator editor)

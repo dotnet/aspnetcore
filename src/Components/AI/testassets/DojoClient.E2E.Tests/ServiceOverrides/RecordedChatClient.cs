@@ -14,15 +14,15 @@ internal sealed class RecordedChatClient : IChatClient
 {
     private readonly RecordedScript _script;
     private readonly TestLockProvider _locks;
-    private readonly DojoBackendKind _backend =
-        DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
+    private readonly DojoBackendKind _backend;
 
-    public RecordedChatClient(RecordedScript script, TestLockProvider locks)
+    public RecordedChatClient(RecordedScript script, TestLockProvider locks, DojoBackendKind backend)
     {
         ArgumentNullException.ThrowIfNull(script);
         ArgumentNullException.ThrowIfNull(locks);
         _script = script;
         _locks = locks;
+        _backend = backend;
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(

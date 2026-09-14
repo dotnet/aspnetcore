@@ -1,6 +1,7 @@
 @page "/function-invocation"
 @rendermode InteractiveServer
 @implements IDisposable
+@inject DirectDojoScenarioBridge ScenarioBridge
 @inject FunctionScenarioState Controls
 
 <PageTitle>Built-in function invocation mapping</PageTitle>
@@ -53,13 +54,8 @@
         _agent = new UIAgent(ChatClient, options =>
         {
             options.Thread = _thread;
-            options.ChatOptions = new ChatOptions
-            {
-                AdditionalProperties = new()
-                {
-                    [DojoRequestContext.PropertyName] = new DojoRequestContext { ThreadId = _thread.ThreadId },
-                },
-            };
+            options.ChatOptions = ScenarioBridge.CreateStateOptions(
+                () => new DojoRequestContext { ThreadId = _thread.ThreadId });
         });
     }
 

@@ -1,20 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using DojoAgent;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DojoClient.E2E.Tests.Tests;
+namespace DojoClient.E2E.Tests.Tests.Infrastructure;
 
 [TestClass]
+[TestCategory("Infrastructure")]
 public class DojoRunStoreTests
 {
     [TestMethod]
     public async Task Disposal_FailsPromptlyForAnAbandonedEnumerator()
     {
-        var run = new DojoRunStore.Run(new ConfigurationBuilder().Build(), DojoRecording.AgenticChat);
+        var run = new DojoRunStore.Run(
+            new ConfigurationBuilder().Build(), DojoRecording.AgenticChat, DojoBackendKind.Direct);
         var enumerator = run.GetUpdatesAsync(
             [new ChatMessage(ChatRole.User, "Tell me about Blazor")],
             options: null, predictive: false, CancellationToken.None).GetAsyncEnumerator();

@@ -17,25 +17,10 @@ internal sealed class DirectDojoChatClient : DelegatingChatClient
     internal DirectDojoChatClient(IChatClient model, string endpoint)
         : base(model)
     {
-        var jsonOptions = AIJsonUtilities.DefaultOptions;
-        (string? SystemPrompt, IList<AITool> Tools) scenario = endpoint switch
-        {
-            DojoScenarioEndpoints.AgenticChatEndpoint => (null, []),
-            DojoScenarioEndpoints.BackendToolRenderingEndpoint => (null,
-                ChatClientAgentFactory.CreateBackendToolRenderingTools(jsonOptions)),
-            DojoScenarioEndpoints.HumanInTheLoopEndpoint => (ChatClientAgentFactory.HumanInTheLoopSystemPrompt, []),
-            DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint => (ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt, []),
-            DojoScenarioEndpoints.AgenticGenerativeUIEndpoint => (ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
-                ChatClientAgentFactory.CreateAgenticGenerativeUITools(jsonOptions)),
-            DojoScenarioEndpoints.SharedStateEndpoint => (ChatClientAgentFactory.SharedStateSystemPrompt,
-                ChatClientAgentFactory.CreateSharedStateTools(jsonOptions)),
-            DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint => (ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
-                ChatClientAgentFactory.CreatePredictiveStateUpdatesTools(jsonOptions)),
-            _ => throw new ArgumentException($"Unknown dojo scenario '{endpoint}'.", nameof(endpoint)),
-        };
+        var scenario = DojoScenarioCatalog.Get(endpoint);
         _systemPrompt = scenario.SystemPrompt;
-        _serverTools = scenario.Tools;
-        _predictive = endpoint == DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint;
+        _serverTools = scenario.CreateServerTools(AIJsonUtilities.DefaultOptions);
+        _predictive = scenario.PredictiveStateUpdates;
     }
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(

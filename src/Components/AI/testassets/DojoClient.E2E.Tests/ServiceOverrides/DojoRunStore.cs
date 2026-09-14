@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-internal sealed class DojoRunStore(IConfiguration configuration) : IAsyncDisposable
+internal sealed class DojoRunStore(IConfiguration configuration, DojoBackendKind backend) : IAsyncDisposable
 {
     internal const string RunKey = "dojo-test-run";
     internal const string ControlPath = "/_test/dojo-runs";
@@ -19,7 +19,7 @@ internal sealed class DojoRunStore(IConfiguration configuration) : IAsyncDisposa
 
     internal async Task CreateAsync(string id, DojoRecording? recording)
     {
-        var run = new Run(configuration, recording);
+        var run = new Run(configuration, recording, backend);
         if (!_runs.TryAdd(id, run))
         {
             await run.DisposeAsync();
@@ -63,12 +63,12 @@ internal sealed class DojoRunStore(IConfiguration configuration) : IAsyncDisposa
         private int _activeRequests;
         private bool _disposed;
 
-        internal Run(IConfiguration configuration, DojoRecording? recording)
+        internal Run(IConfiguration configuration, DojoRecording? recording, DojoBackendKind backend)
         {
             if (recording is { } selected)
             {
                 var model = new RecordedChatClient(
-                    RecordedScript.Load($"{selected}.recording.json"), Locks);
+                    RecordedScript.Load($"{selected}.recording.json"), Locks, backend);
                 _client = selected is DojoRecording.BackendToolRendering or
                     DojoRecording.AgenticGenerativeUI or DojoRecording.SharedState
                     ? new FunctionInvokingChatClient(model)

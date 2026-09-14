@@ -23,13 +23,18 @@ pages use the stateless `IDojoScenarioBridge` to construct request options witho
 inspecting the backend. Each agent creates its own backend-neutral `DojoStateUpdates`
 mapper, so reset agents do not share mutable tool-correlation state.
 The original dojo endpoint names are shared through `DojoScenarioEndpoints`.
+`DojoScenarioCatalog` defines each standard scenario's prompt, tool factory,
+model key, predictive behavior, and AG-UI stream options once. The API and UI
+enumerate that catalog, and `DirectDojoChatClient` consumes the same descriptor.
+Dedicated approval and native-only component scenarios keep their own clients.
 
 ## Suite-wide hosts and per-test sessions
 
 The suite lazily starts at most three application processes: one AGUIDojoApi
 host, one AG-UI-configured DojoClient host, and one Direct-configured DojoClient
-host. `TestRoot.Servers` caches these fixed configurations until assembly cleanup.
-Filtered runs start only the hosts they need.
+host. `TestRoot.GetServersAsync` lazily initializes the shared factory and proxy;
+the factory caches these configurations until assembly cleanup. Filtered runs
+start only the hosts they need.
 
 `GetDojoAsync` acquires those hosts and creates a `DojoTestSession`, not another
 process. The session selects a `DojoRecording` or the offline scripted model.
@@ -66,6 +71,7 @@ dojo scenarios and the focused component scenarios previously hosted in AIApp:
 - `/function-invocation` exercises the generic `FunctionInvocationContentBlock`,
   including its informational flag and loading-to-result transition. The release
   button unblocks the real tool in the UI process in either host configuration.
+  Assistant text retains `FormattedChatClient`'s Markdown-to-rich-text conversion.
 - `/rich-text` renders native `RichTextContent` snapshots, including tables,
   images, footnotes, task lists, and encoded HTML, rather than parsing Markdown.
   It always uses an in-process client.
@@ -82,8 +88,8 @@ tool-call events in the protocol. These two tests run once against Direct and
 retain their original in-process assertions without a custom serialization path.
 These pages are registered and linked unconditionally in DojoClient; selecting
 AGUI for the other scenarios does not turn them into AG-UI clients. They have no
-API endpoints and no custom transport. Approval remains covered on both backends through the
-standard AG-UI approval protocol. The Markdown-based agentic-chat rich-text case
+API endpoints and no custom transport. Approval remains covered on both backends
+through the standard AG-UI approval protocol. The Markdown-based agentic-chat rich-text case
 also remains covered on both backends.
 
 ## Adding a scenario
@@ -108,6 +114,11 @@ public async Task Scenario_ExercisesComponentBehavior(DojoBackendKind backend)
 }
 ```
 
+For a new standard agent scenario, add its endpoint constant and descriptor to
+`DojoScenarioCatalog`, together with any shared tools and recording. Both hosts
+pick up the descriptor automatically; there is no separate Direct mapping switch
+to maintain.
+
 For a native-only component contract that cannot be exercised through the standard
 AG-UI client, omit `[DojoBackends]` and the backend parameter, call
 `GetDojoAsync(DojoBackendKind.Direct)`, and explain the limitation in the test.
@@ -122,15 +133,37 @@ silently reaching another server.
 
 `DojoModelOverrides` installs the same model router once in each host, leaving
 the scenario client and transport intact. `DojoRunStore` owns per-session models.
+The fixture selects explicit AG-UI or Direct override entry points, and the
+backend is passed through the run store to each recorded client. These helpers
+do not read ambient backend environment variables.
 The recordings and their request assertions are shared across both runs.
 Native tool results are compared in the recording's JSON representation, so
 transport encoding differences do not require separate recordings.
 
 The forwarding decorator preserves AG-UI's generated thread-ID metadata when it
 clones request options by sharing `AdditionalProperties` with the caller. Copying
-that dictionary discards the thread ID pinned by `AGUIChatClient`. Tests cover both generated IDs and explicit thread/state
-metadata through the real `UIAgent` and `AGUIChatClient` request builders.
+that dictionary discards the thread ID pinned by `AGUIChatClient`. Tests cover both
+generated IDs and explicit thread/state metadata through the real `UIAgent` and
+`AGUIChatClient` request builders. The Direct branch separately checks session
+forwarding, caller-option isolation, existing metadata, tools, and cancellation.
 
 A checkpoint release acknowledges the model gate, not the subsequent browser
 render. Predictive-document assertions wait for the rendered candidate text
 (excluding deleted `<s>` text) rather than reading the previous diff once.
+Timeout failures include both the expected document and the last rendered
+candidate. These waits and `Expect()` share the `DojoExpectTimeout` runsettings
+parameter (milliseconds, default 30,000), configured once during assembly setup.
+
+## Infrastructure unit tests
+
+`Tests\Infrastructure` contains the backend-configuration, run-store,
+function-scenario, and request-forwarding unit tests, tagged `Infrastructure`.
+They intentionally remain in this assembly because they exercise the test
+harness's internal types. Moving them to the shipping Components.AI unit-test
+project would invert that dependency; creating another assembly would require
+exposing or duplicating test infrastructure.
+
+They do not derive from `BrowserTest` and do not acquire dojo hosts. A run filtered
+to `TestCategory=Infrastructure` does not initialize Playwright, the server
+factory, or its proxy. The project still builds its test-asset dependencies;
+runtime resource ownership is lazy.

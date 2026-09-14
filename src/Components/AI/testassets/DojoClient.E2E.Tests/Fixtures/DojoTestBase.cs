@@ -26,31 +26,28 @@ public abstract class DojoTestBase : BrowserTest
         DojoBackendKind backend,
         DojoRecording? recording = null)
     {
-        if (backend is not (DojoBackendKind.AGUI or DojoBackendKind.Direct))
-        {
-            throw new ArgumentException($"Unknown dojo backend '{backend}'.", nameof(backend));
-        }
-
+        var servers = await TestRoot.GetServersAsync();
         ServerInstance? api = null;
         if (backend == DojoBackendKind.AGUI)
         {
-            api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
+            api = await StartServerAsync<AGUIDojoApiAssembly>(servers, options =>
             {
                 ConfigureEnvironment(options, backend);
                 options.ConfigureServices<DojoModelOverrides>(nameof(DojoModelOverrides.ConfigureApi));
             });
         }
 
-        var ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
+        var ui = await StartServerAsync<global::DojoClient.Components.App>(servers, options =>
         {
             ConfigureEnvironment(options, backend);
-            options.ConfigureServices<DojoModelOverrides>(nameof(DojoModelOverrides.ConfigureUI));
             if (api is not null)
             {
+                options.ConfigureServices<DojoModelOverrides>(nameof(DojoModelOverrides.ConfigureAguiUI));
                 options.EnvironmentVariables["AGUI_DOJO_API_URL"] = api.AppUrl;
             }
             else
             {
+                options.ConfigureServices<DojoModelOverrides>(nameof(DojoModelOverrides.ConfigureDirectUI));
                 // Expose accidental transport usage instead of reaching an ambient API.
                 options.EnvironmentVariables["AGUI_DOJO_API_URL"] = "http://127.0.0.1:1";
             }

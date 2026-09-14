@@ -5,9 +5,10 @@ using DojoAgent;
 using Microsoft.Extensions.AI;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DojoClient.E2E.Tests.Tests;
+namespace DojoClient.E2E.Tests.Tests.Infrastructure;
 
 [TestClass]
+[TestCategory("Infrastructure")]
 public class FunctionScenariosTests
 {
     [TestMethod]

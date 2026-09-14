@@ -5,6 +5,7 @@ using DojoAgent;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
@@ -13,16 +14,19 @@ internal sealed class DojoModelOverrides
 {
     public static void ConfigureApi(IServiceCollection services)
     {
-        AddRunStore(services);
+        AddRunStore(services, DojoBackendKind.AGUI);
         services.AddScoped<IChatClient, RunSelectedChatClient>();
         services.AddKeyedScoped<IChatClient>(
             ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
             (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>(), predictive: true));
     }
 
-    public static void ConfigureUI(IServiceCollection services)
+    public static void ConfigureAguiUI(IServiceCollection services) => ConfigureUI(services, DojoBackendKind.AGUI);
+
+    public static void ConfigureDirectUI(IServiceCollection services) => ConfigureUI(services, DojoBackendKind.Direct);
+
+    internal static void ConfigureUI(IServiceCollection services, DojoBackendKind backend)
     {
-        var backend = DojoBackendConfiguration.Parse(Environment.GetEnvironmentVariable("DOJO_BACKEND"));
         if (backend == DojoBackendKind.Direct)
         {
             if (!services.Any(service => service.ServiceType == typeof(IChatClient) &&
@@ -31,7 +35,7 @@ internal sealed class DojoModelOverrides
                 throw new InvalidOperationException("The direct dojo model registration is missing.");
             }
 
-            AddRunStore(services);
+            AddRunStore(services, backend);
             services.AddKeyedScoped<IChatClient>(ChatClientAgentFactory.ModelServiceKey,
                 (sp, _) => new RunSelectedChatClient(sp.GetRequiredService<DojoRunStore>()));
             services.AddKeyedScoped<IChatClient>(ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
@@ -69,9 +73,9 @@ internal sealed class DojoModelOverrides
         }
     }
 
-    private static void AddRunStore(IServiceCollection services)
+    private static void AddRunStore(IServiceCollection services, DojoBackendKind backend)
     {
-        services.AddSingleton<DojoRunStore>();
+        services.AddSingleton(sp => new DojoRunStore(sp.GetRequiredService<IConfiguration>(), backend));
         services.AddTransient<IStartupFilter, DojoRunStartupFilter>();
     }
 

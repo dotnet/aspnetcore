@@ -4,9 +4,10 @@
 using DojoAgent;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DojoClient.E2E.Tests.Tests;
+namespace DojoClient.E2E.Tests.Tests.Infrastructure;
 
 [TestClass]
+[TestCategory("Infrastructure")]
 public class DojoBackendConfigurationTests
 {
     [TestMethod]
@@ -15,9 +16,17 @@ public class DojoBackendConfigurationTests
         Assert.AreEqual(DojoBackendKind.AGUI, DojoBackendConfiguration.Parse(null));
         Assert.AreEqual(DojoBackendKind.AGUI, DojoBackendConfiguration.Parse("AGUI"));
         Assert.AreEqual(DojoBackendKind.Direct, DojoBackendConfiguration.Parse("Direct"));
-        foreach (var value in new[] { "", "agui", "direct", "0", "1", "unknown" })
-        {
-            Assert.Throws<InvalidOperationException>(() => DojoBackendConfiguration.Parse(value));
-        }
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("agui")]
+    [DataRow("direct")]
+    [DataRow("0")]
+    [DataRow("1")]
+    [DataRow("unknown")]
+    public void Selection_RejectsInvalidBackendNames(string value)
+    {
+        Assert.Throws<InvalidOperationException>(() => DojoBackendConfiguration.Parse(value));
     }
 }

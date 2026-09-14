@@ -36,40 +36,18 @@ builder.Services.AddKeyedSingleton<IChatClient>(
 var app = builder.Build();
 var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
-app.MapDojoEndpoint(DojoScenarioEndpoints.AgenticChatEndpoint);
+foreach (var scenario in DojoScenarioCatalog.All)
+{
+    app.MapDojoEndpoint(
+        scenario.Endpoint,
+        serverTools: scenario.CreateServerTools(jsonOptions.Value.SerializerOptions),
+        systemPrompt: scenario.SystemPrompt,
+        configureStreamOptions: scenario.CreateStreamOptions,
+        chatClientKey: scenario.ModelServiceKey,
+        treatClientToolsAsDeclarations: scenario.TreatClientToolsAsDeclarations);
+}
 app.MapDojoEndpoint(FunctionScenarios.Approval, chatClientKey: FunctionScenarios.Approval);
 app.MapFunctionScenarioControls();
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.BackendToolRenderingEndpoint,
-    serverTools: ChatClientAgentFactory.CreateBackendToolRenderingTools(
-        jsonOptions.Value.SerializerOptions));
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.HumanInTheLoopEndpoint,
-    systemPrompt: ChatClientAgentFactory.HumanInTheLoopSystemPrompt);
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.ToolBasedGenerativeUIEndpoint,
-    systemPrompt: ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt);
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.AgenticGenerativeUIEndpoint,
-    serverTools: ChatClientAgentFactory.CreateAgenticGenerativeUITools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
-    configureStreamOptions: _ =>
-        ChatClientAgentFactory.CreateAgenticGenerativeUIStreamOptions());
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.SharedStateEndpoint,
-    serverTools: ChatClientAgentFactory.CreateSharedStateTools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.SharedStateSystemPrompt,
-    configureStreamOptions: _ => ChatClientAgentFactory.CreateSharedStateStreamOptions());
-app.MapDojoEndpoint(
-    DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint,
-    serverTools: ChatClientAgentFactory.CreatePredictiveStateUpdatesTools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
-    configureStreamOptions: ChatClientAgentFactory.CreatePredictiveStateUpdatesStreamOptions,
-    chatClientKey: ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
-    treatClientToolsAsDeclarations: true);
 
 await app.RunAsync();
 

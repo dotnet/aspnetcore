@@ -12,12 +12,61 @@ using Microsoft.AspNetCore.Components.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DojoClient.E2E.Tests.Tests;
+namespace DojoClient.E2E.Tests.Tests.Infrastructure;
 
 [TestClass]
+[TestCategory("Infrastructure")]
 public class RunForwardingChatClientTests
 {
     private const string RunId = "11111111111111111111111111111111";
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task DirectRequestConstruction_ForwardsSessionWithoutMutatingCallerOptions(bool hasOptions)
+    {
+        var inner = new CapturingChatClient();
+        var navigation = new TestNavigationManager();
+        using var client = new RunForwardingChatClient(inner, navigation, DojoBackendKind.Direct);
+        var state = new DojoRequestContext { ThreadId = "direct-thread" };
+        var metadata = new AdditionalPropertiesDictionary
+        {
+            ["existing"] = 42,
+            [DojoRunStore.RunKey] = "caller-owned",
+            [DojoRequestContext.PropertyName] = state,
+        };
+        Func<IChatClient, object?> factory = _ => state;
+        var options = hasOptions ? new ChatOptions
+        {
+            AdditionalProperties = metadata,
+            RawRepresentationFactory = factory,
+            Tools = [AIFunctionFactory.Create(() => "unused", name: "example_tool")],
+        } : null;
+        var messages = new[] { new ChatMessage(ChatRole.User, "Direct request") };
+        using var cancellation = new CancellationTokenSource();
+
+        var response = await client.GetResponseAsync(messages, options, cancellation.Token);
+
+        Assert.AreEqual("Reply", response.Text);
+        Assert.AreSame(messages, inner.Messages);
+        Assert.AreEqual(cancellation.Token, inner.CancellationToken);
+        Assert.IsNotNull(inner.Options);
+        Assert.AreEqual(RunId, inner.Options.AdditionalProperties![DojoRunStore.RunKey]);
+        if (hasOptions)
+        {
+            Assert.AreNotSame(options, inner.Options);
+            Assert.AreNotSame(metadata, inner.Options.AdditionalProperties);
+            Assert.AreEqual(42, inner.Options.AdditionalProperties["existing"]);
+            Assert.AreSame(state, inner.Options.AdditionalProperties[DojoRequestContext.PropertyName]);
+            Assert.AreSame(factory, inner.Options.RawRepresentationFactory);
+            CollectionAssert.AreEqual(options!.Tools!.ToArray(), inner.Options.Tools!.ToArray());
+            Assert.AreEqual("caller-owned", metadata[DojoRunStore.RunKey]);
+        }
+        else
+        {
+            Assert.HasCount(1, inner.Options.AdditionalProperties);
+        }
+    }
 
     [TestMethod]
     [DataRow(false, false)]
@@ -102,6 +151,34 @@ public class RunForwardingChatClientTests
             => Initialize("http://localhost/", $"http://localhost/agentic_chat?{DojoRunStore.RunKey}={RunId}");
 
         protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotSupportedException();
+    }
+
+    private sealed class CapturingChatClient : IChatClient
+    {
+        internal IEnumerable<ChatMessage>? Messages { get; private set; }
+        internal ChatOptions? Options { get; private set; }
+        internal CancellationToken CancellationToken { get; private set; }
+
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Messages = messages;
+            Options = options;
+            CancellationToken = cancellationToken;
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Reply");
+            await Task.CompletedTask;
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => GetStreamingResponseAsync(messages, options, cancellationToken).ToChatResponseAsync(cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class CapturingTransport : IAGUITransport
