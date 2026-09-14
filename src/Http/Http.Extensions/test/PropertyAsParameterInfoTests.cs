@@ -170,7 +170,7 @@ public class PropertyAsParameterInfoTests
 
     [Theory]
     [InlineData(typeof(DerivedArgumentList), nameof(DerivedArgumentList.NotInherited), true)]
-    [InlineData(typeof(ArgumentListWithHiddenProperty), nameof(ArgumentListWithHiddenProperty.WithTestAttribute), false)]
+    [InlineData(typeof(ArgumentListWithHiddenProperty), nameof(ArgumentListWithHiddenProperty.WithTestAttribute), true)]
     public void PropertyAsParameterInfoTests_DoesNotInheritCustomAttributes(Type containerType, string propertyName, bool inherit)
     {
         var propertyInfo = GetProperty(containerType, propertyName);
