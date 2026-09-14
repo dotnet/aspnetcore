@@ -353,7 +353,7 @@ public class Http2WebSocketTests : Http2TestBase
         // Don't send any more data and advance just to and then past the grace period.
         AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.AssertOnTimeoutCount(0);
+        Assert.Empty(_mockTimeoutHandler.TimeoutReasons);
 
         await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
 

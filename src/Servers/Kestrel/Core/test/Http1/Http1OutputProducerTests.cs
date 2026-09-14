@@ -254,4 +254,33 @@ public class Http1OutputProducerTests : IDisposable
 
         public Pipe Pipe { get; }
     }
+
+    private sealed class TestPipeScheduler : PipeScheduler
+    {
+        public override void Schedule(Action<object> action, object state)
+        {
+        }
+    }
+
+    private sealed class TestHttpOutputAborter : IHttpOutputAborter
+    {
+        public int AbortCount { get; private set; }
+
+        public int OnInputOrOutputCompletedCount { get; private set; }
+
+        public void Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
+        {
+            AbortCount++;
+        }
+
+        public void OnInputOrOutputCompleted()
+        {
+            OnInputOrOutputCompletedCount++;
+        }
+    }
+
+    private sealed class TestMinResponseDataRateFeature : IHttpMinResponseDataRateFeature
+    {
+        public MinDataRate MinDataRate { get; set; }
+    }
 }

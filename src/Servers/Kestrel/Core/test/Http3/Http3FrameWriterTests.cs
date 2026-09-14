@@ -79,4 +79,9 @@ public class Http3FrameWriterTests
 
         return frameWriter;
     }
+
+    private sealed class TestStreamIdFeature : IStreamIdFeature
+    {
+        public long StreamId { get; set; }
+    }
 }

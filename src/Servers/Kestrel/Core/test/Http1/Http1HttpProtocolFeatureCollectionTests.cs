@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
@@ -257,4 +258,9 @@ public class Http1HttpProtocolFeatureCollectionTests
     }
 
     private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
+
+    private static class TestDuplexPipe
+    {
+        public static IDuplexPipe Create() => new DuplexPipe(PipeReader.Create(Stream.Null), PipeWriter.Create(Stream.Null));
+    }
 }

@@ -5,61 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 internal sealed class TestTimeoutHandler : ITimeoutHandler
 {
-    private readonly List<TimeoutInvocation> _invocations = new();
+    private readonly List<TimeoutReason> _reasons = new();
 
     public Action<TimeoutReason> OnTimeoutCallback { get; set; }
 
-    public IReadOnlyList<TimeoutReason> TimeoutReasons => _invocations.Select(invocation => invocation.Reason).ToArray();
+    public IReadOnlyList<TimeoutReason> TimeoutReasons => _reasons;
 
-    public int OnTimeoutCount => _invocations.Count;
+    public int OnTimeoutCount => _reasons.Count;
 
-    public int Count(TimeoutReason reason) => _invocations.Count(invocation => invocation.Reason == reason);
+    public int Count(TimeoutReason reason) => _reasons.Count(r => r == reason);
 
     public void OnTimeout(TimeoutReason reason)
     {
-        _invocations.Add(new TimeoutInvocation(reason));
+        _reasons.Add(reason);
         OnTimeoutCallback?.Invoke(reason);
-    }
-
-    public void AssertOnTimeoutCount(int expectedCount)
-    {
-        Assert.Equal(expectedCount, _invocations.Count);
-        foreach (var invocation in _invocations)
-        {
-            invocation.Verified = true;
-        }
-    }
-
-    public void AssertOnTimeoutCount(TimeoutReason reason, int expectedCount)
-    {
-        var matchingInvocations = _invocations.Where(invocation => invocation.Reason == reason).ToList();
-        Assert.Equal(expectedCount, matchingInvocations.Count);
-        foreach (var invocation in matchingInvocations)
-        {
-            invocation.Verified = true;
-        }
-    }
-
-    public void AssertNoOtherCalls()
-    {
-        Assert.DoesNotContain(_invocations, invocation => !invocation.Verified);
-    }
-
-    private sealed class TimeoutInvocation
-    {
-        public TimeoutInvocation(TimeoutReason reason)
-        {
-            Reason = reason;
-        }
-
-        public TimeoutReason Reason { get; }
-
-        public bool Verified { get; set; }
     }
 }

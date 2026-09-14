@@ -41,7 +41,6 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
         var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
         var connectionFeatures = new FeatureCollection();
-        connectionFeatures.Set(new TestConnectionLifetimeFeature());
         connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
 
         _serviceContext = new TestServiceContext(LoggerFactory)

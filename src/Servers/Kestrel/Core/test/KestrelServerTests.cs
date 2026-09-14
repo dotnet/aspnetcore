@@ -1012,7 +1012,7 @@ public class KestrelServerTests
 
         public List<EndPoint> BoundEndPoints { get; } = new List<EndPoint>();
 
-        public int CountBindsTo(int port) => BoundEndPoints.Count(endpoint => endpoint is IPEndPoint ipEndPoint && ipEndPoint.Port == port);
+        public int CountBindsTo(int port) => BoundEndPoints.Count(endpoint => Equals(endpoint, new IPEndPoint(IPAddress.IPv6Any, port)));
 
         public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
@@ -1114,4 +1114,32 @@ public class KestrelServerTests
     }
 
     private record BindDetail(EndPoint OriginalEndPoint, EndPoint BoundEndPoint);
+
+    private sealed class TestLoggerFactory : ILoggerFactory
+    {
+        public List<string> Categories { get; } = new List<string>();
+
+        public ILogger Logger { get; set; } = NullLogger.Instance;
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+        }
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            Categories.Add(categoryName);
+            return Logger;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class TestDisposable : IDisposable
+    {
+        public void Dispose()
+        {
+        }
+    }
 }
