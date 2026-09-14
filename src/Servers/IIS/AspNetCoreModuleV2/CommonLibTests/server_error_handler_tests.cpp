@@ -95,6 +95,9 @@ TEST(ServerErrorHandlerTest, PreservesResponseContentAfterApplicationDestroyed)
     NiceMock<MockHttpApplication> httpApplication;
     IREQUEST_HANDLER* handler = nullptr;
     std::string responseContent;
+    std::vector<char> requestMemory;
+    const char* queuedResponseContent = nullptr;
+    ULONG queuedResponseContentLength = 0;
     USHORT statusCode = 0;
     USHORT subStatusCode = 0;
 
@@ -104,6 +107,12 @@ TEST(ServerErrorHandlerTest, PreservesResponseContentAfterApplicationDestroyed)
         .WillByDefault(Return(L"MACHINE/WEBROOT/APPHOST/TestApp"));
     ON_CALL(httpApplication, GetApplicationId())
         .WillByDefault(Return(L"/TestApp"));
+    EXPECT_CALL(context, AllocateRequestMemory(_))
+        .WillOnce([&](DWORD size)
+        {
+            requestMemory.resize(size);
+            return requestMemory.data();
+        });
     EXPECT_CALL(context, GetResponse())
         .WillOnce(Return(&response));
     EXPECT_CALL(response, SetStatus(_, _, _, _, _, _))
@@ -116,9 +125,8 @@ TEST(ServerErrorHandlerTest, PreservesResponseContentAfterApplicationDestroyed)
     EXPECT_CALL(response, WriteEntityChunkByReference(_, -1))
         .WillOnce([&](HTTP_DATA_CHUNK* dataChunk, LONG)
         {
-            responseContent.assign(
-                static_cast<const char*>(dataChunk->FromMemory.pBuffer),
-                dataChunk->FromMemory.BufferLength);
+            queuedResponseContent = static_cast<const char*>(dataChunk->FromMemory.pBuffer);
+            queuedResponseContentLength = dataChunk->FromMemory.BufferLength;
             return S_OK;
         });
 
@@ -138,8 +146,11 @@ TEST(ServerErrorHandlerTest, PreservesResponseContentAfterApplicationDestroyed)
     EXPECT_EQ(RQ_NOTIFICATION_FINISH_REQUEST, handler->OnExecuteRequestHandler());
     EXPECT_EQ(503, statusCode);
     EXPECT_EQ(7, subStatusCode);
-    EXPECT_EQ(ownerContent, responseContent);
 
     handler->DereferenceRequestHandler();
+
+    ASSERT_EQ(requestMemory.data(), queuedResponseContent);
+    responseContent.assign(queuedResponseContent, queuedResponseContentLength);
+    EXPECT_EQ(ownerContent, responseContent);
 }
 }

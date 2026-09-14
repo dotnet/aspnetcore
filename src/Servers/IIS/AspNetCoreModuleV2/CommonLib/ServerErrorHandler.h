@@ -47,8 +47,16 @@ private:
             FALSE
         );
 
+        auto responseContent = static_cast<char*>(m_pHttpContext.AllocateRequestMemory(
+            static_cast<DWORD>(m_ExceptionInfoContent.size())));
+        if (responseContent == nullptr)
+        {
+            return;
+        }
+        memcpy(responseContent, m_ExceptionInfoContent.data(), m_ExceptionInfoContent.size());
+
         dataChunk.DataChunkType = HttpDataChunkFromMemory;
-        dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent.data();
+        dataChunk.FromMemory.pBuffer = responseContent;
         dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_ExceptionInfoContent.size());
 
         pResponse->WriteEntityChunkByReference(&dataChunk);
