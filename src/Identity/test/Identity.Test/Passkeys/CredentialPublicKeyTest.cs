@@ -76,6 +76,18 @@ public class CredentialPublicKeyTest
     }
 
     [Fact]
+    public void Decode_AcceptsRsaExponentAtMinimumValue()
+    {
+        using var rsa = RSA.Create(2048);
+        var modulus = rsa.ExportParameters(false).Modulus!;
+        var encodedKey = EncodeRsaKey(modulus, [3]);
+
+        var key = CredentialPublicKey.Decode(encodedKey);
+
+        Assert.Equal(encodedKey, key.AsMemory());
+    }
+
+    [Fact]
     public void Decode_RejectsRsaExponentNotLessThanModulus()
     {
         using var rsa = RSA.Create(2048);
