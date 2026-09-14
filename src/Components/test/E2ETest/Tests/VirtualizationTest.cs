@@ -6330,7 +6330,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68777")]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
         // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
@@ -6351,9 +6350,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetProviderEvents(js).Contains("scroll-start"));
 
         // While call #1 is still blocked, perform a real user scroll far from row 800.
-        // The scroll event triggers spacer IO -> the fix cancels _currentScrollCts ->
-        // call #1's WaitAsync(ct) throws OCE -> RefreshDataCoreAsync starts call #2 for
-        // the user's window. The caller observes OperationCanceledException.
+        // The wheel input stops programmatic convergence and schedules a fresh spacer
+        // observation that cancels _currentScrollCts. Call #1's WaitAsync(ct) then
+        // throws OCE, and RefreshDataCoreAsync starts call #2 for the user's window.
         ScrollContainerWithWheelTo(js, container, 5000);
 
         Browser.True(() => GetProviderEvents(js).Contains("p1-cancel"));
