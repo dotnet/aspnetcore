@@ -159,6 +159,22 @@ public class ResponseCachingKeyProviderTests
     }
 
     [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_EncodesEmptyHeaderValueInSequence()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = string.Empty;
+        context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            Headers = new string[] { "HeaderA" }
+        };
+
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}{KeyNameValueDelimiter}{KeySubDelimiter}ValueA",
+            cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
     public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesListedQueryKeysOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -261,6 +277,38 @@ public class ResponseCachingKeyProviderTests
         };
 
         Assert.NotEqual(cacheKeyProvider.CreateStorageVaryByKey(absentContext), cacheKeyProvider.CreateStorageVaryByKey(emptyContext));
+    }
+
+    [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_EncodesEmptyExplicitQueryValueInSequence()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=&QueryA=ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "QueryA" }
+        };
+
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA{KeyNameValueDelimiter}{KeyNameValueDelimiter}{KeySubDelimiter}ValueA",
+            cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Theory]
+    [InlineData("?QueryA=", "\u001d")]
+    [InlineData("?QueryA=&QueryA=ValueA", "\u001d\u001fValueA")]
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_EncodesEmptyWildcardQueryValues(string queryString, string expectedValues)
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString(queryString);
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "*" }
+        };
+
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}{expectedValues}",
+            cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
     [Fact]
