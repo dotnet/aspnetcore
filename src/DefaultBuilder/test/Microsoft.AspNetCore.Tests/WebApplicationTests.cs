@@ -2578,6 +2578,47 @@ public class WebApplicationTests
         Assert.Equal(1, protectedEndpointCallCount);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Authentication_RunsOnce_AfterReroute(bool explicitUseRouting)
+    {
+        PathString observedOriginalPath = default;
+        var state = new AuthenticationRequestHandlerState();
+        var builder = WebApplication.CreateBuilder();
+
+        builder.Services.AddSingleton(state);
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, CountingRequestHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        if (explicitUseRouting)
+        {
+            app.UseRouting();
+        }
+
+        app.UseStatusCodePagesWithReExecute("/protected");
+        app.MapGet("/source", (HttpContext context) =>
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        }).AllowAnonymous();
+        app.MapGet("/protected", (HttpContext context) =>
+        {
+            observedOriginalPath = context.Features.Get<IAuthenticationFeature>()?.OriginalPath ?? default;
+            return "protected";
+        }).RequireAuthorization();
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/source");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("/source", observedOriginalPath);
+        Assert.Equal(1, state.CallCount);
+    }
+
     private static async Task RunAuthorizationEnforcementAsync(CreateBuilderFunc createBuilder, bool explicitUseRouting)
     {
         var builder = createBuilder();
@@ -3027,6 +3068,32 @@ public class WebApplicationTests
 
             var identity = new ClaimsIdentity(Scheme.Name);
             identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, username));
+            var principal = new ClaimsPrincipal(identity);
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
+        }
+    }
+
+    private sealed class AuthenticationRequestHandlerState
+    {
+        public int CallCount { get; set; }
+    }
+
+    private sealed class CountingRequestHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        AuthenticationRequestHandlerState state)
+        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder), IAuthenticationRequestHandler
+    {
+        public Task<bool> HandleRequestAsync()
+        {
+            state.CallCount++;
+            return Task.FromResult(false);
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var identity = new ClaimsIdentity(Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
         }

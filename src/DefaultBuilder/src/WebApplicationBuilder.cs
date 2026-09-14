@@ -486,7 +486,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         {
             if (addAuthentication)
             {
-                pipeline.UseAuthentication();
+                var authenticationPipeline = new AutomaticAuthenticationPipeline(pipeline);
+                pipeline.Use(authenticationPipeline.CreateMiddleware);
             }
 
             if (addAuthorization)
@@ -563,6 +564,33 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _configure(branch);
             branch.Run(next);
             return branch.Build();
+        }
+    }
+
+    // Authentication establishes request-wide state and dispatches request-handler schemes, so unlike authorization
+    // and CSRF protection it must not run again when endpoint routing re-enters the post-routing pipeline.
+    private sealed class AutomaticAuthenticationPipeline(IApplicationBuilder app)
+    {
+        private static readonly object Invoked = new();
+        private readonly IApplicationBuilder _app = app;
+
+        public RequestDelegate CreateMiddleware(RequestDelegate next)
+        {
+            var branch = _app.New();
+            branch.UseAuthentication();
+            branch.Run(next);
+            var authenticationPipeline = branch.Build();
+
+            return context =>
+            {
+                if (context.Features[typeof(AutomaticAuthenticationPipeline)] is not null)
+                {
+                    return next(context);
+                }
+
+                context.Features[typeof(AutomaticAuthenticationPipeline)] = Invoked;
+                return authenticationPipeline(context);
+            };
         }
     }
 
