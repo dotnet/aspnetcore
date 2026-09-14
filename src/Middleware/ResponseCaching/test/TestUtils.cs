@@ -337,10 +337,12 @@ internal class TestResponseCachingKeyProvider : IResponseCachingKeyProvider
 {
     private readonly string _baseKey;
     private readonly StringValues _varyKey;
+    private readonly string _storageVaryKey;
 
-    public TestResponseCachingKeyProvider(string lookupBaseKey = null, StringValues? lookupVaryKey = null)
+    public TestResponseCachingKeyProvider(string lookupBaseKey = null, StringValues? lookupVaryKey = null, string storageVaryKey = null)
     {
         _baseKey = lookupBaseKey;
+        _storageVaryKey = storageVaryKey;
         if (lookupVaryKey.HasValue)
         {
             _varyKey = lookupVaryKey.Value;
@@ -362,7 +364,7 @@ internal class TestResponseCachingKeyProvider : IResponseCachingKeyProvider
 
     public string CreateStorageVaryByKey(ResponseCachingContext context)
     {
-        throw new NotImplementedException();
+        return _storageVaryKey ?? throw new NotImplementedException();
     }
 }
 
