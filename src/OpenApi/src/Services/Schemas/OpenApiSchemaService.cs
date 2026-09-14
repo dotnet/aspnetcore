@@ -400,12 +400,12 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.AdditionalProperties is not null)
         {
-            schema.AdditionalProperties = ResolveReferenceForSchemaWithNullableWrapper(document, schema.AdditionalProperties, rootSchemaId);
+            schema.AdditionalProperties = ResolveReferenceForSchema(document, schema.AdditionalProperties, rootSchemaId);
         }
 
         if (schema.Items is not null)
         {
-            schema.Items = ResolveReferenceForSchemaWithNullableWrapper(document, schema.Items, rootSchemaId);
+            schema.Items = ResolveReferenceForSchema(document, schema.Items, rootSchemaId);
         }
 
         if (schema.Not is not null)

@@ -3047,14 +3047,7 @@
               "array"
             ],
             "items": {
-              "oneOf": [
-                {
-                  "type": "null"
-                },
-                {
-                  "$ref": "#/components/schemas/NestedModel"
-                }
-              ]
+              "$ref": "#/components/schemas/NestedModel"
             }
           }
         }
@@ -3212,14 +3205,7 @@
           "listOfNullableEnums": {
             "type": "array",
             "items": {
-              "oneOf": [
-                {
-                  "type": "null"
-                },
-                {
-                  "$ref": "#/components/schemas/TestEnum"
-                }
-              ]
+              "$ref": "#/components/schemas/TestEnum"
             }
           }
         }
@@ -3443,10 +3429,7 @@
           "listWithNullableElements": {
             "type": "array",
             "items": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           },
           "nullableDictionaryWithNullableValues": {
@@ -3455,10 +3438,7 @@
               "object"
             ],
             "additionalProperties": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         }
@@ -3493,10 +3473,7 @@
               "object"
             ],
             "additionalProperties": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": "string"
             }
           }
         }
