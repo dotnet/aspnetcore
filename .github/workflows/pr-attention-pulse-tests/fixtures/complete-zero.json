@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-09-10T20:00:00Z",
+  "repository": "dotnet/aspnetcore",
+  "filter": {
+    "name": "adhoc",
+    "description": "Ad hoc pull-request scope",
+    "coverage": "all-repo",
+    "selection": "(all open pull requests)",
+    "allRepositoryPullRequests": true
+  },
+  "query": {
+    "openPullRequestCount": 0,
+    "returnedPullRequestCount": 0,
+    "complete": true
+  },
+  "discussion": {
+    "candidateLimit": 20,
+    "assessedCandidateCount": 0,
+    "verificationNeededCount": 0,
+    "unassessedReviewNowCount": 0
+  },
+  "census": {
+    "openPullRequests": 0,
+    "matched": 0,
+    "labelOnly": 0,
+    "pathOnly": 0,
+    "labelAndPath": 0,
+    "incidentalPathExcluded": 0,
+    "unresolvedMergeable": 0,
+    "byBucket": {
+      "ReviewNow": 0,
+      "NeedsRescue": 0,
+      "ReadyToMerge": 0,
+      "WaitingOnAuthor": 0,
+      "WaitingOnCI": 0,
+      "DesignDecision": 0,
+      "Draft": 0,
+      "Excluded": 0
+    }
+  },
+  "overflow": {
+    "reviewNow": 0,
+    "needsRescue": 0,
+    "readyToMerge": 0
+  },
+  "caps": {
+    "reviewNow": 5,
+    "needsRescue": 3,
+    "readyToMerge": 3,
+    "reviewNowPerAuthor": 2
+  },
+  "warnings": [],
+  "items": []
+}

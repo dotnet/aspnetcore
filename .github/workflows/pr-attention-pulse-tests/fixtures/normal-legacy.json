@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-09-10T20:00:00Z",
+  "repository": "dotnet/aspnetcore",
+  "filter": {
+    "name": "adhoc",
+    "description": "Ad hoc <scope> at www.scope.example",
+    "coverage": "all-repo",
+    "selection": "[all](selection.example) open pull requests",
+    "allRepositoryPullRequests": true
+  },
+  "query": {
+    "openPullRequestCount": 5,
+    "returnedPullRequestCount": 5,
+    "complete": true
+  },
+  "discussion": {
+    "candidateLimit": 20,
+    "assessedCandidateCount": 3,
+    "verificationNeededCount": 1,
+    "unassessedReviewNowCount": 0
+  },
+  "census": {
+    "openPullRequests": 5,
+    "matched": 5,
+    "labelOnly": 0,
+    "pathOnly": 0,
+    "labelAndPath": 0,
+    "incidentalPathExcluded": 0,
+    "unresolvedMergeable": 0,
+    "byBucket": {
+      "ReviewNow": 3,
+      "NeedsRescue": 1,
+      "ReadyToMerge": 1,
+      "WaitingOnAuthor": 0,
+      "WaitingOnCI": 0,
+      "DesignDecision": 0,
+      "Draft": 0,
+      "Excluded": 0
+    }
+  },
+  "overflow": {
+    "reviewNow": 0,
+    "needsRescue": 0,
+    "readyToMerge": 0
+  },
+  "caps": {
+    "reviewNow": 5,
+    "needsRescue": 3,
+    "readyToMerge": 3,
+    "reviewNowPerAuthor": 2
+  },
+  "warnings": [
+    "Bounded warning with @mention, GH-88, feedface, and https://warning.example/path."
+  ],
+  "items": [
+    {
+      "number": 102,
+      "title": "Second `review` @candidate | <b>unsafe</b> #88 https://invalid.example/path example.com/also GH-77 deadbee5\nwith controls",
+      "url": "https://example.invalid/pull/102",
+      "author": "@second-author",
+      "body": "RAW BODY MUST NOT CROSS",
+      "reviews": [
+        { "body": "RAW REVIEW MUST NOT CROSS" }
+      ],
+      "comments": [
+        { "body": "RAW COMMENT MUST NOT CROSS" }
+      ],
+      "files": [
+        "src/Secret.cs"
+      ],
+      "bucket": "ReviewNow",
+      "nextActor": "reviewer @unsafe",
+      "reasonCodes": [
+        "author-responded"
+      ],
+      "blockers": [],
+      "ageDays": 10,
+      "idleDays": 2,
+      "scopeMatch": "all-repo | unsafe",
+      "shownInDigest": true,
+      "digestRank": 2,
+      "shownInDiscussionVerification": false,
+      "discussionVerificationRank": null,
+      "discussionAssessment": {
+        "state": "clear",
+        "complete": true,
+        "signals": [],
+        "commentTotalCount": 4,
+        "commentEvidenceTruncated": false,
+        "comments": [
+          { "excerpt": "RAW EVIDENCE MUST NOT CROSS" }
+        ],
+        "threads": {
+          "totalCount": 2,
+          "returnedCount": 2,
+          "complete": true,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      }
+    },
+    {
+      "number": 101,
+      "title": "First review candidate",
+      "author": "first-author",
+      "bucket": "ReviewNow",
+      "nextActor": "reviewer",
+      "reasonCodes": [
+        "needs-first-review"
+      ],
+      "blockers": [],
+      "ageDays": 4,
+      "idleDays": 1,
+      "scopeMatch": "all-repo",
+      "shownInDigest": true,
+      "digestRank": 1,
+      "shownInDiscussionVerification": false,
+      "discussionVerificationRank": null,
+      "discussionAssessment": {
+        "state": "clear",
+        "complete": true,
+        "signals": [],
+        "commentTotalCount": 0,
+        "commentEvidenceTruncated": false,
+        "threads": {
+          "totalCount": 0,
+          "returnedCount": 0,
+          "complete": true,
+          "unresolvedCount": 0,
+          "outdatedUnresolvedCount": 0
+        }
+      }
+    },
+    {
+      "number": 103,
+      "title": "Discussion verification candidate",
+      "author": "discussion-author",
+      "bucket": "ReviewNow",
+      "nextActor": "maintainer/triager",
+      "reasonCodes": [
+        "author-responded"
+      ],
+      "blockers": [],
+      "ageDays": 30,
+      "idleDays": 8,
+      "scopeMatch": "all-repo",
+      "shownInDigest": false,
+      "digestRank": null,
+      "shownInDiscussionVerification": true,
+      "discussionVerificationRank": 1,
+      "discussionAssessment": {
+        "state": "verification-needed",
+        "complete": false,
+        "signals": [
+          "discussion-incomplete",
+          "non-author-discussion-requires-verification"
+        ],
+        "commentTotalCount": 12,
+        "commentEvidenceTruncated": true,
+        "comments": [
+          {
+            "author": "reviewer",
+            "excerpt": "RAW DISCUSSION MUST NOT CROSS"
+          }
+        ],
+        "threads": {
+          "totalCount": 5,
+          "returnedCount": 3,
+          "complete": false,
+          "unresolvedCount": 2,
+          "outdatedUnresolvedCount": 1
+        }
+      }
+    },
+    {
+      "number": 104,
+      "title": "Rescue candidate",
+      "author": "rescue-author",
+      "bucket": "NeedsRescue",
+      "nextActor": "maintainer/triager",
+      "reasonCodes": [
+        "reviewer-idle-30d",
+        "community-contribution"
+      ],
+      "blockers": [
+        "A blocking label from blockers.example requires an explicit @triage decision."
+      ],
+      "ageDays": 60,
+      "idleDays": 40,
+      "scopeMatch": "all-repo",
+      "shownInDigest": true,
+      "digestRank": 1,
+      "shownInDiscussionVerification": false,
+      "discussionVerificationRank": null,
+      "discussionAssessment": null
+    },
+    {
+      "number": 105,
+      "title": "Ready candidate",
+      "author": "ready-author",
+      "bucket": "ReadyToMerge",
+      "nextActor": "maintainer",
+      "reasonCodes": [
+        "approved"
+      ],
+      "blockers": [],
+      "ageDays": 3,
+      "idleDays": 1,
+      "scopeMatch": "all-repo",
+      "shownInDigest": true,
+      "digestRank": 1,
+      "shownInDiscussionVerification": false,
+      "discussionVerificationRank": null,
+      "discussionAssessment": null
+    }
+  ]
+}
