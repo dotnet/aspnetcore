@@ -73,7 +73,7 @@ The [`CODEOWNERS` entry](../../.github/CODEOWNERS) for `src/OpenApi` is the auth
 
 [`OpenApiOptions`](src/Services/OpenApiOptions.cs) defines the per-document inclusion predicate, schema-reference naming policy, target OpenAPI version, and transformer registrations. The default inclusion predicate associates ungrouped descriptions with every applicable document and otherwise matches `ApiDescription.GroupName` to the document name.
 
-`OpenApiDocumentService` and `OpenApiSchemaService` are keyed singletons, but each generation call creates a new document and uses a supplied service scope. Singleton registration therefore does not make the mutable `OpenApiDocument` a singleton.
+`OpenApiDocumentService` and `OpenApiSchemaService` are keyed singletons, but each generation call creates a new document. The generation service provider depends on the entry point: `MapOpenApi` passes request services, direct `IOpenApiDocumentProvider` calls use the singleton-captured application provider, and the build-time `OpenApiDocumentProvider` creates a scope. Singleton registration therefore does not make the mutable `OpenApiDocument` a singleton.
 
 ## Endpoint metadata and `ApiDescription` inputs
 
@@ -162,7 +162,7 @@ This pipeline is distinct from build-time document generation. XML support gener
 
 [`MapOpenApi`](src/Extensions/OpenApiEndpointRouteBuilderExtensions.cs) registers a GET endpoint and excludes that endpoint from ApiExplorer so the document does not describe itself. For a resolved document name it:
 
-- Resolves the keyed document service and options from the request scope.
+- Resolves the keyed document service from request services and reads per-document options from the `IOptionsMonitor<OpenApiOptions>` captured from `endpoints.ServiceProvider` when the route was mapped.
 - Generates a fresh document with `HttpRequest` and `RequestAborted`.
 - Uses the request scheme, host, and path base to populate the server URL.
 - Selects the `Microsoft.OpenApi` YAML writer when the route pattern ends in `.yaml` or `.yml`; other patterns use the JSON writer.
