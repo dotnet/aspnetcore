@@ -11,7 +11,7 @@ import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
 import { JSEventRegistry } from '../../Services/JSEventRegistry';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from '../../JSInterop/Microsoft.JSInterop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
