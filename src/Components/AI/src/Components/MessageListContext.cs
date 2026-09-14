@@ -398,6 +398,23 @@ public class MessageListContext
 
     private static string? GetSafeUrl(string url, bool allowMailTo)
     {
+        var start = 0;
+        var end = url.Length;
+        while (start < end && url[start] <= ' ')
+        {
+            start++;
+        }
+
+        while (end > start && url[end - 1] <= ' ')
+        {
+            end--;
+        }
+
+        url = url[start..end]
+            .Replace("\t", string.Empty, StringComparison.Ordinal)
+            .Replace("\n", string.Empty, StringComparison.Ordinal)
+            .Replace("\r", string.Empty, StringComparison.Ordinal);
+
         if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
         {
             return null;

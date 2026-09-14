@@ -168,10 +168,10 @@ public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisp
                 _container,
                 DropZoneSelector);
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             Context.SetErrorMessage(
-                "File drag and drop could not be initialized. Use the attachment button instead.");
+                $"File drag and drop could not be initialized. Use the attachment button instead. {exception.Message}");
         }
     }
 
@@ -250,18 +250,19 @@ public sealed class MessageAttachButton : ComponentBase, IDisposable, IAsyncDisp
             Context.SetStatusMessage(
                 $"{attachments.Count} file{(attachments.Count == 1 ? string.Empty : "s")} attached.");
         }
-        catch (IOException)
+        catch (IOException exception)
         {
-            Context.SetErrorMessage($"Each file must be {FormatBytes(MaximumFileSize)} or smaller.");
+            Context.SetErrorMessage(
+                $"One or more selected files could not be read. {exception.Message}");
         }
         catch (InvalidOperationException exception)
         {
             Context.SetErrorMessage(exception.Message);
         }
-        catch (JSException)
+        catch (JSException exception)
         {
             Context.SetErrorMessage(
-                "One or more selected files could not be processed by this browser.");
+                $"One or more selected files could not be processed by this browser. {exception.Message}");
         }
         finally
         {

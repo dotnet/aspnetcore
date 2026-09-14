@@ -305,7 +305,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         Context.SetMicrophonePermissionStatus(
             this,
             MicrophonePermissionStatus.Requesting);
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
 
         try
         {
@@ -340,7 +340,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                 }
 
                 operationCts.Dispose();
-                await InvokeAsync(StateHasChanged);
+                StateHasChanged();
                 return;
             }
 
@@ -370,7 +370,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
             }
 
             operationCts.Dispose();
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
 
@@ -505,11 +505,12 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
                     $"The audio recording could not be completed. {exception.Message}");
             }
         }
-        catch (IOException)
+        catch (IOException exception)
         {
             if (ReferenceEquals(_operationCts, operationCts))
             {
-                Context.SetErrorMessage("The captured audio could not be read.");
+                Context.SetErrorMessage(
+                    $"The captured audio could not be read. {exception.Message}");
             }
         }
         catch (InvalidOperationException exception)
@@ -592,7 +593,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         Context.SetMicrophonePermissionStatus(
             this,
             MicrophonePermissionStatus.Requesting);
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
 
         try
         {
@@ -609,7 +610,7 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         catch (JSException exception)
         {
             HandleSpeechRecognitionInitializationFailure(exception);
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
 
@@ -685,9 +686,10 @@ public sealed class AudioCaptureButton : ComponentBase, IAsyncDisposable
         {
             await _interop.StopSpeechRecognitionAsync();
         }
-        catch (JSException)
+        catch (JSException exception)
         {
-            Context.SetStatusMessage("Transcribing the completed recording.");
+            Context.SetStatusMessage(
+                $"Live transcription could not be stopped. Transcribing the completed recording. {exception.Message}");
         }
     }
 

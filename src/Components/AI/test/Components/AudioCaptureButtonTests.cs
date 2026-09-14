@@ -157,6 +157,26 @@ public class AudioCaptureButtonTests
     }
 
     [Fact]
+    public async Task Recording_ReadFailureIncludesExceptionDetails()
+    {
+        var recorder = new TestAudioRecorder();
+        recorder.StreamReference.OpenException = new IOException("The audio stream was interrupted.");
+        var (cut, input, _) = RenderAudioCapture(
+            (_, _) => ValueTask.FromResult<string?>("transcript"),
+            recorder: recorder);
+        var button = cut.FindComponent<AudioCaptureButton>();
+
+        await cut.InvokeAsync(() => ClickAsync(button));
+        await cut.InvokeAsync(() => ClickAsync(button));
+
+        Assert.Equal(
+            "The captured audio could not be read. The audio stream was interrupted.",
+            input.ErrorMessage);
+        Assert.False(input.IsComposing);
+        Assert.Equal("Record audio", GetAttribute(button, "aria-label"));
+    }
+
+    [Fact]
     public async Task Recording_PermissionDeniedClearsPendingStatus()
     {
         var (cut, input, recorder) = RenderAudioCapture(
@@ -898,11 +918,18 @@ public class AudioCaptureButtonTests
 
         internal CancellationToken OpenToken { get; private set; }
 
+        internal IOException? OpenException { get; set; }
+
         public ValueTask<Stream> OpenReadStreamAsync(
             long maxAllowedSize = 512000,
             CancellationToken cancellationToken = default)
         {
             OpenToken = cancellationToken;
+            if (OpenException is not null)
+            {
+                throw OpenException;
+            }
+
             return ValueTask.FromResult<Stream>(
                 new MemoryStream([1, 2, 3, 4], writable: false));
         }

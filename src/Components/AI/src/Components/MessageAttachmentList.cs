@@ -59,41 +59,38 @@ public sealed class MessageAttachmentList : ComponentBase, IDisposable
         builder.AddAttribute(2, "class", CssClass());
         builder.AddAttribute(3, "aria-label", Label);
 
-        var sequence = 10;
         foreach (var attachment in Context.Attachments)
         {
-            builder.OpenRegion(sequence++);
-            builder.OpenElement(0, "li");
+            builder.OpenElement(10, "li");
             builder.SetKey(attachment);
 
-            builder.OpenComponent<MessageAttachmentContent>(1);
-            builder.AddComponentParameter(2, nameof(MessageAttachmentContent.Content), attachment);
+            builder.OpenComponent<MessageAttachmentContent>(11);
+            builder.AddComponentParameter(12, nameof(MessageAttachmentContent.Content), attachment);
             builder.AddComponentParameter(
-                3,
+                13,
                 nameof(MessageAttachmentContent.AlternativeText),
                 GetAlternativeText(attachment));
             builder.CloseComponent();
 
-            builder.OpenElement(4, "span");
-            builder.AddAttribute(5, "class", "sc-ai-attachment__name");
-            builder.AddContent(6, GetName(attachment));
+            builder.OpenElement(14, "span");
+            builder.AddAttribute(15, "class", "sc-ai-attachment__name");
+            builder.AddContent(16, GetName(attachment));
             builder.CloseElement();
 
-            builder.OpenElement(7, "button");
-            builder.AddAttribute(8, "type", "button");
-            builder.AddAttribute(9, "class", "sc-ai-attachment__remove");
-            builder.AddAttribute(10, "aria-label", $"Remove {GetName(attachment)}");
+            builder.OpenElement(17, "button");
+            builder.AddAttribute(18, "type", "button");
+            builder.AddAttribute(19, "class", "sc-ai-attachment__remove");
+            builder.AddAttribute(20, "aria-label", $"Remove {GetName(attachment)}");
             builder.AddAttribute(
-                11,
+                21,
                 "onclick",
                 EventCallback.Factory.Create(
                     this,
                     () => Context.RemoveAttachmentAsync(attachment).AsTask()));
-            builder.AddContent(12, "Remove");
+            builder.AddContent(22, "Remove");
             builder.CloseElement();
 
             builder.CloseElement();
-            builder.CloseRegion();
         }
 
         builder.CloseElement();

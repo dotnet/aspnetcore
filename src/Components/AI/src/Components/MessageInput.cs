@@ -400,10 +400,10 @@ public sealed class MessageInput : ComponentBase, IDisposable, IAsyncDisposable
                     _textArea,
                     _keyboardCallbacksReference);
             }
-            catch (JSException)
+            catch (JSException exception)
             {
                 ErrorMessage =
-                    "Keyboard shortcuts could not be initialized. Use the send button instead.";
+                    $"Keyboard shortcuts could not be initialized. Use the send button instead. {exception.Message}";
                 Refresh();
                 return;
             }

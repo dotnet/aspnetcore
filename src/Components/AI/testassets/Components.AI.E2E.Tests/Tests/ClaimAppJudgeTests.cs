@@ -797,6 +797,69 @@ public partial class ClaimAppJudgeTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task RemovingPhoto_PreservesRemainingAttachmentAndPreview()
+    {
+        await GoToAppAsync();
+        var image = Convert.FromBase64String(TestJpegBase64);
+        await _page.Locator("input[type=file]").SetInputFilesAsync(
+        [
+            new FilePayload { Name = "first-damage.jpg", MimeType = "image/jpeg", Buffer = image },
+            new FilePayload { Name = "second-damage.jpg", MimeType = "image/jpeg", Buffer = image },
+        ]);
+        var attachments = _page.Locator(".claim-composer__attachments li");
+        await Expect(attachments).ToHaveCountAsync(2);
+        await Expect(attachments.Locator("img")).ToHaveCountAsync(2);
+        await using var remainingAttachment = await attachments.Nth(1).ElementHandleAsync();
+        await using var remainingPreview = await attachments.Nth(1).Locator("img").ElementHandleAsync();
+        Assert.IsNotNull(remainingAttachment);
+        Assert.IsNotNull(remainingPreview);
+
+        await _page.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Remove first-damage.jpg", Exact = true }).ClickAsync();
+
+        await Expect(attachments).ToHaveCountAsync(1);
+        await Expect(attachments).ToContainTextAsync("second-damage.jpg");
+        Assert.IsTrue(await remainingAttachment.EvaluateAsync<bool>("element => element.isConnected"));
+        Assert.IsTrue(await remainingPreview.EvaluateAsync<bool>("element => element.isConnected"));
+
+        await _page.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Remove second-damage.jpg", Exact = true }).ClickAsync();
+        await Expect(attachments).ToHaveCountAsync(0);
+        AssertNoBrowserErrors();
+    }
+
+    [TestMethod]
+    [DataRow("registerMessageInput", "Keyboard shortcuts could not be initialized.")]
+    [DataRow("registerFileDropZone", "File drag and drop could not be initialized.")]
+    public async Task Composer_InitializationFailureIncludesExceptionDetails(
+        string initializer,
+        string errorMessage)
+    {
+        const string detail = "The browser blocked composer initialization.";
+        await _page.RouteAsync("**/MessageInput*.js", async route =>
+        {
+            var response = await route.FetchAsync();
+            var module = await response.TextAsync();
+            await route.FulfillAsync(new()
+            {
+                Response = response,
+                Body = module + $"\n{initializer} = () => {{ throw new Error('{detail}'); }};",
+            });
+        });
+
+        await _page.GotoAsync(_testUrl);
+
+        var error = _page.Locator(".sc-ai-input__error");
+        await Expect(error).ToContainTextAsync(errorMessage);
+        await Expect(error).ToContainTextAsync(detail);
+        await ClaimDescription.FillAsync("The front bumper is damaged.");
+        await Expect(SendButton).ToBeEnabledAsync();
+        AssertNoBrowserErrors();
+    }
+
+    [TestMethod]
     public async Task PhotoDragAndDrop_AttachesImageWithoutBreakingTheCircuit()
     {
         await GoToAppAsync();
