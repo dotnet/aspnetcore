@@ -86,7 +86,7 @@ Protobuf reflection descriptors used during endpoint discovery are also distinct
 
 ## Endpoint Discovery and Registration
 
-JSON transcoding extends the service registration established by the external gRPC server package. `AddJsonTranscoding` registers an additional `IServiceMethodProvider<TService>`, shared descriptor state, options setup, and interceptor activator infrastructure. Registrations are idempotent so repeated framework composition does not replace application services or duplicate providers.
+JSON transcoding extends the service registration established by the external gRPC server package. `AddJsonTranscoding` registers an additional `IServiceMethodProvider<TService>`, shared descriptor state, options setup, and interceptor activator infrastructure. The framework registrations use `TryAdd` or `TryAddEnumerable` so repeated calls do not replace an existing singleton or add the same method-provider implementation twice. The configuration overload adds the application's `GrpcJsonTranscodingOptions` callback before the internal setup supplies the shared descriptor registry.
 
 When a gRPC service is mapped, the transcoding method provider performs startup-time discovery:
 
@@ -101,6 +101,8 @@ Client-streaming and bidirectional-streaming methods do not receive transcoded e
 The HTTP rule is parsed and adapted into an ASP.NET Core `RoutePattern`. Multi-segment variables and catch-all forms that do not map directly to ASP.NET Core route syntax are rewritten into internal route values. Request-time rewrite actions reconstruct the public protobuf field path before binding begins. Endpoint routing remains responsible for matching the request; the transcoding layer does not implement a separate per-request router.
 
 Each endpoint carries the application service and method metadata plus `GrpcJsonTranscodingMetadata`, which exposes the protobuf method descriptor and HTTP rule to endpoint metadata consumers. This repository does not contain an in-tree gRPC OpenAPI schema generator.
+
+Discovery failures do not all have the same outcome. A missing generated bind method, an unreadable service descriptor, a missing method descriptor, or an annotated unsupported streaming method is logged and causes the applicable transcoded endpoint or endpoints to be skipped. An invalid route, request-body, or response-body annotation throws during endpoint binding and prevents the gRPC service from being mapped.
 
 ## Transcoded Request Pipeline
 
@@ -143,7 +145,7 @@ Body, route, and query binding have an intentional precedence. A query value mus
 
 ### Service Invocation
 
-The call handler creates a `JsonTranscodingServerCallContext` backed by the current `HttpContext`. Shared invoker infrastructure then applies effective global and per-service gRPC options, activates the application service from request services, executes configured interceptors, invokes the generated service method delegate, and releases framework-created service instances.
+The call handler creates a `JsonTranscodingServerCallContext` backed by the current `HttpContext`. During endpoint discovery, shared invoker infrastructure combines global and per-service gRPC options into the effective method options. At request time it activates the application service from request services, executes configured interceptors, invokes the generated service method delegate, and releases framework-created service instances.
 
 This is an in-process adaptation. A transcoded request does not create a native gRPC client call or proxy through a second network connection.
 
@@ -173,7 +175,7 @@ The project template composes the external `Grpc.AspNetCore` package with ASP.NE
 State is owned at different lifetimes:
 
 - The descriptor registry and interceptor-activator cache are singleton services. Descriptor registration begins during service discovery and can also add payload types encountered through an application `TypeRegistry`, such as an `Any` value whose type is not referenced by the service. Registration is synchronized, while type lookup supports concurrent request-time reads.
-- Effective gRPC service options and serializer options are prepared once and reused. Unary and server-streaming serializers are separate because streaming cannot use indented JSON.
+- Effective gRPC method options are created for each endpoint from the global and per-service gRPC options. Protobuf-aware serializer options are created lazily from `GrpcJsonTranscodingOptions` and the shared descriptor registry, then reused; unary and server-streaming serializers are separate because streaming cannot use indented JSON.
 - Route patterns, route and body descriptors, rewrite actions, method delegates, and endpoint metadata are startup-created endpoint state. Query field paths are resolved on demand and admitted to a bounded endpoint-owned cache; valid paths still bind after the cache reaches its limit.
 - `JsonTranscodingServerCallContext`, request messages, response writers, service activation handles, and request metadata belong to one HTTP request.
 - Application service lifetime follows the external gRPC service activator and dependency injection registration rather than being redefined by transcoding.
@@ -194,7 +196,7 @@ An application `RpcException` preserves its gRPC status for translation. Other e
 
 The `grpc-status-details-bin` trailer has special handling: when valid, its `google.rpc.Status` payload becomes the richer JSON error response. Arbitrary native gRPC trailers do not automatically become equivalent HTTP response metadata. Once a streaming response has started, the HTTP status can no longer be changed; the error payload and streaming delimiter complete the observable transcoded result.
 
-Malformed JSON and exceptions while binding route, query, body, or descriptor values are request errors. They become `InvalidArgument` status before normal service execution. Query paths that do not resolve to protobuf fields are ignored and are not cached. Startup descriptor or route failures instead prevent the corresponding endpoint from being created. Keeping those phases separate makes configuration failures observable before they become request-path ambiguity.
+Malformed JSON and exceptions while binding route, query, body, or descriptor values are request errors. They become `InvalidArgument` status before normal service execution. Query paths that do not resolve to protobuf fields are ignored and are not cached. Invalid route, body, or response annotations fail during endpoint discovery rather than becoming request-path ambiguity.
 
 ## Design Principles and Invariants
 
