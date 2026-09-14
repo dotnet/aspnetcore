@@ -299,6 +299,40 @@ public class PrefixContainerTest
             });
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetKeysFromPrefix_DuplicateChildKey_PreservesSourcePrecedence(bool bracketEntryFirst)
+    {
+        var keys = bracketEntryFirst ?
+            new[] { "foo[1].name", "foo.1.name" } :
+            new[] { "foo.1.name", "foo[1].name" };
+        var container = new PrefixContainer(keys);
+
+        var result = container.GetKeysFromPrefix("foo");
+
+        var item = Assert.Single(result);
+        Assert.Equal("1", item.Key);
+        Assert.Equal(bracketEntryFirst ? "foo[1]" : "foo.1", item.Value);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetKeysFromPrefix_DuplicateTopLevelKey_PreservesSourcePrecedence(bool bracketEntryFirst)
+    {
+        var keys = bracketEntryFirst ?
+            new[] { "[1].name", "1.name" } :
+            new[] { "1.name", "[1].name" };
+        var container = new PrefixContainer(keys);
+
+        var result = container.GetKeysFromPrefix(string.Empty);
+
+        var item = Assert.Single(result);
+        Assert.Equal("1", item.Key);
+        Assert.Equal(bracketEntryFirst ? "[1]" : "1", item.Value);
+    }
+
     [Fact]
     public void GetKeysFromPrefix_DoesNotEnumerateOriginalCollection()
     {
