@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class PrefixContainer
 {
+    private readonly int[] _sortedValueIndices;
     private readonly string[] _sortedValues;
 
     /// <summary>
@@ -26,13 +27,21 @@ public class PrefixContainer
 
         if (values.Count == 0)
         {
+            _sortedValueIndices = Array.Empty<int>();
             _sortedValues = Array.Empty<string>();
         }
         else
         {
+            _sortedValueIndices = new int[values.Count];
             _sortedValues = new string[values.Count];
             values.CopyTo(_sortedValues, 0);
-            Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
+
+            for (var i = 0; i < _sortedValueIndices.Length; i++)
+            {
+                _sortedValueIndices[i] = i;
+            }
+
+            Array.Sort(_sortedValues, _sortedValueIndices, StringComparer.OrdinalIgnoreCase);
         }
     }
 
@@ -72,6 +81,7 @@ public class PrefixContainer
     public IDictionary<string, string> GetKeysFromPrefix(string prefix)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var resultIndices = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         var start = prefix.Length == 0 ? 0 : FindFirstValueWithPrefix(prefix);
 
         for (var i = start; i < _sortedValues.Length; i++)
@@ -95,11 +105,11 @@ public class PrefixContainer
 
             if (prefix.Length == 0)
             {
-                GetKeyFromEmptyPrefix(entry, result);
+                GetKeyFromEmptyPrefix(entry, _sortedValueIndices[i], result, resultIndices);
             }
             else
             {
-                GetKeyFromNonEmptyPrefix(prefix, entry, result);
+                GetKeyFromNonEmptyPrefix(prefix, entry, _sortedValueIndices[i], result, resultIndices);
             }
         }
 
@@ -127,7 +137,11 @@ public class PrefixContainer
         return start;
     }
 
-    private static void GetKeyFromEmptyPrefix(string entry, IDictionary<string, string> results)
+    private static void GetKeyFromEmptyPrefix(
+        string entry,
+        int entryIndex,
+        IDictionary<string, string> results,
+        IDictionary<string, int> resultIndices)
     {
         string key;
         string fullName;
@@ -153,13 +167,15 @@ public class PrefixContainer
             fullName = key;
         }
 
-        if (!results.ContainsKey(key))
-        {
-            results.Add(key, fullName);
-        }
+        AddResult(key, fullName, entryIndex, results, resultIndices);
     }
 
-    private static void GetKeyFromNonEmptyPrefix(string prefix, string entry, IDictionary<string, string> results)
+    private static void GetKeyFromNonEmptyPrefix(
+        string prefix,
+        string entry,
+        int entryIndex,
+        IDictionary<string, string> results,
+        IDictionary<string, int> resultIndices)
     {
         string key;
         string fullName;
@@ -201,9 +217,20 @@ public class PrefixContainer
                 return;
         }
 
-        if (!results.ContainsKey(key))
+        AddResult(key, fullName, entryIndex, results, resultIndices);
+    }
+
+    private static void AddResult(
+        string key,
+        string fullName,
+        int entryIndex,
+        IDictionary<string, string> results,
+        IDictionary<string, int> resultIndices)
+    {
+        if (!resultIndices.TryGetValue(key, out var resultIndex) || entryIndex < resultIndex)
         {
-            results.Add(key, fullName);
+            results[key] = fullName;
+            resultIndices[key] = entryIndex;
         }
     }
 
