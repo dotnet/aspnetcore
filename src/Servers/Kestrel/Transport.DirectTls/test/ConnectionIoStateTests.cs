@@ -591,6 +591,6 @@ public class ConnectionIoStateTests
         {
         }
 
-        public override bool ModifyEvents(int fd, uint events) => false;
+        private protected override bool TryModifyEstablishedInterest(int fd, uint events) => false;
     }
 }
