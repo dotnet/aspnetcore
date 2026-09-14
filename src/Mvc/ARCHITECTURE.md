@@ -19,9 +19,9 @@ MVC turns application types and compiled Razor artifacts into endpoint metadata 
 - `AddRazorPages` adds Razor Pages discovery, page application models, page invocation, views, and MVC Tag Helpers.
 - `AddMvc` composes controllers with views and Razor Pages.
 
-Discovery produces `ActionDescriptor` snapshots for controller actions and Razor Pages. MVC endpoint data sources transform those descriptors into Endpoint Routing endpoints, including route patterns, required route values, filters, action constraints, and other metadata. Endpoint Routing selects one of those endpoints before MVC begins request invocation.
+Discovery produces `ActionDescriptor` snapshots for controller actions and Razor Pages. In the default endpoint-routing composition, MVC endpoint data sources transform those descriptors into Endpoint Routing endpoints, including route patterns, required route values, filters, action constraints, and other metadata. Endpoint Routing selects one of those endpoints before MVC begins request invocation. The legacy `UseMvc` composition remains a compatibility path when endpoint routing is disabled and is not the primary composition described here.
 
-The selected endpoint enters an MVC request delegate. MVC creates an action or page context and resolves cached execution plans. Authorization and resource filters run before controller or page activation and can short-circuit the request. If execution continues, MVC activates the controller or page, binds and validates inputs, runs action or page filters, invokes the action or page handler, maps the return value to an `IActionResult`, and executes that result inside the result-filter stage. A result may write directly to the response, select an output formatter, render a Razor view, redirect through routing, or delegate another specialized response behavior.
+The selected endpoint enters an MVC request delegate. MVC creates an action or page context and resolves cached execution plans. Authorization and resource filters run before application-type activation and can short-circuit the request. If controller execution continues, MVC activates the controller, binds and validates action arguments, runs action filters, and invokes the action. Razor Pages instead activates the handler instance, selects the handler and runs page-handler selection callbacks, binds properties and selected-handler arguments, then runs page execution filters and invokes the handler. MVC maps the return value to an `IActionResult` and executes that result inside the result-filter stage. A result may write directly to the response, select an output formatter, render a Razor view, redirect through routing, or delegate another specialized response behavior.
 
 ### Composition Diagram
 
@@ -156,10 +156,11 @@ sequenceDiagram
     Invoker->>Invoker: Authorization filters
     Invoker->>Invoker: Resource filters
     Note over Invoker,App: Exception filters surround the inner MVC execution
-    Invoker->>Activator: Create controller, page, or PageModel
+    Invoker->>Activator: Create controller or page handler instance
+    Note over Invoker,App: Razor Pages selects the handler and runs selection callbacks here
     Invoker->>Binder: Bind and validate inputs
     Binder-->>Invoker: Arguments, properties, and ModelState
-    Invoker->>Invoker: Action or page filters
+    Invoker->>Invoker: Action or page execution filters
     Invoker->>App: Invoke action or page handler
     App-->>Invoker: Return value or IActionResult
     Note over Invoker,App: Exception filters run only for an unhandled inner exception
@@ -176,6 +177,8 @@ The exact path can short-circuit. Authorization or resource filters can supply a
 ### MVC Filters
 
 [`ResourceInvoker`](Mvc.Core/src/Infrastructure/ResourceInvoker.cs) owns the shared state machine for authorization, resource, exception, and result filters. [`ControllerActionInvoker`](Mvc.Core/src/Infrastructure/ControllerActionInvoker.cs) supplies controller activation, argument binding, action filters, action-method execution, and result mapping. [`PageActionInvoker`](Mvc.RazorPages/src/Infrastructure/PageActionInvoker.cs) supplies page or `PageModel` activation, handler selection, property and handler-argument binding, page filters, handler execution, and the implicit `PageResult`.
+
+Razor Pages has two page-filter stages. The invoker first activates the handler instance: a `PageModel` when the generated page delegates handlers to a separate model, or the generated `Page` when it is itself the handler. It then selects a handler and runs `OnPageHandlerSelected` or `OnPageHandlerSelectionAsync`, allowing the selected handler to change. Only after selection completes does MVC bind the handler instance's properties and the selected handler's arguments. `OnPageHandlerExecuting` or `OnPageHandlerExecutionAsync` then surrounds handler invocation. When a separate `PageModel` handled the request, the generated rendering `Page` is created later while executing a `PageResult`; it is not the earlier handler instance.
 
 Filter descriptors are sorted first by `IOrderedFilter.Order` and then, for equal order values, by registration scope: global, controller, and action. The nested execution model means "before" callbacks run in ascending order while corresponding "after" callbacks unwind in reverse. Exception filters run only after an exception enters their stage.
 
@@ -227,7 +230,7 @@ Input and output formatter collections are ordered extension points. System.Text
 
 [`RazorViewEngine`](Mvc.Razor/src/RazorViewEngine.cs) resolves application-relative paths or expands named view locations using controller, area, page, and view-expander values. It caches both successful and unsuccessful lookups with any change tokens supplied by compiled view descriptors.
 
-[`DefaultViewCompiler`](Mvc.Razor/src/Compilation/DefaultViewCompiler.cs), the default `IViewCompiler` implementation, does not parse `.cshtml` source. It discovers build-time compiled view descriptors from application parts and resolves them by normalized path. The optional runtime-compilation package can compile changed files with Razor and Roslyn services, but that package is obsolete and is not the default production architecture.
+[`DefaultViewCompiler`](Mvc.Razor/src/Compilation/DefaultViewCompiler.cs), the default `IViewCompiler` implementation, does not parse `.cshtml` source. It discovers build-time compiled view descriptors from application parts and resolves them by normalized path. This build-time compiled-artifact path is the default. The optional runtime-compilation package can compile changed files with Razor and Roslyn services, but that package is obsolete and is not the default production architecture.
 
 [`RazorView`](Mvc.Razor/src/RazorView.cs) activates compiled pages, executes `_ViewStart` pages, renders the main page, resolves nested layouts, validates sections, and coordinates pooled view buffers. `ViewContext`, `ViewData`, `TempData`, HTML helpers, view components, and MVC Tag Helpers participate in this request-owned rendering context.
 
@@ -256,7 +259,9 @@ MVC publishes endpoints into the application's route builder. [Endpoint Routing]
 
 Authorization and CORS policies are normally enforced by middleware using metadata on the selected endpoint. MVC application models and endpoint construction project the metadata those systems consume, while MVC filters preserve compatibility and provide MVC-specific execution points.
 
-[Antiforgery](../Antiforgery) owns token generation, protection, and validation. MVC owns integration through application-model conventions, filters, form generation, and endpoint metadata. MVC has two distinct filter paths: `ValidateAntiforgeryTokenAuthorizationFilter`, used by the traditional validation attributes, calls `IAntiforgery.ValidateRequestAsync` directly; `AntiforgeryMiddlewareAuthorizationFilter`, added for endpoint antiforgery metadata, consumes the validation verdict recorded by antiforgery or CSRF-protection middleware. The application-model provider rejects a validate-token filter combined with endpoint antiforgery metadata when both appear on the same controller or action model.
+[Antiforgery](../Antiforgery) owns token generation, protection, and validation. MVC view-feature services register antiforgery services, validation filters, and `AntiforgeryApplicationModelProvider`; `AddControllers` alone does not register this integration. The application-model provider participates only when endpoint routing is enabled. It discovers `IAntiforgeryMetadata` from the attributes already present on each controller or action application model and adds `AntiforgeryMiddlewareAuthorizationFilter`, which consumes the verdict recorded by antiforgery or CSRF-protection middleware. This discovery does not inspect arbitrary endpoint metadata added later.
+
+The traditional `ValidateAntiForgeryTokenAttribute` uses `ValidateAntiforgeryTokenAuthorizationFilter`, which calls `IAntiforgery.ValidateRequestAsync` directly. During application-model construction, MVC specifically rejects `ValidateAntiForgeryTokenAttribute` combined with discovered `IAntiforgeryMetadata` on the same controller or action model; this is not a general conflict rule for every antiforgery policy or later endpoint convention.
 
 HTML helpers and Tag Helpers must preserve the distinction between trusted `IHtmlContent` and text that still requires encoding. The shared HTML content contracts are outside `src/Mvc`, while MVC owns the helpers and rendering behavior that consume them.
 
@@ -308,11 +313,11 @@ Changes across MVC should preserve these relationships:
 | Individual providers, conventions, binders, validators, filters, formatters, result executors, view components, Tag Helpers, and caches | Unit tests beside each product project under `src/Mvc/*/test` |
 | Model-binding and validation compositions using MVC's real metadata, binder, and validation providers | [`test/Mvc.IntegrationTests`](test/Mvc.IntegrationTests) |
 | Hosted controller, routing, filter, formatter, security, ApiExplorer, Razor Pages, view, TempData, and application-model behavior | [`test/Mvc.FunctionalTests`](test/Mvc.FunctionalTests) with applications under [`test/WebSites`](test/WebSites) |
-| Build-time Razor integration and runtime-compilation behavior | `Mvc.Razor/test`, `Mvc.RazorPages/test`, `Mvc.Razor.RuntimeCompilation/test`, and the Razor build web sites |
+| Compiled Razor artifact discovery and consumption, plus optional runtime-compilation integration | `Mvc.Razor/test`, `Mvc.RazorPages/test`, `Mvc.Razor.RuntimeCompilation/test`, and the Razor build web sites |
 | Allocation and throughput characteristics of request-path components | [`perf/Microbenchmarks`](perf/Microbenchmarks) and [`perf/benchmarkapps`](perf/benchmarkapps) |
 | Manual feature exploration | [`samples`](samples) |
 
-Each boundary proves only the behavior it exercises. Unit tests establish local provider and state-machine contracts. MVC integration tests establish binding and validation composition without a complete hosted application. Functional tests establish the hosted HTTP boundary, but `TestServer` does not prove server transport behavior. Build tests establish generated artifacts and compilation behavior, not browser rendering or generic routing internals.
+Each boundary proves only the behavior it exercises. Unit tests establish local provider and state-machine contracts. MVC integration tests establish binding and validation composition without a complete hosted application. Functional tests establish the hosted HTTP boundary, but `TestServer` does not prove server transport behavior. MVC's Razor tests establish how MVC discovers and consumes compiled artifacts and integrates the optional runtime compiler; they do not establish the current Razor compiler, source generator, or SDK output semantics. In particular, `RazorBuildWebSite` disables Razor compilation in the web project and references a separate project containing simulated prebuilt generated C# artifacts.
 
 ## Finding the Right Subsystem
 
@@ -344,5 +349,5 @@ Each boundary proves only the behavior it exercises. Unit tests establish local 
 - **Model binding** - The process that selects value sources and binders to construct action arguments, page-handler arguments, and bound properties.
 - **Model validation** - Metadata-driven traversal that records validation results in `ModelState` after or alongside binding.
 - **Result executor** - The service that implements the HTTP behavior of a concrete `IActionResult`.
-- **Compiled view descriptor** - MVC's runtime description of a build-time compiled Razor view or page.
+- **Compiled view descriptor** - MVC's runtime description of a compiled Razor view or page, produced by build-time compilation by default or by optional runtime compilation.
 - **View context** - The request-owned rendering context shared by a Razor view, layouts, partials, helpers, view components, ViewData, and TempData.
