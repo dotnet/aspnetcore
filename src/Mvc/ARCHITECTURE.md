@@ -267,7 +267,7 @@ HTML helpers and Tag Helpers must preserve the distinction between trusted `IHtm
 
 ### Diagnostics and Observability
 
-MVC emits structured logs and `DiagnosticListener` events around action execution, filters, model binding, action methods, results, view lookup, page handlers, and Razor page execution. Diagnostics observe the existing pipeline; they must not change ordering, exception propagation, disposal, or response behavior.
+MVC emits structured logs throughout the request pipeline, including model binding and validation. `DiagnosticListener` events surround action execution, filters, action methods, results, view lookup and rendering, page handlers, and Razor page execution; model binding itself is observed through logging rather than dedicated `DiagnosticListener` events. Diagnostics observe the existing pipeline; they must not change ordering, exception propagation, disposal, or response behavior.
 
 Performance-sensitive paths use precomputed descriptors, compiled delegates, cached binder graphs, pooled readers, writers, arrays, and view buffers. A proposed cache or allocation change must be evaluated at the layer that owns the work and against its invalidation and concurrency rules.
 
