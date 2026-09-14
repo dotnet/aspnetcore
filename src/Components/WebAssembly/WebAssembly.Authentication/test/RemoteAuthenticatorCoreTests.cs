@@ -485,6 +485,46 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
+    public async Task AuthenticationManager_LogoutCallback_FragmentSignInConfig_KeepsQueryStringState()
+    {
+        // Documents the contract that a logout callback carries its state in the QUERY
+        // string even when sign-in is configured for fragment responses (response_mode:
+        // fragment / response_type: id_token|token): oidc-client's SignoutResponse always
+        // parses '?'. The TS-side query-only lookup (logoutStateExists) is not executed
+        // here - JSRuntime is mocked - so this test locks the URL shape and the C#
+        // flow, not the parser.
+        // Arrange
+        var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
+            "https://www.example.com/base/authentication/logout-callback?state=logout-state-1234#/authentication/logout-callback");
+
+        var fetchDataUrl = "https://www.example.com/base/fetchData";
+        remoteAuthenticator.AuthenticationState.ReturnUrl = fetchDataUrl;
+
+        authServiceMock.CompleteSignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+        {
+            Status = RemoteAuthenticationStatus.Success,
+            State = remoteAuthenticator.AuthenticationState
+        });
+
+        var loggingOutSucceededCalled = false;
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [_action] = RemoteAuthenticationActions.LogOutCallback,
+            [_onLogOutSucceeded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                remoteAuthenticator,
+                (state) => loggingOutSucceededCalled = true),
+
+        });
+
+        // Act
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+
+        // Assert
+        Assert.Equal(fetchDataUrl, remoteAuthenticator.Navigation.Uri);
+        Assert.True(loggingOutSucceededCalled);
+    }
+
+    [Fact]
     public async Task AuthenticationManager_LogoutCallback_NavigatesToLoginFailureOnError()
     {
         // Arrange

@@ -298,7 +298,7 @@ class OidcAuthorizeService implements AuthorizeService {
     async completeSignOut(url: string) {
         this.trace('completeSignOut', url);
         try {
-            if (await this.stateExists(url)) {
+            if (await this.logoutStateExists(url)) {
                 const response = await this._userManager.signoutCallback(url);
                 return this.success(response && response.state);
             } else {
@@ -364,6 +364,19 @@ class OidcAuthorizeService implements AuthorizeService {
 
     private async stateExists(url: string) {
         const stateParam = this.getUrlParameter(url, 'state');
+        if (stateParam && this._userManager.settings.stateStore) {
+            return await this._userManager.settings.stateStore.get(stateParam);
+        } else {
+            return undefined;
+        }
+    }
+
+    // SignoutResponse in oidc-client always parses state from the query string,
+    // even when sign-in was configured with response_mode: fragment or
+    // response_type: id_token/token, so the logout state lookup must stay
+    // query-based while sign-in keeps the hash-aware path above.
+    private async logoutStateExists(url: string) {
+        const stateParam = new URLSearchParams(new URL(url).search).get('state');
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {
