@@ -116,6 +116,8 @@ public class CacheTagKey : IEquatable<CacheTagKey>
             GetStringLength(Key) +
             GetStringLength(_varyBy) +
             GetStringLength(_username) +
+            GetStringLength(_requestCulture?.Name) +
+            GetStringLength(_requestUICulture?.Name) +
             GetStringCollectionLength(_cookies) +
             GetStringCollectionLength(_headers) +
             GetStringCollectionLength(_queries) +

@@ -414,6 +414,7 @@ public class CacheTagKeyTest
     }
 
     [Fact]
+    [ReplaceCulture("fr-FR", "es-ES")]
     public void GetEstimatedSize_ReturnsSizeOfRetainedStrings()
     {
         var tagHelperContext = GetTagHelperContext();
@@ -426,6 +427,7 @@ public class CacheTagKeyTest
             VaryByQuery = "query-name",
             VaryByRoute = "route-name",
             VaryByUser = true,
+            VaryByCulture = true,
         };
         cacheTagHelper.ViewContext.HttpContext.Request.Headers.Cookie = "cookie-name=cookie-value";
         cacheTagHelper.ViewContext.HttpContext.Request.Headers["header-name"] = "header-value";
@@ -444,7 +446,9 @@ public class CacheTagKeyTest
             "query-value".Length +
             "route-name".Length +
             "route-value".Length +
-            "user-name".Length;
+            "user-name".Length +
+            "fr-FR".Length +
+            "es-ES".Length;
 
         var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
         var size = cacheTagKey.GetEstimatedSize();
