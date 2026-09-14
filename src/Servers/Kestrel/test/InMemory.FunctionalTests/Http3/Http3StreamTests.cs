@@ -2080,6 +2080,33 @@ public class Http3StreamTests : Http3TestBase
         await requestStream.ExpectReceiveEndOfStream();
     }
 
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task RequestTrailers_ContainsNewlines(string newlineChars)
+    {
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var trailerWithNewlines = new[]
+        {
+            new KeyValuePair<string, string>("contains-newlines", newlineChars),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: false);
+        await requestStream.SendHeadersAsync(trailerWithNewlines, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+    }
+
     [Fact]
     public async Task FrameAfterTrailers_UnexpectedFrameError()
     {

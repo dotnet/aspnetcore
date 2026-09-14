@@ -121,6 +121,11 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the configured passkey handler supports conditionally mediated passkey creation.
+    /// </summary>
+    public virtual bool SupportsPasskeyConditionalCreation => _passkeyHandler?.SupportsConditionalCreation ?? false;
+
+    /// <summary>
     /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
     /// </summary>
     /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> for.</param>
@@ -536,6 +541,40 @@ public class SignInManager<TUser> where TUser : class
 
         var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, Context);
         await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
+        return result.CreationOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
+    /// </summary>
+    /// <param name="userEntity">The user entity for which to create passkey options.</param>
+    /// <param name="isConditionallyMediated">
+    /// <see langword="true"/> if the passkey will be created with conditional mediation; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <returns>A JSON string representing the created passkey options.</returns>
+    /// <remarks>
+    /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
+    /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
+    /// call must specify <c>mediation: "conditional"</c>.
+    /// The caller must only request conditional mediation after a recent successful password authentication.
+    /// An existing authenticated session by itself is not sufficient authorization to add a new passkey.
+    /// The protected attestation state prevents the client from changing the mediation mode after options
+    /// are issued, but it does not authorize issuing conditional options.
+    /// </remarks>
+    public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated)
+    {
+        if (!isConditionallyMediated)
+        {
+            return await MakePasskeyCreationOptionsAsync(userEntity);
+        }
+
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, isConditionallyMediated, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
         return result.CreationOptionsJson;
     }
 
@@ -1331,16 +1370,22 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Creates a claims principal for the specified 2fa information.
     /// </summary>
-    /// <param name="userId">The user whose is logging in via 2fa.</param>
-    /// <param name="loginProvider">The 2fa provider.</param>
+    /// <param name="user">The user who is logging in via 2fa.</param>
+    /// <param name="loginProvider">The external login provider used to complete sign-in after 2FA (if applicable).</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
-    internal static ClaimsPrincipal StoreTwoFactorInfo(string userId, string? loginProvider)
+    internal async Task<ClaimsPrincipal> StoreTwoFactorInfo(TUser user, string? loginProvider)
     {
+        var userId = await UserManager.GetUserIdAsync(user);
         var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         identity.AddClaim(new Claim(ClaimTypes.Name, userId));
         if (loginProvider != null)
         {
             identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
+        }
+        if (UserManager.SupportsUserSecurityStamp)
+        {
+            var stamp = await UserManager.GetSecurityStampAsync(user);
+            identity.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, stamp));
         }
         return new ClaimsPrincipal(identity);
     }
@@ -1395,9 +1440,8 @@ public class SignInManager<TUser> where TUser : class
 
                 if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
                 {
-                    // Store the userId for use after two factor check
-                    var userId = await UserManager.GetUserIdAsync(user);
-                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                    // Store the user for use after two factor check
+                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, await StoreTwoFactorInfo(user, loginProvider));
                 }
 
                 return SignInResult.TwoFactorRequired;
@@ -1432,13 +1476,9 @@ public class SignInManager<TUser> where TUser : class
             return null;
         }
 
-        var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
-        if (userId == null)
-        {
-            return null;
-        }
-
-        var user = await UserManager.FindByIdAsync(userId);
+        // Validate the security stamp embedded in the two-factor principal so that a stale
+        // two-factor cookie (e.g. issued before a password reset) can no longer complete sign in.
+        var user = await ValidateTwoFactorSecurityStampAsync(result.Principal);
         if (user == null)
         {
             return null;

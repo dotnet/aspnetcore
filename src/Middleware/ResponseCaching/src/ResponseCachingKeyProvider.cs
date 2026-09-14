@@ -122,7 +122,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                         .Append(KeyNameValueDelimiter);
 
                     var headerValuesArray = headerValues.ToArray();
-                    Array.Sort(headerValuesArray, StringComparer.Ordinal);
 
                     for (var j = 0; j < headerValuesArray.Length; j++)
                     {
@@ -160,7 +159,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryArray[i].Value.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {
@@ -185,7 +183,6 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryKeyValues.ToArray();
-                        Array.Sort(queryValueArray, StringComparer.Ordinal);
 
                         for (var j = 0; j < queryValueArray.Length; j++)
                         {

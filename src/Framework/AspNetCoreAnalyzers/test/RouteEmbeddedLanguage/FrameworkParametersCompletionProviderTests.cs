@@ -565,7 +565,7 @@ public class CustomParsableType
     }
 
     [Fact]
-    public async Task Insertion_Space_CustomParsableWithFormatType_NonPublic_EndpointMapGet_HasDelegate_NoItems()
+    public async Task Insertion_Space_CustomParsableWithFormatType_NonPublic_EndpointMapGet_HasDelegate_NoRouteParameterItem()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -592,11 +592,12 @@ public class CustomParsableType
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
     [Fact]
-    public async Task Insertion_Space_NonParsableType_EndpointMapGet_HasDelegate_NoItems()
+    public async Task Insertion_Space_NonParsableType_EndpointMapGet_HasDelegate_NoRouteParameterItem()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -618,6 +619,7 @@ public interface NonParsableType
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
@@ -670,7 +672,7 @@ class Program
     [InlineData("IFormFile")]
     [InlineData("Stream")]
     [InlineData("PipeReader")]
-    public async Task Insertion_Space_SpecialType_EndpointMapGet_HasDelegate_NoItems(string parameterType)
+    public async Task Insertion_Space_SpecialType_EndpointMapGet_HasDelegate_NoRouteParameterItem(string parameterType)
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -693,6 +695,7 @@ class Program
 ");
 
         // Assert
+        // Roslyn may offer standard C# completions here, but the unbindable route parameter should not be offered.
         Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
