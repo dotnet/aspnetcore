@@ -116,13 +116,8 @@ internal sealed class WebAssemblyComponentParameterDeserializer
         return ParameterView.FromDictionary(parametersDictionary);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     private bool IsUnion(Type parameterType)
-    {
-        // GetTypeInfo can run before the first deserialization and does not populate the default resolver.
-        _jsonSerializationOptions.MakeReadOnly(populateMissingResolver: true);
-        return _jsonSerializationOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union;
-    }
+        => _jsonSerializationOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union;
 
     [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
