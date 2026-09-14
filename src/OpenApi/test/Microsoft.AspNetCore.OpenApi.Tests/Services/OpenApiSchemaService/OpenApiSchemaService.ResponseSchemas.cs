@@ -859,6 +859,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(todosSchema.Items.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+                
+            var statusComponentSchema = Assert.IsType<OpenApiSchema>(document.Components.Schemas["Status"]);
+            Assert.False(statusComponentSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false);
+            Assert.DoesNotContain(statusComponentSchema.Enum ?? [], value => value is null);
+
+            var todoComponentSchema = Assert.IsType<OpenApiSchema>(document.Components.Schemas["Todo"]);
+            Assert.False(todoComponentSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false);
         });
     }
 
