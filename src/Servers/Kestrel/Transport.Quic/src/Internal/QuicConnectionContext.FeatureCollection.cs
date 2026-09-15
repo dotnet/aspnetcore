@@ -50,7 +50,7 @@ internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature,
         {
             null => null,
             X509Certificate2 cert2 => cert2,
-            _ => new X509Certificate2(certificate),
+            _ => X509CertificateLoader.LoadCertificate(certificate.GetRawCertData()),
         };
     }
 }
