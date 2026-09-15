@@ -19,6 +19,10 @@
     <button type="submit" id="set-supply-from-tempdata">Set TempData Values via SupplyParameterFromTempData</button>
 </form>
 
+<EditForm method="post" FormName="SetSupplyFromTempDataEditForm" Model="this" OnValidSubmit="SetValuesSupplyFromTempDataFromEditForm">
+    <button type="submit" id="set-supply-from-tempdata-edit-form">Set TempData Values via SupplyParameterFromTempData from EditForm</button>
+</EditForm>
+
 <form method="post" @formname="JustRedirect" @onsubmit="() => NavigateToSamePage()">
     <AntiforgeryToken />
     <button type="submit" id="redirect-button">Navigate to the Same Page</button>
@@ -46,6 +50,7 @@
 <p id="contains-message">@_containsMessageKey</p>
 <p id="contains-peeked-value">@_containsPeekedValueKey</p>
 <p id="supply-parameter-from-tempdata">@SupplyParameterFromTempDataValue</p>
+<p id="navigation-manager-returned">@_navigationManagerReturned</p>
 
 @code {
     [SupplyParameterFromForm(Name = "_handler")]
@@ -71,6 +76,7 @@
 
     private bool _containsMessageKey;
     private bool _containsPeekedValueKey;
+    private bool _navigationManagerReturned;
 
     protected override void OnInitialized()
     {
@@ -86,6 +92,7 @@
 
         _containsMessageKey = TempData?.ContainsKey("Message") ?? false;
         _containsPeekedValueKey = TempData?.ContainsKey("PeekedValue") ?? false;
+        _navigationManagerReturned = TempData!.Get("NavigationManagerReturned") as bool? ?? false;
 
         if (ValueToKeep == "all")
         {
@@ -127,6 +134,13 @@
     {
         SupplyParameterFromTempDataValue = "Supplied from TempData";
         NavigateToSamePage();
+    }
+
+    private void SetValuesSupplyFromTempDataFromEditForm()
+    {
+        SupplyParameterFromTempDataValue = "Supplied from TempData";
+        NavigateToSamePage();
+        TempData!["NavigationManagerReturned"] = true;
     }
 
     private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);

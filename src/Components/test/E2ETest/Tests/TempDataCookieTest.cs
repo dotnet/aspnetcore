@@ -158,6 +158,17 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
+    public void SupplyParameterFromTempDataReadsAndSavesValuesFromEditForm()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("navigation-manager-returned")).Text);
+        Browser.FindElement(By.Id("set-supply-from-tempdata-edit-form")).Click();
+        Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("navigation-manager-returned")).Text);
+    }
+
+    [Fact]
     public void StreamingSSR_CookieTempData_DoesNotPersistValuesWrittenAfterFirstFlush()
     {
         Navigate($"{ServerPathBase}/streaming-cookie-tempdata-persistence");

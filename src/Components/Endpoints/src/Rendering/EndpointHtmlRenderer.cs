@@ -211,7 +211,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     // For tests only
-    internal Task? NonStreamingPendingTasksCompletion;
+    internal Task<bool>? NonStreamingPendingTasksCompletion;
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
