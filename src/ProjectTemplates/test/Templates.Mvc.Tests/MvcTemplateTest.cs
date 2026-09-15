@@ -76,14 +76,14 @@ public class MvcTemplateTest : LoggedTest
 
         if (languageOverride == "F#")
         {
+            Assert.Contains("<UseRazorSourceGenerator>false</UseRazorSourceGenerator>", projectFileContents);
+            Assert.Contains("<RazorCompileOnBuild>true</RazorCompileOnBuild>", projectFileContents);
+            Assert.Contains("<RazorCompileOnPublish>true</RazorCompileOnPublish>", projectFileContents);
+
             var programFileContents = project.ReadFile("Program.fs");
             Assert.DoesNotContain("AddRazorRuntimeCompilation", programFileContents);
-        }
-
-        // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
-        if (languageOverride != null)
-        {
-            return;
+            Assert.Contains("addCompiledRazorViews", programFileContents);
+            Assert.Contains("CompiledRazorAssemblyPart", programFileContents);
         }
 
         await project.RunDotNetPublishAsync();
