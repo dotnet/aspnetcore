@@ -12,7 +12,7 @@
   <ItemGroup>
     <Compile Include="Models/ErrorViewModel.fs" />
     <Compile Include="Controllers/HomeController.fs" />
-    <Compile Include="RazorViewEngine.fs" />
+    <Compile Include="MvcBuilderExtensions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
