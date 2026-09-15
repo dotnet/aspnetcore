@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +20,10 @@ namespace Microsoft.Extensions.Internal;
 /// </summary>
 internal static class SecurityHelper
 {
+    private const string SubjectClaimType = "sub";
+    private const int StackAllocThreshold = 256;
+    private const int InitialPoolSize = 8;
+
     internal const int UserIdentifierSize = SHA256.HashSizeInBytes;
 
     /// <summary>
@@ -76,120 +81,253 @@ internal static class SecurityHelper
             return false;
         }
 
-        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(principal.Identities);
-        if (uniqueIdentifierParameters is null)
+        var principalIdentities = principal.Identities;
+        if (principalIdentities is List<ClaimsIdentity> identities)
         {
-            return false;
+            return TryGetUserIdentifier(CollectionsMarshal.AsSpan(identities), destination);
         }
 
-        ComputeSha256(uniqueIdentifierParameters, destination);
-        return true;
+        if (principalIdentities is ClaimsIdentity[] identitiesArray)
+        {
+            return TryGetUserIdentifier(identitiesArray, destination);
+        }
+
+        ClaimsIdentity[]? rentedIdentities = null;
+        var identityCount = 0;
+        try
+        {
+            rentedIdentities = ArrayPool<ClaimsIdentity>.Shared.Rent(InitialPoolSize);
+            foreach (var identity in principalIdentities)
+            {
+                AddPooledItem(identity, ref rentedIdentities, ref identityCount);
+            }
+
+            return TryGetUserIdentifier(rentedIdentities.AsSpan(0, identityCount), destination);
+        }
+        finally
+        {
+            if (rentedIdentities is not null)
+            {
+                rentedIdentities.AsSpan(0, identityCount).Clear();
+                ArrayPool<ClaimsIdentity>.Shared.Return(rentedIdentities);
+            }
+        }
     }
 
-    private static List<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+    private static bool TryGetUserIdentifier(ReadOnlySpan<ClaimsIdentity> identities, Span<byte> destination)
     {
-        var identitiesList = claimsIdentities as List<ClaimsIdentity>;
-        if (identitiesList is null)
+        for (var i = 0; i < identities.Length; i++)
         {
-            identitiesList = [.. claimsIdentities];
-        }
-
-        for (var i = 0; i < identitiesList.Count; i++)
-        {
-            var identity = identitiesList[i];
+            var identity = identities[i];
             if (!identity.IsAuthenticated)
             {
                 continue;
             }
 
-            var subClaim = identity.FindFirst(
-                claim => string.Equals("sub", claim.Type, StringComparison.Ordinal));
-            if (subClaim is not null && !string.IsNullOrEmpty(subClaim.Value))
+            var identifierClaim = FindUserIdentifierClaim(identity.Claims);
+            if (identifierClaim is not null)
             {
-                return
-                [
-                    subClaim.Type,
-                    subClaim.Value,
-                    subClaim.Issuer
-                ];
-            }
-
-            var nameIdentifierClaim = identity.FindFirst(
-                claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
-            if (nameIdentifierClaim is not null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
-            {
-                return
-                [
-                    nameIdentifierClaim.Type,
-                    nameIdentifierClaim.Value,
-                    nameIdentifierClaim.Issuer
-                ];
-            }
-
-            var upnClaim = identity.FindFirst(
-                claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
-            if (upnClaim is not null && !string.IsNullOrEmpty(upnClaim.Value))
-            {
-                return
-                [
-                    upnClaim.Type,
-                    upnClaim.Value,
-                    upnClaim.Issuer
-                ];
+                ComputeSha256(identifierClaim, destination);
+                return true;
             }
         }
 
-        var allClaims = new List<Claim>();
-        for (var i = 0; i < identitiesList.Count; i++)
+        Claim[]? rentedClaims = null;
+        var claimCount = 0;
+        try
         {
-            if (identitiesList[i].IsAuthenticated)
+            rentedClaims = ArrayPool<Claim>.Shared.Rent(InitialPoolSize);
+            for (var i = 0; i < identities.Length; i++)
             {
-                allClaims.AddRange(identitiesList[i].Claims);
+                if (identities[i].IsAuthenticated)
+                {
+                    AddClaims(identities[i].Claims, ref rentedClaims, ref claimCount);
+                }
+            }
+
+            if (claimCount == 0)
+            {
+                return false;
+            }
+
+            var claims = rentedClaims.AsSpan(0, claimCount);
+            claims.Sort(static (a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
+            ComputeSha256(claims, destination);
+            return true;
+        }
+        finally
+        {
+            if (rentedClaims is not null)
+            {
+                rentedClaims.AsSpan(0, claimCount).Clear();
+                ArrayPool<Claim>.Shared.Return(rentedClaims);
             }
         }
-
-        if (allClaims.Count == 0)
-        {
-            return null;
-        }
-
-        allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
-
-        var identifierParameters = new List<string>(allClaims.Count * 3);
-        for (var i = 0; i < allClaims.Count; i++)
-        {
-            var claim = allClaims[i];
-            identifierParameters.Add(claim.Type);
-            identifierParameters.Add(claim.Value);
-            identifierParameters.Add(claim.Issuer);
-        }
-
-        return identifierParameters;
     }
 
-    private static void ComputeSha256(List<string> parameters, Span<byte> destination)
+    private static Claim? FindUserIdentifierClaim(IEnumerable<Claim> claims)
+    {
+        if (claims is List<Claim> claimsList)
+        {
+            return FindUserIdentifierClaim(CollectionsMarshal.AsSpan(claimsList));
+        }
+
+        Claim? subClaim = null;
+        Claim? nameIdentifierClaim = null;
+        Claim? upnClaim = null;
+        foreach (var claim in claims)
+        {
+            if (subClaim is null && string.Equals(SubjectClaimType, claim.Type, StringComparison.Ordinal))
+            {
+                subClaim = claim;
+                if (!string.IsNullOrEmpty(claim.Value))
+                {
+                    return claim;
+                }
+            }
+            else if (nameIdentifierClaim is null && string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal))
+            {
+                nameIdentifierClaim = claim;
+            }
+            else if (upnClaim is null && string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal))
+            {
+                upnClaim = claim;
+            }
+        }
+
+        return GetFirstNonemptyClaim(nameIdentifierClaim, upnClaim);
+    }
+
+    private static Claim? FindUserIdentifierClaim(ReadOnlySpan<Claim> claims)
+    {
+        Claim? subClaim = null;
+        Claim? nameIdentifierClaim = null;
+        Claim? upnClaim = null;
+        for (var i = 0; i < claims.Length; i++)
+        {
+            var claim = claims[i];
+            if (subClaim is null && string.Equals(SubjectClaimType, claim.Type, StringComparison.Ordinal))
+            {
+                subClaim = claim;
+                if (!string.IsNullOrEmpty(claim.Value))
+                {
+                    return claim;
+                }
+            }
+            else if (nameIdentifierClaim is null && string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal))
+            {
+                nameIdentifierClaim = claim;
+            }
+            else if (upnClaim is null && string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal))
+            {
+                upnClaim = claim;
+            }
+        }
+
+        return GetFirstNonemptyClaim(nameIdentifierClaim, upnClaim);
+    }
+
+    private static Claim? GetFirstNonemptyClaim(Claim? nameIdentifierClaim, Claim? upnClaim)
+    {
+        if (nameIdentifierClaim is not null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
+        {
+            return nameIdentifierClaim;
+        }
+
+        return upnClaim is not null && !string.IsNullOrEmpty(upnClaim.Value) ? upnClaim : null;
+    }
+
+    private static void AddClaims(IEnumerable<Claim> claims, ref Claim[] buffer, ref int count)
+    {
+        if (claims is List<Claim> claimsList)
+        {
+            var claimsSpan = CollectionsMarshal.AsSpan(claimsList);
+            for (var i = 0; i < claimsSpan.Length; i++)
+            {
+                AddPooledItem(claimsSpan[i], ref buffer, ref count);
+            }
+
+            return;
+        }
+
+        foreach (var claim in claims)
+        {
+            AddPooledItem(claim, ref buffer, ref count);
+        }
+    }
+
+    private static void AddPooledItem<T>(T item, ref T[] buffer, ref int count)
+    {
+        if (count == buffer.Length)
+        {
+            var replacement = ArrayPool<T>.Shared.Rent(buffer.Length * 2);
+            buffer.AsSpan(0, count).CopyTo(replacement);
+            buffer.AsSpan(0, count).Clear();
+            ArrayPool<T>.Shared.Return(buffer);
+            buffer = replacement;
+        }
+
+        buffer[count++] = item;
+    }
+
+    private static void ComputeSha256(Claim claim, Span<byte> destination)
+    {
+        Debug.Assert(destination.Length >= UserIdentifierSize);
+
+        var totalSize =
+            Measure7BitEncodedStringLength(claim.Type) +
+            Measure7BitEncodedStringLength(claim.Value) +
+            Measure7BitEncodedStringLength(claim.Issuer);
+
+        byte[]? rentedBuffer = null;
+        var buffer = totalSize <= StackAllocThreshold
+            ? stackalloc byte[StackAllocThreshold]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(totalSize));
+
+        try
+        {
+            var span = buffer[..totalSize];
+            var offset = Write7BitEncodedString(span, claim.Type);
+            offset += Write7BitEncodedString(span[offset..], claim.Value);
+            offset += Write7BitEncodedString(span[offset..], claim.Issuer);
+            SHA256.HashData(span[..offset], destination);
+        }
+        finally
+        {
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer);
+            }
+        }
+    }
+
+    private static void ComputeSha256(ReadOnlySpan<Claim> claims, Span<byte> destination)
     {
         Debug.Assert(destination.Length >= UserIdentifierSize);
 
         var totalSize = 0;
-        for (var i = 0; i < parameters.Count; i++)
+        for (var i = 0; i < claims.Length; i++)
         {
-            var byteCount = Encoding.UTF8.GetByteCount(parameters[i]);
-            totalSize += Measure7BitEncodedUIntLength(byteCount) + byteCount;
+            totalSize +=
+                Measure7BitEncodedStringLength(claims[i].Type) +
+                Measure7BitEncodedStringLength(claims[i].Value) +
+                Measure7BitEncodedStringLength(claims[i].Issuer);
         }
 
         byte[]? rentedBuffer = null;
-        var buffer = totalSize <= 256
-            ? stackalloc byte[256]
+        var buffer = totalSize <= StackAllocThreshold
+            ? stackalloc byte[StackAllocThreshold]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(totalSize));
 
         try
         {
             var span = buffer[..totalSize];
             var offset = 0;
-            for (var i = 0; i < parameters.Count; i++)
+            for (var i = 0; i < claims.Length; i++)
             {
-                offset += Write7BitEncodedString(span[offset..], parameters[i]);
+                offset += Write7BitEncodedString(span[offset..], claims[i].Type);
+                offset += Write7BitEncodedString(span[offset..], claims[i].Value);
+                offset += Write7BitEncodedString(span[offset..], claims[i].Issuer);
             }
 
             SHA256.HashData(span[..offset], destination);
@@ -203,9 +341,16 @@ internal static class SecurityHelper
         }
     }
 
+    private static int Measure7BitEncodedStringLength(string value)
+    {
+        var byteCount = Encoding.UTF8.GetByteCount(value);
+        return Measure7BitEncodedUIntLength(byteCount) + byteCount;
+    }
+
     private static int Measure7BitEncodedUIntLength(int value)
         => ((31 - System.Numerics.BitOperations.LeadingZeroCount((uint)value | 1)) / 7) + 1;
 
+    // Preserve BinaryWriter's string framing because antiforgery tokens persist the resulting hash.
     private static int Write7BitEncodedString(Span<byte> target, string value)
     {
         if (string.IsNullOrEmpty(value))
