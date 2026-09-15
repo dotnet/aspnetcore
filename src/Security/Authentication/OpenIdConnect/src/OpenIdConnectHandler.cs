@@ -32,6 +32,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 {
     private const string NonceProperty = "N";
     private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
+    private const string MaxAgeProperty = ".OpenIdConnect.MaxAge";
+    private const string DisableMaxAgeValidationSwitch = "Microsoft.AspNetCore.Authentication.OpenIdConnect.DisableMaxAgeValidation";
 
     private OpenIdConnectConfiguration? _configuration;
 
@@ -478,6 +480,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         message = redirectContext.ProtocolMessage;
 
+        if (!string.IsNullOrEmpty(message.MaxAge))
+        {
+            properties.Items[MaxAgeProperty] = message.MaxAge;
+        }
+
         if (!string.IsNullOrEmpty(message.State))
         {
             properties.Items[OpenIdConnectDefaults.UserstatePropertiesKey] = message.State;
@@ -588,6 +595,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             Logger.PushAuthorizationSkippedPush();
             return;
+        }
+
+        if (!IsMaxAgeValidationDisabled() &&
+            !string.Equals(parRequest.MaxAge, authorizeRequest.MaxAge, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "The max_age parameter cannot be changed in OnPushAuthorization. Change it in OnRedirectToIdentityProvider so that the value can be correlated with the authorization response.");
         }
 
         // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
@@ -734,6 +748,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 return HandleRequestResult.Fail("Correlation failed.", properties);
             }
 
+            var maxAge = ReadMaxAge(properties);
+
             // if any of the error fields are set, throw error null
             if (!string.IsNullOrEmpty(authorizationResponse.Error))
             {
@@ -808,6 +824,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ValidatedIdToken = jwt,
                 Nonce = nonce
             });
+
+            if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
+            {
+                ValidateAuthTime(jwt, maxAge);
+            }
 
             OpenIdConnectMessage? tokenEndpointResponse = null;
 
@@ -906,6 +927,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                         Nonce = nonce
                     });
                 }
+
+                ValidateAuthTime(tokenEndpointJwt, maxAge);
             }
 
             if (Options.SaveTokens)
@@ -952,6 +975,113 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             }
 
             return HandleRequestResult.Fail(exception, properties);
+        }
+    }
+
+    private static long? ReadMaxAge(AuthenticationProperties properties)
+    {
+        if (!properties.Items.Remove(MaxAgeProperty, out var value) || IsMaxAgeValidationDisabled())
+        {
+            return null;
+        }
+
+        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var maxAge))
+        {
+            throw new SecurityTokenValidationException("The correlated max_age value is invalid.");
+        }
+
+        return maxAge;
+    }
+
+    private static bool IsMaxAgeValidationDisabled() =>
+        AppContext.TryGetSwitch(DisableMaxAgeValidationSwitch, out var disabled) && disabled;
+
+    private void ValidateAuthTime(JwtSecurityToken? token, long? maxAge)
+    {
+        if (!maxAge.HasValue)
+        {
+            return;
+        }
+
+        if (token is null ||
+            !token.Payload.TryGetValue(JwtRegisteredClaimNames.AuthTime, out var value) ||
+            !TryReadNumericDate(value, out var authTime))
+        {
+            throw new SecurityTokenValidationException("The auth_time claim must be a valid integral NumericDate when max_age is requested.");
+        }
+
+        var now = Options.TimeProvider!.GetUtcNow();
+        var nowSeconds = (decimal)(now - DateTimeOffset.UnixEpoch).Ticks / TimeSpan.TicksPerSecond;
+        var skewSeconds = (decimal)Options.TokenValidationParameters.ClockSkew.Ticks / TimeSpan.TicksPerSecond;
+
+        if (authTime > nowSeconds + skewSeconds)
+        {
+            throw new SecurityTokenValidationException("The auth_time claim is later than the current time plus the allowed clock skew.");
+        }
+
+        if (nowSeconds - authTime > maxAge.Value + skewSeconds)
+        {
+            throw new SecurityTokenValidationException("The auth_time claim exceeds the requested max_age plus the allowed clock skew.");
+        }
+    }
+
+    private static bool TryReadNumericDate(object? value, out long numericDate)
+    {
+        if (value is long longValue)
+        {
+            numericDate = longValue;
+        }
+        else if (value is int intValue)
+        {
+            numericDate = intValue;
+        }
+        else if (value is uint uintValue)
+        {
+            numericDate = uintValue;
+        }
+        else if (value is short shortValue)
+        {
+            numericDate = shortValue;
+        }
+        else if (value is ushort ushortValue)
+        {
+            numericDate = ushortValue;
+        }
+        else if (value is byte byteValue)
+        {
+            numericDate = byteValue;
+        }
+        else if (value is sbyte sbyteValue)
+        {
+            numericDate = sbyteValue;
+        }
+        else if (value is ulong ulongValue && ulongValue <= long.MaxValue)
+        {
+            numericDate = (long)ulongValue;
+        }
+        else if (value is JsonElement { ValueKind: JsonValueKind.Number } element && element.TryGetInt64(out var elementValue))
+        {
+            numericDate = elementValue;
+        }
+        else
+        {
+            numericDate = 0;
+            return false;
+        }
+
+        if (numericDate < 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            _ = DateTimeOffset.FromUnixTimeSeconds(numericDate);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
         }
     }
 
