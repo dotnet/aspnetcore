@@ -8,7 +8,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <DefineConstants>$(DefineConstants);MVC_TAGHELPERS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

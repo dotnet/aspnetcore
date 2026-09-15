@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
