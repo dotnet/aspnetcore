@@ -241,7 +241,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapPost("/", [Consumes(typeof(IFormFile), "application/magic-foo-content-type")] (IFormFile formFile) => { });
+        builder.MapPost("/", [Consumes<IFormFile>("application/magic-foo-content-type")] (IFormFile formFile) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -364,7 +364,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapPost("/", [Consumes(typeof(string), "application/magic-foo-content-type")] (string name) => { });
+        builder.MapPost("/", [Consumes<string>("application/magic-foo-content-type")] (string name) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -1245,7 +1245,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapPatch("/", [Consumes(typeof(JsonPatchDocument), "application/vnd.github.patch+json")] (JsonPatchDocument patch) => { });
+        builder.MapPatch("/", [Consumes<JsonPatchDocument>("application/vnd.github.patch+json")] (JsonPatchDocument patch) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -1375,7 +1375,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
 
         // Act
-        builder.MapPatch("/", [Consumes(typeof(JsonPatchDocument<JsonPatchModel>), "application/vnd.github.patch+json")] (JsonPatchDocument<JsonPatchModel> patch) => { });
+        builder.MapPatch("/", [Consumes<JsonPatchDocument<JsonPatchModel>>("application/vnd.github.patch+json")] (JsonPatchDocument<JsonPatchModel> patch) => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
