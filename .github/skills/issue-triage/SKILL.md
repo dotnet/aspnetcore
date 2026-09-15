@@ -32,10 +32,12 @@ Read [references/areas.md](references/areas.md) before choosing an area. It cont
 complete supported area set, ownership boundaries, and disambiguation rules.
 Do not choose an area until this reference was read successfully. If opening the rendered
 link fails because the path is missing or cannot be resolved, locate `references/areas.md`
-within the active skill directory and retry with another available local file-reading
-tool. Do not retry a permission or content-exclusion denial, search outside the active
-skill directory, or infer the reference contents. If the reference still cannot be read,
-surface that limitation and abstain from the area decision.
+only within the active skill directory and retry using its path relative to the current
+workspace, not the same absolute path. If that still cannot read the file and `bash` is
+available, use `cat` on the located in-skill file. Never retry or use a shell after a
+permission or content-exclusion denial, search outside the active skill directory, or
+infer the reference contents. If the reference still cannot be read, surface that
+limitation and abstain from the area decision.
 
 Choose the single best match from issue evidence such as API and type names, source paths,
 stack traces, packages, and described behavior. Never return a second area as a fallback.

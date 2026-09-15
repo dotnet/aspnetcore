@@ -45,6 +45,9 @@ stimuli:
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
+
       ### Triage Summary
 
       **Area:** `<area or abstention>` (brief evidence-based reason)
@@ -98,6 +101,9 @@ stimuli:
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
+
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
 
       ### Triage Summary
 
@@ -172,6 +178,9 @@ stimuli:
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
+
       ### Triage Summary
 
       **Area:** `<area or abstention>` (brief evidence-based reason)
@@ -226,6 +235,9 @@ stimuli:
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
+
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
 
       ### Triage Summary
 
@@ -282,6 +294,9 @@ stimuli:
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
+
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
 
       ### Triage Summary
 
@@ -349,6 +364,9 @@ stimuli:
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
+
       ### Triage Summary
 
       **Area:** `<area or abstention>` (brief evidence-based reason)
@@ -405,6 +423,9 @@ stimuli:
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
+
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
 
       ### Triage Summary
 
@@ -480,6 +501,9 @@ stimuli:
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
       - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
+
+      Wrap concrete area labels, issue types, and supported subtypes in backticks exactly
+      as shown; do not emit angle-bracket placeholders.
 
       ### Triage Summary
 
