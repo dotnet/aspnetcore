@@ -31,6 +31,7 @@
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="server_error_handler_tests.cpp" />
     <ClCompile Include="StandardOutputRedirectionTest.cpp" />
     <ClCompile Include="BindingInformationTest.cpp" />
     <ClCompile Include="utility_tests.cpp" />
