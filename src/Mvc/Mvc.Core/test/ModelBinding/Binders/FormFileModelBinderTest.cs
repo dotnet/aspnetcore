@@ -557,7 +557,7 @@ public class FormFileModelBinderTest
         };
 
         var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
-        var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
+        var bindingContext = GetBindingContext(modelType, httpContext);
         var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
         // Act
