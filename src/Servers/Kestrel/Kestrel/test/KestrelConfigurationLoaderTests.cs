@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.InternalTesting;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 
@@ -2062,7 +2064,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
 
         Assert.Single(serverOptions.CodeBackedListenOptions);
-        mockConfig.Verify(c => c.GetSection(It.IsNotIn("EndpointDefaults")), Times.Never); // It does read the EndpointDefaults sections
+        mockConfig.Verify(c => c.GetSection(It.IsNotIn("EndpointDefaults", "Limits")), Times.Never); // It does read the EndpointDefaults and Limits sections
 
         mockConfig.Invocations.Clear();
 
@@ -2134,6 +2136,312 @@ public class KestrelConfigurationLoaderTests
         Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal("abc", serverOptions.CodeBackedListenOptions[0].PipeName);
         Assert.NotNull(serverOptions.ConfigurationLoader);
+    }
+
+    [Fact]
+    public void ServerOptionsReadFromConfig()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("AddServerHeader", "false"),
+            new KeyValuePair<string, string>("AllowAlternateSchemes", "true"),
+            new KeyValuePair<string, string>("AllowHostHeaderOverride", "true"),
+            new KeyValuePair<string, string>("AllowResponseHeaderCompression", "false"),
+            new KeyValuePair<string, string>("AllowSynchronousIO", "true"),
+            new KeyValuePair<string, string>("DisableStringReuse", "true"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.False(serverOptions.AddServerHeader);
+        Assert.True(serverOptions.AllowAlternateSchemes);
+        Assert.True(serverOptions.AllowHostHeaderOverride);
+        Assert.False(serverOptions.AllowResponseHeaderCompression);
+        Assert.True(serverOptions.AllowSynchronousIO);
+        Assert.True(serverOptions.DisableStringReuse);
+    }
+
+    [Fact]
+    public void LimitsReadFromConfig()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MaxResponseBufferSize", "2048"),
+            new KeyValuePair<string, string>("Limits:MaxRequestBufferSize", "4096"),
+            new KeyValuePair<string, string>("Limits:MaxRequestLineSize", "1024"),
+            new KeyValuePair<string, string>("Limits:MaxRequestHeadersTotalSize", "16384"),
+            new KeyValuePair<string, string>("Limits:MaxRequestHeaderCount", "50"),
+            new KeyValuePair<string, string>("Limits:MaxRequestBodySize", "10485760"),
+            new KeyValuePair<string, string>("Limits:KeepAliveTimeout", "00:02:10"),
+            new KeyValuePair<string, string>("Limits:RequestHeadersTimeout", "00:00:45"),
+            new KeyValuePair<string, string>("Limits:MaxConcurrentConnections", "100"),
+            new KeyValuePair<string, string>("Limits:MaxConcurrentUpgradedConnections", "20"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        var limits = serverOptions.Limits;
+        Assert.Equal(2048, limits.MaxResponseBufferSize);
+        Assert.Equal(4096, limits.MaxRequestBufferSize);
+        Assert.Equal(1024, limits.MaxRequestLineSize);
+        Assert.Equal(16384, limits.MaxRequestHeadersTotalSize);
+        Assert.Equal(50, limits.MaxRequestHeaderCount);
+        Assert.Equal(10485760, limits.MaxRequestBodySize);
+        Assert.Equal(TimeSpan.FromSeconds(130), limits.KeepAliveTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(45), limits.RequestHeadersTimeout);
+        Assert.Equal(100, limits.MaxConcurrentConnections);
+        Assert.Equal(20, limits.MaxConcurrentUpgradedConnections);
+    }
+
+    [Fact]
+    public void HttpLimitsReadFromConfig()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:Http2:MaxStreamsPerConnection", "10"),
+            new KeyValuePair<string, string>("Limits:Http2:HeaderTableSize", "8192"),
+            new KeyValuePair<string, string>("Limits:Http2:MaxFrameSize", "16385"),
+            new KeyValuePair<string, string>("Limits:Http2:MaxRequestHeaderFieldSize", "16384"),
+            new KeyValuePair<string, string>("Limits:Http2:InitialConnectionWindowSize", "131072"),
+            new KeyValuePair<string, string>("Limits:Http2:InitialStreamWindowSize", "98304"),
+            new KeyValuePair<string, string>("Limits:Http2:KeepAlivePingDelay", "00:00:10"),
+            new KeyValuePair<string, string>("Limits:Http2:KeepAlivePingTimeout", "00:00:30"),
+            new KeyValuePair<string, string>("Limits:Http3:MaxRequestHeaderFieldSize", "8192"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        var http2 = serverOptions.Limits.Http2;
+        Assert.Equal(10, http2.MaxStreamsPerConnection);
+        Assert.Equal(8192, http2.HeaderTableSize);
+        Assert.Equal(16385, http2.MaxFrameSize);
+        Assert.Equal(16384, http2.MaxRequestHeaderFieldSize);
+        Assert.Equal(131072, http2.InitialConnectionWindowSize);
+        Assert.Equal(98304, http2.InitialStreamWindowSize);
+        Assert.Equal(TimeSpan.FromSeconds(10), http2.KeepAlivePingDelay);
+        Assert.Equal(TimeSpan.FromSeconds(30), http2.KeepAlivePingTimeout);
+
+        Assert.Equal(8192, serverOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+    }
+
+    [Fact]
+    public void MinDataRatesReadFromConfig()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate:BytesPerSecond", "120.5"),
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate:GracePeriod", "00:00:10"),
+            new KeyValuePair<string, string>("Limits:MinResponseDataRate:BytesPerSecond", "480"),
+            new KeyValuePair<string, string>("Limits:MinResponseDataRate:GracePeriod", "00:00:15"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.Equal(120.5, serverOptions.Limits.MinRequestBodyDataRate.BytesPerSecond);
+        Assert.Equal(TimeSpan.FromSeconds(10), serverOptions.Limits.MinRequestBodyDataRate.GracePeriod);
+        Assert.Equal(480, serverOptions.Limits.MinResponseDataRate.BytesPerSecond);
+        Assert.Equal(TimeSpan.FromSeconds(15), serverOptions.Limits.MinResponseDataRate.GracePeriod);
+    }
+
+    [Fact]
+    public void MinDataRatePartiallySpecifiedInConfigKeepsRemainingValue()
+    {
+        var serverOptions = CreateServerOptions();
+        var originalGracePeriod = serverOptions.Limits.MinRequestBodyDataRate.GracePeriod;
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate:BytesPerSecond", "480"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.Equal(480, serverOptions.Limits.MinRequestBodyDataRate.BytesPerSecond);
+        Assert.Equal(originalGracePeriod, serverOptions.Limits.MinRequestBodyDataRate.GracePeriod);
+    }
+
+    [Fact]
+    public void MinDataRateWithoutExistingValueRequiresGracePeriod()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Limits.MinRequestBodyDataRate = null;
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate:BytesPerSecond", "480"),
+        }).Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+        Assert.Contains("Limits:MinRequestBodyDataRate:GracePeriod", ex.Message);
+    }
+
+    [Fact]
+    public void NullValuesInConfigResetNullableLimits()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MaxRequestBodySize", null),
+            new KeyValuePair<string, string>("Limits:MaxRequestBufferSize", null),
+            new KeyValuePair<string, string>("Limits:MaxResponseBufferSize", null),
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate", null),
+            new KeyValuePair<string, string>("Limits:MinResponseDataRate", null),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.Null(serverOptions.Limits.MaxRequestBodySize);
+        Assert.Null(serverOptions.Limits.MaxRequestBufferSize);
+        Assert.Null(serverOptions.Limits.MaxResponseBufferSize);
+        Assert.Null(serverOptions.Limits.MinRequestBodyDataRate);
+        Assert.Null(serverOptions.Limits.MinResponseDataRate);
+    }
+
+    [Fact]
+    public void OptionsMissingFromConfigKeepTheirCodeConfiguredValues()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.AddServerHeader = false;
+        serverOptions.Limits.MaxRequestBodySize = 1234;
+        serverOptions.Limits.Http2.MaxStreamsPerConnection = 7;
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MaxRequestHeaderCount", "42"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.False(serverOptions.AddServerHeader);
+        Assert.Equal(1234, serverOptions.Limits.MaxRequestBodySize);
+        Assert.Equal(7, serverOptions.Limits.Http2.MaxStreamsPerConnection);
+        Assert.Equal(42, serverOptions.Limits.MaxRequestHeaderCount);
+    }
+
+    [Fact]
+    public void OptionsConfiguredAfterConfigureWinOverConfig()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Kestrel:AddServerHeader", "false"),
+            new KeyValuePair<string, string>("Kestrel:Limits:MaxRequestBodySize", "10485760"),
+            new KeyValuePair<string, string>("Kestrel:Limits:MaxRequestHeaderCount", "42"),
+        }).Build();
+
+        var env = new MockHostingEnvironment { ApplicationName = "TestApplication", ContentRootPath = Directory.GetCurrentDirectory() };
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IHostEnvironment>(env)
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
+            .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
+            .AddSingleton<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+
+        // Matches what WebHost.ConfigureWebDefaults registers.
+        services.Configure<KestrelServerOptions>(options => options.Configure(config.GetSection("Kestrel"), reloadOnChange: true));
+
+        // Matches an application calling services.Configure<KestrelServerOptions>(...) in Program.cs.
+        services.Configure<KestrelServerOptions>(options =>
+        {
+            options.AddServerHeader = true;
+            options.Limits.MaxRequestBodySize = int.MaxValue;
+        });
+
+        var serverOptions = services.BuildServiceProvider().GetRequiredService<IOptions<KestrelServerOptions>>().Value;
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.True(serverOptions.AddServerHeader);
+        Assert.Equal(int.MaxValue, serverOptions.Limits.MaxRequestBodySize);
+        Assert.Equal(42, serverOptions.Limits.MaxRequestHeaderCount);
+    }
+
+    [Fact]
+    public void ServerOptionsKeysAreCaseInsensitive()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("addserverheader", "false"),
+            new KeyValuePair<string, string>("limits:maxrequestheadercount", "42"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.False(serverOptions.AddServerHeader);
+        Assert.Equal(42, serverOptions.Limits.MaxRequestHeaderCount);
+    }
+
+    [Theory]
+    [InlineData("AddServerHeader", "notabool")]
+    [InlineData("Limits:MaxRequestHeaderCount", "notanumber")]
+    [InlineData("Limits:MaxRequestBodySize", "notanumber")]
+    [InlineData("Limits:KeepAliveTimeout", "notatimespan")]
+    [InlineData("Limits:Http2:MaxStreamsPerConnection", "notanumber")]
+    [InlineData("Limits:Http3:MaxRequestHeaderFieldSize", "notanumber")]
+    [InlineData("Limits:MinRequestBodyDataRate:BytesPerSecond", "notanumber")]
+    public void InvalidValueInConfigThrows(string key, string value)
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>(key, value),
+        }).Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+        Assert.Contains(key, ex.Message);
+        Assert.Contains(value, ex.Message);
+    }
+
+    [Fact]
+    public void OutOfRangeValueInConfigThrows()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MaxRequestHeaderCount", "0"),
+        }).Build();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => serverOptions.Configure(config).Load());
+    }
+
+    [Fact]
+    public void Reload_DoesNotReapplyServerOptionsAndLimits()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("AddServerHeader", "false"),
+            new KeyValuePair<string, string>("Limits:MaxRequestHeaderCount", "42"),
+        }).Build();
+
+        serverOptions.Configure(config).Load();
+
+        Assert.False(serverOptions.AddServerHeader);
+        Assert.Equal(42, serverOptions.Limits.MaxRequestHeaderCount);
+
+        serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("AddServerHeader", "true"),
+            new KeyValuePair<string, string>("Limits:MaxRequestHeaderCount", "24"),
+        }).Build();
+
+        serverOptions.ConfigurationLoader.Reload();
+
+        Assert.False(serverOptions.AddServerHeader);
+        Assert.Equal(42, serverOptions.Limits.MaxRequestHeaderCount);
     }
 
     private static string GetCertificatePath()
