@@ -378,7 +378,17 @@ internal sealed class OpenApiSchemaService(
             // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
             foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                schema.Properties[key] = ResolveReferenceForSchemaWithNullableWrapper(document, propertyValue, rootSchemaId);
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
+                    targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
+                    isNullableProperty is true)
+                {
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
+                }
+                else
+                {
+                    schema.Properties[key] = resolvedProperty;
+                }
             }
         }
 
@@ -419,16 +429,6 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
-    }
-
-    private static IOpenApiSchema ResolveReferenceForSchemaWithNullableWrapper(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId)
-    {
-        var resolvedSchema = ResolveReferenceForSchema(document, inputSchema, rootSchemaId);
-        return inputSchema is OpenApiSchema schema &&
-            schema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
-            isNullableProperty is true
-            ? resolvedSchema.CreateOneOfNullableWrapper()
-            : resolvedSchema;
     }
 
     private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)

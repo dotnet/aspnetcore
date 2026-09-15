@@ -588,34 +588,25 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
-        if (!schema.WillBeComponentized())
+        if (schema.WillBeComponentized())
         {
-            return;
-        }
-
-        if (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
-        {
-            for (var i = typeArray.Count - 1; i >= 0; i--)
+            if (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
             {
-                if (typeArray[i]?.GetValue<string>() == "null")
+                for (var i = typeArray.Count - 1; i >= 0; i--)
                 {
-                    typeArray.RemoveAt(i);
+                    if (typeArray[i]?.GetValue<string>() == "null")
+                    {
+                        typeArray.RemoveAt(i);
+                    }
+                }
+                if (typeArray.Count == 1)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
                 }
             }
-            if (typeArray.Count == 1)
+            if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
-            }
-        }
-
-        if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
-        {
-            for (var i = enumArray.Count - 1; i >= 0; i--)
-            {
-                if (enumArray[i] is null)
-                {
-                    enumArray.RemoveAt(i);
-                }
+                enumArray.Remove(null);
             }
         }
     }
