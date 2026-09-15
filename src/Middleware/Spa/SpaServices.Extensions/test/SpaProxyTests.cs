@@ -55,7 +55,7 @@ public class SpaProxyTests
         HttpRequestMessage forwardedRequestMessage = null;
         var (context, httpClient) = GetHttpContextAndClient(path, queryString, (req) => forwardedRequestMessage = req);
         var baseUriTask = Task.FromResult(new Uri(baseUrl));
-        var res = await SpaProxy.PerformProxyRequest(context, httpClient, baseUriTask, CancellationToken.None, true);
+        var res = await Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(context, httpClient, baseUriTask, CancellationToken.None, true);
         Assert.Equal(expected, forwardedRequestMessage.RequestUri.ToString());
     }
 }
