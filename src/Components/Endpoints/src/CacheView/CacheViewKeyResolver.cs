@@ -192,7 +192,9 @@ internal static class CacheViewKeyResolver
         Span<byte> userIdentifier = stackalloc byte[SecurityHelper.UserIdentifierSize];
         if (!SecurityHelper.TryGetUserIdentifier(user, userIdentifier))
         {
-            AppendLengthPrefixedString(hash, "NoIdentifier");
+            AppendLengthPrefixedString(
+                hash,
+                SecurityHelper.IsAuthenticated(user) ? "AuthenticatedWithoutIdentifier" : "Anonymous");
             return;
         }
 

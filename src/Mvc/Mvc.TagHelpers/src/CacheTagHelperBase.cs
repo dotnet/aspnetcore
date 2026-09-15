@@ -95,7 +95,7 @@ public abstract class CacheTagHelperBase : TagHelper
     /// The ordinal claim type, value, and issuer tuple must be trusted, unique, stable, and consistent across
     /// requests and application instances. If no recognized claim exists, all claims on authenticated identities
     /// identify the user. Claims transformations must run before cache key generation, and identity and relevant
-    /// claim ordering must be deterministic.
+    /// claim ordering must be deterministic. Authenticated users without claims are cached separately from anonymous users.
     /// </summary>
     [HtmlAttributeName(VaryByUserAttributeName)]
     public bool VaryByUser { get; set; }

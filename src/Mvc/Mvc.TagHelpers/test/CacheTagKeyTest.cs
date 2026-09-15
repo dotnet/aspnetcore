@@ -328,7 +328,7 @@ public class CacheTagKeyTest
     public void GenerateKey_UsesVaryByUser_WhenUserIsNotAuthenticated()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryByUser||NoIdentifier";
+        var expected = "CacheTagHelper||testid||VaryByUserV2||Anonymous";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
@@ -348,7 +348,7 @@ public class CacheTagKeyTest
     public void GenerateKey_UsesVaryByUserAndAuthenticatedUserName()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryByUser||Identifier||wKNzuxHuw8whTcbXNGFvkB/QW/8LQlUWLEgkQsd03Oc=";
+        var expected = "CacheTagHelper||testid||VaryByUserV2||Identifier||wKNzuxHuw8whTcbXNGFvkB/QW/8LQlUWLEgkQsd03Oc=";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
@@ -384,6 +384,49 @@ public class CacheTagKeyTest
             distributed).GenerateKey();
 
         Assert.NotEqual(firstKey, secondKey);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GenerateKey_VaryByUser_DistinguishesAnonymousFromAuthenticatedWithoutClaims(bool distributed)
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var anonymousKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity()),
+            tagHelperContext,
+            distributed);
+        var authenticatedKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "Test")),
+            tagHelperContext,
+            distributed);
+
+        Assert.NotEqual(anonymousKey, authenticatedKey);
+        Assert.NotEqual(anonymousKey.GenerateKey(), authenticatedKey.GenerateKey());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GenerateKey_VaryByUser_DoesNotCollideWithLegacyUserNames(bool distributed)
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var anonymousKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity()),
+            tagHelperContext,
+            distributed).GenerateKey();
+        var identifiedKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name")],
+                "Test")),
+            tagHelperContext,
+            distributed).GenerateKey();
+        var prefix = distributed ? "DistributedCacheTagHelper" : "CacheTagHelper";
+
+        Assert.NotEqual($"{prefix}||testid||VaryByUser||NoIdentifier", anonymousKey);
+        Assert.NotEqual(
+            $"{prefix}||testid||VaryByUser||Identifier||wKNzuxHuw8whTcbXNGFvkB/QW/8LQlUWLEgkQsd03Oc=",
+            identifiedKey);
     }
 
     [Fact]
@@ -472,7 +515,7 @@ public class CacheTagKeyTest
     {
         // Arrange
         var expected = "CacheTagHelper||testid||VaryBy||custom-value||" +
-            "VaryByHeader(content-type||text/html)||VaryByUser||Identifier||g6GQB/k6nAau9yZ+aDyvA4dEZMh2bWNoHaiB9tLmcfM=";
+            "VaryByHeader(content-type||text/html)||VaryByUserV2||Identifier||g6GQB/k6nAau9yZ+aDyvA4dEZMh2bWNoHaiB9tLmcfM=";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
