@@ -1,0 +1,24 @@
+<span id="activity-links-instance">@_instanceId</span>
+<span id="activity-links-interactive">@_interactive</span>
+<button id="activity-links-trigger" @onclick="Trigger">Trigger activity</button>
+<span id="activity-links-trigger-count">@_count</span>
+
+@code {
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private bool _interactive;
+    private int _count;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+
+    private void Trigger()
+    {
+        _count++;
+    }
+}
