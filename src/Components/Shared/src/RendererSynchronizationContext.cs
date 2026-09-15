@@ -4,7 +4,11 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+#if COMPONENTS_ENDPOINTS
+namespace Microsoft.AspNetCore.Components.Endpoints;
+#else
 namespace Microsoft.AspNetCore.Components.Rendering;
+#endif
 
 [DebuggerDisplay("{_state,nq}")]
 internal sealed class RendererSynchronizationContext : SynchronizationContext
@@ -252,4 +256,27 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
     /// <summary>Invokes <see cref="UnhandledException"/> with the supplied exception instance.</summary>
     private void DispatchException(Exception ex) =>
         UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+
+    /// <summary>
+    /// Inserts a task into the queue that blocks subsequent work items until it completes.
+    /// The caller is responsible for ensuring the task eventually completes.
+    /// </summary>
+    /// <remarks>
+    /// This is useful when the caller needs to perform async I/O operations (like writing
+    /// to the HTTP response) while preventing other continuations from running. The caller
+    /// must use ConfigureAwait(false) on all async operations to avoid deadlock.
+    /// </remarks>
+    public void EnqueueBlockingTask(Task blockingTask)
+    {
+        lock (_lock)
+        {
+            _taskQueue = ChainBlockingTask(_taskQueue, blockingTask);
+        }
+
+        static async Task ChainBlockingTask(Task antecedent, Task blockingTask)
+        {
+            await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            await blockingTask.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+    }
 }
