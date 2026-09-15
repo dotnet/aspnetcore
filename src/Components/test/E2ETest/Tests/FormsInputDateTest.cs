@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
+
+using ParsingResetComponent = BasicTestApp.FormsTest.ParsingResetComponent;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
@@ -247,6 +250,37 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         input.SendKeys(Keys.Control + "a");
         input.SendKeys(Keys.Delete);
         input.SendKeys(Keys.Tab);
+    }
+
+    [Fact]
+    public void InputDate_ResetParsingStateWhenValueSetByParent()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'invalid-date';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
+
+        appElement.FindElement(By.Id("set-another-new-date-btn")).Click();
+
+        Browser.Equal("2021-06-15", () => dateInput.GetDomProperty("value"));
+
+        Browser.Empty(messagesAccessor);
+
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
