@@ -224,6 +224,16 @@ public class SecurityHelperTests
     }
 
     [Fact]
+    public void TryGetUserIdentifier_PreservesOverriddenFindFirstBehavior()
+    {
+        var overriddenClaim = new Claim("sub", "overridden");
+        var principal = new ClaimsPrincipal(new FindFirstClaimsIdentity(overriddenClaim));
+        var standardPrincipal = CreatePrincipal(overriddenClaim);
+
+        Assert.Equal(GetUserIdentifier(standardPrincipal), GetUserIdentifier(principal));
+    }
+
+    [Fact]
     public void TryGetUserIdentifier_ClaimTypeValueAndIssuerAffectOutput()
     {
         var subject = GetUserIdentifier(CreatePrincipal(new Claim("sub", "identifier", ClaimValueTypes.String, "issuer")));
@@ -359,5 +369,11 @@ public class SecurityHelperTests
         var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
 
         Assert.Equal(0, allocated);
+    }
+
+    private sealed class FindFirstClaimsIdentity(Claim claim) : ClaimsIdentity(authenticationType: "Test")
+    {
+        public override Claim? FindFirst(Predicate<Claim> match)
+            => match(claim) ? claim : null;
     }
 }
