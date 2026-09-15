@@ -2222,7 +2222,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-            await store.SetLockoutEndDateAsync(user, UtcNow().Add(Options.Lockout.DefaultLockoutTimeSpan),
+            var now = UtcNow();
+            // Guard against overflow when DefaultLockoutTimeSpan is large enough to push the lockout end
+            // date past DateTimeOffset.MaxValue (e.g. TimeSpan.MaxValue is used to lock out indefinitely).
+            var lockoutEndDate = Options.Lockout.DefaultLockoutTimeSpan < DateTimeOffset.MaxValue - now
+                ? now.Add(Options.Lockout.DefaultLockoutTimeSpan)
+                : DateTimeOffset.MaxValue;
+            await store.SetLockoutEndDateAsync(user, lockoutEndDate,
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
