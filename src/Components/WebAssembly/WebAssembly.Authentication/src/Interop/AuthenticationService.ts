@@ -1,10 +1,65 @@
-import { UserManager, UserManagerSettings, User } from 'oidc-client'
+import { UserManager, UserManagerSettings, User, WebStorageStateStore } from 'oidc-client'
+
+enum RemoteAuthenticationTokenStorage {
+  SessionStorage = 0,
+  LocalStorage = 1,
+}
+interface BlazorOidcStorageSettings {
+    tokenStorage?: RemoteAuthenticationTokenStorage | string;
+}
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 type ExtendedUserManagerSettings = Writeable<UserManagerSettings & AuthorizeServiceSettings>
+type TokenStorageUserManagerSettings = Writeable<
+  UserManagerSettings & BlazorOidcStorageSettings
+>;
 
 type OidcAuthorizeServiceSettings = ExtendedUserManagerSettings | ApiAuthorizationSettings;
+
+
+const LOCAL_STORAGE_VALUES: ReadonlySet<string> = new Set<string>([
+  String(RemoteAuthenticationTokenStorage.LocalStorage),
+  'LocalStorage',
+  'localStorage',
+]);
+
+const SESSION_STORAGE_VALUES: ReadonlySet<string> = new Set<string>([
+  String(RemoteAuthenticationTokenStorage.SessionStorage),
+  'SessionStorage',
+  'sessionStorage',
+]);
+
+function resolveTokenStorage(
+  tokenStorage: RemoteAuthenticationTokenStorage | string | undefined,
+): Storage {
+  if (tokenStorage === undefined || tokenStorage === null) {
+    return window.sessionStorage;
+  }
+
+  const value = String(tokenStorage);
+
+  if (LOCAL_STORAGE_VALUES.has(value)) {
+    return window.localStorage;
+  }
+
+  if (SESSION_STORAGE_VALUES.has(value)) {
+    return window.sessionStorage;
+  }
+
+  throw new Error(
+    `Invalid value '${tokenStorage}' for tokenStorage option. ` +
+    `Expected '${RemoteAuthenticationTokenStorage.SessionStorage}' (sessionStorage) or ` +
+    `'${RemoteAuthenticationTokenStorage.LocalStorage}' (localStorage).`,
+  );
+}
+
+function configureTokenStorage(
+  settings: TokenStorageUserManagerSettings,
+): void {
+  const store = resolveTokenStorage(settings.tokenStorage);
+  settings.userStore = new WebStorageStateStore({ store });
+}
 
 function isApiAuthorizationSettings(settings: OidcAuthorizeServiceSettings): settings is ApiAuthorizationSettings {
     return settings.hasOwnProperty('configurationEndpoint');
@@ -513,6 +568,7 @@ export class AuthenticationService {
     }
 
     private static createUserManagerCore(finalSettings: UserManagerSettings) {
+        configureTokenStorage(finalSettings);
         const userManager = new UserManager(finalSettings);
         userManager.events.addUserSignedOut(async () => {
             userManager.removeUser();
