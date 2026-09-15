@@ -10,14 +10,14 @@ This file should be imported by eng/Versions.props
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.13</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBclCryptographyPackageVersion>10.0.13</MicrosoftBclCryptographyPackageVersion>
     <MicrosoftBclTimeProviderPackageVersion>10.0.13</MicrosoftBclTimeProviderPackageVersion>
-    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetBuildTasksArchivesPackageVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetHelixJobMonitorPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetHelixSdkPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.26461.103</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetBuildTasksArchivesPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetHelixJobMonitorPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.26465.101</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>10.0.13</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>10.0.13</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>10.0.13</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -46,7 +46,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>10.0.13</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>10.0.13</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.13</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>10.0.13-servicing.26461.103</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>10.0.13-servicing.26465.101</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>10.0.13</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>10.0.13</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>10.0.13</MicrosoftExtensionsHttpPackageVersion>
@@ -62,16 +62,16 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>10.0.13</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>10.0.13</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>10.0.13</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>10.0.13-servicing.26461.103</MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>10.0.13-servicing.26465.101</MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>
     <MicrosoftNETRuntimeMonoAOTCompilerTaskPackageVersion>10.0.13</MicrosoftNETRuntimeMonoAOTCompilerTaskPackageVersion>
     <MicrosoftNETRuntimeWebAssemblySdkPackageVersion>10.0.13</MicrosoftNETRuntimeWebAssemblySdkPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>10.0.13</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>10.0.13-servicing.26461.103</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>10.0.13-servicing.26461.103</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>10.0.13-servicing.26465.101</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>10.0.13-servicing.26465.101</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.2.13</MicrosoftWebXdtPackageVersion>
-    <NuGetFrameworksPackageVersion>7.0.3-rc.46203</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>7.0.3-rc.46203</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>7.0.3-rc.46203</NuGetVersioningPackageVersion>
+    <NuGetFrameworksPackageVersion>7.0.3-rc.46601</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>7.0.3-rc.46601</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>7.0.3-rc.46601</NuGetVersioningPackageVersion>
     <SystemCollectionsImmutablePackageVersion>10.0.13</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionPackageVersion>10.0.13</SystemCompositionPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>10.0.13</SystemConfigurationConfigurationManagerPackageVersion>
