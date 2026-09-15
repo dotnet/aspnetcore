@@ -33,25 +33,25 @@ public class MvcTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
+    public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore();
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public async Task MvcTemplate_NoAuthNoHttpsCSharp() => await MvcTemplateCore(languageOverride: null, new[] { ArgConstants.NoHttps });
+    public async Task MvcTemplate_NoAuthNoHttpsCSharp() => await MvcTemplateCore(new[] { ArgConstants.NoHttps });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new[] { ArgConstants.UseProgramMain });
+    public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(new[] { ArgConstants.UseProgramMain });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public async Task MvcTemplate_ProgramMainNoAuthNoHttpsCSharp() => await MvcTemplateCore(languageOverride: null, new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps });
+    public async Task MvcTemplate_ProgramMainNoAuthNoHttpsCSharp() => await MvcTemplateCore(new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps });
 
-    private async Task MvcTemplateCore(string languageOverride, string[] args = null)
+    private async Task MvcTemplateCore(string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        await project.RunDotNetNewAsync("mvc", language: languageOverride, args: args);
+        await project.RunDotNetNewAsync("mvc", language: null, args: args);
 
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = noHttps
@@ -59,26 +59,13 @@ public class MvcTemplateTest : LoggedTest
             : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
-        var projectFileContents = project.ReadFile($"{project.ProjectName}.{projectExtension}");
+        var projectFileContents = project.ReadFile($"{project.ProjectName}.csproj");
         Assert.DoesNotContain("app.db", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
         Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
         Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
         Assert.DoesNotContain("Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation", projectFileContents);
-
-        if (languageOverride == "F#")
-        {
-            var programFileContents = project.ReadFile("Program.fs");
-            Assert.DoesNotContain("AddRazorRuntimeCompilation", programFileContents);
-        }
-
-        // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
-        if (languageOverride != null)
-        {
-            return;
-        }
 
         await project.RunDotNetPublishAsync();
 
