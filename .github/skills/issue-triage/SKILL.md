@@ -36,10 +36,12 @@ stack traces, packages, and described behavior. Never return a second area as a 
 If the best area is below roughly 40% confidence, abstain from the area decision and
 briefly identify the missing evidence.
 
-An issue can describe an ASP.NET Core symptom while establishing that the root cause and
-required fix belong to another tool or repository. In that case, prefer the `external`
-subtype and do not invent an ASP.NET Core area merely from the application in which the
-symptom appeared.
+When supplied or verified evidence establishes both that the root cause and required fix
+belong to a tool, service, component, or repository outside ASP.NET Core, the decision
+must use area `Abstain` and subtype `external`. Do not substitute an unsupported area such
+as `area-tooling` or the host application's area. For example, Visual Studio Browser Link
+or `/_vs/browserLink` requires this decision when the evidence identifies it as both the
+source and the external fix owner.
 
 ## Type
 
