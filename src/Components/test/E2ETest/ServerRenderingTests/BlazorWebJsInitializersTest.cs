@@ -5,7 +5,6 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -29,16 +28,17 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
 
     [Theory]
     [MemberData(nameof(InitializerTestData))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68856")]
     public void InitializersRunsModernCallbacksByDefaultWhenPresent(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {
-        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
-        Navigate(url);
-
         if (webassembly)
         {
+            Browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/");
             ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
         }
+
+        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
+
+        Navigate(url);
 
         foreach (var callback in expectedInvokedCallbacks)
         {
