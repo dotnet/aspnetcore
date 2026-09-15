@@ -879,6 +879,30 @@ public class ResponseCachingMiddlewareTests
         Assert.False(await middleware.TryServeFromCacheAsync(context));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FinalizeCache_IndependentlyAccountsForVaryRuleAndResponseKeys(bool rejectVaryRules)
+    {
+        const long sizeLimit = 256;
+        var baseKey = rejectVaryRules ? new string('b', 200) : "b";
+        var storageVaryKey = rejectVaryRules ? "s" : new string('s', 200);
+        var cache = new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions { SizeLimit = sizeLimit }));
+        var middleware = TestUtils.CreateTestMiddleware(
+            cache: cache,
+            keyProvider: new TestResponseCachingKeyProvider(baseKey, storageVaryKey: storageVaryKey));
+        var context = TestUtils.CreateTestContext();
+        context.BaseKey = baseKey;
+        context.HttpContext.Response.Headers.Vary = HeaderNames.From;
+        middleware.ShimResponseStream(context);
+
+        middleware.FinalizeCacheHeaders(context);
+        middleware.FinalizeCacheBody(context);
+
+        Assert.Equal(!rejectVaryRules, cache.Get(baseKey) is CachedVaryByRules);
+        Assert.Equal(rejectVaryRules, cache.Get(storageVaryKey) is CachedResponse);
+    }
+
     [Fact]
     public void AddResponseCachingFeature_SecondInvocation_Throws()
     {
