@@ -26,12 +26,13 @@ public class CacheTagKey : IEquatable<CacheTagKey>
         Convert.ToString(c[key], CultureInfo.InvariantCulture);
 
     private const string CacheKeyTokenSeparator = "||";
+    private const string CacheKeyVersion = "v1";
     private const string VaryByName = "VaryBy";
     private const string VaryByHeaderName = "VaryByHeader";
     private const string VaryByQueryName = "VaryByQuery";
     private const string VaryByRouteName = "VaryByRoute";
     private const string VaryByCookieName = "VaryByCookie";
-    private const string VaryByUserName = "VaryByUserV2";
+    private const string VaryByUserName = "VaryByUser";
     private const string UserIdentifierName = "Identifier";
     private const string AnonymousUserName = "Anonymous";
     private const string AuthenticatedUserWithoutIdentifierName = "AuthenticatedWithoutIdentifier";
@@ -140,6 +141,8 @@ public class CacheTagKey : IEquatable<CacheTagKey>
 
         var builder = new StringBuilder(_prefix);
         builder
+            .Append(CacheKeyTokenSeparator)
+            .Append(CacheKeyVersion)
             .Append(CacheKeyTokenSeparator)
             .Append(Key);
 
