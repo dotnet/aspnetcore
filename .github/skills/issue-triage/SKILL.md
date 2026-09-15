@@ -70,6 +70,8 @@ Never recommend assigning `Epic`. It remains valid maintainer-managed planning m
 in the dotnet organization, but it is not an automated newly-opened-issue
 classification. A broad or large single feature request remains a `Feature`;
 implementation size alone does not make it an Epic.
+For such a request, the semantic Type rationale must explicitly state that the request is
+one coherent capability and that API or implementation breadth does not make it an Epic.
 
 A template signal can inform classification of a confirmed untyped issue when the content
 supports it, but it never overrides a trusted current issue type or an unavailable lookup.
