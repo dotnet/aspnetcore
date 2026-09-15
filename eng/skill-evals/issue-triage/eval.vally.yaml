@@ -43,7 +43,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -97,7 +97,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -170,7 +170,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -225,7 +225,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -281,7 +281,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -347,7 +347,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -404,7 +404,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
@@ -479,7 +479,7 @@ stimuli:
       - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
         `Unknown (lookup unavailable)`
       - **Subtype:** `<one supported subtype>` or `None`
-      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, `#N (unrelated)`, or `None found`
 
       ### Triage Summary
 
