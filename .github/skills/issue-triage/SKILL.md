@@ -125,6 +125,12 @@ Compare technical substance, not shared keywords:
 - Same component but a different problem: not a duplicate.
 - Similar error in a different context: related at most, not a duplicate.
 
+Supplied or verified maintainer evidence explicitly identifying a candidate as the same
+known underlying change or problem establishes a high-confidence duplicate when the
+component, version or upgrade boundary, and material behavior align. Do not downgrade it
+to merely related only because the concrete manifestation or implementation details
+differ.
+
 Verify any cited issue's existence and substance from supplied or actually retrieved
 evidence. Never invent an issue number. When confidence is not high, say `related` or
 `none found` instead of `duplicate`.
