@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Platform" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+</Project>

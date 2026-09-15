@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestCaptureOutput>false</TestCaptureOutput>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
+    <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 5 --minimum-expected-tests 1</TestRunnerAdditionalArguments>
+    <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <Reference Include="Microsoft.Playwright" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <ProjectReference Include="../PlatformTestApp/PlatformTestApp.csproj">
+      <E2EApp>true</E2EApp>
+    </ProjectReference>
+    <ProjectReference Include="../../../Testing/gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="../../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
+
+</Project>
