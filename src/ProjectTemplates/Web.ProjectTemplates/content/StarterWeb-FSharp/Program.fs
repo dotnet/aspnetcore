@@ -6,8 +6,6 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Linq
-open System.Reflection
-open System.Runtime.Loader
 open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
@@ -15,7 +13,6 @@ open Microsoft.AspNetCore.Hosting
 #if (!NoHttps)
 open Microsoft.AspNetCore.HttpsPolicy
 #endif
-open Microsoft.AspNetCore.Mvc.ApplicationParts
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
@@ -24,22 +21,6 @@ open Microsoft.Extensions.Logging
 module Program =
     let exitCode = 0
 
-    // Razor source generation requires C#, so load the build-time compiled views explicitly.
-    let private addCompiledRazorViews (builder : IMvcBuilder) =
-        let applicationAssembly = Assembly.GetExecutingAssembly()
-        let viewsAssemblyName = $"{applicationAssembly.GetName().Name}.Views"
-        let viewsAssemblyPath = Path.Combine(AppContext.BaseDirectory, $"{viewsAssemblyName}.dll")
-        let loadContext = AssemblyLoadContext.GetLoadContext(applicationAssembly)
-
-        let viewsAssembly =
-            if File.Exists(viewsAssemblyPath) then
-                loadContext.LoadFromAssemblyPath(viewsAssemblyPath)
-            else
-                loadContext.LoadFromAssemblyName(AssemblyName(viewsAssemblyName))
-
-        builder.PartManager.ApplicationParts.Add(CompiledRazorAssemblyPart(viewsAssembly))
-        builder
-
     [<EntryPoint>]
     let main args =
         let builder = WebApplication.CreateBuilder(args)
@@ -47,7 +28,7 @@ module Program =
         builder
             .Services
             .AddControllersWithViews()
-        |> addCompiledRazorViews
+            .AddCompiledRazorViews()
 
         builder.Services.AddRazorPages()
 

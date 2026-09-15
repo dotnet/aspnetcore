@@ -82,8 +82,11 @@ public class MvcTemplateTest : LoggedTest
 
             var programFileContents = project.ReadFile("Program.fs");
             Assert.DoesNotContain("AddRazorRuntimeCompilation", programFileContents);
-            Assert.Contains("addCompiledRazorViews", programFileContents);
-            Assert.Contains("CompiledRazorAssemblyPart", programFileContents);
+            Assert.Contains("AddCompiledRazorViews", programFileContents);
+
+            var razorViewEngineFileContents = project.ReadFile("RazorViewEngine.fs");
+            Assert.Contains("static member AddCompiledRazorViews", razorViewEngineFileContents);
+            Assert.Contains("CompiledRazorAssemblyPart", razorViewEngineFileContents);
         }
 
         await project.RunDotNetPublishAsync();
