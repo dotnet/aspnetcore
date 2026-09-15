@@ -23,7 +23,7 @@ if (preparation) {
   });
 }
 process.env.GH_AW_SAFE_OUTPUTS_URLS = "allowed-or-code-region";
-process.env.GH_AW_ALLOWED_GITHUB_REFS = "";
+process.env.GH_AW_ALLOWED_GITHUB_REFS = "dotnet/aspnetcore";
 process.env.GH_AW_DETECTION_CONCLUSION = "success";
 
 global.core = { info() {}, warning() {}, error() {}, debug() {} };

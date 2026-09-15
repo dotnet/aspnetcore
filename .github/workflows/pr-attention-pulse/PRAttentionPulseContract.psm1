@@ -56,6 +56,27 @@ function Format-PulseCodes
     return (($Codes | ForEach-Object { "``$_``" }) -join ", ") + "."
 }
 
+function Format-PulsePullRequestLink
+{
+    param([Parameter(Mandatory)][object]$Number)
+
+    if ($Number -isnot [byte] -and
+        $Number -isnot [int16] -and
+        $Number -isnot [int32] -and
+        $Number -isnot [int64])
+    {
+        throw "Pulse pull request number must be an integer."
+    }
+
+    $validatedNumber = [int64]$Number
+    if ($validatedNumber -lt 1 -or $validatedNumber -gt [int32]::MaxValue)
+    {
+        throw "Pulse pull request number is outside the allowed range."
+    }
+
+    return "[dotnet/aspnetcore#$validatedNumber](https://github.com/dotnet/aspnetcore/pull/$validatedNumber)"
+}
+
 function Add-PulseCandidateView
 {
     param(
@@ -93,7 +114,7 @@ function Add-PulseCandidateView
 
     foreach ($item in $Items)
     {
-        $identity = "$($item.rank): ``dotnet/aspnetcore#$($item.number)``"
+        $identity = "$($item.rank): $(Format-PulsePullRequestLink -Number $item.number)"
         $ages = "$($item.idleDays)d idle / $($item.ageDays)d open"
         $reasons = Format-PulseCodes -Codes @($item.reasonCodes)
         $blockers = if (@($item.blockers).Count -eq 0)
@@ -329,23 +350,7 @@ function Assert-PRAttentionPulseOutput
         throw "The issue body is outside the allowed size range."
     }
 
-    foreach ($pattern in @(
-        "(?i)\b(?:https?|ftp)://",
-        "(?i)\bwww\.",
-        "(?i)(?<![\w.-])(?:[A-Z0-9-]+\.)+[A-Z]{2,}(?::[0-9]+)?(?:[/#?]\S*)?",
-        "\]\(",
-        "(?i)<\s*a\b",
-        "(?<![\w])@[A-Za-z0-9]",
-        "(?i)\bGH-[0-9]+\b",
-        "(?i)(?<![0-9A-Z])(?=[0-9A-F]{7,40}(?![0-9A-Z]))(?=[0-9A-F]{0,39}[A-F])(?=[0-9A-F]{0,39}[0-9])[0-9A-F]{7,40}(?![0-9A-Z])"))
-    {
-        if ($body -match $pattern)
-        {
-            throw "The issue body contains prohibited content matching '$pattern'."
-        }
-    }
-
-    $expectedReferences = if ([string]::Equals([string]$Pulse.status, "complete", [StringComparison]::Ordinal))
+    $expectedNumbers = if ([string]::Equals([string]$Pulse.status, "complete", [StringComparison]::Ordinal))
     {
         @(
             foreach ($viewName in @(
@@ -356,7 +361,7 @@ function Assert-PRAttentionPulseOutput
             {
                 foreach ($candidate in @($Pulse.views.$viewName))
                 {
-                    "dotnet/aspnetcore#$($candidate.number)"
+                    [string]$candidate.number
                 }
             }
         )
@@ -369,23 +374,59 @@ function Assert-PRAttentionPulseOutput
     {
         throw "Unsupported Pulse status '$($Pulse.status)'."
     }
-    $actualReferences = @(
-        [regex]::Matches($body, "``(dotnet/aspnetcore#[0-9]+)``") |
-            ForEach-Object { $_.Groups[1].Value }
-    )
-    if (-not [string]::Equals(
-        ($actualReferences -join ","),
-        ($expectedReferences -join ","),
-        [StringComparison]::Ordinal))
+
+    if (@($expectedNumbers | Select-Object -Unique).Count -ne @($expectedNumbers).Count)
     {
-        throw "The body did not preserve the exact legacy candidate membership and order. Expected '$($expectedReferences -join ',')'; actual '$($actualReferences -join ',')'."
+        throw "The sanitized Pulse views contain duplicate displayed pull request numbers."
     }
 
-    $withoutAllowedReferences = [regex]::Replace($body, "``dotnet/aspnetcore#[0-9]+``", "")
-    if ($withoutAllowedReferences -match "(?<!#)#[0-9]+" -or
-        $withoutAllowedReferences -match "\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+")
+    $linkPattern = [regex]::new(
+        "\[dotnet/aspnetcore#(?<label>[1-9][0-9]*)\]\(https://github\.com/dotnet/aspnetcore/pull/(?<target>[1-9][0-9]*)\)",
+        [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $actualLinks = @($linkPattern.Matches($body))
+    $actualNumbers = @(
+        foreach ($match in $actualLinks)
+        {
+            if (-not [string]::Equals(
+                $match.Groups["label"].Value,
+                $match.Groups["target"].Value,
+                [StringComparison]::Ordinal))
+            {
+                throw "A pull request link label does not match its target."
+            }
+
+            $match.Groups["label"].Value
+        }
+    )
+    if (-not [string]::Equals(
+        ($actualNumbers -join ","),
+        ($expectedNumbers -join ","),
+        [StringComparison]::Ordinal))
     {
-        throw "The body contains a backlink-producing GitHub reference."
+        throw "The body did not preserve one exact upstream pull request link per displayed candidate in legacy order. Expected '$($expectedNumbers -join ',')'; actual '$($actualNumbers -join ',')'."
+    }
+
+    $withoutAllowedLinks = $linkPattern.Replace($body, "")
+    foreach ($pattern in @(
+        "(?i)\b(?:https?|ftp)://",
+        "(?i)\bwww\.",
+        "(?i)(?<![\w.-])(?:[A-Z0-9-]+\.)+[A-Z]{2,}(?::[0-9]+)?(?:[/#?]\S*)?",
+        "\]\(",
+        "(?i)<\s*a\b",
+        "(?<![\w])@[A-Za-z0-9]",
+        "(?i)\bGH-[0-9]+\b",
+        "(?i)(?<![0-9A-Z])(?=[0-9A-F]{7,40}(?![0-9A-Z]))(?=[0-9A-F]{0,39}[A-F])(?=[0-9A-F]{0,39}[0-9])[0-9A-F]{7,40}(?![0-9A-Z])"))
+    {
+        if ($withoutAllowedLinks -match $pattern)
+        {
+            throw "The issue body contains prohibited content matching '$pattern'."
+        }
+    }
+
+    if ($withoutAllowedLinks -match "(?<!#)#[0-9]+" -or
+        $withoutAllowedLinks -match "\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+")
+    {
+        throw "The body contains an unexpected GitHub reference."
     }
 }
 
