@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -1469,6 +1470,8 @@ public static partial class RequestDelegateFactory
 
         Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
 
+        var allowEmpty = factoryContext.AllowEmptyRequestBody;
+
         if (factoryContext.ParameterBinders.Count > 0)
         {
             // We need to generate the code for reading from the body or form before calling into the delegate
@@ -1493,7 +1496,8 @@ public static partial class RequestDelegateFactory
                     httpContext,
                     parameterTypeName,
                     parameterName,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    allowEmpty);
 
                 if (!successful)
                 {
@@ -1515,7 +1519,8 @@ public static partial class RequestDelegateFactory
                     httpContext,
                     parameterTypeName,
                     parameterName,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    allowEmpty);
 
                 if (!successful)
                 {
@@ -1530,16 +1535,25 @@ public static partial class RequestDelegateFactory
             HttpContext httpContext,
             string parameterTypeName,
             string parameterName,
-            bool throwOnBadRequest)
+            bool throwOnBadRequest,
+            bool allowEmpty = false)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
             if (feature?.CanHaveBody == false)
             {
-                Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return (null, false);
+                if (!allowEmpty)
+                {
+                    Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (null, false);
+                }
+
+                // When the form body is optional and the request has no body, set the form to empty
+                // so that subsequent accesses to Request.Form don't throw.
+                httpContext.Request.Form = EmptyForm;
+                return (null, true);
             }
 
             if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
@@ -2316,6 +2330,7 @@ public static partial class RequestDelegateFactory
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
     {
+        UpdateFormAllowEmptyRequestBody(parameter, factoryContext);
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter);
         factoryContext.ReadForm = true;
@@ -2336,6 +2351,7 @@ public static partial class RequestDelegateFactory
     {
         var valueExpression = GetValueFromProperty(FormFilesExpr, FormFilesIndexerProperty, key, typeof(IFormFile));
 
+        UpdateFormAllowEmptyRequestBody(parameter, factoryContext);
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, trackedParameterSource);
         factoryContext.ReadForm = true;
@@ -2346,6 +2362,21 @@ public static partial class RequestDelegateFactory
             valueExpression,
             factoryContext,
             "form file");
+    }
+
+    private static void UpdateFormAllowEmptyRequestBody(ParameterInfo parameter, RequestDelegateFactoryContext factoryContext)
+    {
+        var isOptional = IsOptionalParameter(parameter, factoryContext);
+        if (factoryContext.FirstFormRequestBodyParameter is null)
+        {
+            // First form parameter - initialize AllowEmptyRequestBody based on its optionality.
+            factoryContext.AllowEmptyRequestBody = isOptional;
+        }
+        else if (!isOptional)
+        {
+            // Any subsequent required form parameter makes the body required.
+            factoryContext.AllowEmptyRequestBody = false;
+        }
     }
 
     private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, RequestDelegateFactoryContext factoryContext)
@@ -2976,5 +3007,36 @@ public static partial class RequestDelegateFactory
     {
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;
+    }
+
+    // Used as a stand-in when form binding is optional and the request has no body.
+    // Setting Request.Form to this prevents FormFeature from throwing "Incorrect Content-Type" when
+    // subsequent expressions try to access Request.Form.Files[key] for nullable form file parameters.
+    private static readonly IFormCollection EmptyForm = new EmptyFormCollection();
+
+    private sealed class EmptyFormCollection : IFormCollection
+    {
+        private static readonly IFormFileCollection _emptyFiles = new EmptyFormFileCollection();
+
+        public StringValues this[string key] => StringValues.Empty;
+        public int Count => 0;
+        public ICollection<string> Keys => Array.Empty<string>();
+        public IFormFileCollection Files => _emptyFiles;
+        public bool ContainsKey(string key) => false;
+        public bool TryGetValue(string key, out StringValues value) { value = default; return false; }
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
+            => Enumerable.Empty<KeyValuePair<string, StringValues>>().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private sealed class EmptyFormFileCollection : IFormFileCollection
+    {
+        public IFormFile? this[string name] => null;
+        public IFormFile this[int index] => throw new ArgumentOutOfRangeException(nameof(index));
+        public int Count => 0;
+        public IFormFile? GetFile(string name) => null;
+        public IReadOnlyList<IFormFile> GetFiles(string name) => Array.Empty<IFormFile>();
+        public IEnumerator<IFormFile> GetEnumerator() => Enumerable.Empty<IFormFile>().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -2056,6 +2056,79 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
     }
 
+    [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody()
+    {
+        IFormFile? fileArgument = null;
+        var invoked = false;
+
+        void TestAction(IFormFile? file)
+        {
+            fileArgument = file;
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.True(invoked);
+        Assert.Null(fileArgument);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileCollectionParameterAsEmptyWhenRequestHasNoBody()
+    {
+        IFormFileCollection? fileCollectionArgument = null;
+        var invoked = false;
+
+        void TestAction(IFormFileCollection? fileCollection)
+        {
+            fileCollectionArgument = fileCollection;
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.True(invoked);
+        Assert.NotNull(fileCollectionArgument);
+        Assert.Empty(fileCollectionArgument);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
     private readonly struct TraceIdentifier
     {
         private TraceIdentifier(string id)
