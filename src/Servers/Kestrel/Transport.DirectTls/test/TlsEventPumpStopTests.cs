@@ -98,6 +98,89 @@ public class TlsEventPumpStopTests
         Thread.Sleep(200);
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task StopAndJoinAsync_AbandonedConnectionDisposalInFlight_ReturnsFalse()
+    {
+        var disposalStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseDisposal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pump = new ControllableDisposalPump(disposalStarted, releaseDisposal);
+
+        using var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        listenSocket.Listen(backlog: 16);
+
+        // Stands in for the OpenSSL server credentials the listener frees as soon as the pump confirms exit.
+        using var bootstrap = TlsContext.CreateServer(new SslServerAuthenticationOptions());
+        var readyConnections = Channel.CreateUnbounded<DirectTlsConnection>();
+
+        pump.StartWithListenSocket(
+            (int)listenSocket.Handle,
+            (IPEndPoint)listenSocket.LocalEndPoint!,
+            bootstrap,
+            contextResolver: null,
+            readyConnections.Writer,
+            MemoryPool<byte>.Shared,
+            NullLoggerFactory.Instance,
+            noDelay: false,
+            maxReadBufferSize: 0,
+            maxWriteBufferSize: 0,
+            onFatalError: static _ => { });
+
+        var connectionState = new ConnectionIoState(
+            fd: 101,
+            session: null!,
+            NullLogger<ConnectionIoState>.Instance);
+        var connection = new DirectTlsConnection(
+            connectionState,
+            pump,
+            localEndPoint: null,
+            remoteEndPoint: null,
+            MemoryPool<byte>.Shared,
+            maxReadBufferSize: 0,
+            maxWriteBufferSize: 0,
+            NullLogger<DirectTlsConnection>.Instance);
+
+        // A connection that completed its handshake just as the listener stopped accepting. Its DisposeAsync
+        // resumes the send/receive loops asynchronously, so it outlives the event loop.
+        _ = pump.DisposeAbandonedConnectionAsync(connection);
+        await disposalStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // The event loop is free to wind down, but the disposal is provably still running and still reaches the
+        // memory pool and the OpenSSL contexts, so the pump must not yet report itself as exited - that report is
+        // exactly what lets the listener free them.
+        pump.SignalStop();
+        using var stopCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        Assert.False(await pump.StopAndJoinAsync(stopCts.Token));
+
+        // Let the disposal finish so the pump closes its own fds before the bootstrap context goes away.
+        releaseDisposal.SetResult();
+        Thread.Sleep(200);
+    }
+
+    /// <summary>
+    /// A pump whose abandoned-connection disposal is held open by the test, standing in for send/receive loops
+    /// that are still unwinding after the event loop has gone. The real TLS session is never touched.
+    /// </summary>
+    private sealed class ControllableDisposalPump : TlsEventPump
+    {
+        private readonly TaskCompletionSource _started;
+        private readonly TaskCompletionSource _release;
+
+        public ControllableDisposalPump(TaskCompletionSource started, TaskCompletionSource release)
+            : base(NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
+        {
+            _started = started;
+            _release = release;
+        }
+
+        internal override async ValueTask DisposeConnectionAsync(DirectTlsConnection connection)
+        {
+            _started.TrySetResult();
+            await _release.Task;
+        }
+    }
+
     /// <summary>
     /// A pump whose accept path blocks on the first call, standing in for a user callback that never returns.
     /// Once released it reports a drained backlog so the loop can wind down. The native TLS session is never

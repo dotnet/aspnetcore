@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -130,6 +131,8 @@ internal sealed partial class SocketConnection : TransportConnection
         _connectionClosedTokenSource.Dispose();
     }
 
+    // This long-running method currently performs better with AggressiveOptimization, see https://github.com/dotnet/runtime/issues/133672.
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private async Task DoReceive()
     {
         Exception? error = null;
@@ -263,6 +266,8 @@ internal sealed partial class SocketConnection : TransportConnection
         }
     }
 
+    // This long-running method currently performs better with AggressiveOptimization, see https://github.com/dotnet/runtime/issues/133672.
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private async Task DoSend()
     {
         Exception? shutdownReason = null;

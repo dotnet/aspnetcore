@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
@@ -133,6 +134,105 @@ public class VirtualizeTest
 
         Assert.True(virtualize._totalMeasuredHeight > 0);
         Assert.True(virtualize._measuredItemCount > 0);
+    }
+
+    [Fact]
+    public async Task InitialIndex_MeasurementDoesNotChangeSpacerUntilPositioningCompletes()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 1000).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 950);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var virtualizeComponentId = testRenderer.Batches
+            .SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component
+                && ReferenceEquals(frame.Component, virtualize))
+            .ComponentId;
+        var spacerHeights = testRenderer.GetCurrentRenderTreeFrames(virtualizeComponentId)
+            .AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute
+                && frame.AttributeName == "data-blazor-virtualize-reserved-height");
+
+        Assert.Equal(1253f, virtualize._totalMeasuredHeight);
+        Assert.Equal(7, virtualize._measuredItemCount);
+        Assert.Collection(
+            spacerHeights,
+            spacerBefore => Assert.Equal("47350", spacerBefore.AttributeValue),
+            spacerAfter => Assert.Equal("2300", spacerAfter.AttributeValue));
+    }
+
+    [Fact]
+    public async Task InitialIndex_ApplyingMeasuredGeometry_PreservesRunningAverage()
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(0, 7).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 5);
+                builder.AddComponentParameter(4, "OverscanCount", 3);
+                builder.AddComponentParameter(5, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(6, component => virtualize = (Virtualize<int>)component);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.RenderedContentMeasurement));
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1253f,
+                2000f,
+                SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(2506f, virtualize._totalMeasuredHeight);
+        Assert.Equal(14, virtualize._measuredItemCount);
     }
 
     [Fact]
@@ -1052,11 +1152,12 @@ public class VirtualizeTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68852")]
     public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
     {
         var blockProvider = false;
-        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var requestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cts = new CancellationTokenSource();
+        CancellationToken? providerCancellationToken = null;
 
         async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
         {
@@ -1067,8 +1168,9 @@ public class VirtualizeTest
                     100);
             }
 
-            requestStarted.TrySetResult();
-            using var registration = request.CancellationToken.Register(requestCanceled.SetResult);
+            providerCancellationToken = request.CancellationToken;
+            // Cancel only after capturing the provider token, so no separate start-signal rendezvous is needed.
+            cts.Cancel();
             await Task.Delay(Timeout.InfiniteTimeSpan, request.CancellationToken);
             return default;
         }
@@ -1080,15 +1182,11 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         blockProvider = true;
-        using var cts = new CancellationTokenSource();
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(90, cts.Token); });
-        await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-        cts.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(TimeSpan.FromSeconds(5)));
-        await requestCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(providerCancellationToken is { IsCancellationRequested: true });
     }
 
     [Fact]

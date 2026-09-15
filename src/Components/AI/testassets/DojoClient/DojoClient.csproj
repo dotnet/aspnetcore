@@ -39,6 +39,9 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+    <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+                     OutputItemType="Analyzer"
+                     ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

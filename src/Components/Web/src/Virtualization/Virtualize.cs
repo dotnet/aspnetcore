@@ -264,6 +264,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var ourCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _currentScrollCts = ourCts;
         var token = ourCts.Token;
+        ViewportFillDirection? fillDirection = null;
 
         if (_jsInterop is not null)
         {
@@ -280,7 +281,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             token.ThrowIfCancellationRequested();
             var refetchRequired = MoveWindowToContain(itemIndex);
             await EnsureRenderCommittedAsync(refetchRequired, token);
-            await AlignToTargetAsync(itemIndex, token);
+            fillDirection = await AlignToTargetAsync(itemIndex, token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -295,6 +296,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
             ourCts.Dispose();
         }
+
+        UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
     }
 
     private bool MoveWindowToContain(int itemIndex)
@@ -346,21 +349,23 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         token.ThrowIfCancellationRequested();
     }
 
-    private async ValueTask AlignToTargetAsync(int itemIndex, CancellationToken token)
+    private async ValueTask<ViewportFillDirection?> AlignToTargetAsync(int itemIndex, CancellationToken token)
     {
         // Re-clamp in case _itemCount shifted during the fetch.
         var localIndex = ClampToItemRange(itemIndex) - _itemsBefore;
         if (localIndex < 0 || localIndex >= _visibleItemCapacity || _lastRenderedItemCount == 0)
         {
             // Window doesn't contain the target (e.g., empty provider result) — bail cleanly.
-            return;
+            return null;
         }
 
-        // Pixel-exact one-shot scroll: JS reads getBoundingClientRect() and sets scrollTop.
-        if (_jsInterop is not null)
+        if (_jsInterop is null)
         {
-            await _jsInterop.AlignToItemAsync(localIndex, token);
+            return null;
         }
+
+        var fillDirection = await _jsInterop.AlignToItemAsync(localIndex, token);
+        return fillDirection;
     }
 
     private int ClampToItemRange(int requested)
@@ -507,7 +512,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             if (InitialItemIndex > 0)
             {
-                _initialIndex.BeginPending(_itemSize);
+                _initialIndex.BeginFillingViewport(_itemSize);
                 await ScrollToItemAsyncCore(InitialItemIndex, CancellationToken.None);
             }
             else if (_itemCount > 0)
@@ -516,9 +521,23 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
         }
 
-        if (_jsInterop is not null && _lastRenderedItemCount > 0 && _initialIndex.ShouldRealign(_itemSize))
+        if (_jsInterop is not null
+            && !_loading
+            && _loadedItemsStartIndex == _itemsBefore
+            && _lastRenderedItemCount > 0
+            && _lastRenderedPlaceholderCount == 0
+            && _initialIndex.IsPositioning)
         {
-            await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
+            var fillDirection = await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
+            var finalAlignmentUnavailable = fillDirection is null
+                && _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry;
+            if (finalAlignmentUnavailable)
+            {
+                _initialIndex.Abort();
+                return;
+            }
+
+            UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
         }
     }
 
@@ -617,26 +636,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         => (itemCount * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
     private float GetItemHeight()
+        => _initialIndex.IsPositioning
+            ? _initialIndex.SpacerItemSize
+            : GetMeasuredItemHeight();
+
+    private float GetMeasuredItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
     private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_initialIndex.Phase != InitialIndexPhase.Pending)
+        if (_initialIndex.Phase != InitialIndexPhase.FillingViewport)
         {
             return;
         }
 
-        var previousItemSize = _itemSize;
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out _, out _, out _);
-        RerenderSpacersIfItemSizeChanged(previousItemSize);
-    }
-
-    private void RerenderSpacersIfItemSizeChanged(float previousItemSize)
-    {
-        if (_itemSize != previousItemSize)
-        {
-            StateHasChanged();
-        }
     }
 
     private void CancelInFlightScrollForUserInteraction()
@@ -673,9 +687,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 CancelInFlightScrollForUserInteraction();
                 break;
             case SpacerVisibilityReason.ViewportFill:
-                // A fill callback while our own scroll is in flight, or while the initial target is pinned,
-                // is a side effect of that scroll — acting on it would move the target.
-                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Pending)
+                // A fill callback while our own scroll is in flight is a side effect of that scroll —
+                // acting on it would move the target.
+                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry)
                 {
                     return;
                 }
@@ -683,6 +697,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+
+        if (_initialIndex.IsPositioning)
+        {
+            UpdateWindowFromViewport(
+                ViewportFillDirection.Before,
+                visibleItemCapacity,
+                unusedItemCapacity);
+            return;
+        }
 
         // Slide window up by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
@@ -708,17 +731,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             CancelInFlightScrollForUserInteraction();
         }
-        else if (reason == SpacerVisibilityReason.ViewportFill && _currentScrollCts is not null)
+        else if (reason == SpacerVisibilityReason.ViewportFill
+            && (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.ApplyingMeasuredGeometry))
         {
             // Bottom-spacer fill while our own scroll is in flight: the window moved but scrollTop hasn't
             // landed, so acting on it would undo the target. The real fill runs once the scroll completes.
             return;
         }
-
         var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
-        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        if (_initialIndex.IsPositioning)
         {
+            UpdateWindowFromViewport(
+                ViewportFillDirection.After,
+                visibleItemCapacity,
+                unusedItemCapacity);
             return;
         }
 
@@ -742,6 +769,71 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
+    }
+
+    private void UpdateWindowFromViewport(
+        ViewportFillDirection? fillDirection,
+        int visibleItemCapacity,
+        int unusedItemCapacity)
+    {
+        if (fillDirection == ViewportFillDirection.Covered)
+        {
+            if (_initialIndex.IsPositioning && _lastRenderedPlaceholderCount == 0)
+            {
+                AdvanceInitialIndexPhase();
+            }
+            return;
+        }
+
+        if (fillDirection is null)
+        {
+            return;
+        }
+
+        var maximumCapacity = Math.Min(GetMaximumItemCapacity(), _itemCount);
+        var doubledCapacity = (long)Math.Max(1, _visibleItemCapacity) * 2;
+        var desiredCapacity = (int)Math.Min(
+            Math.Max((long)visibleItemCapacity, doubledCapacity),
+            maximumCapacity);
+        var availableItems = fillDirection == ViewportFillDirection.Before
+            ? _itemsBefore
+            : Math.Max(0, _itemCount - _itemsBefore - _visibleItemCapacity);
+        var addedItems = Math.Min(
+            Math.Max(0, desiredCapacity - _visibleItemCapacity),
+            availableItems);
+
+        if (addedItems > 0 || unusedItemCapacity != _unusedItemCapacity)
+        {
+            _skipNextDistributionRefresh = false;
+            UpdateItemDistribution(
+                fillDirection == ViewportFillDirection.Before ? _itemsBefore - addedItems : _itemsBefore,
+                _visibleItemCapacity + addedItems,
+                unusedItemCapacity);
+        }
+        else if (_initialIndex.IsPositioning && !_loading)
+        {
+            AdvanceInitialIndexPhase();
+        }
+    }
+
+    private void AdvanceInitialIndexPhase()
+    {
+        if (_initialIndex.Phase == InitialIndexPhase.FillingViewport)
+        {
+            if (_lastRenderedItemCount == 0 || _lastRenderedPlaceholderCount > 0)
+            {
+                _initialIndex.Complete();
+                return;
+            }
+
+            var committedItemSize = GetMeasuredItemHeight();
+            _initialIndex.BeginApplyingMeasuredGeometry(committedItemSize);
+            StateHasChanged();
+        }
+        else
+        {
+            _initialIndex.Complete();
+        }
     }
 
     private float GetEffectiveItemSizeForStaleSpacer()
@@ -801,6 +893,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
         // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
         // new applications should use the much more convenient MaxItemCount parameter.
+        var maxItemCount = GetMaximumItemCapacity();
+
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
+        unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+        visibleItemCapacity -= unusedItemCapacity;
+
+        return hadNewMeasurements;
+    }
+
+    private int GetMaximumItemCapacity()
+    {
         var maxItemCount = AppContext.GetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount") switch
         {
             int val => Math.Min(val, MaxItemCount),
@@ -809,14 +913,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // Count the OverscanCount as used capacity, so we don't end up in a situation where
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
-        maxItemCount += OverscanCount * 2;
-
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
-        unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
-        visibleItemCapacity -= unusedItemCapacity;
-
-        return hadNewMeasurements;
+        return (int)Math.Min((long)maxItemCount + (long)OverscanCount * 2, int.MaxValue);
     }
 
     private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
@@ -1113,37 +1210,38 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private enum InitialIndexPhase
     {
         None,
-        Pending,
+        FillingViewport,
+        ApplyingMeasuredGeometry,
         Completed,
     }
 
     private sealed class InitialIndexState
     {
+        private float _spacerItemSize;
+
         public InitialIndexPhase Phase { get; private set; }
 
-        private float _alignItemSize;
+        public bool IsPositioning => Phase is InitialIndexPhase.FillingViewport or InitialIndexPhase.ApplyingMeasuredGeometry;
+
+        public float SpacerItemSize => _spacerItemSize;
 
         public void Complete() => Phase = InitialIndexPhase.Completed;
 
-        public void BeginPending(float itemSize)
+        public void BeginFillingViewport(float itemSize)
         {
-            Phase = InitialIndexPhase.Pending;
-            _alignItemSize = itemSize;
+            Phase = InitialIndexPhase.FillingViewport;
+            _spacerItemSize = itemSize;
         }
 
-        public bool ShouldRealign(float itemSize)
+        public void BeginApplyingMeasuredGeometry(float itemSize)
         {
-            if (Phase != InitialIndexPhase.Pending || itemSize == _alignItemSize)
-            {
-                return false;
-            }
-            _alignItemSize = itemSize;
-            return true;
+            Phase = InitialIndexPhase.ApplyingMeasuredGeometry;
+            _spacerItemSize = itemSize;
         }
 
         public void Abort()
         {
-            if (Phase == InitialIndexPhase.Pending)
+            if (IsPositioning)
             {
                 Phase = InitialIndexPhase.Completed;
             }

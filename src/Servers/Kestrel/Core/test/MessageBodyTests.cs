@@ -338,7 +338,7 @@ public class MessageBodyTests : LoggedTest
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
             reader.StartAcceptingReads(body);
 
-            input.Add("5;\r");
+            input.Add("5;a\r");
 
             var buffer = new byte[1024];
             var readTask = stream.ReadAsync(buffer, 0, buffer.Length);
@@ -357,6 +357,97 @@ public class MessageBodyTests : LoggedTest
             {
                 throw;
             }
+
+            await body.StopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ReadExitsGivenIncompleteChunkedExtensionValue()
+    {
+        using (var input = new TestInput())
+        {
+            var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+            var reader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            reader.StartAcceptingReads(body);
+
+            input.Add("5;a=b\r");
+
+            var buffer = new byte[1024];
+            var readTask = stream.ReadAsync(buffer, 0, buffer.Length);
+
+            Assert.False(readTask.IsCompleted);
+
+            input.Add("\nHello\r\n0\r\n\r\n");
+
+            Assert.Equal(5, await readTask.DefaultTimeout());
+            try
+            {
+                var res = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, res);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            await body.StopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ReadExitsGivenIncompleteChunkedExtensionQuotedStringValue()
+    {
+        using (var input = new TestInput())
+        {
+            var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+            var reader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            reader.StartAcceptingReads(body);
+
+            // The quoted-string extension value is split before its closing DQUOTE.
+            input.Add("5;a=\"bc");
+
+            var buffer = new byte[1024];
+            var readTask = stream.ReadAsync(buffer, 0, buffer.Length);
+
+            Assert.False(readTask.IsCompleted);
+
+            input.Add("d\"\r\nHello\r\n0\r\n\r\n");
+
+            Assert.Equal(5, await readTask.DefaultTimeout());
+            var res = await stream.ReadAsync(buffer, 0, buffer.Length);
+            Assert.Equal(0, res);
+
+            await body.StopAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("5;a=\"", "bcd\"\r\nHello\r\n0\r\n\r\n")] // Split right after the opening DQUOTE.
+    [InlineData("5;a=\"bc\\", "d\"\r\nHello\r\n0\r\n\r\n")] // Split right after a quoted-pair backslash.
+    public async Task ReadExitsGivenIncompleteChunkedExtensionQuotedStringValueSplitAtBoundary(string firstSegment, string secondSegment)
+    {
+        using (var input = new TestInput())
+        {
+            var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+            var reader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            reader.StartAcceptingReads(body);
+
+            input.Add(firstSegment);
+
+            var buffer = new byte[1024];
+            var readTask = stream.ReadAsync(buffer, 0, buffer.Length);
+
+            Assert.False(readTask.IsCompleted);
+
+            input.Add(secondSegment);
+
+            Assert.Equal(5, await readTask.DefaultTimeout());
+            var res = await stream.ReadAsync(buffer, 0, buffer.Length);
+            Assert.Equal(0, res);
 
             await body.StopAsync();
         }
@@ -403,6 +494,36 @@ public class MessageBodyTests : LoggedTest
                     await stream.ReadAsync(buffer, 0, buffer.Length));
 
             Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
+
+            await body.StopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task CanReadChunkSizeWithMaximumNumberOfHexDigits()
+    {
+        using (var input = new TestInput())
+        {
+            var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+            var reader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+            reader.StartAcceptingReads(body);
+
+            const string chunkSizePrefix = "0000000A";
+            var chunkSize = Convert.ToInt32(chunkSizePrefix, 16);
+            var data = new string('a', chunkSize);
+
+            input.Add($"{chunkSizePrefix}\r\n{data}\r\n");
+
+            var buffer = new byte[1024];
+            var count = await stream.ReadAsync(buffer, 0, buffer.Length);
+            Assert.Equal(chunkSize, count);
+            AssertASCII(data, new ArraySegment<byte>(buffer, 0, count));
+
+            input.Add("0\r\n\r\n");
+
+            count = await stream.ReadAsync(buffer, 0, buffer.Length);
+            Assert.Equal(0, count);
 
             await body.StopAsync();
         }

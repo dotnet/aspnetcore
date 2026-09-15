@@ -58,6 +58,8 @@ export class HubConnection {
     private _closedCallbacks: ((error?: Error) => void)[];
     private _reconnectingCallbacks: ((error?: Error) => void)[];
     private _reconnectedCallbacks: ((connectionId?: string) => void)[];
+    private _authenticationRefreshedCallbacks: ((context: AuthenticationRefreshedContext) => void)[];
+    private _authenticationRefreshFailedCallbacks: ((context: AuthenticationRefreshFailedContext) => void)[];
 
     private _receivedHandshakeResponse: boolean;
     private _handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -153,6 +155,8 @@ export class HubConnection {
         this._closedCallbacks = [];
         this._reconnectingCallbacks = [];
         this._reconnectedCallbacks = [];
+        this._authenticationRefreshedCallbacks = [];
+        this._authenticationRefreshFailedCallbacks = [];
         this._invocationId = 0;
         this._receivedHandshakeResponse = false;
         this._connectionState = HubConnectionState.Disconnected;
@@ -611,6 +615,26 @@ export class HubConnection {
         }
     }
 
+    /** Registers a handler that will be invoked after authentication refresh completes successfully.
+     *
+     * @param {Function} callback The handler that will be invoked after authentication refresh completes successfully.
+     */
+    public onAuthenticationRefreshed(callback: (context: AuthenticationRefreshedContext) => void): void {
+        if (callback) {
+            this._authenticationRefreshedCallbacks.push(callback);
+        }
+    }
+
+    /** Registers a handler that will be invoked when an authentication refresh attempt fails.
+     *
+     * @param {Function} callback The handler that will be invoked when an authentication refresh attempt fails.
+     */
+    public onAuthenticationRefreshFailed(callback: (context: AuthenticationRefreshFailedContext) => void): void {
+        if (callback) {
+            this._authenticationRefreshFailedCallbacks.push(callback);
+        }
+    }
+
     /** Refreshes the authentication state for this connection.
      *
      * @returns A Promise that resolves with the new server-reported token lifetime in seconds, or undefined when the server does not report one.
@@ -629,7 +653,7 @@ export class HubConnection {
         try {
             newTokenLifetimeInSeconds = await authenticationRefreshFeature.refreshAuthentication();
         } catch (e) {
-            await this._invokeAuthenticationRefreshFailed(e);
+            this._invokeAuthenticationRefreshFailed(e);
             throw e;
         }
 
@@ -640,7 +664,7 @@ export class HubConnection {
             this._scheduleAuthenticationRefresh(newTokenLifetimeInSeconds);
         }
 
-        await this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
+        this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
         return newTokenLifetimeInSeconds;
     }
 
@@ -1099,9 +1123,8 @@ export class HubConnection {
         }
     }
 
-    private async _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): Promise<void> {
-        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshed;
-        if (!callback) {
+    private _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): void {
+        if (this._authenticationRefreshedCallbacks.length === 0) {
             return;
         }
 
@@ -1112,15 +1135,14 @@ export class HubConnection {
         };
 
         try {
-            await callback(context);
+            this._authenticationRefreshedCallbacks.forEach((c) => c.apply(this, [context]));
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${getErrorString(e)}'.`);
         }
     }
 
-    private async _invokeAuthenticationRefreshFailed(error: any): Promise<void> {
-        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshFailed;
-        if (!callback) {
+    private _invokeAuthenticationRefreshFailed(error: any): void {
+        if (this._authenticationRefreshFailedCallbacks.length === 0) {
             return;
         }
 
@@ -1130,7 +1152,7 @@ export class HubConnection {
         };
 
         try {
-            await callback(context);
+            this._authenticationRefreshFailedCallbacks.forEach((c) => c.apply(this, [context]));
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${getErrorString(e)}'.`);
         }
