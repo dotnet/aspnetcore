@@ -15,7 +15,7 @@
       "src\\Components\\AI\\testassets\\AIApp\\AIApp.csproj",
       "src\\Components\\AI\\testassets\\AIApp.E2E.Tests\\AIApp.E2E.Tests.csproj",
       "src\\Components\\AI\\testassets\\DojoClient\\DojoClient.csproj",
-      "src\\Components\\AI\\testassets\\DojoClient.E2E.Tests\\DojoClient.E2E.Tests.csproj",
+      "src\\Components\\AI\\testassets\\Components.AI.E2E.Tests\\Components.AI.E2E.Tests.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Authorization\\test\\Microsoft.AspNetCore.Components.Authorization.Tests.csproj",
       "src\\Components\\Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",

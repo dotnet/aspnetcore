@@ -1,0 +1,40 @@
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+    font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+    background: oklch(0.97 0.012 255);
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+a {
+    color: #1767d1;
+}
+
+h1:focus {
+    outline: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 0.2rem solid oklch(0.67 0.18 255);
+    outline-offset: 0.15rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

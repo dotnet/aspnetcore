@@ -1,0 +1,69 @@
+@using ComponentsAIClaimApp.Data
+
+<div class="vehicle-diagram">
+    <svg viewBox="0 0 360 240"
+         role="img"
+         aria-labelledby="@_titleId @_descriptionId">
+        <title id="@_titleId">Vehicle diagram with likely affected areas highlighted</title>
+        <desc id="@_descriptionId">@AffectedAreasDescription</desc>
+        <ellipse class="vehicle-shadow" cx="180" cy="221" rx="105" ry="10" />
+        <rect class="vehicle-wheel" x="72" y="53" width="24" height="52" rx="10" />
+        <rect class="vehicle-wheel" x="264" y="53" width="24" height="52" rx="10" />
+        <rect class="vehicle-wheel" x="72" y="150" width="24" height="52" rx="10" />
+        <rect class="vehicle-wheel" x="264" y="150" width="24" height="52" rx="10" />
+        <path class="vehicle-outline"
+              d="M120 18 Q180 2 240 18 L268 54 Q279 96 276 170 L248 213 Q180 232 112 213 L84 170 Q81 96 92 54Z" />
+        <path class="@AreaClass("front-bumper")"
+              d="M120 18 Q180 2 240 18 L250 31 Q180 20 110 31Z" />
+        <path class="@AreaClass("hood")"
+              d="M111 37 Q180 25 249 37 L258 82 Q180 72 102 82Z" />
+        <path class="@AreaClass("windshield")"
+              d="M105 89 Q180 78 255 89 L240 116 Q180 108 120 116Z" />
+        <path class="vehicle-roof"
+              d="M121 122 Q180 113 239 122 L235 163 Q180 172 125 163Z" />
+        <path class="@AreaClass("left-fender")"
+              d="M92 55 L109 38 L101 88 L87 113 Q85 77 92 55Z" />
+        <path class="@AreaClass("right-fender")"
+              d="M251 38 L268 55 Q275 77 273 113 L259 88Z" />
+        <path class="@AreaClass("left-door")"
+              d="M87 119 L119 119 L124 164 L92 181 Q85 151 87 119Z" />
+        <path class="@AreaClass("right-door")"
+              d="M241 119 L273 119 Q275 151 268 181 L236 164Z" />
+        <path class="@AreaClass("rear-bumper")"
+              d="M92 185 L112 213 Q180 232 248 213 L268 185 L255 205 Q180 219 105 205Z" />
+        <path class="vehicle-rear-glass"
+              d="M125 170 Q180 179 235 170 L247 199 Q180 211 113 199Z" />
+        <path class="vehicle-center-line" d="M180 31 V78 M180 110 V169 M180 208 V220" />
+        <text class="vehicle-orientation" x="180" y="16" text-anchor="middle">FRONT</text>
+    </svg>
+
+    <div class="vehicle-legend" aria-live="polite">
+        <span class="vehicle-legend__swatch" aria-hidden="true"></span>
+        @if (State.AffectedAreas.Count == 0)
+        {
+            <span>No affected areas identified</span>
+        }
+        else
+        {
+            <span>@State.AffectedAreas.Count likely affected area@(State.AffectedAreas.Count == 1 ? "" : "s")</span>
+        }
+    </div>
+</div>
+
+@code {
+    private readonly string _titleId = $"vehicle-title-{Guid.NewGuid():N}";
+    private readonly string _descriptionId = $"vehicle-description-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired]
+    public ClaimState State { get; set; } = default!;
+
+    private string AffectedAreasDescription
+        => State.AffectedAreas.Count == 0
+            ? "Top-down vehicle view. No affected areas are currently identified."
+            : $"Top-down vehicle view. Likely affected areas: {string.Join(", ", State.AffectedAreas)}.";
+
+    private string AreaClass(string area)
+        => State.AffectedAreas.Contains(area, StringComparer.OrdinalIgnoreCase)
+            ? "vehicle-area vehicle-area--affected"
+            : "vehicle-area";
+}
