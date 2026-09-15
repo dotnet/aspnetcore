@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
@@ -31,6 +32,8 @@ public class CacheTagKey : IEquatable<CacheTagKey>
     private const string VaryByRouteName = "VaryByRoute";
     private const string VaryByCookieName = "VaryByCookie";
     private const string VaryByUserName = "VaryByUser";
+    private const string UserIdentifierName = "Identifier";
+    private const string NoUserIdentifierName = "NoIdentifier";
     private const string VaryByCulture = "VaryByCulture";
 
     private readonly string _prefix;
@@ -44,7 +47,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
     private readonly IList<KeyValuePair<string, string>> _cookies;
     private readonly bool _varyByUser;
     private readonly bool _varyByCulture;
-    private readonly string _username;
+    private readonly string _userIdentifier;
     private readonly CultureInfo _requestCulture;
     private readonly CultureInfo _requestUICulture;
 
@@ -97,7 +100,10 @@ public class CacheTagKey : IEquatable<CacheTagKey>
 
         if (_varyByUser)
         {
-            _username = httpContext.User?.Identity?.Name;
+            Span<byte> userIdentifier = stackalloc byte[SecurityHelper.UserIdentifierSize];
+            _userIdentifier = SecurityHelper.TryGetUserIdentifier(httpContext.User, userIdentifier)
+                ? Convert.ToBase64String(userIdentifier)
+                : null;
         }
 
         if (_varyByCulture)
@@ -147,7 +153,14 @@ public class CacheTagKey : IEquatable<CacheTagKey>
                 .Append(CacheKeyTokenSeparator)
                 .Append(VaryByUserName)
                 .Append(CacheKeyTokenSeparator)
-                .Append(_username);
+                .Append(_userIdentifier is null ? NoUserIdentifierName : UserIdentifierName);
+
+            if (_userIdentifier is not null)
+            {
+                builder
+                    .Append(CacheKeyTokenSeparator)
+                    .Append(_userIdentifier);
+            }
         }
 
         if (_varyByCulture)
@@ -206,7 +219,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
             AreSame(_queries, other._queries) &&
             AreSame(_routeValues, other._routeValues) &&
             (_varyByUser == other._varyByUser &&
-                (!_varyByUser || string.Equals(other._username, _username, StringComparison.Ordinal))) &&
+                (!_varyByUser || string.Equals(other._userIdentifier, _userIdentifier, StringComparison.Ordinal))) &&
             CultureEquals();
 
         bool CultureEquals()
@@ -248,7 +261,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
         hashCode.Add(_expiresOn);
         hashCode.Add(_expiresSliding);
         hashCode.Add(_varyBy, StringComparer.Ordinal);
-        hashCode.Add(_username, StringComparer.Ordinal);
+        hashCode.Add(_userIdentifier, StringComparer.Ordinal);
         hashCode.Add(_requestCulture);
         hashCode.Add(_requestUICulture);
 

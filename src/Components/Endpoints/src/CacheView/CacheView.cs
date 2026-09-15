@@ -81,6 +81,13 @@ public sealed class CacheView : IComponent, IDisposable
 
     /// <summary>
     /// Gets or sets whether to vary the cache by the authenticated user identity.
+    /// The first authenticated identity, in principal order, with a nonempty <c>sub</c>,
+    /// <see cref="System.Security.Claims.ClaimTypes.NameIdentifier"/>, or
+    /// <see cref="System.Security.Claims.ClaimTypes.Upn"/> claim identifies the user, with claims checked in that order.
+    /// The ordinal claim type, value, and issuer tuple must be trusted, unique, stable, and consistent across
+    /// requests and application instances. If no recognized claim exists, all claims on authenticated identities
+    /// identify the user. Claims transformations must run before cache key generation, and identity and relevant
+    /// claim ordering must be deterministic.
     /// </summary>
     [Parameter]
     public bool VaryByUser { get; set; }
