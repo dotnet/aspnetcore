@@ -2,252 +2,184 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using Microsoft.Extensions.ObjectPool;
-using Moq;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 public class DefaultClaimUidExtractorTest
 {
-    private readonly DefaultClaimUidExtractor _claimUidExtractor;
-
-    public DefaultClaimUidExtractorTest()
-    {
-        _claimUidExtractor = new DefaultClaimUidExtractor();
-    }
+    private readonly DefaultClaimUidExtractor _claimUidExtractor = new();
 
     [Fact]
     public void ExtractClaimUid_Unauthenticated()
     {
-        var mockIdentity = new Mock<ClaimsIdentity>();
-        mockIdentity.Setup(o => o.IsAuthenticated)
-                    .Returns(false);
+        var claimUid = new byte[SecurityHelper.UserIdentifierSize];
 
-        // Act
-        var claimUid = new byte[32];
-        var result = _claimUidExtractor.TryExtractClaimUidBytes(new ClaimsPrincipal(mockIdentity.Object), claimUid);
+        var result = _claimUidExtractor.TryExtractClaimUidBytes(
+            new ClaimsPrincipal(new ClaimsIdentity()),
+            claimUid);
 
-        // Assert
         Assert.False(result);
     }
 
     [Fact]
     public void ExtractClaimUid_ClaimsIdentity()
     {
-        // Arrange
-        var mockIdentity = new Mock<ClaimsIdentity>();
-        mockIdentity.Setup(o => o.IsAuthenticated)
-                    .Returns(true);
-        mockIdentity.Setup(o => o.Claims).Returns([new Claim(ClaimTypes.Name, "someName")]);
-
-        // Act
-        var claimUid = new byte[32];
-        var result = _claimUidExtractor.TryExtractClaimUidBytes(new ClaimsPrincipal(mockIdentity.Object), claimUid);
-
-        // Assert
-        Assert.True(result);
-        Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", Convert.ToBase64String(claimUid));
+        AssertIdentifier(
+            new ClaimsIdentity([new Claim(ClaimTypes.Name, "someName")], "Test"),
+            "yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=");
     }
 
     [Fact]
     public void DefaultUniqueClaimTypes_NotPresent_SerializesAllClaimTypes()
     {
-        var identity = new ClaimsIdentity("someAuthentication");
-        identity.AddClaim(new Claim(ClaimTypes.Email, "someone@antiforgery.com"));
-        identity.AddClaim(new Claim(ClaimTypes.GivenName, "some"));
-        identity.AddClaim(new Claim(ClaimTypes.Surname, "one"));
-        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, string.Empty));
-
-        // Arrange
-        var claimsIdentity = identity;
-
-        // Act
-        var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([claimsIdentity])!.ToArray();
-        var claims = claimsIdentity.Claims.ToList();
-        claims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
-
-        // Assert
-        int index = 0;
-        foreach (var claim in claims)
-        {
-            Assert.Equal(identiferParameters[index++], claim.Type);
-            Assert.Equal(identiferParameters[index++], claim.Value);
-            Assert.Equal(identiferParameters[index++], claim.Issuer);
-        }
+        AssertIdentifier(
+            new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.Email, "someone@antiforgery.com"),
+                new Claim(ClaimTypes.GivenName, "some"),
+                new Claim(ClaimTypes.Surname, "one"),
+                new Claim(ClaimTypes.NameIdentifier, string.Empty),
+            ],
+            "Test"),
+            "lgltW+GHRdEC9LyGmcEUGTPE6pgOrwjSmHktalz657A=");
     }
 
     [Fact]
     public void DefaultUniqueClaimTypes_Present()
     {
-        // Arrange
-        var identity = new ClaimsIdentity("someAuthentication");
-        identity.AddClaim(new Claim("fooClaim", "fooClaimValue"));
-        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.NameIdentifier,
-                "nameIdentifierValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+            new ClaimsIdentity(
+            [
+                new Claim("fooClaim", "fooClaimValue"),
+                new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"),
+            ],
+            "Test"),
+            "bfRch+srZda3DS/0y7rfGzRNk79V8R+YyAdvpqmiDQE=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_PrefersSubClaimOverNameIdentifierAndUpn()
     {
-        // Arrange
-        var identity = new ClaimsIdentity("someAuthentication");
-        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
-        identity.AddClaim(new Claim("sub", "subClaimValue"));
-        identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                "sub",
-                "subClaimValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+            new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"),
+                new Claim("sub", "subClaimValue"),
+                new Claim(ClaimTypes.Upn, "upnClaimValue"),
+            ],
+            "Test"),
+            "x/mnAdQVHyuS608eNGJN799WFwdSXeUFAze99ZzP6OM=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_PrefersNameIdentifierOverUpn()
     {
-        // Arrange
-        var identity = new ClaimsIdentity("someAuthentication");
-        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
-        identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.NameIdentifier,
-                "nameIdentifierValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+            new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"),
+                new Claim(ClaimTypes.Upn, "upnClaimValue"),
+            ],
+            "Test"),
+            "bfRch+srZda3DS/0y7rfGzRNk79V8R+YyAdvpqmiDQE=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_UsesUpnIfPresent()
     {
-        // Arrange
-        var identity = new ClaimsIdentity("someAuthentication");
-        identity.AddClaim(new Claim("fooClaim", "fooClaimValue"));
-        identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.Upn,
-                "upnClaimValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+            new ClaimsIdentity(
+            [
+                new Claim("fooClaim", "fooClaimValue"),
+                new Claim(ClaimTypes.Upn, "upnClaimValue"),
+            ],
+            "Test"),
+            "s/rFwYSqylQzjDNq3SRzp4J8rHglttP+7jsvHTuXJM8=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_MultipleIdentities_UsesOnlyAuthenticatedIdentities()
     {
-        // Arrange
-        var identity1 = new ClaimsIdentity(); // no authentication
-        identity1.AddClaim(new Claim("sub", "subClaimValue"));
-        var identity2 = new ClaimsIdentity("someAuthentication");
-        identity2.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.NameIdentifier,
-                "nameIdentifierValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+        [
+            new ClaimsIdentity([new Claim("sub", "subClaimValue")]),
+            new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue")],
+                "Test"),
+        ],
+        "bfRch+srZda3DS/0y7rfGzRNk79V8R+YyAdvpqmiDQE=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_NoKnownClaimTypesFound_SortsAndReturnsAllClaimsFromAuthenticatedIdentities()
     {
-        // Arrange
-        var identity1 = new ClaimsIdentity(); // no authentication
-        identity1.AddClaim(new Claim("sub", "subClaimValue"));
-        var identity2 = new ClaimsIdentity("someAuthentication");
-        identity2.AddClaim(new Claim(ClaimTypes.Email, "email@domain.com"));
-        var identity3 = new ClaimsIdentity("someAuthentication");
-        identity3.AddClaim(new Claim(ClaimTypes.Country, "countryValue"));
-        var identity4 = new ClaimsIdentity("someAuthentication");
-        identity4.AddClaim(new Claim(ClaimTypes.Name, "claimName"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2, identity3, identity4]);
-
-        // Assert
-        Assert.Equal(new List<string>
-            {
-                ClaimTypes.Country,
-                "countryValue",
-                "LOCAL AUTHORITY",
-                ClaimTypes.Email,
-                "email@domain.com",
-                "LOCAL AUTHORITY",
-                ClaimTypes.Name,
-                "claimName",
-                "LOCAL AUTHORITY",
-            }, uniqueIdentifierParameters);
+        AssertIdentifier(
+        [
+            new ClaimsIdentity([new Claim("sub", "subClaimValue")]),
+            new ClaimsIdentity([new Claim(ClaimTypes.Email, "email@domain.com")], "Test"),
+            new ClaimsIdentity([new Claim(ClaimTypes.Country, "countryValue")], "Test"),
+            new ClaimsIdentity([new Claim(ClaimTypes.Name, "claimName")], "Test"),
+        ],
+        "yKkuTG96NnpDyUFUte2OT70CzP9JqrxZfsCQdIE6e/E=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_PrefersNameFromFirstIdentity_OverSubFromSecondIdentity()
     {
-        // Arrange
-        var identity1 = new ClaimsIdentity("someAuthentication");
-        identity1.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
-        var identity2 = new ClaimsIdentity("someAuthentication");
-        identity2.AddClaim(new Claim("sub", "subClaimValue"));
-
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
-
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.NameIdentifier,
-                "nameIdentifierValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        AssertIdentifier(
+        [
+            new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue")],
+                "Test"),
+            new ClaimsIdentity([new Claim("sub", "subClaimValue")], "Test"),
+        ],
+        "bfRch+srZda3DS/0y7rfGzRNk79V8R+YyAdvpqmiDQE=");
     }
 
     [Fact]
     public void GetUniqueIdentifierParameters_PrefersUpnFromFirstIdentity_OverNameFromSecondIdentity()
     {
-        // Arrange
-        var identity1 = new ClaimsIdentity("someAuthentication");
-        identity1.AddClaim(new Claim(ClaimTypes.Upn, "upnValue"));
-        var identity2 = new ClaimsIdentity("someAuthentication");
-        identity2.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
+        AssertIdentifier(
+        [
+            new ClaimsIdentity([new Claim(ClaimTypes.Upn, "upnValue")], "Test"),
+            new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue")],
+                "Test"),
+        ],
+        "Iv5FFTtADV8RbrkZ9LLM6kyFwhv32gFAIsqBX73Vas8=");
+    }
 
-        // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
+    [Fact]
+    public void ExtractClaimUid_MatchesSharedUserIdentifier()
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, "name-id"),
+            new Claim("sub", "subject", ClaimValueTypes.String, "issuer"),
+        ],
+        "Test"));
+        var claimUid = new byte[SecurityHelper.UserIdentifierSize];
+        var sharedIdentifier = new byte[SecurityHelper.UserIdentifierSize];
 
-        // Assert
-        Assert.Equal(new string[]
-        {
-                ClaimTypes.Upn,
-                "upnValue",
-                "LOCAL AUTHORITY",
-        }, uniqueIdentifierParameters);
+        var result = _claimUidExtractor.TryExtractClaimUidBytes(principal, claimUid);
+        var sharedResult = SecurityHelper.TryGetUserIdentifier(principal, sharedIdentifier);
+
+        Assert.True(result);
+        Assert.True(sharedResult);
+        Assert.Equal(sharedIdentifier, claimUid);
+    }
+
+    private void AssertIdentifier(ClaimsIdentity identity, string expected)
+        => AssertIdentifier([identity], expected);
+
+    private void AssertIdentifier(IEnumerable<ClaimsIdentity> identities, string expected)
+    {
+        var claimUid = new byte[SecurityHelper.UserIdentifierSize];
+
+        var result = _claimUidExtractor.TryExtractClaimUidBytes(new ClaimsPrincipal(identities), claimUid);
+
+        Assert.True(result);
+        Assert.Equal(expected, Convert.ToBase64String(claimUid));
     }
 }
