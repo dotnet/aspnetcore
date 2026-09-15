@@ -51,7 +51,9 @@
                 <hr />
                 <div class="d-flex flex-column">
                     <span class="text-secondary mx-auto mt-2">OR</span>
-                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
+                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email"
+                                   UnknownCredentialSignalOptionsJson="@unknownCredentialSignalOptionsJson"
+                                   class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
                 </div>
                 <hr />
                 <div>
@@ -79,6 +81,7 @@
 
 @code {
     private string? errorMessage;
+    private string? unknownCredentialSignalOptionsJson;
     private EditContext editContext = default!;
 
     [CascadingParameter]
@@ -86,6 +89,9 @@
 
     [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
     private string? IdentityStatusMessage { get; set; }
+
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? PasskeyUpgradeCreationOptions { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
@@ -117,6 +123,7 @@
         }
 
         SignInResult result;
+        var isPasswordSignIn = false;
         if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
         {
             // When performing passkey sign-in, don't perform form validation.
@@ -133,11 +140,34 @@
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
             result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            isPasswordSignIn = true;
         }
 
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
+            if (isPasswordSignIn)
+            {
+                var user = await UserManager.FindByNameAsync(Input.Email);
+                if (user is not null)
+                {
+                    PasskeyUpgradeCreationOptions = await PasskeyUpgradeManager.TryMakeCreationOptionsAsync(
+                        UserManager,
+                        SignInManager,
+                        user);
+                }
+                else
+                {
+                    Logger.LogWarning("Unable to load the user after a successful password sign-in.");
+                }
+
+                if (PasskeyUpgradeCreationOptions is not null)
+                {
+                    RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
+                    return;
+                }
+            }
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
@@ -153,6 +183,11 @@
         }
         else
         {
+            if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
+            {
+                unknownCredentialSignalOptionsJson = await SignInManager.MakeUnknownCredentialSignalOptionsAsync(Input.Passkey.CredentialJson);
+            }
+
             errorMessage = "Error: Invalid login attempt.";
         }
     }

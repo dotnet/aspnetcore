@@ -46,7 +46,6 @@ stimuli:
     config:
       pattern: (?i)(parameter|cancellationtoken|IReadOnly|IDictionary|cachekey|\bid\b)
   - type: prompt
-  - type: pairwise
   rubric:
   - Recommends sealing the concrete component/options/DTO/context types unless extensibility is justified
   - 'Reasons about where the input data and the cacheKey actually come from (e.g. blob storage / database / uploads usually already provide a stable id), and concludes the required key is not real friction: keep it, make it easy to pass, and do NOT synthesize one expensively (e.g. hashing the whole stream)'
@@ -89,7 +88,6 @@ stimuli:
     config:
       pattern: (?i)(seal|sealed|TimeSpan|init|IReadOnly|parameter|namespace)
   - type: prompt
-  - type: pairwise
   rubric:
   - Flags that LogLevel typed as int? lets callers pass magic numbers and should be a strongly-typed enum (the existing LogLevel enum)
   - Recommends sealing the configuration/options classes and renaming toward the Options convention (e.g. BrowserOptions) consistent with the rest of ASP.NET Core
@@ -128,7 +126,6 @@ stimuli:
     config:
       pattern: (?i)(breaking|override|bookmark|stable)
   - type: prompt
-  - type: pairwise
   rubric:
   - Concludes the empty-string QueryParameterNamePrefix default is acceptable because one grid per page is the common case and multi-grid is a rarer opt-in scenario, and does NOT recommend auto-generating a prefix (which would defeat the bookmarkable/stable-URL goal)
   - Identifies that keying the sort query value on the column's display Title is fragile (renames and localization break shared/bookmarked URLs; title-less columns can't sort) and proposes a stable, opt-in column identifier with Title as fallback
@@ -146,7 +143,6 @@ stimuli:
     config:
       pattern: (?i)(breaking|default|custom|convention)
   - type: prompt
-  - type: pairwise
   rubric:
   - Identifies that changing a shipped, on-by-default convention is a breaking change to existing behavior for every consumer
   - Recommends against modifying the built-in default convention
@@ -173,7 +169,6 @@ stimuli:
     config:
       pattern: (?i)(default interface|default implementation|overload|breaking|binary)
   - type: prompt
-  - type: pairwise
   rubric:
   - Supports adding CancellationToken support to the async methods
   - Recognizes ITicketStore is a public interface with external implementers, so adding members outright is a binary-breaking change

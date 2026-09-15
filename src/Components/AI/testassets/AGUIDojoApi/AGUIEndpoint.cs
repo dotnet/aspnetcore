@@ -24,23 +24,48 @@ internal static class AGUIEndpoint
         string pattern,
         IList<AITool>? serverTools = null,
         string? systemPrompt = null,
-        Func<JsonSerializerOptions, AGUIStreamOptions>? configureStreamOptions = null)
+        Func<JsonSerializerOptions, AGUIStreamOptions>? configureStreamOptions = null,
+        object? chatClientKey = null,
+        bool treatClientToolsAsDeclarations = false)
     {
         return endpoints.MapPost(pattern, (
             [FromBody] RunAgentInput input,
-            // The model client is resolved from DI rather than captured at map time so that the
-            // E2E tests can replace it with a recorded one through a service override.
-            [FromServices] IChatClient chatClient,
             [FromServices] IOptions<JsonOptions> jsonOptions,
             HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
             var jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
+            var chatClient = chatClientKey is null
+                ? httpContext.RequestServices.GetRequiredService<IChatClient>()
+                : httpContext.RequestServices.GetRequiredKeyedService<IChatClient>(chatClientKey);
 
-            var streamOptions = configureStreamOptions?.Invoke(jsonSerializerOptions)
-                ?? new AGUIStreamOptions();
+            var streamOptions = configureStreamOptions?.Invoke(jsonSerializerOptions) ??
+                new AGUIStreamOptions();
+            var clientTools = input.Tools;
+            if (treatClientToolsAsDeclarations)
+            {
+                input.Tools = null;
+            }
 
             var ctx = input.ToChatRequestContext(jsonSerializerOptions, streamOptions);
+            input.Tools = clientTools;
+
+            // A raw model returns these calls to the browser instead of executing them in the
+            // mixed-invocation pipeline. Server-owned tools supersede duplicate declarations.
+            if (treatClientToolsAsDeclarations && clientTools is { Count: > 0 })
+            {
+                var serverToolNames = serverTools?
+                    .Select(tool => tool.Name)
+                    .ToHashSet(StringComparer.Ordinal) ?? [];
+                ctx.ChatOptions.Tools ??= [];
+                foreach (var tool in clientTools.AsAITools())
+                {
+                    if (!serverToolNames.Contains(tool.Name))
+                    {
+                        ctx.ChatOptions.Tools.Add(tool);
+                    }
+                }
+            }
 
             // Inject system prompt if provided
             if (systemPrompt is not null)

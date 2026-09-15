@@ -12,13 +12,17 @@ namespace Microsoft.AspNetCore.Components.AI;
 public class BlockMappingContext
 {
     private readonly bool[] _handled;
+    private readonly IReadOnlyList<IHandlerEntry>? _handlers;
     private int _handledCount;
     private bool _updateHandled;
 
-    internal BlockMappingContext(ChatResponseUpdate update)
+    internal BlockMappingContext(
+        ChatResponseUpdate update,
+        IReadOnlyList<IHandlerEntry>? handlers = null)
     {
         Update = update;
         _handled = new bool[update.Contents.Count];
+        _handlers = handlers;
     }
 
     /// <summary>
@@ -67,6 +71,44 @@ public class BlockMappingContext
         _handledCount >= Update.Contents.Count && (Update.Contents.Count > 0 || _updateHandled);
 
     internal int HandledProgress => _handledCount + (_updateHandled ? 1 : 0);
+
+    /// <summary>
+    /// Maps content through the available handlers to create a nested block.
+    /// </summary>
+    /// <param name="content">The content to map.</param>
+    /// <returns>The mapped block, or <see langword="null"/> when no handler accepts the content.</returns>
+    public ContentBlock? CreateInnerBlock(AIContent content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        if (_handlers is null)
+        {
+            return null;
+        }
+
+        var update = new ChatResponseUpdate
+        {
+            Role = Update.Role,
+            AuthorName = Update.AuthorName,
+            MessageId = Update.MessageId,
+            Contents = [content],
+        };
+        var context = new BlockMappingContext(update, _handlers);
+
+        foreach (var handler in _handlers)
+        {
+            var entry = handler.TryHandle(context);
+            if (entry is not null)
+            {
+                entry.Block.Role = update.Role;
+                entry.Block.AuthorName = update.AuthorName;
+                entry.Block.LifecycleState = BlockLifecycleState.Inactive;
+                return entry.Block;
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Enumerates the content items of an update that have not been claimed by a handler.
