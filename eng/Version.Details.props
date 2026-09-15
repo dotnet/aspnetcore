@@ -105,11 +105,11 @@ This file should be imported by eng/Versions.props
     <SystemThreadingChannelsPackageVersion>11.0.0-rc.2.26461.110</SystemThreadingChannelsPackageVersion>
     <SystemThreadingRateLimitingPackageVersion>11.0.0-rc.2.26461.110</SystemThreadingRateLimitingPackageVersion>
     <!-- dotnet-extensions dependencies -->
-    <MicrosoftExtensionsCachingHybridPackageVersion>10.9.0</MicrosoftExtensionsCachingHybridPackageVersion>
-    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.9.0</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
-    <MicrosoftExtensionsServiceDiscoveryPackageVersion>10.9.0</MicrosoftExtensionsServiceDiscoveryPackageVersion>
-    <MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>10.9.0</MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>
-    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.9.0</MicrosoftExtensionsTimeProviderTestingPackageVersion>
+    <MicrosoftExtensionsCachingHybridPackageVersion>10.10.0</MicrosoftExtensionsCachingHybridPackageVersion>
+    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.10.0</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
+    <MicrosoftExtensionsServiceDiscoveryPackageVersion>10.10.0</MicrosoftExtensionsServiceDiscoveryPackageVersion>
+    <MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>10.10.0</MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>
+    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.10.0</MicrosoftExtensionsTimeProviderTestingPackageVersion>
     <!-- dotnet-msbuild dependencies -->
     <MicrosoftBuildPackageVersion>17.12.50</MicrosoftBuildPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>17.12.50</MicrosoftBuildFrameworkPackageVersion>
