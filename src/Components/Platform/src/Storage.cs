@@ -12,7 +12,6 @@ public sealed class Storage : IAsyncDisposable
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly string _propertyName;
-    private readonly object _lock = new();
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
@@ -91,18 +90,13 @@ public sealed class Storage : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        Task<IJSObjectReference>? referenceTask;
-
-        lock (_lock)
+        if (_disposed)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            referenceTask = _referenceTask;
+            return;
         }
+
+        _disposed = true;
+        var referenceTask = _referenceTask;
 
         if (referenceTask is null || referenceTask.IsCanceled || referenceTask.IsFaulted)
         {
@@ -115,12 +109,8 @@ public sealed class Storage : IAsyncDisposable
 
     private Task<IJSObjectReference> GetReferenceAsync()
     {
-        lock (_lock)
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
-            return _referenceTask;
-        }
+        return _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
     }
 }
