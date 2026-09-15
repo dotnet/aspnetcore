@@ -222,7 +222,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
   const bottomTracking = {
     // Was the viewport at the bottom as of the last render? Drives the append re-pin.
-    wasAtBottomLastRender: false,
+    wasAtBottomLastRender: (anchorMode & 2) !== 0 && isViewportAtBottom(),
     // Has the viewport actually reached the bottom? Not set at mount, stays sticky across appends.
     reached: false,
     // Follow intent: true in End mode (or after a user-initiated End-key jump) until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
@@ -393,6 +393,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // End mode: pin new items into view if we're at the bottom now, or were and are still following.
     if ((anchorModeIs.end || bottomTracking.following) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
+      flushPendingStyleMutations();
       scrollElement.scrollTop = scrollElement.scrollHeight;
       scrollActivity.ignoreNextScroll();
       // Start convergence only when there are more items to load (spacerAfter > 0).
