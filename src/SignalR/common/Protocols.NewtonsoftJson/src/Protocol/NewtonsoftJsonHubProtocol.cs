@@ -122,6 +122,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
             int? type = null;
             string? invocationId = null;
             string? target = null;
+            var hasTarget = false;
             string? error = null;
             var hasItem = false;
             object? item = null;
@@ -190,6 +191,12 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                                     break;
                                 case TargetPropertyName:
+                                    if (hasTarget)
+                                    {
+                                        throw new InvalidDataException($"Duplicate '{TargetPropertyName}' property is not allowed.");
+                                    }
+
+                                    hasTarget = true;
                                     target = JsonUtils.ReadAsString(reader, TargetPropertyName);
                                     break;
                                 case ErrorPropertyName:

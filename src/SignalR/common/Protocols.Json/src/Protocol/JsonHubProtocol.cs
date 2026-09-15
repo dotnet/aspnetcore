@@ -123,6 +123,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             int? type = null;
             string? invocationId = null;
             string? target = null;
+            var hasTarget = false;
             string? error = null;
             var hasItem = false;
             object? item = null;
@@ -191,6 +192,12 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            if (hasTarget)
+                            {
+                                throw new InvalidDataException($"Duplicate '{TargetPropertyName}' property is not allowed.");
+                            }
+
+                            hasTarget = true;
 #if NETCOREAPP
                             reader.Read();
 
