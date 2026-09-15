@@ -4,48 +4,45 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Time.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class TimeoutControlTests
 {
-    private readonly Mock<ITimeoutHandler> _mockTimeoutHandler;
+    private readonly TestTimeoutHandler _timeoutHandler;
     private readonly TimeoutControl _timeoutControl;
     private readonly FakeTimeProvider _timeProvider;
 
     public TimeoutControlTests()
     {
-        _mockTimeoutHandler = new Mock<ITimeoutHandler>();
+        _timeoutHandler = new TestTimeoutHandler();
         _timeProvider = new FakeTimeProvider();
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
+        _timeoutControl = new TimeoutControl(_timeoutHandler, _timeProvider);
     }
 
     [Fact]
     public void DoesNotTimeOutWhenDebuggerIsAttached()
     {
-        var mockDebugger = new Mock<IDebugger>();
-        mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
-        _timeoutControl.Debugger = mockDebugger.Object;
+        var debugger = new TestDebugger { IsAttached = true };
+        _timeoutControl.Debugger = debugger;
 
         var now = _timeProvider.GetTimestamp();
         _timeoutControl.Initialize();
         _timeoutControl.SetTimeout(TimeSpan.FromTicks(1), TimeoutReason.RequestHeaders);
         _timeoutControl.Tick(_timeProvider.GetTimestamp(now + 2, Heartbeat.Interval));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
     }
 
     [Fact]
     public void DoesNotTimeOutWhenRequestBodyDoesNotSatisfyMinimumDataRateButDebuggerIsAttached()
     {
-        var mockDebugger = new Mock<IDebugger>();
-        mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
-        _timeoutControl.Debugger = mockDebugger.Object;
+        var debugger = new TestDebugger { IsAttached = true };
+        _timeoutControl.Debugger = debugger;
 
         TickBodyWithMinimumDataRate(bytesPerSecond: 100);
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
     }
 
     [Fact]
@@ -54,7 +51,7 @@ public class TimeoutControlTests
         TickBodyWithMinimumDataRate(bytesPerSecond: 100);
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Once);
+        Assert.Equal(1, _timeoutHandler.OnTimeoutCount);
     }
 
     [Fact]
@@ -75,7 +72,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Tick after grace period w/ low data rate
         now += _timeProvider.TimestampFrequency;
@@ -85,7 +82,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -114,7 +111,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Data rate: 150 bytes/second
         now += _timeProvider.TimestampFrequency;
@@ -122,7 +119,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Data rate: 120 bytes/second
         now += _timeProvider.TimestampFrequency;
@@ -130,7 +127,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Data rate: 100 bytes/second
         now += _timeProvider.TimestampFrequency;
@@ -138,7 +135,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Data rate: ~85 bytes/second
         now += _timeProvider.TimestampFrequency;
@@ -146,7 +143,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -182,7 +179,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Resume at 6.5s
         _timeProvider.Advance(TimeSpan.FromSeconds(0.5));
@@ -195,14 +192,14 @@ public class TimeoutControlTests
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Tick at 10s, expected counted time is 7s, expected data rate drops below 100 bytes/second
         _timeProvider.Advance(TimeSpan.FromSeconds(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -224,7 +221,7 @@ public class TimeoutControlTests
         _timeoutControl.BytesRead(200);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Pause at 2.25s
         _timeProvider.Advance(TimeSpan.FromSeconds(0.25));
@@ -240,14 +237,14 @@ public class TimeoutControlTests
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Tick at 4s, expected counted time is 4s, expected data rate drops below 100 bytes/second
         _timeProvider.Advance(TimeSpan.FromSeconds(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -270,14 +267,14 @@ public class TimeoutControlTests
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Tick just past timeout period, adjusted by Heartbeat.Interval
         _timeProvider.Advance(TimeSpan.FromSeconds(2) + Heartbeat.Interval + TimeSpan.FromTicks(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestBodyDrain), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.RequestBodyDrain));
     }
 
     [Fact]
@@ -311,21 +308,21 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Relieve low flow control availability
         flowControl.TryUpdateWindow(2, out _);
         _timeoutControl.Tick(now);
 
         // Still not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Read 0 bytes in 1 second
         now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -354,7 +351,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Read 100 bytes in 2 seconds in two ticks
         now += _timeProvider.TimestampFrequency;
@@ -364,7 +361,7 @@ public class TimeoutControlTests
         _timeoutControl.Tick(now);
 
         // Timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.ReadDataRate));
     }
 
     [Fact]
@@ -382,7 +379,7 @@ public class TimeoutControlTests
         // Tick just past 4s plus Heartbeat.Interval
         AdvanceClock(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
     }
 
     [Fact]
@@ -401,12 +398,12 @@ public class TimeoutControlTests
         AdvanceClock(TimeSpan.FromSeconds(1) + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         // Still within grace period, not timed out
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Tick just past grace period (adjusted by Heartbeat.Interval)
         AdvanceClock(minRate.GracePeriod - TimeSpan.FromSeconds(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
     }
 
     [Fact]
@@ -429,7 +426,7 @@ public class TimeoutControlTests
         AdvanceClock(TimeSpan.FromSeconds(5) + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         // Not timed out because the timeout was pushed by the second write
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // Complete the first write, this should have no effect on the timeout
         _timeoutControl.StopTimingWrite();
@@ -437,7 +434,7 @@ public class TimeoutControlTests
         // Tick just past +3s, when the second write should have completed
         AdvanceClock(TimeSpan.FromSeconds(3));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
     }
 
     [Fact]
@@ -464,13 +461,13 @@ public class TimeoutControlTests
         // The grace period should only be added for the first write. The subsequent 4 100 byte writes should add 1 second each to the timeout given the 100 byte/s min rate.
         AdvanceClock(Heartbeat.Interval + minRate.GracePeriod + TimeSpan.FromSeconds((numWrites - 1) * writeSize / minRate.BytesPerSecond));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        Assert.Equal(0, _timeoutHandler.OnTimeoutCount);
 
         // On more tick forward triggers the timeout.
         _timeProvider.Advance(TimeSpan.FromTicks(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
     }
 
     [Fact]
@@ -489,12 +486,12 @@ public class TimeoutControlTests
         _timeProvider.Advance(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Never);
+        Assert.Equal(0, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
 
         // The last Tick only accounted for one heartbeat interval. Try again with a tick per interval.
         AdvanceClock(TimeSpan.FromSeconds(4) + TimeSpan.FromTicks(1));
 
-        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+        Assert.Equal(1, _timeoutHandler.Count(TimeoutReason.WriteDataRate));
     }
 
     private void TickBodyWithMinimumDataRate(int bytesPerSecond)

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -62,9 +61,9 @@ public class DateHeaderValueManagerTests
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
-        var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
+        var heartbeatHandler = new TestHeartbeatHandler();
 
-        using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, timeProvider, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatHandler }, timeProvider, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
 

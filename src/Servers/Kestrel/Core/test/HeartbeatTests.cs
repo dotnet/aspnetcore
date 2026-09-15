@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -25,13 +24,13 @@ public class HeartbeatTests : LoggedTest
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
         var timeProvider = new FakeTimeProvider();
-        var heartbeatHandler = new Mock<IHeartbeatHandler>();
-        var debugger = new Mock<IDebugger>();
+        var heartbeatHandler = new TestHeartbeatHandler();
+        var debugger = new TestDebugger();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
 
         var splits = new List<TimeSpan>();
         Stopwatch sw = null;
-        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
+        heartbeatHandler.OnHeartbeatCallback = () =>
         {
             heartbeatCallCount++;
             if (sw == null)
@@ -59,11 +58,11 @@ public class HeartbeatTests : LoggedTest
                 Logger.LogInformation($"Heartbeat run {heartbeatCallCount} times. Notifying test.");
                 tcs.SetResult();
             }
-        });
+        };
 
         var intervalMs = 300;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, TimeSpan.FromMilliseconds(intervalMs)))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { heartbeatHandler }, timeProvider, debugger, kestrelTrace, TimeSpan.FromMilliseconds(intervalMs)))
         {
             heartbeat.Start();
 
@@ -101,23 +100,23 @@ public class HeartbeatTests : LoggedTest
     public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsWarning()
     {
         var timeProvider = new FakeTimeProvider();
-        var heartbeatHandler = new Mock<IHeartbeatHandler>();
-        var debugger = new Mock<IDebugger>();
+        var heartbeatHandler = new TestHeartbeatHandler();
+        var debugger = new TestDebugger();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var heartbeatDuration = TimeSpan.FromSeconds(2);
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
+        heartbeatHandler.OnHeartbeatCallback = () =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
-        });
-        debugger.Setup(d => d.IsAttached).Returns(false);
+        };
+        debugger.IsAttached = false;
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { heartbeatHandler }, timeProvider, debugger, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -131,7 +130,7 @@ public class HeartbeatTests : LoggedTest
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
+        Assert.Equal(1, heartbeatHandler.OnHeartbeatCount);
 
         var warningMessage = TestSink.Writes.Single(message => message.LogLevel == LogLevel.Warning).Message;
         Assert.Equal($"As of \"{timeProvider.GetUtcNow().ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
@@ -144,23 +143,23 @@ public class HeartbeatTests : LoggedTest
     public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedIfDebuggerAttached()
     {
         var timeProvider = new FakeTimeProvider();
-        var heartbeatHandler = new Mock<IHeartbeatHandler>();
-        var debugger = new Mock<IDebugger>();
+        var heartbeatHandler = new TestHeartbeatHandler();
+        var debugger = new TestDebugger();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
+        heartbeatHandler.OnHeartbeatCallback = () =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
-        });
+        };
 
-        debugger.Setup(d => d.IsAttached).Returns(true);
+        debugger.IsAttached = true;
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { heartbeatHandler }, timeProvider, debugger, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -174,7 +173,7 @@ public class HeartbeatTests : LoggedTest
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
+        Assert.Equal(1, heartbeatHandler.OnHeartbeatCount);
 
         Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "HeartbeatSlow");
     }
@@ -183,13 +182,13 @@ public class HeartbeatTests : LoggedTest
     public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
     {
         var timeProvider = new FakeTimeProvider();
-        var heartbeatHandler = new Mock<IHeartbeatHandler>();
+        var heartbeatHandler = new TestHeartbeatHandler();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var ex = new Exception();
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat()).Throws(ex);
+        heartbeatHandler.OnHeartbeatCallback = () => throw ex;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { heartbeatHandler }, timeProvider, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
         }

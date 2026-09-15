@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Time.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -532,7 +531,7 @@ public class StartLineTests : IDisposable
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
-            connectionContext: Mock.Of<ConnectionContext>(),
+            connectionContext: new DefaultConnectionContext(),
             transport: Transport,
             timeoutControl: new TimeoutControl(timeoutHandler: null, timeProvider),
             memoryPool: MemoryPool,

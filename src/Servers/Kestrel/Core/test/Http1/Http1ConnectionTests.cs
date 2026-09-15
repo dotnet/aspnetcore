@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -591,7 +590,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
         var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout;
-        _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
+        Assert.Contains((expectedKeepAliveTimeout, TimeoutReason.KeepAlive), _timeoutControl.SetTimeoutCalls);
 
         _http1Connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         _application.Output.Complete();
@@ -975,8 +974,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
             var buffer = new byte[10];
             await context.Response.Body.WriteAsync(buffer, 0, 10);
         });
-        var mockMessageBody = new Mock<MessageBody>(null);
-        _http1Connection.NextMessageBody = mockMessageBody.Object;
+        var messageBody = new TestMessageBody();
+        _http1Connection.NextMessageBody = messageBody;
 
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync(httpApplication);
 
@@ -984,7 +983,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _application.Output.WriteAsync(data);
         await requestProcessingTask.DefaultTimeout();
 
-        mockMessageBody.Verify(body => body.ConsumeAsync(), Times.Once);
+        Assert.Equal(1, messageBody.ConsumeAsyncCount);
     }
 
     [Fact]
