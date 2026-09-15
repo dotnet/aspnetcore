@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -826,6 +827,156 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetOpenApiResponse_HandlesNullableComponentizedArrayElementsWithOneOf(bool useSchemaTransformer)
+    {
+        var builder = CreateBuilder();
+
+#nullable enable
+        static Status?[] GetStatuses() => [Status.Pending, null];
+        static Todo?[] GetTodos() => [new Todo(1, "Test Title", true, DateTime.Now), null];
+        builder.MapGet("/statuses", GetStatuses);
+        builder.MapGet("/todos", GetTodos);
+#nullable restore
+
+        var options = new OpenApiOptions();
+        var transformedArrays = 0;
+        if (useSchemaTransformer)
+        {
+            options.AddSchemaTransformer((schema, context, cancellationToken) =>
+            {
+                if (context.JsonTypeInfo.Type.IsArray)
+                {
+                    // Schema transformers run after null pruning, before response nullability is applied.
+                    schema.Items = schema.Items.CreateOneOfNullableWrapper();
+                    transformedArrays++;
+                }
+                return Task.CompletedTask;
+            });
+        }
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        Assert.Equal(useSchemaTransformer ? 2 : 0, transformedArrays);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/statuses": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Status"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "/todos": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Todo"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "Status": {
+                    "enum": [
+                      "Pending",
+                      "Approved",
+                      "Rejected"
+                    ]
+                  },
+                  "Todo": {
+                    "required": [
+                      "id",
+                      "title",
+                      "completed",
+                      "createdAt"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "title": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiSchemaServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
