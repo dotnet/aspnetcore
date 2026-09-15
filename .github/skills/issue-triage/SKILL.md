@@ -93,6 +93,11 @@ If none applies, return no subtype. Do not translate historical or tempting labe
 `enhancement`, `accessibility`, `severity-*`, `help wanted`, feature-family labels, or
 resolution labels into supported subtypes.
 
+Use `by-design` only when supplied or verified maintainer evidence explicitly says the
+reported behavior is intended or that there is no product defect. A breaking change,
+compatibility guidance, documented workaround, or duplicate of a known change does not
+establish `by-design` by itself; without that explicit disposition, return no subtype.
+
 ## Regression
 
 For a `Bug`, identify a regression only when the issue gives evidence that behavior worked

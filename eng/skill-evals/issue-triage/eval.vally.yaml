@@ -8,7 +8,8 @@ defaults:
   model: gpt-5.5
   judge_model: gpt-5.5
 
-scoring: {}
+scoring:
+  threshold: 1.0
 
 stimuli:
   - name: classify-docs-only-work-as-task

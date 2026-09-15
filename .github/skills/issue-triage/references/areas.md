@@ -190,13 +190,15 @@ infrastructure across the repository.
 
 ## `area-infrastructure`
 
-Repository build system, CI/CD, shared framework and targeting-pack construction, source
-build plumbing, test infrastructure, packaging, and installers.
+Repository build system, CI/CD, repository-owned automation and workflows, classification
+policy, shared framework and targeting-pack construction, source build plumbing, test
+infrastructure, packaging, and installers.
 
-- Code: `eng/`, `src/Framework/`, `src/BuildAfterTargetingPack/`, `src/Testing/`,
-  `src/Installers/`, `*.props`, `*.targets`
+- Code: `eng/`, `.github/workflows/`, `src/Framework/`,
+  `src/BuildAfterTargetingPack/`, `src/Testing/`, `src/Installers/`, `*.props`, `*.targets`
 - Signals: MSBuild, Arcade, CI pipelines, source build, shared framework, targeting packs,
-  runtime installers, hosting bundles
+  runtime installers, hosting bundles, repository automation, triage or classification
+  policy
 
 ## `area-unified-build`
 
@@ -224,6 +226,9 @@ build.
 - Route templates, constraints, or `LinkGenerator`: `area-routing`.
 - `IDataProtector` or key management: `area-dataprotection`.
 - Build failures, `eng/`, packages, or CI: `area-infrastructure`.
+- Defects in repository-owned automation, workflows, or classification policy:
+  `area-infrastructure`, even when the policy text mentions product-area paths; route by
+  the artifact that must be fixed.
 - `src/Installers/`, runtime installers, hosting bundles, or shared-framework packaging:
   `area-infrastructure`, not `area-commandlinetools`.
 - Runtime OpenAPI services: `area-minimal`; `dotnet-openapi` and build-time generation:
