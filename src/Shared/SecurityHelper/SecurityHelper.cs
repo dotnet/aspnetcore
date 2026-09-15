@@ -124,7 +124,7 @@ internal static class SecurityHelper
                 continue;
             }
 
-            var identifierClaim = FindUserIdentifierClaim(identity.Claims);
+            var identifierClaim = FindUserIdentifierClaim(identity);
             if (identifierClaim is not null)
             {
                 ComputeSha256(identifierClaim, destination);
@@ -163,6 +163,32 @@ internal static class SecurityHelper
                 ArrayPool<Claim>.Shared.Return(rentedClaims);
             }
         }
+    }
+
+    private static Claim? FindUserIdentifierClaim(ClaimsIdentity identity)
+    {
+        if (identity.GetType() == typeof(ClaimsIdentity))
+        {
+            return FindUserIdentifierClaim(identity.Claims);
+        }
+
+        var subClaim = identity.FindFirst(
+            static claim => string.Equals(SubjectClaimType, claim.Type, StringComparison.Ordinal));
+        if (subClaim is not null && !string.IsNullOrEmpty(subClaim.Value))
+        {
+            return subClaim;
+        }
+
+        var nameIdentifierClaim = identity.FindFirst(
+            static claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
+        if (nameIdentifierClaim is not null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
+        {
+            return nameIdentifierClaim;
+        }
+
+        var upnClaim = identity.FindFirst(
+            static claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
+        return upnClaim is not null && !string.IsNullOrEmpty(upnClaim.Value) ? upnClaim : null;
     }
 
     private static Claim? FindUserIdentifierClaim(IEnumerable<Claim> claims)
