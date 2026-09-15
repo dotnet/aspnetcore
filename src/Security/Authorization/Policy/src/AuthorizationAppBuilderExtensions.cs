@@ -20,6 +20,12 @@ public static class AuthorizationAppBuilderExtensions
     /// When authorizing a resource that is routed using endpoint routing, this call must appear between the calls to
     /// <c>app.UseRouting()</c> and <c>app.UseEndpoints(...)</c> for the middleware to function correctly.
     /// </para>
+    /// <para>
+    /// The middleware authorizes the endpoint associated with the <see cref="HttpContext"/> when it runs. If later
+    /// middleware changes the endpoint or reroutes the request, the application is responsible for placing
+    /// authorization after the final routing pass or explicitly running authorization again for the new endpoint.
+    /// Rerouting does not generally replay authorization or other middleware automatically.
+    /// </para>
     /// </summary>
     /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
     /// <returns>A reference to <paramref name="app"/> after the operation has completed.</returns>

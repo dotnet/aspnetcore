@@ -100,6 +100,7 @@ public class AuthorizationMiddleware
         {
             // EndpointRoutingMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
             // The Authorization middleware can only make this claim if it observes an actual endpoint.
+            // If a later middleware selects a different endpoint, the application must run authorization for that endpoint.
             context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = AuthorizationMiddlewareWithEndpointInvokedValue;
         }
 

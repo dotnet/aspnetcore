@@ -502,6 +502,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
 
         var configureAuthImplicitMiddlewares = (IApplicationBuilder pipeline) =>
         {
+            // These automatic middleware run for the endpoint selected by the implicit routing pass above. An
+            // application that changes the endpoint later is responsible for explicitly arranging authentication
+            // and authorization after its final routing pass.
             if (addAuthentication)
             {
                 pipeline.UseAuthentication();
