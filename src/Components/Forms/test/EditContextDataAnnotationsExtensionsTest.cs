@@ -132,6 +132,28 @@ public class EditContextDataAnnotationsExtensionsTest
         Assert.Equal(new[] { "IntFrom1To100:range" }, editContext.GetValidationMessages());
     }
 
+    [Fact]
+    public void MarkAsModifiedDoesNotTriggerPerPropertyValidation()
+    {
+        var model = new TestModel { IntFrom1To100 = 101 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var onValidationStateChangedCount = 0;
+        var requiredStringIdentifier = new FieldIdentifier(model, nameof(TestModel.RequiredString));
+        editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
+
+        editContext.MarkAsModified(requiredStringIdentifier);
+
+        Assert.True(editContext.IsModified(requiredStringIdentifier));
+        Assert.Equal(0, onValidationStateChangedCount);
+        Assert.Empty(editContext.GetValidationMessages(requiredStringIdentifier));
+        Assert.Empty(editContext.GetValidationMessages());
+
+        editContext.NotifyFieldChanged(requiredStringIdentifier);
+        Assert.Equal(1, onValidationStateChangedCount);
+        Assert.Equal(new[] { "RequiredString:required" }, editContext.GetValidationMessages());
+    }
+
     [Theory]
     [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsAField))]
     [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsInternal))]

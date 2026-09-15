@@ -326,7 +326,12 @@ public class InputBaseTest
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(1, numValidationStateChanges);
 
-        // Act/Assert 2: Transition to valid
+        await inputComponent.SetCurrentValueAsStringAsync("invalid");
+        Assert.Empty(valueChangedArgs);
+        Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Equal(2, numValidationStateChanges);
+
         await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
         var receivedParsedValue = valueChangedArgs.Single();
         Assert.Equal(1991, receivedParsedValue.Year);
@@ -334,7 +339,91 @@ public class InputBaseTest
         Assert.Equal(20, receivedParsedValue.Day);
         Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-        Assert.Equal(2, numValidationStateChanges);
+        Assert.Equal(3, numValidationStateChanges);
+    }
+
+    [Fact]
+    public async Task ParsingFailureDoesNotNotifyFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = _ => { },
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) => fieldChangedCount++;
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(0, fieldChangedCount);
+        Assert.Equal(new[] { "Bad date value" }, editContext.GetValidationMessages(fieldIdentifier));
+    }
+
+    [Fact]
+    public async Task ValidValueAfterParsingFailureNotifiesFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = value => model.DateProperty = value,
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) => fieldChangedCount++;
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+        Assert.Equal(0, fieldChangedCount);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+
+        Assert.Equal(new DateTime(1991, 11, 20), model.DateProperty);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(1, fieldChangedCount);
+        Assert.Empty(editContext.GetValidationMessages(fieldIdentifier));
+    }
+
+    [Fact]
+    public async Task ParsingFailureAfterValidValueDoesNotNotifyFieldChanged()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = editContext,
+            ValueChanged = value => model.DateProperty = value,
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var unrelatedFieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+        var unrelatedMessages = new ValidationMessageStore(editContext);
+        var fieldChangedCount = 0;
+        editContext.OnFieldChanged += (sender, eventArgs) =>
+        {
+            fieldChangedCount++;
+            unrelatedMessages.Add(unrelatedFieldIdentifier, "Unrelated validation ran");
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+        unrelatedMessages.Clear();
+        editContext.MarkAsUnmodified(fieldIdentifier);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+
+        Assert.Equal(new DateTime(1991, 11, 20), model.DateProperty);
+        Assert.True(editContext.IsModified(fieldIdentifier));
+        Assert.Equal(1, fieldChangedCount);
+        Assert.Equal(new[] { "Bad date value" }, editContext.GetValidationMessages(fieldIdentifier));
+        Assert.Empty(editContext.GetValidationMessages(unrelatedFieldIdentifier));
+        Assert.False(editContext.IsModified(unrelatedFieldIdentifier));
     }
 
     [Fact]
