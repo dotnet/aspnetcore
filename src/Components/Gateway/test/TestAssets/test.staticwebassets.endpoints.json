@@ -1,0 +1,35 @@
+{
+  "Version": 1,
+  "ManifestType": "Build",
+  "Endpoints": [
+    {
+      "Route": "{**fallback:nonfile}",
+      "AssetFile": "index.html",
+      "Order": "2147483647",
+      "Selectors": [],
+      "EndpointProperties": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "36"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"test-etag\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Fri, 28 Aug 2026 00:00:00 GMT"
+        }
+      ]
+    }
+  ]
+}

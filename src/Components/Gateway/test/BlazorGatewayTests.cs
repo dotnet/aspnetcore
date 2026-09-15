@@ -10,10 +10,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+[assembly: HostingStartup(typeof(Microsoft.AspNetCore.Components.Gateway.BlazorGatewayTests.TestHostingStartup))]
+
 namespace Microsoft.AspNetCore.Components.Gateway;
 
 public class BlazorGatewayTests
 {
+    private const string HostingStartupHeaderName = "X-Test-Hosting-Startup";
+
     [Fact]
     public async Task HealthChecks_ReturnsOk_InDevelopment_WithDefaultOptions()
     {
@@ -216,6 +220,51 @@ public class BlazorGatewayTests
         Assert.Contains(app.Urls, address => address.StartsWith("https://127.0.0.1:", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task BuildWebHost_RunsConfiguredHostingStartup()
+    {
+        var hostingStartupAssembly = typeof(TestHostingStartup).Assembly.GetName().Name!;
+        await using var app = BlazorGateway.BuildWebHost(
+        [
+            "--environment", Environments.Development,
+            "--hostingStartupAssemblies", hostingStartupAssembly,
+            "--urls", "http://127.0.0.1:0",
+        ]);
+
+        await app.StartAsync();
+
+        using var client = new HttpClient
+        {
+            BaseAddress = new Uri(app.Urls.Single()),
+        };
+        var response = await client.GetAsync("/health");
+
+        Assert.Equal("true", response.Headers.GetValues(HostingStartupHeaderName).Single());
+    }
+
+    [Fact]
+    public async Task SpaFallback_DisablesDocumentCachingInDevelopment()
+    {
+        await using var gateway = await StartSpaFallbackGatewayAsync(Environments.Development);
+
+        var response = await gateway.Client.SendAsync(CreateConditionalDocumentRequest());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.CacheControl?.NoStore);
+        Assert.Contains("Gateway", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task SpaFallback_PreservesDocumentCachingInProduction()
+    {
+        await using var gateway = await StartSpaFallbackGatewayAsync(Environments.Production);
+
+        var response = await gateway.Client.SendAsync(CreateConditionalDocumentRequest());
+
+        Assert.Equal(HttpStatusCode.NotModified, response.StatusCode);
+        Assert.False(response.Headers.CacheControl?.NoStore);
+    }
+
     private static bool IsRedirect(HttpStatusCode status) =>
         status is HttpStatusCode.MovedPermanently
             or HttpStatusCode.Found
@@ -229,4 +278,55 @@ public class BlazorGatewayTests
         string environment,
         Dictionary<string, string?> configuration) =>
         GatewayTestHelpers.StartGatewayAsync(environment, configuration);
+
+    private static async Task<GatewayUnderTest> StartSpaFallbackGatewayAsync(string environment)
+    {
+        var webRoot = Path.Combine(AppContext.BaseDirectory, "TestAssets");
+        var manifest = Path.Combine(webRoot, "test.staticwebassets.endpoints.json");
+        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = environment,
+            WebRootPath = webRoot,
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["ClientApps:app:EndpointsManifest"] = manifest,
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = BlazorGateway.BuildWebHost(builder);
+        await app.StartAsync();
+
+        return new GatewayUnderTest(app);
+    }
+
+    private static HttpRequestMessage CreateConditionalDocumentRequest()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/");
+        request.Headers.Accept.ParseAdd("text/html");
+        request.Headers.Add("Sec-Fetch-Dest", "document");
+        request.Headers.TryAddWithoutValidation("If-None-Match", "\"test-etag\"");
+
+        return request;
+    }
+
+    public sealed class TestHostingStartup : IHostingStartup
+    {
+        public void Configure(IWebHostBuilder builder) =>
+            builder.ConfigureServices(services => services.AddSingleton<IStartupFilter, TestStartupFilter>());
+    }
+
+    public sealed class TestStartupFilter : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) =>
+            app =>
+            {
+                app.Use(async (context, next) =>
+                {
+                    context.Response.Headers[HostingStartupHeaderName] = "true";
+                    await next(context);
+                });
+                next(app);
+            };
+    }
 }
