@@ -5458,6 +5458,104 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void SetManualInitialIndex(int index) => SetNumberInputAndWaitForBind("manual-initial-index", index);
 
+    [Fact]
+    public void AnchorMode_End_InitialItemsProviderLoad_PinsToBottom()
+    {
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
+        new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
+        Browser.Equal("2", () => Browser.Exists(By.Id("current-mode")).Text);
+
+        InstallVirtualizeIntersectionObserverGate(js);
+        try
+        {
+            Browser.Exists(By.Id("reload-with-initial-index")).Click();
+            Browser.True(() => Convert.ToBoolean(js.ExecuteScript(
+                """
+                const spacer = document.querySelector(
+                    '#scroll-container [data-blazor-virtualize-reserved-height]');
+                return spacer?.style.flexShrink === '0'
+                    && window.__virtualizePendingObserverCallbacks > 0;
+                """), CultureInfo.InvariantCulture));
+
+            Browser.Exists(By.Id("refresh-data")).Click();
+            Browser.Contains("Refreshed data", () => Browser.Exists(By.Id("status")).Text);
+            Browser.True(() => GetMaximumScrollTop(js, container) > 0);
+
+            Browser.True(
+                () => IsScrolledToBottom(js, container),
+                TimeSpan.FromSeconds(10),
+                $"Expected the initial provider result to pin to the bottom, but scrollTop was " +
+                $"{GetScrollTop(js, container)} of {GetMaximumScrollTop(js, container)}.");
+
+            js.ExecuteScript("window.__releaseVirtualizeObserverCallbacks();");
+            Browser.True(
+                () => GetBottomRenderedIndex(js) == 999 && IsScrolledToBottom(js, container),
+                TimeSpan.FromSeconds(10),
+                $"Expected item 999 at the pinned tail, but the bottom rendered item was " +
+                $"{GetBottomRenderedIndex(js)} and scrollTop was {GetScrollTop(js, container)}.");
+        }
+        finally
+        {
+            js.ExecuteScript("window.__restoreVirtualizeIntersectionObserver?.();");
+        }
+    }
+
+    private static void InstallVirtualizeIntersectionObserverGate(IJavaScriptExecutor js)
+    {
+        js.ExecuteScript(
+            """
+            const nativeIntersectionObserver = window.IntersectionObserver;
+            const pendingCallbacks = [];
+            window.__virtualizePendingObserverCallbacks = 0;
+
+            window.IntersectionObserver = class extends nativeIntersectionObserver {
+                constructor(callback, options) {
+                    super((entries, observer) => {
+                        const containsVirtualizeSpacer = entries.some(entry =>
+                            entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'));
+                        if (containsVirtualizeSpacer) {
+                            pendingCallbacks.push(() => callback(entries, observer));
+                            window.__virtualizePendingObserverCallbacks = pendingCallbacks.length;
+                            return;
+                        }
+
+                        callback(entries, observer);
+                    }, options);
+                }
+            };
+
+            window.__releaseVirtualizeObserverCallbacks = () => {
+                for (const callback of pendingCallbacks.splice(0)) {
+                    callback();
+                }
+                window.__virtualizePendingObserverCallbacks = 0;
+            };
+
+            window.__restoreVirtualizeIntersectionObserver = () => {
+                window.__releaseVirtualizeObserverCallbacks();
+                window.IntersectionObserver = nativeIntersectionObserver;
+                delete window.__releaseVirtualizeObserverCallbacks;
+                delete window.__restoreVirtualizeIntersectionObserver;
+                delete window.__virtualizePendingObserverCallbacks;
+            };
+            """);
+    }
+
+    private bool IsScrolledToBottom(IJavaScriptExecutor js, IWebElement container)
+        => Math.Abs(GetScrollTop(js, container) - GetMaximumScrollTop(js, container)) < 2;
+
+    private static long GetMaximumScrollTop(IJavaScriptExecutor js, IWebElement container)
+        => Convert.ToInt64(js.ExecuteScript(
+            "return arguments[0].scrollHeight - arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
+
     // Types into <input type=number @bind=...> and polls the sibling {id}-bound span until the bound model commits (needed on Server where @bind round-trips over SignalR).
     private void SetNumberInputAndWaitForBind(string elementId, int value)
     {
