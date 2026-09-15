@@ -19,6 +19,8 @@ Create one reviewable vertical slice: a typed projection and a real adoption.
 ## Implement
 
 - Put the projection in `Microsoft.AspNetCore.Components.Platform`.
+- Let the IL trimmer drop a family the application never touches. Attach each family to `Window` as
+  extension members, not as instance properties that always hold it alive.
 - Follow Web IDL names and behavior. Do not add convenience APIs, polyfills, or .NET substitutions.
 - Keep live browser access asynchronous and raw JS interop types and identifiers non-public.
 - Use direct constructor, property, and method interop before adding a JavaScript module.
@@ -35,4 +37,5 @@ Remove old JavaScript only when no caller remains.
 
 - Test interop identifiers, arguments, lazy acquisition, failure, and disposal.
 - Exercise the public API in Interactive Server and WebAssembly.
+- Publish a trimmed WebAssembly application and confirm the unused families are gone from the output.
 - Update `PublicAPI.Unshipped.txt`, build, pack, and inspect the final diff.
