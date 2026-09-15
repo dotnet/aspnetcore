@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
@@ -108,6 +109,7 @@ public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
             problemDetails.Extensions["traceId"] = traceId;
         }
 
-        _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
+        var exception = httpContext?.Features.Get<IExceptionHandlerFeature>()?.Error;
+        _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails, Exception = exception });
     }
 }
