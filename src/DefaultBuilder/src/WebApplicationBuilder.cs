@@ -398,6 +398,19 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     /// Builds the <see cref="WebApplication"/>.
     /// </summary>
     /// <returns>A configured <see cref="WebApplication"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// When endpoints are mapped and the application does not call
+    /// <see cref="EndpointRoutingApplicationBuilderExtensions.UseRouting(IApplicationBuilder)"/>, routing is added
+    /// automatically before middleware registered by the application. This implicit routing is appropriate when the
+    /// application does not need to control where route matching occurs.
+    /// </para>
+    /// <para>
+    /// Call <see cref="EndpointRoutingApplicationBuilderExtensions.UseRouting(IApplicationBuilder)"/> explicitly when
+    /// middleware must run before route matching, after route matching to inspect endpoint metadata, or when the
+    /// application reroutes requests and must arrange endpoint-aware middleware after final endpoint selection.
+    /// </para>
+    /// </remarks>
     public WebApplication Build()
     {
         // ConfigureContainer callbacks run after ConfigureServices callbacks including the one that adds GenericWebHostService by default.
@@ -437,7 +450,10 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
 
         var hasEndpointDataSources = _builtApplication.DataSources.Count > 0;
 
-        // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
+        // Use implicit routing when the application mapped endpoints without calling UseRouting. It runs before
+        // application middleware and is sufficient when that endpoint selection remains final. Calling UseRouting
+        // explicitly records the application's chosen routing position instead, allowing request-changing middleware
+        // before routing and endpoint-aware middleware after routing.
         if (hasEndpointDataSources)
         {
             // If this is set, someone called UseRouting() when a global route builder was already set
