@@ -222,6 +222,22 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true);
 
+    internal static readonly DiagnosticDescriptor ExplicitRoutingRequiredForAuthorization = CreateDiagnosticDescriptor(
+        "ASP0029",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ExplicitRoutingRequiredForAuthorization_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ExplicitRoutingRequiredForAuthorization_Message)),
+        Security,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    internal static readonly DiagnosticDescriptor ReroutingMiddlewareMustPrecedeRouting = CreateDiagnosticDescriptor(
+        "ASP0030",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ReroutingMiddlewareMustPrecedeRouting_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_ReroutingMiddlewareMustPrecedeRouting_Message)),
+        Security,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static DiagnosticDescriptor CreateDiagnosticDescriptor(
         string id,
         LocalizableString title,
