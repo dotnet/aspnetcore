@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TestServer;
@@ -26,6 +27,9 @@ public static class TestFeatureSwitches
     private const string MetadataUpdaterIsSupportedSwitchName =
         "System.Reflection.Metadata.MetadataUpdater.IsSupported";
 
+    private const string EnableUrlBasedQuickGridNavigationAndSortingSwitchName =
+        "Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting";
+
     private const string HotReloadManagerTypeName = "Microsoft.AspNetCore.Components.HotReload.HotReloadManager";
 
     private static readonly FieldInfo s_throwNavigationExceptionField =
@@ -33,8 +37,14 @@ public static class TestFeatureSwitches
             .GetType("Microsoft.AspNetCore.Components.Endpoints.HttpNavigationManager", throwOnError: true)!
             .GetField("s_throwNavigationException", BindingFlags.Static | BindingFlags.NonPublic)!;
 
+    private static readonly FieldInfo s_enableUrlBasedQuickGridNavigationAndSortingField =
+        typeof(QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags", throwOnError: true)!
+            .GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)!;
+
     private static readonly bool s_defaultDisableThrowNavigationException;
     private static readonly bool s_defaultHotReloadSupported;
+    private static readonly bool s_defaultUrlBasedQuickGridNavigationAndSorting;
 
     // Capturing the defaults from an explicit static constructor, rather than from field initializers,
     // guarantees they are read before the first Set call on this class overwrites the switches.
@@ -46,6 +56,9 @@ public static class TestFeatureSwitches
 
         s_defaultHotReloadSupported =
             !AppContext.TryGetSwitch(MetadataUpdaterIsSupportedSwitchName, out var isSupported) || isSupported;
+
+        s_defaultUrlBasedQuickGridNavigationAndSorting =
+            !AppContext.TryGetSwitch(EnableUrlBasedQuickGridNavigationAndSortingSwitchName, out var isEnabled) || isEnabled;
     }
 
     public static void SetDisableThrowNavigationException(bool disableThrowNavigationException)
@@ -71,6 +84,15 @@ public static class TestFeatureSwitches
 
     public static void ResetHotReloadSupported()
         => SetHotReloadSupported(s_defaultHotReloadSupported);
+
+    public static void SetUrlBasedQuickGridNavigationAndSorting(bool isEnabled)
+    {
+        AppContext.SetSwitch(EnableUrlBasedQuickGridNavigationAndSortingSwitchName, isEnabled);
+        s_enableUrlBasedQuickGridNavigationAndSortingField.SetValue(null, isEnabled);
+    }
+
+    public static void ResetUrlBasedQuickGridNavigationAndSorting()
+        => SetUrlBasedQuickGridNavigationAndSorting(s_defaultUrlBasedQuickGridNavigationAndSorting);
 
     private static IEnumerable<FieldInfo> GetHotReloadSupportedFields()
         => AppDomain.CurrentDomain.GetAssemblies()

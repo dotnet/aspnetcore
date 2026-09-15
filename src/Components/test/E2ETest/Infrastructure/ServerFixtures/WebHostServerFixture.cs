@@ -17,6 +17,7 @@ public abstract class WebHostServerFixture : ServerFixture, IAsyncDisposable, IA
         // Servers are hosted in the test process, so a server that overrides a process-global feature
         // switch would otherwise leak that value into every server started after it.
         TestFeatureSwitches.ResetHotReloadSupported();
+        TestFeatureSwitches.ResetUrlBasedQuickGridNavigationAndSorting();
 
         Host = CreateWebHost();
         RunInBackgroundThread(Host.Start);
