@@ -33,12 +33,29 @@ public static class ElementReferenceExtensions
     {
         var jsRuntime = elementReference.GetJSRuntime();
 
-        if (jsRuntime == null)
+        if (jsRuntime is null)
         {
             throw new InvalidOperationException("No JavaScript runtime found.");
         }
 
         return jsRuntime.InvokeVoidAsync(DomWrapperInterop.Focus, elementReference, preventScroll);
+    }
+
+    /// <summary>
+    /// Removes focus from an element given its <see cref="ElementReference"/>.
+    /// </summary>
+    /// <param name="elementReference">A reference to the element to remove focus from.</param>
+    /// <returns>The <see cref="ValueTask"/> representing the asynchronous blur operation.</returns>
+    public static ValueTask BlurAsync(this ElementReference elementReference)
+    {
+        var jsRuntime = elementReference.GetJSRuntime();
+
+        if (jsRuntime is null)
+        {
+            throw new InvalidOperationException("No JavaScript runtime found.");
+        }
+
+        return jsRuntime.InvokeVoidAsync(DomWrapperInterop.Blur, elementReference);
     }
 
     internal static IJSRuntime GetJSRuntime(this ElementReference elementReference)
