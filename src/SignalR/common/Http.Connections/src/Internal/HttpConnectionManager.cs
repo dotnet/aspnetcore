@@ -51,6 +51,17 @@ internal sealed partial class HttpConnectionManager
         return _connections.TryGetValue(id, out connection);
     }
 
+    internal bool TryGetConnection(string id, HttpConnectionEndpoint? endpoint, [NotNullWhen(true)] out HttpConnectionContext? connection)
+    {
+        if (_connections.TryGetValue(id, out connection) && ReferenceEquals(connection.Endpoint, endpoint))
+        {
+            return true;
+        }
+
+        connection = null;
+        return false;
+    }
+
     internal HttpConnectionContext CreateConnection()
     {
         return CreateConnection(new());
@@ -60,7 +71,11 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useStatefulReconnect = false)
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion = 0,
+        bool useStatefulReconnect = false,
+        HttpConnectionEndpoint? endpoint = null)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -78,7 +93,10 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect)
+        {
+            Endpoint = endpoint,
+        };
 
         _connections.TryAdd(connectionToken, connection);
 

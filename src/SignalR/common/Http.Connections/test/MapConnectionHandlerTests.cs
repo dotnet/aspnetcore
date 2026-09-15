@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -10,13 +11,16 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests;
@@ -496,6 +500,108 @@ public class MapConnectionHandlerTests
             });
     }
 
+    [Fact]
+    public async Task ConnectionTokenCanOnlyBeUsedOnEndpointThatNegotiatedIt()
+    {
+        using var host = BuildEndpointBindingHost();
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        var connectionToken = await NegotiateAsync(client);
+
+        var wrongEndpointResponse = await client.GetAsync($"/b?id={connectionToken}");
+
+        Assert.Equal(StatusCodes.Status404NotFound, (int)wrongEndpointResponse.StatusCode);
+        AssertConnectionOwnedByOriginalEndpoint(host, connectionToken);
+
+        var originalEndpointResponse = await client.GetAsync($"/a?id={connectionToken}");
+
+        Assert.Equal(StatusCodes.Status200OK, (int)originalEndpointResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task NegotiatedWebSocketConnectionTokenCanOnlyBeUsedOnEndpointThatNegotiatedIt()
+    {
+        using var host = BuildEndpointBindingHost();
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        var connectionToken = await NegotiateAsync(client);
+        var server = host.GetTestServer();
+        var webSocketClient = server.CreateWebSocketClient();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            webSocketClient.ConnectAsync(new Uri(server.BaseAddress, $"/b?id={connectionToken}"), CancellationToken.None));
+
+        Assert.Equal("Incomplete handshake, status code: 404", exception.Message);
+        AssertConnectionOwnedByOriginalEndpoint(host, connectionToken);
+
+        var originalEndpointResponse = await client.GetAsync($"/a?id={connectionToken}");
+
+        Assert.Equal(StatusCodes.Status200OK, (int)originalEndpointResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task AuthenticationRefreshConnectionTokenCanOnlyBeUsedOnEndpointThatNegotiatedIt()
+    {
+        using var host = BuildEndpointBindingHost();
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        var connectionToken = await NegotiateAsync(client);
+
+        var wrongEndpointResponse = await client.PostAsync($"/b/refresh?id={connectionToken}", new StringContent(string.Empty));
+
+        Assert.Equal(StatusCodes.Status404NotFound, (int)wrongEndpointResponse.StatusCode);
+        Assert.Equal("connection_not_found", (string)JObject.Parse(await wrongEndpointResponse.Content.ReadAsStringAsync())["error"]);
+        AssertConnectionOwnedByOriginalEndpoint(host, connectionToken);
+
+        var originalEndpointResponse = await client.PostAsync($"/a/refresh?id={connectionToken}", new StringContent(string.Empty));
+
+        Assert.Equal(StatusCodes.Status200OK, (int)originalEndpointResponse.StatusCode);
+    }
+
+    private static IHost BuildEndpointBindingHost()
+    {
+        return new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddConnections())
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapConnectionHandler<CompletingConnectionHandler>("/a", options =>
+                            {
+                                options.CloseOnAuthenticationExpiration = false;
+                                options.EnableAuthenticationRefresh = true;
+                            });
+                            endpoints.MapConnectionHandler<CompletingConnectionHandler>("/b", options =>
+                            {
+                                options.CloseOnAuthenticationExpiration = true;
+                                options.EnableAuthenticationRefresh = true;
+                            });
+                        });
+                    });
+            })
+            .Build();
+    }
+
+    private static async Task<string> NegotiateAsync(HttpClient client)
+    {
+        var negotiateResponse = await client.PostAsync("/a/negotiate?negotiateVersion=1", new StringContent(string.Empty));
+        var payload = JObject.Parse(await negotiateResponse.Content.ReadAsStringAsync());
+
+        return Assert.IsType<string>((string)payload["connectionToken"]);
+    }
+
+    private static void AssertConnectionOwnedByOriginalEndpoint(IHost host, string connectionToken)
+    {
+        var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+        Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+        Assert.False(connection.IsAuthenticationExpirationEnabled);
+    }
+
     private class MyConnectionHandler : ConnectionHandler
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
@@ -512,6 +618,15 @@ public class MapConnectionHandlerTests
                 // Consume nothing
                 connection.Transport.Input.AdvanceTo(result.Buffer.Start);
             }
+        }
+    }
+
+    private sealed class CompletingConnectionHandler : ConnectionHandler
+    {
+        public override Task OnConnectedAsync(ConnectionContext connection)
+        {
+            connection.Transport.Output.Complete();
+            return Task.CompletedTask;
         }
     }
 
