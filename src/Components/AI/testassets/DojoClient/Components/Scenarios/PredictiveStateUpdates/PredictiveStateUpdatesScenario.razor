@@ -3,6 +3,7 @@
 @implements IDisposable
 @using System.Text.Json
 @inject ILoggerFactory LoggerFactory
+@inject IDojoScenarioBridge ScenarioBridge
 
 <PageTitle>Predictive State Updates</PageTitle>
 
@@ -66,7 +67,7 @@
     private bool _showDiff;
     private bool _candidateComplete;
 
-    [Inject(Key = DojoScenarios.PredictiveStateUpdatesEndpoint)]
+    [Inject(Key = DojoScenarioEndpoints.PredictiveStateUpdatesEndpoint)]
     public IChatClient ChatClient { get; set; } = default!;
 
     protected override void OnInitialized() => Reset();
@@ -74,25 +75,23 @@
     private UIAgent<DocumentState> CreateAgent(DocumentState initialState)
     {
         _thread = new DojoConversationThread(Guid.NewGuid().ToString("N"));
+        var stateUpdates = new DojoStateUpdates();
 
         return new UIAgent<DocumentState>(ChatClient, options =>
         {
             options.Thread = _thread;
-            options.ChatOptions = new ChatOptions
+            options.ChatOptions = ScenarioBridge.CreateStateOptions(() => new DojoRequestContext
             {
-                RawRepresentationFactory = _ => new RunAgentInput
-                {
-                    ThreadId = _thread.ThreadId,
-                    State = JsonSerializer.SerializeToElement(_agent.State.Value, _jsonOptions),
-                },
-                Tools =
-                [
-                    AIFunctionFactory.Create(
-                        WriteDocument,
-                        name: "write_document_local",
-                        description: "Write the full document in Markdown format."),
-                ],
-            };
+                ThreadId = _thread.ThreadId,
+                State = JsonSerializer.SerializeToElement(_agent.State.Value, _jsonOptions),
+            });
+            options.ChatOptions.Tools =
+            [
+                AIFunctionFactory.Create(
+                    WriteDocument,
+                    name: "write_document_local",
+                    description: "Write the full document in Markdown format."),
+            ];
             options.StateMapper = context =>
             {
                 if (context.Update.Contents
@@ -103,18 +102,13 @@
                     _ = InvokeAsync(StateHasChanged);
                 }
 
-                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
+                foreach (var (value, _) in stateUpdates.Read(context))
                 {
-                    return;
+                    if (value.Deserialize<DocumentState>(_jsonOptions) is { } state)
+                    {
+                        context.SetPredictiveState(state);
+                    }
                 }
-
-                var state = snapshot.Snapshot.Deserialize<DocumentState>(_jsonOptions);
-                if (state is null)
-                {
-                    return;
-                }
-
-                context.SetPredictiveState(state);
             };
             options.RegisterUIAction(AIFunctionFactory.Create(
                 ConfirmChanges,

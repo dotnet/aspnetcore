@@ -32,8 +32,6 @@
 
     protected override void OnInitialized()
     {
-        // The injected IChatClient is an AGUIChatClient pointed at AGUIDojoApi, so every
-        // message crosses the real AG-UI HTTP + SSE boundary.
         _agent = new UIAgent(ChatClient, options =>
         {
             options.RegisterUIAction(AIFunctionFactory.Create(

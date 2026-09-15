@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,44 +11,31 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// The browser and DojoClient use the real AG-UI HTTP/SSE transport. Only the model inside
-// AGUIDojoApi is replaced so task selection and continuation cross the protocol boundary.
 [UITest]
-public partial class HumanInTheLoopScenarioTests : BrowserTest
+public partial class HumanInTheLoopScenarioTests : DojoTestBase
 {
     private const string ApprovalPrompt = "Please plan a trip to mars in 5 steps.";
     private const string RejectionPrompt = "Please create a simple Mars mission plan.";
 
-    private ServerInstance _api = null!;
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private IPage _page = null!;
-    private string _runId = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
-        await base.InitializeCoreAsync();
+        _dojo = await GetDojoAsync(backend, DojoRecording.HumanInTheLoop);
 
-        _runId = Guid.NewGuid().ToString("N")[..8];
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.HumanInTheLoop));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/human_in_the_loop");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/human_in_the_loop"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 
     [TestMethod]
-    public async Task TaskSteps_SelectsAndApprovesBeforeContinuing()
+    [DojoBackends]
+    public async Task TaskSteps_SelectsAndApprovesBeforeContinuing(DojoBackendKind backend)
     {
-        var prompt = Prompt(ApprovalPrompt);
+        await InitializeScenarioAsync(backend);
+        var prompt = ApprovalPrompt;
 
         await SendAsync(prompt);
 
@@ -82,9 +69,11 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task TaskSteps_RejectsBeforeContinuing()
+    [DojoBackends]
+    public async Task TaskSteps_RejectsBeforeContinuing(DojoBackendKind backend)
     {
-        var prompt = Prompt(RejectionPrompt);
+        await InitializeScenarioAsync(backend);
+        var prompt = RejectionPrompt;
 
         await SendAsync(prompt);
 
@@ -101,8 +90,6 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
                 "No tasks were selected, so I won't move forward with any proposed steps.");
         await Expect(_page.Locator("button.sc-ai-input__send")).ToBeEnabledAsync();
     }
-
-    private string Prompt(string prompt) => $"{prompt} ({_runId})";
 
     private async Task SendAsync(string prompt)
     {

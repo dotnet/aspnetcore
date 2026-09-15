@@ -8,12 +8,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 using AGUIDojoApi;
+using DojoAgent;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AG-UI hosting: the SSE formatter plus the JSON configuration the protocol types need.
 builder.Services.TryAddEnumerable(
     ServiceDescriptor.Singleton<IAGUIEventStreamFormatter, SseEventStreamFormatter>());
 builder.Services.Configure<JsonOptions>(options =>
@@ -25,6 +25,9 @@ builder.Services.Configure<JsonOptions>(options =>
 
 builder.Services.AddSingleton<IChatClient>(sp =>
     ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<FunctionScenarioState>();
+builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,
+    (sp, _) => FunctionScenarios.Create(sp.GetRequiredService<FunctionScenarioState>(), requiresApproval: true));
 builder.Services.AddKeyedSingleton<IChatClient>(
     ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
     (sp, _) => ChatClientAgentFactory.CreatePredictiveStateUpdates(
@@ -33,39 +36,18 @@ builder.Services.AddKeyedSingleton<IChatClient>(
 var app = builder.Build();
 var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
-// Map the AG-UI agent endpoints for the dojo scenarios.
-app.MapDojoEndpoint("/agentic_chat");
-app.MapDojoEndpoint(
-    "/backend_tool_rendering",
-    serverTools: ChatClientAgentFactory.CreateBackendToolRenderingTools(
-        jsonOptions.Value.SerializerOptions));
-app.MapDojoEndpoint(
-    "/human_in_the_loop",
-    systemPrompt: ChatClientAgentFactory.HumanInTheLoopSystemPrompt);
-app.MapDojoEndpoint(
-    "/tool_based_generative_ui",
-    systemPrompt: ChatClientAgentFactory.ToolBasedGenerativeUISystemPrompt);
-app.MapDojoEndpoint(
-    "/agentic_generative_ui",
-    serverTools: ChatClientAgentFactory.CreateAgenticGenerativeUITools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
-    configureStreamOptions: _ =>
-        ChatClientAgentFactory.CreateAgenticGenerativeUIStreamOptions());
-app.MapDojoEndpoint(
-    "/shared_state",
-    serverTools: ChatClientAgentFactory.CreateSharedStateTools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.SharedStateSystemPrompt,
-    configureStreamOptions: _ => ChatClientAgentFactory.CreateSharedStateStreamOptions());
-app.MapDojoEndpoint(
-    "/predictive_state_updates",
-    serverTools: ChatClientAgentFactory.CreatePredictiveStateUpdatesTools(
-        jsonOptions.Value.SerializerOptions),
-    systemPrompt: ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
-    configureStreamOptions: ChatClientAgentFactory.CreatePredictiveStateUpdatesStreamOptions,
-    chatClientKey: ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
-    treatClientToolsAsDeclarations: true);
+foreach (var scenario in DojoScenarioCatalog.All)
+{
+    app.MapDojoEndpoint(
+        scenario.Endpoint,
+        serverTools: scenario.CreateServerTools(jsonOptions.Value.SerializerOptions),
+        systemPrompt: scenario.SystemPrompt,
+        configureStreamOptions: scenario.CreateStreamOptions,
+        chatClientKey: scenario.ModelServiceKey,
+        treatClientToolsAsDeclarations: scenario.TreatClientToolsAsDeclarations);
+}
+app.MapDojoEndpoint(FunctionScenarios.Approval, chatClientKey: FunctionScenarios.Approval);
+app.MapFunctionScenarioControls();
 
 await app.RunAsync();
 

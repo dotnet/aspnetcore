@@ -5,10 +5,6 @@ using System.Text.Json;
 
 namespace DojoClient.E2E.Tests.ServiceOverrides;
 
-// A recorded model response, replayed by AGUIDojoApi so browser tests are deterministic.
-//
-// A call is selected by the text of the last user message, so a test can pick its own script
-// and give every run a unique lock namespace by appending a run id to the message it types.
 internal sealed class RecordedScript
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -60,7 +56,7 @@ internal sealed class RecordedScript
             if (_threadId != threadId)
             {
                 throw new InvalidOperationException(
-                    $"Expected AG-UI thread '{_threadId}', received '{threadId}'.");
+                    $"Expected dojo thread '{_threadId}', received '{threadId}'.");
             }
         }
     }
@@ -68,43 +64,43 @@ internal sealed class RecordedScript
 
 internal sealed class RecordedCall
 {
-    /// <summary>The prefix of the last user message this call answers.</summary>
+    /// <summary>The latest user message must start with this prompt.</summary>
     public required string Prompt { get; init; }
 
-    /// <summary>The message count that distinguishes continuations of the same prompt.</summary>
+    /// <summary>Optional message count used to distinguish continuations of the same prompt.</summary>
     public int? MessageCount { get; init; }
 
-    /// <summary>The tool declarations expected on this model request.</summary>
+    /// <summary>Expected tool declarations, in request order; null skips this check.</summary>
     public List<string>? ToolNames { get; init; }
 
-    /// <summary>The function result call IDs expected on this model request.</summary>
+    /// <summary>Expected result call IDs from tool-role messages, in order.</summary>
     public List<string>? ToolResultCallIds { get; init; }
 
-    /// <summary>The function results expected on this model request.</summary>
+    /// <summary>Expected JSON-encoded results, checked when ToolResultCallIds is supplied.</summary>
     public List<RecordedToolResult>? ToolResults { get; init; }
 
-    /// <summary>The AG-UI state expected on this model request.</summary>
+    /// <summary>Optional UI state that must be present in the model request.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>Whether this call must use the same non-empty AG-UI thread as prior calls.</summary>
+    /// <summary>Requires one nonempty thread identity across this recording session's calls.</summary>
     public bool RequireStableThread { get; init; }
 
-    /// <summary>The response, split into the checkpoints a test can stop at.</summary>
+    /// <summary>Ordered response frames, separated by test-controlled checkpoint gates.</summary>
     public required List<RecordedFrame> Frames { get; init; }
 }
 
 internal sealed class RecordedFrame
 {
-    /// <summary>Name of the checkpoint, used to build the lock key that gates it.</summary>
+    /// <summary>Checkpoint name released after this frame to allow the next frame to stream.</summary>
     public required string Name { get; init; }
 
-    /// <summary>The text chunks streamed for this checkpoint.</summary>
+    /// <summary>Text chunks emitted after any state and function call in this frame.</summary>
     public List<string> Chunks { get; init; } = [];
 
-    /// <summary>A predictive state snapshot emitted at this checkpoint.</summary>
+    /// <summary>Optional predictive-state snapshot emitted before other frame content.</summary>
     public JsonElement? State { get; init; }
 
-    /// <summary>A function call emitted at this checkpoint.</summary>
+    /// <summary>Optional native tool call emitted before this frame's text chunks.</summary>
     public RecordedFunctionCall? FunctionCall { get; init; }
 }
 

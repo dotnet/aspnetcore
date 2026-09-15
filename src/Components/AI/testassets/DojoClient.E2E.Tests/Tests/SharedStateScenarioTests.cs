@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,43 +11,31 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// The browser edits typed state in DojoClient, which serializes it through AGUIChatClient.
-// Only the API's model is recorded; thread identity, state, HTTP, and SSE remain real.
 [UITest]
-public partial class SharedStateScenarioTests : BrowserTest
+public partial class SharedStateScenarioTests : DojoTestBase
 {
-    private ServerInstance _api = null!;
-    private ServerInstance _ui = null!;
+    private const string FirstPrompt = "Create a delicious Italian pasta recipe.";
+
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
-    private string _firstPrompt = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
-        await base.InitializeCoreAsync();
+        _dojo = await GetDojoAsync(backend, DojoRecording.SharedState);
+        _checkpoints = _dojo.Checkpoints;
 
-        var runId = Guid.NewGuid().ToString("N");
-        _firstPrompt = $"Create a delicious Italian pasta recipe. ({runId})";
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.SharedState));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-        _checkpoints = new ApiCheckpointClient(_api);
-
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/shared_state");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/shared_state"));
         await _page.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
     }
 
     [TestMethod]
-    public async Task RecipeEditor_ReplacesLocalStateWithItalianRecipeSnapshot()
+    [DojoBackends]
+    public async Task RecipeEditor_ReplacesLocalStateWithItalianRecipeSnapshot(DojoBackendKind backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='shared_state']");
         var editor = scenario.Locator(".recipe-editor");
         var input = scenario.Locator("textarea.sc-ai-input__textarea");
@@ -61,7 +49,7 @@ public partial class SharedStateScenarioTests : BrowserTest
         await editor.GetByLabel("Ingredient name").First.FillAsync("Zucchini");
         await editor.GetByLabel("Ingredient amount").First.FillAsync("2, sliced");
 
-        await input.FillAsync(_firstPrompt);
+        await input.FillAsync(FirstPrompt);
         await send.ClickAsync();
         await Expect(send).ToBeDisabledAsync();
         var improve = editor.Locator(".recipe-editor__improve-btn");
@@ -73,7 +61,7 @@ public partial class SharedStateScenarioTests : BrowserTest
         await Expect(editor.GetByLabel("Recipe title"))
             .ToHaveValueAsync("Sunday Garden Pasta");
 
-        await _checkpoints.ReleaseAsync(_firstPrompt, "before-italian-recipe");
+        await _checkpoints.ReleaseAsync(FirstPrompt, "before-italian-recipe");
 
         await Expect(editor.GetByLabel("Recipe title"))
             .ToHaveValueAsync("Classic Italian Carbonara");
@@ -88,7 +76,7 @@ public partial class SharedStateScenarioTests : BrowserTest
         await Expect(editor.GetByLabel("High Protein", new() { Exact = true }))
             .Not.ToBeCheckedAsync();
 
-        await _checkpoints.ReleaseAsync(_firstPrompt, "before-italian-summary");
+        await _checkpoints.ReleaseAsync(FirstPrompt, "before-italian-summary");
         await Expect(scenario.Locator(
             ".sc-ai-message--assistant .sc-ai-message__content").Last)
             .ToContainTextAsync("Classic Italian Carbonara");
@@ -98,8 +86,10 @@ public partial class SharedStateScenarioTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task RecipeEditor_MatchesDojoChatAndResponsiveControls()
+    [DojoBackends]
+    public async Task RecipeEditor_MatchesDojoChatAndResponsiveControls(DojoBackendKind backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='shared_state']");
         var editor = scenario.Locator(".recipe-editor");
         var chat = scenario.GetByRole(

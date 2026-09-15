@@ -117,6 +117,36 @@
           ]
         }
       ]
+    },
+    {
+      "prompt": "Please clear the document.",
+      "messageCount": 2,
+      "toolNames": ["confirm_changes", "write_document_local"],
+      "state": { "document": "Document to remove." },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "empty-document",
+          "functionCall": {
+            "callId": "predictive-clear-1",
+            "name": "write_document_local",
+            "arguments": { "document": "" }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please clear the document.",
+      "messageCount": 6,
+      "toolNames": ["confirm_changes", "write_document_local"],
+      "state": { "document": "" },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "clear-summary",
+          "chunks": ["The document is empty."]
+        }
+      ]
     }
   ]
 }

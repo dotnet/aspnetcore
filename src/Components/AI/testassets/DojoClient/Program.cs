@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using AGUI.Client;
+using DojoAgent;
 using DojoClient;
 using DojoClient.Components;
 using DojoClient.Formatting;
@@ -13,40 +14,60 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// The dojo UI never talks to a model directly: every scenario goes through AGUIDojoApi over
-// HTTP + SSE, which is the boundary these test assets exist to exercise.
-var apiBaseUrl = builder.Configuration["AGUI_DOJO_API_URL"] ?? "http://localhost:5018";
-builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
+var backend = DojoBackendConfiguration.Parse(builder.Configuration["DOJO_BACKEND"]);
+var directBridge = new DirectDojoScenarioBridge();
+builder.Services.AddSingleton(directBridge);
+IDojoScenarioBridge scenarioBridge = backend == DojoBackendKind.Direct
+    ? directBridge
+    : new AGUIDojoScenarioBridge();
+builder.Services.AddSingleton(scenarioBridge);
+builder.Services.AddSingleton<FunctionScenarioState>();
+builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Invocation,
+    (sp, _) => new FormattedChatClient(
+        FunctionScenarios.Create(sp.GetRequiredService<FunctionScenarioState>(), requiresApproval: false)));
+builder.Services.AddKeyedScoped<IChatClient>(StructuredRichTextChatClient.Endpoint,
+    (_, _) => StructuredRichTextChatClient.Create());
+if (backend == DojoBackendKind.Direct)
 {
-    client.BaseAddress = new Uri(apiBaseUrl);
-    // Streamed AG-UI responses have no meaningful overall duration limit.
-    client.Timeout = Timeout.InfiniteTimeSpan;
-});
+    builder.Services.AddKeyedScoped<IChatClient>(
+        ChatClientAgentFactory.ModelServiceKey,
+        (sp, _) => ChatClientAgentFactory.CreateAgenticChat(sp.GetRequiredService<IConfiguration>()));
+    builder.Services.AddKeyedScoped<IChatClient>(
+        ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+        (sp, _) => ChatClientAgentFactory.CreatePredictiveStateUpdates(sp.GetRequiredService<IConfiguration>()));
+}
+else
+{
+    var apiBaseUrl = builder.Configuration["AGUI_DOJO_API_URL"] ?? "http://localhost:5018";
+    builder.Services.AddHttpClient(DojoScenarios.ApiHttpClientName, client =>
+    {
+        client.BaseAddress = new Uri(apiBaseUrl);
+        client.Timeout = Timeout.InfiniteTimeSpan;
+    });
+}
 
-builder.Services.AddScoped<IChatClient>(sp =>
-    CreateChatClient(sp, DojoScenarios.AgenticChatEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.BackendToolRenderingEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.BackendToolRenderingEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.HumanInTheLoopEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.HumanInTheLoopEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.ToolBasedGenerativeUIEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.ToolBasedGenerativeUIEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.AgenticGenerativeUIEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.AgenticGenerativeUIEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.SharedStateEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
-builder.Services.AddKeyedScoped<IChatClient>(
-    DojoScenarios.PredictiveStateUpdatesEndpoint,
-    (sp, _) => CreateChatClient(sp, DojoScenarios.PredictiveStateUpdatesEndpoint));
+foreach (var scenario in DojoScenarioCatalog.All)
+{
+    if (scenario.Endpoint == DojoScenarioEndpoints.AgenticChatEndpoint)
+    {
+        builder.Services.AddScoped<IChatClient>(sp => CreateChatClient(sp, scenario.Endpoint));
+    }
+    else
+    {
+        builder.Services.AddKeyedScoped<IChatClient>(scenario.Endpoint,
+            (sp, _) => CreateChatClient(sp, scenario.Endpoint));
+    }
+}
+builder.Services.AddKeyedScoped<IChatClient>(FunctionScenarios.Approval,
+    (sp, _) => CreateChatClient(sp, FunctionScenarios.Approval));
 
 var app = builder.Build();
 
 app.UseAntiforgery();
+if (backend == DojoBackendKind.Direct)
+{
+    app.MapFunctionScenarioControls();
+}
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
@@ -54,8 +75,22 @@ app.MapRazorComponents<App>()
 
 app.Run();
 
-static IChatClient CreateChatClient(IServiceProvider services, string endpoint)
+IChatClient CreateChatClient(IServiceProvider services, string endpoint)
 {
+    if (backend == DojoBackendKind.Direct)
+    {
+        if (endpoint == FunctionScenarios.Approval)
+        {
+            return new FormattedChatClient(FunctionScenarios.Create(
+                services.GetRequiredService<FunctionScenarioState>(),
+                requiresApproval: true));
+        }
+
+        var key = DojoScenarioCatalog.Get(endpoint).ModelServiceKey ?? ChatClientAgentFactory.ModelServiceKey;
+        var model = services.GetRequiredKeyedService<IChatClient>(key);
+        return new FormattedChatClient(ChatClientAgentFactory.CreateDirect(model, endpoint));
+    }
+
     var httpClient = services.GetRequiredService<IHttpClientFactory>()
         .CreateClient(DojoScenarios.ApiHttpClientName);
     var aguiClient = new AGUIChatClient(new AGUIChatClientOptions(httpClient, endpoint));

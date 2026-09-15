@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using AGUIDojoApi;
+using DojoAgent;
 using DojoClient.E2E.Tests.Fixtures;
 using DojoClient.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -11,9 +11,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DojoClient.E2E.Tests.Tests;
 
-// Only the API model is recorded. DojoClient still crosses HTTP/SSE through AGUIChatClient.
 [UITest]
-public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
+public partial class PredictiveStateUpdatesScenarioTests : DojoTestBase
 {
     private const string InitialDocument =
         "# Harbor Notes\n\nThe crew is preparing for a quiet voyage.";
@@ -28,35 +27,26 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         EditedPirateDocument +
         "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon.";
 
-    private ServerInstance _api = null!;
-    private ServerInstance _ui = null!;
+    private DojoTestSession _dojo = null!;
     private ApiCheckpointClient _checkpoints = null!;
     private IPage _page = null!;
 
-    protected override async Task InitializeCoreAsync()
+    private async Task InitializeScenarioAsync(DojoBackendKind backend)
     {
-        await base.InitializeCoreAsync();
+        _dojo = await GetDojoAsync(backend, DojoRecording.PredictiveStateUpdates);
+        _checkpoints = _dojo.Checkpoints;
 
-        _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
-        {
-            options.ConfigureServices<DojoModelOverrides>(
-                nameof(DojoModelOverrides.PredictiveStateUpdates));
-        });
-        _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
-        {
-            options.EnvironmentVariables["AGUI_DOJO_API_URL"] = _api.AppUrl;
-        });
-        _checkpoints = new ApiCheckpointClient(_api);
-
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_ui));
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_dojo.UI));
         _page = await context.NewPageAsync();
-        await _page.GotoAsync($"{_ui.TestUrl}/predictive_state_updates");
+        await _page.GotoAsync(_dojo.GetScenarioUrl("/predictive_state_updates"));
         await _page.WaitForInteractiveAsync("[aria-label='Document editor']");
     }
 
     [TestMethod]
-    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject()
+    [DojoBackends]
+    public async Task DocumentEditor_StreamsPredictionAndSupportsAcceptAndReject(DojoBackendKind backend)
     {
+        await InitializeScenarioAsync(backend);
         var scenario = _page.Locator("[data-scenario='predictive_state_updates']");
         var editor = scenario.GetByRole(
             AriaRole.Textbox,
@@ -129,23 +119,76 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         await Expect(send).ToBeEnabledAsync();
     }
 
+    [TestMethod]
+    [TestCategory("BrowserInfrastructure")]
+    public async Task CandidateTimeout_ReportsExpectedAndRenderedDocument()
+    {
+        var context = await NewContext();
+        var page = await context.NewPageAsync();
+        await page.SetContentAsync(
+            """<div id="editor"><pre class="document-editor__diff">kept <s>removed</s><em>candidate</em></pre></div>""");
+
+        var exception = await Assert.ThrowsAsync<TimeoutException>(
+            () => WaitForCandidateAsync(page.Locator("#editor"), "missing document", timeout: 50));
+
+        StringAssert.Contains(exception.Message, "Expected:\nmissing document");
+        StringAssert.Contains(exception.Message, "Actual:\nkept candidate");
+        Assert.IsInstanceOfType<TimeoutException>(exception.InnerException);
+    }
+
     private static async Task AssertReadOnlyDiffAsync(ILocator editor, string expected)
     {
         await Expect(editor).ToHaveClassAsync("document-editor__surface");
         await Expect(editor).ToHaveAttributeAsync("aria-readonly", "true");
         await Expect(editor.Locator("em").First).ToBeVisibleAsync();
-        var proposedDocument = await editor.Locator(".document-editor__diff")
-            .EvaluateAsync<string>(
+        await WaitForCandidateAsync(editor, expected, TestRoot.ExpectTimeout);
+        Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
+        await AssertNoInternalMetadataAsync(editor);
+    }
+
+    private static async Task WaitForCandidateAsync(ILocator editor, string expected, float timeout)
+    {
+        await using var editorElement = await editor.ElementHandleAsync();
+        Assert.IsNotNull(editorElement);
+        // Releasing the model checkpoint does not wait for the circuit's render batch.
+        // Retry the candidate-only projection, not the already-visible previous diff.
+        try
+        {
+            await using var candidate = await editor.Page.WaitForFunctionAsync(
                 """
-                element => {
-                    const clone = element.cloneNode(true);
+                ({ editor, expected }) => {
+                    const diff = editor.querySelector('.document-editor__diff');
+                    if (!diff) {
+                        return false;
+                    }
+
+                    const clone = diff.cloneNode(true);
+                    clone.querySelectorAll('s').forEach(item => item.remove());
+                    return clone.textContent.includes(expected);
+                }
+                """,
+                new { editor = editorElement, expected },
+                new() { Timeout = timeout });
+        }
+        catch (TimeoutException exception)
+        {
+            var actual = await editor.EvaluateAsync<string>(
+                """
+                editor => {
+                    const diff = editor.querySelector('.document-editor__diff');
+                    if (!diff) {
+                        return '<candidate diff unavailable>';
+                    }
+
+                    const clone = diff.cloneNode(true);
                     clone.querySelectorAll('s').forEach(item => item.remove());
                     return clone.textContent;
                 }
                 """);
-        StringAssert.Contains(proposedDocument, expected);
-        Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
-        await AssertNoInternalMetadataAsync(editor);
+            throw new TimeoutException(
+                $"The rendered candidate did not contain the expected document.\nExpected:\n{expected}\nActual:\n{actual}",
+                exception);
+        }
     }
 
     private static async Task AssertNoInternalMetadataAsync(ILocator editor)

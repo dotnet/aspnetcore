@@ -1,0 +1,24 @@
+@page "/rich-text"
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>Rich text rendering</PageTitle>
+
+<h1>Rich text rendering</h1>
+
+<ChatPage Agent="_agent" Placeholder="Request rich text" data-scenario="rich-text">
+    <WelcomeContent>
+        <p>Send a message to render the structured content matrix.</p>
+    </WelcomeContent>
+</ChatPage>
+
+@code {
+    private UIAgent _agent = default!;
+
+    [Inject(Key = StructuredRichTextChatClient.Endpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized() => _agent = new UIAgent(ChatClient);
+
+    public void Dispose() => _agent?.Dispose();
+}
