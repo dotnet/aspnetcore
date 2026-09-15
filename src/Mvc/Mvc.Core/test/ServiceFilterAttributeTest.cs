@@ -43,6 +43,27 @@ public class ServiceFilterAttributeTest
         Assert.IsType<TestFilter>(filter);
     }
 
+    [Fact]
+    public void ServiceFilterAttribute_Generic_PreservesAllowMultipleAcrossInheritance()
+    {
+        // Arrange & Act
+        var attributes = typeof(GenericFilterDerivedClass).GetCustomAttributes(typeof(ServiceFilterAttribute), inherit: true)
+            .Cast<ServiceFilterAttribute>()
+            .ToArray();
+
+        // Assert - all three attributes from the inheritance hierarchy should be present
+        Assert.Equal(3, attributes.Length);
+    }
+
+    [ServiceFilter<TestFilter>]
+    private class GenericFilterBaseClass;
+
+    [ServiceFilter<TestFilter>]
+    private class GenericFilterMiddleClass : GenericFilterBaseClass;
+
+    [ServiceFilter<TestFilter>]
+    private class GenericFilterDerivedClass : GenericFilterMiddleClass;
+
     public class TestFilter : IFilterMetadata
     {
     }

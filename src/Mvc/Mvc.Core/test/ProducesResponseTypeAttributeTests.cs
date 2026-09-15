@@ -90,6 +90,31 @@ public class ProducesResponseTypeAttributeTests
         Assert.Null(producesResponseTypeAttribute.Description);
     }
 
+    [Fact]
+    public void ProducesResponseTypeAttribute_Generic_PreservesAllowMultipleAcrossInheritance()
+    {
+        // Arrange & Act
+        var attributes = typeof(GenericDerivedClass).GetCustomAttributes(typeof(ProducesResponseTypeAttribute), inherit: true)
+            .Cast<ProducesResponseTypeAttribute>()
+            .OrderBy(a => a.StatusCode)
+            .ToArray();
+
+        // Assert - all three attributes from the inheritance hierarchy should be present
+        Assert.Equal(3, attributes.Length);
+        Assert.Equal(500, attributes[0].StatusCode);
+        Assert.Equal(401, attributes[1].StatusCode);
+        Assert.Equal(403, attributes[2].StatusCode);
+    }
+
+    [ProducesResponseType<Person>(StatusCodes.Status500InternalServerError)]
+    private class GenericBaseClass;
+
+    [ProducesResponseType<Person>(StatusCodes.Status401Unauthorized)]
+    private class GenericMiddleClass : GenericBaseClass;
+
+    [ProducesResponseType<Person>(StatusCodes.Status403Forbidden)]
+    private class GenericDerivedClass : GenericMiddleClass;
+
     private class Person
     {
         public int Id { get; set; }
