@@ -151,7 +151,9 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
         Debug.Assert(ticket != null);
         var ticketContext = new TicketReceivedContext(Context, Scheme, Options, ticket)
         {
-            ReturnUri = ticket.Properties.RedirectUri
+            // Normalized here rather than at the redirect below: an OnTicketReceived handler can both observe
+            // this value and take over the response, in which case the redirect below never runs.
+            ReturnUri = RedirectUriNormalizer.CollapseLeadingSlashes(ticket.Properties.RedirectUri)
         };
 
         ticket.Properties.RedirectUri = null;
@@ -183,7 +185,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
             ticketContext.ReturnUri = "/";
         }
 
-        Response.Redirect(ticketContext.ReturnUri);
+        Response.Redirect(RedirectUriNormalizer.CollapseLeadingSlashes(ticketContext.ReturnUri));
         return true;
     }
 
@@ -298,7 +300,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
         {
             AccessDeniedPath = Options.AccessDeniedPath,
             Properties = properties,
-            ReturnUrl = properties?.RedirectUri,
+            ReturnUrl = RedirectUriNormalizer.CollapseLeadingSlashes(properties?.RedirectUri),
             ReturnUrlParameter = Options.ReturnUrlParameter
         };
         await Events.AccessDenied(context);
