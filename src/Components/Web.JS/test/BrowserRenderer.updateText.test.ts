@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { expect, test, describe, beforeEach, afterEach } from '@jest/globals';
 import { BrowserRenderer } from '../src/Rendering/BrowserRenderer';
 import { toLogicalElement } from '../src/Rendering/LogicalElements';
@@ -66,12 +69,11 @@ describe('BrowserRenderer.updateText textarea rendering', () => {
 
   test('should sync textarea value from child content when there is no value frame', () => {
     // Render <textarea>Hello</textarea>.
-    applyBatch(renderer, rootComponentId,
+    applyBatch(
+      renderer, rootComponentId,
       [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
-      [
-        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 2 },
-        { frameType: FrameType.text, textContent: 'Hello' },
-      ]);
+      [{ frameType: FrameType.element, elementName: 'textarea', subtreeLength: 2 }, { frameType: FrameType.text, textContent: 'Hello' }]
+    );
 
     const textarea = container.querySelector('textarea')!;
     expect(textarea.value).toEqual('Hello');
@@ -82,40 +84,219 @@ describe('BrowserRenderer.updateText textarea rendering', () => {
     textarea.value = 'user typed';
 
     // Change the child text: the renderer must resync .value from the child content.
-    applyBatch(renderer, rootComponentId,
+    applyBatch(
+      renderer, rootComponentId,
       [
         { editType: EditType.stepIn, siblingIndex: 0 },
         { editType: EditType.updateText, siblingIndex: 0, newTreeIndex: 0 },
         { editType: EditType.stepOut },
       ],
-      [{ frameType: FrameType.text, textContent: 'Updated' }]);
+      [{ frameType: FrameType.text, textContent: 'Updated' }]
+    );
 
     expect(textarea.value).toEqual('Updated');
   });
 
+  test('should sync textarea value after all child edits are applied', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.text, textContent: 'A' },
+        { frameType: FrameType.text, textContent: 'B' },
+      ]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    textarea.value = 'user typed';
+
+    applyBatch(
+      renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.updateText, siblingIndex: 0, newTreeIndex: 0 },
+        { editType: EditType.removeFrame, siblingIndex: 1 },
+        { editType: EditType.stepOut },
+      ],
+      [{ frameType: FrameType.text, textContent: 'A2' }]
+    );
+
+    expect(textarea.textContent).toEqual('A2');
+    expect(textarea.value).toEqual('A2');
+  });
+
+  test('should sync textarea value after text frames are removed or prepended', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.text, textContent: 'A' },
+        { frameType: FrameType.text, textContent: 'B' },
+      ]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    textarea.value = 'user typed';
+
+    applyBatch(
+      renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.removeFrame, siblingIndex: 1 },
+        { editType: EditType.stepOut },
+      ],
+      []
+    );
+
+    expect(textarea.textContent).toEqual('A');
+    expect(textarea.value).toEqual('A');
+
+    textarea.value = 'user typed again';
+    applyBatch(
+      renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 },
+        { editType: EditType.stepOut },
+      ],
+      [{ frameType: FrameType.text, textContent: 'B' }]
+    );
+
+    expect(textarea.textContent).toEqual('BA');
+    expect(textarea.value).toEqual('BA');
+  });
+
+  test('should sync textarea value after markup is updated', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [{ frameType: FrameType.element, elementName: 'textarea', subtreeLength: 2 }, { frameType: FrameType.markup, markupContent: 'A' }]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    textarea.value = 'user typed';
+
+    applyBatch(
+      renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.updateMarkup, siblingIndex: 0, newTreeIndex: 0 },
+        { editType: EditType.stepOut },
+      ],
+      [{ frameType: FrameType.markup, markupContent: 'B' }]
+    );
+
+    expect(textarea.textContent).toEqual('B');
+    expect(textarea.value).toEqual('B');
+  });
+
+  test('should sync textarea value after child frames are permuted', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.text, textContent: 'A' },
+        { frameType: FrameType.text, textContent: 'B' },
+      ]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    textarea.value = 'user typed';
+
+    applyBatch(
+      renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.permutationListEntry, siblingIndex: 0, moveToSiblingIndex: 1 },
+        { editType: EditType.permutationListEntry, siblingIndex: 1, moveToSiblingIndex: 0 },
+        { editType: EditType.permutationListEnd },
+        { editType: EditType.stepOut },
+      ],
+      []
+    );
+
+    expect(textarea.textContent).toEqual('BA');
+    expect(textarea.value).toEqual('BA');
+  });
+
   test('should not override an explicit value frame with textarea child content', () => {
     // Render <textarea value="currentValue">defaultValue</textarea>.
-    applyBatch(renderer, rootComponentId,
+    applyBatch(
+      renderer, rootComponentId,
       [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
       [
         { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
         { frameType: FrameType.attribute, attributeName: 'value', attributeValue: 'currentValue' },
         { frameType: FrameType.text, textContent: 'defaultValue' },
-      ]);
+      ]
+    );
 
     const textarea = container.querySelector('textarea')!;
     // The value frame wins over the child content.
     expect(textarea.value).toEqual('currentValue');
 
     // Changing only the child content must not clobber the value frame.
-    applyBatch(renderer, rootComponentId,
+    applyBatch(
+      renderer, rootComponentId,
       [
         { editType: EditType.stepIn, siblingIndex: 0 },
         { editType: EditType.updateText, siblingIndex: 0, newTreeIndex: 0 },
         { editType: EditType.stepOut },
       ],
-      [{ frameType: FrameType.text, textContent: 'newDefault' }]);
+      [{ frameType: FrameType.text, textContent: 'newDefault' }]
+    );
 
     expect(textarea.value).toEqual('currentValue');
+  });
+
+  test('should restore textarea child content after removing an explicit value frame', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.attribute, attributeName: 'value', attributeValue: 'currentValue' },
+        { frameType: FrameType.text, textContent: 'defaultValue' },
+      ]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea.value).toEqual('currentValue');
+
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.removeAttribute, siblingIndex: 0, removedAttributeName: 'value' }],
+      []
+    );
+
+    expect(textarea.textContent).toEqual('defaultValue');
+    expect(textarea.value).toEqual('defaultValue');
+  });
+
+  test('should preserve a user edit when removing an unrelated textarea attribute', () => {
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.attribute, attributeName: 'class', attributeValue: 'initial' },
+        { frameType: FrameType.text, textContent: 'defaultValue' },
+      ]
+    );
+
+    const textarea = container.querySelector('textarea')!;
+    textarea.value = 'user typed';
+
+    applyBatch(
+      renderer, rootComponentId,
+      [{ editType: EditType.removeAttribute, siblingIndex: 0, removedAttributeName: 'class' }],
+      []
+    );
+
+    expect(textarea.textContent).toEqual('defaultValue');
+    expect(textarea.value).toEqual('user typed');
   });
 });
