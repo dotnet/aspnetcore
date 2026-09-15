@@ -30,6 +30,12 @@ For a full triage, decide:
 
 Read [references/areas.md](references/areas.md) before choosing an area. It contains the
 complete supported area set, ownership boundaries, and disambiguation rules.
+Do not choose an area until this reference was read successfully. If opening the rendered
+link fails because the path is missing or cannot be resolved, locate `references/areas.md`
+within the active skill directory and retry with another available local file-reading
+tool. Do not retry a permission or content-exclusion denial, search outside the active
+skill directory, or infer the reference contents. If the reference still cannot be read,
+surface that limitation and abstain from the area decision.
 
 Choose the single best match from issue evidence such as API and type names, source paths,
 stack traces, packages, and described behavior. Never return a second area as a fallback.
@@ -66,12 +72,15 @@ Only for an issue confirmed untyped by a successful lookup, recommend exactly on
 | `Feature` | The requested product behavior does not exist yet, including an addition or enhancement to existing behavior. |
 | `Task` | Bounded maintenance, documentation, test, infrastructure, or refactoring work where current behavior is not broken. A docs-only deliverable is `Task` plus the `docs` subtype. |
 
+Supplied or verified evidence that repository-owned automation, a workflow, or
+classification policy reproducibly violates its intended behavior establishes a `Bug`,
+even when the correction is small or maintenance-like. Use `Task` for proactive or
+bounded infrastructure maintenance when no current behavior is shown to be broken.
+
 Never recommend assigning `Epic`. It remains valid maintainer-managed planning metadata
 in the dotnet organization, but it is not an automated newly-opened-issue
 classification. A broad or large single feature request remains a `Feature`;
 implementation size alone does not make it an Epic.
-For such a request, the semantic Type rationale must explicitly state that the request is
-one coherent capability and that API or implementation breadth does not make it an Epic.
 
 A template signal can inform classification of a confirmed untyped issue when the content
 supports it, but it never overrides a trusted current issue type or an unavailable lookup.

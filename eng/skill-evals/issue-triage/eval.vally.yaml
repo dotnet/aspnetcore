@@ -34,6 +34,26 @@ stimuli:
         fingerprinting and Static Server Side Rendering (SSR)?
 
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - type: output-matches
         config:
@@ -68,6 +88,26 @@ stimuli:
         fingerprinting and Static Server Side Rendering (SSR)?
 
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - name: require-unknown-type-decision
         type: output-matches
@@ -121,6 +161,26 @@ stimuli:
         and sibling Account pages. ValidationSummary itself correctly forwards attributes.
 
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - type: output-matches
         config:
@@ -156,6 +216,26 @@ stimuli:
         Actual: the Browser Link debugging integration produces the console violation.
 
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - type: output-matches
         config:
@@ -192,6 +272,26 @@ stimuli:
         observe the contradictory source-path assignment.
 
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - type: output-matches
         config:
@@ -238,6 +338,26 @@ stimuli:
         "This was indeed a breaking change that we've discussed in the linked issue.
         Specifically, this comment from @halter73 is what you should try to follow:
         https://github.com/dotnet/aspnetcore/issues/52075#issuecomment-1815025177"
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - type: output-matches
         config:
@@ -275,6 +395,26 @@ stimuli:
 
       Existing labels: area-blazor, api-suggestion, api-proposal
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - name: require-area-blazor
         type: output-matches
@@ -301,7 +441,7 @@ stimuli:
       - type: prompt
     rubric:
       - "Recommends exactly area-blazor, issue type Feature, and supported subtype api-proposal"
-      - "Treats the media-component suite as one broad product capability and explicitly does not recommend Epic merely because the API surface and implementation are large"
+      - "Recommends Feature for the requested built-in media-component capability and does not recommend Epic; an explicit anti-Epic policy explanation is not required"
       - "Does not claim to preserve a current type because the trusted current issue type is none"
       - "Does not emit a second area, Task, Bug, Epic, or an unsupported subtype"
       - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
@@ -330,6 +470,26 @@ stimuli:
 
       Existing labels: area-blazor, feature-blazor-builtin-components
       No duplicate candidates are supplied.
+
+      Use this output format. This specifies syntax only; choose every value from the
+      supplied evidence.
+
+      ### Triage Decision
+      - **Area:** `<one area>` or `Abstain`
+      - **Type action:** `Recommend <Bug|Feature|Task>`, `Preserve <trusted type>`, or
+        `Unknown (lookup unavailable)`
+      - **Subtype:** `<one supported subtype>` or `None`
+      - **Duplicate:** `#N (duplicate)`, `#N (related)`, or `None found`
+
+      ### Triage Summary
+
+      **Area:** `<area or abstention>` (brief evidence-based reason)
+      **Type:** `<type and brief evidence-based reason>`, or exactly
+      `unknown (type lookup unavailable)` when the lookup is unavailable
+
+      Optionally include `#### Regression Info` and `#### Notes` when supported. Always
+      include `#### Potential Duplicates`; use exactly `- _None found_` when there is no
+      verified candidate.
     graders:
       - name: require-area-blazor
         type: output-matches
