@@ -478,7 +478,7 @@ public class CacheViewKeyResolverTest
     }
 
     [Fact]
-    public void ComputeKey_VaryByUser_NoIdentifierHasStableMarker()
+    public void ComputeKey_VaryByUser_DistinguishesAnonymousFromAuthenticatedWithoutClaims()
     {
         var component = CreateComponent(varyByUser: true);
         var anonymousContext = CreateHttpContext();
@@ -488,7 +488,7 @@ public class CacheViewKeyResolverTest
         var anonymousKey = CacheViewKeyResolver.ComputeKey(component, anonymousContext);
         var authenticatedWithoutClaimsKey = CacheViewKeyResolver.ComputeKey(component, authenticatedWithoutClaims);
 
-        Assert.Equal(anonymousKey, authenticatedWithoutClaimsKey);
+        Assert.NotEqual(anonymousKey, authenticatedWithoutClaimsKey);
     }
 
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
