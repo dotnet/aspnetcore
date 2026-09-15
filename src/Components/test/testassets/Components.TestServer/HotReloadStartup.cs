@@ -3,8 +3,6 @@
 
 using System.Globalization;
 using System.Net.WebSockets;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer;
@@ -13,14 +11,9 @@ public class HotReloadStartup
 {
     public HotReloadStartup()
     {
-        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
-
-        // HotReloadManager captures the AppContext switch value once into a static field at static
-        // initialization, so the AppContext.SetSwitch call above has no effect once another in-process
-        // server has already initialized it. Force the cached field to true via reflection so hot reload
-        // is active for this server. This is safe only because the E2E suite runs serially.
-        typeof(HotReloadManager).GetField("s_isSupported", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, true);
+        // Every in-process server is started with the process defaults restored, so this override only
+        // applies for as long as this server is the one under test.
+        TestFeatureSwitches.SetHotReloadSupported(true);
     }
 
     public void ConfigureServices(IServiceCollection services)
