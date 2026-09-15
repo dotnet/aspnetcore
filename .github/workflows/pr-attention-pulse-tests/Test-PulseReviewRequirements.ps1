@@ -129,42 +129,45 @@ Invoke-Control "TelemetryCredentialExclusions" {
     }
 }
 
-Invoke-Control "DynamicDashboardTarget" {
-    $variableExpression = '${{ vars.PR_ATTENTION_PULSE_ISSUE_NUMBER }}'
-    $targetExpression = '${{ needs.resolve_dashboard_target.outputs.issue_number }}'
-    Assert-True (-not ($workflow -match '(?m)^\s*issue_number:\s*58\s*$')) "The source prompt must not emit the fork's issue 58."
-    Assert-True (-not ($workflow -match '(?m)^\s*target:\s*["'']?58["'']?\s*$')) "The source safe-output policy must not target the fork's issue 58."
-    Assert-True (-not ($lock -match '(?m)^\s*issue_number:\s*58\s*$')) "The generated prompt must not emit the fork's issue 58."
-    Assert-True (-not $lock.Contains('"target":"58"')) "The generated handler policy must not target the fork's issue 58."
-    Assert-True ($workflow.Contains("PR_ATTENTION_PULSE_ISSUE_NUMBER: $variableExpression")) "The trusted resolver must read the repository variable."
-    Assert-True ($workflow.Contains("target: $targetExpression")) "The source safe-output policy must use the immutable validated job output."
-    Assert-True ($lock.Contains($targetExpression)) "The generated workflow must preserve the immutable dynamic target expression."
+Invoke-Control "FixedDashboardTarget" {
+    $issueNumber = 69328
+    Assert-True (-not $workflow.Contains("PR_ATTENTION_PULSE_ISSUE_NUMBER")) "The workflow must not depend on the retired repository variable."
+    Assert-True (-not $lock.Contains("PR_ATTENTION_PULSE_ISSUE_NUMBER")) "The generated workflow must not depend on the retired repository variable."
+    Assert-True (-not $workflow.Contains("resolve_dashboard_target")) "The configurable target resolver must be removed."
+    Assert-True (-not $lock.Contains("resolve_dashboard_target")) "The generated configurable target resolver must be removed."
+    Assert-True ($workflow.Contains("target: `"$issueNumber`"")) "The source safe-output policy must hardcode the permanent dashboard issue."
+    Assert-True ($lock.Replace("\", "").Contains('"target":"69328"')) "The generated handler policy must hardcode the permanent dashboard issue."
+    Assert-True ($workflow.Contains("issue_number: $issueNumber")) "The prompt payload contract must name the permanent dashboard issue."
+    Assert-True ($workflow.Contains("const issueNumber = $issueNumber;")) "Trusted request serialization must hardcode the permanent dashboard issue."
+    Assert-True ($workflow.Contains("`$dashboardIssueNumber = $issueNumber")) "The private validator must hardcode the permanent dashboard issue."
 
-    $sourceTargetChecks = @([regex]::Matches($workflow, "(?m)^\s+- name: Validate configured Pulse dashboard target\r?$"))
-    Assert-True ($sourceTargetChecks.Count -eq 1) "The agent job must validate the configured dashboard target once before inference."
-    $resolverStart = $lock.IndexOf("resolve_dashboard_target:", [StringComparison]::Ordinal)
-    $resolverOutput = $lock.IndexOf('issue_number: ${{ steps.target.outputs.issue_number }}', $resolverStart, [StringComparison]::Ordinal)
-    Assert-True ($resolverStart -ge 0 -and $resolverOutput -gt $resolverStart) "The trusted resolver must publish the validated issue number."
+    $validatorStart = $lock.IndexOf("validate_dashboard_target:", [StringComparison]::Ordinal)
+    Assert-True ($validatorStart -ge 0) "The trusted fixed-target validation job must be generated."
     $agentJobStart = $lock.IndexOf("`n  agent:", [StringComparison]::Ordinal)
     $agentNeeds = $lock.Substring($agentJobStart, $agentStepStart - $agentJobStart)
-    Assert-True ($agentNeeds.Contains("resolve_dashboard_target")) "The agent job must depend on successful target resolution."
+    Assert-True ($agentNeeds.Contains("validate_dashboard_target")) "The agent job must depend on successful fixed-target validation."
     $safeOutputsStart = $lock.IndexOf("`n  safe_outputs:", [StringComparison]::Ordinal)
     $handlerStep = $lock.IndexOf("name: Process Safe Outputs", $safeOutputsStart, [StringComparison]::Ordinal)
-    $safeOutputTargetCheck = $lock.IndexOf("name: Revalidate configured Pulse dashboard target", $safeOutputsStart, [StringComparison]::Ordinal)
-    Assert-True ($safeOutputTargetCheck -gt $safeOutputsStart -and $safeOutputTargetCheck -lt $handlerStep) "The configured dashboard target must be revalidated immediately before safe-output handling."
+    $safeOutputTargetCheck = $lock.IndexOf("name: Revalidate fixed Pulse dashboard target", $safeOutputsStart, [StringComparison]::Ordinal)
+    Assert-True ($safeOutputTargetCheck -gt $safeOutputsStart -and $safeOutputTargetCheck -lt $handlerStep) "The fixed dashboard target must be revalidated immediately before safe-output handling."
     $safeOutputPrelude = $lock.Substring($safeOutputsStart, $handlerStep - $safeOutputsStart)
-    Assert-True ($safeOutputPrelude.Contains("resolve_dashboard_target")) "The safe-output job must depend on the same trusted target resolution."
+    Assert-True ($safeOutputPrelude.Contains("validate_dashboard_target")) "The safe-output job must depend on successful fixed-target validation."
 
     foreach ($requiredText in @(
-        '^[1-9][0-9]*$',
+        'dotnet/aspnetcore',
+        'repos/dotnet/aspnetcore/issues/69328',
         'pull_request',
         'state',
         '[pr-attention-pulse]'))
     {
         Assert-True ($workflow.Contains($requiredText)) "The trusted target checks must enforce '$requiredText'."
     }
-    Assert-True ([regex]::Matches($workflow, [regex]::Escape("PR_ATTENTION_PULSE_ISSUE_NUMBER: $targetExpression")).Count -eq 3) "Request creation, private validation, and publication revalidation must use the same immutable target output."
-    Assert-True ($workflow.Contains('-ExpectedIssueNumber $dashboardIssueNumber')) "The private validator must enforce the configured issue number."
+    Assert-True ([regex]::Matches($workflow, 'GITHUB_REPOSITORY.*dotnet/aspnetcore').Count -eq 2) "Execution and publication must each enforce the canonical upstream repository."
+    Assert-True ([regex]::Matches($workflow, 'repos/dotnet/aspnetcore/issues/69328').Count -eq 2) "The fixed issue must be checked before inference and immediately before publication."
+    Assert-True ([regex]::Matches($workflow, 'PSObject\.Properties\["pull_request"\]').Count -eq 2) "Both target checks must reject a pull request."
+    Assert-True ([regex]::Matches($workflow, '\[string\]\$issue\.state, "open"').Count -eq 2) "Both target checks must require the issue to remain open."
+    Assert-True ([regex]::Matches($workflow, '\(\[string\]\$issue\.title\)\.StartsWith\("\[pr-attention-pulse\]"').Count -eq 2) "Both target checks must require the dashboard title prefix."
+    Assert-True ($workflow.Contains('-ExpectedIssueNumber $dashboardIssueNumber')) "The private validator must enforce the permanent issue number."
 }
 
 Invoke-Control "DeterministicClickableReferences" {

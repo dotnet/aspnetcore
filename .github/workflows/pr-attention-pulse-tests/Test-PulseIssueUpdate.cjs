@@ -4,13 +4,13 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const [actionsDir, lockPath, bodyPath] = process.argv.slice(2);
-const dashboardIssueNumber = 69123;
+const dashboardIssueNumber = 69328;
 const lock = fs.readFileSync(lockPath, "utf8");
 const job = lock.slice(lock.indexOf("\n  safe_outputs:"));
 const step = job.slice(job.indexOf("      - name: Process Safe Outputs"), job.indexOf("      - name:", job.indexOf("      - name: Process Safe Outputs") + 10));
-const serializedConfig = JSON.parse(step.match(/GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: (.+)/)[1])
-  .replace("${{ needs.resolve_dashboard_target.outputs.issue_number }}", String(dashboardIssueNumber));
+const serializedConfig = JSON.parse(step.match(/GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: (.+)/)[1]);
 const config = JSON.parse(serializedConfig).update_issue;
+assert.equal(config.target, String(dashboardIssueNumber));
 const jobWorkflowId = JSON.parse(job.match(/^\s+GH_AW_WORKFLOW_ID: (.+)$/m)[1]);
 process.env.GH_AW_WORKFLOW_ID = jobWorkflowId;
 const preparation = job.match(/name: Preserve canonical Pulse body on publication\r?\n[\s\S]*?script: (.+)/)?.[1];
@@ -31,14 +31,14 @@ process.env.GH_AW_DETECTION_CONCLUSION = "success";
 
 global.core = { info() {}, warning() {}, error() {}, debug() {} };
 global.context = {
-  repo: { owner: "PureWeen", repo: "aspnetcore" },
+  repo: { owner: "dotnet", repo: "aspnetcore" },
   serverUrl: "https://github.com", runId: 1, eventName: "workflow_dispatch", payload: {},
 };
 const { main } = require(path.join(actionsDir, "update_issue.cjs"));
 const body = fs.readFileSync(bodyPath, "utf8");
 const issue = {
   number: dashboardIssueNumber, title: "[pr-attention-pulse] ASP.NET Core PR Attention Pulse",
-  state: "open", labels: [], assignees: [], html_url: `https://github.com/PureWeen/aspnetcore/issues/${dashboardIssueNumber}`,
+  state: "open", labels: [], assignees: [], html_url: `https://github.com/dotnet/aspnetcore/issues/${dashboardIssueNumber}`,
 };
 
 async function publish(currentBody, title = issue.title, target = dashboardIssueNumber) {
@@ -47,7 +47,7 @@ async function publish(currentBody, title = issue.title, target = dashboardIssue
     rest: {
       issues: {
         get: async args => {
-          assert.deepEqual(args, { owner: "PureWeen", repo: "aspnetcore", issue_number: dashboardIssueNumber });
+          assert.deepEqual(args, { owner: "dotnet", repo: "aspnetcore", issue_number: dashboardIssueNumber });
           return { data: { ...issue, title, body: currentBody } };
         },
         update: async args => {

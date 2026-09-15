@@ -9,7 +9,7 @@ description: >
   Manually dispatched ASP.NET Core pull-request attention pulse. Trusted runner steps
   independently collect the maintained Blazor scope and a repository-wide baseline, validate and
   combine their legacy queue views, delete raw data, and give the model only the bounded sanitized
-  envelope. The sole mutation is a body replacement on the configured dashboard issue.
+  envelope. The sole mutation is a body replacement on the permanent upstream dashboard issue.
 
 permissions:
   contents: read
@@ -23,37 +23,26 @@ concurrency:
 checkout: false
 
 jobs:
-  resolve_dashboard_target:
-    name: Resolve Pulse dashboard target
+  validate_dashboard_target:
+    name: Validate fixed Pulse dashboard target
     runs-on: ubuntu-latest
     permissions:
       issues: read
-    outputs:
-      issue_number: ${{ steps.target.outputs.issue_number }}
     steps:
-      - name: Validate configured Pulse dashboard target
-        id: target
+      - name: Validate fixed Pulse dashboard target
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_ATTENTION_PULSE_ISSUE_NUMBER: ${{ vars.PR_ATTENTION_PULSE_ISSUE_NUMBER }}
         run: |
-          $issueNumberText = [string]$env:PR_ATTENTION_PULSE_ISSUE_NUMBER
-          if (-not [regex]::IsMatch($issueNumberText, '\A[1-9][0-9]*\z', [Text.RegularExpressions.RegexOptions]::CultureInvariant))
+          if (-not [string]::Equals([string]$env:GITHUB_REPOSITORY, "dotnet/aspnetcore", [StringComparison]::Ordinal))
           {
-            throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER must be a positive decimal integer."
+            throw "PR Attention Pulse may run only in dotnet/aspnetcore."
           }
 
-          $issueNumber = [int64]$issueNumberText
-          if ($issueNumber -gt [int]::MaxValue)
-          {
-            throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER is outside the supported issue-number range."
-          }
-
-          $issueJson = & gh api --method GET "repos/$env:GITHUB_REPOSITORY/issues/$issueNumber"
+          $issueJson = & gh api --method GET "repos/dotnet/aspnetcore/issues/69328"
           if ($LASTEXITCODE -ne 0)
           {
-            throw "The configured Pulse dashboard issue could not be read."
+            throw "The fixed Pulse dashboard issue could not be read."
           }
 
           $issue = $issueJson | ConvertFrom-Json -Depth 20
@@ -61,10 +50,8 @@ jobs:
             -not [string]::Equals([string]$issue.state, "open", [StringComparison]::Ordinal) -or
             -not ([string]$issue.title).StartsWith("[pr-attention-pulse]", [StringComparison]::Ordinal))
           {
-            throw "The configured Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
+            throw "The fixed Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
           }
-
-          "issue_number=$issueNumber" >> $env:GITHUB_OUTPUT
 
   activation:
     steps:
@@ -82,31 +69,23 @@ jobs:
             fi
           done
   safe_outputs:
-    needs: [resolve_dashboard_target]
+    needs: [validate_dashboard_target]
     if: "needs.agent.result == 'success'"
     pre-steps:
-      - name: Revalidate configured Pulse dashboard target
+      - name: Revalidate fixed Pulse dashboard target
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_ATTENTION_PULSE_ISSUE_NUMBER: ${{ needs.resolve_dashboard_target.outputs.issue_number }}
         run: |
-          $issueNumberText = [string]$env:PR_ATTENTION_PULSE_ISSUE_NUMBER
-          if (-not [regex]::IsMatch($issueNumberText, '\A[1-9][0-9]*\z', [Text.RegularExpressions.RegexOptions]::CultureInvariant))
+          if (-not [string]::Equals([string]$env:GITHUB_REPOSITORY, "dotnet/aspnetcore", [StringComparison]::Ordinal))
           {
-            throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER must be a positive decimal integer."
+            throw "PR Attention Pulse may publish only in dotnet/aspnetcore."
           }
 
-          $issueNumber = [int64]$issueNumberText
-          if ($issueNumber -gt [int]::MaxValue)
-          {
-            throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER is outside the supported issue-number range."
-          }
-
-          $issueJson = & gh api --method GET "repos/$env:GITHUB_REPOSITORY/issues/$issueNumber"
+          $issueJson = & gh api --method GET "repos/dotnet/aspnetcore/issues/69328"
           if ($LASTEXITCODE -ne 0)
           {
-            throw "The configured Pulse dashboard issue could not be read."
+            throw "The fixed Pulse dashboard issue could not be read."
           }
 
           $issue = $issueJson | ConvertFrom-Json -Depth 20
@@ -114,7 +93,7 @@ jobs:
             -not [string]::Equals([string]$issue.state, "open", [StringComparison]::Ordinal) -or
             -not ([string]$issue.title).StartsWith("[pr-attention-pulse]", [StringComparison]::Ordinal))
           {
-            throw "The configured Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
+            throw "The fixed Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
           }
 
       - name: Preserve canonical Pulse body on publication
@@ -127,7 +106,7 @@ jobs:
   detection:
     if: "needs.agent.result == 'success'"
   agent:
-    needs: [resolve_dashboard_target]
+    needs: [validate_dashboard_target]
   conclusion:
     # This disables framework tracking comments/issues and also skips conclusion usage reporting.
     if: "false"
@@ -222,7 +201,6 @@ steps:
     env:
       GH_AW_SAFE_OUTPUTS_URLS: allowed-or-code-region
       GH_AW_ALLOWED_GITHUB_REFS: dotnet/aspnetcore
-      PR_ATTENTION_PULSE_ISSUE_NUMBER: ${{ needs.resolve_dashboard_target.outputs.issue_number }}
     with:
       script: |
         const fs = require("fs");
@@ -239,14 +217,7 @@ steps:
         if (!normalizedBody) {
           throw new Error("Trusted Pulse body normalization produced an empty report.");
         }
-        const issueNumberText = process.env.PR_ATTENTION_PULSE_ISSUE_NUMBER ?? "";
-        if (!/^[1-9][0-9]*$/.test(issueNumberText)) {
-          throw new Error("Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER must be a positive decimal integer.");
-        }
-        const issueNumber = Number(issueNumberText);
-        if (!Number.isSafeInteger(issueNumber) || issueNumber > 2147483647) {
-          throw new Error("Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER is outside the supported issue-number range.");
-        }
+        const issueNumber = 69328;
         fs.writeFileSync(bodyPath, normalizedBody, "utf8");
         fs.writeFileSync(".pr-attention-pulse/pulse-request.json", JSON.stringify({
           issue_number: issueNumber,
@@ -362,7 +333,6 @@ post-steps:
       GH_AW_SAFE_OUTPUTS_URLS: allowed-or-code-region
       GH_AW_ALLOWED_GITHUB_REFS: dotnet/aspnetcore
       GH_AW_SANITIZER_MODULE_PATH: ${{ runner.temp }}/gh-aw/actions/sanitize_content.cjs
-      PR_ATTENTION_PULSE_ISSUE_NUMBER: ${{ needs.resolve_dashboard_target.outputs.issue_number }}
     run: |
       function Get-CanonicalPath
       {
@@ -396,16 +366,7 @@ post-steps:
         }
       }
 
-      $issueNumberText = [string]$env:PR_ATTENTION_PULSE_ISSUE_NUMBER
-      if (-not [regex]::IsMatch($issueNumberText, '\A[1-9][0-9]*\z', [Text.RegularExpressions.RegexOptions]::CultureInvariant))
-      {
-        throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER must be a positive decimal integer."
-      }
-      $dashboardIssueNumber = [int64]$issueNumberText
-      if ($dashboardIssueNumber -gt [int]::MaxValue)
-      {
-        throw "Repository variable PR_ATTENTION_PULSE_ISSUE_NUMBER is outside the supported issue-number range."
-      }
+      $dashboardIssueNumber = 69328
 
       Assert-PrivateValidatorRoot -Path "${{ runner.temp }}/pr-attention-pulse-validator"
       pwsh "${{ runner.temp }}/pr-attention-pulse-validator/Validate-PRAttentionPulseOutput.ps1" `
@@ -487,7 +448,7 @@ safe-outputs:
     max-ai-credits: -1
     continue-on-error: false
   update-issue:
-    target: ${{ needs.resolve_dashboard_target.outputs.issue_number }}
+    target: "69328"
     required-title-prefix: "[pr-attention-pulse]"
     body: true
     footer: false
@@ -545,7 +506,7 @@ Emit exactly one safe-output payload and no other payload:
 
 ```yaml
 type: update_issue
-issue_number: <the configured positive integer already serialized in pulse-request.json>
+issue_number: 69328
 operation: replace
 body: <the complete dashboard body>
 ```

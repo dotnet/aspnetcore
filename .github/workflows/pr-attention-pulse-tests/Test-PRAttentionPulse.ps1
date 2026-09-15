@@ -2,7 +2,7 @@
 #Requires -Version 7.0
 
 $ErrorActionPreference = "Stop"
-$script:DashboardIssueNumber = 69123
+$script:DashboardIssueNumber = 69328
 
 function Assert-True
 {
@@ -1283,7 +1283,7 @@ try
     Assert-True ($workflow.Contains('Remove-Item .pr-attention-pulse/pulse-request.json')) "The serialized request must be removed after inference."
     Assert-True (-not ($workflow -match '(?m)^\s*issue_number:\s*58\s*$')) "The emitted payload must not use the fork's issue 58."
     Assert-True (-not ($workflow -match '(?m)^\s*target:\s*["'']?58["'']?\s*$')) "The safe-output handler must not target the fork's issue 58."
-    Assert-True ($workflow.Contains('target: ${{ needs.resolve_dashboard_target.outputs.issue_number }}')) "The safe-output handler must use the immutable validated dashboard issue."
+    Assert-True ($workflow.Contains('target: "69328"')) "The safe-output handler must use the permanent dashboard issue."
     Assert-True ($workflow.Contains("operation: replace")) "The payload contract must replace the issue body."
     Assert-True (($workflow | Select-String -Pattern "type: update_issue" -AllMatches).Matches.Count -eq 1) "The prompt must define exactly one update_issue payload."
     Assert-True ($workflow.Contains("github: false")) "The inference sandbox must not mount GitHub tools."
@@ -1359,7 +1359,7 @@ try
         Assert-True (-not ($agentStep -match "(?m)\bexport\s+$([regex]::Escape($name))=")) "The main inference command must not export '$name' into the sandbox."
     }
     Assert-True (-not $normalizedLock.Contains('"target":"58"')) "The generated safe-output policy must not pin the fork's issue 58."
-    Assert-True ($normalizedLock.Contains('"target":"${{ needs.resolve_dashboard_target.outputs.issue_number }}"')) "The generated safe-output policy must preserve the immutable validated target."
+    Assert-True ($normalizedLock.Contains('"target":"69328"')) "The generated safe-output policy must preserve the permanent dashboard target."
     Assert-True ($normalizedLock.Contains('"required_title_prefix":"[pr-attention-pulse]"')) "The generated safe-output policy must require the dashboard title prefix."
     Assert-True (-not $normalizedLock.Contains('"create_issue"')) "The generated workflow must not expose issue creation."
     Assert-True ($lock.IndexOf("Remove-Item -Recurse -Force .github", [StringComparison]::Ordinal) -lt $agentStepStart) "Repository workflow sources and raw data must be removed before inference."
