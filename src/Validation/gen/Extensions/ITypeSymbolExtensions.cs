@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -11,14 +12,45 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ITypeSymbolExtensions
 {
-    public static bool IsEnumerable(this ITypeSymbol type, INamedTypeSymbol enumerable)
+    public static bool IsGenericEnumerable(this INamedTypeSymbol type, [NotNullWhen(true)] out ITypeSymbol? elementType)
     {
+        elementType = null;
+
         if (type.SpecialType == SpecialType.System_String)
         {
             return false;
         }
 
-        return type.ImplementsInterface(enumerable) || SymbolEqualityComparer.Default.Equals(type, enumerable);
+        // TODO: Remove this check in .NET 12.
+        // It doesn't accurately reflect enumerables.
+        // The given type itself couldn't be generic, but it could be implementing IEnumerable<T>.
+        // For example:
+        // public class StudentList : List<Student> { }
+        // Note that this fix might bring us dictionary support for free.
+        // https://github.com/dotnet/aspnetcore/issues/61953
+        if (type.TypeArguments.Length != 1)
+        {
+            return false;
+        }
+
+        if (type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+        {
+            elementType = type.TypeArguments[0];
+            return true;
+        }
+
+        foreach (var iface in type.AllInterfaces)
+        {
+            if (iface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+            {
+                // TODO: Use iface.TypeArguments[0] instead of type.TypeArguments[0] in .NET 12.
+                // This is the right way to get the element type of the IEnumerable<T>.
+                elementType = type.TypeArguments[0];
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static bool ImplementsValidationAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol validationAttributeSymbol)
@@ -36,7 +68,7 @@ internal static class ITypeSymbolExtensions
         return false;
     }
 
-    public static ITypeSymbol UnwrapType(this ITypeSymbol type, INamedTypeSymbol enumerable)
+    public static ITypeSymbol UnwrapType(this ITypeSymbol type)
     {
         if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
             type is INamedTypeSymbol { TypeArguments.Length: 1 })
@@ -52,10 +84,10 @@ internal static class ITypeSymbolExtensions
             type = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
         }
 
-        if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
+        // Extract the T from an IEnumerable<T> or List<T>
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericEnumerable(out var elementType))
         {
-            // Extract the T from an IEnumerable<T> or List<T>
-            type = namedType.TypeArguments[0];
+            type = elementType;
         }
 
         if (type is IArrayTypeSymbol arrayType)
@@ -172,7 +204,7 @@ internal static class ITypeSymbolExtensions
         // JsonIgnoreCondition enum values from System.Text.Json.Serialization
         const int JsonIgnoreCondition_Always = 1;      // Property is always ignored
         const int JsonIgnoreCondition_WhenReading = 5; // Property is ignored during deserialization
-        
+
         foreach (var attr in property.GetAttributes())
         {
             if (attr.AttributeClass is not null &&
@@ -194,12 +226,12 @@ internal static class ITypeSymbolExtensions
                         }
                     }
                 }
-                
+
                 // If no Condition is specified, the default behavior is Always (skip validation)
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -211,5 +243,19 @@ internal static class ITypeSymbolExtensions
     internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
     {
         return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
+    }
+
+    internal static bool IsInaccessibleFromGeneratedCode(this ITypeSymbol type)
+    {
+        for (ITypeSymbol? current = type; current is not null; current = current.ContainingType)
+        {
+            if (current is INamedTypeSymbol { IsFileLocal: true } ||
+                current.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

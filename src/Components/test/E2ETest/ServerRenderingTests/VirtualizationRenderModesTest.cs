@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -43,6 +44,43 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Browser.False(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-webassembly"))).Contains("Item 1"));
         Browser.True(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-server"))).Contains("Item 50"));
         Browser.True(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-webassembly"))).Contains("Item 50"));
+    }
+
+    [Fact]
+    public void InitialItemIndex_IsAppliedOnPrerenderedInteractiveServerLoad()
+    {
+        var chromeDriver = (ChromeDriver)Browser;
+        var scriptIdentifier = InstallInitialSpacerCallbackRace(chromeDriver);
+        try
+        {
+            Navigate($"{ServerPathBase}/interactivity/virtualization?test-initial-item-index=true");
+
+            Browser.True(() => Convert.ToBoolean(((IJavaScriptExecutor)Browser).ExecuteScript(
+                "return window.__virtualizeRaceWasTriggered === true;"), CultureInfo.InvariantCulture));
+
+            Browser.True(() =>
+            {
+                var container = Browser.FindElement(By.Id("scroll-container"));
+                var targets = container.FindElements(By.CssSelector(".item[data-index='500']"));
+                if (targets.Count != 1)
+                {
+                    return false;
+                }
+
+                var scrollTop = double.Parse(container.GetDomProperty("scrollTop"), CultureInfo.InvariantCulture);
+
+                return scrollTop > 0 && Math.Abs(targets[0].Location.Y - container.Location.Y) <= 2;
+            },
+                "Expected InitialItemIndex=500 to remain aligned after the initial spacer callback.");
+        }
+        finally
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript("window.__restoreVirtualizeRaceTest?.()");
+            chromeDriver.ExecuteCdpCommand("Page.removeScriptToEvaluateOnNewDocument", new Dictionary<string, object>
+            {
+                ["identifier"] = scriptIdentifier,
+            });
+        }
     }
 
     [Theory]
@@ -147,6 +185,81 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     {
         var js = (IJavaScriptExecutor)browser;
         js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
+    }
+
+    private static string InstallInitialSpacerCallbackRace(ChromeDriver chromeDriver)
+    {
+        var result = chromeDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object>
+        {
+            ["source"] =
+                """
+                (() => {
+                    const nativeIntersectionObserver = window.IntersectionObserver;
+                    let pendingInitialCallback;
+                    let originalBeginProgrammaticScroll;
+                    window.__virtualizeRaceWasTriggered = false;
+
+                    window.IntersectionObserver = class extends nativeIntersectionObserver {
+                        constructor(callback, options) {
+                            let heldInitialCallback = false;
+                            super((entries, observer) => {
+                                const containsVirtualizeSpacer = entries.some(entry =>
+                                    entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'));
+                                if (!heldInitialCallback && containsVirtualizeSpacer) {
+                                    heldInitialCallback = true;
+                                    pendingInitialCallback = () => callback(entries, observer);
+                                    return;
+                                }
+
+                                callback(entries, observer);
+                            }, options);
+                        }
+                    };
+
+                    Object.defineProperty(window, 'Blazor', {
+                        configurable: true,
+                        set(value) {
+                            Object.defineProperty(window, 'Blazor', {
+                                configurable: true,
+                                writable: true,
+                                value,
+                            });
+
+                            const virtualize = value?._internal?.Virtualize;
+                            originalBeginProgrammaticScroll = virtualize.beginProgrammaticScroll;
+                            virtualize.beginProgrammaticScroll = async (...args) => {
+                                const deadline = Date.now() + 5000;
+                                while (!pendingInitialCallback) {
+                                    if (Date.now() > deadline) {
+                                        throw new Error('Virtualize race harness: the initial spacer IntersectionObserver callback never fired within 5s, so the race could not be triggered.');
+                                    }
+                                    await new Promise(resolve => setTimeout(resolve));
+                                }
+
+                                const callback = pendingInitialCallback;
+                                pendingInitialCallback = null;
+                                callback();
+                                window.__virtualizeRaceWasTriggered = true;
+
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                                originalBeginProgrammaticScroll(...args);
+                            };
+                        },
+                    });
+
+                    window.__restoreVirtualizeRaceTest = () => {
+                        window.IntersectionObserver = nativeIntersectionObserver;
+                        if (originalBeginProgrammaticScroll && window.Blazor?._internal?.Virtualize) {
+                            window.Blazor._internal.Virtualize.beginProgrammaticScroll = originalBeginProgrammaticScroll;
+                        }
+                        delete window.__restoreVirtualizeRaceTest;
+                        delete window.__virtualizeRaceWasTriggered;
+                    };
+                })();
+                """,
+        });
+
+        return (string)((Dictionary<string, object>)result)["identifier"];
     }
 
     private int GetPlaceholderCellCount() => Browser.FindElements(By.CssSelector("#repro-scroll-container td.grid-cell-placeholder")).Count;

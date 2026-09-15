@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PreReleaseVersionLabel;PreReleaseVersionIteration">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- NU5127/NU5128: This is intentionally a build-only package with no lib/ref assets. -->
+    <NoWarn>$(NoWarn);RS2008;NU5127;NU5128</NoWarn>
+    <Description>Build-only Native AOT application harness for Microsoft.AspNetCore.Components.Testing.</Description>
+    <PackageTags>blazor;e2e;testing;nativeaot;analyzer</PackageTags>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="_IncludeGeneratorInPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(TargetPath)"
+            Pack="true"
+            PackagePath="tools/netstandard2.0"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <None Include="buildTransitive/Microsoft.AspNetCore.Components.Testing.NativeAot.props"
+          Pack="true"
+          PackagePath="buildTransitive/net10.0/" />
+    <None Include="buildTransitive/Microsoft.AspNetCore.Components.Testing.NativeAot.targets"
+          Pack="true"
+          PackagePath="buildTransitive/net10.0/" />
+  </ItemGroup>
+
+</Project>

@@ -138,8 +138,7 @@ internal static class ParsabilityHelper
             methodSymbol.Parameters.Length == 1 &&
             SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpContext)) &&
             methodSymbol.ReturnType is INamedTypeSymbol returnType &&
-            SymbolEqualityComparer.Default.Equals(returnType.ConstructedFrom, wellKnownTypes.Get(WellKnownType.System_Threading_Tasks_ValueTask_T)) &&
-            SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0], typeSymbol);
+            IsReturningValueTaskOfTOrNullableT(returnType, typeSymbol, wellKnownTypes);
     }
 
     private static bool IsBindAsyncWithParameter(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)

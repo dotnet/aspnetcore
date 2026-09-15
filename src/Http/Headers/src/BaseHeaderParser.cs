@@ -57,6 +57,7 @@ internal abstract class BaseHeaderParser<T> : HttpHeaderParser<T>
 
         if (length == 0)
         {
+            parsedLength = current - startIndex;
             return false;
         }
 

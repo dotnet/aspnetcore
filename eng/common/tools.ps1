@@ -31,11 +31,16 @@
 # Set to true to reuse msbuild nodes. Recommended to not reuse on CI.
 [bool]$nodeReuse = if (Test-Path variable:nodeReuse) { $nodeReuse } else { !$ci }
 
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
+# explicitly requested. It's intended to become the default for local builds once it has proven out.
+[bool]$msbuildMultiThreaded = if (Test-Path variable:msbuildMultiThreaded) { $msbuildMultiThreaded } else { $false }
+
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }
 
 # Specifies semi-colon delimited list of warning codes that should not be treated as errors.
-[string]$warnNotAsError = if (Test-Path variable:warnNotAsError) { $warnNotAsError } else { '' }
+# Defaults to NuGet Audit warning codes NU1901-NU1904.
+[string]$warnNotAsError = if ((Test-Path variable:warnNotAsError) -and $warnNotAsError) { $warnNotAsError } else { 'NU1901;NU1902;NU1903;NU1904' }
 
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
@@ -808,8 +813,8 @@ function MSBuild() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
-  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
-  if ($env:MSBUILD_MT_ENABLED -eq "1") {
+  # Build with MSBuild's multi-threaded mode.
+  if ($msbuildMultiThreaded) {
     $cmdArgs += ' -mt'
   }
 

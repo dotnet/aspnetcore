@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -53,10 +54,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        services.AddSingleton<ExternalNavigationTarget>();
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
-#pragma warning restore ASP0029
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
@@ -398,10 +398,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }

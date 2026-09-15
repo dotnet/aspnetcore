@@ -1,0 +1,26 @@
+@page "/cache-component-head"
+@using System.Collections.Concurrent
+
+<h3>CacheView HEAD</h3>
+
+<div id="test-head">
+    <CacheView ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
+        <p class="head-cached-guid">@RecordFragmentRender()</p>
+    </CacheView>
+    <p id="head-render-count">@FragmentRenderCount</p>
+</div>
+
+@code
+{
+    private static readonly ConcurrentDictionary<string, int> FragmentRenderCounts = new();
+
+    [SupplyParameterFromQuery] private string? TestId { get; set; }
+
+    private int FragmentRenderCount => FragmentRenderCounts.TryGetValue(TestId ?? "", out var count) ? count : 0;
+
+    private string RecordFragmentRender()
+    {
+        FragmentRenderCounts.AddOrUpdate(TestId ?? "", 1, static (_, count) => count + 1);
+        return Guid.NewGuid().ToString("N");
+    }
+}

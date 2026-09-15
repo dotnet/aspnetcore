@@ -33,7 +33,8 @@
                     {
                       "enum": [
                         null
-                      ]
+                      ],
+                      "nullable": true
                     },
                     {
                       "$ref": "#/components/schemas/CamelCaseStatus"
