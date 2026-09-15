@@ -486,8 +486,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         {
             if (addAuthentication)
             {
-                var authenticationPipeline = new AutomaticAuthenticationPipeline(pipeline);
-                pipeline.Use(authenticationPipeline.CreateMiddleware);
+                pipeline.UseAuthentication();
             }
 
             if (addAuthorization)
@@ -501,22 +500,38 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             }
         };
 
-        // The implicit authentication/authorization/CSRF middleware must run after routing so they observe the
-        // matched endpoint. The deferred block also runs after every reroute, preserving that ordering when the
-        // endpoint changes. Explicit routing always uses the block, even when no endpoints have been registered yet.
-        var hasExplicitRouting = _builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey);
-        var hasImplicitPostRoutingMiddleware = hasEndpointDataSources && (addAuthentication || addAuthorization || addCsrfProtection);
-        if (hasExplicitRouting || hasImplicitPostRoutingMiddleware)
+        var configureAuthImplicitMiddlewares = (IApplicationBuilder pipeline) =>
         {
-            if (hasExplicitRouting || !_builtApplication.Properties.ContainsKey(MiddlewareInvokedKeys.PostRoutingPipeline))
+            if (addAuthentication)
             {
-                var postRoutingPipeline = new PostRoutingPipeline(app, configureImplicitMiddlewares);
-                _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
+                pipeline.UseAuthentication();
             }
+
+            if (addAuthorization)
+            {
+                pipeline.UseAuthorization();
+            }
+        };
+
+        // When the app calls UseRouting() explicitly, the framework skips adding its own UseRouting() above, so
+        // routing runs later, inside the source pipeline. The implicit authentication/authorization/CSRF middleware
+        // must still run AFTER routing so they observe the matched endpoint (e.g. CSRF reads a per-endpoint CORS
+        // policy such as RequireCors("name"), see #67174). That's why middlewares are deferred after the routing runs.
+        if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
+        {
+            var postRoutingPipeline = new PostRoutingPipeline(app, configureImplicitMiddlewares);
+            _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
         }
         else
         {
-            configureImplicitMiddlewares(app);
+            configureAuthImplicitMiddlewares(app);
+
+            // Chain CSRF via PostRoutingPipeline so it runs after routing on both the outer pass and any re-routed branch (e.g. UseStatusCodePagesWithReExecute).
+            if (addCsrfProtection && !_builtApplication.Properties.ContainsKey(MiddlewareInvokedKeys.PostRoutingPipeline))
+            {
+                var csrfPostRoutingPipeline = new PostRoutingPipeline(app, static pipeline => pipeline.UseMiddleware<CsrfProtectionMiddleware>());
+                _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)csrfPostRoutingPipeline.CreateMiddleware;
+            }
         }
 
         // Wire the source pipeline to run in the destination pipeline
@@ -564,33 +579,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _configure(branch);
             branch.Run(next);
             return branch.Build();
-        }
-    }
-
-    // Authentication establishes request-wide state and dispatches request-handler schemes, so unlike authorization
-    // and CSRF protection it must not run again when endpoint routing re-enters the post-routing pipeline.
-    private sealed class AutomaticAuthenticationPipeline(IApplicationBuilder app)
-    {
-        private static readonly object Invoked = new();
-        private readonly IApplicationBuilder _app = app;
-
-        public RequestDelegate CreateMiddleware(RequestDelegate next)
-        {
-            var branch = _app.New();
-            branch.UseAuthentication();
-            branch.Run(next);
-            var authenticationPipeline = branch.Build();
-
-            return context =>
-            {
-                if (context.Features[typeof(AutomaticAuthenticationPipeline)] is not null)
-                {
-                    return next(context);
-                }
-
-                context.Features[typeof(AutomaticAuthenticationPipeline)] = Invoked;
-                return authenticationPipeline(context);
-            };
         }
     }
 

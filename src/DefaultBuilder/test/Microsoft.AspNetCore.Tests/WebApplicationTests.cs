@@ -2532,103 +2532,6 @@ public class WebApplicationTests
     public Task Authorization_IsEnforced_WithExplicitUseRouting(CreateBuilderFunc createBuilder) =>
         RunAuthorizationEnforcementAsync(createBuilder, explicitUseRouting: true);
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Authorization_IsReevaluated_AfterReroute(bool explicitUseRouting)
-    {
-        var sourceEndpointCallCount = 0;
-        var protectedEndpointCallCount = 0;
-        var builder = WebApplication.CreateBuilder();
-
-        builder.Services.AddAuthorization();
-        builder.Services.AddAuthentication("testSchemeName")
-            .AddScheme<AuthenticationSchemeOptions, ClaimsAuthHandler>("testSchemeName", "testDisplayName", _ => { });
-        builder.WebHost.UseTestServer();
-        await using var app = builder.Build();
-
-        if (explicitUseRouting)
-        {
-            app.UseRouting();
-        }
-
-        app.UseStatusCodePagesWithReExecute("/protected");
-        app.MapGet("/source", (HttpContext context) =>
-        {
-            sourceEndpointCallCount++;
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.CompletedTask;
-        }).AllowAnonymous();
-        app.MapGet("/protected", () =>
-        {
-            protectedEndpointCallCount++;
-            return "protected";
-        }).RequireAuthorization();
-
-        await app.StartAsync();
-        var client = app.GetTestClient();
-        var deniedResponse = await client.GetAsync("/source");
-
-        Assert.Equal(HttpStatusCode.Unauthorized, deniedResponse.StatusCode);
-
-        var allowedResponse = await client.GetAsync("/source?username=admin");
-
-        Assert.Equal(HttpStatusCode.NotFound, allowedResponse.StatusCode);
-        Assert.Equal(2, sourceEndpointCallCount);
-        Assert.Equal(1, protectedEndpointCallCount);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Authentication_RunsOnce_AfterReroute(bool explicitUseRouting)
-    {
-        PathString observedOriginalPath = default;
-        PathString observedOriginalPathBase = default;
-        var state = new AuthenticationRequestHandlerState();
-        var builder = WebApplication.CreateBuilder();
-
-        builder.Services.AddSingleton(state);
-        builder.Services.AddAuthorization();
-        builder.Services.AddAuthentication("testSchemeName")
-            .AddScheme<AuthenticationSchemeOptions, CountingRequestHandler>("testSchemeName", "testDisplayName", _ => { });
-        builder.WebHost.UseTestServer();
-        await using var app = builder.Build();
-
-        if (explicitUseRouting)
-        {
-            app.UseRouting();
-        }
-
-        app.UseStatusCodePagesWithReExecute("/protected");
-        app.MapGet("/source", (HttpContext context) =>
-        {
-            context.Request.PathBase = "/rerouted-base";
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.CompletedTask;
-        }).AllowAnonymous();
-        app.MapGet("/protected", (HttpContext context) =>
-        {
-            var authenticationFeature = context.Features.Get<IAuthenticationFeature>();
-            observedOriginalPath = authenticationFeature?.OriginalPath ?? default;
-            observedOriginalPathBase = authenticationFeature?.OriginalPathBase ?? default;
-            return "protected";
-        }).RequireAuthorization();
-
-        await app.StartAsync();
-        var response = await app.GetTestServer().SendAsync(context =>
-        {
-            context.Request.Method = HttpMethods.Get;
-            context.Request.PathBase = "/base";
-            context.Request.Path = "/source";
-        });
-
-        Assert.Equal(StatusCodes.Status404NotFound, response.Response.StatusCode);
-        Assert.Equal("/source", observedOriginalPath);
-        Assert.Equal("/base", observedOriginalPathBase);
-        Assert.Equal(1, state.CallCount);
-    }
-
     private static async Task RunAuthorizationEnforcementAsync(CreateBuilderFunc createBuilder, bool explicitUseRouting)
     {
         var builder = createBuilder();
@@ -2934,11 +2837,11 @@ public class WebApplicationTests
 
         var debugView = new WebApplication.WebApplicationDebugView(app);
 
-        // Authentication and authorization are nested in the post-routing pipeline so they can run after every
-        // reroute. Like other nested middleware, they aren't represented in the top-level middleware debug view.
         Assert.Collection(debugView.Middleware,
             m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }
@@ -3078,32 +2981,6 @@ public class WebApplicationTests
 
             var identity = new ClaimsIdentity(Scheme.Name);
             identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, username));
-            var principal = new ClaimsPrincipal(identity);
-            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
-        }
-    }
-
-    private sealed class AuthenticationRequestHandlerState
-    {
-        public int CallCount { get; set; }
-    }
-
-    private sealed class CountingRequestHandler(
-        IOptionsMonitor<AuthenticationSchemeOptions> options,
-        ILoggerFactory logger,
-        UrlEncoder encoder,
-        AuthenticationRequestHandlerState state)
-        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder), IAuthenticationRequestHandler
-    {
-        public Task<bool> HandleRequestAsync()
-        {
-            state.CallCount++;
-            return Task.FromResult(false);
-        }
-
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-        {
-            var identity = new ClaimsIdentity(Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
         }
