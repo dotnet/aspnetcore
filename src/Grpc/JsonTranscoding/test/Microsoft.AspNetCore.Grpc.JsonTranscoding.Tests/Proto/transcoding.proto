@@ -149,6 +149,7 @@ message HelloRequest {
   message SubMessage {
     string subfield = 1;
     repeated string subfields = 2;
+    string sub_field_name = 3 [json_name="subFieldNameJson"];
   }
   message DataTypes {
     enum NestedEnum {
@@ -190,6 +191,10 @@ message HelloRequest {
     google.protobuf.UInt64Value uint64_value = 8;
     google.protobuf.BytesValue bytes_value = 9;
   }
+  message RecursiveMessage {
+    string value = 1;
+    RecursiveMessage child = 2;
+  }
   string name = 1;
   SubMessage sub = 2;
   DataTypes data = 3;
@@ -219,6 +224,7 @@ message HelloRequest {
   repeated SubMessage repeated_messages = 25;
   map<int32, int32> map_keyint_valueint = 26;
   SubMessage sub_data = 27;
+  RecursiveMessage recursive = 28;
 }
 
 message HelloReply {

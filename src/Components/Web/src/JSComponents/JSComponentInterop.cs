@@ -34,6 +34,7 @@ public class JSComponentInterop
     }
 
     private const int MaxParameters = 100;
+    private readonly HashSet<int> _jsComponentIds = [];
     private WebRenderer? _renderer;
 
     internal JSComponentConfigurationStore Configuration { get; }
@@ -70,7 +71,9 @@ public class JSComponentInterop
             throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
         }
 
-        return Renderer.AddRootComponent(componentType, domElementSelector);
+        var componentId = Renderer.AddRootComponent(componentType, domElementSelector);
+        _jsComponentIds.Add(componentId);
+        return componentId;
     }
 
     /// <summary>
@@ -80,6 +83,8 @@ public class JSComponentInterop
         Justification = "OpenComponent already has the right set of attributes")]
     protected internal void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson, JsonSerializerOptions jsonOptions)
     {
+        EnsureValidJSComponentId(componentId);
+
         // In case the client misreports the number of parameters, impose bounds so we know the amount
         // of work done is limited to a fixed, low amount.
         if (parameterCount < 0 || parameterCount > MaxParameters)
@@ -153,7 +158,11 @@ public class JSComponentInterop
     /// For framework use only.
     /// </summary>
     protected internal virtual void RemoveRootComponent(int componentId)
-        => Renderer.RemoveRootComponent(componentId);
+    {
+        EnsureValidJSComponentId(componentId);
+        Renderer.RemoveRootComponent(componentId);
+        _jsComponentIds.Remove(componentId);
+    }
 
     internal static ParameterTypeCache GetComponentParameters(Type componentType)
         => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
@@ -190,6 +199,14 @@ public class JSComponentInterop
     {
         var cacheForComponent = GetComponentParameters(componentType);
         return cacheForComponent.ParameterInfoByName.TryGetValue(parameterName, out parameterInfo);
+    }
+
+    private void EnsureValidJSComponentId(int componentId)
+    {
+        if (!_jsComponentIds.Contains(componentId))
+        {
+            throw new InvalidOperationException($"Root component with ID '{componentId}' was not added by JavaScript.");
+        }
     }
 
     internal readonly struct ParameterTypeCache
