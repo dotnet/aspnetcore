@@ -14,6 +14,8 @@ $specialized = Join-Path $testRoot 'specialized.vally.yaml'
 $customExperiment = Join-Path $testRoot 'custom.experiment.yaml'
 $output = Join-Path $testRoot 'results'
 $relativeOutput = 'artifacts/skill-eval-runner-selftest'
+$previousVally = [Environment]::GetEnvironmentVariable('SKILL_EVAL_VALLY')
+$hadPreviousVally = Test-Path Env:SKILL_EVAL_VALLY
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -68,10 +70,11 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     Set-Content $specialized "name: specialized`n"
     Set-Content $customExperiment "name: custom`n"
     $env:SKILL_EVAL_RUNNER_RECORD = $record
+    $env:SKILL_EVAL_VALLY = $fakeVally
 
     Push-Location $testRoot
     try {
-        & $runner -Vally $fakeVally -VallyPrefix @()
+        & $runner
     } finally {
         Pop-Location
     }
@@ -172,5 +175,10 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } finally {
     Remove-Item Env:SKILL_EVAL_RUNNER_RECORD -ErrorAction SilentlyContinue
     Remove-Item Env:SKILL_EVAL_FAKE_FAILURE -ErrorAction SilentlyContinue
+    if ($hadPreviousVally) {
+        $env:SKILL_EVAL_VALLY = $previousVally
+    } else {
+        Remove-Item Env:SKILL_EVAL_VALLY -ErrorAction SilentlyContinue
+    }
     Remove-Item -Recurse -Force $testRoot
 }
