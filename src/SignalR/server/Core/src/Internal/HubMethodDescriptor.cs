@@ -27,6 +27,7 @@ internal sealed class HubMethodDescriptor
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object?>>? _makeCancelableEnumerator;
+    private ConditionalWeakTable<IAuthorizationPolicyProvider, AuthorizationPolicy>? _authorizationPolicies;
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
@@ -179,6 +180,26 @@ internal sealed class HubMethodDescriptor
     public IReadOnlyList<object> AuthorizationMetadata { get; }
 
     public bool HasSyntheticArguments { get; private set; }
+
+    public async ValueTask<AuthorizationPolicy?> GetAuthorizationPolicyAsync(IAuthorizationPolicyProvider policyProvider)
+    {
+        // Keep policies separate by provider identity without retaining scoped or transient providers.
+        var policies = policyProvider.AllowsCachingPolicies
+            ? LazyInitializer.EnsureInitialized(ref _authorizationPolicies)
+            : null;
+        if (policies is not null && policies.TryGetValue(policyProvider, out var cachedPolicy))
+        {
+            return cachedPolicy;
+        }
+
+        var policy = await AuthorizationPolicy.CombineAsync(policyProvider, AuthorizationMetadata);
+        if (policy is not null)
+        {
+            policies?.TryAdd(policyProvider, policy);
+        }
+
+        return policy;
+    }
 
     public bool IsServiceArgument(int argumentIndex)
     {

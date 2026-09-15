@@ -228,7 +228,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             case CancelInvocationMessage cancelInvocationMessage:
                 // Check if there is an associated active invocation or stream and cancel it if it exists.
                 // The cts will be removed when the hub method completes executing
-                if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
+                if (connection.TryGetActiveRequestCancellationSource(cancelInvocationMessage.InvocationId!, out var cts))
                 {
                     Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
@@ -770,18 +770,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return IsHubMethodAuthorizedSlow(
             provider,
             hubCallerContext.User ?? new ClaimsPrincipal(),
-            descriptor.AuthorizationMetadata,
+            descriptor,
             new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
-    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IReadOnlyList<object> authorizationMetadata, HubInvocationContext resource)
+    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, HubMethodDescriptor descriptor, HubInvocationContext resource)
     {
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizationMetadata);
+        var authorizePolicy = await descriptor.GetAuthorizationPolicyAsync(policyProvider);
         if (authorizePolicy is null)
         {
-            // The method had attributes, but none of them contributed authorization metadata 
+            // The method had attributes, but none of them contributed authorization metadata
             return true;
         }
 
