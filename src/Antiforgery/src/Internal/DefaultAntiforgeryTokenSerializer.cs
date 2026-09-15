@@ -6,7 +6,6 @@ using System.Buffers.Text;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -39,34 +38,41 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(maxTokenDecodedSize));
             var tokenBytes = rent[..maxTokenDecodedSize];
 
-            var bytesWritten = WebEncoders.Base64UrlDecode(serializedToken, tokenBytes);
-            var tokenBytesDecoded = tokenBytes[..bytesWritten];
-
-            if (_perfCryptoSystem is not null)
+            try
             {
-                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
-                try
+                Base64Url.DecodeFromChars(serializedToken, tokenBytes, out _, out var bytesWritten);
+                var tokenBytesDecoded = tokenBytes[..bytesWritten];
+
+                if (_perfCryptoSystem is not null)
                 {
-                    _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
-                    var token = Deserialize(protectBuffer.WrittenSpan);
+                    var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+                    try
+                    {
+                        _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
+                        var token = Deserialize(protectBuffer.WrittenSpan);
+                        if (token is not null)
+                        {
+                            return token;
+                        }
+                    }
+                    finally
+                    {
+                        protectBuffer.Dispose();
+                    }
+                }
+                else
+                {
+                    var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
+                    var token = Deserialize(unprotectedBytes);
                     if (token is not null)
                     {
                         return token;
                     }
                 }
-                finally
-                {
-                    protectBuffer.Dispose();
-                }
             }
-            else
+            catch (Exception ex) when (ex is not FormatException)
             {
-                var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
-                var token = Deserialize(unprotectedBytes);
-                if (token is not null)
-                {
-                    return token;
-                }
+                throw new FormatException("The serialized antiforgery token is not a valid Base64Url string.", ex);
             }
         }
         catch (Exception ex)
