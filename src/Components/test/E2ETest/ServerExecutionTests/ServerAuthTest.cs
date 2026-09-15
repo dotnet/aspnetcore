@@ -86,6 +86,29 @@ public class ServerAuthTest : AuthTest
                 """);
     }
 
+    [Fact]
+    public void UpdatesAuthenticationStateWhenAuthenticationRefreshesAutomatically()
+    {
+        SignInAs("user-a", "TestRole", includeNameIdentifier: true);
+        var appElement = MountAndNavigateToAuthTest(
+            AuthorizeViewCases,
+            "?captureAuthenticationRefresh&accelerateAuthenticationRefresh");
+        Browser.Equal("Welcome, user-a!", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        var connectionId = Assert.IsType<string>(
+            javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
+
+        SignInAs(null, null, useSeparateTab: true);
+
+        Browser.Equal("You're not authorized, anonymous", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+        Assert.Equal(
+            connectionId,
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+    }
+
     private void SignInAs(
         string userName,
         string roles,
