@@ -7,12 +7,14 @@
   "scripts": {
     "copy-dependency": "node copyDependency.mjs",
     "copy-dependencies": "npm run copy-bootstrap && npm run copy-jquery && npm run copy-jquery-validation && npm run copy-jquery-validation-unobtrusive",
-    "copy-bootstrap": "npm run copy-bootstrap-blazor && npm run copy-bootstrap-razor-pages && npm run copy-bootstrap-starter-web",
-    "copy-bootstrap-blazor": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/BlazorWeb-CSharp/BlazorWeb-CSharp/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap": "npm run copy-bootstrap-blazor && npm run copy-bootstrap-blazor-wasm && npm run copy-bootstrap-razor-pages && npm run copy-bootstrap-starter-web && npm run copy-bootstrap-identity-ui",
+    "copy-bootstrap-blazor": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/BlazorWeb-CSharp/BlazorWebCSharp.1/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap-blazor-wasm": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/ComponentsWebAssembly-CSharp/wwwroot/lib/bootstrap/dist",
     "copy-bootstrap-razor-pages": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/bootstrap/dist",
     "copy-bootstrap-starter-web": "npm run copy-bootstrap-starter-web-csharp && npm run copy-bootstrap-starter-web-fsharp",
     "copy-bootstrap-starter-web-csharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/bootstrap/dist",
     "copy-bootstrap-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap-identity-ui": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ../../Identity/UI/src/assets/V5/lib/bootstrap/dist",
     "copy-jquery": "npm run copy-jquery-razor-pages && npm run copy-jquery-starter-web",
     "copy-jquery-razor-pages": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/jquery/dist",
     "copy-jquery-starter-web": "npm run copy-jquery-starter-web-csharp && npm run copy-jquery-starter-web-fsharp",
@@ -35,7 +37,7 @@
   },
   "homepage": "https://github.com/dotnet/aspnetcore#readme",
   "dependencies": {
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "jquery": "3.7",
     "jquery-validation": "^1.21.0",
     "jquery-validation-unobtrusive": "^4.0.0"

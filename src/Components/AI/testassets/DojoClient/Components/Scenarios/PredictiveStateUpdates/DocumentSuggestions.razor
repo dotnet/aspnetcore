@@ -1,0 +1,39 @@
+@implements IDisposable
+
+<div class="document-suggestions">
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Please write a story about a pirate named Candy Beard.")'>
+        Write a pirate story
+    </button>
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Please write a story about a mermaid named Luna.")'>
+        Write a mermaid story
+    </button>
+    <button disabled="@IsRunning"
+            @onclick='() => SendAsync("Please add a character named Courage.")'>
+        Add character
+    </button>
+</div>
+
+@code {
+    private IDisposable? _statusChangedRegistration;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    private bool IsRunning
+        => AgentContext.Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+
+    protected override void OnInitialized()
+    {
+        _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(
+            status =>
+            {
+                _ = InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private Task SendAsync(string prompt) => AgentContext.SendMessageAsync(prompt);
+
+    public void Dispose() => _statusChangedRegistration?.Dispose();
+}

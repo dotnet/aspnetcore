@@ -24,51 +24,173 @@ You can submit changes for templates in this repo by submitting a pull request. 
 `content/*/.template.config/localize/` changes in your pull request. (Your build may update the strings in those
 files for later localization.)
 
-## Building locally
+## Building and running locally
 
-### Build
+### Preflight
 
-Some projects in this repository (like SignalR Java Client) require JDK installation and configuration of `JAVA_HOME` environment variable.
+From the repository root:
 
-1. If you don't have the JDK installed, you can find it from https://www.oracle.com/technetwork/java/javase/downloads/index.html
-1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
-1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
+```powershell
+git submodule update --init --recursive
+.\restore.cmd
+. .\activate.ps1
+```
 
-To build the ProjectTemplates, use one of:
+Use `./restore.sh` and `source activate.sh` on Linux or macOS. The `Run-*-Locally.ps1` workflow below currently
+requires Windows x64.
 
-1. Run `eng\build.cmd -all -pack -configuration Release` in the repository root to build and pack all of the repo, including template projects.
-1. Run `src\ProjectTemplates\build.cmd -pack -configuration Release` to produce NuGet packages only for the template projects.
-    - This will also build and pack the shared framework.
+Generated projects under `src\ProjectTemplates\scripts` are ignored by Git but are still found by the
+repository-wide project glob. Remove each generated project directory before starting a full repository build.
 
-**Note** use `eng/build.sh` or `src/ProjectTemplates/build.sh` on non-Windows platforms.
+### Package-only validation
 
-### Test
+Use the ProjectTemplates area build when only template generation and package contents need validation:
 
-#### Running ProjectTemplate tests
+```powershell
+.\src\ProjectTemplates\build.cmd -pack -configuration Release
+```
 
-To run ProjectTemplate tests, first ensure the ASP.NET localhost development certificate is installed and trusted.
-Otherwise, you'll get a test error "Certificate error: Navigation blocked".
+This produces the four template packages under `artifacts\packages\Release\Shipping`. It does not produce the
+complete local package graph, runtime archive, or `Templates.Tests` imports needed to restore, publish, and run a
+generated application.
 
-Then, use one of:
+### Prepare generated-application validation
 
-1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuildDeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
-1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
-    - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
-1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
-    - `dotnet new -i Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
-    - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
-1. Install the templates to an existing Visual Studio installation.
-    1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
-        - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
-    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new install "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
-    3. Run Visual Studio and test out templates manually.
-    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
+Build and pack the full product graph first:
 
-**Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
+```powershell
+.\eng\build.cmd -all -pack -configuration Release -NoBuildInstallers
+```
 
-**Note** Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the
-previous step, it is NOT advised that you install templates created on your local machine using just
-`dotnet new -i [nupkgPath]`.
+On Windows, runtime and targeting pack projects can still invoke `wix.exe`; `-NoBuildInstallers` only excludes
+installer projects. Ensure WiX is available when building that graph. Do not pass `/p:GenerateInstallers=false`
+to the full product pack: runtime-pack targets still expect the installer target. That property is appropriate
+for focused builds that exclude runtime-pack generation.
+
+Then build the delayed test project that generates the local restore imports:
+
+```powershell
+.\eng\build.cmd -configuration Release `
+    -projects src\ProjectTemplates\test\Templates.Tests\Templates.Tests.csproj `
+    -NoBuildDeps -NoBuildInstallers `
+    /p:OnlyTestProjectTemplates=true /p:GenerateInstallers=false
+```
+
+Before running a local script, verify that these producers created:
+
+- `artifacts\packages\Release\Shipping\aspnetcore-runtime-*-dev-win-x64.zip`
+- the complete matching package graph in `artifacts\packages\Release\Shipping` and `NonShipping`
+- `src\ProjectTemplates\test\Templates.Tests\bin\Release\net11.0\TestTemplates\Directory.Build.props` and
+  `Directory.Build.targets`
+
+If an artifact or source is missing, rerun its producer. Do not create an empty package-source directory.
+
+### Instantiate, publish, and run a template
+
+Run the script for the template variant. For example:
+
+```powershell
+.\src\ProjectTemplates\scripts\Run-BlazorWeb-Locally.ps1 -Configuration Release
+```
+
+The script repacks the selected template project, reinstalls the locally built package, recreates its generated
+project under `scripts`, imports the local Shipping and NonShipping package sources, and publishes the generated
+application to `.publish`.
+
+#### Generate a template with Individual authentication
+
+Use a local runner when the generated application must be restored, published, and run against the locally built ASP.NET Core packages and runtime:
+
+```powershell
+.\src\ProjectTemplates\scripts\Run-BlazorWeb-Locally.ps1 `
+    -Auth Individual -Interactivity Auto -Configuration Release
+```
+
+Equivalent runners are available for Razor Pages, MVC, and standalone Blazor WebAssembly:
+
+```powershell
+.\src\ProjectTemplates\scripts\Run-Razor-Locally.ps1 -Auth Individual
+.\src\ProjectTemplates\scripts\Run-Starterweb-Locally.ps1 -Auth Individual
+.\src\ProjectTemplates\scripts\Run-BlazorWasm-Locally.ps1 -Auth Individual
+```
+
+The Blazor Auto runner publishes the server project to
+`src\ProjectTemplates\scripts\MyBlazorApp\MyBlazorApp\.publish\MyBlazorApp.exe`.
+The helper restores the selected main project before running Entity Framework migrations and passes it explicitly as both the EF target and startup project. SQLite is the default; pass `-UseLocalDb` only when LocalDB is required.
+
+To validate template installation and generation without modifying the default template hive, install the locally built package into a custom hive:
+
+```powershell
+$packages = @(Get-ChildItem `
+    ".\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.*-dev.nupkg")
+if ($packages.Count -ne 1) {
+    throw "Expected exactly one locally built web project-template package, but found $($packages.Count)."
+}
+
+$hive = Join-Path $PWD "artifacts\template-hive"
+$output = Join-Path $PWD "artifacts\generated\BlazorIndividual"
+
+dotnet new install $packages[0].FullName --debug:custom-hive $hive
+dotnet new blazor --auth Individual --interactivity Auto --no-restore `
+    --output $output `
+    --debug:disable-sdk-templates `
+    --debug:custom-hive $hive
+```
+
+For Razor Pages or MVC, replace `blazor --interactivity Auto` with `webapp` or `mvc` and retain `--auth Individual`. `--debug:custom-hive` isolates template registration; `--debug:disable-sdk-templates` ensures the SDK-bundled template does not take precedence.
+
+Custom-hive creation validates installation and generation only. Use the `Run-*-Locally.ps1` runners for restore, build, publish, and runtime validation because they add the generated `Templates.Tests` imports, both local package sources, and the isolated locally built runtime.
+
+Run framework-dependent outputs with the isolated SDK and locally built `Microsoft.AspNetCore.App` prepared by
+the script:
+
+```powershell
+$scripts = Join-Path $PWD "src\ProjectTemplates\scripts"
+$env:DOTNET_ROOT = Join-Path $scripts ".dotnet"
+$env:DOTNET_ROOT_X86 = $env:DOTNET_ROOT
+$env:PATH = "$env:DOTNET_ROOT;$env:PATH"
+$env:ASPNETCORE_URLS = "http://127.0.0.1:5005"
+& "$scripts\MyBlazorApp\.publish\MyBlazorApp.exe"
+```
+
+Confirm behavior at the application boundary, then stop the process with <kbd>Ctrl</kbd>+<kbd>C</kbd>:
+
+| Area | Script | Generated output | Manual probe |
+| --- | --- | --- | --- |
+| Web API | `Run-WebApi-Locally.ps1` | `webapi\.publish\webapi.exe` | Request `/weatherforecast` |
+| Blazor | `Run-BlazorWeb-Locally.ps1` | `MyBlazorApp\.publish\MyBlazorApp.exe` (Server) or `MyBlazorApp\MyBlazorApp\.publish\MyBlazorApp.exe` (Auto/WebAssembly) | Request `/`, complete registration/login for Individual auth, and interact with the changed UI |
+| Worker | `Run-Worker-Locally.ps1` | `worker\.publish\worker.exe` | Observe the recurring worker log |
+| gRPC | `Run-gRPC-Locally.ps1` | `grpc\.publish\grpc.exe` | Call the Greeter service with an HTTP/2 gRPC client |
+| MCP | `Run-McpServer-Locally.ps1` | `mcpserver\.publish\mcpserver.exe` | Connect an MCP stdio client and initialize a session |
+
+Rerun the same script after editing template sources; it removes and recreates only that generated output. Use
+`dotnet new uninstall` with the isolated SDK to list and remove the locally installed package when finished.
+
+### Automated tests
+
+To run ProjectTemplate tests, first ensure the ASP.NET localhost development certificate is installed and
+trusted. Otherwise, navigation tests fail with "Certificate error: Navigation blocked".
+
+Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuildDeps -configuration Release` (or the
+equivalent `build.sh` command) after producing its prerequisites. ProjectTemplates tests require Visual Studio
+unless a full CI build is performed.
+
+##### Focused `Templates.Tests` workflow
+
+`Templates.Tests.csproj` is a delayed-build project. When selecting it directly through the repository build
+orchestration, pass `/p:OnlyTestProjectTemplates=true`; otherwise the normal delayed-project import can change
+project selection before the requested test runs.
+
+On Windows, a focused validation that excludes runtime-pack generation can pass
+`/p:GenerateInstallers=false`. `-NoBuildInstallers` controls installer project selection by setting
+`BuildInstallers=false`, but it does not suppress installer generation requested while producing runtime packs.
+
+The applications generated by `Templates.Tests` restore from both
+`artifacts\packages\<Configuration>\Shipping` and `artifacts\packages\<Configuration>\NonShipping`. For this
+branch, restore requires the complete matching `11.0.0-dev` package graph in those sources, not only the template
+packages. Before running a focused test, map each required package to its producer and run the corresponding
+build or pack steps. If a local artifact source is missing, produce it; do not create an empty directory to make
+the source path exist.
 
 #### Running Blazor Playwright Template Tests
 

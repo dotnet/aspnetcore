@@ -349,4 +349,112 @@ webApp.MapGet(""/"", HttpMethod);
 static Task HttpMethod(HttpContext context) => Task.CompletedTask;
 ");
     }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedAnonymousDelegate_DoesNotReportDiagnostics()
+    {
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run((context) =>
+{
+    Func<Task<DateTime>> _ = () => Task.FromResult(DateTime.Now);
+    return Task.CompletedTask;
+});
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedLambdaPassedToMethod_DoesNotReportDiagnostics()
+    {
+        // This test simulates the real-world case from the issue where a lambda
+        // returning Task<Stream> is passed to ThrowsAsync as Func<Task<Stream>>
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run(async (context) =>
+{
+    await SomeMethodThatTakesFunc(() => Task.FromResult(Stream.Null));
+});
+
+static Task SomeMethodThatTakesFunc(Func<Task<Stream>> func) => Task.CompletedTask;
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedLocalFunction_DoesNotReportDiagnostics()
+    {
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run(async (context) =>
+{
+    Task<string> Local()
+    {
+        return Task.FromResult(""hello world"");
+    }
+
+    await Local();
+});
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedLocalFunctionInsideLambda_DoesNotReportDiagnostics()
+    {
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run((context) =>
+{
+    Func<Task> _ = () =>
+    {
+        Task<string> Local()
+        {
+            return Task.FromResult(""hello world"");
+        }
+
+        return Local();
+    };
+
+    return Task.CompletedTask;
+});
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_OuterReturnAlongsideNestedFunctions_ReportDiagnostics()
+    {
+        // The nested lambda and local function returns must be skipped, but the
+        // RequestDelegate's own returned Task<string> must still be reported.
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapGet(""/"",{|#0:(HttpContext context) =>
+{
+    Func<Task<int>> _ = () => Task.FromResult(1);
+
+    Task<bool> Local()
+    {
+        return Task.FromResult(true);
+    }
+
+    return Task.FromResult(""hello world"");
+}|});
+",
+        new DiagnosticResult(DiagnosticDescriptors.DoNotReturnValueFromRequestDelegate)
+            .WithLocation(0)
+            .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
+    }
 }

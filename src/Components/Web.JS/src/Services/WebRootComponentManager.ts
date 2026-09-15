@@ -272,13 +272,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
     const rendererIds: Set<WebRendererId> = new Set<WebRendererId>();
     for (const component of components) {
+      const operation = this.determinePendingOperation(component);
+
+      // Capture the renderer IDs for the available components to determine the
+      // effective render modes in the document for discovering new persisted state.
+      // This must happen after determining the pending operation, because a component
+      // that is being activated for the first time only gets assigned a renderer ID
+      // as part of computing its 'add' operation.
       if (discoverNewState && component.assignedRendererId !== undefined) {
-        // Capture the renderer IDs for the available components to determine the
-        // effective render modes in the document for discovering new persisted state.
         rendererIds.add(component.assignedRendererId);
       }
 
-      const operation = this.determinePendingOperation(component);
       if (!operation) {
         continue;
       }

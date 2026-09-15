@@ -353,7 +353,7 @@ public class MapConnectionHandlerTests
     }
 
     [Fact]
-    public void MapConnectionHandlerEndPointRoutingAppliesAuthenticationRefreshMetadataWhenEnabled()
+    public void MapConnectionHandlerEndPointRoutingAppliesAuthenticationRefreshAndAuthorizationMetadataWhenEnabled()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
         {
@@ -383,6 +383,7 @@ public class MapConnectionHandlerTests
                     var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
                     Assert.NotNull(optionsMetaData);
                     Assert.True(optionsMetaData.EnableAuthenticationRefresh);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
                 },
                 endpoint =>
                 {

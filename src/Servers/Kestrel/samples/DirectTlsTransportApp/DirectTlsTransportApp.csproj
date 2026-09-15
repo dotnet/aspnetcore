@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <!-- UseKestrelCore references these transports at JIT-metadata level (NamedPipes is
+         Windows-only guarded; Quic only for the USE_STANDARD_TLS=1 comparison path). The app
+         resolves ASP.NET assemblies app-local (no shared framework), so they must be referenced
+         explicitly to land in deps.json; neither is actually invoked on this Linux sample. -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+
+    <!-- Override Transport.Sockets to use our local build instead of shared framework -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets"
+               HintPath="$(ArtifactsBinDir)Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets/$(Configuration)/$(DefaultNetCoreTargetFramework)/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll"
+               Private="true" />
+
+    <!-- The DirectTls transport is not part of the shared framework; resolve it from the local project list. -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="server-p256.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="server-p256.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="server-p256.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="server-p384.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="server-p384.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="server-p384.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -73,14 +73,18 @@ internal sealed partial class CacheViewService : IDisposable
         return varyByMatches;
     }
 
-   private static string FormatVaryByFlags(CacheVaryBy varyBy)
+    private static string FormatVaryByFlags(CacheVaryBy varyBy)
         => "CacheVaryBy." + varyBy.ToString().Replace(", ", " | CacheVaryBy.");
+
+    // HEAD shares GET's cache entries: it renders the identical representation, and the server drops the
+    // response body below the capturing writer, so a HEAD-populated entry matches a GET-populated one.
+    private static bool IsCacheableRequestMethod(string method)
+        => HttpMethods.IsGet(method) || HttpMethods.IsHead(method);
 
     public async Task<CacheViewRenderState?> PrepareAsync(CacheView cacheView, HttpContext httpContext)
     {
-        // Skip cache if method is not GET, caching is disabled, or the cacheView is rendered inside a
-        // streaming render context (not yet supported).
-        if (!cacheView.Enabled || !HttpMethods.IsGet(httpContext.Request.Method) || cacheView.IsInStreamingContext)
+        // Rendering inside a streaming render context is not supported yet.
+        if (!cacheView.Enabled || !IsCacheableRequestMethod(httpContext.Request.Method) || cacheView.IsInStreamingContext)
         {
             return null;
         }
