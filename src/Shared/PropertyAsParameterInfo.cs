@@ -218,6 +218,8 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
         }
 
         var attributes = Attribute.GetCustomAttributes(_underlyingProperty, attributeType, inherit);
+        // GetCustomAttributes<T> casts this result to T[], so preserve the runtime array type
+        // returned by the typed PropertyInfo overload instead of returning Attribute[].
         var typedAttributes = Array.CreateInstanceFromArrayType(declaredAttributes.GetType(), attributes.Length);
         Array.Copy(attributes, typedAttributes, attributes.Length);
 
