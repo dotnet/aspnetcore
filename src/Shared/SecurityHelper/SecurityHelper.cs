@@ -13,7 +13,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+#if MVC_TAGHELPERS
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+#else
 namespace Microsoft.Extensions.Internal;
+#endif
 
 /// <summary>
 /// Helper code for security-related operations.
