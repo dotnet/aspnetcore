@@ -40,7 +40,16 @@ public static class RateLimiterApplicationBuilderExtensions
 
         VerifyServicesAreRegistered(app);
 
-        return app.UseMiddleware<RateLimitingMiddleware>(Options.Create(options));
+        var middleware = app.ApplicationServices.GetService<RateLimitingMiddleware>();
+        if (middleware == null)
+        {
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(RateLimiterServiceCollectionExtensions.AddRateLimiter)));
+        }
+        middleware.Initialize(Options.Create(options));
+
+        return app.UseMiddleware<RateLimitingMiddleware>();
     }
 
     private static void VerifyServicesAreRegistered(IApplicationBuilder app)
