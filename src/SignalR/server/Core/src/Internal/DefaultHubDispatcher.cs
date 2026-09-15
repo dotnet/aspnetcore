@@ -791,6 +791,20 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return authorizationResult.Succeeded;
     }
 
+    private static void EnsureNoAuthenticationSchemeSpecified(IReadOnlyList<object> authorizationMetadata)
+    {
+        // It's not meaningful to specify a nonempty scheme, since by the time hub method
+        // authorization runs, the connection already has a specific ClaimsPrincipal (we're stateful).
+        // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
+        for (var i = 0; i < authorizationMetadata.Count; i++)
+        {
+            if (authorizationMetadata[i] is IAuthorizeData entry && !string.IsNullOrEmpty(entry.AuthenticationSchemes))
+            {
+                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for hub methods.");
+            }
+        }
+    }
+
     private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamResponse,
         HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
     {
@@ -914,6 +928,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
             var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true);
+            EnsureNoAuthenticationSchemeSpecified(authorizationMetadata);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata);
             _cachedMethodNames.Add(methodName);
 
