@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -188,36 +189,15 @@ internal static class CacheViewKeyResolver
 
     private static void AppendUserIdentity(IncrementalHash hash, ClaimsPrincipal user)
     {
-        var identity = user.Identity;
-        var isAuthenticated = identity?.IsAuthenticated == true;
-
-        AppendLengthPrefixedString(hash, isAuthenticated ? "1" : "0");
-        AppendLengthPrefixedString(hash, identity?.AuthenticationType ?? "");
-
-        if (!isAuthenticated)
+        Span<byte> userIdentifier = stackalloc byte[SecurityHelper.UserIdentifierSize];
+        if (!SecurityHelper.TryGetUserIdentifier(user, userIdentifier))
         {
-            // Anonymous: nothing more to mix in.
-            AppendLengthPrefixedString(hash, "anonymous");
+            AppendLengthPrefixedString(hash, "NoIdentifier");
             return;
         }
 
-        var nameIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-        if (nameIdClaim is not null && !string.IsNullOrEmpty(nameIdClaim.Value))
-        {
-            AppendLengthPrefixedString(hash, "nameid");
-            AppendLengthPrefixedString(hash, nameIdClaim.Value);
-            AppendLengthPrefixedString(hash, nameIdClaim.Issuer);
-            return;
-        }
-
-        AppendLengthPrefixedString(hash, "claims");
-        AppendLengthPrefixedString(hash, identity?.Name ?? "");
-        foreach (var claim in user.Claims)
-        {
-            AppendLengthPrefixedString(hash, claim.Type);
-            AppendLengthPrefixedString(hash, claim.Value);
-            AppendLengthPrefixedString(hash, claim.Issuer);
-        }
+        AppendLengthPrefixedString(hash, "Identifier");
+        hash.AppendData(userIdentifier);
     }
 
     private static void AppendNameStringValues(IncrementalHash hash, string name, StringValues values)

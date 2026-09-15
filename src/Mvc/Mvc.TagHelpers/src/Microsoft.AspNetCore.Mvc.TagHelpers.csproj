@@ -8,10 +8,12 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\**\*" />
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
