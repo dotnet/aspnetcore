@@ -84,7 +84,7 @@ try
         -Path $BlazorInputPath `
         -Id "blazor" `
         -Label "Blazor" `
-        -OpenByDefault $true `
+        -OpenByDefault $false `
         -ExpectedFilterName "blazor" `
         -ExpectedAllRepositoryPullRequests $false
     $repositoryWide = Read-PulseArea `

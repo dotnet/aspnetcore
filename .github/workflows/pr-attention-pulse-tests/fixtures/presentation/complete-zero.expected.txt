@@ -5,7 +5,7 @@
 
 This report contains the **Blazor** Pulse area.
 
-<details open>
+<details>
 <summary><strong>Blazor</strong> - 0 matched; 0 review now; 0 rescue; 0 ready; generated 2026-09-10T20:00:00.0000000Z</summary>
 
 > Source generated: `2026-09-10T20:00:00.0000000Z`; attempted: `2026-09-10T20:04:56.0000000Z`.

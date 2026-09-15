@@ -39,6 +39,7 @@ $testRoot = $PSScriptRoot
 $workflowRoot = Split-Path -Parent $testRoot
 $workflowPath = Join-Path $workflowRoot "pr-attention-pulse.md"
 $lockPath = Join-Path $workflowRoot "pr-attention-pulse.lock.yml"
+$combinerPath = Join-Path $workflowRoot "pr-attention-pulse/Combine-PRAttentionPulse.ps1"
 $contractPath = Join-Path $workflowRoot "pr-attention-pulse/PRAttentionPulseContract.psm1"
 $publishedFixturePath = Join-Path $testRoot "fixtures/presentation/published-34643961191.pulse.json"
 
@@ -219,8 +220,10 @@ Invoke-Control "BlazorScopeAndPresentation" {
         Assert-True ($workflow.Contains($path)) "The trusted workflow must explicitly handle and delete '$path'."
     }
 
+    $combiner = Get-Content -LiteralPath $combinerPath -Raw
+    Assert-True (-not $combiner.Contains('-OpenByDefault $true')) "No Pulse area may be expanded by default."
+    Assert-True ([regex]::Matches($combiner, '(?m)^\s*-OpenByDefault \$false').Count -eq 2) "Both Pulse area envelopes must be collapsed by default."
     $contract = Get-Content -LiteralPath $contractPath -Raw
-    Assert-True ($contract.Contains('if ($Area.openByDefault) { "<details open>" } else { "<details>" }')) "The trusted renderer must distinguish expanded and collapsed area blocks."
     Assert-True ($contract.Contains("This initial area composition includes the maintained **Blazor** view and a **Repository-wide** baseline.")) "The trusted renderer must explain the two initial scopes."
     Assert-True ($contract.Contains("Additional product areas will be added only after maintainers define their exact label/path queries")) "The trusted renderer must defer future area taxonomy and presentation decisions."
 }

@@ -161,7 +161,7 @@ function Get-PulseAreas
 
         $areas = @($Pulse.areas)
         $expected = @(
-            @{ Id = "blazor"; Label = "Blazor"; Open = $true },
+            @{ Id = "blazor"; Label = "Blazor"; Open = $false },
             @{ Id = "repository-wide"; Label = "Repository-wide"; Open = $false }
         )
         for ($index = 0; $index -lt $expected.Count; $index++)
@@ -205,7 +205,7 @@ function Get-PulseAreas
     $area = [ordered]@{
         id = [string]$Pulse.scope
         label = if ($Pulse.scope -ceq "blazor") { "Blazor" } else { "Repository-wide" }
-        openByDefault = $Pulse.scope -ceq "blazor"
+        openByDefault = $false
         status = [string]$Pulse.status
         attemptedAt = $Pulse.attemptedAt
         candidateCountsAvailable = $Pulse.candidateCountsAvailable

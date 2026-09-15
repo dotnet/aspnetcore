@@ -5,7 +5,7 @@
 
 This report contains the **Blazor** Pulse area.
 
-<details open>
+<details>
 <summary><strong>Blazor</strong> - data unavailable; attempted 2026-09-10T20:04:56.0000000Z</summary>
 
 > [!WARNING]
