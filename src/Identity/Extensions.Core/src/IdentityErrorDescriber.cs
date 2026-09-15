@@ -95,13 +95,14 @@ public class IdentityErrorDescriber
     /// Returns an <see cref="IdentityError"/> indicating the specified user <paramref name="userName"/> is invalid.
     /// </summary>
     /// <param name="userName">The user name that is invalid.</param>
+    /// <param name="allowedUsernameCharacters">The characters that are allowed in the username.</param>
     /// <returns>An <see cref="IdentityError"/> indicating the specified user <paramref name="userName"/> is invalid.</returns>
-    public virtual IdentityError InvalidUserName(string? userName)
+    public virtual IdentityError InvalidUserName(string? userName, string? allowedUsernameCharacters)
     {
         return new IdentityError
         {
             Code = nameof(InvalidUserName),
-            Description = Resources.FormatInvalidUserName(userName)
+            Description = Resources.FormatInvalidUserName(userName, allowedUsernameCharacters)
         };
     }
 
