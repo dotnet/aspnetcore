@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
@@ -106,7 +106,119 @@ internal sealed class Tokenizer
         {
             var token = tokens[i];
             var trimmed = token.Trim('\"');
-            tokens[i] = Regex.Unescape(trimmed);
+            tokens[i] = UnescapeToken(trimmed);
         }
     }
+
+    // Unescapes characters escaped for the mod_rewrite file format while preserving regex escape
+    // sequences such as \d, which must be passed through unaltered to the regex engine.
+    private static string UnescapeToken(string token)
+    {
+        if (!token.Contains(Escape))
+        {
+            return token;
+        }
+
+        var builder = new StringBuilder(token.Length);
+        for (var i = 0; i < token.Length; i++)
+        {
+            var current = token[i];
+            if (current != Escape)
+            {
+                builder.Append(current);
+                continue;
+            }
+
+            if (i == token.Length - 1)
+            {
+                // A trailing escape character can only occur within a quoted token, since
+                // Tokenize throws otherwise. It is removed, matching the previous behavior.
+                break;
+            }
+
+            var escaped = token[++i];
+            switch (escaped)
+            {
+                case 'a':
+                    builder.Append('\a');
+                    break;
+                case 'f':
+                    builder.Append('\f');
+                    break;
+                case 'n':
+                    builder.Append('\n');
+                    break;
+                case 'r':
+                    builder.Append('\r');
+                    break;
+                case 't':
+                    builder.Append('\t');
+                    break;
+                case 'v':
+                    builder.Append('\v');
+                    break;
+                case 'x':
+                case 'u':
+                {
+                    var length = escaped == 'x' ? 2 : 4;
+                    var value = 0;
+                    var valid = true;
+                    for (var j = 1; j <= length; j++)
+                    {
+                        var digit = i + j < token.Length ? GetHexDigitValue(token[i + j]) : -1;
+                        if (digit < 0)
+                        {
+                            valid = false;
+                            break;
+                        }
+                        value = (value << 4) | digit;
+                    }
+                    if (valid)
+                    {
+                        builder.Append((char)value);
+                        i += length;
+                    }
+                    else
+                    {
+                        builder.Append(Escape).Append(escaped);
+                    }
+                    break;
+                }
+                case >= '0' and <= '7':
+                {
+                    var value = escaped - '0';
+                    var count = 1;
+                    while (count < 3 && i + 1 < token.Length && token[i + 1] >= '0' && token[i + 1] <= '7')
+                    {
+                        value = (value << 3) | (token[++i] - '0');
+                        count++;
+                    }
+                    builder.Append((char)(value & 0xFF));
+                    break;
+                }
+                default:
+                    if ((escaped >= 'a' && escaped <= 'z') || (escaped >= 'A' && escaped <= 'Z') || escaped is '8' or '9')
+                    {
+                        // Preserve regex shorthand escapes and backreferences so they are
+                        // interpreted by the regex engine rather than unescaped here.
+                        builder.Append(Escape).Append(escaped);
+                    }
+                    else
+                    {
+                        builder.Append(escaped);
+                    }
+                    break;
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static int GetHexDigitValue(char character) => character switch
+    {
+        >= '0' and <= '9' => character - '0',
+        >= 'a' and <= 'f' => character - 'a' + 10,
+        >= 'A' and <= 'F' => character - 'A' + 10,
+        _ => -1,
+    };
 }
