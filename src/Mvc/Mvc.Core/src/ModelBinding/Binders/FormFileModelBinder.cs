@@ -142,6 +142,9 @@ public partial class FormFileModelBinder : IModelBinder
         {
             var form = await request.ReadFormAsync();
 
+            // Check if the target is a collection rather than a scalar IFormFile
+            var allowIndexedMatches = typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType) && !typeof(IFormFile).IsAssignableFrom(bindingContext.ModelType);
+
             foreach (var file in form.Files)
             {
                 // If there is an <input type="file" ... /> in the form and is left blank.
@@ -150,11 +153,15 @@ public partial class FormFileModelBinder : IModelBinder
                     continue;
                 }
 
-                if (file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase) ||
-                    (file.Name.Length - 2 >= modelName.Length &&
-                     file.Name.StartsWith(modelName, StringComparison.OrdinalIgnoreCase) &&
-                     file.Name[modelName.Length] == '[' &&
-                     file.Name[file.Name.Length - 1] == ']'))
+                var isExactMatch = file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase);
+
+                var isIndexedMatch = allowIndexedMatches &&
+                    file.Name.Length - 2 >= modelName.Length &&
+                    file.Name.StartsWith(modelName, StringComparison.OrdinalIgnoreCase) &&
+                    file.Name[modelName.Length] == '[' &&
+                    file.Name[file.Name.Length - 1] == ']';
+
+                if (isExactMatch || isIndexedMatch)
                 {
                     postedFiles.Add(file);
                 }

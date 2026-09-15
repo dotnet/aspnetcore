@@ -519,6 +519,54 @@ public class FormFileModelBinderTest
         Assert.Equal("file2.txt", files[1].FileName);
     }
 
+    [Fact]
+    public async Task BindModelAsync_ScalarFormFile_IgnoresIndexedMatch_WhenIndexedAppearsFirst()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+        {
+            GetMockFormFile("file[0]", "wrong.txt"),
+            GetMockFormFile("file", "correct.txt")
+        };
+
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+        var result = Assert.IsAssignableFrom<IFormFile>(bindingContext.Result.Model);
+
+        // Ensure the exact match was chosen, NOT the indexed file[0]
+        Assert.Equal("correct.txt", result.FileName);
+    }
+
+    [Theory]
+    [InlineData(typeof(IFormFile))]
+    [InlineData(typeof(IFormFileCollection))]
+    [InlineData(typeof(List<IFormFile>))]
+    public async Task BindModelAsync_IgnoresPureIndexKeys_WhenModelNameIsSpecified(Type modelType)
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+        {
+            GetMockFormFile("[0]", "unprefixed.txt"),
+        };
+
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.False(bindingContext.Result.IsModelSet);
+    }
+
     private static DefaultModelBindingContext GetBindingContextForReadOnlyArray(HttpContext httpContext)
     {
         var metadataProvider = new TestModelMetadataProvider();
