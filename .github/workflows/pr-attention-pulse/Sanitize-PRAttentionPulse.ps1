@@ -14,6 +14,9 @@ param(
 
     [int]$CollectionExitCode = 0,
 
+    [ValidateSet("blazor", "repository-wide")]
+    [string]$Scope = "blazor",
+
     [string]$ExpectedRepository = "dotnet/aspnetcore",
 
     [string]$ExpectedSchemaVersion = "1.0.0",
@@ -24,6 +27,28 @@ param(
 
 $ErrorActionPreference = "Stop"
 $pulseSchemaVersion = "1.0.0"
+$scopeContract = if ([string]::Equals($Scope, "blazor", [StringComparison]::Ordinal))
+{
+    @{
+        Name = "blazor"
+        Description = "Blazor and Components pull requests"
+        Coverage = "labels-and-paths"
+        Selection = "(labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**])"
+        AllRepositoryPullRequests = $false
+        ScopeMatches = @("label-only", "path-only", "label-and-path")
+    }
+}
+else
+{
+    @{
+        Name = "adhoc"
+        Description = "Ad hoc pull-request scope"
+        Coverage = "all-repo"
+        Selection = "(all open pull requests)"
+        AllRepositoryPullRequests = $true
+        ScopeMatches = @("all-repo")
+    }
+}
 
 function Throw-ContractError
 {
@@ -331,6 +356,7 @@ function New-FailureEnvelope
 
     return [ordered]@{
         schemaVersion = $pulseSchemaVersion
+        scope = $Scope
         status = "unavailable"
         attemptedAt = $AttemptTimestamp.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", [Globalization.CultureInfo]::InvariantCulture)
         source = [ordered]@{
@@ -401,9 +427,11 @@ function ConvertTo-SanitizedItem
             -MaximumLength 300
         ageDays = Get-RequiredInteger -Object $Item -Name "ageDays"
         idleDays = Get-RequiredInteger -Object $Item -Name "idleDays"
-        scopeMatch = ConvertTo-SafeDisplayText `
-            -Value (Get-RequiredString -Object $Item -Name "scopeMatch") `
-            -MaximumLength 80
+        scopeMatch = Get-RequiredString -Object $Item -Name "scopeMatch"
+    }
+    if (-not (Test-OrdinalIn -Value $result.scopeMatch -AllowedValues $scopeContract.ScopeMatches))
+    {
+        Throw-ContractError "invalid-contract"
     }
 
     if ($IncludeDiscussion)
@@ -520,8 +548,11 @@ function ConvertTo-SanitizedResult
     }
 
     $filter = Get-RequiredProperty -Object $Raw -Name "filter"
-    if (-not (Get-RequiredBoolean -Object $filter -Name "allRepositoryPullRequests") -or
-        -not (Test-OrdinalEqual -Left (Get-RequiredString -Object $filter -Name "coverage") -Right "all-repo"))
+    if ((Get-RequiredBoolean -Object $filter -Name "allRepositoryPullRequests") -ne $scopeContract.AllRepositoryPullRequests -or
+        -not (Test-OrdinalEqual -Left (Get-RequiredString -Object $filter -Name "name") -Right $scopeContract.Name) -or
+        -not (Test-OrdinalEqual -Left (Get-RequiredString -Object $filter -Name "description") -Right $scopeContract.Description) -or
+        -not (Test-OrdinalEqual -Left (Get-RequiredString -Object $filter -Name "coverage") -Right $scopeContract.Coverage) -or
+        -not (Test-OrdinalEqual -Left (Get-RequiredString -Object $filter -Name "selection") -Right $scopeContract.Selection))
     {
         Throw-ContractError "invalid-contract"
     }
@@ -610,7 +641,7 @@ function ConvertTo-SanitizedResult
 
     $returnedCount = Get-RequiredInteger -Object $query -Name "returnedPullRequestCount"
     $openCount = Get-RequiredInteger -Object $query -Name "openPullRequestCount"
-    if ($returnedCount -ne $items.Count -or $openCount -ne $returnedCount)
+    if ($openCount -ne $returnedCount)
     {
         Throw-ContractError "invalid-contract"
     }
@@ -700,6 +731,7 @@ function ConvertTo-SanitizedResult
 
     return [ordered]@{
         schemaVersion = $pulseSchemaVersion
+        scope = $Scope
         status = "complete"
         attemptedAt = $AttemptTimestamp.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", [Globalization.CultureInfo]::InvariantCulture)
         candidateCountsAvailable = $true
@@ -713,17 +745,11 @@ function ConvertTo-SanitizedResult
                 complete = $true
             }
             filter = [ordered]@{
-                name = ConvertTo-SafeDisplayText `
-                    -Value (Get-RequiredString -Object $filter -Name "name") `
-                    -MaximumLength 80
-                description = ConvertTo-SafeDisplayText `
-                    -Value (Get-RequiredString -Object $filter -Name "description") `
-                    -MaximumLength 200
-                coverage = "all-repo"
-                selection = ConvertTo-SafeDisplayText `
-                    -Value (Get-RequiredString -Object $filter -Name "selection") `
-                    -MaximumLength 200
-                allRepositoryPullRequests = $true
+                name = $scopeContract.Name
+                description = $scopeContract.Description
+                coverage = $scopeContract.Coverage
+                selection = $scopeContract.Selection
+                allRepositoryPullRequests = $scopeContract.AllRepositoryPullRequests
             }
             discussion = [ordered]@{
                 candidateLimit = $discussionCandidateLimit

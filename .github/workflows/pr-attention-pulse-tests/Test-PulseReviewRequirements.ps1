@@ -66,6 +66,13 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
     $artifactDownload = $lock.IndexOf("name: Download activation artifact", [StringComparison]::Ordinal)
     $preAgentCleanup = $lock.IndexOf("name: Enforce model-visible Pulse boundary", [StringComparison]::Ordinal)
     Assert-True ($preAgentCleanup -gt $artifactDownload -and $preAgentCleanup -lt $agentStepStart) "The model-visible boundary must be enforced after artifact download and before inference."
+    $trustedCleanupStart = $lock.IndexOf("name: Protect canonical Pulse artifacts", [StringComparison]::Ordinal)
+    Assert-True ($trustedCleanupStart -ge 0 -and $trustedCleanupStart -lt $preAgentCleanup) "Trusted workspace cleanup must run before the pre-agent boundary check."
+    $trustedCleanupStep = $lock.Substring($trustedCleanupStart, $preAgentCleanup - $trustedCleanupStart)
+    Assert-True ($trustedCleanupStep.Contains('Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Force')) "Trusted cleanup must enumerate every workspace root entry."
+    Assert-True ($trustedCleanupStep.Contains('$_.Name, \".pr-attention-pulse\"')) "Trusted cleanup must preserve only the bounded Pulse directory."
+    Assert-True ($trustedCleanupStep.Contains("Remove-Item -Recurse -Force")) "Trusted cleanup must delete every other workspace entry."
+    Assert-True (-not $trustedCleanupStep.Contains("Remove-Item -Recurse -Force .github, .git")) "Trusted cleanup must not delete only repository metadata while leaving other checkout files."
     $cleanupStep = $lock.Substring($preAgentCleanup, $agentStepStart - $preAgentCleanup)
     foreach ($requiredText in @(
         "/tmp/gh-aw/base",
@@ -86,7 +93,7 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
     Assert-True ($toolCommentStart -ge 0 -and $toolCommentEnd -gt $toolCommentStart) "The effective Copilot tool comment could not be isolated."
     $toolComment = $agentStep.Substring($toolCommentStart, $toolCommentEnd - $toolCommentStart)
     $actualShellTools = @(
-        [regex]::Matches($toolComment, "(?m)^        # --allow-tool shell\((?<command>[^)]+)\)$") |
+        [regex]::Matches($toolComment, "(?m)^        # --allow-tool shell\((?<command>[^)]+)\)\r?$") |
             ForEach-Object { $_.Groups["command"].Value }
     )
     $expectedShellTools = @("cat", "date", "echo", "grep", "head", "ls", "printf", "pwd", "safeoutputs:*", "sort", "tail", "uniq", "wc", "yq")
@@ -121,9 +128,48 @@ Invoke-Control "TelemetryCredentialExclusions" {
     }
 }
 
+Invoke-Control "DynamicDashboardTarget" {
+    $variableExpression = '${{ vars.PR_ATTENTION_PULSE_ISSUE_NUMBER }}'
+    $targetExpression = '${{ needs.resolve_dashboard_target.outputs.issue_number }}'
+    Assert-True (-not ($workflow -match '(?m)^\s*issue_number:\s*58\s*$')) "The source prompt must not emit the fork's issue 58."
+    Assert-True (-not ($workflow -match '(?m)^\s*target:\s*["'']?58["'']?\s*$')) "The source safe-output policy must not target the fork's issue 58."
+    Assert-True (-not ($lock -match '(?m)^\s*issue_number:\s*58\s*$')) "The generated prompt must not emit the fork's issue 58."
+    Assert-True (-not $lock.Contains('"target":"58"')) "The generated handler policy must not target the fork's issue 58."
+    Assert-True ($workflow.Contains("PR_ATTENTION_PULSE_ISSUE_NUMBER: $variableExpression")) "The trusted resolver must read the repository variable."
+    Assert-True ($workflow.Contains("target: $targetExpression")) "The source safe-output policy must use the immutable validated job output."
+    Assert-True ($lock.Contains($targetExpression)) "The generated workflow must preserve the immutable dynamic target expression."
+
+    $sourceTargetChecks = @([regex]::Matches($workflow, "(?m)^\s+- name: Validate configured Pulse dashboard target\r?$"))
+    Assert-True ($sourceTargetChecks.Count -eq 1) "The agent job must validate the configured dashboard target once before inference."
+    $resolverStart = $lock.IndexOf("resolve_dashboard_target:", [StringComparison]::Ordinal)
+    $resolverOutput = $lock.IndexOf('issue_number: ${{ steps.target.outputs.issue_number }}', $resolverStart, [StringComparison]::Ordinal)
+    Assert-True ($resolverStart -ge 0 -and $resolverOutput -gt $resolverStart) "The trusted resolver must publish the validated issue number."
+    $agentJobStart = $lock.IndexOf("`n  agent:", [StringComparison]::Ordinal)
+    $agentNeeds = $lock.Substring($agentJobStart, $agentStepStart - $agentJobStart)
+    Assert-True ($agentNeeds.Contains("resolve_dashboard_target")) "The agent job must depend on successful target resolution."
+    $safeOutputsStart = $lock.IndexOf("`n  safe_outputs:", [StringComparison]::Ordinal)
+    $handlerStep = $lock.IndexOf("name: Process Safe Outputs", $safeOutputsStart, [StringComparison]::Ordinal)
+    $safeOutputTargetCheck = $lock.IndexOf("name: Revalidate configured Pulse dashboard target", $safeOutputsStart, [StringComparison]::Ordinal)
+    Assert-True ($safeOutputTargetCheck -gt $safeOutputsStart -and $safeOutputTargetCheck -lt $handlerStep) "The configured dashboard target must be revalidated immediately before safe-output handling."
+    $safeOutputPrelude = $lock.Substring($safeOutputsStart, $handlerStep - $safeOutputsStart)
+    Assert-True ($safeOutputPrelude.Contains("resolve_dashboard_target")) "The safe-output job must depend on the same trusted target resolution."
+
+    foreach ($requiredText in @(
+        '^[1-9][0-9]*$',
+        'pull_request',
+        'state',
+        '[pr-attention-pulse]'))
+    {
+        Assert-True ($workflow.Contains($requiredText)) "The trusted target checks must enforce '$requiredText'."
+    }
+    Assert-True ([regex]::Matches($workflow, [regex]::Escape("PR_ATTENTION_PULSE_ISSUE_NUMBER: $targetExpression")).Count -eq 3) "Request creation, private validation, and publication revalidation must use the same immutable target output."
+    Assert-True ($workflow.Contains('-ExpectedIssueNumber $dashboardIssueNumber')) "The private validator must enforce the configured issue number."
+}
+
 Invoke-Control "DeterministicClickableReferences" {
     Import-Module -Scope Local -Force $contractPath
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
+    $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
     $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse
     $expectedNumbers = @(
         foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
@@ -145,6 +191,38 @@ Invoke-Control "DeterministicClickableReferences" {
     )
     Assert-True ([string]::Equals(($actualNumbers -join ","), ($expectedNumbers -join ","), [StringComparison]::Ordinal)) "Clickable references must preserve exact candidate membership and ordering."
     Assert-True (@($actualNumbers | Select-Object -Unique).Count -eq $actualNumbers.Count) "Every displayed pull request number must appear exactly once."
+}
+
+Invoke-Control "BlazorScopeAndPresentation" {
+    $productionInvocations = @([regex]::Matches(
+        $workflow,
+        "(?m)pwsh \.github/skills/pr-attention-queue/scripts/Get-PRAttentionQueue\.ps1(?<arguments>.*?) > \.pr-attention-pulse/queue-(?<scope>[^ ]+)-raw\.json"))
+    Assert-True ($productionInvocations.Count -eq 2) "Exactly two independent production queue invocations are required."
+    $blazorArguments = ($productionInvocations[0].Groups["arguments"].Value -replace "\s+", " ").Trim()
+    $repositoryWideArguments = ($productionInvocations[1].Groups["arguments"].Value -replace "\s+", " ").Trim()
+    Assert-True ([string]::Equals(
+        $blazorArguments,
+        "-Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json",
+        [StringComparison]::Ordinal)) "The first producer must use the explicit Blazor preset; actual arguments: '$blazorArguments'."
+    Assert-True ([string]::Equals(
+        $repositoryWideArguments,
+        "-Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json",
+        [StringComparison]::Ordinal)) "The second producer must use the repository-wide baseline; actual arguments: '$repositoryWideArguments'."
+    Assert-True ($productionInvocations[0].Groups["scope"].Value -ceq "blazor" -and
+        $productionInvocations[1].Groups["scope"].Value -ceq "repository-wide") "The two raw producer outputs must remain independently named and ordered."
+    foreach ($path in @(
+        "queue-blazor-raw.json",
+        "queue-repository-wide-raw.json",
+        "pulse-blazor.json",
+        "pulse-repository-wide.json"))
+    {
+        Assert-True ($workflow.Contains($path)) "The trusted workflow must explicitly handle and delete '$path'."
+    }
+
+    $contract = Get-Content -LiteralPath $contractPath -Raw
+    Assert-True ($contract.Contains('if ($Area.openByDefault) { "<details open>" } else { "<details>" }')) "The trusted renderer must distinguish expanded and collapsed area blocks."
+    Assert-True ($contract.Contains("This initial area composition includes the maintained **Blazor** view and a **Repository-wide** baseline.")) "The trusted renderer must explain the two initial scopes."
+    Assert-True ($contract.Contains("Additional product areas will be added only after maintainers define their exact label/path queries")) "The trusted renderer must defer future area taxonomy and presentation decisions."
 }
 
 if ($failures.Count -gt 0)

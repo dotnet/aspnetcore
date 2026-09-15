@@ -2,6 +2,7 @@
 #Requires -Version 7.0
 
 $ErrorActionPreference = "Stop"
+$script:DashboardIssueNumber = 69123
 
 function Assert-True
 {
@@ -57,6 +58,8 @@ function Invoke-Sanitizer
     param(
         [string]$FixtureName,
         [string]$SourcePath,
+        [ValidateSet("blazor", "repository-wide")]
+        [string]$Scope = "blazor",
         [int]$CollectionExitCode = 0,
         [int]$MaxOutputBytes = 65536
     )
@@ -79,6 +82,7 @@ function Invoke-Sanitizer
             -OutputPath $outputPath `
             -AttemptTimestamp $attemptTimestamp `
             -CollectionExitCode $CollectionExitCode `
+            -Scope $Scope `
             -MaxOutputBytes $MaxOutputBytes
 
         Assert-True (-not (Test-Path $inputPath)) "The raw input must always be deleted."
@@ -87,6 +91,34 @@ function Invoke-Sanitizer
     finally
     {
         Remove-Item $inputPath, $outputPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function New-CombinedPulse
+{
+    param(
+        [Parameter(Mandatory)][object]$Blazor,
+        [Parameter(Mandatory)][object]$RepositoryWide
+    )
+
+    $blazorPath = Join-Path $tempRoot "blazor-$([guid]::NewGuid().ToString('N')).json"
+    $repositoryWidePath = Join-Path $tempRoot "repository-wide-$([guid]::NewGuid().ToString('N')).json"
+    $outputPath = Join-Path $tempRoot "combined-$([guid]::NewGuid().ToString('N')).json"
+    try
+    {
+        Write-JsonFile -Value $Blazor -Path $blazorPath
+        Write-JsonFile -Value $RepositoryWide -Path $repositoryWidePath
+        & $combinerPath `
+            -BlazorInputPath $blazorPath `
+            -RepositoryWideInputPath $repositoryWidePath `
+            -OutputPath $outputPath
+        Assert-True (-not (Test-Path $blazorPath) -and -not (Test-Path $repositoryWidePath)) "Intermediate area envelopes must be deleted after combination."
+
+        return Get-Content -LiteralPath $outputPath -Raw | ConvertFrom-Json -Depth 100
+    }
+    finally
+    {
+        Remove-Item $blazorPath, $repositoryWidePath, $outputPath -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -145,7 +177,8 @@ function Invoke-PublicationValidator
                 -AgentOutputPath $outputPath `
                 -PulseInputPath $pulsePath `
                 -ExpectedBodyPath $bodyPath `
-                -SanitizerModulePath $collectorSanitizerPath 2>&1)
+                -SanitizerModulePath $collectorSanitizerPath `
+                -ExpectedIssueNumber $script:DashboardIssueNumber 2>&1)
             $validatorExitCode = $LASTEXITCODE
             if ($validatorExitCode -ne 0)
             {
@@ -181,7 +214,7 @@ function New-ValidAgentOutput
         items = @(
             [pscustomobject]@{
                 type = "update_issue"
-                issue_number = 58
+                issue_number = $script:DashboardIssueNumber
                 operation = "replace"
                 body = $Body
             }
@@ -315,7 +348,7 @@ function Invoke-PinnedCollector
         New-Item -ItemType Directory -Force $validationRoot, $collectorOutputRoot | Out-Null
         $rawItem = [ordered]@{
             type = "update_issue"
-            issue_number = 58
+            issue_number = $script:DashboardIssueNumber
             operation = "replace"
             body = $Body
         }
@@ -325,7 +358,7 @@ function Invoke-PinnedCollector
             [Text.UTF8Encoding]::new($false))
         [IO.File]::WriteAllText(
             $configPath,
-            '{"max_bot_mentions":"0","mentions":{"enabled":false},"update_issue":{"allow_body":true,"footer":false,"max":1,"required_title_prefix":"[pr-attention-pulse]","target":"58"}}',
+            "{`"max_bot_mentions`":`"0`",`"mentions`":{`"enabled`":false},`"update_issue`":{`"allow_body`":true,`"footer`":false,`"max`":1,`"required_title_prefix`":`"[pr-attention-pulse]`",`"target`":`"$script:DashboardIssueNumber`"}}",
             [Text.UTF8Encoding]::new($false))
         [IO.File]::WriteAllText(
             $validationPath,
@@ -388,21 +421,38 @@ require(process.argv[2]).main().catch(error => {
 
 function Invoke-RealQueueFixture
 {
-    param([Parameter(Mandatory)][string]$FixtureName)
+    param(
+        [Parameter(Mandatory)][string]$FixtureName,
+        [ValidateSet("blazor", "repository-wide")]
+        [string]$Scope = "blazor"
+    )
 
     $queueOutput = Join-Path $tempRoot "queue-$([guid]::NewGuid().ToString('N')).json"
     try
     {
-        & $queueScript `
-            -Repository dotnet/aspnetcore `
-            -AllRepo `
-            -DisablePersonalInbox `
-            -InputPath (Join-Path $queueFixtureRoot $FixtureName) `
-            -Now $queueSnapshot `
-            -OutputFormat Json > $queueOutput
+        if ($Scope -ceq "blazor")
+        {
+            & $queueScript `
+                -Repository dotnet/aspnetcore `
+                -Preset blazor `
+                -DisablePersonalInbox `
+                -InputPath (Join-Path $queueFixtureRoot $FixtureName) `
+                -Now $queueSnapshot `
+                -OutputFormat Json > $queueOutput
+        }
+        else
+        {
+            & $queueScript `
+                -Repository dotnet/aspnetcore `
+                -AllRepo `
+                -DisablePersonalInbox `
+                -InputPath (Join-Path $queueFixtureRoot $FixtureName) `
+                -Now $queueSnapshot `
+                -OutputFormat Json > $queueOutput
+        }
         Assert-True $? "The real queue script failed for $FixtureName."
 
-        return Invoke-Sanitizer -SourcePath $queueOutput
+        return Invoke-Sanitizer -SourcePath $queueOutput -Scope $Scope
     }
     finally
     {
@@ -445,23 +495,86 @@ function Assert-PresentationLayout
     $expected = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Coverage and data quality")
     Assert-True (($headings -join "`n") -ceq ($expected -join "`n")) "Expected exactly six ordered H2 sections; actual: $($headings -join ', ')."
     $disclaimer = "> [!IMPORTANT]`n> These views identify pull requests worth inspecting. They do not certify readiness, prove that feedback was addressed, authorize merge or review, or reliably establish completion."
-    $prefix = if ($Pulse.status -ceq "unavailable")
-    {
-        "> [!WARNING]`n> Attention data unavailable`n`n"
-    }
-    else
-    {
-        ""
-    }
-    Assert-True ($Body.StartsWith($prefix + $disclaimer, [StringComparison]::Ordinal)) "The exact disclaimer must be prominent, after the leading warning when unavailable."
+    Assert-True ($Body.StartsWith($disclaimer, [StringComparison]::Ordinal)) "The exact disclaimer must be prominent."
     Assert-True ($Body.Contains("> Auto-generated by PR Attention Pulse. Manual edits are replaced on the next manual run.")) "The compact auto-generated header is missing."
+    $label = if ($Pulse.scope -ceq "blazor") { "Blazor" } else { "Repository-wide" }
+    $opening = if ($Pulse.scope -ceq "blazor") { "<details open>" } else { "<details>" }
+    Assert-True ([regex]::Matches($Body, "(?m)^<details(?: open)?>$").Count -eq 1) "A single-area report must contain exactly one details block."
+    Assert-True ([regex]::Matches($Body, "(?m)^</details>$").Count -eq 1) "A single-area report must close exactly one details block."
+    $detailsStart = $Body.IndexOf($opening, [StringComparison]::Ordinal)
+    $summaryStart = $Body.IndexOf("<summary><strong>$label</strong>", $detailsStart, [StringComparison]::Ordinal)
+    $detailsEnd = $Body.IndexOf("</details>", $summaryStart, [StringComparison]::Ordinal)
+    Assert-True ($detailsStart -ge 0 -and $summaryStart -gt $detailsStart -and $detailsEnd -gt $summaryStart) "The '$label' details structure is invalid."
+    foreach ($heading in $expected)
+    {
+        $headingIndex = $Body.IndexOf($heading, [StringComparison]::Ordinal)
+        Assert-True ($headingIndex -gt $summaryStart -and $headingIndex -lt $detailsEnd) "Section '$heading' must be inside the '$label' details block."
+    }
+    $outsideDetails = $Body.Remove($detailsStart, ($detailsEnd + "</details>".Length) - $detailsStart)
+    Assert-True (-not ($outsideDetails -match "(?m)^## ")) "No report section may appear outside its area details block."
     $withoutAllowedLinks = [regex]::Replace(
         $Body,
         "\[dotnet/aspnetcore#[1-9][0-9]*\]\(https://github\.com/dotnet/aspnetcore/pull/[1-9][0-9]*\)",
         "")
-    Assert-True (-not ($withoutAllowedLinks -match "(?i)<(?:details|table|a|br)\b|\]\(|https?://|(?<![\w])@[A-Za-z0-9]")) "Presentation must not add HTML, mentions, or links other than deterministic upstream pull request references."
+    $withoutAreaMarkup = $withoutAllowedLinks.Replace($opening, "").Replace("</details>", "")
+    $withoutAreaMarkup = [regex]::Replace($withoutAreaMarkup, "(?m)^<summary><strong>(?:Blazor|Repository-wide)</strong>[^`r`n]*</summary>$", "")
+    Assert-True (-not ($withoutAreaMarkup -match "(?i)<(?:details|summary|strong|table|a|br)\b|\]\(|https?://|(?<![\w])@[A-Za-z0-9]")) "Presentation must not add unexpected HTML, mentions, or links."
     $header = $Body.Substring(0, $Body.IndexOf("## Summary counts", [StringComparison]::Ordinal))
     Assert-True (-not ($header -match "(?i)\.lock\.yml|pr-attention-pulse\.md|\b[0-9a-f]{40}\b")) "The header must not expose a workflow filename or commit hash."
+}
+
+function Assert-CombinedPresentationLayout
+{
+    param([Parameter(Mandatory)][object]$Pulse, [Parameter(Mandatory)][string]$Body)
+
+    Assert-True ($Pulse.schemaVersion -ceq "2.0.0" -and @($Pulse.areas).Count -eq 2) "The combined presentation requires exactly two ordered areas."
+    Assert-True ([regex]::Matches($Body, "(?m)^<details open>$").Count -eq 1) "Exactly one area must be expanded by default."
+    Assert-True ([regex]::Matches($Body, "(?m)^<details>$").Count -eq 1) "Exactly one area must be collapsed by default."
+    Assert-True ([regex]::Matches($Body, "(?m)^</details>$").Count -eq 2) "Both area blocks must be closed."
+    Assert-True ($Body.Contains("This initial area composition includes the maintained **Blazor** view and a **Repository-wide** baseline.")) "The initial area composition note is missing."
+    Assert-True ($Body.Contains("Additional product areas will be added only after maintainers define their exact label/path queries and decide whether this report shape is useful.")) "The future-area design note is missing."
+
+    $expectedHeadings = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Coverage and data quality")
+    $cursor = 0
+    foreach ($area in @($Pulse.areas))
+    {
+        $opening = if ($area.openByDefault) { "<details open>" } else { "<details>" }
+        $start = $Body.IndexOf($opening, $cursor, [StringComparison]::Ordinal)
+        $summaryEnd = $Body.IndexOf("</summary>", $start, [StringComparison]::Ordinal)
+        $end = $Body.IndexOf("</details>", $summaryEnd, [StringComparison]::Ordinal)
+        Assert-True ($start -ge $cursor -and $summaryEnd -gt $start -and $end -gt $summaryEnd) "The '$($area.id)' area block is missing or out of order."
+        $block = $Body.Substring($start, ($end + "</details>".Length) - $start)
+        Assert-True ($block.Contains("<summary><strong>$($area.label)</strong> -")) "The '$($area.id)' summary must include its trusted label and compact status."
+        $headings = @([regex]::Matches($block, "(?m)^#{1,6} .+$") | ForEach-Object Value)
+        Assert-True ([string]::Equals(($headings -join "`n"), ($expectedHeadings -join "`n"), [StringComparison]::Ordinal)) "The '$($area.id)' area must contain exactly the six ordered report sections."
+
+        $expectedNumbers = if ($area.status -ceq "complete")
+        {
+            @(
+                foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+                {
+                    foreach ($candidate in @($area.views.$viewName))
+                    {
+                        [string]$candidate.number
+                    }
+                }
+            )
+        }
+        else
+        {
+            @()
+        }
+        $actualNumbers = @(
+            [regex]::Matches($block, "\[dotnet/aspnetcore#(?<number>[1-9][0-9]*)\]\(https://github\.com/dotnet/aspnetcore/pull/\k<number>\)") |
+                ForEach-Object { $_.Groups["number"].Value }
+        )
+        Assert-True ([string]::Equals(($actualNumbers -join ","), ($expectedNumbers -join ","), [StringComparison]::Ordinal)) "The '$($area.id)' links must preserve exact per-area membership and order."
+        Assert-True (@($actualNumbers | Select-Object -Unique).Count -eq @($actualNumbers).Count) "The '$($area.id)' area must not repeat a pull request."
+        $cursor = $end + "</details>".Length
+    }
+
+    $outsideBlocks = [regex]::Replace($Body, "(?ms)^<details(?: open)?>$.*?^</details>$", "")
+    Assert-True (-not ($outsideBlocks -match "(?m)^## ")) "No report section may appear outside the two area blocks."
 }
 
 function Assert-PresentationTablesAndFields
@@ -683,6 +796,7 @@ $queueRoot = Join-Path (Split-Path -Parent $workflowRoot) "skills/pr-attention-q
 $queueFixtureRoot = Join-Path $queueRoot "tests/fixtures"
 $queueScript = Join-Path $queueRoot "scripts/Get-PRAttentionQueue.ps1"
 $sanitizerPath = Join-Path $supportRoot "Sanitize-PRAttentionPulse.ps1"
+$combinerPath = Join-Path $supportRoot "Combine-PRAttentionPulse.ps1"
 $rendererPath = Join-Path $supportRoot "Render-PRAttentionPulse.ps1"
 $validatorPath = Join-Path $supportRoot "Validate-PRAttentionPulseOutput.ps1"
 $compilePath = Join-Path $supportRoot "Compile-PRAttentionPulse.ps1"
@@ -726,6 +840,45 @@ try
             Assert-True ($null -eq $candidate.PSObject.Properties["discussionAssessment"]) "Discussion assessment data must cross only for the discussion verification view."
         }
     }
+
+    $repositoryWideNormalPath = Join-Path $tempRoot "repository-wide-normal.json"
+    $repositoryWideNormalRaw = Get-Content -Raw (Join-Path $fixtureRoot "normal-legacy.json") | ConvertFrom-Json -Depth 100
+    $repositoryWideNormalRaw.filter.name = "adhoc"
+    $repositoryWideNormalRaw.filter.description = "Ad hoc pull-request scope"
+    $repositoryWideNormalRaw.filter.coverage = "all-repo"
+    $repositoryWideNormalRaw.filter.selection = "(all open pull requests)"
+    $repositoryWideNormalRaw.filter.allRepositoryPullRequests = $true
+    foreach ($candidate in $repositoryWideNormalRaw.items)
+    {
+        $candidate.scopeMatch = "all-repo"
+    }
+    Write-JsonFile -Value $repositoryWideNormalRaw -Path $repositoryWideNormalPath
+    $repositoryWideNormal = Invoke-Sanitizer -SourcePath $repositoryWideNormalPath -Scope repository-wide
+    Assert-True ($repositoryWideNormal.status -ceq "complete") "The repository-wide baseline fixture must satisfy its independent sanitizer contract."
+    $combinedNormal = New-CombinedPulse -Blazor $normal -RepositoryWide $repositoryWideNormal
+    Assert-True ($combinedNormal.schemaVersion -ceq "2.0.0" -and $combinedNormal.status -ceq "complete") "Two complete areas must produce a complete versioned combined envelope."
+    Assert-True ($combinedNormal.areas[0].id -ceq "blazor" -and $combinedNormal.areas[0].openByDefault) "Blazor must be the first, expanded area."
+    Assert-True ($combinedNormal.areas[1].id -ceq "repository-wide" -and -not $combinedNormal.areas[1].openByDefault) "Repository-wide must be the second, collapsed baseline."
+    $combinedNormalBody = Invoke-Renderer -Pulse $combinedNormal
+    Assert-CombinedPresentationLayout -Pulse $combinedNormal -Body $combinedNormalBody
+    Assert-True ($combinedNormalBody.Length -le 65000) "The combined two-area report must remain within the publication body limit."
+    Assert-True ([regex]::Matches($combinedNormalBody, "\[dotnet/aspnetcore#101\]\(https://github\.com/dotnet/aspnetcore/pull/101\)").Count -eq 2) "The same pull request may appear once in each independently generated area."
+    $combinedPostIngestionBody = Invoke-PinnedOutputSanitizer -Content $combinedNormalBody
+    Assert-True ([string]::Equals($combinedPostIngestionBody, $combinedNormalBody, [StringComparison]::Ordinal)) "Pinned gh-aw output sanitization must preserve the complete combined report byte-for-byte."
+    $combinedOutput = Invoke-PinnedCollector -Body $combinedPostIngestionBody
+    Assert-True ($combinedOutput.errors -is [array] -and $combinedOutput.errors.Count -eq 0) "The pinned collector must accept the combined report without errors."
+    Assert-True (@($combinedOutput.items).Count -eq 1) "The pinned collector must emit exactly one update item for the combined report."
+    Invoke-PublicationValidator -Pulse $combinedNormal -AgentOutput $combinedOutput -ExpectedBody $combinedPostIngestionBody
+
+    $reorderedCombined = $combinedNormal | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+    $reorderedCombined.areas = @($reorderedCombined.areas[1], $reorderedCombined.areas[0])
+    Assert-Throws { Invoke-Renderer -Pulse $reorderedCombined } "The renderer must reject reordered combined areas." "The combined Pulse area order or metadata is invalid."
+    $mislabeledCombined = $combinedNormal | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+    $mislabeledCombined.areas[0].label = "Repository-wide"
+    Assert-Throws { Invoke-Renderer -Pulse $mislabeledCombined } "The renderer must reject mismatched combined-area metadata." "The combined Pulse area order or metadata is invalid."
+    $wrongCombinedStatus = $combinedNormal | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+    $wrongCombinedStatus.status = "partial"
+    Assert-Throws { Invoke-Renderer -Pulse $wrongCombinedStatus } "The renderer must reject a combined status inconsistent with its area results." "The combined Pulse status does not match its area results."
 
     $normalJson = $normal | ConvertTo-Json -Depth 100
     foreach ($prohibitedText in @(
@@ -785,6 +938,22 @@ try
     Write-JsonFile -Value $repositoryCase -Path $repositoryCasePath
     $repositoryCaseResult = Invoke-Sanitizer -SourcePath $repositoryCasePath
     Assert-True ($repositoryCaseResult.errorCategory -eq "unexpected-repository") "Repository identity must use an ordinal comparison."
+
+    foreach ($scopeMutation in @(
+        @{ Name = "wrong-filter-name"; Apply = { param($value) $value.filter.name = "all-repo" } },
+        @{ Name = "wrong-filter-description"; Apply = { param($value) $value.filter.description = "Every open pull request in the repository" } },
+        @{ Name = "wrong-filter-coverage"; Apply = { param($value) $value.filter.coverage = "all-repo" } },
+        @{ Name = "wrong-filter-selection"; Apply = { param($value) $value.filter.selection = "(all open pull requests)" } },
+        @{ Name = "wrong-filter-all-repository"; Apply = { param($value) $value.filter.allRepositoryPullRequests = $true } },
+        @{ Name = "wrong-scope-match"; Apply = { param($value) $value.items[0].scopeMatch = "all-repo" } }))
+    {
+        $scopePath = Join-Path $tempRoot "$($scopeMutation.Name).json"
+        $scopeInput = Get-Content -Raw (Join-Path $fixtureRoot "normal-legacy.json") | ConvertFrom-Json -Depth 100
+        & $scopeMutation.Apply $scopeInput
+        Write-JsonFile -Value $scopeInput -Path $scopePath
+        $scopeResult = Invoke-Sanitizer -SourcePath $scopePath -Scope blazor
+        Assert-True ($scopeResult.errorCategory -eq "invalid-contract") "The Blazor sanitizer must reject $($scopeMutation.Name)."
+    }
 
     $strictBooleanPath = Join-Path $tempRoot "strict-boolean.json"
     $strictBoolean = Get-Content -Raw (Join-Path $fixtureRoot "complete-zero.json") | ConvertFrom-Json -Depth 100
@@ -897,24 +1066,29 @@ try
     Assert-True ($oversizedResult.errorCategory -eq "sanitized-output-too-large") "Oversized sanitized output must become a bounded failure envelope."
 
     $realFixtureExpectations = [ordered]@{
-        "pull-requests.json" = @(5, 0, 3, 1)
-        "correctness-pull-requests.json" = @(4, 1, 2, 1)
-        "discussion-pull-requests.json" = @(2, 5, 0, 0)
+        "blazor/pull-requests.json" = @(3, 0, 3, 1)
+        "blazor/correctness-pull-requests.json" = @(0, 1, 2, 1)
+        "blazor/discussion-pull-requests.json" = @(0, 0, 0, 0)
+        "repository-wide/pull-requests.json" = @(5, 0, 3, 1)
+        "repository-wide/correctness-pull-requests.json" = @(4, 1, 2, 1)
+        "repository-wide/discussion-pull-requests.json" = @(2, 5, 0, 0)
     }
     $realPulses = [ordered]@{}
-    foreach ($fixtureName in $realFixtureExpectations.Keys)
+    foreach ($fixtureKey in $realFixtureExpectations.Keys)
     {
-        $realPulse = Invoke-RealQueueFixture -FixtureName $fixtureName
-        Assert-True ($realPulse.status -eq "complete") "The sanitizer must accept real legacy output from $fixtureName."
-        Assert-True ($realPulse.source.query.returnedPullRequestCount -eq $realPulse.source.census.matched) "The real fixture inventory must remain complete."
-        $expectedCounts = $realFixtureExpectations[$fixtureName]
-        Assert-True (@($realPulse.views.reviewNow).Count -eq $expectedCounts[0]) "The real $fixtureName Review now membership changed."
-        Assert-True (@($realPulse.views.verifyDiscussionBeforeReview).Count -eq $expectedCounts[1]) "The real $fixtureName discussion verification membership changed."
-        Assert-True (@($realPulse.views.needsRescue).Count -eq $expectedCounts[2]) "The real $fixtureName Needs rescue membership changed."
-        Assert-True (@($realPulse.views.readyToMerge).Count -eq $expectedCounts[3]) "The real $fixtureName Ready to merge membership changed."
+        $scope, $fixtureName = $fixtureKey.Split("/", 2)
+        $realPulse = Invoke-RealQueueFixture -FixtureName $fixtureName -Scope $scope
+        Assert-True ($realPulse.status -eq "complete") "The sanitizer must accept real $scope output from $fixtureName."
+        Assert-True ($realPulse.source.query.returnedPullRequestCount -eq $realPulse.source.query.openPullRequestCount) "The real $scope query must be independently complete."
+        Assert-True ($realPulse.source.census.matched -le $realPulse.source.query.returnedPullRequestCount) "The real $scope matched inventory cannot exceed the complete query."
+        $expectedCounts = $realFixtureExpectations[$fixtureKey]
+        Assert-True (@($realPulse.views.reviewNow).Count -eq $expectedCounts[0]) "The real $fixtureKey Review now membership changed."
+        Assert-True (@($realPulse.views.verifyDiscussionBeforeReview).Count -eq $expectedCounts[1]) "The real $fixtureKey discussion verification membership changed."
+        Assert-True (@($realPulse.views.needsRescue).Count -eq $expectedCounts[2]) "The real $fixtureKey Needs rescue membership changed."
+        Assert-True (@($realPulse.views.readyToMerge).Count -eq $expectedCounts[3]) "The real $fixtureKey Ready to merge membership changed."
         $realBody = Invoke-Renderer -Pulse $realPulse
         Invoke-PublicationValidator -Pulse $realPulse -AgentOutput (New-ValidAgentOutput -Body $realBody) -ExpectedBody $realBody
-        $realPulses[$fixtureName] = $realPulse
+        $realPulses[$fixtureKey] = $realPulse
     }
 
     $normalBody = Invoke-Renderer -Pulse $normal
@@ -931,9 +1105,22 @@ try
     Assert-True (-not ($normalBodyWithoutAllowedReferences -match "(?<!#)#[0-9]+")) "Rendered output must not contain bare issue references."
 
     $failureBody = Invoke-Renderer -Pulse $collectionFailure
-    Assert-True ($failureBody.StartsWith("> [!WARNING]`n> Attention data unavailable")) "Failure rendering must prominently report unavailable data."
+    Assert-True ($failureBody.Contains("> [!WARNING]`n> Blazor attention data unavailable")) "Failure rendering must prominently report the unavailable area."
     Assert-True ($failureBody.Contains("Candidate counts unavailable.")) "Failure rendering must mark counts unavailable."
     Assert-True (-not $failureBody.Contains("Open pull requests: 0")) "Failure rendering must not present unavailable counts as zero."
+    $repositoryWideFailure = Invoke-Sanitizer -CollectionExitCode 8 -Scope repository-wide
+    $blazorFailureCombined = New-CombinedPulse -Blazor $collectionFailure -RepositoryWide $repositoryWideNormal
+    Assert-True ($blazorFailureCombined.status -ceq "partial") "A Blazor-only collection failure must preserve the complete repository-wide area."
+    $blazorFailureBody = Invoke-Renderer -Pulse $blazorFailureCombined
+    Assert-CombinedPresentationLayout -Pulse $blazorFailureCombined -Body $blazorFailureBody
+    Assert-True ($blazorFailureBody.Contains("> Blazor attention data unavailable") -and
+        $blazorFailureBody.Contains("<summary><strong>Repository-wide</strong> - 5 matched;")) "A Blazor failure must not erase or zero the repository-wide baseline."
+    $repositoryWideFailureCombined = New-CombinedPulse -Blazor $normal -RepositoryWide $repositoryWideFailure
+    Assert-True ($repositoryWideFailureCombined.status -ceq "partial") "A repository-wide collection failure must preserve the complete Blazor area."
+    $repositoryWideFailureBody = Invoke-Renderer -Pulse $repositoryWideFailureCombined
+    Assert-CombinedPresentationLayout -Pulse $repositoryWideFailureCombined -Body $repositoryWideFailureBody
+    Assert-True ($repositoryWideFailureBody.Contains("> Repository-wide attention data unavailable") -and
+        $repositoryWideFailureBody.Contains("<summary><strong>Blazor</strong> - 5 matched;")) "A repository-wide failure must not erase or zero the Blazor area."
 
     $validOutput = Invoke-PinnedCollector -Body $postIngestionBody
     Assert-True ($validOutput.errors -is [array] -and $validOutput.errors.Count -eq 0) "The pinned collector must accept the canonical report without errors."
@@ -1010,7 +1197,7 @@ try
     }
 
     $wrongIssue = New-ValidAgentOutput -Body $normalBody
-    $wrongIssue.items[0].issue_number = 59
+    $wrongIssue.items[0].issue_number = $script:DashboardIssueNumber + 1
     Assert-Throws { Invoke-PublicationValidator -Pulse $normal -AgentOutput $wrongIssue -ExpectedBody $normalBody } "The publication boundary must reject the wrong fixed issue."
 
     $append = New-ValidAgentOutput -Body $normalBody
@@ -1061,7 +1248,8 @@ try
 
     Assert-True (Test-Path $workflowPath) "The Pulse workflow source must exist."
     $workflow = Get-Content -Raw $workflowPath
-    Assert-True ($workflow.Contains("github.repository == 'PureWeen/aspnetcore'")) "The workflow must reject every repository except the fork."
+    Assert-True (-not $workflow.Contains("github.repository == 'PureWeen/aspnetcore'")) "The workflow must be deployable upstream instead of remaining fork-only."
+    Assert-True ($workflow -match "(?m)^\s*workflow_dispatch:\s*$") "The workflow must remain manually dispatched."
     Assert-True ($workflow.Contains("checkout: false")) "The compiler-managed checkout must be disabled."
     $preStepsIndex = [regex]::Match($workflow, "(?m)^pre-steps:").Index
     $stepsIndex = $workflow.IndexOf("steps:", $preStepsIndex + "pre-steps:".Length, [StringComparison]::Ordinal)
@@ -1070,6 +1258,15 @@ try
     Assert-True ($workflow.Contains("persist-credentials: false")) "The trusted checkout must not persist credentials."
     Assert-True ($workflow.Contains(".github/skills/pr-attention-queue")) "The trusted checkout must include the legacy queue implementation."
     Assert-True ($workflow.Contains(".github/workflows/pr-attention-pulse")) "The trusted checkout must include the Pulse support scripts."
+    Assert-True ([regex]::Matches($workflow, "Get-PRAttentionQueue\.ps1 -Repository dotnet/aspnetcore").Count -eq 2) "Production must execute two independent queue collections."
+    Assert-True ($workflow.Contains("Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox -OutputFormat Json")) "Production must explicitly use the maintained Blazor preset."
+    Assert-True ($workflow.Contains("Get-PRAttentionQueue.ps1 -Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox -OutputFormat Json")) "Production must preserve the repository-wide baseline."
+    Assert-True ($workflow.IndexOf("-Preset blazor", [StringComparison]::Ordinal) -lt $workflow.IndexOf("-AllRepo", [StringComparison]::Ordinal)) "The Blazor producer must run before the repository-wide producer."
+    Assert-True ($workflow.Contains("Combine-PRAttentionPulse.ps1")) "Production must create one versioned combined sanitized envelope."
+    foreach ($path in @("queue-blazor-raw.json", "queue-repository-wide-raw.json", "pulse-blazor.json", "pulse-repository-wide.json"))
+    {
+        Assert-True ($workflow.Contains($path)) "Production must explicitly account for trusted-only intermediate '$path'."
+    }
     Assert-True (-not $workflow.Contains("contents/`$path")) "Trusted source acquisition must not use an additional token-backed Contents API path."
     Assert-True ([regex]::Matches($workflow, "Assert-PrivateValidatorRoot -Path").Count -eq 2) "Private validator storage must be checked before canonical copy and before validation."
     Assert-True ($workflow.Contains('Get-CanonicalPath -Path $env:GITHUB_WORKSPACE')) "The private validator root must be outside the symlink-resolved workspace."
@@ -1082,9 +1279,11 @@ try
     Assert-True ($workflow.Contains('bash: ["cat"]')) "The requested shell surface must remain minimal even though v0.88.7 adds baseline utilities."
     Assert-True ($workflow.Contains("gh-aw v0.88.7 retains compiler-required runtime files and a")) "The prompt must accurately distinguish bounded task data from compiler-required runtime files."
     Assert-True ($workflow.Contains("Although the compiler exposes baseline shell utilities")) "The prompt must not claim that the effective shell is cat-only."
+    Assert-True ($workflow.Contains("two independently collected dashboards")) "The prompt must preserve both independently generated area reports."
     Assert-True ($workflow.Contains('Remove-Item .pr-attention-pulse/pulse-request.json')) "The serialized request must be removed after inference."
-    Assert-True ($workflow.Contains("issue_number: 58")) "The emitted payload must use the fixed dashboard issue."
-    Assert-True ($workflow.Contains('target: "58"')) "The safe-output handler must reject a different issue target."
+    Assert-True (-not ($workflow -match '(?m)^\s*issue_number:\s*58\s*$')) "The emitted payload must not use the fork's issue 58."
+    Assert-True (-not ($workflow -match '(?m)^\s*target:\s*["'']?58["'']?\s*$')) "The safe-output handler must not target the fork's issue 58."
+    Assert-True ($workflow.Contains('target: ${{ needs.resolve_dashboard_target.outputs.issue_number }}')) "The safe-output handler must use the immutable validated dashboard issue."
     Assert-True ($workflow.Contains("operation: replace")) "The payload contract must replace the issue body."
     Assert-True (($workflow | Select-String -Pattern "type: update_issue" -AllMatches).Matches.Count -eq 1) "The prompt must define exactly one update_issue payload."
     Assert-True ($workflow.Contains("github: false")) "The inference sandbox must not mount GitHub tools."
@@ -1155,11 +1354,12 @@ try
     foreach ($name in @("GH_TOKEN", "GH_AW_GITHUB_TOKEN", "GITHUB_MCP_SERVER_TOKEN", "GITHUB_TOKEN", "OTEL_EXPORTER_OTLP_HEADERS", "GH_AW_OTLP_ENDPOINTS"))
     {
         Assert-True ([regex]::Matches($agentStep, "(?<!\S)--exclude-env $([regex]::Escape($name))(?=\s|\\\\)").Count -eq 1) "The main inference command must exclude '$name' exactly once."
-        Assert-True ([regex]::Matches($agentStep, "(?m)^\s+$([regex]::Escape($name)): \$\{\{ needs\.pat_pool\.outputs\.pat_number \}\}$").Count -eq 1) "The v0.88.7 compatibility adapter must bind '$name' only to the non-secret PAT slot number."
+        Assert-True ([regex]::Matches($agentStep, "(?m)^\s+$([regex]::Escape($name)): \$\{\{ needs\.pat_pool\.outputs\.pat_number \}\}\r?$").Count -eq 1) "The v0.88.7 compatibility adapter must bind '$name' only to the non-secret PAT slot number."
         Assert-True (-not ($agentStep -match "(?m)^\s+$([regex]::Escape($name)):.*secrets\.")) "The main inference step must not bind '$name' to a secret-bearing workflow value."
         Assert-True (-not ($agentStep -match "(?m)\bexport\s+$([regex]::Escape($name))=")) "The main inference command must not export '$name' into the sandbox."
     }
-    Assert-True ($normalizedLock.Contains('"target":"58"')) "The generated safe-output policy must pin issue 58."
+    Assert-True (-not $normalizedLock.Contains('"target":"58"')) "The generated safe-output policy must not pin the fork's issue 58."
+    Assert-True ($normalizedLock.Contains('"target":"${{ needs.resolve_dashboard_target.outputs.issue_number }}"')) "The generated safe-output policy must preserve the immutable validated target."
     Assert-True ($normalizedLock.Contains('"required_title_prefix":"[pr-attention-pulse]"')) "The generated safe-output policy must require the dashboard title prefix."
     Assert-True (-not $normalizedLock.Contains('"create_issue"')) "The generated workflow must not expose issue creation."
     Assert-True ($lock.IndexOf("Remove-Item -Recurse -Force .github", [StringComparison]::Ordinal) -lt $agentStepStart) "Repository workflow sources and raw data must be removed before inference."
@@ -1205,6 +1405,7 @@ try
     Write-Output "PASS ExistingPreservationAndPublication"
     $presentationFailures = [Collections.Generic.List[string]]::new()
     $published = Get-Content -LiteralPath (Join-Path $presentationRoot "published-34643961191.pulse.json") -Raw | ConvertFrom-Json -Depth 100
+    $published | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
     $presentationFixtures = [ordered]@{
         "normal-legacy" = $normal
         "complete-zero" = $zero
@@ -1257,16 +1458,12 @@ try
     }
 
     $scopeFixtures = [ordered]@{ "uniform-published" = $published; "mixed" = $normal; "empty" = $zero; "displayed-only" = $boundedDigestResult }
-    foreach ($name in @("ordinal-case", "uniform-not-query-coverage"))
+    foreach ($name in @("uniform-not-query-coverage"))
     {
         $raw = Get-Content -LiteralPath (Join-Path $fixtureRoot "normal-legacy.json") -Raw | ConvertFrom-Json -Depth 100
         foreach ($item in $raw.items)
         {
             $item.scopeMatch = "label-only"
-        }
-        if ($name -ceq "ordinal-case")
-        {
-            $raw.items[0].scopeMatch = "LABEL-ONLY"
         }
         $path = Join-Path $tempRoot "$name.json"
         Write-JsonFile -Value $raw -Path $path
@@ -1357,8 +1554,8 @@ try
             {
                 Assert-True (-not $pulse.candidateCountsAvailable -and $null -eq $pulse.source.census) "Unavailable must not manufacture a census."
                 Assert-True ($body.Contains("Error category: ``$($pulse.errorCategory)``.") -and $body.Contains("Attempted: ``2026-09-10T20:04:56.0000000Z``.")) "Unavailable must preserve category and exact attempted time."
-                Assert-True ($body.Contains("Candidate counts unavailable.") -and $body.Contains("No complete source coverage was available.") -and -not ($body -match "(?m)^\||\bOpen: 0")) "Unavailable is not an empty successful inventory."
-                Assert-True ([regex]::Matches($body, "Unavailable because collection did not produce a complete compatible inventory\.").Count -eq 4) "Every unavailable candidate section must explain its state."
+                Assert-True ($body.Contains("Candidate counts unavailable.") -and $body.Contains("No complete source coverage was available for this area.") -and -not ($body -match "(?m)^\||\bOpen: 0")) "Unavailable is not an empty successful inventory."
+                Assert-True ([regex]::Matches($body, "Unavailable because this area's collection did not produce a complete compatible inventory\.").Count -eq 4) "Every unavailable candidate section must explain its state."
             }
             else
             {
@@ -1429,7 +1626,7 @@ try
     {
         $roundTripFixtures[$name] = $presentationFixtures[$name]
     }
-    $roundTripFixtures["discussion-pull-requests"] = $realPulses["discussion-pull-requests.json"]
+    $roundTripFixtures["discussion-pull-requests"] = $realPulses["repository-wide/discussion-pull-requests.json"]
     $roundTripFixtures["varied-evidence"] = $tableFixtures["varied-evidence"]
     $roundTripFixtures["bounded-empty-digest"] = $boundedDigestResult
     foreach ($name in $roundTripFixtures.Keys)
@@ -1470,7 +1667,7 @@ try
             Assert-True (-not [string]::Equals($tampered, $canonical, [StringComparison]::Ordinal)) "Table tampering must actually change the body."
             Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
             Assert-Throws `
-                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -ExpectedBody $tampered } `
+                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
                 -Message "The direct publication contract must reject $name."
             Assert-Throws `
                 -Action { Invoke-PublicationValidator -Pulse $normal -AgentOutput (New-ValidAgentOutput -Body $tampered) -ExpectedBody $canonical } `

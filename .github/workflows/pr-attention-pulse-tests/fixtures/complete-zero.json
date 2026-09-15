@@ -3,11 +3,11 @@
   "generatedAt": "2026-09-10T20:00:00Z",
   "repository": "dotnet/aspnetcore",
   "filter": {
-    "name": "adhoc",
-    "description": "Ad hoc pull-request scope",
-    "coverage": "all-repo",
-    "selection": "(all open pull requests)",
-    "allRepositoryPullRequests": true
+    "name": "blazor",
+    "description": "Blazor and Components pull requests",
+    "coverage": "labels-and-paths",
+    "selection": "(labels any of [area-blazor, feature-blazor-*, Blazor \u2665 *] OR paths any of [src/Components/**])",
+    "allRepositoryPullRequests": false
   },
   "query": {
     "openPullRequestCount": 0,

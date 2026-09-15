@@ -8,7 +8,11 @@ param(
 
     [Parameter(Mandatory)][string]$ExpectedBodyPath,
 
-    [Parameter(Mandatory)][string]$SanitizerModulePath
+    [Parameter(Mandatory)][string]$SanitizerModulePath,
+
+    [Parameter(Mandatory)]
+    [ValidateRange(1, [int]::MaxValue)]
+    [int]$ExpectedIssueNumber
 )
 
 $ErrorActionPreference = "Stop"
@@ -49,7 +53,8 @@ fs.writeFileSync(process.argv[4], output, "utf8");
     Assert-PRAttentionPulseOutput `
         -AgentOutput $agentOutput `
         -Pulse $pulse `
-        -ExpectedBody $expectedBody
+        -ExpectedBody $expectedBody `
+        -ExpectedIssueNumber $ExpectedIssueNumber
 }
 catch
 {
