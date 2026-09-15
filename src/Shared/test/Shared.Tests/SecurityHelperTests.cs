@@ -292,6 +292,40 @@ public class SecurityHelperTests
         Assert.Equal("n68b/ma1cEcRL2AyEiy3YE4zE+qGpgMJda+FFN+oqAk=", Convert.ToBase64String(GetUserIdentifier(principal)));
     }
 
+    [Fact]
+    public void TryGetUserIdentifier_RecognizedClaimDoesNotAllocate()
+    {
+        var principal = CreatePrincipal(new Claim("sub", "subject"));
+        var destination = new byte[SecurityHelper.UserIdentifierSize];
+
+        AssertNoAllocations(principal, destination);
+    }
+
+    [Fact]
+    public void TryGetUserIdentifier_ClaimsFallbackDoesNotAllocate()
+    {
+        var principal = CreatePrincipal(
+            new Claim("custom-b", "value-b"),
+            new Claim("custom-a", "value-a"));
+        var destination = new byte[SecurityHelper.UserIdentifierSize];
+
+        AssertNoAllocations(principal, destination);
+    }
+
+    [Fact]
+    public void TryGetUserIdentifier_LargeClaimsFallbackDoesNotAllocate()
+    {
+        var claims = new Claim[20];
+        for (var i = 0; i < claims.Length; i++)
+        {
+            claims[i] = new Claim($"custom-{i:D2}", new string((char)('a' + i), 100));
+        }
+        var principal = CreatePrincipal(claims);
+        var destination = new byte[SecurityHelper.UserIdentifierSize];
+
+        AssertNoAllocations(principal, destination);
+    }
+
     private static ClaimsPrincipal CreatePrincipal(params Claim[] claims)
         => new(new ClaimsIdentity(claims, "Test"));
 
@@ -305,5 +339,25 @@ public class SecurityHelperTests
     {
         identifier = new byte[SecurityHelper.UserIdentifierSize];
         return SecurityHelper.TryGetUserIdentifier(principal, identifier);
+    }
+
+    private static void AssertNoAllocations(ClaimsPrincipal principal, byte[] destination)
+    {
+        for (var i = 0; i < 100; i++)
+        {
+            Assert.True(SecurityHelper.TryGetUserIdentifier(principal, destination));
+        }
+
+        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+        {
+            if (!SecurityHelper.TryGetUserIdentifier(principal, destination))
+            {
+                throw new InvalidOperationException();
+            }
+        }
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+
+        Assert.Equal(0, allocated);
     }
 }
