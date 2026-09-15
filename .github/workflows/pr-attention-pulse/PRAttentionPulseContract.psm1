@@ -108,14 +108,19 @@ function Add-PulseCandidateView
     }
     else
     {
-        $Lines.Add("| PR | Title | Author | Next actor | Idle / Open | Reasons / Blockers |")
+        $Lines.Add("| PR | Title | Author | Next actor | Open age | Reasons / Blockers |")
     }
     $Lines.Add("| --- | --- | --- | --- | --- | --- |")
 
     foreach ($item in $Items)
     {
         $identity = "$($item.rank): $(Format-PulsePullRequestLink -Number $item.number)"
-        $ages = "$($item.idleDays)d idle / $($item.ageDays)d open"
+        $openAge = "$($item.ageDays)d open"
+        $author = [string]$item.author
+        if (@($item.reasonCodes) -ccontains "community-contribution")
+        {
+            $author += " **Community**"
+        }
         $reasons = Format-PulseCodes -Codes @($item.reasonCodes)
         $blockers = if (@($item.blockers).Count -eq 0)
         {
@@ -138,11 +143,11 @@ function Add-PulseCandidateView
             $discussion = "**State:** ``$($assessment.state)``; assessment complete: $($assessment.complete.ToString().ToLowerInvariant()). **Signals:** $signals **Comments:** $($assessment.commentTotalCount) total; evidence truncated: $($assessment.commentEvidenceTruncated.ToString().ToLowerInvariant())."
             $threads = $assessment.threads
             $threadCounts = "$($threads.returnedCount) of $($threads.totalCount) returned; complete: $($threads.complete.ToString().ToLowerInvariant()); $($threads.unresolvedCount) unresolved; $($threads.outdatedUnresolvedCount) outdated unresolved"
-            $Lines.Add("| $identity; **Author:** $($item.author) | $($item.title) | **Next:** $($item.nextActor); $ages | $reasonsAndBlockers | $discussion | $threadCounts |")
+            $Lines.Add("| $identity; **Author:** $author | $($item.title) | **Next:** $($item.nextActor); $openAge | $reasonsAndBlockers | $discussion | $threadCounts |")
         }
         else
         {
-            $Lines.Add("| $identity | $($item.title) | $($item.author) | $($item.nextActor) | $ages | $reasonsAndBlockers |")
+            $Lines.Add("| $identity | $($item.title) | $author | $($item.nextActor) | $openAge | $reasonsAndBlockers |")
         }
     }
 }
@@ -229,7 +234,7 @@ function Get-PulseAreaSummary
 
     if ([string]::Equals([string]$Area.status, "complete", [StringComparison]::Ordinal))
     {
-        return "<summary><strong>$($Area.label)</strong> - $($Area.source.census.matched) matched; $($Area.source.census.byBucket.ReviewNow) review now; $($Area.source.census.byBucket.NeedsRescue) rescue; $($Area.source.census.byBucket.ReadyToMerge) ready; generated $(Format-PulseTimestamp -Value $Area.source.generatedAt)</summary>"
+        return "<summary><strong>$($Area.label)</strong> - $($Area.source.census.matched) matched; shown: $(@($Area.views.reviewNow).Count) review now, $(@($Area.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($Area.views.needsRescue).Count) rescue, $(@($Area.views.readyToMerge).Count) ready; generated $(Format-PulseTimestamp -Value $Area.source.generatedAt)</summary>"
     }
 
     if ([string]::Equals([string]$Area.status, "unavailable", [StringComparison]::Ordinal))

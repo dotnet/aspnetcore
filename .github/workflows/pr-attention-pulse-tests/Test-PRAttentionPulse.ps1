@@ -477,6 +477,154 @@ function Invoke-PresentationCase
     }
 }
 
+function Get-PulseAreaBlock
+{
+    param(
+        [Parameter(Mandatory)][string]$Body,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    $summary = "<summary><strong>$Label</strong>"
+    $summaryStart = $Body.IndexOf($summary, [StringComparison]::Ordinal)
+    Assert-True ($summaryStart -ge 0) "The '$Label' area summary is missing."
+    $detailsStart = $Body.LastIndexOf("<details>", $summaryStart, [StringComparison]::Ordinal)
+    $detailsEnd = $Body.IndexOf("</details>", $summaryStart, [StringComparison]::Ordinal)
+    Assert-True ($detailsStart -ge 0 -and $detailsEnd -gt $summaryStart) "The '$Label' area details block is invalid."
+
+    return $Body.Substring($detailsStart, ($detailsEnd + "</details>".Length) - $detailsStart)
+}
+
+function New-PresentationAreaFromRawFixture
+{
+    param(
+        [Parameter(Mandatory)][ValidateSet("blazor", "repository-wide")][string]$Scope,
+        [int]$CandidateNumber,
+        [string]$CommunityReasonCode
+    )
+
+    $raw = Get-Content -LiteralPath (Join-Path $fixtureRoot "normal-legacy.json") -Raw | ConvertFrom-Json -Depth 100
+    if ($Scope -ceq "repository-wide")
+    {
+        $raw.filter.name = "adhoc"
+        $raw.filter.description = "Ad hoc pull-request scope"
+        $raw.filter.coverage = "all-repo"
+        $raw.filter.selection = "(all open pull requests)"
+        $raw.filter.allRepositoryPullRequests = $true
+        foreach ($item in $raw.items)
+        {
+            $item.scopeMatch = "all-repo"
+        }
+    }
+
+    if ($CandidateNumber -gt 0)
+    {
+        $candidate = @($raw.items | Where-Object { $_.number -eq $CandidateNumber })
+        Assert-True ($candidate.Count -eq 1) "The focused candidate '$CandidateNumber' is missing."
+        $candidate = $candidate[0]
+        $candidate.reasonCodes = @($candidate.reasonCodes | Where-Object { $_ -cne "community-contribution" -and $_ -cne "community-contribution-extra" })
+        if (-not [string]::IsNullOrEmpty($CommunityReasonCode))
+        {
+            $candidate.reasonCodes = @($candidate.reasonCodes) + $CommunityReasonCode
+        }
+        if ($CommunityReasonCode -cne "community-contribution")
+        {
+            $candidate.author = "community-author"
+            $candidate.title = "community-contribution text"
+        }
+    }
+
+    $rawPath = Join-Path $tempRoot "presentation-raw-$([guid]::NewGuid().ToString('N')).json"
+    try
+    {
+        Write-JsonFile -Value $raw -Path $rawPath
+        return Invoke-Sanitizer -SourcePath $rawPath -Scope $Scope
+    }
+    finally
+    {
+        Remove-Item -LiteralPath $rawPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Assert-CommunityMarkerPresentation
+{
+    param(
+        [Parameter(Mandatory)][ValidateSet("blazor", "repository-wide")][string]$Scope,
+        [Parameter(Mandatory)][ValidateSet("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge")][string]$ViewName,
+        [Parameter(Mandatory)][bool]$ExpectedMarker,
+        [Parameter(Mandatory)][object]$BlazorBaseline,
+        [Parameter(Mandatory)][object]$RepositoryWideBaseline
+    )
+
+    $candidateNumber = switch ($ViewName)
+    {
+        "reviewNow" { 101 }
+        "verifyDiscussionBeforeReview" { 103 }
+        "needsRescue" { 104 }
+        "readyToMerge" { 105 }
+    }
+    $reasonCode = if ($ExpectedMarker) { "community-contribution" } else { "community-contribution-extra" }
+    $focusedArea = New-PresentationAreaFromRawFixture -Scope $Scope -CandidateNumber $candidateNumber -CommunityReasonCode $reasonCode
+    $combined = if ($Scope -ceq "blazor")
+    {
+        New-CombinedPulse -Blazor $focusedArea -RepositoryWide $RepositoryWideBaseline
+    }
+    else
+    {
+        New-CombinedPulse -Blazor $BlazorBaseline -RepositoryWide $focusedArea
+    }
+
+    $body = Invoke-Renderer -Pulse $combined
+    $label = if ($Scope -ceq "blazor") { "Blazor" } else { "Repository-wide" }
+    $block = Get-PulseAreaBlock -Body $body -Label $label
+    $reference = "[dotnet/aspnetcore#$candidateNumber](https://github.com/dotnet/aspnetcore/pull/$candidateNumber)"
+    $rows = @($block -split "`r?`n" | Where-Object { $_.Contains($reference, [StringComparison]::Ordinal) })
+    Assert-True ($rows.Count -eq 1) "The focused '$Scope/$ViewName' candidate must render exactly once."
+    $row = $rows[0]
+    $candidate = @($focusedArea.views.$ViewName | Where-Object { $_.number -eq $candidateNumber })
+    Assert-True ($candidate.Count -eq 1) "The sanitized '$Scope/$ViewName' candidate is missing."
+    $candidate = $candidate[0]
+    $authorWithMarker = "$($candidate.author) **Community**"
+    $expectedAuthorText = if ($ViewName -ceq "verifyDiscussionBeforeReview")
+    {
+        "**Author:** $authorWithMarker"
+    }
+    else
+    {
+        $authorWithMarker
+    }
+    Assert-True ($row.Contains("``$reasonCode``", [StringComparison]::Ordinal)) "The focused reason code must remain visible in Reasons."
+    Assert-True ($row.Contains("$($candidate.ageDays)d open", [StringComparison]::Ordinal)) "The focused candidate must retain its exact open age."
+    Assert-True (-not ($row -match "\b[0-9]+d idle\b")) "The focused candidate row must not claim inactivity."
+    Assert-True ($block.Contains("| PR | Title | Author | Next actor | Open age | Reasons / Blockers |")) "Ordinary candidate tables must retain six columns with the Open age heading."
+    if ($ExpectedMarker)
+    {
+        Assert-True ($row.Contains($expectedAuthorText, [StringComparison]::Ordinal)) "The exact community reason code must add the fixed author marker."
+    }
+    else
+    {
+        Assert-True (-not $row.Contains("**Community**", [StringComparison]::Ordinal)) "A partial reason code or author/title text must not add the community marker."
+    }
+
+    Invoke-PublicationValidator -Pulse $combined -AgentOutput (New-ValidAgentOutput -Body $body) -ExpectedBody $body
+    $forgedRow = if ($ExpectedMarker)
+    {
+        $row.Replace(" **Community**", "")
+    }
+    elseif ($ViewName -ceq "verifyDiscussionBeforeReview")
+    {
+        $row.Replace("**Author:** $($candidate.author)", "**Author:** $($candidate.author) **Community**")
+    }
+    else
+    {
+        $row.Replace("| $($candidate.author) |", "| $($candidate.author) **Community** |")
+    }
+    Assert-True (-not [string]::Equals($row, $forgedRow, [StringComparison]::Ordinal)) "The forged marker case must change the focused row."
+    $forgedBody = $body.Replace($row, $forgedRow)
+    Assert-Throws {
+        Invoke-PublicationValidator -Pulse $combined -AgentOutput (New-ValidAgentOutput -Body $forgedBody) -ExpectedBody $body
+    } "The private validator must reject a forged community marker change."
+}
+
 function Get-PresentationSection
 {
     param([string]$Body, [string]$Name)
@@ -660,7 +808,7 @@ function Assert-PresentationTablesAndFields
             }
             else
             {
-                "| PR | Title | Author | Next actor | Idle / Open | Reasons / Blockers |"
+                "| PR | Title | Author | Next actor | Open age | Reasons / Blockers |"
             }
             Assert-True ($tableLines[0] -ceq $tableHeader) "$name has the wrong six-column grouping."
             Assert-True ($tableLines[1] -ceq "| --- | --- | --- | --- | --- | --- |") "$name has an invalid table delimiter."
@@ -692,13 +840,18 @@ function Assert-PresentationTablesAndFields
             $reference = "[dotnet/aspnetcore#$($item.number)](https://github.com/dotnet/aspnetcore/pull/$($item.number))"
             $expectedReferences.Add($reference)
             $identity = "$($item.rank): $reference"
+            $author = [string]$item.author
+            if (@($item.reasonCodes) -ccontains "community-contribution")
+            {
+                $author += " **Community**"
+            }
             if ($discussion)
             {
-                $identity += "; **Author:** $($item.author)"
+                $identity += "; **Author:** $author"
             }
             Assert-True ($cells[1] -ceq $identity -and $item.bucket -ceq $bucket) "Candidate identity, original rank, author or classification changed."
             Assert-True ($cells[2] -ceq $item.title) "Candidate $($item.number) lost its full sanitized title."
-            $ages = "$($item.idleDays)d idle / $($item.ageDays)d open"
+            $openAge = "$($item.ageDays)d open"
             $reasons = if (@($item.reasonCodes).Count -eq 0)
             {
                 "None."
@@ -727,7 +880,7 @@ function Assert-PresentationTablesAndFields
             Assert-True ($withoutScope -ceq "**Reasons:** $reasons **Blockers:** $blockers") "Every ordered reason and blocker must stay in candidate $($item.number)'s row."
             if ($discussion)
             {
-                Assert-True ($cells[3] -ceq "**Next:** $($item.nextActor); $ages") "Discussion actor and both ages must remain in the same row."
+                Assert-True ($cells[3] -ceq "**Next:** $($item.nextActor); $openAge") "Discussion actor and open age must remain in the same row."
                 $assessment = $item.discussionAssessment
                 $signals = if (@($assessment.signals).Count -eq 0)
                 {
@@ -744,7 +897,7 @@ function Assert-PresentationTablesAndFields
             }
             else
             {
-                Assert-True ($cells[3] -ceq $item.author -and $cells[4] -ceq $item.nextActor -and $cells[5] -ceq $ages) "Author, next actor, idle days and open days must remain exact."
+                Assert-True ($cells[3] -ceq $author -and $cells[4] -ceq $item.nextActor -and $cells[5] -ceq $openAge) "Author, next actor, and open age must remain exact."
             }
         }
     }
@@ -1413,6 +1566,56 @@ try
         "bounded-empty-verification" = $boundedDiscussionResult
         "published-34643961191" = $published
     }
+
+    foreach ($scope in @("blazor", "repository-wide"))
+    {
+        foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+        {
+            foreach ($expectedMarker in @($true, $false))
+            {
+                $expectation = if ($expectedMarker) { "exact-code" } else { "partial-code" }
+                Invoke-PresentationCase "CommunityMarker/$scope/$viewName/$expectation" {
+                    Assert-CommunityMarkerPresentation `
+                        -Scope $scope `
+                        -ViewName $viewName `
+                        -ExpectedMarker $expectedMarker `
+                        -BlazorBaseline $normal `
+                        -RepositoryWideBaseline $repositoryWideNormal
+                }
+            }
+        }
+    }
+
+    Invoke-PresentationCase "CollapsedSummary/complete" {
+        $body = Invoke-Renderer -Pulse $normal
+        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 5 matched; shown: 2 review now, 1 verify discussion, 1 rescue, 1 ready; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete summary must use displayed array lengths."
+    }
+    Invoke-PresentationCase "CollapsedSummary/complete-zero" {
+        $body = Invoke-Renderer -Pulse $zero
+        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 0 matched; shown: 0 review now, 0 verify discussion, 0 rescue, 0 ready; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete-zero summary must explicitly show four zero displayed counts."
+    }
+    Invoke-PresentationCase "CollapsedSummary/capped" {
+        $capped = $realPulses["repository-wide/discussion-pull-requests.json"]
+        $body = Invoke-Renderer -Pulse $capped
+        $expected = "<summary><strong>Repository-wide</strong> - $($capped.source.census.matched) matched; shown: $(@($capped.views.reviewNow).Count) review now, $(@($capped.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($capped.views.needsRescue).Count) rescue, $(@($capped.views.readyToMerge).Count) ready; generated "
+        Assert-True ($capped.source.overflow.reviewNow -gt 0) "The capped summary control requires real producer overflow."
+        Assert-True ($body.Contains($expected)) "A capped summary must report displayed arrays instead of inventory counts."
+        Invoke-PublicationValidator -Pulse $capped -AgentOutput (New-ValidAgentOutput -Body $body) -ExpectedBody $body
+    }
+    Invoke-PresentationCase "CollapsedSummary/unassessed" {
+        $body = Invoke-Renderer -Pulse $unassessedDiscussionResult
+        $expected = "<summary><strong>Blazor</strong> - $($unassessedDiscussionResult.source.census.matched) matched; shown: $(@($unassessedDiscussionResult.views.reviewNow).Count) review now, $(@($unassessedDiscussionResult.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($unassessedDiscussionResult.views.needsRescue).Count) rescue, $(@($unassessedDiscussionResult.views.readyToMerge).Count) ready; generated "
+        Assert-True ($unassessedDiscussionResult.source.discussion.unassessedReviewNowCount -gt 0) "The unassessed summary control requires a real sanitized unassessed count."
+        Assert-True ($body.Contains($expected)) "An unassessed summary must report displayed arrays instead of deriving ordinary review count."
+        Assert-True ($body.Contains("$($unassessedDiscussionResult.source.discussion.unassessedReviewNowCount) Review now candidates unassessed")) "The unassessed count must remain in the area audit."
+        Invoke-PublicationValidator -Pulse $unassessedDiscussionResult -AgentOutput (New-ValidAgentOutput -Body $body) -ExpectedBody $body
+    }
+    Invoke-PresentationCase "CollapsedSummary/unavailable" {
+        $body = Invoke-Renderer -Pulse $collectionFailure
+        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - data unavailable; attempted 2026-09-10T20:04:56.0000000Z</summary>")) "An unavailable summary must remain distinct from complete zero."
+        Assert-True (-not $body.Contains("shown:")) "An unavailable summary must not manufacture displayed counts."
+    }
+
     $tableFixtures = [ordered]@{}
     foreach ($name in $presentationFixtures.Keys)
     {
