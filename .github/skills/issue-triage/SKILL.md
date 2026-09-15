@@ -43,12 +43,20 @@ symptom appeared.
 
 ## Type
 
-Treat a supplied trusted current issue type as authoritative. When it is non-empty,
-report that it must be preserved and recommend no replacement type. This includes
-maintainer-created `Epic` issues and template- or automation-assigned `Bug`, `Feature`,
-or `Task` issues.
+Treat the supplied current-type lookup status and returned type as separate trusted
+inputs. Only a lookup status explicitly reported as successful or `true` establishes the
+current type state:
 
-Only for an untyped issue, recommend exactly one of:
+- Successful lookup with a non-empty type: preserve that type and recommend no
+  replacement. This includes maintainer-created `Epic` issues and template- or
+  automation-assigned `Bug`, `Feature`, or `Task` issues.
+- Successful lookup with an empty or `none` type: treat the issue as genuinely untyped
+  and recommend exactly one replacement type.
+- Failed, unknown, or missing lookup status: the current type is unknown. Use
+  `Unknown (lookup unavailable)` as the type action, recommend no replacement type, and
+  never imply that a type can be assigned.
+
+Only for an issue confirmed untyped by a successful lookup, recommend exactly one of:
 
 | Type | Use when |
 |---|---|
@@ -61,11 +69,11 @@ in the dotnet organization, but it is not an automated newly-opened-issue
 classification. A broad or large single feature request remains a `Feature`;
 implementation size alone does not make it an Epic.
 
-A template signal can inform classification of an untyped issue when the content supports
-it, but it never overrides a trusted current issue type.
+A template signal can inform classification of a confirmed untyped issue when the content
+supports it, but it never overrides a trusted current issue type or an unavailable lookup.
 
-Existing-type preservation affects only the type action. Continue area, subtype,
-duplicate, abstention, and summary analysis normally.
+Existing-type preservation and unavailable lookup status affect only the type action.
+Continue area, subtype, duplicate, abstention, and summary analysis normally.
 
 ## Supported subtype
 
@@ -141,7 +149,8 @@ For a full triage, first give this structured decision record:
 Use exactly one value on each line:
 
 - **Area:** a supported area enclosed in backticks, or `Abstain` without backticks.
-- **Type action:** `Preserve` or `Recommend` followed by the type enclosed in backticks.
+- **Type action:** `Preserve` or `Recommend` followed by the type enclosed in backticks,
+  or exactly `Unknown (lookup unavailable)`.
 - **Subtype:** a supported subtype enclosed in backticks, or `None` without backticks.
 - **Duplicate:** `#123 (duplicate)`, `#123 (related)`, `#123 (unrelated)`, or
   `None found`, all without backticks.
@@ -154,7 +163,7 @@ recommendation to assign `Epic`. Then draft the summary with this semantic shape
 ### Triage Summary
 
 **Area:** `area-xyz` (brief evidence-based reason)
-**Type:** `<existing issue type>` (preserved) | `Bug` | `Feature` | `Task` (brief evidence-based reason)
+**Type:** `<existing issue type>` (preserved) | `Bug` | `Feature` | `Task` (brief evidence-based reason) | unknown (type lookup unavailable)
 
 #### Regression Info
 - **Previously working version:** ...
@@ -171,6 +180,9 @@ recommendation to assign `Epic`. Then draft the summary with this semantic shape
 Apply these shape rules:
 
 - Omit `Regression Info` unless the issue supports a regression.
+- For a failed, unknown, or missing type lookup, use exactly
+  `**Type:** unknown (type lookup unavailable)` and do not append a proposed type or
+  reason.
 - Always include `Potential Duplicates`; use exactly `- _None found_` when no verified
   candidate survives.
 - Omit `Notes` when there is no additive verified information.

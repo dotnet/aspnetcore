@@ -5,8 +5,8 @@ type: capability
 defaults:
   runs: 5
   timeout: 420s
-  model: claude-opus-4.6
-  judge_model: claude-opus-4.6
+  model: gpt-5.5
+  judge_model: gpt-5.5
 
 scoring: {}
 
@@ -19,6 +19,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/65910
       Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Title: Update Multiple Hosted WebAssembly documentation to new 8.0+ model with App.razor
       Body:
@@ -44,6 +45,50 @@ stimuli:
       - "Reports no verified duplicate and includes Potential Duplicates with '- _None found_'"
       - "Does not claim that 8.0 is preview, stable, released, or unreleased"
 
+  - name: abstain-from-type-when-lookup-fails
+    prompt: |
+      Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
+      subtype, duplicate status, and any abstention. Then provide the recommended semantic
+      triage summary. Use only the frozen data below; do not fetch live GitHub state.
+
+      Source: https://github.com/dotnet/aspnetcore/issues/65910
+      Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: false
+      Trusted current issue type: unavailable
+      Title: Update Multiple Hosted WebAssembly documentation to new 8.0+ model with App.razor
+      Body:
+        Not sure if this is a feature request or documentation issue.
+
+        This page automatically reverts to the 7.0 version:
+        https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly/multiple-hosted-webassembly
+
+        Can you please update the documentation and or guidance to get multiple hosted
+        Blazor WebAssembly clients working with the new App.razor model, static asset
+        fingerprinting and Static Server Side Rendering (SSR)?
+
+      No duplicate candidates are supplied.
+    graders:
+      - name: require-unknown-type-decision
+        type: output-matches
+        config:
+          pattern: '(?ims)^-\s+\*\*Area:\*\*\s+`area-blazor`\s*$.*^-\s+\*\*Type action:\*\*\s+Unknown \(lookup unavailable\)\s*$.*^-\s+\*\*Subtype:\*\*\s+`docs`\s*$.*^-\s+\*\*Duplicate:\*\*\s+None found\s*$'
+      - name: require-unknown-type-summary
+        type: output-matches
+        config:
+          pattern: '(?im)^\*\*Type:\*\*\s+unknown \(type lookup unavailable\)\s*$'
+      - name: reject-type-recommendation
+        type: output-matches
+        config:
+          pattern: '(?im)^(?:[-*]\s*)?(?:\*\*)?Type(?:\s+action)?(?:\*\*)?\s*:\s*(?:\*\*)?\s*(?:Recommend|Preserve)\b'
+          negate: true
+      - type: prompt
+    rubric:
+      - "Reports the type action exactly as Unknown (lookup unavailable) because the trusted lookup failed"
+      - "Uses 'unknown (type lookup unavailable)' in the semantic summary and does not recommend or preserve Bug, Feature, Task, or Epic"
+      - "Still recommends exactly area-blazor and supported subtype docs"
+      - "Continues duplicate analysis and includes Potential Duplicates with '- _None found_'"
+      - "Does not imply that a replacement type can be assigned until a successful lookup confirms the issue is untyped"
+
   - name: keep-broken-identity-template-output-as-bug
     prompt: |
       Classify this frozen public dotnet/aspnetcore issue for area, issue type, supported
@@ -52,6 +97,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/67614
       Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Title: Accessibility: scaffolded Identity validation summary produces an invalid ul with role=alert
       Body:
@@ -94,6 +140,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/68678
       Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Title: Browser Link triggers "Permissions policy violation: unload is not allowed in this document" in Edge during Blazor Web App debugging
       Body:
@@ -128,6 +175,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/68802
       Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Title: Issue triage agent maps Blazor component projects to area-ui-rendering
       Body:
@@ -163,6 +211,7 @@ stimuli:
 
       Issue source: https://github.com/dotnet/aspnetcore/issues/54321
       Snapshot captured: 2026-08-27
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Issue title: JWT Token Validation Fails after Upgrade from .NET 6 to .NET 8
       Issue body:
@@ -208,6 +257,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/66391
       Snapshot captured: 2026-09-02
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: none
       Title: API Proposal: Media components (Image, Video, FileDownload)
       Body:
@@ -240,7 +290,7 @@ stimuli:
       - name: reject-epic-type-choice
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:(?:recommend(?:ed)?|preserve(?:d)?)\s+)?`?Epic`?\b|(?:\*\*)?(?:Selected|Recommended|Preserved)\s+type\s*:\s*(?:\*\*)?\s*`?Epic`?\b|(?:I\s+)?(?:recommend|preserve)\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?type\s+`?Epic`?\b)'
+          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?(?:\*\*)?\s*:\s*(?:\*\*)?\s*(?:(?:recommend(?:ed)?|preserve(?:d)?)\s+)?`?Epic`?\b|(?:\*\*)?(?:Selected|Recommended|Preserved)\s+type(?:\*\*)?\s*:\s*(?:\*\*)?\s*`?Epic`?\b|(?:I\s+)?(?:recommend|preserve)\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?type\s+`?Epic`?\b)'
           negate: true
       - name: reject-bug-or-task-type-choice
         type: output-matches
@@ -263,6 +313,7 @@ stimuli:
 
       Source: https://github.com/dotnet/aspnetcore/issues/68375
       Snapshot captured: 2026-09-02
+      Trusted current issue type lookup succeeded: true
       Trusted current issue type: Epic
       Title: Components.AI attachments, media, and voice
       Body:
@@ -290,7 +341,7 @@ stimuli:
       - name: reject-replacement-type
         type: output-matches
         config:
-          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?(?:Bug|Feature|Task)`?\b|(?:\*\*)?(?:Replacement|Recommended)\s+type\s*:\s*(?:\*\*)?\s*`?(?:Bug|Feature|Task|Epic)`?\b|(?:[^;\n]*[;,.]\s*)?(?:I\s+)?recommend\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?(?:type\s+)?`?(?:Bug|Feature|Task|Epic)`?\b|(?:\*\*)?Type(?:\s+action)?\s*:\s*(?:\*\*)?\s*recommend(?:ed)?\s+`?Epic`?\b)'
+          pattern: '(?im)^(?:[-*]\s*)?(?:(?:\*\*)?Type(?:\s+action)?(?:\*\*)?\s*:\s*(?:\*\*)?\s*(?:recommend(?:ed)?\s+)?`?(?:Bug|Feature|Task)`?\b|(?:\*\*)?(?:Replacement|Recommended)\s+type(?:\*\*)?\s*:\s*(?:\*\*)?\s*`?(?:Bug|Feature|Task|Epic)`?\b|(?:[^;\n]*[;,.]\s*)?(?:I\s+)?recommend\s+(?:assigning\s+)?(?:the\s+)?(?:issue\s+)?(?:type\s+)?`?(?:Bug|Feature|Task|Epic)`?\b|(?:\*\*)?Type(?:\s+action)?(?:\*\*)?\s*:\s*(?:\*\*)?\s*recommend(?:ed)?\s+`?Epic`?\b)'
           negate: true
       - type: prompt
     rubric:
