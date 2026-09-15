@@ -37,6 +37,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
+    // Error boundaries for which we've queued, but not yet executed, a render that forcibly discards
+    // their subtree. See HandleExceptionViaErrorBoundary.
+    private readonly HashSet<int> _errorBoundariesWithPendingSubtreeClear = new();
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private SectionRegistry? _sectionRegistry;
@@ -1090,6 +1093,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             _componentStateById.Remove(disposeComponentId);
             _componentStateByComponent.Remove(disposeComponentState.Component);
+            // If the boundary is disposed before its queued subtree-clearing render executes, that
+            // render is skipped, so drop the tracking entry here instead.
+            _errorBoundariesWithPendingSubtreeClear.Remove(disposeComponentId);
             _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
         }
 
@@ -1210,7 +1216,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // Don't just trust the error boundary to dispose its subtree - force it to do so by
                 // making it render an empty fragment. Ensures that failed components don't continue to
                 // operate, which would be a whole new kind of edge case to support forever.
-                AddToRenderQueue(candidate.ComponentId, builder => { });
+                //
+                // If several errors reach the same boundary before that empty render has executed (for
+                // example, when a @foreach renders multiple children that all throw in one batch), queue
+                // it only once. The already-queued empty render is still ordered ahead of anything the
+                // boundary renders in response to HandleException below, so it discards the subtree just
+                // as effectively. Queueing another one would instead land *after* the boundary's error
+                // content and blank it out.
+                var boundaryComponentId = candidate.ComponentId;
+                if (_errorBoundariesWithPendingSubtreeClear.Add(boundaryComponentId))
+                {
+                    AddToRenderQueue(
+                        boundaryComponentId,
+                        _ => _errorBoundariesWithPendingSubtreeClear.Remove(boundaryComponentId));
+                }
 
                 try
                 {

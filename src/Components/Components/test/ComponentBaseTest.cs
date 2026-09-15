@@ -437,6 +437,65 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowInSameBatch()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        // Several children failing in one batch (e.g. a @foreach) each route an error to the same
+        // boundary. Every error forces the renderer to discard the boundary's subtree, but that must
+        // not undo the error content the boundary renders in response.
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(i);
+                    childBuilder.CloseComponent();
+                }
+            }));
+            builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        // Assert
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+
+        var batch = renderer.Batches.Single();
+        var boundaryComponentId = batch.GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+
+        // The boundary's final render is its error content, not the forced empty render
+        var frames = renderer.GetCurrentRenderTreeFrames(boundaryComponentId).AsEnumerable().ToArray();
+        Assert.Collection(frames,
+            frame =>
+            {
+                Assert.Equal(RenderTree.RenderTreeFrameType.Element, frame.FrameType);
+                Assert.Equal("div", frame.ElementName);
+            },
+            frame =>
+            {
+                Assert.Equal(RenderTree.RenderTreeFrameType.Attribute, frame.FrameType);
+                Assert.Equal("class", frame.AttributeName);
+                Assert.Equal("blazor-error-boundary", frame.AttributeValue);
+            });
+
+        // All of the failed children are still discarded
+        var failedChildIds = batch.GetComponentFrames<TestComponentErrorBuildRenderTree>()
+            .Select(f => f.ComponentId);
+        Assert.Equal(3, failedChildIds.Count());
+        Assert.Equal(failedChildIds.OrderBy(id => id), batch.DisposedComponentIDs.OrderBy(id => id));
+    }
+
+    [Fact]
     public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
     {
         // Arrange

@@ -4572,6 +4572,43 @@ public class RendererTest
     }
 
     [Fact]
+    public void RenderingExceptionsFromSeveralChildrenInOneBatchDiscardWholeFailedSubtree()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var exception = new InvalidTimeZoneException("Error during render");
+        var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder =>
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(i * 2);
+                    builder.AddComponentParameter(i * 2 + 1, nameof(ErrorThrowingComponent.ThrowDuringRender), exception);
+                    builder.CloseComponent();
+                }
+            }));
+            builder.CloseComponent();
+        }));
+
+        // Act
+        renderer.RenderRootComponent(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var errorBoundary = (TestErrorBoundary)batch.GetComponentFrames<TestErrorBoundary>().Single().Component;
+        Assert.Same(exception, errorBoundary.ReceivedException);
+
+        // This boundary never re-renders itself in response to an error, so only the renderer's forced
+        // empty render can discard the failed subtree. It must still discard all of it, even though
+        // several errors arrived before that empty render executed.
+        var failedComponentIds = batch.GetComponentFrames<ErrorThrowingComponent>().Select(f => f.ComponentId);
+        Assert.Equal(3, failedComponentIds.Count());
+        Assert.Equal(failedComponentIds.OrderBy(id => id), batch.DisposedComponentIDs.OrderBy(id => id));
+    }
+
+    [Fact]
     public void SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Sync()
     {
         // Arrange
@@ -6218,7 +6255,7 @@ public class RendererTest
         public void HandleException(Exception error)
         {
             ReceivedException = error;
-            receivedErrorTaskCompletionSource.SetResult();
+            receivedErrorTaskCompletionSource.TrySetResult();
         }
 
         public static void RenderNestedErrorBoundaries(RenderTreeBuilder builder, RenderFragment innerContent)
