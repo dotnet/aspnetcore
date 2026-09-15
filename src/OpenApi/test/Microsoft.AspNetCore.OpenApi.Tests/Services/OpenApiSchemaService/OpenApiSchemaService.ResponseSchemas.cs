@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -828,8 +829,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
-    [Fact]
-    public async Task GetOpenApiResponse_HandlesNullableComponentizedArrayElementsWithOneOf()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetOpenApiResponse_HandlesNullableComponentizedArrayElementsWithOneOf(bool useSchemaTransformer)
     {
         var builder = CreateBuilder();
 
@@ -840,33 +843,140 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/todos", GetTodos);
 #nullable restore
 
-        await VerifyOpenApiDocument(builder, document =>
+        var options = new OpenApiOptions();
+        var transformedArrays = 0;
+        if (useSchemaTransformer)
         {
-            var statusesOperation = document.Paths["/statuses"].Operations[HttpMethod.Get];
-            var statusesResponse = Assert.Single(statusesOperation.Responses);
-            Assert.True(statusesResponse.Value.Content.TryGetValue("application/json", out var statusesMediaType));
-            var statusesSchema = statusesMediaType.Schema;
-            Assert.Equal(JsonSchemaType.Array, statusesSchema.Type);
-            Assert.Collection(statusesSchema.Items.OneOf,
-                item => Assert.Equal(JsonSchemaType.Null, item.Type),
-                item => Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id));
+            options.AddSchemaTransformer((schema, context, cancellationToken) =>
+            {
+                if (context.JsonTypeInfo.Type.IsArray)
+                {
+                    // Schema transformers run after null pruning, before response nullability is applied.
+                    schema.Items = schema.Items.CreateOneOfNullableWrapper();
+                    transformedArrays++;
+                }
+                return Task.CompletedTask;
+            });
+        }
 
-            var todosOperation = document.Paths["/todos"].Operations[HttpMethod.Get];
-            var todosResponse = Assert.Single(todosOperation.Responses);
-            Assert.True(todosResponse.Value.Content.TryGetValue("application/json", out var todosMediaType));
-            var todosSchema = todosMediaType.Schema;
-            Assert.Equal(JsonSchemaType.Array, todosSchema.Type);
-            Assert.Collection(todosSchema.Items.OneOf,
-                item => Assert.Equal(JsonSchemaType.Null, item.Type),
-                item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
-                
-            var statusComponentSchema = Assert.IsType<OpenApiSchema>(document.Components.Schemas["Status"]);
-            Assert.False(statusComponentSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false);
-            Assert.DoesNotContain(statusComponentSchema.Enum ?? [], value => value is null);
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        Assert.Equal(useSchemaTransformer ? 2 : 0, transformedArrays);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/statuses": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Status"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "/todos": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Todo"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "Status": {
+                    "enum": [
+                      "Pending",
+                      "Approved",
+                      "Rejected"
+                    ]
+                  },
+                  "Todo": {
+                    "required": [
+                      "id",
+                      "title",
+                      "completed",
+                      "createdAt"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "title": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiSchemaServiceTests"
+                }
+              ]
+            }
+            """;
 
-            var todoComponentSchema = Assert.IsType<OpenApiSchema>(document.Components.Schemas["Todo"]);
-            Assert.False(todoComponentSchema.Type?.HasFlag(JsonSchemaType.Null) ?? false);
-        });
+        Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
