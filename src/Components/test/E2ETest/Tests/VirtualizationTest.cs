@@ -5477,10 +5477,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             """
             window.__nativeIntersectionObserver = window.IntersectionObserver;
             window.__virtualizeObserverCallbacks = [];
+            window.__holdVirtualizeObserverCallbacks = true;
             window.IntersectionObserver = class extends window.__nativeIntersectionObserver {
                 constructor(callback, options) {
                     super((entries, observer) => {
-                        if (entries.some(entry =>
+                        if (window.__holdVirtualizeObserverCallbacks && entries.some(entry =>
                             entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'))) {
                             window.__virtualizeObserverCallbacks.push(() => callback(entries, observer));
                         } else {
@@ -5509,6 +5510,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
             js.ExecuteScript(
                 """
+                window.__holdVirtualizeObserverCallbacks = false;
                 for (const callback of window.__virtualizeObserverCallbacks.splice(0)) {
                     callback();
                 }
@@ -5523,9 +5525,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             js.ExecuteScript(
                 """
+                window.__holdVirtualizeObserverCallbacks = false;
+                for (const callback of window.__virtualizeObserverCallbacks.splice(0)) {
+                    callback();
+                }
                 window.IntersectionObserver = window.__nativeIntersectionObserver;
                 delete window.__nativeIntersectionObserver;
                 delete window.__virtualizeObserverCallbacks;
+                delete window.__holdVirtualizeObserverCallbacks;
                 """);
         }
     }
