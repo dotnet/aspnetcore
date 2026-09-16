@@ -1,0 +1,564 @@
+[
+  {
+    "number": 101,
+    "title": "Approved pull request with explicit no-merge block",
+    "url": "https://github.com/dotnet/aspnetcore/pull/101",
+    "author": { "login": "blocked-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "* NO MERGE *" },
+      { "name": "pending-ci-rerun" }
+    ],
+    "createdAt": "2026-01-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1011011011011011011011011011011011011011",
+    "headRefName": "blocked-no-merge",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1011011011011011011011011011011011011011" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Blocked.cs" }
+    ],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 102,
+    "title": "Approved pull request waiting on CI rerun",
+    "url": "https://github.com/dotnet/aspnetcore/pull/102",
+    "author": { "login": "rerun-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" },
+      { "name": "pending-ci-rerun" }
+    ],
+    "createdAt": "2026-02-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1021021021021021021021021021021021021021",
+    "headRefName": "pending-ci-rerun",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1021021021021021021021021021021021021021" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Rerun.cs" }
+    ],
+    "additions": 3,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 103,
+    "title": "Approved pull request with blocked merge state",
+    "url": "https://github.com/dotnet/aspnetcore/pull/103",
+    "author": { "login": "merge-state-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-03-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1031031031031031031031031031031031031031",
+    "headRefName": "blocked-merge-state",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1031031031031031031031031031031031031031" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/BlockedMergeState.cs" }
+    ],
+    "additions": 4,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 104,
+    "title": "Approved clean pull request",
+    "url": "https://github.com/dotnet/aspnetcore/pull/104",
+    "author": { "login": "clean-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-04-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1041041041041041041041041041041041041041",
+    "headRefName": "clean-ready",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1041041041041041041041041041041041041041" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Clean.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 105,
+    "title": "Recent reviewer feedback after stale team request",
+    "url": "https://github.com/dotnet/aspnetcore/pull/105",
+    "author": { "login": "feedback-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-05-01T18:00:00Z",
+    "updatedAt": "2026-09-02T18:00:00Z",
+    "headRefOid": "1051051051051051051051051051051051051051",
+    "headRefName": "recent-review-feedback",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "COMMENTED",
+        "submittedAt": "2026-09-02T18:00:00Z",
+        "commit": { "oid": "1051051051051051051051051051051051051051" }
+      }
+    ],
+    "reviewRequests": [
+      { "name": "aspnet-blazor-eng", "requestedAt": "2026-06-01T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Feedback.cs" }
+    ],
+    "additions": 6,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 106,
+    "title": "Author responded after reviewer feedback",
+    "url": "https://github.com/dotnet/aspnetcore/pull/106",
+    "author": { "login": "responded-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-05-01T18:00:00Z",
+    "updatedAt": "2026-08-20T18:00:00Z",
+    "headRefOid": "1061061061061061061061061061061061061061",
+    "headRefName": "author-responded",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "COMMENTED",
+        "submittedAt": "2026-08-10T18:00:00Z",
+        "commit": { "oid": "1061061061061061061061061061061061061061" }
+      }
+    ],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-21T18:00:00Z" }
+    ],
+    "comments": [
+      {
+        "author": { "login": "responded-author", "is_bot": false },
+        "createdAt": "2026-08-20T18:00:00Z"
+      }
+    ],
+    "files": [
+      { "path": "src/Components/Components/src/Responded.cs" }
+    ],
+    "additions": 7,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 107,
+    "title": "Author-authored review does not count as reviewer activity",
+    "url": "https://github.com/dotnet/aspnetcore/pull/107",
+    "author": { "login": "self-review-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-05-01T18:00:00Z",
+    "updatedAt": "2026-09-02T18:00:00Z",
+    "headRefOid": "1071071071071071071071071071071071071071",
+    "headRefName": "self-review",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "self-review-author", "is_bot": false },
+        "state": "COMMENTED",
+        "submittedAt": "2026-09-02T18:00:00Z",
+        "commit": { "oid": "1071071071071071071071071071071071071071" }
+      }
+    ],
+    "reviewRequests": [
+      { "name": "aspnet-blazor-eng", "requestedAt": "2026-06-01T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/SelfReview.cs" }
+    ],
+    "additions": 8,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 108,
+    "title": "Internal ranking candidate",
+    "url": "https://github.com/dotnet/aspnetcore/pull/108",
+    "author": { "login": "internal-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-ranking" }
+    ],
+    "createdAt": "2026-07-01T18:00:00Z",
+    "updatedAt": "2026-08-10T18:00:00Z",
+    "headRefOid": "1081081081081081081081081081081081081081",
+    "headRefName": "internal-ranking",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-10T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Ranking/Internal.cs" }
+    ],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 109,
+    "title": "Community ranking candidate",
+    "url": "https://github.com/dotnet/aspnetcore/pull/109",
+    "author": { "login": "community-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-ranking" },
+      { "name": "community-contribution" }
+    ],
+    "createdAt": "2026-07-01T18:00:00Z",
+    "updatedAt": "2026-08-10T18:00:00Z",
+    "headRefOid": "1091091091091091091091091091091091091091",
+    "headRefName": "community-ranking",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-10T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Ranking/Community.cs" }
+    ],
+    "additions": 20,
+    "deletions": 5,
+    "changedFiles": 10,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 110,
+    "title": "Unhealthy stack ancestor",
+    "url": "https://github.com/dotnet/aspnetcore/pull/110",
+    "author": { "login": "stack-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-20T18:00:00Z",
+    "headRefOid": "1101101101101101101101101101101101101101",
+    "headRefName": "stack-base",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "FAILURE" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/Base.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 111,
+    "title": "Reviewable child with unhealthy stack ancestor",
+    "url": "https://github.com/dotnet/aspnetcore/pull/111",
+    "author": { "login": "stack-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-02T18:00:00Z",
+    "updatedAt": "2026-08-15T18:00:00Z",
+    "headRefOid": "1111111111111111111111111111111111111111",
+    "headRefName": "stack-child",
+    "baseRefName": "stack-base",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-15T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/Child.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 112,
+    "title": "Independent stack-scope candidate",
+    "url": "https://github.com/dotnet/aspnetcore/pull/112",
+    "author": { "login": "independent-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-03T18:00:00Z",
+    "updatedAt": "2026-08-16T18:00:00Z",
+    "headRefOid": "1121121121121121121121121121121121121121",
+    "headRefName": "independent-candidate",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-16T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/Independent.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 113,
+    "title": "Caller-owned candidate",
+    "url": "https://github.com/dotnet/aspnetcore/pull/113",
+    "author": { "login": "current-user", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-04T18:00:00Z",
+    "updatedAt": "2026-08-14T18:00:00Z",
+    "headRefOid": "1131131131131131131131131131131131131131",
+    "headRefName": "caller-owned",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [
+      { "login": "reviewer", "requestedAt": "2026-08-14T18:00:00Z" }
+    ],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/Caller.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 114,
+    "title": "Unhealthy fork branch named main",
+    "url": "https://github.com/dotnet/aspnetcore/pull/114",
+    "author": { "login": "fork-author", "is_bot": false },
+    "isDraft": false,
+    "isCrossRepository": true,
+    "labels": [
+      { "name": "area-stack" }
+    ],
+    "createdAt": "2026-08-01T18:00:00Z",
+    "updatedAt": "2026-08-20T18:00:00Z",
+    "headRefOid": "1141141141141141141141141141141141141141",
+    "headRefName": "main",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BLOCKED",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "FAILURE" }
+    ],
+    "latestReviews": [],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Stack/ForkMain.cs" }
+    ],
+    "additions": 5,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  },
+  {
+    "number": 116,
+    "title": "Approved pull request behind its base branch",
+    "url": "https://github.com/dotnet/aspnetcore/pull/116",
+    "author": { "login": "behind-author", "is_bot": false },
+    "isDraft": false,
+    "labels": [
+      { "name": "area-blazor" }
+    ],
+    "createdAt": "2026-04-01T18:00:00Z",
+    "updatedAt": "2026-09-01T18:00:00Z",
+    "headRefOid": "1161161161161161161161161161161161161161",
+    "headRefName": "behind-base",
+    "baseRefName": "main",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "BEHIND",
+    "reviewDecision": "APPROVED",
+    "statusCheckRollup": [
+      { "__typename": "CheckRun", "status": "COMPLETED", "conclusion": "SUCCESS" }
+    ],
+    "latestReviews": [
+      {
+        "author": { "login": "reviewer", "is_bot": false },
+        "state": "APPROVED",
+        "submittedAt": "2026-09-01T18:00:00Z",
+        "commit": { "oid": "1161161161161161161161161161161161161161" }
+      }
+    ],
+    "reviewRequests": [],
+    "comments": [],
+    "files": [
+      { "path": "src/Components/Components/src/Behind.cs" }
+    ],
+    "additions": 2,
+    "deletions": 1,
+    "changedFiles": 1,
+    "milestone": null,
+    "assignees": []
+  }
+]

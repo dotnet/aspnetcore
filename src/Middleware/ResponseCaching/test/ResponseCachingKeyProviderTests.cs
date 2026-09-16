@@ -124,7 +124,7 @@ public class ResponseCachingKeyProviderTests
     }
 
     [Fact]
-    public void ResponseCachingKeyProvider_CreateStorageVaryKey_HeaderValuesAreSorted()
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_HeaderValuesPreserveOriginalOrder()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
@@ -135,7 +135,7 @@ public class ResponseCachingKeyProviderTests
             Headers = new string[] { "HeaderA", "HeaderC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -208,7 +208,7 @@ public class ResponseCachingKeyProviderTests
     }
 
     [Fact]
-    public void ResponseCachingKeyProvider_CreateStorageVaryKey_QueryKeysValuesAreSorted()
+    public void ResponseCachingKeyProvider_CreateStorageVaryKey_QueryKeysValuesPreserveOriginalOrder()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
@@ -221,8 +221,57 @@ public class ResponseCachingKeyProviderTests
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueB{KeySubDelimiter}ValueA",
             cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryByKey_SelectedHeaderValues_DoesNotMutateRequestHeaderValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueB";
+        context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            Headers = new string[] { "HeaderA" }
+        };
+
+        _ = cacheKeyProvider.CreateStorageVaryByKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Headers["HeaderA"].ToArray());
+    }
+
+    [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryByKey_ExplicitQueryValues_DoesNotMutateRequestQueryValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueB&QueryA=ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "QueryA" }
+        };
+
+        _ = cacheKeyProvider.CreateStorageVaryByKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Query["QueryA"].ToArray());
+    }
+
+    [Fact]
+    public void ResponseCachingKeyProvider_CreateStorageVaryByKey_WildcardQueryValues_DoesNotMutateRequestQueryValueOrder()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueB&QueryA=ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            QueryKeys = new string[] { "*" }
+        };
+
+        _ = cacheKeyProvider.CreateStorageVaryByKey(context);
+
+        Assert.Equal(new[] { "ValueB", "ValueA" }, context.HttpContext.Request.Query["QueryA"].ToArray());
     }
 
     [Fact]

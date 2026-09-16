@@ -1,0 +1,694 @@
+#!/usr/bin/env pwsh
+#Requires -Version 7.0
+
+$ErrorActionPreference = "Stop"
+
+function Assert-True {
+    param(
+        [bool]$Condition,
+        [string]$Message
+    )
+
+    if (-not $Condition) {
+        throw $Message
+    }
+}
+
+$skillRoot = Split-Path -Parent $PSScriptRoot
+$scriptPath = Join-Path $skillRoot "scripts/Get-PRAttentionQueue.ps1"
+$modulePath = Join-Path $skillRoot "scripts/PRAttentionQueue.psm1"
+$fixturePath = Join-Path $PSScriptRoot "fixtures/pull-requests.json"
+$correctnessFixturePath = Join-Path $PSScriptRoot "fixtures/correctness-pull-requests.json"
+$discussionFixturePath = Join-Path $PSScriptRoot "fixtures/discussion-pull-requests.json"
+$inboxFixturePath = Join-Path $PSScriptRoot "fixtures/inbox-pull-requests.json"
+$snapshot = [datetime]"2026-09-03T18:00:00Z"
+
+Import-Module -Scope Local -Force $modulePath
+$exportedCommands = @(Get-Command -Module PRAttentionQueue)
+
+Assert-True ($exportedCommands.Count -eq 1) "The module must export exactly one command."
+Assert-True ($exportedCommands[0].Name -eq "Invoke-PRAttentionQueue") "The module must export Invoke-PRAttentionQueue."
+
+$defaultJson = & $scriptPath `
+    -InputPath $fixturePath `
+    -Now $snapshot `
+    -OutputFormat Json
+$defaultResult = $defaultJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($defaultResult.filter.name -eq "blazor") "The default scope must be the Blazor preset."
+Assert-True ($defaultResult.query.complete) "The fixture universe must be complete."
+Assert-True ($defaultResult.census.matched -eq 14) "The Blazor preset should match fourteen fixture PRs."
+Assert-True ($defaultResult.census.pathOnly -eq 1) "One unlabeled PR should match only by Components path."
+Assert-True ($defaultResult.census.incidentalPathExcluded -eq 1) "A repository-wide sweep must not enter a narrow scope."
+Assert-True (-not ($defaultResult.items | Where-Object number -eq 13)) "PR 13 touches Components incidentally and must be excluded."
+Assert-True (($defaultResult.items | Where-Object number -eq 14).bucket -eq "WaitingOnAuthor") "PR 14 conflicts and belongs to its author."
+Assert-True (($defaultResult.items | Where-Object number -eq 14).reasonCodes -contains "merge-conflict") "PR 14 should explain the merge conflict."
+Assert-True (($defaultResult.items | Where-Object number -eq 1).bucket -eq "ReviewNow") "PR 1 should be reviewable now."
+Assert-True (($defaultResult.items | Where-Object number -eq 2).bucket -eq "NeedsRescue") "PR 2 should need rescue."
+Assert-True (($defaultResult.items | Where-Object number -eq 3).bucket -eq "WaitingOnAuthor") "PR 3 should wait on its author."
+Assert-True (($defaultResult.items | Where-Object number -eq 4).bucket -eq "ReadyToMerge") "PR 4 should be ready to merge."
+Assert-True (($defaultResult.items | Where-Object number -eq 5).bucket -eq "WaitingOnCI") "PR 5 should wait on CI."
+Assert-True (($defaultResult.items | Where-Object number -eq 6).bucket -eq "DesignDecision") "PR 6 should wait on API review."
+Assert-True (($defaultResult.items | Where-Object number -eq 7).bucket -eq "Excluded") "PR 7 should be excluded as a bot."
+Assert-True (($defaultResult.items | Where-Object number -eq 9).bucket -eq "ReviewNow") "PR 9 should return to review after the author responds."
+Assert-True (($defaultResult.items | Where-Object number -eq 9).reasonCodes -contains "author-responded") "PR 9 should explain the author roundtrip."
+Assert-True (($defaultResult.items | Where-Object number -eq 10).bucket -eq "ReviewNow") "PR 10 should return to review after a new commit."
+Assert-True (($defaultResult.items | Where-Object number -eq 10).reasonCodes -contains "author-responded") "PR 10 should explain the commit roundtrip."
+Assert-True (($defaultResult.items | Where-Object number -eq 11).bucket -eq "WaitingOnAuthor") "PR 11 should handle a bot-only change request without crashing."
+Assert-True (($defaultResult.items | Where-Object number -eq 11).author -eq "pedro") "A human login ending in 'o' must not be classified as a bot."
+Assert-True (($defaultResult.items | Where-Object number -eq 12).bucket -eq "NeedsRescue") "PR 12 should treat a stale review request as rescue work."
+Assert-True (($defaultResult.items | Where-Object number -eq 12).reasonCodes -contains "reviewer-idle-30d") "PR 12 should explain reviewer silence."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).bucket -eq "NeedsRescue") "PR 15 should treat an abandoned human review as rescue work."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).nextActor -eq "maintainer/triager") "PR 15 should require maintainer triage."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "review-abandoned") "PR 15 should identify the abandoned review."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "reviewer-commented") "PR 15 should preserve the specific review state."
+Assert-True (($defaultResult.items | Where-Object number -eq 15).reasonCodes -contains "reviewer-idle-30d") "PR 15 should explain reviewer inactivity."
+Assert-True (($defaultResult.items | Where-Object number -eq 16).bucket -eq "WaitingOnCI") "PR 16 should remain blocked on CI."
+Assert-True (-not (($defaultResult.items | Where-Object number -eq 16).reasonCodes -contains "review-abandoned")) "PR 16 must not be marked abandoned while CI is failing."
+Assert-True ($defaultResult.schemaVersion -eq "1.0.0") "The JSON contract must declare its schema version."
+Assert-True ($defaultResult.display.buckets.ReviewNow.label -eq "Review now") "Bucket display metadata must be emitted in-band."
+Assert-True ($defaultResult.display.buckets.NeedsRescue.description -ne "") "Bucket display metadata must include descriptions."
+Assert-True ($defaultResult.display.reasonCodes.'review-abandoned'.label -eq "Review abandoned") "Reason-code display metadata must include review-abandoned."
+Assert-True ($defaultResult.display.reasonCodes.'ci-failed'.description -ne "") "Reason-code display metadata must describe existing codes."
+foreach ($bucket in @($defaultResult.census.byBucket.PSObject.Properties.Name)) {
+    Assert-True ($null -ne $defaultResult.display.buckets.PSObject.Properties[$bucket]) "Bucket '$bucket' must have display metadata."
+}
+foreach ($reasonCode in @($defaultResult.items.reasonCodes | Select-Object -Unique)) {
+    Assert-True ($null -ne $defaultResult.display.reasonCodes.PSObject.Properties[$reasonCode]) "Reason code '$reasonCode' must have display metadata."
+}
+Assert-True (@($defaultResult.items | Where-Object { $_.bucket -eq "ReviewNow" -and $_.shownInDigest }).Count -le 5) "Review now must respect its cap."
+Assert-True (@($defaultResult.items | Where-Object { $_.bucket -eq "NeedsRescue" -and $_.shownInDigest }).Count -le 3) "Needs rescue must respect its cap."
+Assert-True ($defaultResult.overflow.reviewNow -ge 0) "Review now overflow must be reported."
+
+Import-Module -Scope Local -Force $modulePath
+$identityJson = Invoke-PRAttentionQueue `
+    -InputPath $fixturePath `
+    -Now $snapshot `
+    -Label area-identity `
+    -Path "src/Identity/**" `
+    -OutputFormat Json
+$identityResult = $identityJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($identityResult.filter.name -eq "adhoc") "Explicit filters must disable the Blazor default."
+Assert-True ($identityResult.census.matched -eq 1) "The Identity scope should match one fixture PR."
+Assert-True ($identityResult.items[0].number -eq 8) "The Identity scope should return PR 8."
+
+$forwardedJson = & $scriptPath `
+    -InputPath $fixturePath `
+    -Now $snapshot `
+    -MaxReviewNow 1 `
+    -OutputFormat Json
+$forwardedResult = $forwardedJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($forwardedResult.caps.reviewNow -eq 1) "The entry point must forward explicit parameter values."
+Assert-True (@($forwardedResult.items | Where-Object { $_.bucket -eq "ReviewNow" -and $_.shownInDigest }).Count -eq 1) "The forwarded Review now cap must be applied."
+
+$markdown = & $scriptPath `
+    -InputPath $fixturePath `
+    -Now $snapshot `
+    -OutputFormat Markdown
+$markdownText = $markdown -join [Environment]::NewLine
+
+Assert-True ($markdownText.Contains("## Review now")) "Markdown must contain Review now."
+Assert-True ($markdownText.Contains("## Needs rescue")) "Markdown must contain Needs rescue."
+Assert-True ($markdownText.Contains("matched only by changed path")) "Markdown must report path-only coverage."
+Assert-True ($markdownText.Contains("incidentally")) "Markdown must report incidental path exclusions."
+Assert-True ($markdownText.Contains("**Overflow:**")) "Markdown must report digest overflow."
+Assert-True (-not $markdownText.Contains("@community-user")) "Markdown must not mention contributors."
+
+$correctnessJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -OutputFormat Json
+$correctnessResult = $correctnessJson | ConvertFrom-Json -Depth 100
+
+Assert-True (($correctnessResult.items | Where-Object number -eq 101).bucket -eq "NeedsRescue") "An explicit no-merge label must win over pending CI."
+Assert-True (($correctnessResult.items | Where-Object number -eq 101).reasonCodes -contains "blocked-label") "The no-merge result must identify the blocking label."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).bucket -eq "WaitingOnCI") "A pending CI rerun must not be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 102).reasonCodes -contains "ci-rerun-pending") "The pending rerun must have a stable reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 103).bucket -eq "WaitingOnCI") "A non-clean merge state must not be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 103).reasonCodes -contains "merge-state-not-clean") "The non-clean merge state must have a stable reason."
+Assert-True (($correctnessResult.items | Where-Object number -eq 104).bucket -eq "ReadyToMerge") "An approved clean pull request should be ready to merge."
+Assert-True (($correctnessResult.items | Where-Object number -eq 116).bucket -eq "WaitingOnAuthor") "A branch behind its base must not be assigned to CI."
+Assert-True (($correctnessResult.items | Where-Object number -eq 116).reasonCodes -contains "branch-update-required") "A behind branch must explain the required update."
+Assert-True (($correctnessResult.items | Where-Object number -eq 105).bucket -eq "WaitingOnAuthor") "Recent reviewer feedback must override a stale team request."
+Assert-True (($correctnessResult.items | Where-Object number -eq 106).bucket -eq "ReviewNow") "A later author response should return the pull request to review."
+Assert-True (($correctnessResult.items | Where-Object number -eq 107).humanReviewCount -eq 0) "Author-authored reviews must not count as human reviewer activity."
+Assert-True (($correctnessResult.items | Where-Object number -eq 107).bucket -eq "NeedsRescue") "A stale request must remain rescue work when the only review is author-authored."
+
+$rankingJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-ranking `
+    -MaxReviewNow 2 `
+    -OutputFormat Json
+$rankingResult = $rankingJson | ConvertFrom-Json -Depth 100
+$rankedItems = @($rankingResult.items | Where-Object shownInDigest | Sort-Object digestRank)
+Assert-True ($rankedItems[0].number -eq 109) "Community neglect risk must determine the first digest rank."
+Assert-True ($rankedItems[0].digestRank -eq 1) "The first selected item must expose digest rank one."
+Assert-True ($rankedItems[1].number -eq 108) "The second selected item must preserve the deterministic rank."
+Assert-True ($rankedItems[1].digestRank -eq 2) "The second selected item must expose digest rank two."
+
+$rankingMarkdown = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-ranking `
+    -MaxReviewNow 2 `
+    -OutputFormat Markdown
+$rankingMarkdownText = $rankingMarkdown -join [Environment]::NewLine
+Assert-True ($rankingMarkdownText.IndexOf("[#109]") -lt $rankingMarkdownText.IndexOf("[#108]")) "Markdown must render selected items by digest rank."
+
+$digestControlJson = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-stack `
+    -ExcludeDigestAuthor current-user `
+    -MaxReviewNow 2 `
+    -OutputFormat Json
+$digestControlResult = $digestControlJson | ConvertFrom-Json -Depth 100
+Assert-True (($digestControlResult.items | Where-Object number -eq 111).bucket -eq "ReviewNow") "Stack health must not rewrite the child bucket."
+Assert-True (-not ($digestControlResult.items | Where-Object number -eq 111).shownInDigest) "A child with an unhealthy ancestor must not consume a digest slot."
+Assert-True (($digestControlResult.items | Where-Object number -eq 111).digestExclusionReasons -contains "stacked-on-unhealthy-pr") "The child must explain its digest exclusion."
+Assert-True (($digestControlResult.items | Where-Object number -eq 113).bucket -eq "ReviewNow") "Caller exclusion must not rewrite the bucket."
+Assert-True (-not ($digestControlResult.items | Where-Object number -eq 113).shownInDigest) "A caller-owned pull request must not consume a digest slot."
+Assert-True (($digestControlResult.items | Where-Object number -eq 113).digestExclusionReasons -contains "excluded-author") "Caller exclusion must be explicit."
+Assert-True (($digestControlResult.items | Where-Object number -eq 112).shownInDigest) "An eligible independent pull request should fill the digest."
+Assert-True (($digestControlResult.items | Where-Object number -eq 112).stackDepth -eq 0) "A fork branch named main must not be treated as an upstream stack ancestor."
+Assert-True ($digestControlResult.filter.excludeDigestAuthors -contains "current-user") "The resolved filter must echo digest author exclusions."
+
+$digestControlMarkdown = & $scriptPath `
+    -InputPath $correctnessFixturePath `
+    -Now $snapshot `
+    -Label area-stack `
+    -ExcludeDigestAuthor current-user `
+    -OutputFormat Markdown
+$digestControlMarkdownText = $digestControlMarkdown -join [Environment]::NewLine
+Assert-True ($digestControlMarkdownText.Contains("**Digest author exclusions:** current-user")) "Markdown must echo digest author exclusions."
+
+$discussionJson = & $scriptPath `
+    -InputPath $discussionFixturePath `
+    -Now $snapshot `
+    -Label area-discussion `
+    -MaxReviewNow 5 `
+    -OutputFormat Json
+$discussionResult = $discussionJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($discussionResult.census.byBucket.ReviewNow -eq 7) "Discussion assessment must not rewrite deterministic classification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.state -eq "verification-needed") "An author close-or-continue response must require discussion verification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.signals -contains "author-disposition-mentioned") "Author disposition evidence must be explicit."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).reasonCodes -contains "needs-first-review") "An author disposition test must not require a formal review."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 117).shownInDigest)) "An author disposition response must not be presented as ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).shownInDiscussionVerification) "An author disposition response must surface for discussion verification."
+Assert-True (($discussionResult.items | Where-Object number -eq 117).discussionAssessment.threads.unresolvedCount -eq 1) "Unresolved thread state must be surfaced as evidence."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.signals -contains "non-author-discussion-after-author-response") "Later owner feedback must require discussion verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 118).shownInDigest)) "Later owner feedback must not be presented as ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].actor -eq "repository-member") "Repository-member feedback must be attributed."
+Assert-True (($discussionResult.items | Where-Object number -eq 118).discussionAssessment.comments[0].kind -eq "actionable") "A polite prefix must not hide actionable feedback."
+Assert-True (($discussionResult.items | Where-Object number -eq 119).discussionAssessment.signals -contains "current-inline-discussion-unassessed") "A current unresolved thread without comment evidence must require verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 119).shownInDigest)) "Unread current inline feedback must not enter the unattended digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 120).discussionAssessment.state -eq "clear") "Explicit informational follow-up must not block ordinary review."
+Assert-True (($discussionResult.items | Where-Object number -eq 120).shownInDigest) "An informational follow-up must not remove the candidate from the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 121).discussionAssessment.signals -contains "discussion-incomplete") "Truncated discussion must be disclosed."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 121).shownInDigest)) "Truncated discussion must not enter the unattended digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 122).discussionAssessment.state -eq "clear") "Resolved and outdated threads must remain a positive control."
+Assert-True (($discussionResult.items | Where-Object number -eq 122).shownInDigest) "Resolved and outdated threads must not remove a normal roundtrip from the digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 123).discussionAssessment.signals -contains "non-author-discussion-requires-verification") "An initial owner concern without a formal review or author response must require verification."
+Assert-True (-not (($discussionResult.items | Where-Object number -eq 123).shownInDigest)) "An initial owner concern must not enter the unattended digest."
+Assert-True (($discussionResult.items | Where-Object number -eq 123).shownInDiscussionVerification) "All five fixture verification cases must remain visible in the capped verification lane."
+Assert-True ($discussionResult.discussion.assessedCandidateCount -eq 7) "The bounded assessment count must be emitted."
+Assert-True ($discussionResult.discussion.verificationNeededCount -eq 5) "The assessment summary must count verification-needed candidates."
+
+$discussionMarkdown = & $scriptPath `
+    -InputPath $discussionFixturePath `
+    -Now $snapshot `
+    -Label area-discussion `
+    -OutputFormat Markdown
+$discussionMarkdownText = $discussionMarkdown -join [Environment]::NewLine
+Assert-True ($discussionMarkdownText.Contains("## Verify discussion before review")) "Markdown must separate discussion verification from ordinary review."
+Assert-True ($discussionMarkdownText.Contains("[#117]")) "Markdown must surface author disposition evidence."
+
+$inboxJson = & $scriptPath `
+    -InputPath $inboxFixturePath `
+    -Now $snapshot `
+    -Label area-blazor `
+    -OutputFormat Json
+$inboxResult = $inboxJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($inboxResult.inbox.recentCommunityWindowDays -eq 7) "The recent community window must be explicitly seven days."
+Assert-True ($inboxResult.inbox.recentCommunity.count -eq 4) "The recent community inventory must use the seven-day window."
+Assert-True ($inboxResult.inbox.recentCommunity.newest -eq 201) "The newest recent contribution should be surfaced first."
+Assert-True ($inboxResult.inbox.community.count -eq 7) "The full community inventory must retain older items beyond the preview window."
+Assert-True (@($inboxResult.inbox.community.preview).Count -eq 5) "The community preview must remain capped at five items."
+Assert-True (@($inboxResult.inbox.community.inventory).Count -gt @($inboxResult.inbox.community.preview).Count) "The full community inventory must remain available beyond the preview cap."
+Assert-True ($inboxResult.inbox.unclassified.count -eq 1) "Unlabeled in-scope PRs must remain visible as unclassified."
+Assert-True (($inboxResult.inbox.unclassified.inventory | Where-Object number -eq 205).provenance -eq "unclassified") "Unlabeled contributions must not be mistaken for community."
+$inboxRecentCommunity = @($inboxResult.inbox.recentCommunity.inventory)
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 201).responseEvidence.status -eq "no-response") "Complete evidence without a non-author human response must be marked no-response."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 202).responseEvidence.status -eq "recorded-response") "A recorded non-author human response must be preserved as evidence."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 203).responseEvidence.status -eq "unknown") "Truncated discussion evidence must never be reported as no-response."
+Assert-True (($inboxRecentCommunity | Where-Object number -eq 204).responseEvidence.status -eq "unknown") "Current unresolved inline discussion without captured evidence must remain unknown."
+Assert-True ($inboxResult.inbox.evidence.coverage.Contains("bounded")) "The inbox evidence coverage metadata must be explicit."
+Assert-True ($inboxResult.inbox.evidence.unknownResponseCount -ge 2) "The inbox metadata must count ambiguous evidence as unknown."
+
+$personalJson = & $scriptPath `
+    -InputPath $inboxFixturePath `
+    -Now $snapshot `
+    -Label area-blazor `
+    -PersonalLogin reviewer `
+    -OutputFormat Json
+$personalResult = $personalJson | ConvertFrom-Json -Depth 100
+
+Assert-True ($personalResult.personal.enabled) "The personal inbox must be enabled when an authenticated identity is supplied."
+Assert-True ($personalResult.personal.login -eq "reviewer") "The personal inbox must echo the authenticated identity."
+Assert-True ($personalResult.personal.scope -eq "all-repo") "The personal inbox must retain repository-wide scope."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals.kind -contains "changed-since-own-review") "A changed head after the user's review must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 202).signals.kind -contains "direct-request") "A direct review request must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 203).signals.kind -contains "follow-up-notification") "An unread notification must produce a personal signal."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 204).signals.kind -contains "review-thread-reply") "A later participant reply must produce a thread signal."
+Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 203).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/203")) "REST subject.url must map the notification to the canonical PR URL for PR 203."
+Assert-True ((($personalResult.personal.inventory | Where-Object number -eq 204).signals | Where-Object kind -eq "follow-up-notification").evidenceUrl.Contains("/pull/204")) "REST subject.url must map the notification to the canonical PR URL for PR 204."
+Assert-True (-not (($personalResult.personal.inventory | Where-Object number -eq 201).signals.kind -contains "follow-up-notification")) "Read notifications must not create follow-up signals."
+Assert-True (-not (($personalResult.personal.inventory | Where-Object number -eq 205).signals.kind -contains "review-thread-reply")) "Pending own comments and pending replies must not create thread signals."
+Assert-True (($personalResult.personal.inventory | Where-Object number -eq 201).signals[0].evidenceUrl.Contains("pullrequestreview-201")) "Personal signals must retain canonical evidence links."
+Assert-True (($personalResult.personal.coverage.reviewThreads -like "partial*") -or ($personalResult.personal.coverage.reviewThreads -eq "assessed")) "Personal coverage must disclose bounded thread evidence."
+Assert-True (($personalResult.personal.inventory | Select-Object -ExpandProperty number -Unique).Count -eq @($personalResult.personal.inventory).Count) "Multiple signals must remain one card per pull request."
+
+$module = Get-Module PRAttentionQueue
+$cachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-notification-cache-$PID.json"
+if (Test-Path -LiteralPath $cachePath) {
+    Remove-Item -Force -LiteralPath $cachePath
+}
+$transportCalls = [System.Collections.Generic.List[object]]::new()
+$conditionalTransport = {
+    param([object[]]$Arguments)
+    $transportCalls.Add(@($Arguments))
+    if ($transportCalls.Count -eq 1) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-1`"`r`nLast-Modified: Mon, 01 Sep 2026 12:00:00 GMT`r`nX-Poll-Interval: 0`r`n`r`n[{`"id`":`"one`"}]"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    Assert-True (@($Arguments) -contains "If-None-Match: `"etag-1`"") "A warm notification request must send the cached ETag."
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 304 Not Modified`r`n`r`n"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$firstNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $conditionalTransport $cachePath
+$secondNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $conditionalTransport $cachePath
+Assert-True ($firstNotification.value[0].id -eq "one") "The mocked cold notification response must be parsed."
+Assert-True ($secondNotification.notModified) "The mocked warm notification response must use HTTP 304."
+Assert-True ($secondNotification.value[0].id -eq "one") "HTTP 304 must reuse the exact cached notification body."
+Assert-True ($transportCalls.Count -eq 2) "The conditional transport test must perform exactly one cold and one warm request."
+
+$revalidationCachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-revalidation-cache-$PID.json"
+if (Test-Path -LiteralPath $revalidationCachePath) {
+    Remove-Item -Force -LiteralPath $revalidationCachePath
+}
+$revalidationCalls = [System.Collections.Generic.List[object]]::new()
+$revalidationTransport = {
+    param([object[]]$Arguments)
+    $revalidationCalls.Add(@($Arguments))
+    if ($revalidationCalls.Count -eq 1) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-old`"`r`n`r`n[{`"id`":`"revalidate`"}]"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    if ($revalidationCalls.Count -eq 2) {
+        return [pscustomobject]@{
+            stdout = "HTTP/2.0 304 Not Modified`r`nETag: `"etag-new`"`r`nX-Poll-Interval: 120`r`n`r`n"
+            stderr = ""
+            exitCode = 0
+        }
+    }
+
+    throw "A revalidated cache entry must defer the immediate follow-up request."
+}
+$null = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+$revalidationCache = Get-Content -LiteralPath $revalidationCachePath -Raw | ConvertFrom-Json -Depth 20
+$revalidationEntry = $revalidationCache.entries.PSObject.Properties | Select-Object -First 1
+$revalidationEntry.Value.fetchedAtUtc = "2020-01-01T00:00:00.0000000+00:00"
+$revalidationEntry.Value.pollIntervalSeconds = 0
+$revalidationCache | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $revalidationCachePath
+$revalidatedNotification = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+$deferredRevalidation = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $revalidationTransport $revalidationCachePath
+Assert-True ($revalidatedNotification.notModified) "An expired cache entry must revalidate with HTTP 304."
+Assert-True ($deferredRevalidation.retryLater) "A 304 response must refresh the poll interval for the next request."
+Assert-True ($revalidationCalls.Count -eq 2) "A revalidated cache entry must make only the cold and expired revalidation requests."
+
+$pollCachePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-poll-cache-$PID.json"
+if (Test-Path -LiteralPath $pollCachePath) {
+    Remove-Item -Force -LiteralPath $pollCachePath
+}
+$pollCalls = [System.Collections.Generic.List[object]]::new()
+$pollTransport = {
+    param([object[]]$Arguments)
+    $pollCalls.Add(@($Arguments))
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 200 OK`r`nETag: `"etag-poll`"`r`nX-Poll-Interval: 120`r`n`r`n[{`"id`":`"poll`"}]"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$null = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $pollTransport $pollCachePath
+$deferredPoll = & $module {
+    param($transport, $path)
+    Invoke-GhConditionalJson `
+        -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+        -Identity "reviewer" `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Page 1 `
+        -CachePath $path `
+        -Transport $transport
+} $pollTransport $pollCachePath
+Assert-True ($deferredPoll.retryLater) "A successful X-Poll-Interval must defer an immediate second poll."
+Assert-True ($pollCalls.Count -eq 1) "X-Poll-Interval deferral must not issue an early second request."
+
+$backoffCalls = [System.Collections.Generic.List[object]]::new()
+$backoffTransport = {
+    param([object[]]$Arguments)
+    $backoffCalls.Add(@($Arguments))
+    return [pscustomobject]@{
+        stdout = "HTTP/2.0 429 Too Many Requests`r`nRetry-After: 31`r`n`r`n"
+        stderr = ""
+        exitCode = 0
+    }
+}
+$backoffError = $null
+try {
+    & $module {
+        param($transport, $path)
+        Invoke-GhConditionalJson `
+            -Endpoint "repos/dotnet/aspnetcore/notifications?all=true&per_page=100&page=1" `
+            -Identity "reviewer" `
+            -RepositoryName "dotnet/aspnetcore" `
+            -Page 1 `
+            -CachePath $path `
+            -Transport $transport
+    } $backoffTransport (Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-backoff-cache-$PID.json")
+}
+catch {
+    $backoffError = $_.Exception.Message
+}
+Assert-True ($backoffError -like "retry-later:*") "A server delay beyond the retry budget must surface retry-later."
+Assert-True ($backoffCalls.Count -eq 1) "A long server delay must not retry early."
+
+$emptyEvidence = & $module {
+    Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates @() `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+}
+Assert-True ($emptyEvidence.requestCount -eq 0) "An empty personal candidate union must return zero evidence requests."
+Assert-True ($null -ne $emptyEvidence.elapsedMs) "An empty personal candidate union must still return evidence metrics."
+$emptyPersonal = & $module {
+    Get-PersonalData `
+        -GeneralItems @() `
+        -PersonalCandidates @() `
+        -PersonalLogin "reviewer" `
+        -CollectionState "assessed" `
+        -NotificationMetrics ([pscustomobject]@{ state = "unavailable" })
+}
+Assert-True ($emptyPersonal.coverage.state -eq "partial") "Unavailable notifications must keep top-level empty personal coverage partial."
+Assert-True ($emptyPersonal.coverage.notifications -eq "unavailable") "Unavailable notifications must not become assessed because there are no cards."
+
+$mockEvidence = & $module {
+    function Invoke-GhJson {
+        param([string[]]$Arguments)
+        $query = [string]($Arguments | Where-Object { $_ -like "query=*" } | Select-Object -First 1)
+        $repository = [ordered]@{}
+        foreach ($number in @(301, 302)) {
+            if ($query -like "*reviewThreads*") {
+                $repository["pr$number"] = [pscustomobject]@{
+                    reviewThreads = [pscustomobject]@{
+                        pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                        nodes = @()
+                    }
+                }
+            }
+            else {
+                $repository["pr$number"] = [pscustomobject]@{
+                    number = $number
+                    title = "Mock personal PR $number"
+                    url = "https://github.com/dotnet/aspnetcore/pull/$number"
+                    author = [pscustomobject]@{ login = "author-$number" }
+                    state = "OPEN"
+                    isDraft = $false
+                    updatedAt = "2026-09-06T12:00:00Z"
+                    headRefOid = "head-$number"
+                    reviewRequests = [pscustomobject]@{
+                        pageInfo = [pscustomobject]@{ hasNextPage = $false }
+                        nodes = @()
+                    }
+                    reviews = [pscustomobject]@{ nodes = @() }
+                }
+            }
+        }
+        return [pscustomobject]@{
+            data = [pscustomobject]@{
+                repository = [pscustomobject]$repository
+            }
+        }
+    }
+
+    $candidates = @(
+        [pscustomobject]@{
+            number = 301
+            url = "https://github.com/dotnet/aspnetcore/pull/301"
+            personalDiscoveryKinds = @("reviewed-by")
+        }
+        [pscustomobject]@{
+            number = 302
+            url = "https://github.com/dotnet/aspnetcore/pull/302"
+            personalDiscoveryKinds = @("mentions")
+        }
+    )
+    $result = Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates $candidates `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+    [pscustomobject]@{
+        metrics = $result
+        candidates = $candidates
+    }
+}
+Assert-True ($mockEvidence.metrics.requestCount -eq 2) "Two mocked candidates should produce one details and one bounded thread request."
+Assert-True ($mockEvidence.metrics.threadCandidates -eq 1) "Thread hydration must be limited to the explicit relevant subset."
+Assert-True (($mockEvidence.candidates | Where-Object number -eq 301).personalCoverage.reviewThreads.state -eq "assessed") "The selected candidate must receive thread coverage."
+Assert-True (($mockEvidence.candidates | Where-Object number -eq 302).personalCoverage.reviewThreads.state -eq "unassessed") "The unselected candidate must remain unassessed."
+
+$hydratedEvidence = & $module {
+    function Invoke-GhJson {
+        param([string[]]$Arguments)
+        $query = [string]($Arguments | Where-Object { $_ -like "query=*" } | Select-Object -First 1)
+        if ($query -like "*reviewThreads*") {
+            $publishedThread = [pscustomobject]@{
+                id = "thread-303"
+                isResolved = $false
+                isOutdated = $false
+                comments = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                    nodes = @(
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "reviewer" }
+                            createdAt = "2026-09-06T10:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/303#discussion_r303"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "reviewer" }
+                                state = "COMMENTED"
+                                submittedAt = "2026-09-06T10:00:01Z"
+                                url = "https://github.com/dotnet/aspnetcore/pull/303#pullrequestreview-303"
+                            }
+                        }
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "community-author" }
+                            createdAt = "2026-09-06T11:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/303#discussion_r303-reply"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "community-author" }
+                                state = "COMMENTED"
+                                submittedAt = "2026-09-06T11:00:01Z"
+                                url = "https://github.com/dotnet/aspnetcore/pull/303#pullrequestreview-304"
+                            }
+                        }
+                    )
+                }
+            }
+            $pendingThread = [pscustomobject]@{
+                id = "thread-304"
+                isResolved = $false
+                isOutdated = $false
+                comments = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                    nodes = @(
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "reviewer" }
+                            createdAt = "2026-09-06T12:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/304#discussion_r304"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "reviewer" }
+                                state = "PENDING"
+                                submittedAt = $null
+                                url = "https://github.com/dotnet/aspnetcore/pull/304#pending-review"
+                            }
+                        }
+                        [pscustomobject]@{
+                            author = [pscustomobject]@{ login = "community-author" }
+                            createdAt = "2026-09-06T13:00:00Z"
+                            url = "https://github.com/dotnet/aspnetcore/pull/304#discussion_r304-reply"
+                            pullRequestReview = [pscustomobject]@{
+                                author = [pscustomobject]@{ login = "community-author" }
+                                state = "PENDING"
+                                submittedAt = $null
+                                url = "https://github.com/dotnet/aspnetcore/pull/304#pending-reply"
+                            }
+                        }
+                    )
+                }
+            }
+            return [pscustomobject]@{
+                data = [pscustomobject]@{
+                    repository = [pscustomobject]@{
+                        pr303 = [pscustomobject]@{
+                            reviewThreads = [pscustomobject]@{
+                                pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                                nodes = @($publishedThread)
+                            }
+                        }
+                        pr304 = [pscustomobject]@{
+                            reviewThreads = [pscustomobject]@{
+                                pageInfo = [pscustomobject]@{ hasPreviousPage = $false }
+                                nodes = @($pendingThread)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $repository = [ordered]@{}
+        foreach ($number in @(303, 304)) {
+            $repository["pr$number"] = [pscustomobject]@{
+                number = $number
+                title = "Hydrated personal PR $number"
+                url = "https://github.com/dotnet/aspnetcore/pull/$number"
+                author = [pscustomobject]@{ login = "author-$number" }
+                state = "OPEN"
+                isDraft = $false
+                updatedAt = "2026-09-06T12:00:00Z"
+                headRefOid = "head-$number"
+                reviewRequests = [pscustomobject]@{
+                    pageInfo = [pscustomobject]@{ hasNextPage = $false }
+                    nodes = @()
+                }
+                reviews = [pscustomobject]@{ nodes = @() }
+            }
+        }
+        return [pscustomobject]@{
+            data = [pscustomobject]@{
+                repository = [pscustomobject]$repository
+            }
+        }
+    }
+
+    $candidates = @(
+        [pscustomobject]@{
+            number = 303
+            url = "https://github.com/dotnet/aspnetcore/pull/303"
+            personalDiscoveryKinds = @("reviewed-by")
+        }
+        [pscustomobject]@{
+            number = 304
+            url = "https://github.com/dotnet/aspnetcore/pull/304"
+            personalDiscoveryKinds = @("commenter")
+        }
+    )
+    $null = Add-PersonalEvidenceDetails `
+        -RepositoryName "dotnet/aspnetcore" `
+        -Candidates $candidates `
+        -PersonalLogin "reviewer" `
+        -Notifications @() `
+        -NotificationCoverage ([pscustomobject]@{ state = "assessed" }) `
+        -NotificationMetrics ([pscustomobject]@{ requestCount = 0 })
+    [pscustomobject]@{
+        published = Get-PersonalInboxItem -Item ($candidates | Where-Object number -eq 303) -PersonalLogin "reviewer"
+        pending = Get-PersonalInboxItem -Item ($candidates | Where-Object number -eq 304) -PersonalLogin "reviewer"
+    }
+}
+Assert-True (($hydratedEvidence.published.signals.kind -contains "review-thread-reply") -and
+    (($hydratedEvidence.published.signals | Where-Object kind -eq "review-thread-reply").evidenceUrl -like "*discussion_r303-reply")) "A submitted COMMENTED review and later participant reply must produce a thread signal after production hydration."
+Assert-True (-not ($hydratedEvidence.pending.signals.kind -contains "review-thread-reply")) "PENDING reviews must not produce a thread signal after production hydration."
+
+foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)) {
+    if (Test-Path -LiteralPath $temporaryPath) {
+        Remove-Item -Force -LiteralPath $temporaryPath
+    }
+}
+
+Write-Output "All PR attention queue tests passed."
