@@ -21,11 +21,10 @@ public static class AuthorizationAppBuilderExtensions
     /// <c>app.UseRouting()</c> and <c>app.UseEndpoints(...)</c> for the middleware to function correctly.
     /// </para>
     /// <para>
-    /// The middleware authorizes the endpoint associated with the
-    /// <see cref="Microsoft.AspNetCore.Http.HttpContext"/> when it runs. If later middleware changes the endpoint or
-    /// reroutes the request, the application is responsible for placing authorization after the final routing pass or
-    /// explicitly running authorization again for the new endpoint. Rerouting does not generally replay authorization
-    /// or other middleware automatically.
+    /// The middleware authorizes the endpoint associated with the <see cref="HttpContext"/> when it runs. If later
+    /// middleware changes the endpoint or reroutes the request, the application is responsible for placing
+    /// authorization after the final routing pass or explicitly running authorization again for the new endpoint.
+    /// Rerouting does not generally replay authorization or other middleware automatically.
     /// </para>
     /// </summary>
     /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
