@@ -314,3 +314,11 @@ private:
     PROCESS_MANAGER         *m_pProcessManager;
     std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVarTable;
 };
+
+struct SERVER_PROCESS_DELETER
+{
+    void operator()(SERVER_PROCESS* process) const
+    {
+        process->DereferenceServerProcess();
+    }
+};
