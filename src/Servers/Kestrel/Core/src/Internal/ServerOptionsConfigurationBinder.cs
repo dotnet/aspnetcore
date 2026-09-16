@@ -102,13 +102,19 @@ internal static class ServerOptionsConfigurationBinder
 
         var section = configuration.GetSection(key);
 
-        if (!section.Exists())
+        // A scalar can never describe a rate, so it's a configuration error rather than an empty section.
+        if (!string.IsNullOrEmpty(section.Value))
+        {
+            throw new InvalidOperationException(CoreStrings.FormatInvalidConfigurationValue(section.Path, section.Value));
+        }
+
+        var rateKeys = GetKeys(section);
+
+        if (rateKeys.Count == 0)
         {
             setter(null);
             return;
         }
-
-        var rateKeys = GetKeys(section);
 
         // Seeded with the current value so a section can specify just one half; MinDataRate is immutable and its
         // constructor needs both, so a half left unset with no current value to fall back on is an error.

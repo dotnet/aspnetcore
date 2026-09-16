@@ -2303,6 +2303,21 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void MinDataRateWithScalarValueInConfigThrows()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate", "not-a-section"),
+        }).Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+        Assert.Contains("Limits:MinRequestBodyDataRate", ex.Message);
+        Assert.Contains("not-a-section", ex.Message);
+    }
+
+    [Fact]
     public void NullValuesInConfigResetNullableLimits()
     {
         var serverOptions = CreateServerOptions();
