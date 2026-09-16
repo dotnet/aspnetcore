@@ -28,6 +28,7 @@ public:
         }
     }
 
+    // The caller must release the returned reference with DereferenceServerProcess.
     HRESULT 
     GetProcess(
         _In_    REQUESTHANDLER_CONFIG      *pConfig,
