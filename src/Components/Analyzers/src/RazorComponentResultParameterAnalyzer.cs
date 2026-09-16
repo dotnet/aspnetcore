@@ -75,6 +75,14 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
+                if (symbols.ComponentBaseType is null || !InheritsFrom(componentType, symbols.ComponentBaseType))
+                {
+                    // Parameter binding for custom IComponent implementations that do not derive from
+                    // ComponentBase is not guaranteed to follow the [Parameter]/[CascadingParameter] conventions,
+                    // so we cannot safely determine the set of valid parameter names.
+                    return;
+                }
+
                 if (!TryGetComponentParameterNames(symbols, componentType, out var parameterNames))
                 {
                     // The component captures unmatched values, so any parameter name is accepted at runtime.
@@ -102,6 +110,19 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
                 }
             }, OperationKind.ObjectCreation);
         });
+    }
+
+    private static bool InheritsFrom(INamedTypeSymbol type, INamedTypeSymbol baseType)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, baseType))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static IOperation UnwrapConversions(IOperation operation)

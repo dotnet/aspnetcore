@@ -28,6 +28,10 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         public interface {typeof(IComponent).Name}
         {{
         }}
+
+        public abstract class ComponentBase : {typeof(IComponent).Name}
+        {{
+        }}
     }}
 
     namespace Microsoft.AspNetCore.Http.HttpResults
@@ -51,7 +55,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
         }}
@@ -93,7 +97,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
         }}
@@ -139,7 +143,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
             [Parameter] public int Count {{ get; set; }}
@@ -166,7 +170,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter, CascadingParameter] public string UserId {{ get; set; }}
         }}
@@ -203,7 +207,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
         }}
@@ -229,7 +233,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class BaseComponent : IComponent
+        class BaseComponent : ComponentBase
         {{
             [Parameter] public string InheritedParam {{ get; set; }}
         }}
@@ -260,7 +264,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter(CaptureUnmatchedValues = true)]
             public System.Collections.Generic.Dictionary<string, object> Attributes {{ get; set; }}
@@ -287,7 +291,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         using Microsoft.AspNetCore.Http.HttpResults;
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
         }}
@@ -312,7 +316,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
     {{
         using {typeof(ParameterAttribute).Namespace};
 
-        class TestComponent : IComponent
+        class TestComponent : ComponentBase
         {{
             [Parameter] public string UserId {{ get; set; }}
         }}
@@ -327,6 +331,32 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
             object Get()
             {{
                 return new NotAResult<TestComponent>(new {{ AuthorId = 5 }});
+            }}
+        }}
+    }}" + RazorComponentResultDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void DoesNotReportForCustomIComponentImplementationsNotDerivingFromComponentBase()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        using Microsoft.AspNetCore.Http.HttpResults;
+
+        class TestComponent : IComponent
+        {{
+            [Parameter] public string UserId {{ get; set; }}
+        }}
+
+        class TestEndpoints
+        {{
+            object Get()
+            {{
+                return new RazorComponentResult<TestComponent>(new {{ AnythingGoes = 5 }});
             }}
         }}
     }}" + RazorComponentResultDeclarations;
