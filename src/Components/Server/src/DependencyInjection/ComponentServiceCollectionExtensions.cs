@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Platform;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -40,15 +39,14 @@ public static class ComponentServiceCollectionExtensions
         var builder = new DefaultServerSideBlazorBuilder(services);
 
         services.AddDataProtection();
-        services.AddBrowserPlatform();
 
         services.TryAddScoped<ProtectedBrowserStorageJsonSerializerOptions>();
         services.TryAddScoped(static services => new ProtectedLocalStorage(
-            services.GetRequiredService<IBrowserPlatform>().Window.LocalStorage,
+            services.GetRequiredService<IJSRuntime>(),
             services.GetRequiredService<IDataProtectionProvider>(),
             services.GetRequiredService<ProtectedBrowserStorageJsonSerializerOptions>().Options));
         services.TryAddScoped(static services => new ProtectedSessionStorage(
-            services.GetRequiredService<IBrowserPlatform>().Window.SessionStorage,
+            services.GetRequiredService<IJSRuntime>(),
             services.GetRequiredService<IDataProtectionProvider>(),
             services.GetRequiredService<ProtectedBrowserStorageJsonSerializerOptions>().Options));
 

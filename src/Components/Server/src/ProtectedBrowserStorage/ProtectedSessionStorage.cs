@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Platform;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
@@ -34,14 +33,6 @@ public sealed class ProtectedSessionStorage : ProtectedBrowserStorage
         IDataProtectionProvider dataProtectionProvider,
         JsonSerializerOptions serializerOptions)
         : base("sessionStorage", jsRuntime, dataProtectionProvider, serializerOptions)
-    {
-    }
-
-    internal ProtectedSessionStorage(
-        Storage storage,
-        IDataProtectionProvider dataProtectionProvider,
-        JsonSerializerOptions serializerOptions)
-        : base("sessionStorage", storage, dataProtectionProvider, serializerOptions)
     {
     }
 }
