@@ -1,6 +1,8 @@
 #!/usr/bin/env pwsh
 #Requires -Version 7.0
 
+param([switch]$FunctionsOnly)
+
 $ErrorActionPreference = "Stop"
 $script:DashboardIssueNumber = 69328
 
@@ -499,7 +501,8 @@ function New-PresentationAreaFromRawFixture
     param(
         [Parameter(Mandatory)][ValidateSet("blazor", "repository-wide")][string]$Scope,
         [int]$CandidateNumber,
-        [string]$CommunityReasonCode
+        [string]$CommunityReasonCode,
+        [switch]$MergeEligible
     )
 
     $raw = Get-Content -LiteralPath (Join-Path $fixtureRoot "normal-legacy.json") -Raw | ConvertFrom-Json -Depth 100
@@ -532,6 +535,21 @@ function New-PresentationAreaFromRawFixture
             $candidate.title = "community-contribution text"
         }
     }
+    if ($MergeEligible)
+    {
+        $raw | Add-Member mergeDiscussion ([pscustomobject]@{
+            candidateLimit = 20; assessedCandidateCount = 1; verificationNeededCount = 0
+            unassessedCandidateCount = 0; eligibleCount = 1; excludedCandidateCount = 0; verificationLimit = 3
+        })
+        foreach ($item in $raw.items)
+        {
+            $item | Add-Member mergeEligibility "not-candidate"
+            $item | Add-Member shownInMergeVerification $false
+            $item | Add-Member mergeVerificationRank $null
+        }
+        $raw.items[4].mergeEligibility = "eligible"
+        $raw.items[4].discussionAssessment = $raw.items[1].discussionAssessment | ConvertTo-Json -Depth 20 | ConvertFrom-Json -Depth 20
+    }
 
     $rawPath = Join-Path $tempRoot "presentation-raw-$([guid]::NewGuid().ToString('N')).json"
     try
@@ -549,7 +567,7 @@ function Assert-CommunityMarkerPresentation
 {
     param(
         [Parameter(Mandatory)][ValidateSet("blazor", "repository-wide")][string]$Scope,
-        [Parameter(Mandatory)][ValidateSet("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge")][string]$ViewName,
+        [Parameter(Mandatory)][ValidateSet("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge")][string]$ViewName,
         [Parameter(Mandatory)][bool]$ExpectedMarker,
         [Parameter(Mandatory)][object]$BlazorBaseline,
         [Parameter(Mandatory)][object]$RepositoryWideBaseline
@@ -561,9 +579,10 @@ function Assert-CommunityMarkerPresentation
         "verifyDiscussionBeforeReview" { 103 }
         "needsRescue" { 104 }
         "readyToMerge" { 105 }
+        "verifyDiscussionBeforeMerge" { 105 }
     }
     $reasonCode = if ($ExpectedMarker) { "community-contribution" } else { "community-contribution-extra" }
-    $focusedArea = New-PresentationAreaFromRawFixture -Scope $Scope -CandidateNumber $candidateNumber -CommunityReasonCode $reasonCode
+    $focusedArea = New-PresentationAreaFromRawFixture -Scope $Scope -CandidateNumber $candidateNumber -CommunityReasonCode $reasonCode -MergeEligible:($ViewName -ceq "readyToMerge")
     $combined = if ($Scope -ceq "blazor")
     {
         New-CombinedPulse -Blazor $focusedArea -RepositoryWide $RepositoryWideBaseline
@@ -584,7 +603,7 @@ function Assert-CommunityMarkerPresentation
     Assert-True ($candidate.Count -eq 1) "The sanitized '$Scope/$ViewName' candidate is missing."
     $candidate = $candidate[0]
     $authorWithMarker = "$($candidate.author) **Community**"
-    $expectedAuthorText = if ($ViewName -ceq "verifyDiscussionBeforeReview")
+    $expectedAuthorText = if ($ViewName -cin @("verifyDiscussionBeforeReview", "verifyDiscussionBeforeMerge"))
     {
         "**Author:** $authorWithMarker"
     }
@@ -610,7 +629,7 @@ function Assert-CommunityMarkerPresentation
     {
         $row.Replace(" **Community**", "")
     }
-    elseif ($ViewName -ceq "verifyDiscussionBeforeReview")
+    elseif ($ViewName -cin @("verifyDiscussionBeforeReview", "verifyDiscussionBeforeMerge"))
     {
         $row.Replace("**Author:** $($candidate.author)", "**Author:** $($candidate.author) **Community**")
     }
@@ -640,8 +659,8 @@ function Assert-PresentationLayout
     param([object]$Pulse, [string]$Body)
 
     $headings = @([regex]::Matches($Body, "(?m)^#{1,6} .+$") | ForEach-Object Value)
-    $expected = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Coverage and data quality")
-    Assert-True (($headings -join "`n") -ceq ($expected -join "`n")) "Expected exactly six ordered H2 sections; actual: $($headings -join ', ')."
+    $expected = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Verify discussion before merge", "## Coverage and data quality")
+    Assert-True (($headings -join "`n") -ceq ($expected -join "`n")) "Expected exactly seven ordered H2 sections; actual: $($headings -join ', ')."
     $disclaimer = "> [!IMPORTANT]`n> These views identify pull requests worth inspecting. They do not certify readiness, prove that feedback was addressed, authorize merge or review, or reliably establish completion."
     Assert-True ($Body.StartsWith($disclaimer, [StringComparison]::Ordinal)) "The exact disclaimer must be prominent."
     Assert-True ($Body.Contains("> Auto-generated by PR Attention Pulse. Manual edits are replaced on the next manual run.")) "The compact auto-generated header is missing."
@@ -682,7 +701,7 @@ function Assert-CombinedPresentationLayout
     Assert-True ($Body.Contains("This initial area composition includes the maintained **Blazor** view and a **Repository-wide** baseline.")) "The initial area composition note is missing."
     Assert-True ($Body.Contains("Additional product areas will be added only after maintainers define their exact label/path queries and decide whether this report shape is useful.")) "The future-area design note is missing."
 
-    $expectedHeadings = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Coverage and data quality")
+    $expectedHeadings = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Verify discussion before merge", "## Coverage and data quality")
     $cursor = 0
     foreach ($area in @($Pulse.areas))
     {
@@ -694,12 +713,12 @@ function Assert-CombinedPresentationLayout
         $block = $Body.Substring($start, ($end + "</details>".Length) - $start)
         Assert-True ($block.Contains("<summary><strong>$($area.label)</strong> -")) "The '$($area.id)' summary must include its trusted label and compact status."
         $headings = @([regex]::Matches($block, "(?m)^#{1,6} .+$") | ForEach-Object Value)
-        Assert-True ([string]::Equals(($headings -join "`n"), ($expectedHeadings -join "`n"), [StringComparison]::Ordinal)) "The '$($area.id)' area must contain exactly the six ordered report sections."
+        Assert-True ([string]::Equals(($headings -join "`n"), ($expectedHeadings -join "`n"), [StringComparison]::Ordinal)) "The '$($area.id)' area must contain exactly the seven ordered report sections."
 
         $expectedNumbers = if ($area.status -ceq "complete")
         {
             @(
-                foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+                foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
                 {
                     foreach ($candidate in @($area.views.$viewName))
                     {
@@ -735,6 +754,7 @@ function Assert-PresentationTablesAndFields
     $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse
     Assert-True ([string]::Equals($before, ($Pulse | ConvertTo-Json -Depth 100 -Compress), [StringComparison]::Ordinal)) "Rendering must not mutate the supplied envelope."
     Assert-True ([string]::Equals($directBody, $Body, [StringComparison]::Ordinal)) "The file entry point and the single production renderer must agree."
+    $Pulse = Resolve-PulseMergeArea -Area $Pulse
     if ($Pulse.status -ceq "unavailable")
     {
         Assert-True (-not ($Body -match "(?m)^\|")) "Unavailable data must not manufacture a table."
@@ -753,6 +773,7 @@ function Assert-PresentationTablesAndFields
     foreach ($line in @(
         "- Query coverage: $($source.query.returnedPullRequestCount) of $($source.query.openPullRequestCount) open pull requests returned; complete $($source.query.complete.ToString().ToLowerInvariant()).",
         "- Discussion coverage: $($source.discussion.assessedCandidateCount) of limit $($source.discussion.candidateLimit) assessed; $($source.discussion.verificationNeededCount) need verification; $($source.discussion.unassessedReviewNowCount) Review now candidates unassessed.",
+        "- Merge discussion coverage: $($source.mergeDiscussion.assessedCandidateCount) of limit $($source.mergeDiscussion.candidateLimit) assessed; $($source.mergeDiscussion.eligibleCount) eligible; $($source.mergeDiscussion.verificationNeededCount) need verification; $($source.mergeDiscussion.unassessedCandidateCount) unassessed; $($source.mergeDiscussion.excludedCandidateCount) excluded from assessment. Verification display cap: $($source.mergeDiscussion.verificationLimit).",
         "- Queue census: Review now $($source.census.byBucket.ReviewNow); Needs rescue $($source.census.byBucket.NeedsRescue); Ready to merge $($source.census.byBucket.ReadyToMerge); Waiting on author $($source.census.byBucket.WaitingOnAuthor); Waiting on CI $($source.census.byBucket.WaitingOnCI); Design decision $($source.census.byBucket.DesignDecision); Draft $($source.census.byBucket.Draft); Excluded $($source.census.byBucket.Excluded).",
         "- Scope census: $($source.census.labelOnly) label-only; $($source.census.pathOnly) path-only; $($source.census.labelAndPath) label-and-path; $($source.census.incidentalPathExcluded) incidental paths excluded; $($source.census.unresolvedMergeable) unresolved mergeability.",
         "- Overflow: Review now $($source.overflow.reviewNow); Needs rescue $($source.overflow.needsRescue); Ready to merge $($source.overflow.readyToMerge).",
@@ -777,9 +798,13 @@ function Assert-PresentationTablesAndFields
     foreach ($viewName in $presentationViews.Keys)
     {
         $name, $bucket = $presentationViews[$viewName]
-        $discussion = $viewName -ceq "verifyDiscussionBeforeReview"
+        $discussion = $viewName -cin @("verifyDiscussionBeforeReview", "verifyDiscussionBeforeMerge")
         $items = @($Pulse.views.$viewName)
-        $total = if ($discussion)
+        $total = if ($viewName -ceq "verifyDiscussionBeforeMerge")
+        {
+            $source.mergeDiscussion.verificationNeededCount + $source.mergeDiscussion.unassessedCandidateCount
+        }
+        elseif ($discussion)
         {
             $source.discussion.verificationNeededCount
         }
@@ -813,7 +838,12 @@ function Assert-PresentationTablesAndFields
             Assert-True ($tableLines[0] -ceq $tableHeader) "$name has the wrong six-column grouping."
             Assert-True ($tableLines[1] -ceq "| --- | --- | --- | --- | --- | --- |") "$name has an invalid table delimiter."
         }
-        if ($discussion)
+        if ($viewName -ceq "verifyDiscussionBeforeMerge")
+        {
+            Assert-True ($summary.Contains("| $name | $($items.Count) | $total need verification or are unassessed |")) "Merge verification summary must count both uncertain states."
+            Assert-True ($section.Contains("Displaying $($items.Count) of $total candidates needing verification or not assessed. Display cap: $($source.mergeDiscussion.verificationLimit).")) "Merge verification display cap and inventory count must remain distinct."
+        }
+        elseif ($discussion)
         {
             Assert-True ($summary.Contains("| $name | $($items.Count) | $total assessed candidates need verification |")) "Verification counts must not use the assessment budget as their denominator."
             Assert-True ($section.Contains("Displaying $($items.Count) of $total assessed candidates needing verification; $($total - $items.Count) are not displayed.")) "Verification display and undisplayed counts must remain explicit."
@@ -824,6 +854,11 @@ function Assert-PresentationTablesAndFields
             Assert-True ($summary.Contains("| $name | $($items.Count) | $total in the ReviewNow inventory bucket, not $total cleared for review |")) "ReviewNow inventory is not a cleared-for-review count."
             Assert-True ($section.Contains("Displaying $($items.Count) candidates from a ReviewNow inventory of $total. Legacy overflow: $($source.overflow.reviewNow).")) "Review now must retain displayed, inventory and legacy overflow counts."
             Assert-True ($section.Contains("The inventory includes discussion-verification and unassessed candidates; see coverage below.")) "ReviewNow inventory semantics must remain visible."
+        }
+        elseif ($viewName -ceq "readyToMerge")
+        {
+            Assert-True ($summary.Contains("| $name | $($items.Count) | $($source.mergeDiscussion.eligibleCount) discussion-eligible; $total in the prospective ReadyToMerge inventory bucket |")) "Merge inventory must not imply eligibility."
+            Assert-True ($section.Contains("Displaying $($items.Count) of $total inventory candidates. Legacy overflow: $($source.overflow.readyToMerge).")) "Merge overflow must retain its original inventory meaning."
         }
         else
         {
@@ -909,6 +944,8 @@ function Assert-PresentationScopePlacement
 {
     param([object]$Pulse, [string]$Body)
 
+    Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
+    $Pulse = Resolve-PulseMergeArea -Area $Pulse
     $items = @($presentationViews.Keys | ForEach-Object { $Pulse.views.$_ })
     $scopes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($item in $items)
@@ -934,6 +971,11 @@ function Assert-PresentationScopePlacement
     }
 }
 
+if ($FunctionsOnly)
+{
+    return
+}
+
 $testRoot = $PSScriptRoot
 $workflowRoot = Split-Path -Parent $testRoot
 $supportRoot = Join-Path $workflowRoot "pr-attention-pulse"
@@ -944,6 +986,7 @@ $presentationViews = [ordered]@{
     verifyDiscussionBeforeReview = @("Verify discussion before review", "ReviewNow")
     needsRescue = @("Needs rescue", "NeedsRescue")
     readyToMerge = @("Ready to merge", "ReadyToMerge")
+    verifyDiscussionBeforeMerge = @("Verify discussion before merge", "ReadyToMerge")
 }
 $queueRoot = Join-Path (Split-Path -Parent $workflowRoot) "skills/pr-attention-queue"
 $queueFixtureRoot = Join-Path $queueRoot "tests/fixtures"
@@ -959,6 +1002,8 @@ $ghAwVersion = (& gh aw --version 2>&1) -join "`n"
 Assert-True ($LASTEXITCODE -eq 0 -and $ghAwVersion.Contains("v0.88.7")) "Focused tests require the reviewed gh-aw v0.88.7 installation."
 & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseReviewRequirements.ps1")
 Assert-True ($LASTEXITCODE -eq 0) "The effective generated security and presentation controls must pass."
+& pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseMergeRequirements.ps1")
+Assert-True ($LASTEXITCODE -eq 0) "The bounded merge discussion contract and compatibility controls must pass."
 $collectorJsRoot = Join-Path (Get-GhAwExtensionRoot) "actions/setup/js"
 $collectorSanitizerPath = Join-Path $collectorJsRoot "sanitize_content.cjs"
 $attemptTimestamp = [datetime]"2026-09-10T20:04:56Z"
@@ -984,9 +1029,10 @@ try
     Assert-True ($normal.views.verifyDiscussionBeforeReview[0].discussionAssessment.signals -contains "discussion-incomplete") "Discussion completeness signals must be preserved."
     Assert-True ($normal.views.verifyDiscussionBeforeReview[0].discussionAssessment.threads.unresolvedCount -eq 2) "Thread assessment counts must be preserved."
     Assert-True ($normal.views.needsRescue[0].bucket -eq "NeedsRescue") "Needs rescue membership must not be reclassified."
-    Assert-True ($normal.views.readyToMerge[0].bucket -eq "ReadyToMerge") "Ready to merge membership must not be reclassified."
+    Assert-True (@($normal.views.readyToMerge).Count -eq 0) "Legacy selected rows cannot establish merge eligibility."
+    Assert-True ($normal.views.verifyDiscussionBeforeMerge[0].bucket -ceq "ReadyToMerge") "Legacy ready inventory remains prospective and requires merge verification."
     Assert-True ($normal.views.reviewNow[1].author -eq "second-author") "Authors must render without mentions."
-    foreach ($viewName in @("reviewNow", "needsRescue", "readyToMerge"))
+    foreach ($viewName in @("reviewNow", "needsRescue"))
     {
         foreach ($candidate in @($normal.views.$viewName))
         {
@@ -1061,12 +1107,12 @@ try
     $zero = Invoke-Sanitizer -FixtureName "complete-zero.json"
     Assert-True ($zero.status -eq "complete") "A complete zero inventory must be a normal successful result."
     Assert-True ($zero.source.census.openPullRequests -eq 0) "A complete zero inventory must preserve zero census counts."
-    foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+    foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
     {
         Assert-True (@($zero.views.$viewName).Count -eq 0) "A complete zero inventory must keep '$viewName' empty."
     }
     $zeroBody = Invoke-Renderer -Pulse $zero
-    Assert-True ([regex]::Matches($zeroBody, "None in this complete inventory\.").Count -eq 4) "A complete zero inventory must render all four candidate sections as empty."
+    Assert-True ([regex]::Matches($zeroBody, "None in this complete inventory\.").Count -eq 5) "A complete zero inventory must render all five candidate sections as empty."
 
     $collectionFailure = Invoke-Sanitizer -CollectionExitCode 9
     Assert-True ($collectionFailure.status -eq "unavailable") "Collection failure must produce a failure envelope."
@@ -1219,12 +1265,12 @@ try
     Assert-True ($oversizedResult.errorCategory -eq "sanitized-output-too-large") "Oversized sanitized output must become a bounded failure envelope."
 
     $realFixtureExpectations = [ordered]@{
-        "blazor/pull-requests.json" = @(3, 0, 3, 1)
-        "blazor/correctness-pull-requests.json" = @(0, 1, 2, 1)
-        "blazor/discussion-pull-requests.json" = @(0, 0, 0, 0)
-        "repository-wide/pull-requests.json" = @(5, 0, 3, 1)
-        "repository-wide/correctness-pull-requests.json" = @(4, 1, 2, 1)
-        "repository-wide/discussion-pull-requests.json" = @(2, 5, 0, 0)
+        "blazor/pull-requests.json" = @(3, 0, 3, 0, 1)
+        "blazor/correctness-pull-requests.json" = @(0, 1, 2, 0, 1)
+        "blazor/discussion-pull-requests.json" = @(0, 0, 0, 0, 0)
+        "repository-wide/pull-requests.json" = @(5, 0, 3, 0, 1)
+        "repository-wide/correctness-pull-requests.json" = @(4, 1, 2, 0, 1)
+        "repository-wide/discussion-pull-requests.json" = @(2, 5, 0, 0, 0)
     }
     $realPulses = [ordered]@{}
     foreach ($fixtureKey in $realFixtureExpectations.Keys)
@@ -1239,6 +1285,7 @@ try
         Assert-True (@($realPulse.views.verifyDiscussionBeforeReview).Count -eq $expectedCounts[1]) "The real $fixtureKey discussion verification membership changed."
         Assert-True (@($realPulse.views.needsRescue).Count -eq $expectedCounts[2]) "The real $fixtureKey Needs rescue membership changed."
         Assert-True (@($realPulse.views.readyToMerge).Count -eq $expectedCounts[3]) "The real $fixtureKey Ready to merge membership changed."
+        Assert-True (@($realPulse.views.verifyDiscussionBeforeMerge).Count -eq $expectedCounts[4]) "The real $fixtureKey merge verification membership changed."
         $realBody = Invoke-Renderer -Pulse $realPulse
         Invoke-PublicationValidator -Pulse $realPulse -AgentOutput (New-ValidAgentOutput -Body $realBody) -ExpectedBody $realBody
         $realPulses[$fixtureKey] = $realPulse
@@ -1569,7 +1616,7 @@ try
 
     foreach ($scope in @("blazor", "repository-wide"))
     {
-        foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+        foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
         {
             foreach ($expectedMarker in @($true, $false))
             {
@@ -1588,23 +1635,23 @@ try
 
     Invoke-PresentationCase "CollapsedSummary/complete" {
         $body = Invoke-Renderer -Pulse $normal
-        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 5 matched; shown: 2 review now, 1 verify discussion, 1 rescue, 1 ready; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete summary must use displayed array lengths."
+        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 5 matched; shown: 2 review now, 1 verify discussion, 1 rescue, 0 ready, 1 verify before merge; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete summary must use displayed array lengths."
     }
     Invoke-PresentationCase "CollapsedSummary/complete-zero" {
         $body = Invoke-Renderer -Pulse $zero
-        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 0 matched; shown: 0 review now, 0 verify discussion, 0 rescue, 0 ready; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete-zero summary must explicitly show four zero displayed counts."
+        Assert-True ($body.Contains("<summary><strong>Blazor</strong> - 0 matched; shown: 0 review now, 0 verify discussion, 0 rescue, 0 ready, 0 verify before merge; generated 2026-09-10T20:00:00.0000000Z</summary>")) "A complete-zero summary must explicitly show five zero displayed counts."
     }
     Invoke-PresentationCase "CollapsedSummary/capped" {
         $capped = $realPulses["repository-wide/discussion-pull-requests.json"]
         $body = Invoke-Renderer -Pulse $capped
-        $expected = "<summary><strong>Repository-wide</strong> - $($capped.source.census.matched) matched; shown: $(@($capped.views.reviewNow).Count) review now, $(@($capped.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($capped.views.needsRescue).Count) rescue, $(@($capped.views.readyToMerge).Count) ready; generated "
+        $expected = "<summary><strong>Repository-wide</strong> - $($capped.source.census.matched) matched; shown: $(@($capped.views.reviewNow).Count) review now, $(@($capped.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($capped.views.needsRescue).Count) rescue, $(@($capped.views.readyToMerge).Count) ready, $(@($capped.views.verifyDiscussionBeforeMerge).Count) verify before merge; generated "
         Assert-True ($capped.source.overflow.reviewNow -gt 0) "The capped summary control requires real producer overflow."
         Assert-True ($body.Contains($expected)) "A capped summary must report displayed arrays instead of inventory counts."
         Invoke-PublicationValidator -Pulse $capped -AgentOutput (New-ValidAgentOutput -Body $body) -ExpectedBody $body
     }
     Invoke-PresentationCase "CollapsedSummary/unassessed" {
         $body = Invoke-Renderer -Pulse $unassessedDiscussionResult
-        $expected = "<summary><strong>Blazor</strong> - $($unassessedDiscussionResult.source.census.matched) matched; shown: $(@($unassessedDiscussionResult.views.reviewNow).Count) review now, $(@($unassessedDiscussionResult.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($unassessedDiscussionResult.views.needsRescue).Count) rescue, $(@($unassessedDiscussionResult.views.readyToMerge).Count) ready; generated "
+        $expected = "<summary><strong>Blazor</strong> - $($unassessedDiscussionResult.source.census.matched) matched; shown: $(@($unassessedDiscussionResult.views.reviewNow).Count) review now, $(@($unassessedDiscussionResult.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($unassessedDiscussionResult.views.needsRescue).Count) rescue, $(@($unassessedDiscussionResult.views.readyToMerge).Count) ready, $(@($unassessedDiscussionResult.views.verifyDiscussionBeforeMerge).Count) verify before merge; generated "
         Assert-True ($unassessedDiscussionResult.source.discussion.unassessedReviewNowCount -gt 0) "The unassessed summary control requires a real sanitized unassessed count."
         Assert-True ($body.Contains($expected)) "An unassessed summary must report displayed arrays instead of deriving ordinary review count."
         Assert-True ($body.Contains("$($unassessedDiscussionResult.source.discussion.unassessedReviewNowCount) Review now candidates unassessed")) "The unassessed count must remain in the area audit."
@@ -1758,7 +1805,7 @@ try
                 Assert-True (-not $pulse.candidateCountsAvailable -and $null -eq $pulse.source.census) "Unavailable must not manufacture a census."
                 Assert-True ($body.Contains("Error category: ``$($pulse.errorCategory)``.") -and $body.Contains("Attempted: ``2026-09-10T20:04:56.0000000Z``.")) "Unavailable must preserve category and exact attempted time."
                 Assert-True ($body.Contains("Candidate counts unavailable.") -and $body.Contains("No complete source coverage was available for this area.") -and -not ($body -match "(?m)^\||\bOpen: 0")) "Unavailable is not an empty successful inventory."
-                Assert-True ([regex]::Matches($body, "Unavailable because this area's collection did not produce a complete compatible inventory\.").Count -eq 4) "Every unavailable candidate section must explain its state."
+                Assert-True ([regex]::Matches($body, "Unavailable because this area's collection did not produce a complete compatible inventory\.").Count -eq 5) "Every unavailable candidate section must explain its state."
             }
             else
             {
@@ -1769,7 +1816,11 @@ try
                         continue
                     }
                     $sectionName, $bucket = $presentationViews[$viewName]
-                    $total = if ($viewName -ceq "verifyDiscussionBeforeReview")
+                    $total = if ($viewName -ceq "verifyDiscussionBeforeMerge")
+                    {
+                        $pulse.source.mergeDiscussion.verificationNeededCount + $pulse.source.mergeDiscussion.unassessedCandidateCount
+                    }
+                    elseif ($viewName -ceq "verifyDiscussionBeforeReview")
                     {
                         $pulse.source.discussion.verificationNeededCount
                     }

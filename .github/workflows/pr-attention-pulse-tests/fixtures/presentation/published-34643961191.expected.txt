@@ -6,7 +6,7 @@
 This report contains the **Repository-wide** Pulse area.
 
 <details>
-<summary><strong>Repository-wide</strong> - 366 matched; shown: 5 review now, 5 verify discussion, 3 rescue, 3 ready; generated 2026-09-11T20:25:08.8529515Z</summary>
+<summary><strong>Repository-wide</strong> - 366 matched; shown: 5 review now, 5 verify discussion, 3 rescue, 0 ready, 3 verify before merge; generated 2026-09-11T20:25:08.8529515Z</summary>
 
 > Source generated: `2026-09-11T20:25:08.8529515Z`; attempted: `2026-09-11T20:25:07.9519155Z`.
 > Source: `dotnet/aspnetcore`. Ad hoc pull-request scope; coverage `all-repo`; selection (all open pull requests).
@@ -24,7 +24,8 @@ Open: 366. Matched: 366. Returned: 366 of 366; query complete: true.
 | Review now | 5 | 40 in the ReviewNow inventory bucket, not 40 cleared for review |
 | Verify discussion before review | 5 | 9 assessed candidates need verification |
 | Needs rescue | 3 | 29 in the NeedsRescue inventory bucket |
-| Ready to merge | 3 | 5 in the ReadyToMerge inventory bucket |
+| Ready to merge | 0 | 0 discussion-eligible; 5 in the prospective ReadyToMerge inventory bucket |
+| Verify discussion before merge | 3 | 5 need verification or are unassessed |
 
 ## Review now
 
@@ -64,18 +65,27 @@ Displaying 3 of 29 inventory candidates. Legacy overflow: 26.
 
 ## Ready to merge
 
-Displaying 3 of 5 inventory candidates. Legacy overflow: 2.
+Displaying 0 of 5 inventory candidates. Legacy overflow: 2.
+Only discussion-eligible candidates with complete clear evidence are shown; the prospective inventory is not an eligibility count.
 
-| PR | Title | Author | Next actor | Open age | Reasons / Blockers |
+No candidates shown in this view.
+
+## Verify discussion before merge
+
+Displaying 3 of 5 candidates needing verification or not assessed. Display cap: 3.
+Inspect the discussion before merging; these prospective candidates do not establish that feedback was addressed.
+
+| PR / Author | Title | Next actor / Age | Reasons / Blockers | Discussion / Comments | Threads |
 | --- | --- | --- | --- | --- | --- |
-| 1: [dotnet/aspnetcore#62861](https://github.com/dotnet/aspnetcore/pull/62861) | Fix RequestDelegateFactory to handle nullable types correctly in empty request body scenarios | opuzakov **Community** | merger | 416d open | **Reasons:** `approved`, `mergeable`, `ci-green`, `community-contribution`. **Blockers:** None. |
-| 2: [dotnet/aspnetcore#65785](https://github.com/dotnet/aspnetcore/pull/65785) | forward CancellationToken in StreamOutputFormatter | mus65 **Community** | merger | 180d open | **Reasons:** `approved`, `mergeable`, `ci-green`, `community-contribution`. **Blockers:** None. |
-| 3: [dotnet/aspnetcore#67695](https://github.com/dotnet/aspnetcore/pull/67695) | Improve Render Output Invalid Exception Message to Clarify Common Control Flow Causes | Yuvan111 | merger | 64d open | **Reasons:** `approved`, `mergeable`, `ci-green`. **Blockers:** None. |
+| 1: [dotnet/aspnetcore#62861](https://github.com/dotnet/aspnetcore/pull/62861); **Author:** opuzakov **Community** | Fix RequestDelegateFactory to handle nullable types correctly in empty request body scenarios | **Next:** merger; 416d open | **Reasons:** `approved`, `mergeable`, `ci-green`, `community-contribution`. **Blockers:** None. | **State:** `not-assessed`; assessment complete: false. **Signals:** `discussion-not-assessed`. **Comments:** 0 total; evidence truncated: false. | 0 of 0 returned; complete: false; 0 unresolved; 0 outdated unresolved |
+| 2: [dotnet/aspnetcore#65785](https://github.com/dotnet/aspnetcore/pull/65785); **Author:** mus65 **Community** | forward CancellationToken in StreamOutputFormatter | **Next:** merger; 180d open | **Reasons:** `approved`, `mergeable`, `ci-green`, `community-contribution`. **Blockers:** None. | **State:** `not-assessed`; assessment complete: false. **Signals:** `discussion-not-assessed`. **Comments:** 0 total; evidence truncated: false. | 0 of 0 returned; complete: false; 0 unresolved; 0 outdated unresolved |
+| 3: [dotnet/aspnetcore#67695](https://github.com/dotnet/aspnetcore/pull/67695); **Author:** Yuvan111 | Improve Render Output Invalid Exception Message to Clarify Common Control Flow Causes | **Next:** merger; 64d open | **Reasons:** `approved`, `mergeable`, `ci-green`. **Blockers:** None. | **State:** `not-assessed`; assessment complete: false. **Signals:** `discussion-not-assessed`. **Comments:** 0 total; evidence truncated: false. | 0 of 0 returned; complete: false; 0 unresolved; 0 outdated unresolved |
 
 ## Coverage and data quality
 
 - Query coverage: 366 of 366 open pull requests returned; complete true.
 - Discussion coverage: 20 of limit 20 assessed; 9 need verification; 20 Review now candidates unassessed.
+- Merge discussion coverage: 0 of limit 20 assessed; 0 eligible; 0 need verification; 5 unassessed; 0 excluded from assessment. Verification display cap: 3.
 - Queue census: Review now 40; Needs rescue 29; Ready to merge 5; Waiting on author 71; Waiting on CI 112; Design decision 0; Draft 65; Excluded 44.
 - Scope census: 0 label-only; 0 path-only; 0 label-and-path; 0 incidental paths excluded; 0 unresolved mergeability.
 - Overflow: Review now 35; Needs rescue 26; Ready to merge 2.
