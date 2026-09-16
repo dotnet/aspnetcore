@@ -4,9 +4,11 @@ if: ${{ github.event.repository.fork == false }}
 on:
   # Deliberately use direct slash commands: v0.88.2 centralized membership rejects community
   # fork PRs and its router retains write scopes. Do not bypass that gate or add a router.
+  # Inline review-comment events run from the PR merge ref, including bootstrap/skill checkout.
+  # Only PR conversation comments preserve the trusted default-branch workflow and configuration.
   slash_command:
     name: review
-    events: [pull_request_comment, pull_request_review_comment]
+    events: [pull_request_comment]
   roles: [admin, maintainer, write]
   reaction: none
   status-comment: false
@@ -24,9 +26,9 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: pull-request-review-${{ github.repository }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  group: pull-request-review-${{ github.repository }}-${{ github.event.issue.number || github.run_id }}
   cancel-in-progress: false
-  job-discriminator: ${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  job-discriminator: ${{ github.event.issue.number || github.run_id }}
 
 # Initial operational ceilings, not evidence that a panel completed. The skill owns the topic
 # count and its 50-row maximum; budget exhaustion must never silently reduce that manifest.
@@ -126,9 +128,7 @@ jobs:
             const repository = `${context.repo.owner}/${context.repo.repo}`;
             const pullNumber = context.eventName === 'issue_comment' && context.payload.issue?.pull_request
               ? context.payload.issue.number
-              : context.eventName === 'pull_request_review_comment'
-                ? context.payload.pull_request?.number
-                : undefined;
+              : undefined;
             if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
               core.setFailed('The triggering event must identify a valid pull request number.');
               return;
@@ -167,6 +167,11 @@ engine:
 ---
 
 # ASP.NET Core Pull Request Review
+
+Maintainers invoke `/review` in the PR conversation, not an inline review comment.
+Inline invocation is intentionally unsupported: gh-aw v0.88.2 direct review-comment activation
+would load its bootstrap and local skill from the PR merge ref rather than trusted default-branch
+workflow content. This workflow uses no privileged relay, PR checkout, or fork-secret workaround.
 
 You are the hosted caller of the repository's review skill. Perform source-only analysis of
 `${{ github.repository }}#${{ needs.freeze_pr_head.outputs.pr_number }}` at the trusted frozen
