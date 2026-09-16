@@ -28,9 +28,7 @@ public sealed class Storage : IAsyncDisposable
     {
         var storage = await GetReferenceAsync().ConfigureAwait(false);
 
-        return await storage
-            .GetValueAsync<uint>("length", CancellationToken.None)
-            .ConfigureAwait(false);
+        return await storage.GetValueAsync<uint>("length").ConfigureAwait(false);
     }
 
     /// <summary>

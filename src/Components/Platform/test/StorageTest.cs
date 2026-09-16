@@ -168,6 +168,11 @@ public class StorageTest
             return ValueTask.FromResult((TValue?)result!);
         }
 
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+        {
+            return GetValueAsync<TValue>(identifier, CancellationToken.None);
+        }
+
         public ValueTask<TValue> GetValueAsync<TValue>(
             string identifier,
             CancellationToken cancellationToken)
