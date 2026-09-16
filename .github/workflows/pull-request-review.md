@@ -66,7 +66,9 @@ tools:
     # that content requires the lowest integrity floor; it never makes the content trusted.
     # Compensating controls: read-only agent, no checkout/execution, and capped staged outputs.
     min-integrity: none
-    allowed-repos: ["${{ github.repository }}"]
+    # Production is intentionally scoped to the upstream repository. The MCP guard requires
+    # lowercase scopes; fork validation must use its own exact scope on a test-only branch.
+    allowed-repos: [dotnet/aspnetcore]
     toolsets: [context, repos, issues, pull_requests]
 
 # Do not expose inherited telemetry credentials to a process reading untrusted pull request text.
