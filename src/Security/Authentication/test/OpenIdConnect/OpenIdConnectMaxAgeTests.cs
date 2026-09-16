@@ -224,6 +224,39 @@ public class OpenIdConnectMaxAgeTests
         Assert.Equal(0, backchannelCalls);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CodeFlowValidatesTokenReplacedByTokenValidatedEvent(bool useSecurityTokenValidator)
+    {
+        using var host = await CreateHostAsync(
+            useSecurityTokenValidator,
+            options =>
+            {
+                options.MaxAge = TimeSpan.FromMinutes(5);
+                options.ResponseType = OpenIdConnectResponseType.Code;
+                options.Events.OnTokenValidated = context =>
+                {
+                    context.SecurityToken = new JwtSecurityToken(
+                        new JwtHeader(),
+                        new JwtPayload
+                        {
+                            [JwtSecurityTokenClaimNames.Sub] = "subject",
+                        });
+                    return Task.CompletedTask;
+                };
+            },
+            new Dictionary<string, object?>
+            {
+                ["front"] = Now,
+                ["back"] = Now,
+            });
+
+        var transaction = await AuthenticateAsync(host, idToken: null, includeCode: true);
+
+        Assert.Equal(HttpStatusCode.BadRequest, transaction.Response.StatusCode);
+    }
+
     [Fact]
     public async Task FailureStopsTicketAndUserInfoAndUsesExistingFailureEvents()
     {

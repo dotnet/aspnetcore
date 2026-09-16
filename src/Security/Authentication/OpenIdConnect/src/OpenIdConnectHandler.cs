@@ -928,7 +928,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     });
                 }
 
-                ValidateAuthTime(tokenEndpointJwt, maxAge);
+                ValidateAuthTime(jwt, maxAge);
             }
 
             if (Options.SaveTokens)
