@@ -4,7 +4,9 @@ parameters:
   HelixType: 'tests/default/'            # required -- Helix telemetry which identifies what type of data this is; should include "test" for clarity and must end in '/'
   HelixBuild: $(Build.BuildNumber)       # required -- the build number Helix will use to identify this -- automatically set to the AzDO build number
   HelixTargetQueues: ''                  # required -- semicolon-delimited list of Helix queues to test on; see https://helix.dot.net/ for a list of queues
-  HelixAccessToken: ''                   # required -- access token to make Helix API requests; should be provided by the appropriate variable group
+  HelixAccessToken: ''                   # optional -- legacy access token; not forwarded when HelixUseEntraAuthentication is true
+  HelixUseEntraAuthentication: false     # optional -- use refreshable Entra authentication instead of a PAT or anonymous access
+  HelixAzureSubscription: ''             # required when HelixUseEntraAuthentication is true -- Azure service connection ID authorized for Helix
   HelixProjectPath: 'eng/common/helixpublish.proj'  # optional -- path to the project file to build relative to BUILD_SOURCESDIRECTORY
   HelixProjectArguments: ''              # optional -- arguments passed to the build command
   HelixConfiguration: ''                 # optional -- additional property attached to a job
@@ -32,12 +34,35 @@ parameters:
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
 steps:
+  - ${{ if and(eq(parameters.HelixUseEntraAuthentication, true), eq(parameters.HelixAzureSubscription, '')) }}:
+    - pwsh: throw "HelixAzureSubscription must be set when HelixUseEntraAuthentication is true."
+      displayName: Validate Helix Entra authentication
+      condition: ${{ parameters.condition }}
+
+  - ${{ if eq(parameters.HelixUseEntraAuthentication, true) }}:
+    - task: AzureCLI@2
+      displayName: Initialize Helix Entra authentication
+      inputs:
+        azureSubscription: ${{ parameters.HelixAzureSubscription }}
+        addSpnToEnvironment: true
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          if ([string]::IsNullOrWhiteSpace($env:servicePrincipalId) -or [string]::IsNullOrWhiteSpace($env:tenantId)) {
+            throw "The Helix Azure service connection did not provide a service principal or tenant ID."
+          }
+
+          Write-Host "##vso[task.setvariable variable=HelixEntraClientId]$env:servicePrincipalId"
+          Write-Host "##vso[task.setvariable variable=HelixEntraTenantId]$env:tenantId"
+      condition: ${{ parameters.condition }}
+
   - powershell: >
       $(Build.SourcesDirectory)\eng\common\msbuild.ps1
       $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
       /restore
       /p:TreatWarningsAsErrors=false
       /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+      /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }}
       ${{ parameters.HelixProjectArguments }}
       /t:Test
       /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
@@ -49,7 +74,12 @@ steps:
       HelixBuild: ${{ parameters.HelixBuild }}
       HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
-      HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      ${{ if eq(parameters.HelixUseEntraAuthentication, false) }}:
+        HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      ${{ if eq(parameters.HelixUseEntraAuthentication, true) }}:
+        AZURESUBSCRIPTION_CLIENT_ID: $(HelixEntraClientId)
+        AZURESUBSCRIPTION_TENANT_ID: $(HelixEntraTenantId)
+        AZURESUBSCRIPTION_SERVICE_CONNECTION_ID: ${{ parameters.HelixAzureSubscription }}
       HelixPreCommands: ${{ parameters.HelixPreCommands }}
       HelixPostCommands: ${{ parameters.HelixPostCommands }}
       WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
@@ -76,6 +106,7 @@ steps:
       /restore
       /p:TreatWarningsAsErrors=false
       /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+      /p:HelixUseEntraAuthentication=${{ parameters.HelixUseEntraAuthentication }}
       ${{ parameters.HelixProjectArguments }}
       /t:Test
       /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
@@ -87,7 +118,12 @@ steps:
       HelixBuild: ${{ parameters.HelixBuild }}
       HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
-      HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      ${{ if eq(parameters.HelixUseEntraAuthentication, false) }}:
+        HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      ${{ if eq(parameters.HelixUseEntraAuthentication, true) }}:
+        AZURESUBSCRIPTION_CLIENT_ID: $(HelixEntraClientId)
+        AZURESUBSCRIPTION_TENANT_ID: $(HelixEntraTenantId)
+        AZURESUBSCRIPTION_SERVICE_CONNECTION_ID: ${{ parameters.HelixAzureSubscription }}
       HelixPreCommands: ${{ parameters.HelixPreCommands }}
       HelixPostCommands: ${{ parameters.HelixPostCommands }}
       WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
@@ -108,4 +144,3 @@ steps:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
     continueOnError: ${{ parameters.continueOnError }}
-
