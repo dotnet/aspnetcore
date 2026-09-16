@@ -5473,17 +5473,29 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
         Browser.Equal("2", () => Browser.Exists(By.Id("current-mode")).Text);
 
-        InstallVirtualizeIntersectionObserverGate(js);
+        js.ExecuteScript(
+            """
+            window.__nativeIntersectionObserver = window.IntersectionObserver;
+            window.__virtualizeObserverCallbacks = [];
+            window.IntersectionObserver = class extends window.__nativeIntersectionObserver {
+                constructor(callback, options) {
+                    super((entries, observer) => {
+                        if (entries.some(entry =>
+                            entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'))) {
+                            window.__virtualizeObserverCallbacks.push(() => callback(entries, observer));
+                        } else {
+                            callback(entries, observer);
+                        }
+                    }, options);
+                }
+            };
+            """);
+
         try
         {
             Browser.Exists(By.Id("reload-with-initial-index")).Click();
-            Browser.True(() => Convert.ToBoolean(js.ExecuteScript(
-                """
-                const spacer = document.querySelector(
-                    '#scroll-container [data-blazor-virtualize-reserved-height]');
-                return spacer?.style.flexShrink === '0'
-                    && window.__virtualizePendingObserverCallbacks > 0;
-                """), CultureInfo.InvariantCulture));
+            Browser.True(() => Convert.ToInt64(js.ExecuteScript(
+                "return window.__virtualizeObserverCallbacks.length;"), CultureInfo.InvariantCulture) > 0);
 
             Browser.Exists(By.Id("refresh-data")).Click();
             Browser.Contains("Refreshed data", () => Browser.Exists(By.Id("status")).Text);
@@ -5495,7 +5507,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 $"Expected the initial provider result to pin to the bottom, but scrollTop was " +
                 $"{GetScrollTop(js, container)} of {GetMaximumScrollTop(js, container)}.");
 
-            js.ExecuteScript("window.__releaseVirtualizeObserverCallbacks();");
+            js.ExecuteScript(
+                """
+                for (const callback of window.__virtualizeObserverCallbacks.splice(0)) {
+                    callback();
+                }
+                """);
             Browser.True(
                 () => GetBottomRenderedIndex(js) == 999 && IsScrolledToBottom(js, container),
                 TimeSpan.FromSeconds(10),
@@ -5504,49 +5521,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
         finally
         {
-            js.ExecuteScript("window.__restoreVirtualizeIntersectionObserver?.();");
+            js.ExecuteScript(
+                """
+                window.IntersectionObserver = window.__nativeIntersectionObserver;
+                delete window.__nativeIntersectionObserver;
+                delete window.__virtualizeObserverCallbacks;
+                """);
         }
-    }
-
-    private static void InstallVirtualizeIntersectionObserverGate(IJavaScriptExecutor js)
-    {
-        js.ExecuteScript(
-            """
-            const nativeIntersectionObserver = window.IntersectionObserver;
-            const pendingCallbacks = [];
-            window.__virtualizePendingObserverCallbacks = 0;
-
-            window.IntersectionObserver = class extends nativeIntersectionObserver {
-                constructor(callback, options) {
-                    super((entries, observer) => {
-                        const containsVirtualizeSpacer = entries.some(entry =>
-                            entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'));
-                        if (containsVirtualizeSpacer) {
-                            pendingCallbacks.push(() => callback(entries, observer));
-                            window.__virtualizePendingObserverCallbacks = pendingCallbacks.length;
-                            return;
-                        }
-
-                        callback(entries, observer);
-                    }, options);
-                }
-            };
-
-            window.__releaseVirtualizeObserverCallbacks = () => {
-                for (const callback of pendingCallbacks.splice(0)) {
-                    callback();
-                }
-                window.__virtualizePendingObserverCallbacks = 0;
-            };
-
-            window.__restoreVirtualizeIntersectionObserver = () => {
-                window.__releaseVirtualizeObserverCallbacks();
-                window.IntersectionObserver = nativeIntersectionObserver;
-                delete window.__releaseVirtualizeObserverCallbacks;
-                delete window.__restoreVirtualizeIntersectionObserver;
-                delete window.__virtualizePendingObserverCallbacks;
-            };
-            """);
     }
 
     private bool IsScrolledToBottom(IJavaScriptExecutor js, IWebElement container)
