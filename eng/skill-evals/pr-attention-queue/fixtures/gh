@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+
+
+def fail(message):
+    print(message, file=sys.stderr)
+    raise SystemExit(64)
+
+
+fixture_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pull-requests.json")
+with open(fixture_path, encoding="utf-8") as fixture_file:
+    fixture = json.load(fixture_file)
+
+arguments = sys.argv[1:]
+
+if len(arguments) >= 2 and arguments[0:2] == ["pr", "list"]:
+    print(json.dumps(fixture["pullRequests"]))
+    raise SystemExit(0)
+
+if len(arguments) >= 2 and arguments[0:2] == ["api", "graphql"]:
+    query_arguments = [argument for argument in arguments if argument.startswith("query=")]
+    if len(query_arguments) != 1:
+        fail("fixture gh expected exactly one GraphQL query")
+
+    query = query_arguments[0][len("query="):]
+    if "pullRequests(states:OPEN){totalCount}" in query:
+        print(json.dumps({"data": {"repository": {"pullRequests": {"totalCount": len(fixture["pullRequests"])}}}}))
+        raise SystemExit(0)
+
+    repository = {}
+    for pull_request in fixture["pullRequests"]:
+        number = str(pull_request["number"])
+        repository[f"pr{number}"] = {
+            "number": pull_request["number"],
+            "title": pull_request["title"],
+            "url": pull_request["url"],
+            "author": {
+                "__typename": "User",
+                "login": pull_request["author"]["login"],
+            },
+            "state": "OPEN",
+            "isDraft": pull_request["isDraft"],
+            "updatedAt": pull_request["updatedAt"],
+            "headRefOid": pull_request["headRefOid"],
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "CLEAN",
+            "reviewDecision": None,
+            "reviews": {
+                "totalCount": 0,
+                "pageInfo": {"hasPreviousPage": False},
+                "nodes": [],
+            },
+            "reviewRequests": {
+                "totalCount": 0,
+                "pageInfo": {"hasNextPage": False},
+                "nodes": [],
+            },
+            "comments": {
+                "totalCount": 0,
+                "pageInfo": {"hasPreviousPage": False},
+                "nodes": [],
+            },
+            "reviewThreads": {
+                "totalCount": 0,
+                "pageInfo": {"hasPreviousPage": False},
+                "nodes": [],
+            },
+            "timelineItems": {
+                "totalCount": 0,
+                "filteredCount": 0,
+                "pageInfo": {"hasPreviousPage": False},
+                "nodes": [],
+            },
+            "commits": {
+                "nodes": [
+                    {
+                        "commit": {
+                            "oid": pull_request["headRefOid"],
+                            "url": pull_request["url"] + "/commits/" + pull_request["headRefOid"],
+                            "committedDate": pull_request["updatedAt"],
+                            "author": {"user": {"__typename": "User", "login": pull_request["author"]["login"]}},
+                            "committer": {"user": {"__typename": "User", "login": pull_request["author"]["login"]}},
+                            "statusCheckRollup": {"state": "SUCCESS"},
+                        }
+                    }
+                ]
+            },
+        }
+
+    print(json.dumps({"data": {"repository": repository}}))
+    raise SystemExit(0)
+
+fail("fixture gh refuses unexpected commands and performs no network access")

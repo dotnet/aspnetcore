@@ -225,6 +225,13 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal Memory<byte> GetFakeMemory(int minSize)
     {
+        if (minSize == 0)
+        {
+            // MemoryPool.Rent(0) may return empty memory;
+            // use Kestrel's minimum segment size to satisfy the IBufferWriter contract.
+            minSize = _memoryPool.GetMinimumSegmentSize();
+        }
+
         // Try to reuse _fakeMemoryOwner
         if (_fakeMemoryOwner != null)
         {
