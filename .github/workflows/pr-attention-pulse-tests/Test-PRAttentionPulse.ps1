@@ -1005,6 +1005,8 @@ Assert-True ($LASTEXITCODE -eq 0) "The effective generated security and presenta
 & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseMergeRequirements.ps1")
 Assert-True ($LASTEXITCODE -eq 0) "The bounded merge discussion contract and compatibility controls must pass."
 $collectorJsRoot = Join-Path (Get-GhAwExtensionRoot) "actions/setup/js"
+& node (Join-Path $testRoot "Test-PulseSchedule.cjs") $collectorJsRoot $workflowPath $lockPath
+Assert-True ($LASTEXITCODE -eq 0) "Daily and manual triggers must preserve the pinned activation behavior."
 $collectorSanitizerPath = Join-Path $collectorJsRoot "sanitize_content.cjs"
 $attemptTimestamp = [datetime]"2026-09-10T20:04:56Z"
 $queueSnapshot = [datetime]"2026-09-03T18:00:00Z"

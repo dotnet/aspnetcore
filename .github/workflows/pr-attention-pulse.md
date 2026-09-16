@@ -1,12 +1,13 @@
 ---
 on:
+  schedule: daily
   workflow_dispatch:
   roles: [admin, maintainer, write]
   reaction: none
   status-comment: false
 
 description: >
-  Manually dispatched ASP.NET Core pull-request attention pulse. Trusted runner steps
+  Daily and manually dispatched ASP.NET Core pull-request attention pulse. Trusted runner steps
   independently collect the maintained Blazor scope and a repository-wide baseline, validate and
   combine their legacy queue views, delete raw data, and give the model only the bounded sanitized
   envelope. The sole mutation is a body replacement on the permanent upstream dashboard issue.
