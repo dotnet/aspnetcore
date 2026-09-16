@@ -128,6 +128,218 @@ foreach ($scenario in @("thanks-after-approval", "head-differs-old-approval", "a
         Require ($item.bucket -eq "ReadyToMerge" -and $item.shownInDigest) "This negative control must remain merge eligible."
     }
 }
+$reviewFollowupFixtures = [Collections.Generic.List[object]]::new()
+foreach ($scenario in @(
+    "other-approval",
+    "response-before-other-approval",
+    "new-head-before-other-approval",
+    "request-before-other-approval",
+    "request-before-other-approval-without-action",
+    "request-after-approval-before-other-approval",
+    "request-before-other-informational-review",
+    "request-before-other-unknown-review",
+    "same-reviewer-current-approval",
+    "settled-old-pair-after-push",
+    "same-reviewer-old-head-approval",
+    "own-approval-preserves-other-feedback",
+    "own-approval-preserves-other-unknown",
+    "informational-after-feedback",
+    "other-approval-after-unknown",
+    "same-reviewer-approves-unknown",
+    "self-feedback",
+    "bot-feedback")) {
+    Assert-MergeCase "per-reviewer feedback $scenario" {
+        $fixture = Get-ClearFixture
+        $fixture.threads = @()
+        $feedback = [pscustomobject]@{
+            author = @{ login = "reviewer-a" }
+            state = "COMMENTED"
+            submittedAt = "2026-09-01T00:00:00Z"
+            commit = @{ oid = $fixture.headRefOid }
+            bodyText = "Please add coverage for the empty body."
+        }
+        $approval = [pscustomobject]@{
+            author = @{ login = "reviewer-b" }
+            state = "APPROVED"
+            submittedAt = "2026-09-03T00:00:00Z"
+            commit = @{ oid = $fixture.headRefOid }
+            bodyText = ""
+        }
+        $expectedBucket = "WaitingOnAuthor"
+        $expectedEligibility = "not-candidate"
+        $expectedReason = "reviewer-commented"
+        $otherFeedback = @()
+        switch ($scenario) {
+            "response-before-other-approval" {
+                $fixture.comments = @(@{ author = $fixture.author; createdAt = "2026-09-02T00:00:00Z"; bodyText = "Updated."; authorAssociation = "NONE" })
+                $expectedBucket = "ReviewNow"
+                $expectedReason = "author-responded"
+            }
+            "new-head-before-other-approval" {
+                $fixture.headRefOid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                $fixture.updatedAt = "2026-09-02T00:00:00Z"
+                $approval.commit.oid = $fixture.headRefOid
+                $expectedBucket = "ReviewNow"
+                $expectedReason = "head-changed-after-review"
+            }
+            "request-before-other-approval" {
+                $fixture.requests = @(@{ login = "reviewer-a"; requestedAt = "2026-09-02T00:00:00Z" })
+                $expectedBucket = "ReviewNow"
+                $expectedReason = "review-requested"
+            }
+            { $_ -in @("request-before-other-approval-without-action", "request-after-approval-before-other-approval") } {
+                $feedback.bodyText = "Hmm."
+                if ($scenario -eq "request-after-approval-before-other-approval") {
+                    $feedback.state = "APPROVED"
+                    $feedback.bodyText = ""
+                }
+                $fixture.requests = @(@{ login = "reviewer-a"; requestedAt = "2026-09-02T00:00:00Z" })
+                $expectedBucket = "ReviewNow"
+                $expectedReason = "review-requested"
+            }
+            { $_ -in @("request-before-other-informational-review", "request-before-other-unknown-review") } {
+                $feedback.state = "APPROVED"
+                $feedback.bodyText = ""
+                $approval.state = "COMMENTED"
+                $approval.bodyText = if ($scenario -eq "request-before-other-informational-review") { "FYI: background context only." } else { "Hmm." }
+                $fixture.requests = @(@{ login = "reviewer-a"; requestedAt = "2026-09-02T00:00:00Z" })
+                $expectedBucket = "ReviewNow"
+                $expectedReason = "review-requested"
+            }
+            "same-reviewer-current-approval" {
+                $approval.author.login = "reviewer-a"
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "eligible"
+                $expectedReason = "approved"
+            }
+            "settled-old-pair-after-push" {
+                $approval.author.login = "reviewer-a"
+                $fixture.headRefOid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                $fixture.updatedAt = "2026-09-04T00:00:00Z"
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "eligible"
+                $expectedReason = "approved"
+            }
+            "same-reviewer-old-head-approval" {
+                $approval.author.login = "reviewer-a"
+                $approval.commit.oid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            }
+            { $_ -in @("own-approval-preserves-other-feedback", "own-approval-preserves-other-unknown") } {
+                $approval.author.login = "reviewer-a"
+                $otherFeedback = @([pscustomobject]@{
+                    author = @{ login = "reviewer-c" }
+                    state = "COMMENTED"
+                    submittedAt = "2026-09-02T00:00:00Z"
+                    commit = @{ oid = $fixture.headRefOid }
+                    bodyText = "Please add coverage."
+                })
+                if ($scenario -eq "own-approval-preserves-other-unknown") {
+                    $otherFeedback[0].bodyText = "Hmm."
+                    $expectedBucket = "ReadyToMerge"
+                    $expectedEligibility = "verification-needed"
+                    $expectedReason = "approved"
+                }
+            }
+            "informational-after-feedback" {
+                $approval.author.login = "reviewer-a"
+                $approval.state = "COMMENTED"
+                $approval.bodyText = "FYI: background context only."
+            }
+            "other-approval-after-unknown" {
+                $feedback.bodyText = "Hmm."
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "verification-needed"
+                $expectedReason = "approved"
+            }
+            "same-reviewer-approves-unknown" {
+                $feedback.bodyText = "Hmm."
+                $approval.author.login = "reviewer-a"
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "eligible"
+                $expectedReason = "approved"
+            }
+            "self-feedback" {
+                $feedback.author = $fixture.author
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "eligible"
+                $expectedReason = "approved"
+            }
+            "bot-feedback" {
+                $feedback.author.login = "copilot-pull-request-reviewer"
+                $expectedBucket = "ReadyToMerge"
+                $expectedEligibility = "eligible"
+                $expectedReason = "approved"
+            }
+        }
+        $fixture.reviews += @($feedback, $approval) + $otherFeedback
+        $fixture.reviews = @($fixture.reviews | Sort-Object submittedAt)
+        $fixture | Add-Member testCase $scenario
+        $reviewFollowupFixtures.Add($fixture)
+        $item = (Get-Result @($fixture)).items[0]
+        Require ($item.bucket -eq $expectedBucket -and $item.reasonCodes -contains $expectedReason) "Expected $expectedBucket/$expectedReason; got $($item.bucket)/$($item.reasonCodes -join ',')."
+        Require ($item.mergeEligibility -eq $expectedEligibility) "Expected merge eligibility $expectedEligibility; got $($item.mergeEligibility)."
+        Require ($item.shownInDigest -eq ($expectedBucket -eq "ReviewNow" -or $expectedEligibility -eq "eligible")) "Digest must preserve the actual next action, not a different reviewer's approval."
+        if ($expectedEligibility -eq "verification-needed") {
+            Require ($item.shownInMergeVerification -and $item.discussionAssessment.signals -contains "review-feedback-requires-verification") "An unapproved unknown review body must remain visible for interpretation."
+        }
+    }
+}
+foreach ($scenario in @("current-unresolved", "resolved", "outdated", "no-threads", "missing-body", "missing-discussion", "truncated-comments", "truncated-threads", "truncated-reviews", "informational", "same-reviewer-approval")) {
+    Assert-MergeCase "empty review context $scenario" {
+        $fixture = Get-ClearFixture
+        $review = [pscustomobject]@{
+            author = @{ login = "reviewer-a" }
+            state = "COMMENTED"
+            submittedAt = "2026-09-01T00:00:00Z"
+            commit = @{ oid = $fixture.headRefOid }
+            bodyText = ""
+        }
+        $fixture.reviews += $review
+        $fixture.threads = @()
+        $expectedEligibility = "eligible"
+        switch ($scenario) {
+            "current-unresolved" {
+                $fixture.threads = @(@{ isResolved = $false; isOutdated = $false })
+                $expectedEligibility = "verification-needed"
+            }
+            "resolved" { $fixture.threads = @(@{ isResolved = $true; isOutdated = $false }) }
+            "outdated" { $fixture.threads = @(@{ isResolved = $false; isOutdated = $true }) }
+            "missing-body" {
+                $review.PSObject.Properties.Remove("bodyText")
+                $expectedEligibility = "verification-needed"
+            }
+            "missing-discussion" {
+                $fixture | Add-Member missingDiscussion $true
+                $expectedEligibility = "verification-needed"
+            }
+            "truncated-comments" {
+                $fixture | Add-Member truncateComments $true
+                $expectedEligibility = "verification-needed"
+            }
+            "truncated-threads" {
+                $fixture | Add-Member truncateThreads $true
+                $expectedEligibility = "verification-needed"
+            }
+            "truncated-reviews" {
+                $fixture | Add-Member truncateReviews $true
+                $expectedEligibility = "verification-needed"
+            }
+            "informational" { $review.bodyText = "FYI: background context only." }
+            "same-reviewer-approval" {
+                $fixture.reviews += @{ author = @{ login = "reviewer-a" }; state = "APPROVED"; submittedAt = "2026-09-02T00:00:00Z"; commit = @{ oid = $fixture.headRefOid }; bodyText = "" }
+            }
+        }
+        $run = Invoke-MergeFixtureQueue -PullRequests @($fixture)
+        $item = ($run.output | ConvertFrom-Json -Depth 40).items[0]
+        Require ($item.bucket -eq "ReadyToMerge" -and $item.nextActor -eq "merger") "Empty review text must not fabricate author ownership."
+        Require ($item.mergeEligibility -eq $expectedEligibility -and $item.shownInDigest -eq ($expectedEligibility -eq "eligible")) "Expected $expectedEligibility from complete thread-state assessment; got $($item.mergeEligibility)."
+        Require ($run.discussionNumbers -contains $fixture.number) "The real bounded discussion collector must run before the empty review is interpreted."
+    }
+}
+if ($EvidenceDirectory) {
+    $reviewFollowupFixtures | ConvertTo-Json -Depth 30 |
+        Set-Content -LiteralPath (Join-Path $EvidenceDirectory "review-followup-producer-fixtures.json")
+}
 foreach ($scenario in @("human-thread", "bot-thread", "unknown-review", "informational-top-level", "other-reviewer-old-concern", "later-concern", "missing", "truncated-comments", "truncated-threads", "truncated-reviews", "missing-comment-nodes")) {
     Assert-MergeCase "merge evidence $scenario" {
         $fixture = Get-ClearFixture

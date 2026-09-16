@@ -600,6 +600,30 @@ function Get-HumanReviews {
     ) | Sort-Object -Property SubmittedAt -Descending
 }
 
+function Get-OutstandingReviewComments {
+    param(
+        [object[]]$HumanReviews,
+        [string]$HeadSha
+    )
+
+    $approvals = @($HumanReviews | Where-Object { $_.State -eq "APPROVED" -and $_.CommitOid })
+    foreach ($review in $HumanReviews) {
+        if ($review.State -ne "COMMENTED" -or $review.BodyKind -eq "informational") {
+            continue
+        }
+
+        # A later push must not reopen feedback already approved on the reviewed commit.
+        $subsequentApproval = $approvals | Where-Object {
+            $review.Login -and $_.Login -eq $review.Login -and
+                $_.SubmittedAt -gt $review.SubmittedAt -and
+                ($_.CommitOid -eq $HeadSha -or $_.CommitOid -eq $review.CommitOid)
+        } | Select-Object -First 1
+        if (-not $subsequentApproval) {
+            $review
+        }
+    }
+}
+
 function Get-LatestAuthorCommentAt {
     param(
         [object]$PullRequest,
@@ -702,7 +726,6 @@ function Get-DiscussionAssessment {
             -KnownBotPatterns $KnownBotPatterns `
             -AuthorLogin $AuthorInfo.Login
     )
-    $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
     $discussionComments = @(
         ConvertTo-Array (Get-PropertyValue -Object $PullRequest -Name "discussionComments")
     )
@@ -798,9 +821,10 @@ function Get-DiscussionAssessment {
         if (-not [bool](Get-PropertyValue -Object $PullRequest -Name "reviewEvidenceComplete" -DefaultValue $false)) {
             $signals.Add("review-evidence-incomplete")
         }
-        if ($latestHumanReview -and $latestHumanReview.State -eq "COMMENTED" -and
-            $latestHumanReview.BodyKind -ne "informational" -and
-            ($latestHumanReview.HasBody -or -not $latestHumanReview.HasBodyText)) {
+        $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
+        $reviewFeedback = @(Get-OutstandingReviewComments -HumanReviews $humanReviews -HeadSha $headSha |
+            Where-Object { $_.HasBody -or -not $_.HasBodyText })
+        if ($reviewFeedback.Count -gt 0) {
             $signals.Add("review-feedback-requires-verification")
         }
     }
@@ -817,7 +841,6 @@ function Get-DiscussionAssessment {
             $comment.Kind -ne "informational") {
             if ($ForMerge) {
                 $reviewerDisposition = @($humanReviews | Where-Object { $_.Login -eq $comment.Author } | Select-Object -First 1)
-                $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
                 if ($reviewerDisposition.Count -gt 0 -and
                     $reviewerDisposition[0].State -eq "APPROVED" -and
                     $headSha -and $reviewerDisposition[0].CommitOid -eq $headSha -and
@@ -2252,7 +2275,7 @@ function Get-Classification {
             -KnownBotPatterns $knownBotPatterns `
             -AuthorLogin $AuthorInfo.Login
     )
-    $latestHumanReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
+    $ownershipReview = if ($humanReviews.Count -gt 0) { $humanReviews[0] } else { $null }
     $latestAuthorCommentAt = Get-LatestAuthorCommentAt -PullRequest $PullRequest -AuthorLogin $AuthorInfo.Login
     $humanReviewRequests = @(Get-HumanReviewRequests -PullRequest $PullRequest -KnownBotPatterns $knownBotPatterns)
     $humanReviewRequestCount = $humanReviewRequests.Count
@@ -2268,6 +2291,13 @@ function Get-Classification {
     $updatedAt = [datetime](Get-PropertyValue -Object $PullRequest -Name "updatedAt" -DefaultValue $createdAt)
     $headSha = [string](Get-PropertyValue -Object $PullRequest -Name "headRefOid" -DefaultValue "")
     $reviewDecision = [string](Get-PropertyValue -Object $PullRequest -Name "reviewDecision" -DefaultValue "")
+    if ($reviewDecision -eq "APPROVED") {
+        $actionableFeedback = @(Get-OutstandingReviewComments -HumanReviews $humanReviews -HeadSha $headSha |
+            Where-Object { $_.BodyKind -eq "actionable" })
+        if ($actionableFeedback.Count -gt 0) {
+            $ownershipReview = $actionableFeedback[0]
+        }
+    }
     $mergeable = [string](Get-PropertyValue -Object $PullRequest -Name "mergeable" -DefaultValue "UNKNOWN")
     $mergeStateStatus = [string](Get-PropertyValue -Object $PullRequest -Name "mergeStateStatus" -DefaultValue "CLEAN")
     $isDraft = [bool](Get-PropertyValue -Object $PullRequest -Name "isDraft" -DefaultValue $false)
@@ -2279,21 +2309,36 @@ function Get-Classification {
         (Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.blockedLabelsExact))
     $ciRerunPending = Test-AnyExactMatch -Values $Labels -ExpectedValues @($Settings.pendingCiLabels)
     $designGate = Test-AnyWildcardMatch -Values $Labels -Patterns @($Settings.designGateLabels)
-    $headChangedAfterReview = $latestHumanReview -and
-        $latestHumanReview.CommitOid -and
+    $headChangedAfterReview = $ownershipReview -and
+        $ownershipReview.CommitOid -and
         $headSha -and
-        $latestHumanReview.CommitOid -ne $headSha
-    $authorCommentedAfterReview = $latestHumanReview -and
+        $ownershipReview.CommitOid -ne $headSha
+    $authorCommentedAfterReview = $ownershipReview -and
         $latestAuthorCommentAt -and
-        $latestAuthorCommentAt -gt $latestHumanReview.SubmittedAt
+        $latestAuthorCommentAt -gt $ownershipReview.SubmittedAt
     $authorRespondedAfterReview = $headChangedAfterReview -or $authorCommentedAfterReview
-    $latestReviewerCommentIsCurrent = $latestHumanReview -and
-        $latestHumanReview.State -eq "COMMENTED" -and
-        (-not $latestReviewRequestAt -or $latestHumanReview.SubmittedAt -ge $latestReviewRequestAt)
-    $approvedFeedbackNeedsAction = $latestHumanReview -and
-        $latestHumanReview.State -eq "COMMENTED" -and $latestHumanReview.BodyKind -eq "actionable"
-    $reviewRequestedAfterReview = $latestHumanReview -and $latestReviewRequestAt -and
-        $latestReviewRequestAt -gt $latestHumanReview.SubmittedAt
+    $latestReviewerCommentIsCurrent = $ownershipReview -and
+        $ownershipReview.State -eq "COMMENTED" -and
+        (-not $latestReviewRequestAt -or $ownershipReview.SubmittedAt -ge $latestReviewRequestAt)
+    $approvedFeedbackNeedsAction = $ownershipReview -and
+        $ownershipReview.State -eq "COMMENTED" -and $ownershipReview.BodyKind -eq "actionable"
+    $reviewRequestedAfterReview = $ownershipReview -and $latestReviewRequestAt -and
+        $latestReviewRequestAt -gt $ownershipReview.SubmittedAt
+    if ($reviewDecision -eq "APPROVED" -and -not $reviewRequestedAfterReview) {
+        foreach ($request in $humanReviewRequests) {
+            if (-not $request.Login -or -not $request.RequestedAt) {
+                continue
+            }
+
+            $requestedReviewerReview = $humanReviews |
+                Where-Object { $_.Login -eq $request.Login } |
+                Select-Object -First 1
+            if ($requestedReviewerReview -and $request.RequestedAt -gt $requestedReviewerReview.SubmittedAt) {
+                $reviewRequestedAfterReview = $true
+                break
+            }
+        }
+    }
     $reviewerRescueAfterDays = [int]$Settings.reviewerRescueAfterDays
 
     $bucket = "ReviewNow"
@@ -2337,7 +2382,7 @@ function Get-Classification {
         $blockers.Add("The pull request is explicitly waiting for CI to be rerun.")
     }
     elseif ($reviewDecision -eq "CHANGES_REQUESTED" -or
-        ($latestHumanReview -and $latestHumanReview.State -eq "CHANGES_REQUESTED")) {
+        ($ownershipReview -and $ownershipReview.State -eq "CHANGES_REQUESTED")) {
         if ($authorRespondedAfterReview) {
             $reasonCodes.Add("author-responded")
             $reasonCodes.Add("roundtrip-waiting")
@@ -2366,8 +2411,8 @@ function Get-Classification {
             $bucket = "WaitingOnAuthor"
             $nextActor = "author"
             $reasonCodes.Add("changes-requested")
-            if ($latestHumanReview) {
-                $waitingSince = $latestHumanReview.SubmittedAt
+            if ($ownershipReview) {
+                $waitingSince = $ownershipReview.SubmittedAt
             }
         }
     }
@@ -2416,7 +2461,7 @@ function Get-Classification {
         ($reviewDecision -ne "APPROVED" -or $approvedFeedbackNeedsAction)) {
         $reasonCodes.Add("author-responded")
         $reasonCodes.Add("roundtrip-waiting")
-        if ($latestHumanReview.State -eq "COMMENTED") {
+        if ($ownershipReview.State -eq "COMMENTED") {
             $reasonCodes.Add("reviewer-commented")
         }
         if ($headChangedAfterReview) {
@@ -2435,11 +2480,12 @@ function Get-Classification {
             $nextActor = "human reviewer"
         }
     }
-    elseif ($latestReviewerCommentIsCurrent) {
+    elseif ($latestReviewerCommentIsCurrent -and
+        ($reviewDecision -ne "APPROVED" -or $approvedFeedbackNeedsAction)) {
         $bucket = "WaitingOnAuthor"
         $nextActor = "author"
         $reasonCodes.Add("reviewer-commented")
-        $waitingSince = $latestHumanReview.SubmittedAt
+        $waitingSince = $ownershipReview.SubmittedAt
     }
     elseif ($humanReviewRequestCount -gt 0) {
         $reasonCodes.Add("review-requested")
@@ -2478,7 +2524,7 @@ function Get-Classification {
         $bucket = "ReviewNow"
         $nextActor = "human reviewer"
         $reasonCodes.Add("review-required")
-        $waitingSince = $latestHumanReview.SubmittedAt
+        $waitingSince = $ownershipReview.SubmittedAt
     }
 
     if ($bucket -eq "ReviewNow" -and $checkState -eq "Pending") {

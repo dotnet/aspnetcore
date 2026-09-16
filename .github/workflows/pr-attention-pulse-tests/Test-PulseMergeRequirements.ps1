@@ -472,3 +472,4 @@ if ($failures.Count -gt 0)
 {
     throw "$($failures.Count) merge requirement cases failed."
 }
+& (Join-Path $PSScriptRoot "Test-PulseCommentCoverage.ps1") -BaselineSupportRoot $BaselineSupportRoot

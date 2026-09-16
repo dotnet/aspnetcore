@@ -79,6 +79,9 @@ The bounded pass does not identify inline-thread authors or read their text, so 
 requires verification when current and unresolved. For merge candidates only, a reviewer's later
 approval of the current head supersedes that same reviewer's earlier top-level concern. It does not
 clear another participant's concern or any current unresolved thread.
+An empty review body is not itself clearance: assess the complete bounded discussion context.
+Resolved or outdated-only threads can be clear; current unresolved threads or missing/incomplete
+evidence require verification. Do not invent an author blocker from empty text.
 
 The same queue also includes an additive community inbox that operates on the full scoped inventory,
 not just the review digest. The inbox exposes:
@@ -249,9 +252,13 @@ Classification precedence is evidence-driven:
 - A current non-author `COMMENTED` review routes to `WaitingOnAuthor` unless the author responded or
   pushed afterward. Even with aggregate `APPROVED`, explicit actionable review-body feedback takes
   this route; an empty or unknown review body instead requires bounded discussion interpretation.
-- A newer review request after reviewer feedback returns ownership to a reviewer.
-- A subsequent approval supersedes the preceding feedback roundtrip. Author thanks after approval
-  and a head differing from an older approval do not independently invalidate GitHub's approval.
+- A newer review request after reviewer feedback returns ownership to a reviewer. Another person's
+  later review does not satisfy a renewed request to that reviewer.
+- With aggregate `APPROVED`, keep each reviewer's outstanding feedback until that same reviewer
+  approves the feedback's commit or the current head. Another reviewer's approval or a later
+  informational review does not settle it. Use the latest outstanding actionable feedback for
+  response, push, and re-request ownership; retain other unknown feedback for merge verification.
+  Author thanks after approval and a later push do not independently reopen a settled roundtrip.
 - Author-authored review records do not count as reviewer activity.
 - Unresolved review threads alone do not determine the next actor.
 
