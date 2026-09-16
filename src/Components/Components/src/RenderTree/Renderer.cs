@@ -37,8 +37,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
-    // Error boundaries for which we've queued, but not yet executed, a render that forcibly discards
-    // their subtree. See HandleExceptionViaErrorBoundary.
     private readonly HashSet<int> _errorBoundariesWithPendingSubtreeClear = new();
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
