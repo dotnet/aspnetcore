@@ -109,6 +109,9 @@ internal static class ServerOptionsConfigurationBinder
         }
 
         var rateKeys = GetKeys(section);
+
+        // Seeded with the current value so a section can specify just one half; MinDataRate is immutable and its
+        // constructor needs both, so a half left unset with no current value to fall back on is an error.
         var bytesPerSecond = currentValue?.BytesPerSecond;
         var gracePeriod = currentValue?.GracePeriod;
 

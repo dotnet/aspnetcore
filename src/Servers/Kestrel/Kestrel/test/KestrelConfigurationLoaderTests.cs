@@ -2252,20 +2252,24 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
-    public void MinDataRatePartiallySpecifiedInConfigKeepsRemainingValue()
+    public void MinDataRateWithOnlyOneHalfInConfigKeepsTheOtherHalf()
     {
         var serverOptions = CreateServerOptions();
         var originalGracePeriod = serverOptions.Limits.MinRequestBodyDataRate.GracePeriod;
+        var originalBytesPerSecond = serverOptions.Limits.MinResponseDataRate.BytesPerSecond;
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Limits:MinRequestBodyDataRate:BytesPerSecond", "480"),
+            new KeyValuePair<string, string>("Limits:MinResponseDataRate:GracePeriod", "00:00:20"),
         }).Build();
 
         serverOptions.Configure(config).Load();
 
         Assert.Equal(480, serverOptions.Limits.MinRequestBodyDataRate.BytesPerSecond);
         Assert.Equal(originalGracePeriod, serverOptions.Limits.MinRequestBodyDataRate.GracePeriod);
+        Assert.Equal(TimeSpan.FromSeconds(20), serverOptions.Limits.MinResponseDataRate.GracePeriod);
+        Assert.Equal(originalBytesPerSecond, serverOptions.Limits.MinResponseDataRate.BytesPerSecond);
     }
 
     [Fact]
@@ -2281,6 +2285,21 @@ public class KestrelConfigurationLoaderTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Contains("Limits:MinRequestBodyDataRate:GracePeriod", ex.Message);
+    }
+
+    [Fact]
+    public void MinDataRateWithoutExistingValueRequiresBytesPerSecond()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Limits.MinResponseDataRate = null;
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Limits:MinResponseDataRate:GracePeriod", "00:00:20"),
+        }).Build();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+        Assert.Contains("Limits:MinResponseDataRate:BytesPerSecond", ex.Message);
     }
 
     [Fact]
