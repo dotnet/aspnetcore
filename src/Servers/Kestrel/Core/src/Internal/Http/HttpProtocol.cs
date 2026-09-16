@@ -643,6 +643,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         }
     }
 
+    // This long-running method currently performs better with AggressiveOptimization, see https://github.com/dotnet/runtime/issues/133672.
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         while (_keepAlive)
