@@ -242,7 +242,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         app.MapPost("/protected", EnforceCsrfProtected);
@@ -307,7 +307,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         app.UseCors();
@@ -361,7 +361,7 @@ public class CsrfProtectionIntegrationTests
 
         app.UseCors();
         // Inline-policy variant: RequireCors(lambda) builds a CorsPolicy and attaches it as ICorsPolicyMetadata.
-        app.MapPost("/webhook", EnforceCsrfProtected).RequireCors(p => p.WithOrigins("https://stripe.example.com"));
+        app.MapPost("/webhook", EnforceCsrfProtected).RequireCors(p => p.WithOrigins("https://stripe.example.com").AllowCredentials());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -432,7 +432,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         app.UseRouting();
@@ -456,7 +456,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         app.UseCors();
@@ -1660,7 +1660,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddPolicy("Trusted", p => p.WithOrigins("https://trusted.example.com")));
+            options.AddPolicy("Trusted", p => p.WithOrigins("https://trusted.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         app.UseStatusCodePagesWithReExecute("/not-found");
