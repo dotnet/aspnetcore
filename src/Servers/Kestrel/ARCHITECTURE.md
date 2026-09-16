@@ -54,9 +54,10 @@ flowchart TB
         StreamPipeline -. "HTTPS on stream transport" .-> TlsMiddleware
         StreamPipeline --> ProtocolSelection
         TlsMiddleware --> ProtocolSelection
-        MultiplexedPipeline --> Http3
+        MultiplexedPipeline --> ProtocolSelection
         ProtocolSelection --> Http1
         ProtocolSelection --> Http2
+        ProtocolSelection --> Http3
         Http1 --> Features
         Http2 --> Features
         Http3 --> Features
@@ -110,17 +111,18 @@ Directory location alone does not transfer ownership. The [`Hosting server abstr
 
 ## Startup, Binding, and the Hosting Handoff
 
-`UseKestrelCore` registers `KestrelServerImpl`, core options and diagnostics services, the sockets transport, the Kestrel memory-pool factory, and the Windows named-pipe transport when applicable. `UseKestrel` adds the full HTTPS configuration service and conditionally registers the QUIC transport when the runtime reports QUIC support. Other transports can be registered additively and can claim selected endpoint types.
+`UseKestrelCore` registers `KestrelServerImpl`, core options and diagnostics services, the sockets transport, the Kestrel memory-pool factory, the HTTPS configuration service, and the Windows named-pipe transport when applicable. `UseKestrel` builds on that composition: it chains `UseKestrelHttpsConfiguration`, which supplies the initializer that enables full HTTPS configuration, and conditionally registers the QUIC transport when the runtime reports QUIC support. A reduced `UseKestrelCore` application can opt into HTTPS configuration explicitly. Other transports can be registered additively and can claim selected endpoint types.
 
 When Hosting starts the web workload, it passes its application adapter to `KestrelServerImpl.StartAsync`. Kestrel then:
 
 1. Validates server limits and starts its heartbeat.
 2. Loads code-backed and configuration-backed endpoints.
 3. Resolves the precedence between explicit Kestrel endpoints and addresses supplied through `IServerAddressesFeature`.
-4. Applies endpoint defaults and HTTPS defaults.
-5. Builds a stream connection pipeline for HTTP/1.1 and HTTP/2, a multiplexed connection pipeline for HTTP/3, or both when an endpoint supports multiple protocol families.
-6. Selects a registered listener factory that supports the endpoint and binds it.
-7. Starts an accept loop and tracks the listener and its connections for reload and shutdown.
+4. Builds a stream connection pipeline for HTTP/1.1 and HTTP/2, a multiplexed connection pipeline for HTTP/3, or both when an endpoint supports multiple protocol families.
+5. Selects a registered listener factory that supports the endpoint and binds it.
+6. Starts an accept loop and tracks the listener and its connections for reload and shutdown.
+
+Endpoint defaults are applied while endpoints are constructed: during `Listen` calls for code-backed endpoints, during configuration loading for configuration-backed endpoints, and while hosting addresses are converted to endpoints. Applicable `UseHttps` overloads apply HTTPS defaults at that point; overloads that accept explicit TLS options or a handshake callback intentionally bypass configured HTTPS defaults.
 
 Listener factories are considered in reverse registration order. A factory can implement `IConnectionListenerFactorySelector` to claim only compatible endpoints. This allows named pipes, DirectTls, sockets, and application-provided transports to coexist without making one factory responsible for every endpoint.
 
@@ -145,8 +147,9 @@ sequenceDiagram
     Protocol->>App: CreateContext(request features)
     Protocol->>App: ProcessRequestAsync
     App-->>Protocol: Application completed or failed
-    Protocol->>Protocol: Complete response, callbacks, and request cleanup
+    Protocol->>Protocol: Complete response and callbacks
     Protocol->>App: DisposeContext
+    Protocol->>Protocol: Drain body and cleanup or pool stream state
 ```
 
 Hosting owns construction of the application pipeline and `HttpContext`. Its `HostingApplication` creates or reinitializes a context from Kestrel's feature collection, begins request diagnostics, invokes the `RequestDelegate`, and performs context cleanup. Kestrel owns accepting the connection, parsing the HTTP request, publishing server capabilities, invoking the adapter at the correct protocol transition, and completing the wire-level request and response lifetime.
@@ -206,9 +209,9 @@ Stopping an HTTP/1.1 connection disables the next keep-alive request and cancels
 
 HTTP/2 requests can run concurrently, but the connection remains the owner of shared framing and connection windows. Stream and connection flow-control windows are tracked separately. Consuming request data can release capacity to both levels; aborting a stream returns its unread contribution to the connection window without continuing stream-level window updates.
 
-Completed streams remain tracked while unread request data is drained, until a drain deadline expires, or until bounded drain tracking evicts older completed streams. After removal from active tracking, a stream is eligible for Kestrel's HTTP/2 stream pool when its response completed without a connection abort and pool capacity is available. Reinitialization resets stream features, flow control, body pipes, output state, and request state before reuse.
+Completed streams remain tracked while unread request data is drained, until a drain deadline expires, or until bounded drain tracking evicts older completed streams. After removal from active tracking, a stream is eligible for Kestrel's HTTP/2 stream pool when its response has completed, its inherited request-abort flag is clear, and pool capacity is available. A stream-local abort can therefore prevent reuse even when the HTTP/2 connection remains open. Reinitialization resets stream features, flow control, body pipes, output state, and request state before reuse.
 
-Server-initiated graceful shutdown begins two-stage GOAWAY processing when requests remain active. Kestrel sends an initial GOAWAY with the maximum permitted stream identifier and continues accepting request streams that may have been created before the client observed that frame. When active client streams reach zero, Kestrel closes admission, sends a final GOAWAY using the highest opened stream identifier, and closes the connection. When no requests are active at shutdown initiation, Kestrel skips the initial GOAWAY and sends only the final one. Connection errors and shutdown escalation use protocol-specific error codes and abort remaining streams.
+Server-initiated graceful shutdown begins two-stage GOAWAY processing when requests remain active. Kestrel sends an initial GOAWAY with the maximum permitted stream identifier and continues accepting request streams that may have been created before the client observed that frame. When the connection loop resumes and observes that active client streams have reached zero, it closes admission, sends a final GOAWAY using the highest opened stream identifier, and closes the connection. Stream completion establishes this condition but does not itself describe the loop's wakeup mechanism. When no requests are active at shutdown initiation, Kestrel skips the initial GOAWAY and sends only the final one. Connection errors and shutdown escalation use protocol-specific error codes and abort remaining streams.
 
 ### HTTP/3
 
@@ -218,7 +221,7 @@ Kestrel owns HTTP/3 frame ordering, pseudo-header validation, control-stream rul
 
 When an application completes without reading the full request body, Kestrel can abort the read direction with an HTTP/3 no-error code while completing the response direction. Request finalization awaits application completion, attempts frame-writer completion, marks the HTTP stream completed and waits for in-flight abort side effects, drains and disposes the transport stream, removes active tracking, and only then permits eligible transport and HTTP stream state to be reused.
 
-Server-initiated graceful shutdown begins two-stage GOAWAY processing when requests remain active. Kestrel sends an initial GOAWAY with the maximum permitted request-stream identifier and rejects newly arriving request streams. When active request streams reach zero, the accept loop exits, Kestrel sends a final GOAWAY with the next request-stream identifier beyond the highest opened stream, and closes the connection. When no request stream has been opened, that cutoff is stream 0; when no requests are active at shutdown initiation, Kestrel skips the initial GOAWAY and sends only the final one. Critical control-stream closure, connection errors, and shutdown escalation abort the connection and its active streams with HTTP/3 error semantics.
+Server-initiated graceful shutdown begins two-stage GOAWAY processing when requests remain active. Kestrel currently uses the maximum QUIC variable-length integer (`2^62 - 1`) as the initial GOAWAY sentinel and rejects newly arriving request streams. When the accept loop resumes and observes that active request streams have reached zero, it exits, sends a final GOAWAY with the next request-stream identifier beyond the highest opened stream, and closes the connection. Request completion establishes this condition but does not itself guarantee that an outstanding transport accept immediately completes. When no request stream has been opened, the final cutoff is stream 0; when no requests are active at shutdown initiation, Kestrel skips the initial GOAWAY and sends only the final one. Critical control-stream closure, connection errors, peer closure, and shutdown escalation use their respective HTTP/3 or transport paths to finish or abort the connection and its active streams.
 
 ## Request Processing and Feature Adaptation
 
@@ -280,7 +283,7 @@ The Hosting cancellation token bounds the graceful connection wait, not all tear
 Kestrel uses pooling to reduce allocation on hot paths, but pooled state is reusable only after its previous owner has finished all reads, writes, callbacks, cancellation, abort handling, and disposal.
 
 - HTTP/1.1 reuses one `Http1Connection` across sequential requests and resets request features and mutable state between them.
-- HTTP/2 can pool `Http2Stream` objects after removal from active tracking when the response completed without a connection abort and pool capacity is available. Drain completion, expiry, or bounded drain-queue eviction can trigger removal.
+- HTTP/2 can pool `Http2Stream` objects after removal from active tracking when the response has completed, the inherited request-abort flag is clear, and pool capacity is available. A stream-local abort can prevent reuse without aborting the HTTP/2 connection. Drain completion, expiry, or bounded drain-queue eviction can trigger removal.
 - HTTP/3 can retain `Http3Stream` state through a transport stream's persistent-state feature only when both the HTTP stream and reusable QUIC stream adapter completed cleanly. The underlying `QuicStream` itself is disposed and is not reused.
 - Transports create or obtain memory pools for their pipes. Kestrel Core consumes the pool exposed through connection features rather than assuming one process-wide pool.
 - Cancellation sources, feature collections, headers, output producers, and body adapters are reset only when their owning connection or stream state machine has made reuse safe.
@@ -319,7 +322,7 @@ The `shared` directory also contains source compiled into multiple Kestrel proje
 
 ## Trust and External Boundaries
 
-Kestrel treats transport input, HTTP framing, headers, and body bytes as peer-controlled data. Parsing and protocol state machines enforce syntax, ordering, size, rate, stream-count, and lifecycle limits before publishing stable request features to the application. Limits are layered: transport buffering, HTTP message limits, protocol flow control, and application policy are related but not interchangeable.
+Kestrel treats transport input, HTTP framing, headers, and body bytes as peer-controlled data. Enforcement is staged rather than completed up front. Before calling `IHttpApplication<TContext>.CreateContext`, Kestrel validates the initial request line and headers, including header-size limits, and applies stream-admission checks. Request-body size limits and minimum data rates are then enforced as body I/O progresses, so they can end a request that has already started executing, and protocol ordering, trailer validation, and lifecycle limits continue to be enforced through request processing and cleanup. Limits are layered: transport buffering, HTTP message limits, protocol flow control, and application policy are related but not interchangeable.
 
 TLS certificate selection, SNI callbacks, connection middleware, and `IHttpApplication` execution can invoke application code. Kestrel owns when those callbacks run and how their failures affect the connection, but it does not own the callback's application policy or external resources.
 
@@ -349,7 +352,7 @@ Kestrel consumes runtime sockets, `SslStream`, TLS contexts, and `System.Net.Qui
 | In-memory functional tests | [`test/InMemory.FunctionalTests`](test/InMemory.FunctionalTests) | Kestrel HTTP protocol and application interaction over controlled test transports, including malformed frames, timeouts, shutdown, and request/response behavior; these tests do not establish operating-system transport or real QUIC behavior |
 | Socket binding and functional tests | [`test/Sockets.BindTests`](test/Sockets.BindTests) and [`test/Sockets.FunctionalTests`](test/Sockets.FunctionalTests) | Real socket listener, binding, transport, and shared functional behavior |
 | Interoperability tests | [`test/Interop.FunctionalTests`](test/Interop.FunctionalTests) | Behavior with real HTTP clients, HTTP/2 conformance tooling, and supported HTTP/3 runtime environments |
-| Transport-specific tests | [`Transport.Sockets`](Transport.Sockets), [`Transport.NamedPipes`](Transport.NamedPipes), [`Transport.Quic`](Transport.Quic), and [`Transport.DirectTls`](Transport.DirectTls) test directories | Platform adapter, listener, pipe, handshake, stream, disposal, and transport-specific failure behavior |
+| Transport-specific tests | [`Transport.NamedPipes/test`](Transport.NamedPipes/test), [`Transport.Quic/test`](Transport.Quic/test), and [`Transport.DirectTls/test`](Transport.DirectTls/test); the sockets transport is covered by the socket binding and functional test projects above rather than a transport-local test directory | Platform adapter, listener, pipe, handshake, stream, disposal, and transport-specific failure behavior |
 | Microbenchmarks | [`perf/Microbenchmarks`](perf/Microbenchmarks) | Allocation, parser, header, framing, scheduling, and in-memory throughput characteristics; not end-to-end correctness |
 | Stress application | [`stress`](stress) | Sustained concurrency, protocol combinations, cancellation, and resource behavior under load |
 | Samples | [`samples`](samples) | Illustrative compositions and manual experimentation; not compatibility or correctness proof |
@@ -372,7 +375,7 @@ No single layer proves the whole server. In-memory tests can faithfully exercise
 | Change or question | Primary owner |
 | --- | --- |
 | Kestrel DI registration, full versus core composition, or configuration loading | [`Kestrel/Kestrel`](Kestrel) |
-| Endpoint precedence, binding, reload, server limits, connection tracking, or shutdown | [`Kestrel/Core`](Core) |
+| Endpoint precedence, binding, reload, connection or HTTPS middleware, server limits, connection tracking, or shutdown | [`Kestrel/Core`](Core) |
 | TCP, Unix socket, or file-handle I/O | [`Transport.Sockets`](Transport.Sockets) |
 | Windows named-pipe behavior | [`Transport.NamedPipes`](Transport.NamedPipes) |
 | Experimental native DirectTls endpoint behavior | [`Transport.DirectTls`](Transport.DirectTls) |
@@ -380,7 +383,7 @@ No single layer proves the whole server. In-memory tests can faithfully exercise
 | HTTP/1.1 parsing, keep-alive, chunking, upgrade, or sequential request reuse | [`Core/src/Internal/Http`](Core/src/Internal/Http) |
 | HTTP/2 frames, HPACK, flow control, streams, reset, or GOAWAY | [`Core/src/Internal/Http2`](Core/src/Internal/Http2) |
 | HTTP/3 frames, QPACK, control streams, request streams, WebTransport integration, or GOAWAY | [`Core/src/Internal/Http3`](Core/src/Internal/Http3) |
-| General connection or listener abstraction | [`Connections.Abstractions`](../Connections.Abstractions) |
+| General connection or listener abstraction | [`src/Servers/Connections.Abstractions`](../Connections.Abstractions) |
 | `IServer`, application startup, `HttpContext` creation, request diagnostics, host shutdown deadline, or request services | [`src/Hosting`](../../Hosting) and [`src/Http`](../../Http) |
 | Generic HTTP feature interface or `HttpContext` behavior | [`src/Http`](../../Http) |
 | HTTP.sys server behavior | [`src/Servers/HttpSys`](../HttpSys) |
