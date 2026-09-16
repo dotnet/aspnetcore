@@ -255,18 +255,44 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
     /// </summary>
     private static bool ConditionBlockReturnsOnIsInteractive(IOperation operation, JSInteropAnalyzerState state)
     {
-        if (operation is IReturnOperation)
+        if (operation.Syntax is StatementSyntax statementSyntax)
+        {
+            var semanticModel = state.BlockContext.Compilation.GetSemanticModel(statementSyntax.SyntaxTree);
+            var controlFlow = semanticModel.AnalyzeControlFlow(statementSyntax);
+            if (controlFlow.Succeeded)
+            {
+                return !controlFlow.EndPointIsReachable;
+            }
+        }
+
+        return OperationAlwaysTerminates(operation);
+    }
+
+    private static bool OperationAlwaysTerminates(IOperation operation)
+    {
+        if (operation is IReturnOperation || operation is IThrowOperation)
         {
             return true;
         }
-#pragma warning disable CS0618
-        foreach (var childOperation in operation.Children)
-#pragma warning restore CS0618
+
+        if (operation is IBlockOperation blockOperation)
         {
-            if (ConditionBlockReturnsOnIsInteractive(childOperation, state))
+            foreach (var childOperation in blockOperation.Operations)
             {
-                return true;
+                if (OperationAlwaysTerminates(childOperation))
+                {
+                    return true;
+                }
             }
+
+            return false;
+        }
+
+        if (operation is IConditionalOperation conditionalOperation
+            && conditionalOperation.WhenFalse is not null)
+        {
+            return OperationAlwaysTerminates(conditionalOperation.WhenTrue)
+                && OperationAlwaysTerminates(conditionalOperation.WhenFalse);
         }
 
         return false;

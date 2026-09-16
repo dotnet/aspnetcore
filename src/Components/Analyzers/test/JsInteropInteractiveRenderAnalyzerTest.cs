@@ -758,6 +758,154 @@ namespace ConsoleApplication1
     }
 
     [Fact]
+    public void JSInvokeAfterPartialReturnInNonInteractiveBranchShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (!RendererInfo.IsInteractive)
+            {
+                if (RandomCheck())
+                {
+                    return;
+                }
+            }
+
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+
+        private static bool RandomCheck() => false;
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 23, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeAfterNestedIfElseThatAlwaysReturnsShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (!RendererInfo.IsInteractive)
+            {
+                if (RandomCheck())
+                {
+                    return;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+        }
+
+        private static bool RandomCheck() => true;
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInvokeAfterIfElseIfNotAllBranchesReturnShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (!RendererInfo.IsInteractive)
+            {
+                if (RandomCheck())
+                {
+                    return;
+                }
+                else if (OtherCheck())
+                {
+                    return;
+                }
+            }
+
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+
+        private static bool RandomCheck() => false;
+        private static bool OtherCheck() => true;
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 27, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeAfterIfCheckThrowsShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (!RendererInfo.IsInteractive)
+            {
+                throw new InvalidOperationException();
+            }
+
+            await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
     public void JSInvokeAfterIfElseNonInteractiveCheckReturnsShouldThrowWarning()
     {
         var test = @"
