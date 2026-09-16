@@ -229,7 +229,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
 
     /// <summary>
     /// Sets the current synchronization context to this instance, invokes the <paramref name="callback"/>,
-    /// resets the synchronization context, and sets marks the builder as completed.
+    /// marks the builder as completed, and resets the synchronization context.
     /// </summary>
     private void InvokeWithThisAsCurrentSyncCtxThenSetResult<TState>(
         AsyncTaskMethodBuilder completion,
@@ -244,8 +244,16 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         }
         finally
         {
-            SetSynchronizationContext(original);
-            completion.SetResult();
+            try
+            {
+                // Complete the queue marker while this context is still current so that queued
+                // continuations are not inlined onto the caller's thread.
+                completion.SetResult();
+            }
+            finally
+            {
+                SetSynchronizationContext(original);
+            }
         }
     }
 

@@ -790,4 +790,41 @@ public class RendererSynchronizationContextTest
         // Assert
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void InvokeAsync_FuncTask_RestoresContextWhenQueuedWorkDoesNotFlowExecutionContext()
+    {
+        var context = new RendererSynchronizationContext();
+        var contextEntered = new ManualResetEventSlim();
+        var releaseContext = new ManualResetEventSlim();
+        var queuedWorkDone = new ManualResetEventSlim();
+        var callerDone = new ManualResetEventSlim();
+        SynchronizationContext original = null;
+        SynchronizationContext actual = null;
+
+        ThreadPool.UnsafeQueueUserWorkItem(_ =>
+        {
+            original = SynchronizationContext.Current;
+            _ = context.InvokeAsync(async () =>
+            {
+                contextEntered.Set();
+                Assert.True(releaseContext.Wait(Timeout), "timeout");
+                await Task.CompletedTask;
+            });
+
+            Assert.True(queuedWorkDone.Wait(Timeout), "timeout");
+            actual = SynchronizationContext.Current;
+            callerDone.Set();
+        }, null);
+
+        Assert.True(contextEntered.Wait(Timeout), "timeout");
+        using (ExecutionContext.SuppressFlow())
+        {
+            _ = context.InvokeAsync(queuedWorkDone.Set);
+        }
+
+        releaseContext.Set();
+        Assert.True(callerDone.Wait(Timeout), "timeout");
+        Assert.Same(original, actual);
+    }
 }
