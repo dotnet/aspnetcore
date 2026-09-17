@@ -718,12 +718,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => {
-      anchorMode = mode;
-      const atBottom = isViewportAtBottom();
-      bottomTracking.following = (mode & 2) !== 0 && atBottom;
-      bottomTracking.reached = atBottom;
-    },
+    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
