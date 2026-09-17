@@ -245,4 +245,54 @@ eval "set -- $(
         tr '\n' ' '
     )" '"$@"'
 
+distribution_url=$( sed -n 's/^distributionUrl=//p' "$APP_HOME/gradle/wrapper/gradle-wrapper.properties" |
+    sed -E 's/\\:/:/g; s#^([^:]*://)[^/@]*@#\1#; s/[?].*$//' )
+bootstrap_attempt=1
+bootstrap_max_attempts=3
+
+while [ "$bootstrap_attempt" -le "$bootstrap_max_attempts" ]
+do
+    bootstrap_output=$( mktemp "${TMPDIR:-/tmp}/gradle-bootstrap.XXXXXX" ) ||
+        die "Unable to create a temporary file for Gradle distribution bootstrap output."
+
+    warn "Gradle distribution bootstrap attempt $bootstrap_attempt of $bootstrap_max_attempts: $distribution_url"
+    if "$JAVACMD" "$@" --version >"$bootstrap_output" 2>&1
+    then
+        rm -f "$bootstrap_output"
+        break
+    fi
+
+    if grep -Eq 'UnknownHostException' "$bootstrap_output"
+    then
+    bootstrap_reason='hostname resolution failure'
+    elif grep -Eq 'ConnectException|SocketTimeoutException|Connection reset|Connection timed out|Read timed out|Premature EOF' "$bootstrap_output"
+    then
+    bootstrap_reason='transient connection failure'
+    elif grep -Eq 'HTTP response code: (408|429|5[0-9][0-9])' "$bootstrap_output"
+    then
+    bootstrap_reason='transient HTTP response'
+    elif grep -Eq 'Verification of Gradle distribution failed|does not match the expected checksum|distribution SHA-256 sum' "$bootstrap_output"
+    then
+        rm -f "$bootstrap_output"
+        die "Gradle distribution bootstrap checksum verification failed."
+    else
+        rm -f "$bootstrap_output"
+        die "Gradle distribution bootstrap failed with a non-transient error."
+    fi
+
+    rm -f "$bootstrap_output"
+    if [ "$bootstrap_attempt" -eq "$bootstrap_max_attempts" ]
+    then
+        die "Gradle distribution bootstrap failed after $bootstrap_max_attempts attempts due to transient network errors."
+    fi
+
+    case "$bootstrap_attempt" in
+      1) bootstrap_delay=2 ;;
+      *) bootstrap_delay=5 ;;
+    esac
+    warn "$bootstrap_reason acquiring Gradle distribution from $distribution_url; retrying in $bootstrap_delay seconds."
+    sleep "$bootstrap_delay"
+    bootstrap_attempt=$((bootstrap_attempt + 1))
+done
+
 exec "$JAVACMD" "$@"
