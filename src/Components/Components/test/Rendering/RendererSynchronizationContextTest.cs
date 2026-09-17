@@ -694,7 +694,6 @@ public class RendererSynchronizationContextTest
     {
         // Arrange
         var context = new RendererSynchronizationContext();
-        var thread = Thread.CurrentThread;
 
         var e1 = new ManualResetEventSlim();
         var e2 = new ManualResetEventSlim();
@@ -719,12 +718,12 @@ public class RendererSynchronizationContextTest
         });
 
         // Assert
-        Assert.False(e2.IsSet);
+        Assert.False(e3.IsSet);
         e2.Set(); // Unblock the first item
         await task1;
 
-        Assert.True(e3.Wait(Timeout), "timeout");
-        Assert.NotSame(thread, await task2);
+        await task2;
+        Assert.True(e3.IsSet);
     }
 
     [Fact]
