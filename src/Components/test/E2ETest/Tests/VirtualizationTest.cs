@@ -3051,6 +3051,35 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void Table_EndAnchor_AsyncProvider_AppendDuringRapidUserScroll_DoesNotReverseScrollDirection()
+    {
+        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
+        Browser.True(() => GetElementCount(container, ".table-scroll-item") > 0);
+
+        ScrollToBottomAndWait(container, js, ".table-scroll-item");
+
+        var initialScrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var result = ExecuteRapidUpwardScrollWithConcurrentAppends(container, js);
+        var maxBackwardJump = Convert.ToInt64(result["maxBackwardJump"], CultureInfo.InvariantCulture);
+        var backwardJumps = Convert.ToInt64(result["backwardJumps"], CultureInfo.InvariantCulture);
+        var placeholderFrames = Convert.ToInt64(result["placeholderFrames"], CultureInfo.InvariantCulture);
+        var minScrollHeight = Convert.ToInt64(result["minScrollHeight"], CultureInfo.InvariantCulture);
+        var sampleCount = Convert.ToInt64(result["sampleCount"], CultureInfo.InvariantCulture);
+
+        Assert.True(placeholderFrames > 0,
+            "Precondition failed: rapid scrolling should overlap an async provider request and render placeholders.");
+        Assert.True(maxBackwardJump <= 80,
+            $"Upward wheel scrolling must not jump backward by more than two item heights. " +
+            $"Backward jumps: {backwardJumps}, maximum: {maxBackwardJump}px. " +
+            $"Samples: [{result["backwardJumpSamples"]}]. Frames: {sampleCount}, placeholders: {placeholderFrames}, " +
+            $"initial scroll height: {initialScrollHeight}px, minimum scroll height: {minScrollHeight}px.");
+    }
+
+    [Fact]
     public void ItemsIncrementalScroll_DoesNotJumpToStartOrEnd()
     {
         // Before the fix, each ~100px scroll produced large jumps in both directions.
@@ -3178,7 +3207,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
-    private void ScrollToBottomAndWait(IWebElement container, IJavaScriptExecutor js)
+    private void ScrollToBottomAndWait(
+        IWebElement container,
+        IJavaScriptExecutor js,
+        string visibleItemSelector = ".item[data-index]")
     {
         Browser.True(() =>
         {
@@ -3197,13 +3229,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var found = js.ExecuteScript(@"
                 var c = arguments[0];
                 var cr = c.getBoundingClientRect();
-                var items = c.querySelectorAll('.item[data-index]');
+                var items = c.querySelectorAll(arguments[1]);
                 for (var i = 0; i < items.length; i++) {
                     var ir = items[i].getBoundingClientRect();
                     if (ir.bottom > cr.top + 1 && ir.top < cr.bottom - 1) return true;
                 }
                 return false;
-            ", container);
+            ", container, visibleItemSelector);
             return found is bool b && b;
         }, TimeSpan.FromSeconds(5), "Visible items should be rendered after scrolling to bottom");
     }
@@ -5428,6 +5460,86 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             }})();";
 
         return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    private Dictionary<string, object> ExecuteRapidUpwardScrollWithConcurrentAppends(
+        IWebElement container,
+        IJavaScriptExecutor js)
+    {
+        const int scrollCount = 8;
+        const int scrollDelta = 500;
+
+        js.ExecuteScript(@"
+            const container = arguments[0];
+            window.__tableScrollSamples = [];
+            window.__tableScrollSample = () => {
+                window.__tableScrollSamples.push({
+                    scrollTop: container.scrollTop,
+                    scrollHeight: container.scrollHeight,
+                    placeholders: container.querySelectorAll('.table-scroll-placeholder').length
+                });
+                window.__tableScrollAnimationFrame = requestAnimationFrame(window.__tableScrollSample);
+            };
+            window.__tableScrollAnimationFrame = requestAnimationFrame(window.__tableScrollSample);
+        ", container);
+
+        js.ExecuteScript(@"
+            const appendButton = document.getElementById('table-scroll-append');
+            [300, 900, 1500].forEach(delay => setTimeout(() => appendButton.click(), delay));
+        ");
+
+        var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
+        var scrollActions = new Actions(Browser);
+        for (var i = 0; i < scrollCount; i++)
+        {
+            scrollActions
+                .ScrollFromOrigin(scrollOrigin, 0, -scrollDelta)
+                .Pause(TimeSpan.FromMilliseconds(20));
+        }
+        scrollActions.Perform();
+
+        Browser.Contains("Appended item 502", () => Browser.Exists(By.Id("table-scroll-status")).Text);
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        return (Dictionary<string, object>)js.ExecuteScript(@"
+            cancelAnimationFrame(window.__tableScrollAnimationFrame);
+
+            const samples = window.__tableScrollSamples;
+            let backwardJumps = 0;
+            let maxBackwardJump = 0;
+            let minScrollHeight = samples.length > 0 ? samples[0].scrollHeight : 0;
+            let placeholderFrames = 0;
+            const backwardJumpSamples = [];
+
+            for (let i = 0; i < samples.length; i++) {
+                minScrollHeight = Math.min(minScrollHeight, samples[i].scrollHeight);
+                if (samples[i].placeholders > 0) {
+                    placeholderFrames++;
+                }
+
+                if (i === 0) {
+                    continue;
+                }
+
+                const delta = samples[i].scrollTop - samples[i - 1].scrollTop;
+                if (delta > 5) {
+                    backwardJumps++;
+                    maxBackwardJump = Math.max(maxBackwardJump, delta);
+                    if (backwardJumpSamples.length < 20) {
+                        backwardJumpSamples.push(delta);
+                    }
+                }
+            }
+
+            return {
+                backwardJumps,
+                maxBackwardJump,
+                minScrollHeight,
+                placeholderFrames,
+                sampleCount: samples.length,
+                backwardJumpSamples: backwardJumpSamples.join(',')
+            };
+        ");
     }
 
     private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)
