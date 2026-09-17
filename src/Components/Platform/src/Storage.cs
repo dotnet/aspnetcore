@@ -13,7 +13,6 @@ public sealed class Storage : IAsyncDisposable
     private readonly IJSRuntime _jsRuntime;
     private readonly string _propertyName;
     private Task<IJSObjectReference>? _referenceTask;
-    private bool _disposed;
 
     internal Storage(IJSRuntime jsRuntime, string propertyName)
     {
@@ -86,15 +85,12 @@ public sealed class Storage : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
+        // Window owns this instance and hands the same one to every caller, so releasing the
+        // reference must not poison it. A later call acquires a new reference.
         var referenceTask = _referenceTask;
+        _referenceTask = null;
 
         if (referenceTask is null || referenceTask.IsCanceled || referenceTask.IsFaulted)
         {
@@ -106,9 +102,5 @@ public sealed class Storage : IAsyncDisposable
     }
 
     private Task<IJSObjectReference> GetReferenceAsync()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        return _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
-    }
+        => _referenceTask ??= _jsRuntime.GetValueAsync<IJSObjectReference>(_propertyName).AsTask();
 }

@@ -68,7 +68,7 @@ public sealed class Window : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (_disposed)
         {

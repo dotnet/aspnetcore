@@ -70,17 +70,34 @@ public class StorageTest
     }
 
     [Fact]
-    public async Task DisposeAsync_DisposesReferenceAndRejectsFurtherCalls()
+    public async Task ScopeDisposal_DisposesTheAcquiredReference()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+
+        await using (provider)
+        {
+            await provider.GetRequiredService<IBrowserPlatform>().Window.LocalStorage.GetLengthAsync();
+        }
+
+        Assert.True(jsRuntime.ObjectReference.Disposed);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_ReleasesTheReferenceAndAllowsReacquisition()
     {
         var jsRuntime = new RecordingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
         var storage = provider.GetRequiredService<IBrowserPlatform>().Window.LocalStorage;
         await storage.GetLengthAsync();
 
-        await storage.DisposeAsync();
+        await ((IAsyncDisposable)storage).DisposeAsync();
 
         Assert.True(jsRuntime.ObjectReference.Disposed);
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await storage.GetLengthAsync());
+
+        await storage.GetLengthAsync();
+
+        Assert.Equal(2, jsRuntime.GetValueCallCount);
     }
 
     [Fact]
@@ -90,7 +107,7 @@ public class StorageTest
         await using var provider = CreateServiceProvider(jsRuntime);
         var storage = provider.GetRequiredService<IBrowserPlatform>().Window.LocalStorage;
 
-        await storage.DisposeAsync();
+        await ((IAsyncDisposable)storage).DisposeAsync();
 
         Assert.Equal(0, jsRuntime.GetValueCallCount);
     }

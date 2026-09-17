@@ -14,6 +14,6 @@ internal sealed class BrowserPlatform : IBrowserPlatform, IAsyncDisposable
 
     public ValueTask DisposeAsync()
     {
-        return Window.DisposeAsync();
+        return ((IAsyncDisposable)Window).DisposeAsync();
     }
 }

@@ -3,14 +3,12 @@ Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
 Microsoft.AspNetCore.Components.Platform.Storage
 Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Platform.Storage.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
 Microsoft.AspNetCore.Components.Platform.Storage.GetLengthAsync() -> System.Threading.Tasks.ValueTask<uint>
 Microsoft.AspNetCore.Components.Platform.Storage.KeyAsync(uint index) -> System.Threading.Tasks.ValueTask<string?>
 Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Window
-Microsoft.AspNetCore.Components.Platform.Window.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!)
 Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
