@@ -71,6 +71,69 @@ goto fail
 @rem Setup the command line
 
 
+set BOOTSTRAP_ATTEMPT=1
+set BOOTSTRAP_MAX_ATTEMPTS=3
+set BOOTSTRAP_OUTPUT=%TEMP%\gradle-bootstrap-%RANDOM%%RANDOM%.log
+for /f "tokens=1,* delims==" %%i in ('findstr /b "distributionUrl=" "%APP_HOME%\gradle\wrapper\gradle-wrapper.properties"') do set DISTRIBUTION_URL=%%j
+for /f "tokens=2 delims=/" %%i in ("%DISTRIBUTION_URL%") do set DISTRIBUTION_ENDPOINT=%%i
+for /f "tokens=1,2 delims=@" %%i in ("%DISTRIBUTION_ENDPOINT%") do if not "%%j"=="" set DISTRIBUTION_ENDPOINT=%%j
+
+:bootstrap
+echo Gradle distribution bootstrap attempt %BOOTSTRAP_ATTEMPT% of %BOOTSTRAP_MAX_ATTEMPTS%: %DISTRIBUTION_ENDPOINT%
+call :runBootstrap
+set BOOTSTRAP_EXIT_CODE=%ERRORLEVEL%
+if %BOOTSTRAP_EXIT_CODE% equ 0 goto executeGradle
+
+findstr /i /c:"UnknownHostException" "%BOOTSTRAP_OUTPUT%" >NUL
+if not errorlevel 1 (
+    set "BOOTSTRAP_REASON=hostname resolution failure"
+    goto bootstrapTransientFailure
+)
+findstr /i /c:"ConnectException" /c:"SocketTimeoutException" /c:"Connection reset" /c:"Connection timed out" /c:"Read timed out" /c:"Premature EOF" "%BOOTSTRAP_OUTPUT%" >NUL
+if not errorlevel 1 (
+    set "BOOTSTRAP_REASON=transient connection failure"
+    goto bootstrapTransientFailure
+)
+findstr /i /r /c:"HTTP response code: 408" /c:"HTTP response code: 429" /c:"HTTP response code: 5[0-9][0-9]" "%BOOTSTRAP_OUTPUT%" >NUL
+if not errorlevel 1 (
+    set "BOOTSTRAP_REASON=transient HTTP response"
+    goto bootstrapTransientFailure
+)
+findstr /i /c:"Verification of Gradle distribution failed" /c:"does not match the expected checksum" /c:"distribution SHA-256 sum" "%BOOTSTRAP_OUTPUT%" >NUL
+if not errorlevel 1 (
+    goto bootstrapChecksumFailure
+)
+goto bootstrapFail
+
+:bootstrapTransientFailure
+if %BOOTSTRAP_ATTEMPT% geq %BOOTSTRAP_MAX_ATTEMPTS% goto bootstrapRetryExhausted
+if %BOOTSTRAP_ATTEMPT% equ 1 (set BOOTSTRAP_DELAY=2) else (set BOOTSTRAP_DELAY=5)
+echo %BOOTSTRAP_REASON% acquiring Gradle distribution from %DISTRIBUTION_ENDPOINT%; retrying in %BOOTSTRAP_DELAY% seconds.
+timeout /t %BOOTSTRAP_DELAY% /nobreak >NUL
+set /a BOOTSTRAP_ATTEMPT+=1
+goto bootstrap
+
+:bootstrapChecksumFailure
+del "%BOOTSTRAP_OUTPUT%" >NUL 2>&1
+echo Gradle distribution bootstrap checksum verification failed. 1>&2
+goto fail
+
+:bootstrapFail
+del "%BOOTSTRAP_OUTPUT%" >NUL 2>&1
+echo Gradle distribution bootstrap failed with a non-transient error. 1>&2
+goto fail
+
+:bootstrapRetryExhausted
+del "%BOOTSTRAP_OUTPUT%" >NUL 2>&1
+echo Gradle distribution bootstrap failed after %BOOTSTRAP_MAX_ATTEMPTS% attempts due to transient network errors. 1>&2
+goto fail
+
+:runBootstrap
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -jar "%APP_HOME%\gradle\wrapper\gradle-wrapper.jar" --version > "%BOOTSTRAP_OUTPUT%" 2>&1
+exit /b %ERRORLEVEL%
+
+:executeGradle
+del "%BOOTSTRAP_OUTPUT%" >NUL 2>&1
 
 @rem Execute Gradle
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -jar "%APP_HOME%\gradle\wrapper\gradle-wrapper.jar" %*
