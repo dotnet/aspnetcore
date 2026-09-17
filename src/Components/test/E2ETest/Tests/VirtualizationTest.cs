@@ -3080,6 +3080,111 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void Table_EndAnchor_AsyncProvider_ContinuousAppend_MaterializesNewTailBeforeUpdatesStop()
+    {
+        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
+        Browser.True(() => GetElementCount(container, ".table-scroll-item") > 0);
+
+        ScrollToBottomAndWait(container, js, ".table-scroll-item");
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        var result = ExecuteContinuousTailAppendProbe(container, js);
+        var totalItems = Convert.ToInt64(result["totalItems"], CultureInfo.InvariantCulture);
+        var lastVisibleIndex = Convert.ToInt64(result["lastVisibleIndex"], CultureInfo.InvariantCulture);
+        var bottomGap = Convert.ToInt64(result["bottomGap"], CultureInfo.InvariantCulture);
+        var firstVisibleBackwardJumps = Convert.ToInt64(result["firstVisibleBackwardJumps"], CultureInfo.InvariantCulture);
+        var lastVisibleBackwardJumps = Convert.ToInt64(result["lastVisibleBackwardJumps"], CultureInfo.InvariantCulture);
+        var maximumLastVisibleAdvance = Convert.ToInt64(result["maximumLastVisibleAdvance"], CultureInfo.InvariantCulture);
+
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        Assert.Equal(510, totalItems);
+        Assert.True(lastVisibleIndex > 499,
+            $"End anchoring should materialize appended tail items while updates are still arriving. " +
+            $"Total items: {totalItems}, last visible index: {lastVisibleIndex}, bottom gap: {bottomGap}px.");
+        Assert.True(firstVisibleBackwardJumps == 0,
+            $"The first visible item index must not move backward while following appended items. " +
+            $"Backward index changes: {firstVisibleBackwardJumps}.");
+        Assert.True(lastVisibleBackwardJumps == 0,
+            $"The last visible item index must not move backward while following appended items. " +
+            $"Backward index changes: {lastVisibleBackwardJumps}.");
+        Assert.True(maximumLastVisibleAdvance <= 1,
+            $"Following the tail should display each appended item instead of skipping intermediate indexes. " +
+            $"Maximum last-visible index advance: {maximumLastVisibleAdvance}.");
+        Assert.True(bottomGap <= 1,
+            $"End anchoring should remain at the bottom while appending. Bottom gap: {bottomGap}px.");
+    }
+
+    [Fact]
+    public void Table_StartAnchor_AsyncProvider_PrependDuringRapidUserScroll_DoesNotReverseScrollDirection()
+    {
+        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
+        Browser.True(() => GetElementCount(container, ".table-scroll-item") > 0);
+
+        EnableTableStartAnchor();
+
+        var initialScrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var result = ExecuteRapidDownwardScrollWithConcurrentPrepends(container, js);
+        var maxBackwardJump = Convert.ToInt64(result["maxBackwardJump"], CultureInfo.InvariantCulture);
+        var backwardJumps = Convert.ToInt64(result["backwardJumps"], CultureInfo.InvariantCulture);
+        var placeholderFrames = Convert.ToInt64(result["placeholderFrames"], CultureInfo.InvariantCulture);
+        var minScrollHeight = Convert.ToInt64(result["minScrollHeight"], CultureInfo.InvariantCulture);
+        var sampleCount = Convert.ToInt64(result["sampleCount"], CultureInfo.InvariantCulture);
+
+        Assert.True(placeholderFrames > 0,
+            "Precondition failed: rapid scrolling should overlap an async provider request and render placeholders.");
+        Assert.True(maxBackwardJump <= 80,
+            $"Downward wheel scrolling must not jump backward by more than two item heights. " +
+            $"Backward jumps: {backwardJumps}, maximum: {maxBackwardJump}px. " +
+            $"Samples: [{result["backwardJumpSamples"]}]. Frames: {sampleCount}, placeholders: {placeholderFrames}, " +
+            $"initial scroll height: {initialScrollHeight}px, minimum scroll height: {minScrollHeight}px.");
+    }
+
+    [Fact]
+    public void Table_StartAnchor_AsyncProvider_ContinuousPrepend_MaterializesNewHeadWithoutIndexReversal()
+    {
+        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        EnableTableStartAnchor();
+
+        var result = ExecuteContinuousHeadPrependProbe(container, js);
+        var totalItems = Convert.ToInt64(result["totalItems"], CultureInfo.InvariantCulture);
+        var firstVisibleIndex = Convert.ToInt64(result["firstVisibleIndex"], CultureInfo.InvariantCulture);
+        var topGap = Convert.ToInt64(result["topGap"], CultureInfo.InvariantCulture);
+        var firstVisibleBackwardJumps = Convert.ToInt64(result["firstVisibleBackwardJumps"], CultureInfo.InvariantCulture);
+        var lastVisibleBackwardJumps = Convert.ToInt64(result["lastVisibleBackwardJumps"], CultureInfo.InvariantCulture);
+        var maximumFirstVisibleAdvance = Convert.ToInt64(result["maximumFirstVisibleAdvance"], CultureInfo.InvariantCulture);
+
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        Assert.Equal(510, totalItems);
+        Assert.True(firstVisibleIndex < 0,
+            $"Start anchoring should materialize prepended head items while updates are still arriving. " +
+            $"Total items: {totalItems}, first visible index: {firstVisibleIndex}, top gap: {topGap}px.");
+        Assert.True(firstVisibleBackwardJumps == 0,
+            $"The first visible item index must not move backward toward older items while following prepends. " +
+            $"Backward index changes: {firstVisibleBackwardJumps}.");
+        Assert.True(lastVisibleBackwardJumps == 0,
+            $"The last visible item index must not move backward toward older items while following prepends. " +
+            $"Backward index changes: {lastVisibleBackwardJumps}.");
+        Assert.True(maximumFirstVisibleAdvance <= 1,
+            $"Following the head should display each prepended item instead of skipping intermediate indexes. " +
+            $"Maximum first-visible index advance: {maximumFirstVisibleAdvance}.");
+        Assert.True(topGap <= 1,
+            $"Start anchoring should remain at the top while prepending. Top gap: {topGap}px.");
+    }
+
+    [Fact]
     public void ItemsIncrementalScroll_DoesNotJumpToStartOrEnd()
     {
         // Before the fix, each ~100px scroll produced large jumps in both directions.
@@ -5465,9 +5570,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private Dictionary<string, object> ExecuteRapidUpwardScrollWithConcurrentAppends(
         IWebElement container,
         IJavaScriptExecutor js)
+        => ExecuteRapidScrollWithConcurrentMutation(
+            container,
+            js,
+            mutationButtonId: "table-scroll-append",
+            scrollDelta: -500);
+
+    private Dictionary<string, object> ExecuteRapidScrollWithConcurrentMutation(
+        IWebElement container,
+        IJavaScriptExecutor js,
+        string mutationButtonId,
+        int scrollDelta)
     {
         const int scrollCount = 8;
-        const int scrollDelta = 500;
 
         js.ExecuteScript(@"
             const container = arguments[0];
@@ -5484,24 +5599,25 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container);
 
         js.ExecuteScript(@"
-            const appendButton = document.getElementById('table-scroll-append');
-            [300, 900, 1500].forEach(delay => setTimeout(() => appendButton.click(), delay));
-        ");
+            const mutationButton = document.getElementById(arguments[0]);
+            [300, 900, 1500].forEach(delay => setTimeout(() => mutationButton.click(), delay));
+        ", mutationButtonId);
 
         var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
         var scrollActions = new Actions(Browser);
         for (var i = 0; i < scrollCount; i++)
         {
             scrollActions
-                .ScrollFromOrigin(scrollOrigin, 0, -scrollDelta)
+                .ScrollFromOrigin(scrollOrigin, 0, scrollDelta)
                 .Pause(TimeSpan.FromMilliseconds(20));
         }
         scrollActions.Perform();
 
-        Browser.Contains("Appended item 502", () => Browser.Exists(By.Id("table-scroll-status")).Text);
+        Browser.Equal("Total items: 503", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
         WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
 
         return (Dictionary<string, object>)js.ExecuteScript(@"
+            const scrollDirection = arguments[0];
             cancelAnimationFrame(window.__tableScrollAnimationFrame);
 
             const samples = window.__tableScrollSamples;
@@ -5521,12 +5637,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     continue;
                 }
 
-                const delta = samples[i].scrollTop - samples[i - 1].scrollTop;
-                if (delta > 5) {
+                const progress = (samples[i].scrollTop - samples[i - 1].scrollTop) * scrollDirection;
+                if (progress < -5) {
+                    const backwardJump = -progress;
                     backwardJumps++;
-                    maxBackwardJump = Math.max(maxBackwardJump, delta);
+                    maxBackwardJump = Math.max(maxBackwardJump, backwardJump);
                     if (backwardJumpSamples.length < 20) {
-                        backwardJumpSamples.push(delta);
+                        backwardJumpSamples.push(backwardJump);
                     }
                 }
             }
@@ -5539,7 +5656,158 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 sampleCount: samples.length,
                 backwardJumpSamples: backwardJumpSamples.join(',')
             };
-        ");
+        ", Math.Sign(scrollDelta));
+    }
+
+    private Dictionary<string, object> ExecuteContinuousTailAppendProbe(
+        IWebElement container,
+        IJavaScriptExecutor js)
+    {
+        return (Dictionary<string, object>)js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const container = arguments[0];
+            const appendButton = document.getElementById('table-scroll-append');
+            const samples = [];
+            let animationFrame;
+            const sample = () => {
+                const viewport = container.getBoundingClientRect();
+                const visibleIndices = Array.from(container.querySelectorAll('.table-scroll-item td[data-index]'))
+                    .filter(cell => {
+                        const rect = cell.parentElement.getBoundingClientRect();
+                        return rect.bottom > viewport.top && rect.top < viewport.bottom;
+                    })
+                    .map(cell => Number(cell.dataset.index));
+                const totalItems = Number(document.getElementById('table-scroll-total-items').textContent.match(/\d+/)[0]);
+                samples.push({
+                    totalItems,
+                    firstVisibleIndex: visibleIndices.length > 0 ? Math.min(...visibleIndices) : -1,
+                    lastVisibleIndex: visibleIndices.length > 0 ? Math.max(...visibleIndices) : -1,
+                    bottomGap: Math.round(container.scrollHeight - container.scrollTop - container.clientHeight)
+                });
+                animationFrame = requestAnimationFrame(sample);
+            };
+            animationFrame = requestAnimationFrame(sample);
+            const appendTimer = setInterval(() => appendButton.click(), 600);
+
+            setTimeout(() => {
+                clearInterval(appendTimer);
+                cancelAnimationFrame(animationFrame);
+
+                let firstVisibleBackwardJumps = 0;
+                let lastVisibleBackwardJumps = 0;
+                let maximumLastVisibleAdvance = 0;
+                const activeSamples = samples.filter(sample => sample.totalItems > 500);
+                for (let i = 1; i < activeSamples.length; i++) {
+                    if (activeSamples[i].firstVisibleIndex < activeSamples[i - 1].firstVisibleIndex) {
+                        firstVisibleBackwardJumps++;
+                    }
+                    if (activeSamples[i].lastVisibleIndex < activeSamples[i - 1].lastVisibleIndex) {
+                        lastVisibleBackwardJumps++;
+                    }
+                    maximumLastVisibleAdvance = Math.max(
+                        maximumLastVisibleAdvance,
+                        activeSamples[i].lastVisibleIndex - activeSamples[i - 1].lastVisibleIndex);
+                }
+
+                const finalSample = samples[samples.length - 1];
+                done({
+                    totalItems: finalSample.totalItems,
+                    lastVisibleIndex: finalSample.lastVisibleIndex,
+                    bottomGap: finalSample.bottomGap,
+                    firstVisibleBackwardJumps,
+                    lastVisibleBackwardJumps,
+                    maximumLastVisibleAdvance
+                });
+            }, 6300);
+        ", container);
+    }
+
+    private void EnableTableStartAnchor()
+    {
+        Browser.Exists(By.Id("table-scroll-use-start")).Click();
+        Browser.Equal("Start", () => Browser.Exists(By.Id("table-scroll-anchor-mode")).Text);
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() =>
+        {
+            ScrollContainer(js, container, 0);
+            var firstItem = container.FindElements(By.CssSelector(".table-scroll-item td[data-index='0']")).FirstOrDefault();
+            return firstItem is not null && GetScrollTop(js, container) <= 1;
+        });
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+    }
+
+    private Dictionary<string, object> ExecuteRapidDownwardScrollWithConcurrentPrepends(
+        IWebElement container,
+        IJavaScriptExecutor js)
+        => ExecuteRapidScrollWithConcurrentMutation(
+            container,
+            js,
+            mutationButtonId: "table-scroll-prepend",
+            scrollDelta: 500);
+
+    private Dictionary<string, object> ExecuteContinuousHeadPrependProbe(
+        IWebElement container,
+        IJavaScriptExecutor js)
+    {
+        return (Dictionary<string, object>)js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const container = arguments[0];
+            const prependButton = document.getElementById('table-scroll-prepend');
+            const samples = [];
+            let animationFrame;
+            const sample = () => {
+                const viewport = container.getBoundingClientRect();
+                const visibleIndices = Array.from(container.querySelectorAll('.table-scroll-item td[data-index]'))
+                    .filter(cell => {
+                        const rect = cell.parentElement.getBoundingClientRect();
+                        return rect.bottom > viewport.top && rect.top < viewport.bottom;
+                    })
+                    .map(cell => Number(cell.dataset.index));
+                const totalItems = Number(document.getElementById('table-scroll-total-items').textContent.match(/\d+/)[0]);
+                samples.push({
+                    totalItems,
+                    firstVisibleIndex: visibleIndices.length > 0 ? Math.min(...visibleIndices) : -1,
+                    lastVisibleIndex: visibleIndices.length > 0 ? Math.max(...visibleIndices) : -1,
+                    topGap: Math.round(container.scrollTop)
+                });
+                animationFrame = requestAnimationFrame(sample);
+            };
+            animationFrame = requestAnimationFrame(sample);
+            const prependTimer = setInterval(() => prependButton.click(), 600);
+
+            setTimeout(() => {
+                clearInterval(prependTimer);
+                cancelAnimationFrame(animationFrame);
+
+                let firstVisibleBackwardJumps = 0;
+                let lastVisibleBackwardJumps = 0;
+                let maximumFirstVisibleAdvance = 0;
+                const activeSamples = samples.filter(sample => sample.totalItems > 500);
+                for (let i = 1; i < activeSamples.length; i++) {
+                    if (activeSamples[i].firstVisibleIndex > activeSamples[i - 1].firstVisibleIndex) {
+                        firstVisibleBackwardJumps++;
+                    }
+                    if (activeSamples[i].lastVisibleIndex > activeSamples[i - 1].lastVisibleIndex) {
+                        lastVisibleBackwardJumps++;
+                    }
+                    maximumFirstVisibleAdvance = Math.max(
+                        maximumFirstVisibleAdvance,
+                        activeSamples[i - 1].firstVisibleIndex - activeSamples[i].firstVisibleIndex);
+                }
+
+                const finalSample = samples[samples.length - 1];
+                done({
+                    totalItems: finalSample.totalItems,
+                    firstVisibleIndex: finalSample.firstVisibleIndex,
+                    topGap: finalSample.topGap,
+                    firstVisibleBackwardJumps,
+                    lastVisibleBackwardJumps,
+                    maximumFirstVisibleAdvance
+                });
+            }, 6300);
+        ", container);
     }
 
     private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)

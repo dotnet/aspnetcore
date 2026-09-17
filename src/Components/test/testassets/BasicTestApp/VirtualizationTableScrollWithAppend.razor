@@ -5,6 +5,8 @@
 </p>
 
 <button id="table-scroll-append" @onclick="AppendItem">Append item</button>
+<button id="table-scroll-prepend" @onclick="PrependItem">Prepend item</button>
+<button id="table-scroll-use-start" @onclick="UseStartAnchor">Use Start anchor</button>
 
 <div id="table-scroll-container" style="height: 300px; overflow-y: auto;">
     <table>
@@ -14,7 +16,7 @@
                         ItemComparer="itemComparer"
                         ItemSize="40"
                         OverscanCount="15"
-                        AnchorMode="VirtualizeAnchorMode.End"
+                        AnchorMode="anchorMode"
                         SpacerElement="tr">
                 <ItemContent>
                     <tr class="table-scroll-item" style="height: 40px;">
@@ -33,12 +35,15 @@
 
 <p id="table-scroll-total-items">Total items: @items.Count</p>
 <p id="table-scroll-status">@status</p>
+<p id="table-scroll-anchor-mode">@anchorMode</p>
 
 @code {
     private readonly List<ScrollItem> items =
         Enumerable.Range(0, 500).Select(index => new ScrollItem { Index = index }).ToList();
     private readonly IEqualityComparer<ScrollItem> itemComparer =
         EqualityComparer<ScrollItem>.Create((left, right) => left.Index == right.Index, item => item.Index);
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.End;
+    private int nextPrependIndex = -1;
     private Virtualize<ScrollItem> virtualize;
     private string status = "Ready";
 
@@ -61,6 +66,20 @@
         items.Add(new ScrollItem { Index = index });
         await virtualize.RefreshDataAsync();
         status = $"Appended item {index}";
+    }
+
+    private async Task PrependItem()
+    {
+        var index = nextPrependIndex--;
+        items.Insert(0, new ScrollItem { Index = index });
+        await virtualize.RefreshDataAsync();
+        status = $"Prepended item {index}";
+    }
+
+    private void UseStartAnchor()
+    {
+        anchorMode = VirtualizeAnchorMode.Start;
+        status = "Using Start anchor";
     }
 
     private sealed class ScrollItem
