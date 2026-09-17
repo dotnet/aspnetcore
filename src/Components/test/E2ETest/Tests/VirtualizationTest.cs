@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
@@ -5461,45 +5462,36 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void AnchorMode_End_InitialItemsProviderLoad_PinsToBottom()
     {
-        Browser.MountTestComponent<VirtualizationAnchorMode>();
-        var container = Browser.Exists(By.Id("scroll-container"));
-        var js = (IJavaScriptExecutor)Browser;
-        Browser.True(() => GetElementCount(container, ".item") > 0);
-
-        Browser.Exists(By.Id("unload-list")).Click();
-        Browser.Exists(By.Id("list-not-loaded"));
-        Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
-        new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
-        Browser.Equal("2", () => Browser.Exists(By.Id("current-mode")).Text);
-
-        js.ExecuteScript(
-            """
-            window.__nativeIntersectionObserver = window.IntersectionObserver;
-            window.__virtualizeObserverCallbacks = [];
-            window.__holdVirtualizeObserverCallbacks = true;
-            window.IntersectionObserver = class extends window.__nativeIntersectionObserver {
-                constructor(callback, options) {
-                    super((entries, observer) => {
-                        if (window.__holdVirtualizeObserverCallbacks && entries.some(entry =>
-                            entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'))) {
-                            window.__virtualizeObserverCallbacks.push(() => callback(entries, observer));
-                        } else {
-                            callback(entries, observer);
-                        }
-                    }, options);
-                }
-            };
-            """);
+        var emulateServerLatency = _serverFixture.ExecutionMode == ExecutionMode.Server;
+        var chromeDriver = (ChromeDriver)Browser;
+        if (emulateServerLatency)
+        {
+            SetNetworkConditions(chromeDriver, latency: 400, throughput: 50_000);
+            Navigate(ServerPathBase);
+        }
 
         try
         {
-            Browser.Exists(By.Id("reload-with-initial-index")).Click();
-            Browser.True(() => Convert.ToInt64(js.ExecuteScript(
-                "return window.__virtualizeObserverCallbacks.length;"), CultureInfo.InvariantCulture) > 0);
+            Browser.MountTestComponent<VirtualizationAnchorMode>();
+            var container = Browser.Exists(By.Id("scroll-container"));
+            var js = (IJavaScriptExecutor)Browser;
+            Browser.True(() => GetElementCount(container, ".item") > 0);
 
-            Browser.Exists(By.Id("refresh-data")).Click();
-            Browser.Contains("Refreshed data", () => Browser.Exists(By.Id("status")).Text);
+            Browser.Exists(By.Id("unload-list")).Click();
+            Browser.Exists(By.Id("list-not-loaded"));
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
+            new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
+            Browser.Equal("2", () => Browser.Exists(By.Id("current-mode")).Text);
+            Browser.Exists(By.Id("toggle-provider-gate")).Click();
+            Browser.Contains("Provider gate: On", () => Browser.Exists(By.Id("status")).Text);
+
+            Browser.Exists(By.Id("reload-with-initial-index")).Click();
+            Browser.True(() => GetProviderCallIndex(js) == 1);
+            Browser.Contains("p1-enter", () => GetProviderEvents(js));
+
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            Browser.Contains("p1-return", () => GetProviderEvents(js));
             Browser.True(() => GetMaximumScrollTop(js, container) > 0);
 
             Browser.True(
@@ -5508,13 +5500,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 $"Expected the initial provider result to pin to the bottom, but scrollTop was " +
                 $"{GetScrollTop(js, container)} of {GetMaximumScrollTop(js, container)}.");
 
-            js.ExecuteScript(
-                """
-                window.__holdVirtualizeObserverCallbacks = false;
-                for (const callback of window.__virtualizeObserverCallbacks.splice(0)) {
-                    callback();
-                }
-                """);
+            Browser.True(() => GetProviderCallIndex(js) == 2);
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            Browser.Contains("p2-return", () => GetProviderEvents(js));
             Browser.True(
                 () => GetBottomRenderedIndex(js) == 999 && IsScrolledToBottom(js, container),
                 TimeSpan.FromSeconds(10),
@@ -5523,18 +5511,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
         finally
         {
-            js.ExecuteScript(
-                """
-                window.__holdVirtualizeObserverCallbacks = false;
-                for (const callback of window.__virtualizeObserverCallbacks.splice(0)) {
-                    callback();
-                }
-                window.IntersectionObserver = window.__nativeIntersectionObserver;
-                delete window.__nativeIntersectionObserver;
-                delete window.__virtualizeObserverCallbacks;
-                delete window.__holdVirtualizeObserverCallbacks;
-                """);
+            if (emulateServerLatency)
+            {
+                SetNetworkConditions(chromeDriver, latency: 0, throughput: -1);
+                chromeDriver.ExecuteCdpCommand("Network.disable", new Dictionary<string, object>());
+            }
         }
+    }
+
+    private static void SetNetworkConditions(ChromeDriver chromeDriver, int latency, int throughput)
+    {
+        chromeDriver.ExecuteCdpCommand("Network.enable", new Dictionary<string, object>());
+        chromeDriver.ExecuteCdpCommand("Network.emulateNetworkConditions", new Dictionary<string, object>
+        {
+            ["offline"] = false,
+            ["latency"] = latency,
+            ["downloadThroughput"] = throughput,
+            ["uploadThroughput"] = throughput,
+        });
     }
 
     private bool IsScrolledToBottom(IJavaScriptExecutor js, IWebElement container)
