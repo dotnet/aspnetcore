@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using TestServer;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -35,6 +36,11 @@ public abstract class ServerTestBase<TServerFixture>
     public override async Task DisposeAsync()
     {
         EnhancedNavigationTestUtil.CleanEnhancedNavigationSuppression(this);
+
+        // Tests that opt into a different navigation-exception behavior change a process-global cached
+        // value that the shared server fixtures keep observing, so it has to be restored per test.
+        TestFeatureSwitches.ResetDisableThrowNavigationException();
+
         await base.DisposeAsync();
     }
 
