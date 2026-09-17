@@ -222,7 +222,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
   const bottomTracking = {
     // Was the viewport at the bottom as of the last render? Drives the append re-pin.
-    wasAtBottomLastRender: (anchorMode & 2) !== 0 && isViewportAtBottom(),
+    wasAtBottomLastRender: false,
     // Has the viewport actually reached the bottom? Not set at mount, stays sticky across appends.
     reached: false,
     // Follow intent: true in End mode (or after a user-initiated End-key jump) until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
@@ -392,7 +392,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // End mode: pin new items into view if we're at the bottom now, or were and are still following.
-    if ((anchorModeIs.end || bottomTracking.following) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
+    if (bottomTracking.following
+        || (anchorModeIs.end && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached))) {
       flushPendingStyleMutations();
       scrollElement.scrollTop = scrollElement.scrollHeight;
       scrollActivity.ignoreNextScroll();
@@ -717,7 +718,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
+    setAnchorMode: (mode: number) => {
+      anchorMode = mode;
+      const atBottom = isViewportAtBottom();
+      bottomTracking.following = (mode & 2) !== 0 && atBottom;
+      bottomTracking.reached = atBottom;
+    },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
