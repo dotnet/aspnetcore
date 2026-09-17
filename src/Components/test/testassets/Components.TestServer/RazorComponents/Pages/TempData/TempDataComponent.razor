@@ -140,6 +140,10 @@
     {
         SupplyParameterFromTempDataValue = "Supplied from TempData";
         NavigateToSamePage();
+
+        // Deliberately placed after NavigateTo: this line is unreachable when navigation is implemented by
+        // throwing NavigationException, and runs when navigation is implemented by invoking the endpoint
+        // callback. The E2E test reads it back to assert which control-flow mode produced the redirect.
         TempData!["NavigationManagerReturned"] = true;
     }
 
