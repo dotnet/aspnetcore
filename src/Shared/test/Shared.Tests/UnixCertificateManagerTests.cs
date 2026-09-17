@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 using Microsoft.AspNetCore.Certificates.Generation;
 
 namespace Microsoft.AspNetCore.Internal.Tests;
@@ -138,6 +140,50 @@ public sealed class UnixCertificateManagerTests : IDisposable
         Assert.Equal(overrideDirectory, nssDb.Path);
     }
 
+    [Fact]
+    public void CreateProcessStartInfos_PreserveFirefoxArgumentsContainingSpaces()
+    {
+        var profileDirectory = CreateDirectory("custom browser", "profile with spaces");
+        var certificatePath = Path.Combine(_homeDirectory, "certificate with spaces.pem");
+        const string nickname = "nickname with spaces";
+        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(
+            _homeDirectory,
+            xdgConfigHome: null,
+            nssDbOverride: $"firefox={profileDirectory}"));
+
+        AssertProcessStartInfo(
+            nssDb.CreateCheckProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-L");
+        AssertProcessStartInfo(
+            nssDb.CreateAddProcessStartInfo(certificatePath, nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-A", "-i", certificatePath, "-t", "C,,");
+        AssertProcessStartInfo(
+            nssDb.CreateRemoveProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-D");
+    }
+
+    [Fact]
+    public void CreateProcessStartInfos_PreserveChromiumArgumentsContainingSpaces()
+    {
+        var profileDirectory = CreateDirectory("custom browser", "profile with spaces");
+        var certificatePath = Path.Combine(_homeDirectory, "certificate with spaces.pem");
+        const string nickname = "nickname with spaces";
+        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(
+            _homeDirectory,
+            xdgConfigHome: null,
+            nssDbOverride: $"chromium={profileDirectory}"));
+
+        AssertProcessStartInfo(
+            nssDb.CreateCheckProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-V", "-u", "V");
+        AssertProcessStartInfo(
+            nssDb.CreateAddProcessStartInfo(certificatePath, nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-A", "-i", certificatePath, "-t", "P,,");
+        AssertProcessStartInfo(
+            nssDb.CreateRemoveProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-D");
+    }
+
     public void Dispose()
     {
         Directory.Delete(_homeDirectory, recursive: true);
@@ -153,14 +199,21 @@ public sealed class UnixCertificateManagerTests : IDisposable
     private static void AssertFirefoxNssDb(UnixCertificateManager.NssDb nssDb)
     {
         Assert.Equal("Firefox", nssDb.BrowserFamily);
-        Assert.Equal("-L", nssDb.CheckOperation);
+        Assert.Equal(["-L"], nssDb.CheckArguments);
         Assert.Equal("C", nssDb.TrustUsage);
     }
 
     private static void AssertChromiumNssDb(UnixCertificateManager.NssDb nssDb)
     {
         Assert.Equal("Chromium", nssDb.BrowserFamily);
-        Assert.Equal("-V -u V", nssDb.CheckOperation);
+        Assert.Equal(["-V", "-u", "V"], nssDb.CheckArguments);
         Assert.Equal("P", nssDb.TrustUsage);
+    }
+
+    private static void AssertProcessStartInfo(ProcessStartInfo startInfo, params string[] expectedArguments)
+    {
+        Assert.Equal("certutil", startInfo.FileName);
+        Assert.Empty(startInfo.Arguments);
+        Assert.Equal(expectedArguments, startInfo.ArgumentList);
     }
 }

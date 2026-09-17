@@ -682,11 +682,9 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // There is no corresponding -V check for the "Trusted CA" status required by Firefox, so we just check for existence.
         // (The docs suggest that "-V -u A" should do this, but it seems to accept all certs.)
         using SafeFileHandle nullHandle = File.OpenNullHandle();
-        var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} {nssDb.CheckOperation}")
-        {
-            StandardOutputHandle = nullHandle,
-            StandardErrorHandle = nullHandle
-        };
+        var startInfo = nssDb.CreateCheckProcessStartInfo(nickname);
+        startInfo.StandardOutputHandle = nullHandle;
+        startInfo.StandardErrorHandle = nullHandle;
 
         try
         {
@@ -707,11 +705,9 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     {
         // This silently clobbers an existing entry, so there's no need to check for existence first.
         using SafeFileHandle nullHandle = File.OpenNullHandle();
-        var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} -A -i {certificatePath} -t \"{nssDb.TrustUsage},,\"")
-        {
-            StandardOutputHandle = nullHandle,
-            StandardErrorHandle = nullHandle
-        };
+        var startInfo = nssDb.CreateAddProcessStartInfo(certificatePath, nickname);
+        startInfo.StandardOutputHandle = nullHandle;
+        startInfo.StandardErrorHandle = nullHandle;
 
         try
         {
@@ -730,11 +726,9 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private static bool TryRemoveCertificateFromNssDb(string nickname, NssDb nssDb)
     {
         using SafeFileHandle nullHandle = File.OpenNullHandle();
-        var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -D -n {nickname}")
-        {
-            StandardOutputHandle = nullHandle,
-            StandardErrorHandle = nullHandle
-        };
+        var startInfo = nssDb.CreateRemoveProcessStartInfo(nickname);
+        startInfo.StandardOutputHandle = nullHandle;
+        startInfo.StandardErrorHandle = nullHandle;
 
         try
         {
@@ -970,9 +964,40 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         public abstract string BrowserFamily { get; }
 
-        public abstract string CheckOperation { get; }
+        public abstract IReadOnlyList<string> CheckArguments { get; }
 
         public abstract string TrustUsage { get; }
+
+        internal ProcessStartInfo CreateCheckProcessStartInfo(string nickname)
+        {
+            var startInfo = CreateProcessStartInfo(nickname);
+            foreach (var argument in CheckArguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            return startInfo;
+        }
+
+        internal ProcessStartInfo CreateAddProcessStartInfo(string certificatePath, string nickname)
+        {
+            var startInfo = CreateProcessStartInfo(nickname);
+            startInfo.ArgumentList.Add("-A");
+            startInfo.ArgumentList.Add("-i");
+            startInfo.ArgumentList.Add(certificatePath);
+            startInfo.ArgumentList.Add("-t");
+            startInfo.ArgumentList.Add($"{TrustUsage},,");
+
+            return startInfo;
+        }
+
+        internal ProcessStartInfo CreateRemoveProcessStartInfo(string nickname)
+        {
+            var startInfo = CreateProcessStartInfo(nickname);
+            startInfo.ArgumentList.Add("-D");
+
+            return startInfo;
+        }
 
         protected static bool TryRemovePrefix(string path, string prefix, out string unprefixedPath)
         {
@@ -984,6 +1009,17 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
             unprefixedPath = path;
             return false;
+        }
+
+        private ProcessStartInfo CreateProcessStartInfo(string nickname)
+        {
+            var startInfo = new ProcessStartInfo(CertUtilCommand);
+            startInfo.ArgumentList.Add("-d");
+            startInfo.ArgumentList.Add($"sql:{Path}");
+            startInfo.ArgumentList.Add("-n");
+            startInfo.ArgumentList.Add(nickname);
+
+            return startInfo;
         }
 
         private static bool TryGetOverrides(
@@ -1046,10 +1082,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private sealed class ChromiumNssDb(string path) : NssDb(path)
     {
         private const string OverridePrefixValue = "chromium=";
+        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-V", "-u", "V"];
 
         public override string BrowserFamily => "Chromium";
 
-        public override string CheckOperation => "-V -u V";
+        public override IReadOnlyList<string> CheckArguments => CheckArgumentValues;
 
         public override string TrustUsage => "P";
 
@@ -1077,10 +1114,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private sealed class FirefoxNssDb(string path) : NssDb(path)
     {
         private const string OverridePrefixValue = "firefox=";
+        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-L"];
 
         public override string BrowserFamily => "Firefox";
 
-        public override string CheckOperation => "-L";
+        public override IReadOnlyList<string> CheckArguments => CheckArgumentValues;
 
         // Firefox doesn't seem to respect the more correct "trusted peer" (P) usage.
         public override string TrustUsage => "C";
