@@ -23,11 +23,19 @@ Create one reviewable vertical slice: a typed projection and a real adoption.
   extension members, not as instance properties that always hold it alive.
 - Follow Web IDL names and behavior. Do not add convenience APIs, polyfills, or .NET substitutions.
 - Keep live browser access asynchronous and raw JS interop types and identifiers non-public.
+- Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
+  context, so only one thread runs at a time.
 - Use direct constructor, property, and method interop before adding a JavaScript module.
-- Wrap identity-bearing objects, preserve identity, and dispose wrappers asynchronously.
-- Add cancellation only when it maps to `AbortSignal`.
+- Wrap identity-bearing objects and preserve identity. `Window` owns the wrapper and hands the same
+  one to every caller, so implement `IAsyncDisposable` explicitly and let disposal release the
+  reference without leaving the instance unusable.
+- Add cancellation only when it maps to `AbortSignal`. Never pass a token just to have one, because
+  any token turns off the default timeout that `JSRuntime` applies.
 
 ## Adopt
+
+Check the reference boundary first. An assembly in the shared framework cannot reference this
+package while the package ships on its own.
 
 Replace the selected consumer's direct interop with the projection. Preserve existing public API
 compatibility; if a legacy path must remain, make the framework's default path use the projection.
