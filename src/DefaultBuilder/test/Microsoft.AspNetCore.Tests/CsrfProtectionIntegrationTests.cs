@@ -6,7 +6,10 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Tests;
 
@@ -331,8 +335,8 @@ public class CsrfProtectionIntegrationTests
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(policy => policy.WithOrigins("https://app.example.com"));
-            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com"));
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://app.example.com").AllowCredentials());
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com").AllowCredentials());
         });
         using var app = builder.Build();
 
@@ -405,7 +409,7 @@ public class CsrfProtectionIntegrationTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
-            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com").AllowCredentials()));
         using var app = builder.Build();
 
         // [DisableCors] tells us this endpoint has no CORS-derived trust list.
@@ -625,6 +629,9 @@ public class CsrfProtectionIntegrationTests
     private static string EnforceCsrfForm(HttpContext context, [FromForm] string? name = null)
         => EnforceCsrf(context);
 
+    private static string EnforceCsrfFormWithAuthentication(HttpContext context, [FromForm] string? name = null)
+        => $"{EnforceCsrf(context)}:{(context.User.Identity?.IsAuthenticated is true ? "authenticated" : "anonymous")}";
+
     // Local [FromForm] attribute: there is no public Microsoft.AspNetCore.Http.FromFormAttribute,
     // and this test project doesn't reference Microsoft.AspNetCore.Mvc.Core. Implementing
     // IFromFormMetadata is enough for RDF to treat the parameter as form-bound.
@@ -632,6 +639,26 @@ public class CsrfProtectionIntegrationTests
     private sealed class FromFormAttribute : Attribute, IFromFormMetadata
     {
         public string? Name => null;
+    }
+
+    private sealed class HeaderAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            if (!Request.Headers.ContainsKey("X-Test-Authenticated"))
+            {
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
+
+            var identity = new ClaimsIdentity(Scheme.Name);
+            var principal = new ClaimsPrincipal(identity);
+
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
+        }
     }
 
     private static async Task<WebApplication> CreateApp()
@@ -947,6 +974,88 @@ public class CsrfProtectionIntegrationTests
         // endpoint, so CSRF middleware ran validation and recorded IsValid = false. The minimal-API
         // form-binding code then rejects the request with 400 before the handler executes, so the
         // body is empty — distinct from "protected" which would prove the handler had run.
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task CsrfProtection_RdfInferredFormMetadata_CorsTrustRequiresCredentialsRegardlessOfAuthentication(bool allowCredentials, bool authenticated)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("Test").AddScheme<AuthenticationSchemeOptions, HeaderAuthenticationHandler>("Test", _ => { });
+        builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("https://trusted.example.com");
+                if (allowCredentials)
+                {
+                    policy.AllowCredentials();
+                }
+            }));
+        using var app = builder.Build();
+
+        app.MapPost("/form", EnforceCsrfFormWithAuthentication);
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/form")
+        {
+            Content = new FormUrlEncodedContent([new KeyValuePair<string, string>("name", "alice")]),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://trusted.example.com");
+        if (authenticated)
+        {
+            request.Headers.Add("X-Test-Authenticated", "true");
+        }
+
+        var response = await client.SendAsync(request);
+
+        if (allowCredentials)
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                authenticated ? "allowed:authenticated" : "allowed:anonymous",
+                await response.Content.ReadAsStringAsync());
+        }
+        else
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    [Fact]
+    public async Task CsrfProtection_RdfInferredFormMetadata_EndpointPolicyWithoutCredentialsOverridesCredentialedDefaultPolicy()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com").AllowCredentials());
+            options.AddPolicy("NoCredentials", policy => policy.WithOrigins("https://trusted.example.com"));
+        });
+        using var app = builder.Build();
+
+        app.UseCors();
+        app.MapPost("/form", EnforceCsrfForm).RequireCors("NoCredentials");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/form")
+        {
+            Content = new FormUrlEncodedContent([new KeyValuePair<string, string>("name", "alice")]),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://trusted.example.com");
+
+        var response = await client.SendAsync(request);
+
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
