@@ -60,7 +60,6 @@
     </label>
     <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
     <button id="unload-list" @onclick="UnloadList">Unload list</button>
-    <button id="refresh-data" @onclick="RefreshData">Refresh data</button>
     <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
 </div>
 
@@ -498,18 +497,6 @@
     private void UnloadList()
     {
         listLoaded = false;
-    }
-
-    private async Task RefreshData()
-    {
-        if (virtualizeRef is null)
-        {
-            statusMessage = "Refresh failed: no virtualizer";
-            return;
-        }
-
-        await virtualizeRef.RefreshDataAsync();
-        statusMessage = "Refreshed data";
     }
 
     private async Task ScrollToTarget()
