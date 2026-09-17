@@ -1,5 +1,177 @@
 Set-StrictMode -Version Latest
 
+function Get-PulseMergeInteger
+{
+    param([object]$Object, [string]$Name)
+
+    $value = $Object.$Name
+    if (($value -isnot [byte] -and $value -isnot [int16] -and $value -isnot [int32] -and $value -isnot [int64]) -or
+        $value -lt 0 -or $value -gt [int]::MaxValue)
+    {
+        throw "Invalid merge discussion integer '$Name'."
+    }
+
+    return [int]$value
+}
+
+function Assert-PulseMergeAssessment
+{
+    param([Parameter(Mandatory)][object]$Assessment, [Parameter(Mandatory)][string]$Eligibility)
+
+    $expectedState = if ($Eligibility -ceq "eligible") { "clear" } else { $Eligibility }
+    if ($Eligibility -cnotin @("eligible", "verification-needed", "not-assessed") -or
+        $Assessment.state -cne $expectedState -or
+        $Assessment.complete -isnot [bool] -or
+        $Assessment.commentEvidenceTruncated -isnot [bool] -or
+        $Assessment.signals -isnot [array])
+    {
+        throw "Merge eligibility does not match its discussion assessment."
+    }
+    $null = Get-PulseMergeInteger $Assessment "commentTotalCount"
+    foreach ($signal in $Assessment.signals)
+    {
+        if ($signal -isnot [string] -or $signal -cnotmatch "^[a-z0-9-]+$")
+        {
+            throw "Merge discussion signals must be stable codes."
+        }
+    }
+    $threads = $Assessment.threads
+    foreach ($name in @("totalCount", "returnedCount", "unresolvedCount", "outdatedUnresolvedCount"))
+    {
+        $null = Get-PulseMergeInteger $threads $name
+    }
+    if ($threads.complete -isnot [bool] -or
+        $threads.returnedCount -gt $threads.totalCount -or
+        $threads.unresolvedCount -gt $threads.returnedCount -or
+        $threads.outdatedUnresolvedCount -gt $threads.unresolvedCount -or
+        ($threads.complete -and $threads.returnedCount -ne $threads.totalCount))
+    {
+        throw "Merge discussion thread coverage is inconsistent."
+    }
+    # The producer caps comment excerpts at ten and ignores outdated-only threads for eligibility.
+    if ($Eligibility -ceq "eligible" -and
+        (-not $Assessment.complete -or
+            ($Assessment.commentEvidenceTruncated -and $Assessment.commentTotalCount -le 10) -or
+            $Assessment.signals.Count -ne 0 -or -not $threads.complete -or
+            $threads.unresolvedCount -ne $threads.outdatedUnresolvedCount))
+    {
+        throw "Eligible merge candidates require complete clear discussion evidence."
+    }
+    if ($Eligibility -ceq "not-assessed" -and $Assessment.complete)
+    {
+        throw "Unassessed merge discussion cannot be complete."
+    }
+}
+
+function New-PulseUnassessedMergeAssessment
+{
+    return [pscustomobject]@{
+        state = "not-assessed"
+        complete = $false
+        signals = @("discussion-not-assessed")
+        commentTotalCount = 0
+        commentEvidenceTruncated = $false
+        threads = [pscustomobject]@{
+            totalCount = 0
+            returnedCount = 0
+            complete = $false
+            unresolvedCount = 0
+            outdatedUnresolvedCount = 0
+        }
+    }
+}
+
+function Resolve-PulseMergeArea
+{
+    param([Parameter(Mandatory)][object]$Area)
+
+    if ($Area.status -cne "complete")
+    {
+        return $Area
+    }
+
+    $candidateLimit = Get-PulseMergeInteger $Area.source.discussion "candidateLimit"
+    $verificationLimit = Get-PulseMergeInteger $Area.source.caps "readyToMerge"
+    $hasCounts = $null -ne $Area.source.PSObject.Properties["mergeDiscussion"]
+    $hasView = $null -ne $Area.views.PSObject.Properties["verifyDiscussionBeforeMerge"]
+    if ($hasCounts -ne $hasView)
+    {
+        throw "The sanitized merge extension is partial."
+    }
+    if (-not $hasCounts)
+    {
+        foreach ($item in @($Area.views.reviewNow) + @($Area.views.verifyDiscussionBeforeReview) + @($Area.views.needsRescue) + @($Area.views.readyToMerge))
+        {
+            if ($item.PSObject.Properties["mergeEligibility"] -or
+                $item.PSObject.Properties["shownInMergeVerification"] -or
+                $item.PSObject.Properties["mergeVerificationRank"] -or
+                ($item.bucket -ceq "ReadyToMerge" -and $item.PSObject.Properties["discussionAssessment"]))
+            {
+                throw "The sanitized merge extension is partial."
+            }
+        }
+        # Legacy selected rows never establish eligibility; retain the whole inventory as unassessed.
+        $Area = $Area | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+        $total = Get-PulseMergeInteger $Area.source.census.byBucket "ReadyToMerge"
+        $Area.source | Add-Member mergeDiscussion ([pscustomobject]@{
+            candidateLimit = $candidateLimit; assessedCandidateCount = 0; verificationNeededCount = 0
+            unassessedCandidateCount = $total; eligibleCount = 0; excludedCandidateCount = 0; verificationLimit = $verificationLimit
+        })
+        $selected = @($Area.views.readyToMerge | Select-Object -First $verificationLimit)
+        foreach ($item in $selected)
+        {
+            $item | Add-Member mergeEligibility "not-assessed"
+            $item | Add-Member discussionAssessment (New-PulseUnassessedMergeAssessment)
+        }
+        $Area.views | Add-Member verifyDiscussionBeforeMerge $selected
+        $Area.views.readyToMerge = @()
+    }
+    $counts = $Area.source.mergeDiscussion
+    foreach ($name in @("candidateLimit", "assessedCandidateCount", "verificationNeededCount", "unassessedCandidateCount", "eligibleCount", "excludedCandidateCount", "verificationLimit"))
+    {
+        $null = Get-PulseMergeInteger $counts $name
+    }
+    if ($counts.candidateLimit -ne $candidateLimit -or $counts.verificationLimit -ne $verificationLimit -or
+        $counts.assessedCandidateCount -gt $counts.candidateLimit -or
+        $counts.assessedCandidateCount -ne ($counts.eligibleCount + $counts.verificationNeededCount) -or
+        ($counts.assessedCandidateCount + $counts.unassessedCandidateCount + $counts.excludedCandidateCount) -ne $Area.source.census.byBucket.ReadyToMerge)
+    {
+        throw "Merge discussion counters do not match the ReadyToMerge inventory."
+    }
+    foreach ($viewName in @("readyToMerge", "verifyDiscussionBeforeMerge"))
+    {
+        $items = $Area.views.$viewName
+        if ($items -isnot [array])
+        {
+            throw "Merge views must be arrays."
+        }
+        $limit = if ($viewName -ceq "readyToMerge") { $Area.source.caps.readyToMerge } else { $counts.verificationLimit }
+        if ($items.Count -gt $limit)
+        {
+            throw "The merge view exceeds its display limit."
+        }
+        for ($index = 0; $index -lt $items.Count; $index++)
+        {
+            $item = $items[$index]
+            if ($item.bucket -cne "ReadyToMerge" -or (Get-PulseMergeInteger $item "rank") -ne ($index + 1) -or
+                ($viewName -ceq "readyToMerge" -and $item.mergeEligibility -cne "eligible") -or
+                ($viewName -ceq "verifyDiscussionBeforeMerge" -and $item.mergeEligibility -cnotin @("verification-needed", "not-assessed")))
+            {
+                throw "Merge view membership or rank is invalid."
+            }
+            Assert-PulseMergeAssessment -Assessment $item.discussionAssessment -Eligibility $item.mergeEligibility
+        }
+    }
+    if (@($Area.views.readyToMerge).Count -gt $counts.eligibleCount -or
+        @($Area.views.verifyDiscussionBeforeMerge | Where-Object mergeEligibility -CEQ "verification-needed").Count -gt $counts.verificationNeededCount -or
+        @($Area.views.verifyDiscussionBeforeMerge | Where-Object mergeEligibility -CEQ "not-assessed").Count -gt $counts.unassessedCandidateCount)
+    {
+        throw "Displayed merge candidates exceed their assessment counts."
+    }
+
+    return $Area
+}
+
 function Format-PulseTimestamp
 {
     param([Parameter(Mandatory)][object]$Value)
@@ -198,7 +370,7 @@ function Get-PulseAreas
             throw "The combined Pulse status does not match its area results."
         }
 
-        return $areas
+        return @($areas | ForEach-Object { Resolve-PulseMergeArea -Area $_ })
     }
 
     if (-not [string]::Equals([string]$Pulse.schemaVersion, "1.0.0", [StringComparison]::Ordinal) -or
@@ -225,7 +397,7 @@ function Get-PulseAreas
         $area["errorCategory"] = $Pulse.errorCategory
     }
 
-    return @([pscustomobject]$area)
+    return @(Resolve-PulseMergeArea -Area ([pscustomobject]$area))
 }
 
 function Get-PulseAreaSummary
@@ -234,7 +406,7 @@ function Get-PulseAreaSummary
 
     if ([string]::Equals([string]$Area.status, "complete", [StringComparison]::Ordinal))
     {
-        return "<summary><strong>$($Area.label)</strong> - $($Area.source.census.matched) matched; shown: $(@($Area.views.reviewNow).Count) review now, $(@($Area.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($Area.views.needsRescue).Count) rescue, $(@($Area.views.readyToMerge).Count) ready; generated $(Format-PulseTimestamp -Value $Area.source.generatedAt)</summary>"
+        return "<summary><strong>$($Area.label)</strong> - $($Area.source.census.matched) matched; shown: $(@($Area.views.reviewNow).Count) review now, $(@($Area.views.verifyDiscussionBeforeReview).Count) verify discussion, $(@($Area.views.needsRescue).Count) rescue, $(@($Area.views.readyToMerge).Count) ready, $(@($Area.views.verifyDiscussionBeforeMerge).Count) verify before merge; generated $(Format-PulseTimestamp -Value $Area.source.generatedAt)</summary>"
     }
 
     if ([string]::Equals([string]$Area.status, "unavailable", [StringComparison]::Ordinal))
@@ -312,7 +484,7 @@ function Add-PulseArea
         $Lines.Add("> Attempted: ``$(Format-PulseTimestamp -Value $Area.attemptedAt)``. Source repository: ``$($Area.source.repository)``. Error category: ``$($Area.errorCategory)``.")
         Add-PulseSection -Lines $Lines -Name "Summary counts"
         $Lines.Add("Candidate counts unavailable.")
-        foreach ($name in @("Review now", "Verify discussion before review", "Needs rescue", "Ready to merge"))
+        foreach ($name in @("Review now", "Verify discussion before review", "Needs rescue", "Ready to merge", "Verify discussion before merge"))
         {
             Add-PulseSection -Lines $Lines -Name $name
             $Lines.Add("Unavailable because this area's collection did not produce a complete compatible inventory.")
@@ -325,7 +497,7 @@ function Add-PulseArea
     }
 
     $source = $Area.source
-    $displayed = @($Area.views.reviewNow) + @($Area.views.verifyDiscussionBeforeReview) + @($Area.views.needsRescue) + @($Area.views.readyToMerge)
+    $displayed = @($Area.views.reviewNow) + @($Area.views.verifyDiscussionBeforeReview) + @($Area.views.needsRescue) + @($Area.views.readyToMerge) + @($Area.views.verifyDiscussionBeforeMerge)
     $commonScope = $null
     if ($displayed.Count -gt 0)
     {
@@ -366,7 +538,9 @@ function Add-PulseArea
     $Lines.Add("| Review now | $(@($Area.views.reviewNow).Count) | $($source.census.byBucket.ReviewNow) in the ReviewNow inventory bucket, not $($source.census.byBucket.ReviewNow) cleared for review |")
     $Lines.Add("| Verify discussion before review | $(@($Area.views.verifyDiscussionBeforeReview).Count) | $($source.discussion.verificationNeededCount) assessed candidates need verification |")
     $Lines.Add("| Needs rescue | $(@($Area.views.needsRescue).Count) | $($source.census.byBucket.NeedsRescue) in the NeedsRescue inventory bucket |")
-    $Lines.Add("| Ready to merge | $(@($Area.views.readyToMerge).Count) | $($source.census.byBucket.ReadyToMerge) in the ReadyToMerge inventory bucket |")
+    $Lines.Add("| Ready to merge | $(@($Area.views.readyToMerge).Count) | $($source.mergeDiscussion.eligibleCount) discussion-eligible; $($source.census.byBucket.ReadyToMerge) in the prospective ReadyToMerge inventory bucket |")
+    $mergeVerificationTotal = $source.mergeDiscussion.verificationNeededCount + $source.mergeDiscussion.unassessedCandidateCount
+    $Lines.Add("| Verify discussion before merge | $(@($Area.views.verifyDiscussionBeforeMerge).Count) | $mergeVerificationTotal need verification or are unassessed |")
 
     Add-PulseSection -Lines $Lines -Name "Review now"
     $Lines.Add("Displaying $(@($Area.views.reviewNow).Count) candidates from a ReviewNow inventory of $($source.census.byBucket.ReviewNow). Legacy overflow: $($source.overflow.reviewNow).")
@@ -382,11 +556,17 @@ function Add-PulseArea
     Add-PulseCandidateView -Lines $Lines -Items @($Area.views.needsRescue) -SourceTotal $source.census.byBucket.NeedsRescue -IncludeScope:$includeScope
     Add-PulseSection -Lines $Lines -Name "Ready to merge"
     $Lines.Add("Displaying $(@($Area.views.readyToMerge).Count) of $($source.census.byBucket.ReadyToMerge) inventory candidates. Legacy overflow: $($source.overflow.readyToMerge).")
+    $Lines.Add("Only discussion-eligible candidates with complete clear evidence are shown; the prospective inventory is not an eligibility count.")
     Add-PulseCandidateView -Lines $Lines -Items @($Area.views.readyToMerge) -SourceTotal $source.census.byBucket.ReadyToMerge -IncludeScope:$includeScope
+    Add-PulseSection -Lines $Lines -Name "Verify discussion before merge"
+    $Lines.Add("Displaying $(@($Area.views.verifyDiscussionBeforeMerge).Count) of $mergeVerificationTotal candidates needing verification or not assessed. Display cap: $($source.mergeDiscussion.verificationLimit).")
+    $Lines.Add("Inspect the discussion before merging; these prospective candidates do not establish that feedback was addressed.")
+    Add-PulseCandidateView -Lines $Lines -Items @($Area.views.verifyDiscussionBeforeMerge) -SourceTotal $mergeVerificationTotal -IncludeDiscussion -IncludeScope:$includeScope
 
     Add-PulseSection -Lines $Lines -Name "Coverage and data quality"
     $Lines.Add("- Query coverage: $($source.query.returnedPullRequestCount) of $($source.query.openPullRequestCount) open pull requests returned; complete $($source.query.complete.ToString().ToLowerInvariant()).")
     $Lines.Add("- Discussion coverage: $($source.discussion.assessedCandidateCount) of limit $($source.discussion.candidateLimit) assessed; $($source.discussion.verificationNeededCount) need verification; $($source.discussion.unassessedReviewNowCount) Review now candidates unassessed.")
+    $Lines.Add("- Merge discussion coverage: $($source.mergeDiscussion.assessedCandidateCount) of limit $($source.mergeDiscussion.candidateLimit) assessed; $($source.mergeDiscussion.eligibleCount) eligible; $($source.mergeDiscussion.verificationNeededCount) need verification; $($source.mergeDiscussion.unassessedCandidateCount) unassessed; $($source.mergeDiscussion.excludedCandidateCount) excluded from assessment. Verification display cap: $($source.mergeDiscussion.verificationLimit).")
     $Lines.Add("- Queue census: Review now $($source.census.byBucket.ReviewNow); Needs rescue $($source.census.byBucket.NeedsRescue); Ready to merge $($source.census.byBucket.ReadyToMerge); Waiting on author $($source.census.byBucket.WaitingOnAuthor); Waiting on CI $($source.census.byBucket.WaitingOnCI); Design decision $($source.census.byBucket.DesignDecision); Draft $($source.census.byBucket.Draft); Excluded $($source.census.byBucket.Excluded).")
     $Lines.Add("- Scope census: $($source.census.labelOnly) label-only; $($source.census.pathOnly) path-only; $($source.census.labelAndPath) label-and-path; $($source.census.incidentalPathExcluded) incidental paths excluded; $($source.census.unresolvedMergeable) unresolved mergeability.")
     $Lines.Add("- Overflow: Review now $($source.overflow.reviewNow); Needs rescue $($source.overflow.needsRescue); Ready to merge $($source.overflow.readyToMerge).")
@@ -540,7 +720,7 @@ function Assert-PRAttentionPulseOutput
         $expectedNumbers = if ([string]::Equals([string]$area.status, "complete", [StringComparison]::Ordinal))
         {
             @(
-                foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+                foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
                 {
                     foreach ($candidate in @($area.views.$viewName))
                     {
@@ -614,4 +794,4 @@ function Assert-PRAttentionPulseOutput
     }
 }
 
-Export-ModuleMember -Function ConvertTo-PRAttentionPulseBody, Assert-PRAttentionPulseOutput
+Export-ModuleMember -Function ConvertTo-PRAttentionPulseBody, Assert-PRAttentionPulseOutput, Assert-PulseMergeAssessment, New-PulseUnassessedMergeAssessment, Resolve-PulseMergeArea
