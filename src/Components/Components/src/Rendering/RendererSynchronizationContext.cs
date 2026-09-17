@@ -244,16 +244,10 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         }
         finally
         {
-            try
-            {
-                // Complete the queue marker while this context is still current so that queued
-                // continuations are not inlined onto the caller's thread.
-                completion.SetResult();
-            }
-            finally
-            {
-                SetSynchronizationContext(original);
-            }
+            // Complete the queue marker while this context is still current so that queued
+            // continuations are not inlined onto the caller's thread.
+            completion.SetResult();
+            SetSynchronizationContext(original);
         }
     }
 
