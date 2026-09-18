@@ -1,6 +1,9 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from validate_outcome import OutcomeValidationError, build_outcome, validate_preflight
+from validate_outcome import OutcomeValidationError, build_outcome, main, validate_preflight
 
 
 class ValidateOutcomeTests(unittest.TestCase):
@@ -98,6 +101,33 @@ class ValidateOutcomeTests(unittest.TestCase):
                     "selected": {"number": 9},
                 },
             )
+
+    def test_preflight_validation_error_returns_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            agent_output = root / "agent-output.json"
+            existing_draft = root / "existing-draft.json"
+            agent_output.write_text('{"items":[]}', encoding="utf-8")
+            existing_draft.write_text(
+                json.dumps({"found": False, "blocked": False}),
+                encoding="utf-8",
+            )
+
+            exit_code = main(
+                [
+                    "--preflight",
+                    "--agent-output",
+                    str(agent_output),
+                    "--source-repository",
+                    "dotnet/aspnetcore",
+                    "--source-pr-number",
+                    "42",
+                    "--expected-existing-draft",
+                    str(existing_draft),
+                ]
+            )
+
+        self.assertEqual(1, exit_code)
 
     @staticmethod
     def _payload(

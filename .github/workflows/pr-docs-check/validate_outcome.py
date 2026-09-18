@@ -363,6 +363,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             expected_existing_draft,
         )
     except OutcomeValidationError as error:
+        if args.preflight:
+            print(f"::error::{error}")
+            return 1
         outcome = {
             "allow_comment": False,
             "diagnostic": str(error),
@@ -371,7 +374,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
 
     if args.output is None:
-        raise AssertionError("output path was validated above")
+        raise OutcomeValidationError("--output is required unless --preflight is used.")
     args.output.write_text(json.dumps(outcome, indent=2) + "\n", encoding="utf-8")
     return 0
 

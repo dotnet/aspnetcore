@@ -4,7 +4,7 @@ name: "PR Documentation Check (Fork Pilot)"
 description: >
   Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
-max-turns: 50
+max-turns: 100
 
 on:
   workflow_dispatch:
