@@ -5828,10 +5828,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         MountAnchorModeForScrollToItem(useProvider: true, delay: true);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
-        WaitForRenderToSettle(container, js);
 
         container.SendKeys(Keys.End);
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0);
+        WaitForRenderToSettle(container, js);
 
         SetScrollTargetIndex(targetIndex);
         Browser.Exists(By.Id("scroll-to-item")).Click();
