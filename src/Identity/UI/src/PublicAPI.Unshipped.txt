@@ -1,1 +1,5 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.OnGetReauthenticationCallbackAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.OnPostReauthenticateAsync(string! provider) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnGetReauthenticationCallbackAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnPostReauthenticateAsync(string! provider) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
