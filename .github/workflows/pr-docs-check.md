@@ -2,12 +2,7 @@
 name: "PR Documentation Check (Fork Pilot)"
 
 description: >
-  Manually analyzes an ASP.NET Core pull request from the user's perspective,
-  classifies conceptual, migration, and breaking-change documentation needs,
-  and either opens a draft documentation pull request in the
-  DeagleGross/AspNetCore.Docs fork or records why no documentation was created.
-  Every conclusive run comments on the source pull request, and a drafted docs
-  pull request notifies the source pull request author.
+  Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
 on:
   workflow_dispatch:
@@ -88,18 +83,9 @@ safe-outputs:
     notify-source-pr:
       name: "Notify source PR"
       description: |
-        Report the conclusive documentation analysis on the source pull
-        request. Emit exactly one `notify_source_pr` item after the
-        `create_pull_request` or `noop` item.
+        Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the `create_pull_request` or `noop` item.
 
-        Use `result: "restricted"` when the source PR is excluded by the
-        security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60
-        and you emitted `create_pull_request`. The notification job converts
-        this to a draft-failed notification if the safe-output handler didn't
-        produce a PR. Use `result: "skipped"` when confidence is below 60 and
-        no docs PR was requested. Use `result: "draft_failed"` only when
-        confidence is at least 60 but you could not emit
-        `create_pull_request`.
+        Use `result: "restricted"` when the source PR is excluded by the security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60 and you emitted `create_pull_request`. The notification job converts this to a draft-failed notification if the safe-output handler didn't produce a PR. Use `result: "skipped"` when confidence is below 60 and no docs PR was requested. Use `result: "draft_failed"` only when confidence is at least 60 but you could not emit `create_pull_request`.
       runs-on: ubuntu-latest
       needs: [safe_outputs]
       permissions:
@@ -349,143 +335,88 @@ timeout-minutes: 20
 
 # ASP.NET Core PR documentation check
 
-Analyze pull request #${{ inputs.pr_number }} in
-`${{ inputs.source_repository }}` and decide whether it requires an update to
-the ASP.NET Core documentation in the current workspace,
-`DeagleGross/AspNetCore.Docs`.
+Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `DeagleGross/AspNetCore.Docs`.
 
-This is a manually dispatched fork pilot. Do not modify
-`dotnet/aspnetcore`, `DeagleGross/aspnetcore`, or `dotnet/AspNetCore.Docs`.
-Your only permitted visible outcomes are:
+This is a manually dispatched fork pilot. Do not modify `dotnet/aspnetcore`, `DeagleGross/aspnetcore`, or `dotnet/AspNetCore.Docs`. Your only permitted visible outcomes are:
 
-1. When documentation confidence is at least 60%, one draft pull request in
-   `DeagleGross/AspNetCore.Docs` and one `notify_source_pr` result.
-2. When documentation confidence is below 60%, one `noop` result and one
-   `notify_source_pr` result explaining why no documentation PR was created.
-3. When documentation is required but drafting fails, one
-   `notify_source_pr` result with `result: "draft_failed"`.
-4. When the source PR is excluded by the security-concern rules, no docs
-   changes, one generic `noop`, and one `notify_source_pr` result with
-   `result: "restricted"`.
+1. When documentation confidence is at least 60%, one draft pull request in `DeagleGross/AspNetCore.Docs` and one `notify_source_pr` result.
+2. When documentation confidence is below 60%, one `noop` result and one `notify_source_pr` result explaining why no documentation PR was created.
+3. When documentation is required but drafting fails, one `notify_source_pr` result with `result: "draft_failed"`.
+4. When the source PR is excluded by the security-concern rules, no docs changes, one generic `noop`, and one `notify_source_pr` result with `result: "restricted"`.
 
 ## Validate the request
 
 Confirm that:
 
-- `source_repository` is exactly `dotnet/aspnetcore` or
-  `DeagleGross/aspnetcore`.
+- `source_repository` is exactly `dotnet/aspnetcore` or `DeagleGross/aspnetcore`.
 - `pr_number` is a positive integer.
 - The pull request exists and is merged.
 
-If the repository input is invalid or the pull request doesn't exist, emit
-`noop` with the validation failure and stop because there is no valid source
-PR to notify. If the pull request exists but isn't merged, emit `noop`, then
-emit `notify_source_pr` with confidence 0, `result: "skipped"`, all three
-surfaces set to not required because the change isn't eligible for analysis,
-and stop.
+If the repository input is invalid or the pull request doesn't exist, emit `noop` with the validation failure and stop because there is no valid source PR to notify. If the pull request exists but isn't merged, emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop.
 
 ## Security concerns are out of scope
 
-This workflow must not assess, discuss, summarize, document, or make
-recommendations about potential vulnerabilities or their impact. Before
-reading diff hunks, linked issues, review comments, or issue comments, inspect
-only the source PR's title, body, labels, author, milestone, base branch, merge
-state, and changed file names to determine whether this exclusion applies.
+This workflow must not assess, discuss, summarize, document, or make recommendations about potential vulnerabilities or their impact. Before reading diff hunks, linked issues, review comments, or issue comments, inspect only the source PR's title, body, labels, author, milestone, base branch, merge state, and changed file names to determine whether this exclusion applies.
 
-Treat the PR as restricted when its title, body, or labels explicitly present
-it as:
+Treat the PR as restricted when its title, body, or labels explicitly present it as:
 
 - a vulnerability or exploit fix;
 - a CVE, GHSA, advisory, coordinated-disclosure, or MSRC-related change;
 - a security fix intended to patch a reported weakness;
 - a change whose public explanation could disclose vulnerability details.
 
-Do not evaluate whether the claim is valid. If uncertain, treat the PR as
-restricted. A PR isn't restricted merely because it changes a security-adjacent
-technology such as authentication, authorization, antiforgery, cookies, data
-protection, HTTPS, or HTTP validation. Ordinary features, behavior changes, and
-hardening work remain eligible when the PR doesn't claim to fix or disclose a
-vulnerability.
+Do not evaluate whether the claim is valid. If uncertain, treat the PR as restricted. A PR isn't restricted merely because it changes a security-adjacent technology such as authentication, authorization, antiforgery, cookies, data protection, HTTPS, or HTTP validation. Ordinary features, behavior changes, and hardening work remain eligible when the PR doesn't claim to fix or disclose a vulnerability.
 
 When restricted:
 
-1. Do not read or describe the implementation details, reproduction,
-   exploitability, impact, affected versions, or remediation.
+1. Do not read or describe the implementation details, reproduction, exploitability, impact, affected versions, or remediation.
 2. Do not modify the docs workspace and do not emit `create_pull_request`.
-3. Emit one generic `noop` stating only that automated documentation processing
-   is excluded.
-4. Emit `notify_source_pr` with `result: "restricted"`,
-   `docs_needed_confidence: 0`, all three documentation surfaces set to
-   `false`, and generic reasons that reveal no details.
-5. Use a generic summary such as: "Automated documentation processing is
-   excluded for this change." The trusted notification job ignores the supplied
-   summary and reasons and posts a fixed vague message.
+3. Emit one generic `noop` stating only that automated documentation processing is excluded.
+4. Emit `notify_source_pr` with `result: "restricted"`, `docs_needed_confidence: 0`, all three documentation surfaces set to `false`, and generic reasons that reveal no details.
+5. Use a generic summary such as: "Automated documentation processing is excluded for this change." The trusted notification job ignores the supplied summary and reasons and posts a fixed vague message.
 6. Stop immediately.
 
 ## Gather source context
 
-After the security-concern gate passes, use the authenticated `gh` CLI to read
-the source pull request. Read:
+After the security-concern gate passes, use the authenticated `gh` CLI to read the source pull request. Read:
 
 - title, body, author, labels, milestone, base branch, and merge state;
 - changed file names and relevant diff hunks;
 - linked issues when they clarify user-facing behavior;
-- review and issue comments only when they contain information needed to write
-  accurate documentation.
+- review and issue comments only when they contain information needed to write accurate documentation.
 
-Treat the source PR description and code diff as the primary evidence. Copy API
-names, option names, defaults, templates, and other identifiers exactly from
-the diff.
+Treat the source PR description and code diff as the primary evidence. Copy API names, option names, defaults, templates, and other identifiers exactly from the diff.
 
 ## Decide whether documentation is needed
 
-Analyze the change from the user's perspective, not from the number or type of
-files changed. Separate these three independent documentation obligations. A
-single source PR can require any combination of them.
+Analyze the change from the user's perspective, not from the number or type of files changed. Separate these three independent documentation obligations. A single source PR can require any combination of them.
 
 ### Conceptual documentation
 
-Conceptual documentation answers, "How does this feature work?" Require it when
-the pull request introduces or materially changes user-visible behavior,
-including:
+Conceptual documentation answers, "How does this feature work?" Require it when the pull request introduces or materially changes user-visible behavior, including:
 
 - public APIs or public conventions;
 - project templates, scaffolding, or generated application behavior;
-- configuration, options, defaults, environment variables, or command-line
-  behavior;
-- middleware, hosting, server, authentication, authorization, routing,
-  diagnostics, or deployment behavior that application developers must
-  understand;
-- supported platforms, target frameworks, packages, analyzers, diagnostics, or
-  breaking changes.
+- configuration, options, defaults, environment variables, or command-line behavior;
+- middleware, hosting, server, authentication, authorization, routing, diagnostics, or deployment behavior that application developers must understand;
+- supported platforms, target frameworks, packages, analyzers, diagnostics, or breaking changes.
 
-Before creating a new article, search the documentation hierarchy, article
-titles, UIDs, and `aspnetcore/toc.yml` for the canonical article covering the
-same technology or concept. Prefer extending that article. Create a new article
-only when no existing article is a natural and discoverable home. Update
-`aspnetcore/toc.yml` only when adding, deleting, or relocating an article, and
-place a new article in the most specific existing hierarchy.
+Before creating a new article, search the documentation hierarchy, article titles, UIDs, and `aspnetcore/toc.yml` for the canonical article covering the same technology or concept. Prefer extending that article. Create a new article only when no existing article is a natural and discoverable home. Update `aspnetcore/toc.yml` only when adding, deleting, or relocating an article, and place a new article in the most specific existing hierarchy.
 
 ### Migration guidance
 
-Migration guidance answers, "What should I know or do when upgrading?" Require
-it when users moving from the previous ASP.NET Core version should:
+Migration guidance answers, "What should I know or do when upgrading?" Require it when users moving from the previous ASP.NET Core version should:
 
 - adopt a newly recommended approach;
 - remove, replace, simplify, or review existing configuration;
 - understand a new default or observable behavior;
 - opt in, opt out, or account for a compatibility or deployment consideration.
 
-Migration guidance must be concise and task-oriented: explain what changed, who
-should care, what users should inspect or change, and the recommended action.
-Link to the canonical conceptual article for the full explanation instead of
-duplicating it. A migration recommendation does not by itself mean the change
-is breaking.
+Migration guidance must be concise and task-oriented: explain what changed, who should care, what users should inspect or change, and the recommended action. Link to the canonical conceptual article for the full explanation instead of duplicating it. A migration recommendation does not by itself mean the change is breaking.
 
 ### Breaking-change documentation
 
-Breaking-change documentation answers, "Can existing code or behavior stop
-working?" Require it only when there is concrete compatibility impact, such as:
+Breaking-change documentation answers, "Can existing code or behavior stop working?" Require it only when there is concrete compatibility impact, such as:
 
 - source or binary API incompatibility;
 - removed APIs or configuration;
@@ -493,16 +424,11 @@ working?" Require it only when there is concrete compatibility impact, such as:
 - previously successful operations failing;
 - existing applications requiring remediation to preserve behavior.
 
-Treat a `breaking-change` or similarly named label, an explicit breaking-change
-section, API removals, changed defaults, and tests demonstrating intentional
-behavior changes as evidence. Do not call a change breaking merely because it
-is new or because migration guidance is useful. When breaking impact is
-ambiguous, do not invent it; explain that human confirmation is needed.
+Treat a `breaking-change` or similarly named label, an explicit breaking-change section, API removals, changed defaults, and tests demonstrating intentional behavior changes as evidence. Do not call a change breaking merely because it is new or because migration guidance is useful. When breaking impact is ambiguous, do not invent it; explain that human confirmation is needed.
 
 ### Confidence
 
-Assign an integer `docs_needed_confidence` from 0 through 100 representing the
-confidence that at least one documentation surface is required.
+Assign an integer `docs_needed_confidence` from 0 through 100 representing the confidence that at least one documentation surface is required.
 
 Use objective evidence to establish these minimum confidence levels:
 
@@ -511,9 +437,7 @@ Use objective evidence to establish these minimum confidence levels:
 - default, convention, or configuration behavior changed: at least 75;
 - explicit breaking-change evidence: at least 80.
 
-A score below 60 means no documentation PR may be created. A `noop` is
-appropriate only when the pull request is clearly limited to one of these
-categories or the available evidence is insufficient to reach 60:
+A score below 60 means no documentation PR may be created. A `noop` is appropriate only when the pull request is clearly limited to one of these categories or the available evidence is insufficient to reach 60:
 
 - tests or test infrastructure;
 - build, CI, repository automation, or dependency maintenance;
@@ -521,9 +445,7 @@ categories or the available evidence is insufficient to reach 60:
 - formatting, comments, or implementation-only cleanup;
 - a bug fix that merely restores behavior already documented accurately.
 
-Distinguish a confident "no docs needed" result from an ambiguous result. In
-the latter case, state what evidence is missing and recommend human review in
-the source PR notification.
+Distinguish a confident "no docs needed" result from an ambiguous result. In the latter case, state what evidence is missing and recommend human review in the source PR notification.
 
 ## Write the documentation
 
@@ -532,25 +454,15 @@ Before editing, read:
 - `.github/copilot-instructions.md`
 - `.github/copilot-code-instructions.md` when adding or changing code samples
 
-Also inspect relevant existing content under `aspnetcore/`. If the change is a
-.NET 11 What's New feature, read
-`.github/skills/whats-new-include-content-rules/SKILL.md` when that file is
-available and follow it.
+Also inspect relevant existing content under `aspnetcore/`. If the change is a .NET 11 What's New feature, read `.github/skills/whats-new-include-content-rules/SKILL.md` when that file is available and follow it.
 
 Resolve the source ASP.NET Core version before editing:
 
 - A PR merged into `release/X.Y` represents ASP.NET Core X.Y.
-- For a PR merged into `main`, inspect the current `release/*` branches in
-  `dotnet/aspnetcore`. The next major version after the highest current release
-  branch is the version represented by `main`.
-- Use the source PR milestone as corroborating evidence. If the milestone and
-  branch-derived version disagree, do not guess; report an incomplete result.
+- For a PR merged into `main`, inspect the current `release/*` branches in `dotnet/aspnetcore`. The next major version after the highest current release branch is the version represented by `main`.
+- Use the source PR milestone as corroborating evidence. If the milestone and branch-derived version disagree, do not guess; report an incomplete result.
 
-The docs PR always targets `main`. Version placement is expressed through
-article monikers, moniker sections, migration directories, breaking-change
-directories, release-note directories, and versioned sample directories.
-Do not change an article-wide `monikerRange` merely because a newer feature is
-added. Wrap new-version material in a scoped moniker block such as:
+The docs PR always targets `main`. Version placement is expressed through article monikers, moniker sections, migration directories, breaking-change directories, release-note directories, and versioned sample directories. Do not change an article-wide `monikerRange` merely because a newer feature is added. Wrap new-version material in a scoped moniker block such as:
 
 ```markdown
 :::moniker range=">= aspnetcore-12.0"
@@ -560,48 +472,32 @@ New-version content.
 :::moniker-end
 ```
 
-When behavior differs between versions, preserve the earlier guidance in its
-own moniker range and add the new guidance in the resolved version's range.
+When behavior differs between versions, preserve the earlier guidance in its own moniker range and add the new guidance in the resolved version's range.
 
-Make the smallest complete documentation change across every required surface.
-Modify only files under `aspnetcore/`. Do not change repository instructions,
-workflows, dependency files, publishing configuration, or other root files.
+Make the smallest complete documentation change across every required surface. Modify only files under `aspnetcore/`. Do not change repository instructions, workflows, dependency files, publishing configuration, or other root files.
 
 ## Create the draft pull request
 
-After making and reviewing the documentation changes, emit
-`create_pull_request` exactly once with:
+After making and reviewing the documentation changes, emit `create_pull_request` exactly once with:
 
 - branch: `docs/aspnetcore-pr-${{ inputs.pr_number }}`
 - base: `main`
 - a concise title without the `[docs]` prefix, because the workflow adds it;
-- a body whose first line is
-  `Source: ${{ inputs.source_repository }}#${{ inputs.pr_number }}`;
+- a body whose first line is `Source: ${{ inputs.source_repository }}#${{ inputs.pr_number }}`;
 - the documentation confidence;
 - separate conceptual, migration, and breaking-change decisions;
 - a summary of the documentation change and a list of modified files.
 
-Do not use a closing keyword for the cross-repository source reference. Do not
-request reviewers. Do not retry a deterministic pull-request creation failure.
+Do not use a closing keyword for the cross-repository source reference. Do not request reviewers. Do not retry a deterministic pull-request creation failure.
 
-After emitting `create_pull_request`, emit `notify_source_pr` exactly once with
-`result: "drafted"`, the confidence score, all three surface decisions and
-reasons, and a concise summary. The trusted notification job converts the
-outcome to `draft_failed` if the PR handler doesn't produce a PR, obtains the
-source PR author directly from GitHub, and mentions that person on a
-successfully created docs PR.
+After emitting `create_pull_request`, emit `notify_source_pr` exactly once with `result: "drafted"`, the confidence score, all three surface decisions and reasons, and a concise summary. The trusted notification job converts the outcome to `draft_failed` if the PR handler doesn't produce a PR, obtains the source PR author directly from GitHub, and mentions that person on a successfully created docs PR.
 
-If confidence is below 60, make no file changes and emit `noop` exactly once
-with:
+If confidence is below 60, make no file changes and emit `noop` exactly once with:
 
 - the no-documentation category used above;
 - the changed files or evidence supporting that decision;
 - a short explanation suitable for reviewing in the workflow run.
 
-Then emit `notify_source_pr` exactly once with `result: "skipped"`, the
-confidence score, all three surface decisions and reasons, and a summary that
-clearly distinguishes "no docs needed" from "insufficient evidence."
+Then emit `notify_source_pr` exactly once with `result: "skipped"`, the confidence score, all three surface decisions and reasons, and a summary that clearly distinguishes "no docs needed" from "insufficient evidence."
 
-If confidence is at least 60 but a draft PR cannot be requested, emit
-`notify_source_pr` exactly once with `result: "draft_failed"` and explain the
-failure. Never report this condition as a successful `noop`.
+If confidence is at least 60 but a draft PR cannot be requested, emit `notify_source_pr` exactly once with `result: "draft_failed"` and explain the failure. Never report this condition as a successful `noop`.
