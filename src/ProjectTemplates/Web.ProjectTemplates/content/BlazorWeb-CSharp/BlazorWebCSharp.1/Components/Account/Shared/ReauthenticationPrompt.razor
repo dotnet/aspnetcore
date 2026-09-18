@@ -1,0 +1,212 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@using BlazorWebCSharp._1.Components.Account.Shared
+@using BlazorWebCSharp._1.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<h4>Confirm it's you</h4>
+<p class="text-info">@Purpose</p>
+
+<StatusMessage Message="@message" />
+
+@if (hasPassword)
+{
+    <div class="row">
+        <div class="col-xl-6">
+            <EditForm Model="Input" FormName="confirm-password" OnValidSubmit="ConfirmPasswordAsync" method="post">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
+                    <label for="Input.Password" class="form-label">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm password</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@if (hasPasskey)
+{
+    <form @formname="confirm-passkey" @onsubmit="ConfirmPasskeyAsync" method="post">
+        <div class="mb-3">
+            <PasskeySubmit Operation="PasskeyOperation.Reauthenticate" Name="Passkey" class="btn btn-primary">Confirm with a passkey</PasskeySubmit>
+        </div>
+    </form>
+}
+
+@if (currentLogins is { Count: > 0 })
+{
+    <form action="Account/Manage/ReauthenticateExternalLogin" method="post">
+        <input type="hidden" name="ReturnUrl" value="@currentPagePath" />
+        <div class="mb-3">
+            @foreach (var login in currentLogins)
+            {
+                <button type="submit" class="btn btn-primary" name="Provider" value="@login.LoginProvider" title="Confirm using your @login.ProviderDisplayName account">
+                    Confirm with @login.ProviderDisplayName
+                </button>
+            }
+        </div>
+    </form>
+}
+
+@code {
+    public const string ReauthenticationCallbackAction = "ReauthenticationCallback";
+
+    private string? message;
+    private ApplicationUser? user;
+    private bool hasPassword;
+    private bool hasPasskey;
+    private IList<UserLoginInfo>? currentLogins;
+    private string currentPagePath = "";
+
+    [Parameter]
+    [EditorRequired]
+    public string Purpose { get; set; } = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "confirm-password")]
+    private PasswordInputModel Input { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "confirm-passkey")]
+    private PasskeyInputModel Passkey { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? Action { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        Passkey ??= new();
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectTo("Account/InvalidUser");
+            return;
+        }
+
+        hasPassword = await UserManager.HasPasswordAsync(user);
+        hasPasskey = (await UserManager.GetPasskeysAsync(user)).Count > 0;
+        currentLogins = await UserManager.GetLoginsAsync(user);
+        currentPagePath = NavigationManager.ToBaseRelativePath(
+            NavigationManager.ToAbsoluteUri(NavigationManager.Uri).GetLeftPart(UriPartial.Path));
+
+        if (HttpMethods.IsGet(HttpContext.Request.Method) && Action == ReauthenticationCallbackAction)
+        {
+            await ConfirmExternalLoginAsync();
+        }
+    }
+
+    private async Task ConfirmPasswordAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectTo("Account/InvalidUser");
+            return;
+        }
+
+        if (!await UserManager.CheckPasswordAsync(user, Input.Password!))
+        {
+            message = "Error: Incorrect password.";
+            return;
+        }
+
+        // A correct password can rehash the stored hash, which changes the security stamp. Refresh
+        // the sign-in first so that checking the password does not sign this session out.
+        await SignInManager.RefreshSignInAsync(user);
+        await MarkReauthenticatedAsync();
+    }
+
+    private async Task ConfirmPasskeyAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectTo("Account/InvalidUser");
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Passkey.Error))
+        {
+            message = $"Error: {Passkey.Error}";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(Passkey.CredentialJson))
+        {
+            message = "Error: The browser did not provide a passkey.";
+            return;
+        }
+
+        var assertionResult = await SignInManager.PerformPasskeyAssertionAsync(Passkey.CredentialJson);
+        if (!assertionResult.Succeeded)
+        {
+            message = $"Error: Could not confirm the passkey: {assertionResult.Failure.Message}";
+            return;
+        }
+
+        // The passkey must belong to the account that is currently signed in.
+        var assertedUserId = await UserManager.GetUserIdAsync(assertionResult.User);
+        var currentUserId = await UserManager.GetUserIdAsync(user);
+        if (!string.Equals(assertedUserId, currentUserId, StringComparison.Ordinal))
+        {
+            message = "Error: That passkey belongs to a different account.";
+            return;
+        }
+
+        var updateResult = await UserManager.AddOrUpdatePasskeyAsync(user, assertionResult.Passkey);
+        if (!updateResult.Succeeded)
+        {
+            message = $"Error: {string.Join(",", updateResult.Errors.Select(error => error.Description))}";
+            return;
+        }
+
+        await MarkReauthenticatedAsync();
+    }
+
+    private async Task ConfirmExternalLoginAsync()
+    {
+        var userId = await UserManager.GetUserIdAsync(user!);
+        var info = await SignInManager.GetExternalLoginInfoAsync(userId);
+        if (info is null)
+        {
+            message = "Error: Could not load external login info.";
+            return;
+        }
+
+        // Clear the external cookie now that it has been read
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+        // The provider account must already be linked to the account that is currently signed in.
+        var linkedUser = await UserManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+        if (linkedUser is null || !string.Equals(await UserManager.GetUserIdAsync(linkedUser), userId, StringComparison.Ordinal))
+        {
+            message = "Error: That login is not linked to this account.";
+            return;
+        }
+
+        await MarkReauthenticatedAsync();
+    }
+
+    private async Task MarkReauthenticatedAsync()
+    {
+        await PasskeyReauthentication.MarkAsync(HttpContext, UserManager, user!);
+        RedirectManager.RedirectToCurrentPage();
+    }
+
+    private sealed class PasswordInputModel
+    {
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string? Password { get; set; }
+    }
+}

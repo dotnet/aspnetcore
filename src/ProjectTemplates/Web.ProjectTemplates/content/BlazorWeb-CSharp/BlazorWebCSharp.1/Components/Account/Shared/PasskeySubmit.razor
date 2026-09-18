@@ -3,6 +3,7 @@
     operation="@Operation"
     name="@Name"
     email-name="@EmailName"
+    creation-options="@CreationOptionsJson"
     unknown-credential-signal-options="@UnknownCredentialSignalOptionsJson">
 </passkey-submit>
 
@@ -17,6 +18,9 @@
 
     [Parameter]
     public string? EmailName { get; set; }
+
+    [Parameter]
+    public string? CreationOptionsJson { get; set; }
 
     [Parameter]
     public string? UnknownCredentialSignalOptionsJson { get; set; }
