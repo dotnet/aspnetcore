@@ -4,6 +4,8 @@ name: "PR Documentation Check (Fork Pilot)"
 description: >
   Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
+max-turns: 50
+
 on:
   workflow_dispatch:
     inputs:
@@ -43,6 +45,7 @@ checkout:
   - repository: DeagleGross/AspNetCore.Docs
     path: .
     github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+    fetch: ["*"]
     current: true
 
 tools:
@@ -66,6 +69,31 @@ safe-outputs:
   report-failure-as-issue: false
   noop:
     report-as-issue: false
+  steps:
+    - name: Download trusted draft context
+      uses: actions/download-artifact@v8.0.1
+      with:
+        name: pr-docs-check-context-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/pr-docs-check-context
+    - name: Check out safe-output preflight validator
+      uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
+        path: _safe-output-validator
+        sparse-checkout: .github/workflows/pr-docs-check/validate_outcome.py
+        sparse-checkout-cone-mode: false
+    - name: Reject inconsistent docs mutations
+      env:
+        EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+        EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+      run: >-
+        python3 _safe-output-validator/.github/workflows/pr-docs-check/validate_outcome.py
+        --preflight
+        --agent-output "${GH_AW_AGENT_OUTPUT}"
+        --source-repository "${EXPECTED_SOURCE_REPOSITORY}"
+        --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
+        --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
   create-pull-request:
     target-repo: "DeagleGross/AspNetCore.Docs"
     base-branch: main
@@ -78,14 +106,29 @@ safe-outputs:
       - "aspnetcore/**"
     allowed-branches:
       - "docs/aspnetcore-pr-*"
+    preserve-branch-name: true
     protected-files: blocked
+  push-to-pull-request-branch:
+    target: "*"
+    target-repo: "DeagleGross/AspNetCore.Docs"
+    required-title-prefix: "[docs] "
+    required-labels: [documentation]
+    fallback-as-pull-request: false
+    allowed-files:
+      - "aspnetcore/**"
+    protected-files: blocked
+  update-pull-request:
+    target: "*"
+    target-repo: "DeagleGross/AspNetCore.Docs"
+    required-title-prefix: "[docs] "
+    required-labels: [documentation]
   jobs:
     notify-source-pr:
       name: "Notify source PR"
       description: |
-        Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the `create_pull_request` or `noop` item.
+        Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.
 
-        Use `result: "restricted"` when the source PR is excluded by the security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60 and you emitted `create_pull_request`. The notification job converts this to a draft-failed notification if the safe-output handler didn't produce a PR. Use `result: "skipped"` when confidence is below 60 and no docs PR was requested. Use `result: "draft_failed"` only when confidence is at least 60 but you could not emit `create_pull_request`.
+        Use `result: "restricted"` when the source PR is excluded by the security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60 and you either emitted `create_pull_request` or updated the one trusted existing draft. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: "skipped"` when confidence is below 60 and no docs PR was requested. Use `result: "draft_failed"` only when confidence is at least 60 but you could not request a docs PR operation.
       runs-on: ubuntu-latest
       needs: [safe_outputs]
       permissions:
@@ -99,6 +142,14 @@ safe-outputs:
           description: "One of: drafted, skipped, draft_failed, restricted."
           required: true
           type: string
+        docs_pr_action:
+          description: "One of: created, updated, none."
+          required: true
+          type: string
+        existing_docs_pr_number:
+          description: "Existing docs PR number when docs_pr_action is updated."
+          required: false
+          type: number
         docs_needed_confidence:
           description: "Integer confidence from 0 through 100 that documentation is needed."
           required: true
@@ -132,21 +183,94 @@ safe-outputs:
           required: true
           type: string
       steps:
+        - name: Check out trusted outcome validator
+          uses: actions/checkout@v7.0.1
+          with:
+            persist-credentials: false
+            path: _validator
+            sparse-checkout: .github/workflows/pr-docs-check/validate_outcome.py
+            sparse-checkout-cone-mode: false
+        - name: Download trusted draft context
+          uses: actions/download-artifact@v8.0.1
+          with:
+            name: pr-docs-check-context-${{ github.run_attempt }}
+            path: ${{ runner.temp }}/pr-docs-check-context
+        - name: Read resulting docs pull request
+          uses: actions/github-script@v9.0.0
+          env:
+            CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
+            DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
+          with:
+            github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+            script: |
+              const fs = require('fs');
+
+              const output = JSON.parse(fs.readFileSync(process.env.GH_AW_AGENT_OUTPUT, 'utf8'));
+              const notifications = (output.items || []).filter(item => item.type === 'notify_source_pr');
+              const createdUrl = (process.env.CREATED_DOCS_PR_URL || '').trim();
+              let number = 0;
+
+              if (createdUrl) {
+                const match = createdUrl.match(
+                  /^https:\/\/github\.com\/DeagleGross\/AspNetCore\.Docs\/pull\/([1-9][0-9]*)$/);
+                if (!match) {
+                  core.setFailed(`Unexpected created docs PR URL: ${createdUrl}`);
+                  return;
+                }
+                number = Number(match[1]);
+              } else if (notifications.length === 1 && notifications[0].docs_pr_action === 'updated') {
+                number = Number(notifications[0].existing_docs_pr_number);
+                if (!Number.isInteger(number) || number <= 0) {
+                  core.setFailed(`Invalid existing docs PR number: ${notifications[0].existing_docs_pr_number}`);
+                  return;
+                }
+              }
+
+              let metadata = {};
+              if (number) {
+                try {
+                  const response = await github.rest.pulls.get({
+                    owner: 'DeagleGross',
+                    repo: 'AspNetCore.Docs',
+                    pull_number: number,
+                  });
+                  metadata = response.data;
+                } catch (error) {
+                  core.warning(`Unable to read docs PR #${number}: ${error.message}`);
+                }
+              }
+
+              fs.writeFileSync(process.env.DOCS_PR_METADATA_PATH, JSON.stringify(metadata));
+        - name: Prepare trusted documentation outcome
+          env:
+            CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
+            DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
+            EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+            EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          run: >-
+            python3 _validator/.github/workflows/pr-docs-check/validate_outcome.py
+            --agent-output "${GH_AW_AGENT_OUTPUT}"
+            --source-repository "${EXPECTED_SOURCE_REPOSITORY}"
+            --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
+            --created-pr-url "${CREATED_DOCS_PR_URL}"
+            --docs-pr-metadata "${DOCS_PR_METADATA_PATH}"
+            --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
+            --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
         - name: Publish trusted documentation outcome
           uses: actions/github-script@v9.0.0
           env:
             EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
-            CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
+            CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
           with:
             github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
             script: |
               const fs = require('fs');
 
               const marker = '<!-- aspnetcore-pr-docs-check -->';
+              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
               const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
               const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
-              const createdDocsPrUrl = (process.env.CREATED_DOCS_PR_URL || '').trim();
 
               if (!['dotnet/aspnetcore', 'DeagleGross/aspnetcore'].includes(expectedRepository)) {
                 core.setFailed(`Unexpected source repository: ${expectedRepository}`);
@@ -158,79 +282,20 @@ safe-outputs:
                 return;
               }
 
-              const agentOutput = JSON.parse(fs.readFileSync(process.env.GH_AW_AGENT_OUTPUT, 'utf8'));
-              const items = (agentOutput.items || []).filter(item => item.type === 'notify_source_pr');
-              if (items.length !== 1) {
-                core.setFailed(`Expected exactly one notify_source_pr item, found ${items.length}.`);
+              const outcome = JSON.parse(fs.readFileSync(process.env.CANONICAL_OUTCOME_PATH, 'utf8'));
+              const renderKind = String(outcome.render_kind || 'invalid');
+              const summary = String(outcome.summary || '').trim();
+              const docsPrUrl = String(outcome.docs_pr_url || '').trim();
+              const docsPrNumber = Number(outcome.docs_pr_number);
+
+              if (!outcome.allow_comment) {
+                core.setFailed(`Outcome validation failed: ${outcome.diagnostic || 'unknown reason'}`);
+              }
+
+              if (Number(outcome.source_pr_number) !== expectedPrNumber) {
+                core.setFailed(`Canonical outcome targeted PR ${outcome.source_pr_number}; expected ${expectedPrNumber}.`);
                 return;
               }
-
-              const item = items[0];
-              const confidence = Number(item.docs_needed_confidence);
-              const reportedResult = String(item.result || '');
-              const summary = String(item.summary || '').trim();
-              const suppliedPrNumber = Number(item.source_pr_number);
-              const validResults = new Set(['drafted', 'skipped', 'draft_failed', 'restricted']);
-
-              if (suppliedPrNumber !== expectedPrNumber) {
-                core.setFailed(`Notification targeted PR ${suppliedPrNumber}; expected ${expectedPrNumber}.`);
-                return;
-              }
-
-              if (!Number.isInteger(confidence) || confidence < 0 || confidence > 100) {
-                core.setFailed(`Confidence must be an integer from 0 through 100; received ${item.docs_needed_confidence}.`);
-                return;
-              }
-
-              if (!validResults.has(reportedResult)) {
-                core.setFailed(`Invalid documentation result: ${reportedResult}`);
-                return;
-              }
-
-              if (!summary || summary.length > 2000) {
-                core.setFailed('Summary must contain between 1 and 2000 characters.');
-                return;
-              }
-
-              const surfaceFields = [
-                ['Conceptual article', item.conceptual_required, item.conceptual_reason],
-                ['Migration guidance', item.migration_required, item.migration_reason],
-                ['Breaking change', item.breaking_change_required, item.breaking_change_reason],
-              ];
-
-              for (const [name, required, reason] of surfaceFields) {
-                if (typeof required !== 'boolean') {
-                  core.setFailed(`${name} required flag must be a boolean.`);
-                  return;
-                }
-                if (!String(reason || '').trim()) {
-                  core.setFailed(`${name} reason must not be empty.`);
-                  return;
-                }
-              }
-
-              if (reportedResult === 'skipped' && confidence >= 60) {
-                core.setFailed(`A skipped result requires confidence below 60; received ${confidence}.`);
-                return;
-              }
-
-              if (reportedResult === 'restricted' && confidence !== 0) {
-                core.setFailed(`A restricted result requires confidence 0; received ${confidence}.`);
-                return;
-              }
-
-              if (!['skipped', 'restricted'].includes(reportedResult) && confidence < 60) {
-                core.setFailed(`${reportedResult} requires confidence of at least 60; received ${confidence}.`);
-                return;
-              }
-
-              if (reportedResult !== 'drafted' && createdDocsPrUrl) {
-                core.setFailed(`The agent reported ${reportedResult}, but a docs PR was created.`);
-                return;
-              }
-
-              const effectiveResult =
-                reportedResult === 'drafted' && !createdDocsPrUrl ? 'draft_failed' : reportedResult;
 
               const [owner, repo] = expectedRepository.split('/');
               const sourcePr = await github.rest.pulls.get({
@@ -241,21 +306,23 @@ safe-outputs:
 
               const author = sourcePr.data.user;
               const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
-              const surfaces = surfaceFields.map(([name, required, reason]) =>
-                `* **${name}:** ${required ? 'Required' : 'Not required'} — ${String(reason).trim()}`);
+              const surfaces = (outcome.surfaces || []).map(surface =>
+                `* **${surface.name}:** ${surface.required ? 'Required' : 'Not required'} — ${surface.reason}`);
 
               let heading;
-              if (effectiveResult === 'restricted') {
+              if (renderKind === 'restricted') {
                 heading = 'ℹ️ This pull request wasn\'t processed automatically.';
-              } else if (effectiveResult === 'drafted') {
-                heading = `📝 Documentation drafted: ${createdDocsPrUrl}`;
-              } else if (effectiveResult === 'draft_failed') {
+              } else if (renderKind === 'drafted') {
+                heading = `📝 Documentation ${outcome.docs_pr_action === 'updated' ? 'updated' : 'drafted'}: ${docsPrUrl}`;
+              } else if (['draft_failed', 'drafted_missing_pr'].includes(renderKind)) {
                 heading = '⚠️ Documentation appears necessary, but a draft PR could not be created.';
-              } else {
+              } else if (renderKind === 'skipped') {
                 heading = '✅ No documentation PR was created.';
+              } else {
+                heading = '⚠️ The documentation workflow returned an invalid or inconsistent result.';
               }
 
-              const sourceComment = effectiveResult === 'restricted'
+              const sourceComment = renderKind === 'restricted'
                 ? [
                     marker,
                     heading,
@@ -266,13 +333,14 @@ safe-outputs:
                     marker,
                     heading,
                     '',
-                    `**Confidence that documentation is needed:** ${confidence}%`,
-                    '',
-                    summary,
-                    '',
-                    '**Documentation surfaces considered**',
-                    '',
-                    ...surfaces,
+                    ...(Number.isInteger(outcome.confidence)
+                      ? [`**Confidence that documentation is needed:** ${outcome.confidence}%`, '']
+                      : []),
+                    ...(summary ? [summary, ''] : []),
+                    ...(surfaces.length ? ['**Documentation surfaces considered**', '', ...surfaces] : []),
+                    ...(renderKind === 'invalid'
+                      ? ['', `See the workflow run for validation details: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`]
+                      : []),
                   ].join('\n');
 
               try {
@@ -308,27 +376,106 @@ safe-outputs:
                 body: sourceComment,
               });
 
-              if (effectiveResult !== 'drafted' || !sourceAuthor) {
+              if (renderKind !== 'drafted' || !sourceAuthor || !Number.isInteger(docsPrNumber) || docsPrNumber <= 0) {
                 return;
               }
 
-              const match = createdDocsPrUrl.match(
-                /^https:\/\/github\.com\/DeagleGross\/AspNetCore\.Docs\/pull\/([1-9][0-9]*)$/);
-              if (!match) {
-                core.setFailed(`Unexpected docs PR URL: ${createdDocsPrUrl}`);
-                return;
-              }
-
-              await github.rest.issues.createComment({
+              const authorComment = [
+                docsAuthorMarker,
+                `@${sourceAuthor}, this draft documents your source change in ${expectedRepository}#${expectedPrNumber}.`,
+                '',
+                'Please review it for technical accuracy and confirm that the user impact and recommended guidance match the implementation.',
+              ].join('\n');
+              const docsComments = await github.paginate(github.rest.issues.listComments, {
                 owner: 'DeagleGross',
                 repo: 'AspNetCore.Docs',
-                issue_number: Number(match[1]),
-                body: [
-                  `@${sourceAuthor}, this draft documents your source change in ${expectedRepository}#${expectedPrNumber}.`,
-                  '',
-                  'Please review it for technical accuracy and confirm that the user impact and recommended guidance match the implementation.',
-                ].join('\n'),
+                issue_number: docsPrNumber,
+                per_page: 100,
               });
+              const priorAuthorComment = docsComments.find(comment => comment.body?.includes(docsAuthorMarker));
+              if (priorAuthorComment) {
+                await github.rest.issues.updateComment({
+                  owner: 'DeagleGross',
+                  repo: 'AspNetCore.Docs',
+                  comment_id: priorAuthorComment.id,
+                  body: authorComment,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: 'DeagleGross',
+                  repo: 'AspNetCore.Docs',
+                  issue_number: docsPrNumber,
+                  body: authorComment,
+                });
+              }
+
+pre-agent-steps:
+  - name: Check out trusted workflow helpers
+    uses: actions/checkout@v7.0.1
+    with:
+      persist-credentials: false
+      path: _workflow-source
+      sparse-checkout: .github/workflows/pr-docs-check
+      sparse-checkout-cone-mode: false
+  - name: Resolve source version and existing docs draft
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DOCS_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+      SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+      SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+    run: |
+      set -euo pipefail
+      trap 'rm -rf -- _workflow-source' EXIT
+
+      case "${SOURCE_REPOSITORY}" in
+        dotnet/aspnetcore|DeagleGross/aspnetcore) ;;
+        *)
+          echo "ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}" >&2
+          exit 1
+          ;;
+      esac
+      if ! [[ "${SOURCE_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+        echo "ERROR: SOURCE_PR_NUMBER must be a positive integer." >&2
+        exit 1
+      fi
+
+      CONTEXT_DIR=/tmp/gh-aw/pr-docs-check
+      mkdir -p "${CONTEXT_DIR}"
+      gh api "/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}" \
+        > "${CONTEXT_DIR}/source-pr.json"
+      gh api --method GET --paginate --slurp "/repos/dotnet/aspnetcore/branches?per_page=100" \
+        | jq '[.[][] | .name]' \
+        > "${CONTEXT_DIR}/source-branches.json"
+      python3 _workflow-source/.github/workflows/pr-docs-check/resolve_target_version.py \
+        --policy _workflow-source/.github/workflows/pr-docs-check/version-policy.json \
+        --pull-request "${CONTEXT_DIR}/source-pr.json" \
+        --release-branches "${CONTEXT_DIR}/source-branches.json" \
+        --output "${CONTEXT_DIR}/target-version.json"
+
+      GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api --method GET --paginate --slurp \
+        "/repos/DeagleGross/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
+        | jq '[.[][]]' \
+        > "${CONTEXT_DIR}/open-docs-pulls.json"
+      python3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \
+        --pull-requests "${CONTEXT_DIR}/open-docs-pulls.json" \
+        --source-repository "${SOURCE_REPOSITORY}" \
+        --source-pr-number "${SOURCE_PR_NUMBER}" \
+        --docs-repository DeagleGross/AspNetCore.Docs \
+        --allowed-author DeagleGross \
+        --output "${CONTEXT_DIR}/existing-draft.json"
+
+      if [ "$(jq -r '.found' "${CONTEXT_DIR}/existing-draft.json")" = "true" ]; then
+        HEAD_REF="$(jq -r '.selected.head_ref' "${CONTEXT_DIR}/existing-draft.json")"
+        git fetch origin "refs/heads/${HEAD_REF}:refs/remotes/origin/${HEAD_REF}"
+        git checkout -B "${HEAD_REF}" "refs/remotes/origin/${HEAD_REF}"
+      fi
+  - name: Preserve trusted draft context
+    uses: actions/upload-artifact@v7.0.1
+    with:
+      name: pr-docs-check-context-${{ github.run_attempt }}
+      path: /tmp/gh-aw/pr-docs-check/existing-draft.json
+      if-no-files-found: error
+      retention-days: 1
 
 timeout-minutes: 20
 ---
@@ -337,9 +484,9 @@ timeout-minutes: 20
 
 Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `DeagleGross/AspNetCore.Docs`.
 
-This is a manually dispatched fork pilot. Do not modify `dotnet/aspnetcore`, `DeagleGross/aspnetcore`, or `dotnet/AspNetCore.Docs`. Your only permitted visible outcomes are:
+This is a manually dispatched fork pilot. Do not modify `dotnet/aspnetcore`, `DeagleGross/aspnetcore`, or `dotnet/AspNetCore.Docs`. Before analysis, trusted pre-agent steps resolve the source version and search for an existing automated documentation draft. Your only permitted visible outcomes are:
 
-1. When documentation confidence is at least 60%, one draft pull request in `DeagleGross/AspNetCore.Docs` and one `notify_source_pr` result.
+1. When documentation confidence is at least 60%, one new or updated draft pull request in `DeagleGross/AspNetCore.Docs` and one `notify_source_pr` result.
 2. When documentation confidence is below 60%, one `noop` result and one `notify_source_pr` result explaining why no documentation PR was created.
 3. When documentation is required but drafting fails, one `notify_source_pr` result with `result: "draft_failed"`.
 4. When the source PR is excluded by the security-concern rules, no docs changes, one generic `noop`, and one `notify_source_pr` result with `result: "restricted"`.
@@ -352,7 +499,7 @@ Confirm that:
 - `pr_number` is a positive integer.
 - The pull request exists and is merged.
 
-If the repository input is invalid or the pull request doesn't exist, emit `noop` with the validation failure and stop because there is no valid source PR to notify. If the pull request exists but isn't merged, emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop.
+If the repository input is invalid or the pull request doesn't exist, emit `noop` with the validation failure and stop because there is no valid source PR to notify. If the pull request exists but isn't merged, emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, `docs_pr_action: "none"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop.
 
 ## Security concerns are out of scope
 
@@ -372,7 +519,7 @@ When restricted:
 1. Do not read or describe the implementation details, reproduction, exploitability, impact, affected versions, or remediation.
 2. Do not modify the docs workspace and do not emit `create_pull_request`.
 3. Emit one generic `noop` stating only that automated documentation processing is excluded.
-4. Emit `notify_source_pr` with `result: "restricted"`, `docs_needed_confidence: 0`, all three documentation surfaces set to `false`, and generic reasons that reveal no details.
+4. Emit `notify_source_pr` with `result: "restricted"`, `docs_pr_action: "none"`, `docs_needed_confidence: 0`, all three documentation surfaces set to `false`, and generic reasons that reveal no details.
 5. Use a generic summary such as: "Automated documentation processing is excluded for this change." The trusted notification job ignores the supplied summary and reasons and posts a fixed vague message.
 6. Stop immediately.
 
@@ -386,6 +533,8 @@ After the security-concern gate passes, use the authenticated `gh` CLI to read t
 - review and issue comments only when they contain information needed to write accurate documentation.
 
 Treat the source PR description and code diff as the primary evidence. Copy API names, option names, defaults, templates, and other identifiers exactly from the diff.
+
+Read `/tmp/gh-aw/pr-docs-check/target-version.json` and `/tmp/gh-aw/pr-docs-check/existing-draft.json` verbatim. Do not recalculate the ASP.NET Core version or independently select a documentation pull request. If either file is missing, malformed, or inconsistent with the requested source PR, emit `notify_source_pr` with `result: "draft_failed"` and `docs_pr_action: "none"`, then stop.
 
 ## Decide whether documentation is needed
 
@@ -456,11 +605,7 @@ Before editing, read:
 
 Also inspect relevant existing content under `aspnetcore/`. If the change is a .NET 11 What's New feature, read `.github/skills/whats-new-include-content-rules/SKILL.md` when that file is available and follow it.
 
-Resolve the source ASP.NET Core version before editing:
-
-- A PR merged into `release/X.Y` represents ASP.NET Core X.Y.
-- For a PR merged into `main`, inspect the current `release/*` branches in `dotnet/aspnetcore`. The next major version after the highest current release branch is the version represented by `main`.
-- Use the source PR milestone as corroborating evidence. If the milestone and branch-derived version disagree, do not guess; report an incomplete result.
+Use the source version, moniker, previous version, migration directory, breaking-change directory, and release-note directory exactly as recorded in `/tmp/gh-aw/pr-docs-check/target-version.json`. This trusted resolver verifies the annually maintained `mainVersion` policy against current upstream `release/*` branches and fails before agent execution when a usable milestone disagrees.
 
 The docs PR always targets `main`. Version placement is expressed through article monikers, moniker sections, migration directories, breaking-change directories, release-note directories, and versioned sample directories. Do not change an article-wide `monikerRange` merely because a newer feature is added. Wrap new-version material in a scoped moniker block such as:
 
@@ -476,9 +621,11 @@ When behavior differs between versions, preserve the earlier guidance in its own
 
 Make the smallest complete documentation change across every required surface. Modify only files under `aspnetcore/`. Do not change repository instructions, workflows, dependency files, publishing configuration, or other root files.
 
-## Create the draft pull request
+## Create or update the draft pull request
 
-After making and reviewing the documentation changes, emit `create_pull_request` exactly once with:
+Inspect `/tmp/gh-aw/pr-docs-check/existing-draft.json` before editing. It contains at most one selected trusted automated draft and may list older duplicates for human cleanup. Never create another pull request when `found` is `true`. When `blocked` is `true`, an existing matching pull request is no longer a draft; do not modify or replace it. Complete the analysis, then use `draft_failed` if documentation is required or `skipped` if it is not.
+
+When no existing draft was found, after making and reviewing the documentation changes, emit `create_pull_request` exactly once with:
 
 - branch: `docs/aspnetcore-pr-${{ inputs.pr_number }}`
 - base: `main`
@@ -488,9 +635,15 @@ After making and reviewing the documentation changes, emit `create_pull_request`
 - separate conceptual, migration, and breaking-change decisions;
 - a summary of the documentation change and a list of modified files.
 
-Do not use a closing keyword for the cross-repository source reference. Do not request reviewers. Do not retry a deterministic pull-request creation failure.
+Then emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "created"`, no `existing_docs_pr_number`, the confidence score, all three surface decisions and reasons, and a concise summary. Do not use a closing keyword for the cross-repository source reference. Do not request reviewers. Do not retry a deterministic pull-request creation failure.
 
-After emitting `create_pull_request`, emit `notify_source_pr` exactly once with `result: "drafted"`, the confidence score, all three surface decisions and reasons, and a concise summary. The trusted notification job converts the outcome to `draft_failed` if the PR handler doesn't produce a PR, obtains the source PR author directly from GitHub, and mentions that person on a successfully created docs PR.
+When an existing draft was found, the trusted pre-agent step has checked out its head branch. Update the documentation on that branch, then:
+
+1. Emit `push_to_pull_request_branch` exactly once with `pull_request_number` set to `/tmp/gh-aw/pr-docs-check/existing-draft.json`'s selected number.
+2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title and replacing its body with the same body structure required above.
+3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary.
+
+The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main`, belongs to `DeagleGross/AspNetCore.Docs`, has the required title prefix and label, and carries the exact source marker. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
 
 If confidence is below 60, make no file changes and emit `noop` exactly once with:
 
@@ -498,6 +651,6 @@ If confidence is below 60, make no file changes and emit `noop` exactly once wit
 - the changed files or evidence supporting that decision;
 - a short explanation suitable for reviewing in the workflow run.
 
-Then emit `notify_source_pr` exactly once with `result: "skipped"`, the confidence score, all three surface decisions and reasons, and a summary that clearly distinguishes "no docs needed" from "insufficient evidence."
+Then emit `notify_source_pr` exactly once with `result: "skipped"`, `docs_pr_action: "none"`, the confidence score, all three surface decisions and reasons, and a summary that clearly distinguishes "no docs needed" from "insufficient evidence."
 
-If confidence is at least 60 but a draft PR cannot be requested, emit `notify_source_pr` exactly once with `result: "draft_failed"` and explain the failure. Never report this condition as a successful `noop`.
+If confidence is at least 60 but a draft PR operation cannot be requested, emit `notify_source_pr` exactly once with `result: "draft_failed"`, `docs_pr_action: "none"`, and explain the failure. Never report this condition as a successful `noop`.
