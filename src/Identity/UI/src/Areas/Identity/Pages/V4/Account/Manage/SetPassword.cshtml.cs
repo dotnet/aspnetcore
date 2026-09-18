@@ -30,18 +30,11 @@ public abstract class SetPasswordModel : PageModel
     [TempData]
     public string? StatusMessage { get; set; }
 
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
+    // Internal until #69376, the SetPassword reauthentication API proposal, is approved.
     internal bool IsReauthenticated { get; set; }
 
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    /// <remarks>Null when the user store does not support security stamps.</remarks>
-    public IList<UserLoginInfo>? CurrentLogins { get; set; }
+    // Internal until #69376, the SetPassword reauthentication API proposal, is approved.
+    internal IList<UserLoginInfo>? CurrentLogins { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
