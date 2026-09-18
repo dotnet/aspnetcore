@@ -392,7 +392,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // End mode: pin new items into view if we're at the bottom now, or were and are still following.
-    if ((anchorModeIs.end || bottomTracking.following) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
+    if (bottomTracking.following
+        || (anchorModeIs.end && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached))) {
+      flushPendingStyleMutations();
       scrollElement.scrollTop = scrollElement.scrollHeight;
       scrollActivity.ignoreNextScroll();
       // Start convergence only when there are more items to load (spacerAfter > 0).
