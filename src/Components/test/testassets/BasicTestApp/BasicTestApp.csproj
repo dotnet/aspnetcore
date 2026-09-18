@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <UseMonoRuntime>false</UseMonoRuntime>
 
     <!-- Must be defined before ReferenceFromSource.props is imported -->
     <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>

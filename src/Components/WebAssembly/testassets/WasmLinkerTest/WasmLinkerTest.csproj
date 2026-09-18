@@ -3,7 +3,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
-    <UseMonoRuntime>true</UseMonoRuntime>
+    <UseMonoRuntime>false</UseMonoRuntime>
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
     <PublishTrimmed>true</PublishTrimmed>

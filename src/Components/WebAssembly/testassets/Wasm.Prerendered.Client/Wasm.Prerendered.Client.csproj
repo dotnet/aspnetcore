@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <UseMonoRuntime>false</UseMonoRuntime>
   </PropertyGroup>
 
   <ItemGroup>

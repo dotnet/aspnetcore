@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <UseMonoRuntime>false</UseMonoRuntime>
     <WasmEnableHotReload>false</WasmEnableHotReload>
   </PropertyGroup>
 
