@@ -19,6 +19,49 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
 public class MinimalFormTests
 {
+    [Theory]
+    [InlineData(false, nameof(FormClassWithMultipleConstructors))]
+    [InlineData(true, nameof(FormStructWithMultipleConstructors))]
+    public async Task MapPost_WithFormTypeHavingMultiplePublicConstructors_ThrowsOnRequest(
+        bool useStruct,
+        string typeName)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            if (useStruct)
+                            {
+                                endpoints.MapPost("/", ([FromForm] FormStructWithMultipleConstructors value) => value)
+                                    .DisableAntiforgery();
+                            }
+                            else
+                            {
+                                endpoints.MapPost("/", ([FromForm] FormClassWithMultipleConstructors value) => value)
+                                    .DisableAntiforgery();
+                            }
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        await host.StartAsync();
+        var client = host.GetTestClient();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => client.PostAsync("/", new FormUrlEncodedContent([new("value", "42")])));
+
+        Assert.Equal(
+            $"The form parameter 'value' has type '{typeName}', which has multiple public constructors. Only a single public constructor is supported.",
+            exception.Message);
+    }
 
     [Fact]
     public async Task MapPost_WithForm_ValidToken_Works()
@@ -760,6 +803,28 @@ public class MinimalFormTests
         public string Name { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime DueDate { get; set; }
+    }
+
+    private sealed class FormClassWithMultipleConstructors
+    {
+        public FormClassWithMultipleConstructors(int value)
+        {
+        }
+
+        public FormClassWithMultipleConstructors(string value)
+        {
+        }
+    }
+
+    private struct FormStructWithMultipleConstructors
+    {
+        public FormStructWithMultipleConstructors(int value)
+        {
+        }
+
+        public FormStructWithMultipleConstructors(string value)
+        {
+        }
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
