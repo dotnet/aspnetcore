@@ -285,9 +285,10 @@ public class Project : IDisposable
                     {
                         buffer.Add(line);
                         var trimmedLine = line.Trim();
-                        if (trimmedLine.StartsWith(listeningMessagePrefix, StringComparison.Ordinal))
+                        var prefixIndex = trimmedLine.IndexOf(listeningMessagePrefix, StringComparison.Ordinal);
+                        if (prefixIndex >= 0)
                         {
-                            var listeningUri = trimmedLine[listeningMessagePrefix.Length..];
+                            var listeningUri = trimmedLine[(prefixIndex + listeningMessagePrefix.Length)..];
                             if (Uri.TryCreate(listeningUri, UriKind.Absolute, out _))
                             {
                                 return listeningUri;
