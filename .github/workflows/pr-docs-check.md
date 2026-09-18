@@ -2,11 +2,12 @@
 name: "PR Documentation Check (Fork Pilot)"
 
 description: >
-  Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
+  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
 max-turns: 100
 
 on:
+  # Keep the upstream rollout manual-only. Add an automatic merged-PR trigger separately after production approval.
   workflow_dispatch:
     inputs:
       source_repository:
