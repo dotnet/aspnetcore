@@ -50,6 +50,15 @@ public class X509CertificateHelpersTests
         Assert.Equal([dnsName], dnsNames);
     }
 
+    [Fact]
+    public void GetDnsFromExtensions_MalformedSubjectAlternativeName_Throws()
+    {
+        using var certificate = CreateCertificate(
+            new X509Extension(SubjectAlternativeNameOid, [0x30, 0x01, 0x82], critical: false));
+
+        Assert.Throws<CryptographicException>(() => X509CertificateHelpers.GetDnsFromExtensions(certificate));
+    }
+
     private static X509Certificate2 CreateCertificate(params X509Extension[] extensions)
     {
         using var key = RSA.Create();
