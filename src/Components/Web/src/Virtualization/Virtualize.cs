@@ -1065,7 +1065,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
                 if (hasComparableItem && !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current))
                 {
-                    result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                    if (!await ShouldFollowPrependedHeadAsync())
+                    {
+                        result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                    }
                 }
                 else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                 {
@@ -1178,6 +1181,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         => countDelta > 0
             && (AnchorMode & VirtualizeAnchorMode.End) != 0
             && previousItemCount <= _visibleItemCapacity;
+
+    private async ValueTask<bool> ShouldFollowPrependedHeadAsync()
+    {
+        if ((AnchorMode & VirtualizeAnchorMode.Start) == 0
+            || _itemsBefore != 0
+            || _jsInterop is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await _jsInterop.IsFollowingTopAsync();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            return false;
+        }
+    }
 
     private async ValueTask<bool> ShouldFollowAppendedTailAsync(int previousItemCount)
     {
