@@ -92,7 +92,8 @@ safe-outputs:
         request. Emit exactly one `notify_source_pr` item after the
         `create_pull_request` or `noop` item.
 
-        Use `result: "drafted"` when documentation confidence is at least 60
+        Use `result: "restricted"` when the source PR is excluded by the
+        security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60
         and you emitted `create_pull_request`. The notification job converts
         this to a draft-failed notification if the safe-output handler didn't
         produce a PR. Use `result: "skipped"` when confidence is below 60 and
@@ -109,7 +110,7 @@ safe-outputs:
           required: true
           type: number
         result:
-          description: "One of: drafted, skipped, draft_failed."
+          description: "One of: drafted, skipped, draft_failed, restricted."
           required: true
           type: string
         docs_needed_confidence:
@@ -183,7 +184,7 @@ safe-outputs:
               const reportedResult = String(item.result || '');
               const summary = String(item.summary || '').trim();
               const suppliedPrNumber = Number(item.source_pr_number);
-              const validResults = new Set(['drafted', 'skipped', 'draft_failed']);
+              const validResults = new Set(['drafted', 'skipped', 'draft_failed', 'restricted']);
 
               if (suppliedPrNumber !== expectedPrNumber) {
                 core.setFailed(`Notification targeted PR ${suppliedPrNumber}; expected ${expectedPrNumber}.`);
@@ -227,7 +228,12 @@ safe-outputs:
                 return;
               }
 
-              if (reportedResult !== 'skipped' && confidence < 60) {
+              if (reportedResult === 'restricted' && confidence !== 0) {
+                core.setFailed(`A restricted result requires confidence 0; received ${confidence}.`);
+                return;
+              }
+
+              if (!['skipped', 'restricted'].includes(reportedResult) && confidence < 60) {
                 core.setFailed(`${reportedResult} requires confidence of at least 60; received ${confidence}.`);
                 return;
               }
@@ -253,7 +259,9 @@ safe-outputs:
                 `* **${name}:** ${required ? 'Required' : 'Not required'} — ${String(reason).trim()}`);
 
               let heading;
-              if (effectiveResult === 'drafted') {
+              if (effectiveResult === 'restricted') {
+                heading = 'ℹ️ This pull request wasn\'t processed automatically.';
+              } else if (effectiveResult === 'drafted') {
                 heading = `📝 Documentation drafted: ${createdDocsPrUrl}`;
               } else if (effectiveResult === 'draft_failed') {
                 heading = '⚠️ Documentation appears necessary, but a draft PR could not be created.';
@@ -261,18 +269,25 @@ safe-outputs:
                 heading = '✅ No documentation PR was created.';
               }
 
-              const sourceComment = [
-                marker,
-                heading,
-                '',
-                `**Confidence that documentation is needed:** ${confidence}%`,
-                '',
-                summary,
-                '',
-                '**Documentation surfaces considered**',
-                '',
-                ...surfaces,
-              ].join('\n');
+              const sourceComment = effectiveResult === 'restricted'
+                ? [
+                    marker,
+                    heading,
+                    '',
+                    'This change requires specialized review. Please confirm whether documentation updates are needed and handle them through the appropriate process.',
+                  ].join('\n')
+                : [
+                    marker,
+                    heading,
+                    '',
+                    `**Confidence that documentation is needed:** ${confidence}%`,
+                    '',
+                    summary,
+                    '',
+                    '**Documentation surfaces considered**',
+                    '',
+                    ...surfaces,
+                  ].join('\n');
 
               try {
                 const existingComments = await github.paginate(github.rest.issues.listComments, {
@@ -349,6 +364,9 @@ Your only permitted visible outcomes are:
    `notify_source_pr` result explaining why no documentation PR was created.
 3. When documentation is required but drafting fails, one
    `notify_source_pr` result with `result: "draft_failed"`.
+4. When the source PR is excluded by the security-concern rules, no docs
+   changes, one generic `noop`, and one `notify_source_pr` result with
+   `result: "restricted"`.
 
 ## Validate the request
 
@@ -366,9 +384,48 @@ emit `notify_source_pr` with confidence 0, `result: "skipped"`, all three
 surfaces set to not required because the change isn't eligible for analysis,
 and stop.
 
+## Security concerns are out of scope
+
+This workflow must not assess, discuss, summarize, document, or make
+recommendations about potential vulnerabilities or their impact. Before
+reading diff hunks, linked issues, review comments, or issue comments, inspect
+only the source PR's title, body, labels, author, milestone, base branch, merge
+state, and changed file names to determine whether this exclusion applies.
+
+Treat the PR as restricted when its title, body, or labels explicitly present
+it as:
+
+- a vulnerability or exploit fix;
+- a CVE, GHSA, advisory, coordinated-disclosure, or MSRC-related change;
+- a security fix intended to patch a reported weakness;
+- a change whose public explanation could disclose vulnerability details.
+
+Do not evaluate whether the claim is valid. If uncertain, treat the PR as
+restricted. A PR isn't restricted merely because it changes a security-adjacent
+technology such as authentication, authorization, antiforgery, cookies, data
+protection, HTTPS, or HTTP validation. Ordinary features, behavior changes, and
+hardening work remain eligible when the PR doesn't claim to fix or disclose a
+vulnerability.
+
+When restricted:
+
+1. Do not read or describe the implementation details, reproduction,
+   exploitability, impact, affected versions, or remediation.
+2. Do not modify the docs workspace and do not emit `create_pull_request`.
+3. Emit one generic `noop` stating only that automated documentation processing
+   is excluded.
+4. Emit `notify_source_pr` with `result: "restricted"`,
+   `docs_needed_confidence: 0`, all three documentation surfaces set to
+   `false`, and generic reasons that reveal no details.
+5. Use a generic summary such as: "Automated documentation processing is
+   excluded for this change." The trusted notification job ignores the supplied
+   summary and reasons and posts a fixed vague message.
+6. Stop immediately.
+
 ## Gather source context
 
-Use the authenticated `gh` CLI to read the source pull request. Read:
+After the security-concern gate passes, use the authenticated `gh` CLI to read
+the source pull request. Read:
 
 - title, body, author, labels, milestone, base branch, and merge state;
 - changed file names and relevant diff hunks;
