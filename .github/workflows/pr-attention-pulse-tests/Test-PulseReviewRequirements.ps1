@@ -175,8 +175,9 @@ Invoke-Control "DeterministicClickableReferences" {
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
     $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
     $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse
+    $pulse = Resolve-PulseMergeArea -Area $pulse
     $expectedNumbers = @(
-        foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge"))
+        foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
         {
             foreach ($candidate in @($pulse.views.$viewName))
             {

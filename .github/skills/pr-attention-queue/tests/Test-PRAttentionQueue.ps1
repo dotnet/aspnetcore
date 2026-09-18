@@ -691,4 +691,5 @@ foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)
     }
 }
 
+& (Join-Path $PSScriptRoot "Test-MergeEligibility.ps1")
 Write-Output "All PR attention queue tests passed."
