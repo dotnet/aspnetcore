@@ -222,11 +222,27 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       'accept': acceptHeader,
     },
   }, fetchOptions));
+  const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
+  let response: Response;
+  try {
+    response = await responsePromise;
+  } catch (ex) {
+    if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
+      return;
+    }
+
+    if (isGetRequest) {
+      retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+      return;
+    }
+
+    throw ex;
+  }
+
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(
-    responsePromise, abortSignal,
+    response, abortSignal,
     (response, initialContent) => {
-      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
@@ -366,12 +382,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   }
 }
 
-async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
-  let response: Response;
-
+async function getResponsePartsWithFraming(response: Response, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
   try {
-    response = await responsePromise;
-
     if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
       onInitialDocument(response, '');
       return;
@@ -467,3 +479,4 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }
+
