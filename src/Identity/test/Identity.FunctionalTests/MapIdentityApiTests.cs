@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
 public class MapIdentityApiTests : LoggedTest
 {
+    private const string KnownEmail = "known@example.com";
     private static string Email { get; } = $"{Guid.NewGuid()}@example.com";
     private static string Password { get; } = "[PLACEHOLDER]-1a";
     private static Uri BaseAddress { get; } = new Uri("http://example.com");
@@ -242,10 +243,13 @@ public class MapIdentityApiTests : LoggedTest
     [Theory]
     [InlineData(null)]
     [InlineData("unknown@example.com")]
-    public async Task PasskeyRequestOptionsReturnOkWithoutKnownEmail(string? email)
+    [InlineData(KnownEmail)]
+    public async Task PasskeyRequestOptionsDoNotRevealWhetherAccountExists(string? email)
     {
         await using var app = await CreatePasskeyAppAsync();
         using var client = app.GetTestClient();
+
+        await RegisterAsync(client, email: KnownEmail);
 
         var response = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { email });
 
@@ -253,21 +257,6 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.False(content.GetProperty("hasUser").GetBoolean());
-    }
-
-    [Fact]
-    public async Task PasskeyRequestOptionsReturnOkForKnownEmail()
-    {
-        await using var app = await CreatePasskeyAppAsync();
-        using var client = app.GetTestClient();
-
-        await RegisterAsync(client);
-
-        var response = await client.PostAsJsonAsync("/identity/passkeys/requestOptions", new { Email });
-
-        AssertOk(response);
-        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(content.GetProperty("hasUser").GetBoolean());
     }
 
     [Fact]

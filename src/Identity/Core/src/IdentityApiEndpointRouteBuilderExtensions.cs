@@ -132,10 +132,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var userManager = signInManager.UserManager;
             EnsurePasskeySupport(userManager);
 
-            var user = string.IsNullOrEmpty(request.Email)
-                ? null
-                : await userManager.FindByEmailAsync(request.Email);
-            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user: null);
 
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });

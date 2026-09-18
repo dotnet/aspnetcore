@@ -31,21 +31,6 @@ public class PasskeyHandlerAssertionTest
     }
 
     [Fact]
-    public async Task MakeRequestOptionsWithStoredPasskeyHasEmptyAllowCredentials()
-    {
-        var test = new AssertionTest
-        {
-            IsUserIdentified = true,
-        };
-
-        var result = await test.RunAsync();
-
-        Assert.True(result.Succeeded);
-        var requestOptions = test.RequestOptionsJson.GetValueAsJsonElement();
-        Assert.Empty(requestOptions.GetProperty("allowCredentials").EnumerateArray());
-    }
-
-    [Fact]
     public async Task Fails_WhenCredentialIdIsMissing()
     {
         var test = new AssertionTest();
@@ -1015,7 +1000,6 @@ public class PasskeyHandlerAssertionTest
         public ComputedValue<ReadOnlyMemory<byte>> AuthenticatorData { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> ClientDataHash { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> Signature { get; } = new();
-        public ComputedJsonObject RequestOptionsJson { get; } = new();
         public ComputedJsonObject AssertionStateJson { get; } = new();
         public ComputedJsonObject ClientDataJson { get; } = new();
         public ComputedJsonObject CredentialJson { get; } = new();
@@ -1050,6 +1034,10 @@ public class PasskeyHandlerAssertionTest
                     DoesCredentialExistOnUser && user == User && CredentialId.Span.SequenceEqual(credentialId)
                         ? storedPasskey
                         : null));
+            userManager
+                .Setup(m => m.GetPasskeysAsync(It.IsAny<PocoUser>()))
+                .Returns((PocoUser user) => Task.FromResult<IList<UserPasskeyInfo>>(
+                    DoesCredentialExistOnUser && user == User ? [storedPasskey] : []));
 
             if (IsUserIdentified)
             {
@@ -1065,7 +1053,6 @@ public class PasskeyHandlerAssertionTest
                 IsUserIdentified ? User : null,
                 httpContext.Object);
 
-            RequestOptionsJson.Compute(requestOptionsResult.RequestOptionsJson);
             var requestOptions = JsonSerializer.Deserialize(
                 requestOptionsResult.RequestOptionsJson,
                 IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
