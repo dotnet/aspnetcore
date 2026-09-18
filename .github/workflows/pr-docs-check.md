@@ -501,9 +501,9 @@ Confirm that:
 
 If the repository input is invalid or the pull request doesn't exist, emit `noop` with the validation failure and stop because there is no valid source PR to notify. If the pull request exists but isn't merged, emit `noop`, then emit `notify_source_pr` with confidence 0, `result: "skipped"`, `docs_pr_action: "none"`, all three surfaces set to not required because the change isn't eligible for analysis, and stop.
 
-## Security concerns are out of scope
+## Vulnerability-related changes are out of scope
 
-This workflow must not assess, discuss, summarize, document, or make recommendations about potential vulnerabilities or their impact. Before reading diff hunks, linked issues, review comments, or issue comments, inspect only the source PR's title, body, labels, author, milestone, base branch, merge state, and changed file names to determine whether this exclusion applies.
+This workflow must not assess, discuss, summarize, document, or make recommendations about potential vulnerabilities, abuse scenarios, exploitability, or impact. Before reading diff hunks, linked issues, review comments, or issue comments, inspect only the source PR's title, body, labels, author, milestone, base branch, merge state, and changed file names to determine whether this exclusion applies.
 
 Treat the PR as restricted when its title, body, or labels explicitly present it as:
 
@@ -512,7 +512,9 @@ Treat the PR as restricted when its title, body, or labels explicitly present it
 - a security fix intended to patch a reported weakness;
 - a change whose public explanation could disclose vulnerability details.
 
-Do not evaluate whether the claim is valid. If uncertain, treat the PR as restricted. A PR isn't restricted merely because it changes a security-adjacent technology such as authentication, authorization, antiforgery, cookies, data protection, HTTPS, or HTTP validation. Ordinary features, behavior changes, and hardening work remain eligible when the PR doesn't claim to fix or disclose a vulnerability.
+Do not evaluate whether such a claim is valid. If the available high-level metadata explicitly suggests a vulnerability-related change but the classification is uncertain, treat the PR as restricted.
+
+Do not infer that a PR is vulnerability-related from a security-sensitive product area or from words such as `security`, `secure`, `harden`, `restrict`, `validate`, `forgery`, `authentication`, or `authorization` alone. A PR isn't restricted merely because it changes authentication, authorization, antiforgery, cookies, data protection, HTTPS, HTTP validation, identity, credentials, passkeys, access control, or another security-related feature. Ordinary features, behavior changes, standards compliance, ownership boundaries, validation rules, and general hardening remain eligible when the PR doesn't explicitly claim to fix or disclose a vulnerability.
 
 When restricted:
 
@@ -522,6 +524,18 @@ When restricted:
 4. Emit `notify_source_pr` with `result: "restricted"`, `docs_pr_action: "none"`, `docs_needed_confidence: 0`, all three documentation surfaces set to `false`, and generic reasons that reveal no details.
 5. Use a generic summary such as: "Automated documentation processing is excluded for this change." The trusted notification job ignores the supplied summary and reasons and posts a fixed vague message.
 6. Stop immediately.
+
+## Eligible security-related documentation
+
+When a security-related PR isn't restricted by the vulnerability gate, assess and document it like any other user-facing feature or behavior change. Security features are a normal part of ASP.NET Core documentation.
+
+Use the existing canonical documentation as the boundary for level of detail:
+
+- Describe public APIs, supported configuration, intended behavior, defaults, operational guidance, migration actions, and compatibility impact needed to use the feature correctly.
+- Prefer extending the existing article for that technology and match its terminology, scope, and level of technical detail.
+- State only behavior supported by the public source PR, implementation, tests, and existing documentation.
+- Do not add attack walkthroughs, abuse recipes, proof-of-concept material, exploitability analysis, vulnerability impact assessment, affected-version claims, disclosure history, or details that explain how to misuse the behavior.
+- Do not expand a brief public statement into a more detailed vulnerability explanation. If accurate documentation would require restricted details, stop and use the generic restricted outcome instead.
 
 ## Gather source context
 
