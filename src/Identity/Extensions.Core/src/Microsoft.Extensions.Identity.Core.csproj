@@ -36,7 +36,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.InMemory.Test" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

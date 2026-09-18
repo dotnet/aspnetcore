@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
     <Description>Web Client-Side File Templates for Microsoft Template Engine</Description>
     <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
   </PropertyGroup>

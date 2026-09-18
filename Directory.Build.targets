@@ -131,6 +131,13 @@
       '$(Language)' == 'C#' AND
       '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
+    <!-- Pin the shared-framework assembly version to the previous major during early branding.
+         The bootstrap SDK's reference packs still reference the previous major, so bumping the
+         assembly version ahead of the retargeting work breaks source-build (CS1705) when
+         source-built assemblies (e.g. Microsoft.AspNetCore.OpenApi) reference the shared framework
+         at the new major while the resolved reference pack is still the previous major. Unpin to
+         $(AspNetCoreMajorMinorVersion).0.0 when the stack is retargeted to net12.0. -->
+    <AssemblyVersion Condition=" '$(PinAspNetCoreAssemblyVersionToPreviousMajor)' != 'false' ">11.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>

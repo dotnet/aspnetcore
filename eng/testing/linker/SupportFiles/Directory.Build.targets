@@ -3,24 +3,24 @@
     <FrameworkReference Update="Microsoft.NETCore.App"
                         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)" />
 
-    <!-- Workaround when there is no vNext SDK available; copy known packs info from 9.0. -->
-    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net10.0'))"
+    <!-- Workaround when there is no vNext SDK available; copy known packs info from 11.0. -->
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net11.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownAppHostPack->Count())' != '0' AND
                                  !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net10.0'))"
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net11.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownRuntimePack->Count())' != '0' AND
                                  !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net10.0'))"
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net11.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownFrameworkReference->Count())' != '0' AND
                                  !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net10.0'))"
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net11.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILLinkPack->Count())' != '0' AND
                                  !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net10.0'))"
+    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net11.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
                                  !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />

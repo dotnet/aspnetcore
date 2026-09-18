@@ -1,1 +1,7 @@
-<Project />
+<Project>
+  <PropertyGroup>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <LoadPrunePackageDataFromNearestFramework>true</LoadPrunePackageDataFromNearestFramework>
+  </PropertyGroup>
+</Project>

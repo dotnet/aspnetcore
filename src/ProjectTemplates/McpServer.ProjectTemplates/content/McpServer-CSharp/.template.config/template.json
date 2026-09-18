@@ -9,8 +9,8 @@
   "name": "MCP Server App",
   "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
   "groupIdentity": "Microsoft.McpServer",
-  "precedence": "11000",
-  "identity": "Microsoft.McpServer.CSharp.11.0",
+  "precedence": "12000",
+  "identity": "Microsoft.McpServer.CSharp.12.0",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
   "sourceName": "McpServer-CSharp",
@@ -64,11 +64,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net11.0"
+          "choice": "net12.0"
         }
       ],
-      "replaces": "net11.0",
-      "defaultValue": "net11.0"
+      "replaces": "net12.0",
+      "defaultValue": "net12.0"
     },
     "skipRestore": {
       "type": "parameter",

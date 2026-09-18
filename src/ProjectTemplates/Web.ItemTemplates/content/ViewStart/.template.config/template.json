@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewStart",
-  "precedence": "11000",
-  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.11.0",
+  "precedence": "12000",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.12.0",
   "shortName": "viewstart",
   "sourceName": "ignoreme",
   "primaryOutputs": [

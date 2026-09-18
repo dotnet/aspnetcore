@@ -142,8 +142,8 @@
     list under that forked configuration rebuilds the framework's assemblies a second time, causing the
     intermittent MSB3030 PDB copy race described in https://github.com/dotnet/msbuild/issues/12927.
 
-    Instead we run AfterTargets="Build" (so the framework's files are already built) and ask the project
-    for its already-resolved file list via a nested <MSBuild> call to _GetAllSharedFrameworkFiles. We do
+    Instead we run AfterTargets="Build" (so the framework's files are already built) and call
+    _GetAllSharedFrameworkFiles to retrieve its already-resolved file list. We do
     NOT depend on GetFilesToPublish directly, because GetFilesToPublish populates the project-global
     FilesToPackage/_FilesToPackage items that arcade's Pack path (_AddFilesToNuGetPackage) also consumes;
     resolving them in this configuration adds every assembly to the package twice (the plain and the R2R
@@ -153,9 +153,9 @@
     mirrors arcade's GetFilesToPublish for a RuntimePack.
   -->
   <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GetAllSharedFrameworkFiles">
+    <CallTarget Targets="_GetAllSharedFrameworkFiles">
       <Output TaskParameter="TargetOutputs" ItemName="_SharedLayoutPackagedFile" />
-    </MSBuild>
+    </CallTarget>
 
     <ItemGroup>
       <_SharedLayoutFileToPublish Include="@(_SharedLayoutPackagedFile)"
