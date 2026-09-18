@@ -124,13 +124,14 @@ public static class BlazorGateway
         if (app.Environment.IsDevelopment() &&
             !string.Equals(app.Configuration[DotNetWatchEnvironmentVariable], "1", StringComparison.Ordinal))
         {
-            app.MapFallback(
+            app.MapGet(
                     BrowserToolsHotReloadSettingsPath,
                     (HttpContext context) =>
                     {
                         context.Response.Headers.CacheControl = "no-store";
                         return Results.Content(BrowserToolsDisabledResponse, "application/json");
-                    });
+                    })
+                .WithOrder(int.MaxValue);
         }
 
         return app;
