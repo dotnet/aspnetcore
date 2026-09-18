@@ -28,13 +28,16 @@ public class KestrelServerOptions
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
     internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private const string EnableChunkedExtensionsSwitch = "Microsoft.AspNetCore.Server.Kestrel.EnableChunkedExtensions";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
+    private static readonly bool _enableChunkedExtensions;
 
     static KestrelServerOptions()
     {
         AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
         AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+        AppContext.TryGetSwitch(EnableChunkedExtensionsSwitch, out _enableChunkedExtensions);
     }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
@@ -42,6 +45,9 @@ public class KestrelServerOptions
 
     // Opt-out flag for back compat. Remove in 9.0 (or make public).
     internal bool FinOnError { get; set; } = _finOnError;
+
+    // Internal for testing.
+    internal bool EnableChunkedExtensions { get; set; } = _enableChunkedExtensions;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 

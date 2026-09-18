@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 public class JSComponentInteropTest
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     [Fact]
     public async Task SetRootComponentParameters_RejectsComponentNotAddedByJavaScript()
     {
@@ -23,7 +25,7 @@ public class JSComponentInteropTest
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => renderer.Dispatcher.InvokeAsync(
-                () => interop.SetRootComponentParameters(componentId, 1, parameters, JsonSerializerOptions.Web)));
+                () => interop.SetRootComponentParameters(componentId, 1, parameters, JsonOptions)));
 
         Assert.Equal($"Root component with ID '{componentId}' was not added by JavaScript.", exception.Message);
     }
@@ -37,7 +39,7 @@ public class JSComponentInteropTest
         var parameters = JsonDocument.Parse("""{"value":"updated"}""").RootElement;
 
         await renderer.Dispatcher.InvokeAsync(
-            () => interop.SetRootComponentParameters(componentId, 1, parameters, JsonSerializerOptions.Web));
+            () => interop.SetRootComponentParameters(componentId, 1, parameters, JsonOptions));
 
         Assert.Equal("updated", renderer.GetComponent<TestComponent>(componentId).Value);
     }
@@ -78,9 +80,13 @@ public class JSComponentInteropTest
         return (new TestWebRenderer(services, interop), interop);
     }
 
-    private sealed class TestWebRenderer(IServiceProvider services, JSComponentInterop interop)
-        : WebRenderer(services, NullLoggerFactory.Instance, JsonSerializerOptions.Web, interop)
+    private sealed class TestWebRenderer : WebRenderer
     {
+        public TestWebRenderer(IServiceProvider services, JSComponentInterop interop)
+            : base(services, NullLoggerFactory.Instance, JsonOptions, interop)
+        {
+        }
+
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
         public new int AddRootComponent(Type componentType, string selector)

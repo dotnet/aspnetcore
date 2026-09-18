@@ -19,6 +19,9 @@ public partial class AgenticChatScenarioTests : BrowserTest
 {
     private const string FirstPrompt = "Tell me about Blazor";
     private const string SecondPrompt = "And what about streaming";
+    private const string BackgroundPrompt = "Change the background to something new";
+    private const string Background =
+        "linear-gradient(135deg, #ff9a9e, #fad0c4)";
 
     private ServerInstance _api = null!;
     private ServerInstance _ui = null!;
@@ -36,7 +39,19 @@ public partial class AgenticChatScenarioTests : BrowserTest
 
         _api = await StartServerAsync<AGUIDojoApiAssembly>(TestRoot.Servers, options =>
         {
-            options.ConfigureServices<DojoModelOverrides>(nameof(DojoModelOverrides.AgenticChat));
+            var usesClientToolRecording = TestContext.TestName?.Contains(
+                "ClientTool",
+                StringComparison.Ordinal) == true;
+            if (usesClientToolRecording)
+            {
+                options.ConfigureServices<DojoModelOverrides>(
+                    nameof(DojoModelOverrides.AgenticChatClientTool));
+            }
+            else
+            {
+                options.ConfigureServices<DojoModelOverrides>(
+                    nameof(DojoModelOverrides.AgenticChat));
+            }
         });
 
         _ui = await StartServerAsync<global::DojoClient.Components.App>(TestRoot.Servers, options =>
@@ -102,6 +117,41 @@ public partial class AgenticChatScenarioTests : BrowserTest
         await Expect(AssistantMessage.Nth(0)).ToContainTextAsync("Blazor renders");
     }
 
+    [TestMethod]
+    public async Task AgenticChat_ClientToolExecutesAndContinuesWithOneResult()
+    {
+        await GoToScenarioAsync();
+        var prompt = Prompt(BackgroundPrompt);
+
+        await SendAsync(prompt);
+
+        var scenario = _page.Locator(".agentic-chat");
+        await Expect(scenario).ToHaveAttributeAsync("data-background", Background);
+        await Expect(_page.Locator(".agentic-chat__action-status"))
+            .ToContainTextAsync("Background updated");
+        await Expect(AssistantMessage)
+            .ToContainTextAsync("Background changed to a sunset gradient.");
+    }
+
+    [TestMethod]
+    public async Task AgenticChat_ClientToolStateIsIsolatedPerCircuit()
+    {
+        await GoToScenarioAsync();
+
+        var secondContext = await NewContext(
+            new BrowserNewContextOptions().WithServerRouting(_ui));
+        var secondPage = await secondContext.NewPageAsync();
+        await secondPage.GotoAsync($"{_ui.TestUrl}/agentic_chat");
+        await secondPage.WaitForInteractiveAsync("textarea.sc-ai-input__textarea");
+
+        await SendAsync(Prompt(BackgroundPrompt));
+
+        await Expect(_page.Locator(".agentic-chat"))
+            .ToHaveAttributeAsync("data-background", Background);
+        Assert.IsNull(await secondPage.Locator(".agentic-chat")
+            .GetAttributeAsync("data-background"));
+    }
+
     private ILocator UserMessage => _page.Locator(".sc-ai-message--user .sc-ai-message__content");
 
     private ILocator AssistantMessage => _page.Locator(".sc-ai-message--assistant .sc-ai-message__content");
@@ -121,4 +171,5 @@ public partial class AgenticChatScenarioTests : BrowserTest
         await _page.FillAsync("textarea.sc-ai-input__textarea", prompt);
         await _page.ClickAsync("button.sc-ai-input__send");
     }
+
 }

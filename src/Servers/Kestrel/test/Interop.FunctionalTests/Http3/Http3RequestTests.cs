@@ -449,6 +449,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_h3upload")]
     public async Task POST_ClientCancellationUpload_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange
@@ -1124,6 +1125,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange
@@ -1225,6 +1227,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68850")]
     public async Task POST_Bidirectional_LargeData_Cancellation_Error(HttpProtocols protocol)
     {
         // Arrange

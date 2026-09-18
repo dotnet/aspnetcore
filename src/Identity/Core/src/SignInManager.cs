@@ -121,6 +121,11 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the configured passkey handler supports conditionally mediated passkey creation.
+    /// </summary>
+    public virtual bool SupportsPasskeyConditionalCreation => _passkeyHandler?.SupportsConditionalCreation ?? false;
+
+    /// <summary>
     /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
     /// </summary>
     /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> for.</param>
@@ -521,6 +526,12 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
     /// </summary>
+    /// <remarks>
+    /// A passkey is a permanent credential. When adding one as another credential to an existing
+    /// account, callers should require the user to confirm their identity with a credential the account
+    /// already holds before calling this method. This does not apply when registering a new account,
+    /// where the passkey is the account's initial credential.
+    /// </remarks>
     /// <param name="userEntity">The user entity for which to create passkey options.</param>
     /// <returns>A JSON string representing the created passkey options.</returns>
     public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity)
@@ -530,6 +541,40 @@ public class SignInManager<TUser> where TUser : class
 
         var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, Context);
         await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
+        return result.CreationOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
+    /// </summary>
+    /// <param name="userEntity">The user entity for which to create passkey options.</param>
+    /// <param name="isConditionallyMediated">
+    /// <see langword="true"/> if the passkey will be created with conditional mediation; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <returns>A JSON string representing the created passkey options.</returns>
+    /// <remarks>
+    /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
+    /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
+    /// call must specify <c>mediation: "conditional"</c>.
+    /// The caller must only request conditional mediation after a recent successful password authentication.
+    /// An existing authenticated session by itself is not sufficient authorization to add a new passkey.
+    /// The protected attestation state prevents the client from changing the mediation mode after options
+    /// are issued, but it does not authorize issuing conditional options.
+    /// </remarks>
+    public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated)
+    {
+        if (!isConditionallyMediated)
+        {
+            return await MakePasskeyCreationOptionsAsync(userEntity);
+        }
+
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCreationOptionsAsync(userEntity, isConditionallyMediated, Context);
+        await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Attestation, result.AttestationState);
+
         return result.CreationOptionsJson;
     }
 
@@ -545,6 +590,142 @@ public class SignInManager<TUser> where TUser : class
         var result = await _passkeyHandler.MakeRequestOptionsAsync(user, Context);
         await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Assertion, result.AssertionState);
         return result.RequestOptionsJson;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
+    /// generating passkey signal options.
+    /// </summary>
+    /// <remarks>
+    /// Check this before calling <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser)"/> or
+    /// <see cref="MakeCurrentUserDetailsSignalOptionsAsync(TUser, PasskeyUserEntity)"/>, which throw
+    /// when the handler does not support passkey signal options.
+    /// </remarks>
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsPasskeySignalOptions ?? false;
+
+    /// <summary>
+    /// Generates the options used to signal the credentials that are currently registered for a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// JavaScript API, which lets an authenticator stop offering passkeys that were removed from the server.
+    /// </para>
+    /// <para>
+    /// The authenticator treats the signaled list as authoritative: any passkey it holds for this user that is
+    /// not in the list may be hidden or permanently removed. Only call this when the list returned by
+    /// <see cref="UserManager{TUser}.GetPasskeysAsync(TUser)"/> is known to be complete. If a valid credential is
+    /// omitted, signaling a complete list as soon as possible may restore it if the authenticator supports recovery.
+    /// </para>
+    /// <para>
+    /// Because the options reveal how many passkeys a user has, only call this when the user is authenticated.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <returns>A JSON string representing the all accepted credentials signal options.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var result = await _passkeyHandler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates the options used to signal the current details of a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalCurrentUserDetails()</c>
+    /// JavaScript API, which keeps the user's details up to date on the authenticator.
+    /// </para>
+    /// <para>
+    /// Because the options reveal the user's details, only call this when the user is authenticated.
+    /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
+    /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
+    /// otherwise the authenticator will not recognize the user and the signal will have no effect.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose details should be signaled.</param>
+    /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
+    /// <returns>A JSON string representing the current user details signal options.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="user"/> or <paramref name="userEntity"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalCurrentUserDetails?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates options used to signal that a passkey credential is unknown to the server.
+    /// </summary>
+    /// <remarks>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalUnknownCredential()</c>
+    /// JavaScript API. Calling that API permanently deletes the passkey from the browser's passkey provider.
+    /// This method only returns options when no user on the server has the credential.
+    /// </remarks>
+    /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
+    /// <returns>
+    /// A JSON string representing the unknown credential signal options when the credential is unknown to the server,
+    /// otherwise <see langword="null"/>.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="credentialJson"/> is <see langword="null"/> or empty.</exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var result = await _passkeyHandler.MakeUnknownCredentialSignalOptionsAsync(credentialJson, Context);
+        return result?.SignalOptionsJson;
     }
 
     /// <summary>
