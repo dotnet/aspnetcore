@@ -174,7 +174,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 {
                     protocol = "ctap2",
                     transport = "internal",
-                    hasResidentKey = false,
+                    hasResidentKey = true,
                     hasUserVerification = true,
                     isUserVerified = true,
                     automaticPresenceSimulation = true,
@@ -381,6 +381,8 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 Assert.Equal(storedCredentials, acceptedCredentials);
                 var passkeyCredentialId = storedCredentials[0];
 
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: false);
+
                 // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
@@ -414,9 +416,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
                 await page.FillAsync("[name=\"Input.Email\"]", userName);
                 await page.ClickAsync("text=Log in with a passkey");
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: true);
 
                 // Verify that we return to the home page
                 await page.WaitForSelectorAsync("text=Hello, world!");
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: false);
 
                 // Verify that we can visit the "Auth Required" page again
                 await page.ClickAsync("text=Auth Required");
@@ -647,6 +651,13 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 return Base64Url.EncodeToString(Convert.FromBase64String(credentialId));
             })];
         }
+
+        static Task SetAutomaticPresenceSimulationAsync(ICDPSession cdpSession, string authenticatorId, bool enabled)
+            => cdpSession.SendAsync("WebAuthn.setAutomaticPresenceSimulation", new Dictionary<string, object>
+            {
+                ["authenticatorId"] = authenticatorId,
+                ["enabled"] = enabled,
+            });
     }
 
     private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)

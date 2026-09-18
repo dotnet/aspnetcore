@@ -134,7 +134,6 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
-        var allowCredentials = await GetAllowCredentialsAsync().ConfigureAwait(false);
         var serverDomain = GetServerDomain(httpContext);
         var challenge = RandomNumberGenerator.GetBytes(_options.ChallengeSize);
         var options = new PublicKeyCredentialRequestOptions
@@ -142,7 +141,6 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             Challenge = BufferSource.FromBytes(challenge),
             RpId = serverDomain,
             Timeout = (uint)_options.AuthenticatorTimeout.TotalMilliseconds,
-            AllowCredentials = allowCredentials,
             UserVerification = _options.UserVerificationRequirement,
         };
         var userId = user is not null ? await _userManager.GetUserIdAsync(user).ConfigureAwait(false) : null;
@@ -160,24 +158,6 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         };
 
         return requestOptions;
-
-        async Task<PublicKeyCredentialDescriptor[]> GetAllowCredentialsAsync()
-        {
-            if (user is null)
-            {
-                return [];
-            }
-
-            var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
-            var allowCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor
-                {
-                    Type = "public-key",
-                    Id = BufferSource.FromBytes(p.CredentialId),
-                    Transports = p.Transports ?? [],
-                });
-            return [.. allowCredentials];
-        }
     }
 
     /// <inheritdoc />
@@ -544,9 +524,8 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
         // 5. If originalOptions.allowCredentials is not empty, verify that credential.id identifies one of the public key
         //    credentials listed in pkOptions.allowCredentials.
-        //    NOTE: Since we always include the user's full list of credentials in the options,
-        //          we can simply check that the credential ID is present on the user.
-        //          If we change this behavior, we may need to explicitly handle this step.
+        //    NOTE: allowCredentials is always empty, so there is nothing to verify for this step.
+        //          The GetPasskeyAsync call below still ensures the credential belongs to the claimed account.
 
         var credentialId = credential.Id.ToArray();
         var userHandle = response.UserHandle?.ToString();
