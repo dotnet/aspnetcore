@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -30,11 +29,10 @@ class TestInput : IDisposable
         Transport = pair.Transport;
         Application = pair.Application;
 
-        var connectionContext = Mock.Of<ConnectionContext>();
+        var connectionContext = new TestConnectionContext();
         var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
         var connectionFeatures = new FeatureCollection();
-        connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
         connectionFeatures.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature { MetricsContext = metricsContext });
 
         Http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
@@ -44,13 +42,13 @@ class TestInput : IDisposable
             },
             connectionContext: connectionContext,
             transport: Transport,
-            timeoutControl: timeoutControl ?? Mock.Of<ITimeoutControl>(),
+            timeoutControl: timeoutControl ?? new TestTimeoutControl(),
             memoryPool: _memoryPool,
             connectionFeatures: connectionFeatures,
             metricsContext: metricsContext);
 
         Http1Connection = new Http1Connection(Http1ConnectionContext);
-        Http1Connection.HttpResponseControl = Mock.Of<IHttpResponseControl>();
+        Http1Connection.HttpResponseControl = new TestHttpResponseControl();
         Http1Connection.Reset();
     }
 

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -30,7 +29,7 @@ public class ConnectionDispatcherTests : LoggedTest
         // This needs to run inline
         var tcs = new TaskCompletionSource();
 
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         connection.ConnectionClosed = new CancellationToken(canceled: true);
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager, connectionDelegate: _ => tcs.Task);
@@ -74,7 +73,7 @@ public class ConnectionDispatcherTests : LoggedTest
     {
         var serviceContext = new TestServiceContext();
 
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         connection.ConnectionClosed = new CancellationToken(canceled: true);
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager);
@@ -95,7 +94,7 @@ public class ConnectionDispatcherTests : LoggedTest
     public async Task OnConnectionOnCompletedExceptionCaught()
     {
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
+        var connection = new DefaultConnectionContext();
         connection.ConnectionClosed = new CancellationToken(canceled: true);
         var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
         var kestrelConnection = CreateKestrelConnection(serviceContext, connection, transportConnectionManager);

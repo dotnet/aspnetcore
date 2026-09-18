@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -26,7 +26,7 @@ public class Http1HttpProtocolFeatureCollectionTests
 
     public Http1HttpProtocolFeatureCollectionTests()
     {
-        var connectionContext = Mock.Of<ConnectionContext>();
+        var connectionContext = new TestConnectionContext();
         var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
         var connectionFeatures = new FeatureCollection();
@@ -35,9 +35,9 @@ public class Http1HttpProtocolFeatureCollectionTests
         var context = TestContextFactory.CreateHttpConnectionContext(
             connectionContext: connectionContext,
             serviceContext: new TestServiceContext(),
-            transport: Mock.Of<IDuplexPipe>(),
+            transport: TestDuplexPipe.Create(),
             connectionFeatures: connectionFeatures,
-            timeoutControl: Mock.Of<ITimeoutControl>(),
+            timeoutControl: new TestTimeoutControl(),
             metricsContext: metricsContext);
 
         _httpConnectionContext = context;
@@ -258,4 +258,9 @@ public class Http1HttpProtocolFeatureCollectionTests
     }
 
     private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
+
+    private static class TestDuplexPipe
+    {
+        public static IDuplexPipe Create() => new DuplexPipe(PipeReader.Create(Stream.Null), PipeWriter.Create(Stream.Null));
+    }
 }
