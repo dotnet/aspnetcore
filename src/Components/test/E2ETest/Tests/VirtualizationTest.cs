@@ -3611,6 +3611,47 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    public void AnchorMode_EndKeyJump_DoesNotFollowSubsequentAppends(string anchorMode, bool useItemsProvider)
+    {
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider, delay: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        container.SendKeys(Keys.End);
+        Browser.True(
+            () => IsScrolledToBottom(js, container),
+            TimeSpan.FromSeconds(10),
+            $"AnchorMode {anchorMode}: End key should jump to the bottom of the list");
+        Browser.True(
+            () => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0
+                && container.FindElements(By.CssSelector(".loading-placeholder")).Count == 0,
+            TimeSpan.FromSeconds(10),
+            $"AnchorMode {anchorMode}: End key should load the real tail before items are appended");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("append-many-items")).Click();
+        Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"AnchorMode {anchorMode}: an End key jump should not keep following subsequent appends",
+            driftTolerance: 2);
+        Assert.False(IsScrolledToBottom(js, container),
+            $"AnchorMode {anchorMode}: only End mode should follow appended items");
+    }
+
+    [Theory]
     [InlineData("0")]
     [InlineData("1")]
     public void AnchorMode_VariableHeight_EndKeyFromTop_JumpsToBottom(string anchorMode)

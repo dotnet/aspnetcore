@@ -225,8 +225,26 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     wasAtBottomLastRender: false,
     // Has the viewport actually reached the bottom? Not set at mount, stays sticky across appends.
     reached: false,
-    // Follow intent: true in End mode (or after a user-initiated End-key jump) until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
+    // Follow intent: true in End mode until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
     following: (anchorMode & 2) !== 0,
+  };
+  let pendingJumpToStart = false;
+  let transientEndJump = false;
+  const cancelEndJump = () => {
+    const wasInProgress = transientEndJump;
+    transientEndJump = false;
+    if (wasInProgress && convergence.bottom) {
+      stopConvergenceObserving();
+    }
+  };
+  const completeEndJump = () => {
+    if (!transientEndJump) {
+      return;
+    }
+
+    flushPendingStyleMutations();
+    scrollElement.scrollTop = scrollElement.scrollHeight;
+    cancelEndJump();
   };
   const clearBottomFollow = () => {
     bottomTracking.following = false;
@@ -254,6 +272,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Called by C# at the start of a programmatic ScrollToItem, before the align scroll itself.
   function beginProgrammaticScroll(): void {
     stopConvergenceObserving();
+    cancelEndJump();
     clearBottomFollow();
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
@@ -307,8 +326,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       scrollElement.scrollTop = convergence.bottom ? scrollElement.scrollHeight : 0;
       const spacer = convergence.bottom ? spacerAfter : spacerBefore;
       if (spacer.offsetHeight === 0) {
-        stopConvergenceObserving();
+        if (!transientEndJump || !convergence.bottom) {
+          stopConvergenceObserving();
+        }
       }
+    }
+
+    if (transientEndJump) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
     }
 
     let spacerResized = false;
@@ -342,6 +367,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
+    flushPendingStyleMutations();
 
     // During convergence, keep the observed element set in sync with the DOM
     // and force scroll position to prevent bounce-back between renders.
@@ -364,6 +390,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         }
       }
       convergence.items = currentItems;
+      if (transientEndJump && !isLoading && spacerAfter.offsetHeight === 0) {
+        completeEndJump();
+      }
       return;
     }
 
@@ -392,7 +421,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // End mode: pin new items into view if we're at the bottom now, or were and are still following.
-    if (bottomTracking.following
+    if (transientEndJump
+        || bottomTracking.following
         || (anchorModeIs.end && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached))) {
       flushPendingStyleMutations();
       scrollElement.scrollTop = scrollElement.scrollHeight;
@@ -424,20 +454,29 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // Capture the first visible item's position after each render.
     updateAnchorSnapshot();
+    if (transientEndJump && !isLoading && spacerAfter.offsetHeight === 0) {
+      completeEndJump();
+    }
 
   }
 
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
   function restoreAnchorForShift(): void {
+    const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
+    observersByDotNetObjectId[id].anchorSnapshot = null;
+
+    if (!anchorModeIs.end) {
+      cancelEndJump();
+      observersByDotNetObjectId[id].anchorSnapshot = null;
+    }
+
     // Apply styles before we read layout
     flushPendingStyleMutations();
 
-    const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
     if (!snapshot) {
       return;
     }
-    observersByDotNetObjectId[id].anchorSnapshot = null;
 
     if (convergence.isConverging()) {
       return;
@@ -519,10 +558,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     updateAnchorSnapshot();
   }
 
-  let pendingJumpToEnd = false;
-  let pendingJumpToStart = false;
-
   function handleUserScrollInput(): void {
+    cancelEndJump();
     const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
       || scrollActivity.source === ScrollSource.RestoreSnapshot;
     scrollActivity.consumeIgnoreScroll();
@@ -548,11 +585,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (ke.key === 'End') {
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
-      pendingJumpToEnd = true;
       pendingJumpToStart = false;
-      if (!anchorModeIs.end) {
+      if (anchorModeIs.end) {
         bottomTracking.following = true;
         bottomTracking.reached = true;
+      } else {
+        transientEndJump = true;
       }
       if (!convergence.bottom && spacerAfter.offsetHeight > 0) {
         startConvergenceObserving('bottom');
@@ -561,7 +599,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
       pendingJumpToStart = true;
-      pendingJumpToEnd = false;
+      cancelEndJump();
       clearBottomFollow();
       if (!convergence.top && spacerBefore.offsetHeight > 0) {
         startConvergenceObserving('top');
@@ -605,6 +643,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
     scrollActivity.source = ScrollSource.UserScroll;
+
+    if (transientEndJump && spacerAfter.offsetHeight === 0 && isViewportAtBottom()) {
+      completeEndJump();
+    }
 
     // A user scroll is the only thing that (re)sets follow state (self-scrolls early-return above).
     if (anchorModeIs.end || bottomTracking.following) {
@@ -658,6 +700,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       scrollActivity.source = ScrollSource.AlignToItem;
       observersByDotNetObjectId[id].anchorSnapshot = null;
       stopConvergenceObserving();
+      cancelEndJump();
     }
 
     // Target row should be measured against the committed window, not a stale spacer height.
@@ -676,7 +719,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (Math.abs(delta) > 0.5) {
       beginAlign();
       pendingJumpToStart = false;
-      pendingJumpToEnd = false;
       scrollElement.scrollTo({ top: scrollElement.scrollTop + delta, behavior: 'instant' });
     }
 
@@ -718,7 +760,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
+    setAnchorMode: (mode: number) => { cancelEndJump(); anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
@@ -767,12 +809,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     if (convergence.bottom) return;
 
-    // pendingJumpToEnd is user-initiated (End key) — always honor it.
+    // A transient End jump is user-initiated — always honor it.
     // Data-driven convergence only fires when End anchoring is enabled.
-    if (pendingJumpToEnd) {
+    if (transientEndJump) {
       startConvergenceObserving('bottom');
       scrollElement.scrollTop = scrollElement.scrollHeight;
-      pendingJumpToEnd = false;
       return;
     }
 
