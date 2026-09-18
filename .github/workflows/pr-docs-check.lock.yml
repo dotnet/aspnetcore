@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"447f5973929c527e5dd42c3e3a4d3e9a746527af8bc9b9162b7be2008b1c7e44","body_hash":"ff9fcc482be6cecbc5e9629c72ff190b357ff6219538122632cd3da15dbcbf70","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"v0.88.7","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"5be1970dc783e5e44ca7ececa31e05f0a67dc66d89cbf7de14bc2461229b0582","body_hash":"a3cd4bf4bc1c6f617dccaf45e9e2e4e1c60063bb94d96e3f9719a8ffb417af9f","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"5e508589e03a7757a7e05b26e834292f5445bfb6","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr"]}]}
 # This file was automatically generated by gh-aw (v0.88.7). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,7 +23,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Manually analyzes an ASP.NET Core pull request and either records that no documentation is needed or opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork.
+# Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 #
 # Secrets used:
 #   - COPILOT_GITHUB_TOKEN
@@ -42,7 +42,7 @@
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
 #   - actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-#   - github/gh-aw-actions/setup@v0.88.7
+#   - github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
 #
 # Container images used:
 #   - ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98
@@ -125,7 +125,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -295,7 +295,7 @@ jobs:
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SOURCE_REPOSITORY: ${{ inputs.source_repository }}
           GH_AW_PROMPT_CONTENT_0000: "<system>\n"
-          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: create_pull_request, missing_tool, missing_data, noop\n"
+          GH_AW_PROMPT_CONTENT_0001: "<safe-output-tools>\nTools: create_pull_request, missing_tool, missing_data, noop, notify_source_pr\n"
           GH_AW_PROMPT_CONTENT_0002: "</safe-output-tools>\n"
           GH_AW_PROMPT_CONTENT_0003: "<github-context>\nThe following GitHub context information is available for this workflow:\n{{#if github.actor}}\n- **actor**: __GH_AW_GITHUB_ACTOR__\n{{/if}}\n{{#if github.repository}}\n- **repository**: __GH_AW_GITHUB_REPOSITORY__\n{{/if}}\n{{#if github.workspace}}\n- **workspace**: __GH_AW_GITHUB_WORKSPACE__\n{{/if}}\n{{#if github.event.issue.number || (github.aw.context.item_type == 'issue' && github.aw.context.item_number)}}\n- **issue-number**: #__GH_AW_EXPR_802A9F6A__\n{{/if}}\n{{#if github.event.discussion.number || (github.aw.context.item_type == 'discussion' && github.aw.context.item_number)}}\n- **discussion-number**: #__GH_AW_EXPR_1A3A194A__\n{{/if}}\n{{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}\n- **pull-request-number**: #__GH_AW_EXPR_463A214A__\n{{/if}}\n{{#if github.event.comment.id || github.aw.context.comment_id}}\n- **comment-id**: __GH_AW_EXPR_FF1D34CE__\n{{/if}}\n{{#if github.run_id}}\n- **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__\n{{/if}}\n- **checkouts**: The following repositories have been checked out and are available in the workspace:\n  - repo `DeagleGross/AspNetCore.Docs` → `$GITHUB_WORKSPACE` (cwd) (**current** - this is the repository you are working on; use this as the target for all GitHub operations unless otherwise specified) [shallow clone, fetch-depth=1 (default)]\n  - **Note**: If a branch you need is not in the list above and is not listed as an additional fetched ref, it has NOT been checked out. For private repositories you cannot fetch it. If the branch is required and not available, exit with an error and ask the user to add it to the `fetch:` option of the `checkout:` configuration (e.g., `fetch: [\"refs/pulls/open/*\"]` for all open PR refs, or `fetch: [\"main\", \"feature/my-branch\"]` for specific branches).\n  - **Warning: No git credentials are available to the agent.** Credentials are\n    intentionally removed after the checkout step for security. This means any git\n    operation that needs to authenticate to the remote will fail. In private repositories, that includes:\n    - `git fetch`, `git pull`, `git clone`, and `git push` (direct push, not via safe-output tools)\n    - Checking out or switching to a remote branch that is not already fetched\n    - Deepening a shallow clone (`git fetch --unshallow`)\n    - On-demand blob fetches in partial/blobless clones (operations on files not in the initial checkout)\n    Do NOT attempt to configure credentials, run `git credential fill`, or modify `.gitconfig` —\n    authentication will not succeed. If you encounter credential prompts or authentication errors,\n    stop immediately and report the limitation rather than spending turns trying to work around it.\n</github-context>\n\n"
           GH_AW_PROMPT_CONTENT_0004: "</system>\n"
@@ -448,7 +448,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -589,7 +589,7 @@ jobs:
         env:
           GH_AW_FILE_ROOT: "${{ runner.temp }}/gh-aw"
           GH_AW_FILE_CONFIG: "{\"files\":[{\"path\":\"safeoutputs/config.json\",\"content_env\":\"GH_AW_SAFE_OUTPUTS_CONFIG\"}]}"
-          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"DeagleGross/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"DeagleGross/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"notify-source-pr\":{\"description\":\"Report the conclusive documentation analysis on the source pull\\nrequest. Emit exactly one `notify_source_pr` item after the\\n`create_pull_request` or `noop` item.\\n\\nUse `result: \\\"drafted\\\"` when documentation confidence is at least 60\\nand you emitted `create_pull_request`. The notification job converts\\nthis to a draft-failed notification if the safe-output handler didn't\\nproduce a PR. Use `result: \\\"skipped\\\"` when confidence is below 60 and\\nno docs PR was requested. Use `result: \\\"draft_failed\\\"` only when\\nconfidence is at least 60 but you could not emit\\n`create_pull_request`.\\n\",\"inputs\":{\"breaking_change_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the breaking-change decision.\",\"required\":true,\"type\":\"string\"},\"breaking_change_required\":{\"default\":null,\"description\":\"Whether a compatibility-breaking change entry is required.\",\"required\":true,\"type\":\"boolean\"},\"conceptual_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the conceptual decision.\",\"required\":true,\"type\":\"string\"},\"conceptual_required\":{\"default\":null,\"description\":\"Whether durable conceptual documentation is required.\",\"required\":true,\"type\":\"boolean\"},\"docs_needed_confidence\":{\"default\":null,\"description\":\"Integer confidence from 0 through 100 that documentation is needed.\",\"required\":true,\"type\":\"number\"},\"migration_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the migration decision.\",\"required\":true,\"type\":\"string\"},\"migration_required\":{\"default\":null,\"description\":\"Whether version-to-version migration guidance is required.\",\"required\":true,\"type\":\"boolean\"},\"result\":{\"default\":null,\"description\":\"One of: drafted, skipped, draft_failed.\",\"required\":true,\"type\":\"string\"},\"source_pr_number\":{\"default\":null,\"description\":\"Analyzed source pull request number.\",\"required\":true,\"type\":\"number\"},\"summary\":{\"default\":null,\"description\":\"A concise explanation of the overall decision.\",\"required\":true,\"type\":\"string\"}}},\"report_incomplete\":{}}"
         with:
           script: |
             const path = require('path');
@@ -606,7 +606,70 @@ jobs:
                 "create_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[docs] \". Labels [\"documentation\"] will be automatically added. PRs will be created as drafts."
               },
               "repo_params": {},
-              "dynamic_tools": []
+              "dynamic_tools": [
+                {
+                  "description": "Report the conclusive documentation analysis on the source pull\nrequest. Emit exactly one `notify_source_pr` item after the\n`create_pull_request` or `noop` item.\n\nUse `result: \"drafted\"` when documentation confidence is at least 60\nand you emitted `create_pull_request`. The notification job converts\nthis to a draft-failed notification if the safe-output handler didn't\nproduce a PR. Use `result: \"skipped\"` when confidence is below 60 and\nno docs PR was requested. Use `result: \"draft_failed\"` only when\nconfidence is at least 60 but you could not emit\n`create_pull_request`.\n",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "breaking_change_reason": {
+                        "description": "Short evidence-based reason for the breaking-change decision.",
+                        "type": "string"
+                      },
+                      "breaking_change_required": {
+                        "description": "Whether a compatibility-breaking change entry is required.",
+                        "type": "boolean"
+                      },
+                      "conceptual_reason": {
+                        "description": "Short evidence-based reason for the conceptual decision.",
+                        "type": "string"
+                      },
+                      "conceptual_required": {
+                        "description": "Whether durable conceptual documentation is required.",
+                        "type": "boolean"
+                      },
+                      "docs_needed_confidence": {
+                        "description": "Integer confidence from 0 through 100 that documentation is needed.",
+                        "type": "number"
+                      },
+                      "migration_reason": {
+                        "description": "Short evidence-based reason for the migration decision.",
+                        "type": "string"
+                      },
+                      "migration_required": {
+                        "description": "Whether version-to-version migration guidance is required.",
+                        "type": "boolean"
+                      },
+                      "result": {
+                        "description": "One of: drafted, skipped, draft_failed.",
+                        "type": "string"
+                      },
+                      "source_pr_number": {
+                        "description": "Analyzed source pull request number.",
+                        "type": "number"
+                      },
+                      "summary": {
+                        "description": "A concise explanation of the overall decision.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "breaking_change_reason",
+                      "breaking_change_required",
+                      "conceptual_reason",
+                      "conceptual_required",
+                      "docs_needed_confidence",
+                      "migration_reason",
+                      "migration_required",
+                      "result",
+                      "source_pr_number",
+                      "summary"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "notify_source_pr"
+                }
+              ]
             }
           GH_AW_VALIDATION_JSON: |
             {
@@ -1215,6 +1278,7 @@ jobs:
       - activation
       - agent
       - detection
+      - notify_source_pr
       - safe_outputs
     if: >
       always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true' ||
@@ -1240,7 +1304,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1520,7 +1584,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1596,7 +1660,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "PR Documentation Check (Fork Pilot)"
-          WORKFLOW_DESCRIPTION: "Manually analyzes an ASP.NET Core pull request and either records that no documentation is needed or opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork."
+          WORKFLOW_DESCRIPTION: "Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
           GH_AW_DETECTION_SKIP_PROMPT_SUMMARY: "true"
@@ -1664,7 +1728,7 @@ jobs:
           RUNNER_TEMP: ${{ runner.temp }}
           TRACEPARENT: ${{ env.GITHUB_AW_OTEL_TRACE_ID != '' && env.GITHUB_AW_OTEL_PARENT_SPAN_ID != '' && format('00-{0}-{1}-01', env.GITHUB_AW_OTEL_TRACE_ID, env.GITHUB_AW_OTEL_PARENT_SPAN_ID) || '' }}
           WORKFLOW_NAME: "PR Documentation Check (Fork Pilot)"
-          WORKFLOW_DESCRIPTION: "Manually analyzes an ASP.NET Core pull request and either records that no documentation is needed or opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork."
+          WORKFLOW_DESCRIPTION: "Manually analyzes an ASP.NET Core pull request from the user's perspective, classifies conceptual, migration, and breaking-change documentation needs, and either opens a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or records why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
         run: |
@@ -1763,6 +1827,209 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/conclude_threat_detection.sh" /tmp/gh-aw/threat-detection/detection_result.json
 
+  notify_source_pr:
+    name: Notify source PR
+    needs:
+      - agent
+      - detection
+      - safe_outputs
+    if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'notify_source_pr')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download agent output artifact
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "{agent,agent-output-fallback}"
+          merge-multiple: true
+          path: ${{ runner.temp }}/gh-aw/safe-jobs/
+      - name: Publish trusted documentation outcome
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
+          EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+          GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
+        with:
+          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const marker = '<!-- aspnetcore-pr-docs-check -->';
+            const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
+            const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
+            const createdDocsPrUrl = (process.env.CREATED_DOCS_PR_URL || '').trim();
+
+            if (!['dotnet/aspnetcore', 'DeagleGross/aspnetcore'].includes(expectedRepository)) {
+              core.setFailed(`Unexpected source repository: ${expectedRepository}`);
+              return;
+            }
+
+            if (!Number.isInteger(expectedPrNumber) || expectedPrNumber <= 0) {
+              core.setFailed(`Invalid source PR number: ${process.env.EXPECTED_SOURCE_PR_NUMBER}`);
+              return;
+            }
+
+            const agentOutput = JSON.parse(fs.readFileSync(process.env.GH_AW_AGENT_OUTPUT, 'utf8'));
+            const items = (agentOutput.items || []).filter(item => item.type === 'notify_source_pr');
+            if (items.length !== 1) {
+              core.setFailed(`Expected exactly one notify_source_pr item, found ${items.length}.`);
+              return;
+            }
+
+            const item = items[0];
+            const confidence = Number(item.docs_needed_confidence);
+            const reportedResult = String(item.result || '');
+            const summary = String(item.summary || '').trim();
+            const suppliedPrNumber = Number(item.source_pr_number);
+            const validResults = new Set(['drafted', 'skipped', 'draft_failed']);
+
+            if (suppliedPrNumber !== expectedPrNumber) {
+              core.setFailed(`Notification targeted PR ${suppliedPrNumber}; expected ${expectedPrNumber}.`);
+              return;
+            }
+
+            if (!Number.isInteger(confidence) || confidence < 0 || confidence > 100) {
+              core.setFailed(`Confidence must be an integer from 0 through 100; received ${item.docs_needed_confidence}.`);
+              return;
+            }
+
+            if (!validResults.has(reportedResult)) {
+              core.setFailed(`Invalid documentation result: ${reportedResult}`);
+              return;
+            }
+
+            if (!summary || summary.length > 2000) {
+              core.setFailed('Summary must contain between 1 and 2000 characters.');
+              return;
+            }
+
+            const surfaceFields = [
+              ['Conceptual article', item.conceptual_required, item.conceptual_reason],
+              ['Migration guidance', item.migration_required, item.migration_reason],
+              ['Breaking change', item.breaking_change_required, item.breaking_change_reason],
+            ];
+
+            for (const [name, required, reason] of surfaceFields) {
+              if (typeof required !== 'boolean') {
+                core.setFailed(`${name} required flag must be a boolean.`);
+                return;
+              }
+              if (!String(reason || '').trim()) {
+                core.setFailed(`${name} reason must not be empty.`);
+                return;
+              }
+            }
+
+            if (reportedResult === 'skipped' && confidence >= 60) {
+              core.setFailed(`A skipped result requires confidence below 60; received ${confidence}.`);
+              return;
+            }
+
+            if (reportedResult !== 'skipped' && confidence < 60) {
+              core.setFailed(`${reportedResult} requires confidence of at least 60; received ${confidence}.`);
+              return;
+            }
+
+            if (reportedResult !== 'drafted' && createdDocsPrUrl) {
+              core.setFailed(`The agent reported ${reportedResult}, but a docs PR was created.`);
+              return;
+            }
+
+            const effectiveResult =
+              reportedResult === 'drafted' && !createdDocsPrUrl ? 'draft_failed' : reportedResult;
+
+            const [owner, repo] = expectedRepository.split('/');
+            const sourcePr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: expectedPrNumber,
+            });
+
+            const author = sourcePr.data.user;
+            const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
+            const surfaces = surfaceFields.map(([name, required, reason]) =>
+              `* **${name}:** ${required ? 'Required' : 'Not required'} — ${String(reason).trim()}`);
+
+            let heading;
+            if (effectiveResult === 'drafted') {
+              heading = `📝 Documentation drafted: ${createdDocsPrUrl}`;
+            } else if (effectiveResult === 'draft_failed') {
+              heading = '⚠️ Documentation appears necessary, but a draft PR could not be created.';
+            } else {
+              heading = '✅ No documentation PR was created.';
+            }
+
+            const sourceComment = [
+              marker,
+              heading,
+              '',
+              `**Confidence that documentation is needed:** ${confidence}%`,
+              '',
+              summary,
+              '',
+              '**Documentation surfaces considered**',
+              '',
+              ...surfaces,
+            ].join('\n');
+
+            try {
+              const existingComments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number: expectedPrNumber,
+                per_page: 100,
+              });
+              for (const comment of existingComments) {
+                if (comment.body?.includes(marker)) {
+                  try {
+                    await github.graphql(
+                      `mutation($id: ID!) {
+                        minimizeComment(input: { subjectId: $id, classifier: OUTDATED }) {
+                          minimizedComment { isMinimized }
+                        }
+                      }`,
+                      { id: comment.node_id });
+                  } catch (error) {
+                    core.warning(`Unable to minimize prior comment ${comment.id}: ${error.message}`);
+                  }
+                }
+              }
+            } catch (error) {
+              core.warning(`Unable to enumerate prior source comments: ${error.message}`);
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: expectedPrNumber,
+              body: sourceComment,
+            });
+
+            if (effectiveResult !== 'drafted' || !sourceAuthor) {
+              return;
+            }
+
+            const match = createdDocsPrUrl.match(
+              /^https:\/\/github\.com\/DeagleGross\/AspNetCore\.Docs\/pull\/([1-9][0-9]*)$/);
+            if (!match) {
+              core.setFailed(`Unexpected docs PR URL: ${createdDocsPrUrl}`);
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner: 'DeagleGross',
+              repo: 'AspNetCore.Docs',
+              issue_number: Number(match[1]),
+              body: [
+                `@${sourceAuthor}, this draft documents your source change in ${expectedRepository}#${expectedPrNumber}.`,
+                '',
+                'Please review it for technical accuracy and confirm that the user impact and recommended guidance match the implementation.',
+              ].join('\n'),
+            });
+
   pre_activation:
     runs-on: ubuntu-slim
     env:
@@ -1776,7 +2043,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1848,7 +2115,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.88.7
+        uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1923,6 +2190,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,docs.github.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,patch-diff.githubusercontent.com,patchdiff.githubusercontent.com,ppa.launchpad.net,raw.githubusercontent.com,s.symcb.com,s.symcd.com,security.ubuntu.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
+          GH_AW_SAFE_OUTPUT_JOBS: "{\"notify_source_pr\":\"\"}"
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"DeagleGross/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
