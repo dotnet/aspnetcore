@@ -1,0 +1,20 @@
+{
+  "ordinary-report-uses-trusted-session-storage": {
+    "storageCase": "save",
+    "issueNumber": "999024",
+    "destinationFile": "issue-999024-investigation.md",
+    "promptDestination": "__SESSION_ARTIFACT_ROOT__/issue-999024-investigation.md"
+  },
+  "session-storage-collision-preserves-existing-file": {
+    "storageCase": "collision",
+    "issueNumber": "999026",
+    "destinationFile": "issue-999026-investigation.md",
+    "promptDestination": "__SESSION_ARTIFACT_ROOT__/issue-999026-investigation.md"
+  },
+  "session-storage-writer-failure-keeps-chat-report": {
+    "storageCase": "writer-failure",
+    "issueNumber": "999027",
+    "destinationFile": "issue-999027-investigation.md",
+    "promptDestination": "__FAILING_ARTIFACT_PATH__"
+  }
+}
