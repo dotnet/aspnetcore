@@ -100,7 +100,14 @@ internal sealed class ProcessEx : IDisposable
 
     public object Id => _process.Id;
 
-    public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null, TimeSpan? timeout = default)
+    public static ProcessEx Run(
+        ITestOutputHelper output,
+        string workingDirectory,
+        string command,
+        string args = null,
+        IDictionary<string, string> envVars = null,
+        TimeSpan? timeout = default,
+        string envVarToRemove = null)
     {
         var startInfo = new ProcessStartInfo(command, args)
         {
@@ -117,6 +124,11 @@ internal sealed class ProcessEx : IDisposable
             {
                 startInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
             }
+        }
+
+        if (envVarToRemove != null)
+        {
+            startInfo.EnvironmentVariables.Remove(envVarToRemove);
         }
 
         startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
