@@ -51,7 +51,7 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos, issues, pull_requests]
-    github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     min-integrity: merged
     allowed-repos:
       - deaglegross/aspnetcore
