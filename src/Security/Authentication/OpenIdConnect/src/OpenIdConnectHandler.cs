@@ -484,6 +484,10 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             properties.Items[MaxAgeProperty] = message.MaxAge;
         }
+        else
+        {
+            properties.Items.Remove(MaxAgeProperty);
+        }
 
         if (!string.IsNullOrEmpty(message.State))
         {
@@ -825,7 +829,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 Nonce = nonce
             });
 
-            if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
+            if (jwt is not null)
             {
                 ValidateAuthTime(jwt, maxAge);
             }
@@ -1010,7 +1014,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             throw new SecurityTokenValidationException("The auth_time claim must be a valid integral NumericDate when max_age is requested.");
         }
 
-        var now = Options.TimeProvider!.GetUtcNow();
+        var now = TimeProvider.GetUtcNow();
         var nowSeconds = (decimal)(now - DateTimeOffset.UnixEpoch).Ticks / TimeSpan.TicksPerSecond;
         var skewSeconds = (decimal)Options.TokenValidationParameters.ClockSkew.Ticks / TimeSpan.TicksPerSecond;
 
@@ -1027,62 +1031,15 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
     private static bool TryReadNumericDate(object? value, out long numericDate)
     {
-        if (value is long longValue)
+        numericDate = value switch
         {
-            numericDate = longValue;
-        }
-        else if (value is int intValue)
-        {
-            numericDate = intValue;
-        }
-        else if (value is uint uintValue)
-        {
-            numericDate = uintValue;
-        }
-        else if (value is short shortValue)
-        {
-            numericDate = shortValue;
-        }
-        else if (value is ushort ushortValue)
-        {
-            numericDate = ushortValue;
-        }
-        else if (value is byte byteValue)
-        {
-            numericDate = byteValue;
-        }
-        else if (value is sbyte sbyteValue)
-        {
-            numericDate = sbyteValue;
-        }
-        else if (value is ulong ulongValue && ulongValue <= long.MaxValue)
-        {
-            numericDate = (long)ulongValue;
-        }
-        else if (value is JsonElement { ValueKind: JsonValueKind.Number } element && element.TryGetInt64(out var elementValue))
-        {
-            numericDate = elementValue;
-        }
-        else
-        {
-            numericDate = 0;
-            return false;
-        }
+            int number => number,
+            long number => number,
+            _ => -1,
+        };
 
-        if (numericDate < 0)
-        {
-            return false;
-        }
-
-        try
-        {
-            _ = DateTimeOffset.FromUnixTimeSeconds(numericDate);
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return false;
-        }
+        return numericDate >= 0 &&
+            numericDate <= DateTimeOffset.MaxValue.ToUnixTimeSeconds();
     }
 
     private AuthenticationProperties? ReadPropertiesAndClearState(OpenIdConnectMessage message)

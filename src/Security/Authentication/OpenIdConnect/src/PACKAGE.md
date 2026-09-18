@@ -90,7 +90,9 @@ AppContext.SetSwitch(
     true);
 ```
 
-The switch defaults to `false` and is intended only as a temporary provider-compatibility escape hatch. Applications that do not set `MaxAge` are unaffected. When pushed authorization and validation are used, set or modify `max_age` in `OnRedirectToIdentityProvider`; changing it later in `OnPushAuthorization` is rejected because the handler must correlate the pushed value with the authorization response.
+The switch defaults to `false` and is intended only as a temporary provider-compatibility escape hatch. Applications that do not configure a `max_age` are unaffected. The most common way applications configure this is through `OpenIdConnectOptions.MaxAge`.
+
+When pushed authorization and validation are used, set or modify `max_age` in `OnRedirectToIdentityProvider`; changing it later in `OnPushAuthorization` is rejected unless pushing is skipped, because the handler has already correlated the value with the authorization response.
 
 ## Additional Documentation
 

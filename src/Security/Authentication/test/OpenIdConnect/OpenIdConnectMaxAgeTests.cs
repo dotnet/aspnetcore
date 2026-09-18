@@ -428,11 +428,65 @@ public class OpenIdConnectMaxAgeTests
         Assert.Equal(HttpStatusCode.BadRequest, transaction.Response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClearingProtocolMessageIdTokenDoesNotSkipFrontChannelValidation(bool useSecurityTokenValidator)
+    {
+        using var host = await CreateHostAsync(
+            useSecurityTokenValidator,
+            options =>
+            {
+                options.MaxAge = TimeSpan.FromMinutes(5);
+                options.Events.OnTokenValidated = context =>
+                {
+                    context.ProtocolMessage.IdToken = null;
+                    return Task.CompletedTask;
+                };
+            },
+            new Dictionary<string, object?> { ["front"] = Now - 601 });
+
+        var transaction = await AuthenticateAsync(host, "front");
+
+        Assert.Equal(HttpStatusCode.BadRequest, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ClearingMaxAgeRemovesCorrelationFromReusedChallengeProperties()
+    {
+        var challengeCount = 0;
+        var properties = new AuthenticationProperties { RedirectUri = "/complete" };
+        using var host = await CreateHostAsync(
+            useSecurityTokenValidator: false,
+            options =>
+            {
+                options.MaxAge = TimeSpan.FromMinutes(5);
+                options.Events.OnRedirectToIdentityProvider = context =>
+                {
+                    if (++challengeCount == 2)
+                    {
+                        context.ProtocolMessage.MaxAge = null;
+                    }
+                    return Task.CompletedTask;
+                };
+            },
+            new Dictionary<string, object?>(),
+            challengeProperties: properties);
+
+        var firstChallenge = await ChallengeAsync(host);
+        properties.Items.Remove(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey);
+        var secondChallenge = await ChallengeAsync(host);
+
+        Assert.Equal("300", firstChallenge.MaxAge);
+        Assert.Null(secondChallenge.MaxAge);
+    }
+
     private static async Task<IHost> CreateHostAsync(
         bool useSecurityTokenValidator,
         Action<OpenIdConnectOptions> configure,
         IReadOnlyDictionary<string, object?> tokenAuthTimes,
-        Action? onBackchannelCall = null)
+        Action? onBackchannelCall = null,
+        AuthenticationProperties? challengeProperties = null)
     {
         var stateDataFormat = new TestStateDataFormat();
         var tokenFactory = new TestTokenFactory(tokenAuthTimes);
@@ -500,7 +554,11 @@ public class OpenIdConnectMaxAgeTests
                         if (context.Request.Path == "/challenge")
                         {
                             AuthenticationProperties properties;
-                            if (context.Request.Query.TryGetValue("maxAge", out var maxAge))
+                            if (challengeProperties is not null)
+                            {
+                                properties = challengeProperties;
+                            }
+                            else if (context.Request.Query.TryGetValue("maxAge", out var maxAge))
                             {
                                 properties = new OpenIdConnectChallengeProperties
                                 {
