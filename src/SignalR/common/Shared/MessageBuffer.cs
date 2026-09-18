@@ -221,6 +221,11 @@ internal sealed class MessageBuffer : IDisposable
         {
             // TODO: is a sequence message expected right now?
 
+            if (sequenceMessage.SequenceId < 1)
+            {
+                throw new InvalidOperationException("Sequence ID must be greater than 0.");
+            }
+
             if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
             {
                 throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
