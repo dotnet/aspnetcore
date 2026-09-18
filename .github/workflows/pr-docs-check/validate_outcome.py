@@ -11,8 +11,9 @@ class OutcomeValidationError(ValueError):
     pass
 
 
-DOCS_REPOSITORY = "DeagleGross/AspNetCore.Docs"
-DOCS_PR_URL = re.compile(r"^https://github\.com/DeagleGross/AspNetCore\.Docs/pull/([1-9][0-9]*)$")
+DOCS_REPOSITORY = "dotnet/AspNetCore.Docs"
+DOCS_PR_AUTHOR = "aspnetcore-docs-bot[bot]"
+DOCS_PR_URL = re.compile(r"^https://github\.com/dotnet/AspNetCore\.Docs/pull/([1-9][0-9]*)$")
 
 
 def _load_json(path: Path) -> Any:
@@ -77,7 +78,7 @@ def _validate_docs_pr(
     ) is None:
         raise OutcomeValidationError(f"Unexpected documentation branch: {head.get('ref')!r}.")
     author = metadata.get("user")
-    if not isinstance(author, dict) or author.get("login") != "DeagleGross":
+    if not isinstance(author, dict) or author.get("login") != DOCS_PR_AUTHOR:
         raise OutcomeValidationError("The documentation pull request must be owned by the configured automation identity.")
     title = metadata.get("title")
     if not isinstance(title, str) or not title.startswith("[docs] "):

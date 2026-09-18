@@ -71,8 +71,8 @@ class FindExistingDraftTests(unittest.TestCase):
             pulls,
             "dotnet/aspnetcore",
             42,
-            "DeagleGross/AspNetCore.Docs",
-            "DeagleGross",
+            "dotnet/AspNetCore.Docs",
+            "aspnetcore-docs-bot[bot]",
         )
 
         self.assertTrue(result["found"])
@@ -89,8 +89,8 @@ class FindExistingDraftTests(unittest.TestCase):
             pulls,
             "dotnet/aspnetcore",
             42,
-            "DeagleGross/AspNetCore.Docs",
-            "DeagleGross",
+            "dotnet/AspNetCore.Docs",
+            "aspnetcore-docs-bot[bot]",
         )
 
         self.assertFalse(result["found"])
@@ -101,8 +101,8 @@ class FindExistingDraftTests(unittest.TestCase):
             [self._pull(1, "2026-01-01T00:00:00Z", "docs/aspnetcore-pr-99")],
             "dotnet/aspnetcore",
             42,
-            "DeagleGross/AspNetCore.Docs",
-            "DeagleGross",
+            "dotnet/AspNetCore.Docs",
+            "aspnetcore-docs-bot[bot]",
         )
 
         self.assertFalse(result["found"])
@@ -115,18 +115,18 @@ class FindExistingDraftTests(unittest.TestCase):
         head_ref,
         *,
         draft=True,
-        head_repo="DeagleGross/AspNetCore.Docs",
+        head_repo="dotnet/AspNetCore.Docs",
     ):
         return {
             "number": number,
-            "html_url": f"https://github.com/DeagleGross/AspNetCore.Docs/pull/{number}",
+            "html_url": f"https://github.com/dotnet/AspNetCore.Docs/pull/{number}",
             "state": "open",
             "draft": draft,
             "updated_at": updated_at,
             "body": "Source: dotnet/aspnetcore#42\n\nDetails",
             "base": {"ref": "main"},
             "head": {"ref": head_ref, "repo": {"full_name": head_repo}},
-            "user": {"login": "DeagleGross"},
+            "user": {"login": "aspnetcore-docs-bot[bot]"},
             "labels": [{"name": "documentation"}],
         }
 

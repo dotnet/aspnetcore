@@ -1,8 +1,8 @@
 ---
-name: "PR Documentation Check (Fork Pilot)"
+name: "PR Documentation Check"
 
 description: >
-  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in the DeagleGross/AspNetCore.Docs fork or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
+  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
 max-turns: 100
 
@@ -17,7 +17,6 @@ on:
         type: choice
         options:
           - "dotnet/aspnetcore"
-          - "DeagleGross/aspnetcore"
       pr_number:
         description: "Pull request number to analyze"
         required: true
@@ -33,7 +32,7 @@ permissions:
   copilot-requests: none
 
 concurrency:
-  group: "pr-docs-check-fork-pilot-${{ inputs.source_repository }}-${{ inputs.pr_number }}"
+  group: "pr-docs-check-${{ inputs.source_repository }}-${{ inputs.pr_number }}"
   cancel-in-progress: false
   job-discriminator: ${{ github.run_id }}
 
@@ -43,7 +42,7 @@ engine:
     COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
 checkout:
-  - repository: DeagleGross/AspNetCore.Docs
+  - repository: dotnet/AspNetCore.Docs
     path: .
     github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
     fetch: ["*"]
@@ -56,7 +55,6 @@ tools:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     min-integrity: merged
     allowed-repos:
-      - deaglegross/aspnetcore
       - dotnet/aspnetcore
   bash: [cat, find, git, grep, head, jq, sed]
 
@@ -96,7 +94,7 @@ safe-outputs:
         --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
         --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
   create-pull-request:
-    target-repo: "DeagleGross/AspNetCore.Docs"
+    target-repo: "dotnet/AspNetCore.Docs"
     base-branch: main
     title-prefix: "[docs] "
     labels: [documentation]
@@ -111,7 +109,7 @@ safe-outputs:
     protected-files: blocked
   push-to-pull-request-branch:
     target: "*"
-    target-repo: "DeagleGross/AspNetCore.Docs"
+    target-repo: "dotnet/AspNetCore.Docs"
     required-title-prefix: "[docs] "
     required-labels: [documentation]
     fallback-as-pull-request: false
@@ -120,7 +118,7 @@ safe-outputs:
     protected-files: blocked
   update-pull-request:
     target: "*"
-    target-repo: "DeagleGross/AspNetCore.Docs"
+    target-repo: "dotnet/AspNetCore.Docs"
     required-title-prefix: "[docs] "
     required-labels: [documentation]
   jobs:
@@ -213,7 +211,7 @@ safe-outputs:
 
               if (createdUrl) {
                 const match = createdUrl.match(
-                  /^https:\/\/github\.com\/DeagleGross\/AspNetCore\.Docs\/pull\/([1-9][0-9]*)$/);
+                  /^https:\/\/github\.com\/dotnet\/AspNetCore\.Docs\/pull\/([1-9][0-9]*)$/);
                 if (!match) {
                   core.setFailed(`Unexpected created docs PR URL: ${createdUrl}`);
                   return;
@@ -231,7 +229,7 @@ safe-outputs:
               if (number) {
                 try {
                   const response = await github.rest.pulls.get({
-                    owner: 'DeagleGross',
+                    owner: 'dotnet',
                     repo: 'AspNetCore.Docs',
                     pull_number: number,
                   });
@@ -273,7 +271,7 @@ safe-outputs:
               const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
               const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
 
-              if (!['dotnet/aspnetcore', 'DeagleGross/aspnetcore'].includes(expectedRepository)) {
+              if (expectedRepository !== 'dotnet/aspnetcore') {
                 core.setFailed(`Unexpected source repository: ${expectedRepository}`);
                 return;
               }
@@ -388,7 +386,7 @@ safe-outputs:
                 'Please review it for technical accuracy and confirm that the user impact and recommended guidance match the implementation.',
               ].join('\n');
               const docsComments = await github.paginate(github.rest.issues.listComments, {
-                owner: 'DeagleGross',
+                owner: 'dotnet',
                 repo: 'AspNetCore.Docs',
                 issue_number: docsPrNumber,
                 per_page: 100,
@@ -396,14 +394,14 @@ safe-outputs:
               const priorAuthorComment = docsComments.find(comment => comment.body?.includes(docsAuthorMarker));
               if (priorAuthorComment) {
                 await github.rest.issues.updateComment({
-                  owner: 'DeagleGross',
+                  owner: 'dotnet',
                   repo: 'AspNetCore.Docs',
                   comment_id: priorAuthorComment.id,
                   body: authorComment,
                 });
               } else {
                 await github.rest.issues.createComment({
-                  owner: 'DeagleGross',
+                  owner: 'dotnet',
                   repo: 'AspNetCore.Docs',
                   issue_number: docsPrNumber,
                   body: authorComment,
@@ -429,7 +427,7 @@ pre-agent-steps:
       trap 'rm -rf -- _workflow-source' EXIT
 
       case "${SOURCE_REPOSITORY}" in
-        dotnet/aspnetcore|DeagleGross/aspnetcore) ;;
+        dotnet/aspnetcore) ;;
         *)
           echo "ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}" >&2
           exit 1
@@ -454,15 +452,15 @@ pre-agent-steps:
         --output "${CONTEXT_DIR}/target-version.json"
 
       GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api --method GET --paginate --slurp \
-        "/repos/DeagleGross/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
+        "/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
         | jq '[.[][]]' \
         > "${CONTEXT_DIR}/open-docs-pulls.json"
       python3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \
         --pull-requests "${CONTEXT_DIR}/open-docs-pulls.json" \
         --source-repository "${SOURCE_REPOSITORY}" \
         --source-pr-number "${SOURCE_PR_NUMBER}" \
-        --docs-repository DeagleGross/AspNetCore.Docs \
-        --allowed-author DeagleGross \
+        --docs-repository dotnet/AspNetCore.Docs \
+        --allowed-author 'aspnetcore-docs-bot[bot]' \
         --output "${CONTEXT_DIR}/existing-draft.json"
 
       if [ "$(jq -r '.found' "${CONTEXT_DIR}/existing-draft.json")" = "true" ]; then
@@ -483,11 +481,11 @@ timeout-minutes: 20
 
 # ASP.NET Core PR documentation check
 
-Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `DeagleGross/AspNetCore.Docs`.
+Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `dotnet/AspNetCore.Docs`.
 
-This is a manually dispatched fork pilot. Do not modify `dotnet/aspnetcore`, `DeagleGross/aspnetcore`, or `dotnet/AspNetCore.Docs`. Before analysis, trusted pre-agent steps resolve the source version and search for an existing automated documentation draft. Your only permitted visible outcomes are:
+This workflow is manually dispatched. Do not modify `dotnet/aspnetcore` directly. Before analysis, trusted pre-agent steps resolve the source version and search for an existing automated documentation draft. Your only permitted visible outcomes are:
 
-1. When documentation confidence is at least 60%, one new or updated draft pull request in `DeagleGross/AspNetCore.Docs` and one `notify_source_pr` result.
+1. When documentation confidence is at least 60%, one new or updated draft pull request in `dotnet/AspNetCore.Docs` and one `notify_source_pr` result.
 2. When documentation confidence is below 60%, one `noop` result and one `notify_source_pr` result explaining why no documentation PR was created.
 3. When documentation is required but drafting fails, one `notify_source_pr` result with `result: "draft_failed"`.
 4. When the source PR is excluded by the security-concern rules, no docs changes, one generic `noop`, and one `notify_source_pr` result with `result: "restricted"`.
@@ -496,7 +494,7 @@ This is a manually dispatched fork pilot. Do not modify `dotnet/aspnetcore`, `De
 
 Confirm that:
 
-- `source_repository` is exactly `dotnet/aspnetcore` or `DeagleGross/aspnetcore`.
+- `source_repository` is exactly `dotnet/aspnetcore`.
 - `pr_number` is a positive integer.
 - The pull request exists and is merged.
 
@@ -658,7 +656,7 @@ When an existing draft was found, the trusted pre-agent step has checked out its
 2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title and replacing its body with the same body structure required above.
 3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary.
 
-The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main`, belongs to `DeagleGross/AspNetCore.Docs`, has the required title prefix and label, and carries the exact source marker. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
+The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main`, belongs to `dotnet/AspNetCore.Docs`, has the required title prefix and label, carries the exact source marker, and is owned by `aspnetcore-docs-bot[bot]`. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
 
 If confidence is below 60, make no file changes and emit `noop` exactly once with:
 

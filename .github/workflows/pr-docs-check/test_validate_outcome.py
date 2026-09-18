@@ -18,7 +18,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             payload,
             "dotnet/aspnetcore",
             42,
-            "https://github.com/DeagleGross/AspNetCore.Docs/pull/9",
+            "https://github.com/dotnet/AspNetCore.Docs/pull/9",
             self._metadata(9, "docs/aspnetcore-pr-42"),
             {"found": False, "blocked": False},
         )
@@ -49,7 +49,7 @@ class ValidateOutcomeTests(unittest.TestCase):
         )
 
         self.assertEqual("updated", result["docs_pr_action"])
-        self.assertEqual("https://github.com/DeagleGross/AspNetCore.Docs/pull/9", result["docs_pr_url"])
+        self.assertEqual("https://github.com/dotnet/AspNetCore.Docs/pull/9", result["docs_pr_url"])
 
     def test_restricted_outcome_rejects_code_output(self):
         payload = self._payload(
@@ -160,7 +160,7 @@ class ValidateOutcomeTests(unittest.TestCase):
     def _metadata(number, head_ref):
         return {
             "number": number,
-            "html_url": f"https://github.com/DeagleGross/AspNetCore.Docs/pull/{number}",
+            "html_url": f"https://github.com/dotnet/AspNetCore.Docs/pull/{number}",
             "state": "open",
             "draft": True,
             "title": "[docs] Update docs",
@@ -168,9 +168,9 @@ class ValidateOutcomeTests(unittest.TestCase):
             "base": {"ref": "main"},
             "head": {
                 "ref": head_ref,
-                "repo": {"full_name": "DeagleGross/AspNetCore.Docs"},
+                "repo": {"full_name": "dotnet/AspNetCore.Docs"},
             },
-            "user": {"login": "DeagleGross"},
+            "user": {"login": "aspnetcore-docs-bot[bot]"},
             "labels": [{"name": "documentation"}],
         }
 
