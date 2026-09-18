@@ -1,1 +1,13 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.CurrentLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo!>?
+Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.CurrentLogins.set -> void
+Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.IsReauthenticated.get -> bool
+Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.IsReauthenticated.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.CurrentLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo!>?
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.CurrentLogins.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.IsReauthenticated.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.IsReauthenticated.set -> void
+virtual Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.OnGetReauthenticationCallbackAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.SetPasswordModel.OnPostReauthenticateAsync(string! provider) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnGetReauthenticationCallbackAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
+virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnPostReauthenticateAsync(string! provider) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult!>!
