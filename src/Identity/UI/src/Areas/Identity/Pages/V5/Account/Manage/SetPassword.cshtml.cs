@@ -135,7 +135,11 @@ internal sealed class SetPasswordModel<TUser> : SetPasswordModel where TUser : c
         }
 
         await LoadAsync(user);
-        if (!IsReauthenticated)
+        if (CurrentLogins is null)
+        {
+            ModelState.AddModelError(string.Empty, "Setting a password requires a user store that supports security stamps.");
+        }
+        else if (!IsReauthenticated)
         {
             ModelState.AddModelError(string.Empty, "You must confirm your identity before setting a password.");
         }

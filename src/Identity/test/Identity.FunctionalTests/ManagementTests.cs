@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using AngleSharp.Html.Dom;
 using Identity.DefaultUI.WebSite;
@@ -334,8 +335,21 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
     [Theory]
     [InlineData("[PLACEHOLDER]-1a-updated", "different", "The new password and confirmation password do not match.")]
     [InlineData("alllowercase", "alllowercase", "Passwords must have at least one digit ('0'-'9').")]
-    [InlineData("[PLACEHOLDER]-1a-final", null, "The selected external login is not available for confirmation.")]
-    public async Task CanSetPasswordAfterValidationFailure(string password, string confirmation, string error)
+    public Task CanSetPasswordAfterValidationFailure(string password, string confirmation, string error) =>
+        AssertCanSetPasswordAfterFailedRequestAsync(
+            setPassword => setPassword.PostPasswordAsync(password, confirmation), password, error);
+
+    [Fact]
+    public Task CanSetPasswordAfterReauthenticationFailure() =>
+        AssertCanSetPasswordAfterFailedRequestAsync(
+            setPassword => setPassword.PostReauthenticationAsync("NotRegistered"),
+            "[PLACEHOLDER]-1a-final",
+            "The selected external login is not available for confirmation.");
+
+    private async Task AssertCanSetPasswordAfterFailedRequestAsync(
+        Func<SetPassword, Task<HttpResponseMessage>> request,
+        string password,
+        string error)
     {
         using var server = ServerFactory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services => services.SetupTestThirdPartyLogin()));
@@ -354,9 +368,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.Equal("/", issuedMarker.Path);
         var marker = issuedMarker.Value;
 
-        var response = confirmation is null
-            ? await setPassword.PostReauthenticationAsync("NotRegistered")
-            : await setPassword.PostPasswordAsync(password, confirmation);
+        var response = await request(setPassword);
         var document = await ResponseAssert.IsHtmlDocumentAsync(response);
 
         Assert.Contains(error, document.Body.TextContent);
