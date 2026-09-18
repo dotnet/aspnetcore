@@ -178,7 +178,7 @@
     <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
     <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
-    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.15.3</OpenTelemetryExporterOpenTelemetryProtocolVersion>
+    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.19.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
     <OpenTelemetryExtensionsHostingVersion>1.15.3</OpenTelemetryExtensionsHostingVersion>
     <OpenTelemetryInstrumentationHttpVersion>1.15.1</OpenTelemetryInstrumentationHttpVersion>
     <OpenTelemetryInstrumentationAspNetCoreVersion>1.15.1</OpenTelemetryInstrumentationAspNetCoreVersion>
