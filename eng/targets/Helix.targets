@@ -162,7 +162,8 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
+  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)"
+      Condition="$(BuildHelixPayload) AND '$(ExcludeFromBuild)' != 'true'">
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
