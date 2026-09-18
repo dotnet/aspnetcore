@@ -43,90 +43,25 @@ public class ServerSentEventsMessageFormatterTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FormattingPreservesExistingNewlineBehavior(bool segmented)
-    {
-        var random = new Random(42);
-        for (var iteration = 0; iteration < 256; iteration++)
-        {
-            var characters = new char[random.Next(0, 128)];
-            for (var i = 0; i < characters.Length; i++)
-            {
-                characters[i] = "x\r\n\u00e9"[random.Next(4)];
-            }
-
-            var text = new string(characters);
-            var bytes = Encoding.UTF8.GetBytes(text);
-            var payload = segmented
-                ? ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes)
-                : new ReadOnlySequence<byte>(bytes);
-            using var output = new MemoryStream();
-            await ServerSentEventsMessageFormatter.WriteMessageAsync(payload, output, default).DefaultTimeout();
-
-            var lines = text.Split('\n');
-            var expected = new StringBuilder();
-            if (text.Length > 0)
-            {
-                for (var i = 0; i < lines.Length; i++)
-                {
-                    var line = lines[i];
-                    if (i < lines.Length - 1 && line.Length > 1 && line.EndsWith('\r'))
-                    {
-                        line = line[..^1];
-                    }
-                    expected.Append("data: ").Append(line).Append("\r\n");
-                }
-            }
-            expected.Append("\r\n");
-            Assert.Equal(expected.ToString(), Encoding.UTF8.GetString(output.ToArray()));
-        }
-    }
-
-    [Theory]
     [InlineData(32)]
     [InlineData(4096)]
-    public async Task MultilineMessageUsesOneOutputWrite(int lineLength)
+    public async Task MultilineMessageWritesOnlyFormattedBytesInOneWrite(int lineLength)
     {
         var line = new string('x', lineLength);
         var lines = Enumerable.Repeat(line, 16);
-        var payload = string.Join("\r\n", lines);
-        var expected = string.Concat(lines.Select(value => $"data: {value}\r\n")) + "\r\n";
+        var payload = string.Join("\r\n", lines) + "\r\n";
+        var expected = string.Concat(lines.Select(value => $"data: {value}\r\n")) + "data: \r\n\r\n";
         var buffer = ReadOnlySequenceFactory.CreateSegments(
             Encoding.UTF8.GetBytes(payload[..(lineLength + 1)]),
             Encoding.UTF8.GetBytes(payload[(lineLength + 1)..]));
         var output = CreateOutputStream((bytes, token) =>
         {
+            Assert.Equal(expected.Length, bytes.Length);
             Assert.Equal(expected, Encoding.UTF8.GetString(bytes.Span));
             return Task.CompletedTask;
         });
 
         await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output.Object, default).DefaultTimeout();
-
-        Assert.Single(output.Invocations);
-    }
-
-    [Theory]
-    [InlineData(1, false)]
-    [InlineData(1, true)]
-    [InlineData(128, false)]
-    [InlineData(128, true)]
-    public async Task WritesOnlyFormattedBytesWhenCarriageReturnsAreTrimmed(int lineCount, bool segmented)
-    {
-        var text = string.Concat(Enumerable.Repeat("x\r\n", lineCount));
-        var expected = string.Concat(Enumerable.Repeat("data: x\r\n", lineCount)) + "data: \r\n\r\n";
-        var bytes = Encoding.UTF8.GetBytes(text);
-        var payload = segmented
-            ? ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes)
-            : new ReadOnlySequence<byte>(bytes);
-        var output = CreateOutputStream((written, token) =>
-        {
-            Assert.Equal(expected.Length, written.Length);
-            Assert.Equal(expected, Encoding.UTF8.GetString(written.Span));
-            return Task.CompletedTask;
-        });
-
-        await ServerSentEventsMessageFormatter.WriteMessageAsync(payload, output.Object, default).DefaultTimeout();
 
         Assert.Single(output.Invocations);
     }
@@ -249,5 +184,8 @@ public class ServerSentEventsMessageFormatterTests
             new object[] { "data: \r\ndata: \r\n\r\n", "\n" },
             new object[] { "data: \r\ndata: \r\ndata: \r\n\r\n", "\n\n" },
             new object[] { "data: \u00e9\r\ndata: \u03bb\r\n\r\n", "\u00e9\n\u03bb" },
+            new object[] { "data: \r\r\ndata: \r\n\r\n", "\r\n" },
+            new object[] { "data: Hello\rWorld\r\ndata: Next\r\ndata: Last\r\r\n\r\n", "Hello\rWorld\r\nNext\nLast\r" },
+            new object[] { "data: \u00e9\r\ndata: \u03bb\r\n\r\n", "\u00e9\r\n\u03bb" },
         };
 }

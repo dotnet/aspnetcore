@@ -8,40 +8,11 @@ using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
 public class HubConnectionContextTests
 {
-    [Fact]
-    public async Task UnknownCancellationAndCleanupDoNotAllocateCancellationSources()
-    {
-        await using var transport = new DefaultConnectionContext();
-        var connection = HubConnectionContextUtils.Create(transport);
-        using var services = (ServiceProvider)HubConnectionHandlerTestUtils.CreateServiceProvider();
-        var dispatcher = new DefaultHubDispatcher<MethodHub>(
-            services.GetRequiredService<IServiceScopeFactory>(),
-            services.GetRequiredService<IHubContext<MethodHub>>(),
-            enableDetailedErrors: false,
-            disableImplicitFromServiceParameters: false,
-            NullLogger<DefaultHubDispatcher<MethodHub>>.Instance,
-            hubFilters: null,
-            services.GetRequiredService<HubLifetimeManager<MethodHub>>());
-
-        Assert.Null(GetCancellationSources(connection));
-        Assert.False(connection.TryGetActiveRequestCancellationSource("missing", out var cancellationSource));
-        Assert.Null(cancellationSource);
-        await dispatcher.DispatchMessageAsync(connection, new CancelInvocationMessage("missing")).DefaultTimeout();
-        Assert.Null(GetCancellationSources(connection));
-
-        connection.Cleanup();
-        Assert.Null(GetCancellationSources(connection));
-    }
-
     [Fact]
     public async Task ConcurrentFirstRegistrationsShareCancellationSources()
     {

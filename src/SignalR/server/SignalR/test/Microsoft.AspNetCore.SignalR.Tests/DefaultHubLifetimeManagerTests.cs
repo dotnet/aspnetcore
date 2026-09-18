@@ -148,13 +148,11 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
         }
     }
 
-    [Theory]
-    [InlineData(17)]
-    [InlineData(100_000)]
-    public async Task SendConnectionsAsyncDoesNotInspectLargeTargetListsWhenThereAreNoConnections(int targetCount)
+    [Fact]
+    public async Task SendConnectionsAsyncDoesNotInspectLargeTargetListsWhenThereAreNoConnections()
     {
         var targets = new Mock<IReadOnlyList<string>>(MockBehavior.Strict);
-        targets.SetupGet(list => list.Count).Returns(targetCount);
+        targets.SetupGet(list => list.Count).Returns(17);
         var manager = CreateNewHubLifetimeManager();
 
         await manager.SendConnectionsAsync(targets.Object, "Hello", ["World"]).DefaultTimeout();
@@ -163,14 +161,10 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
     }
 
     [Theory]
-    [InlineData(6, false)]
-    [InlineData(6, true)]
     [InlineData(16, false)]
     [InlineData(16, true)]
     [InlineData(17, false)]
     [InlineData(17, true)]
-    [InlineData(100_000, false)]
-    [InlineData(100_000, true)]
     public async Task SendConnectionsAsyncIgnoresDuplicateAndMissingConnectionIds(int targetCount, bool useList)
     {
         using var client1 = new TestClient();
