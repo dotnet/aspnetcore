@@ -5991,6 +5991,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         container.SendKeys(Keys.End);
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0);
+        WaitForRenderToSettle(container, js);
 
         SetScrollTargetIndex(targetIndex);
         Browser.Exists(By.Id("scroll-to-item")).Click();
