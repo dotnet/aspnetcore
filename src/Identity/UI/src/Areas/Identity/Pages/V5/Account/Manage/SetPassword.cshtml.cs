@@ -240,6 +240,12 @@ internal sealed class SetPasswordModel<TUser> : SetPasswordModel where TUser : c
             return;
         }
 
+        if (!_userManager.SupportsUserLogin)
+        {
+            CurrentLogins = [];
+            return;
+        }
+
         var schemes = await _signInManager.GetExternalAuthenticationSchemesAsync();
         var logins = await _userManager.GetLoginsAsync(user);
         CurrentLogins = logins.Where(login => schemes.Any(scheme => scheme.Name == login.LoginProvider)).ToList();
