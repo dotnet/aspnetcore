@@ -87,9 +87,9 @@ function Test-Template {
     }
     Invoke-DotNet -Arguments $packArguments
 
-    $templatePackages = @(Get-ChildItem -Path $shippingPackagesPath -Filter $TemplatePackagePath -File)
+    $templatePackages = @(Get-ChildItem -Path $nonShippingPackagesPath -Filter $TemplatePackagePath -File)
     if ($templatePackages.Count -ne 1) {
-        throw "Expected exactly one template package matching '$TemplatePackagePath' in '$shippingPackagesPath', but found $($templatePackages.Count)."
+        throw "Expected exactly one template package matching '$TemplatePackagePath' in '$nonShippingPackagesPath', but found $($templatePackages.Count)."
     }
 
     if (-not (Test-Path $isolatedDotNetRoot)) {
