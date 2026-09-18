@@ -17,6 +17,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+Import-Module -Scope Local -Force (Join-Path $PSScriptRoot "PRAttentionPulseContract.psm1")
 
 function Read-PulseArea
 {
@@ -69,7 +70,7 @@ function Read-PulseArea
         $result["errorCategory"] = [string]$area.errorCategory
     }
 
-    return $result
+    return Resolve-PulseMergeArea -Area ([pscustomobject]$result)
 }
 
 $outputDirectory = Split-Path -Parent $OutputPath
