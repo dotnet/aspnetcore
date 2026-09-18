@@ -3,15 +3,21 @@
 
 #nullable enable
 
+#if NET
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+#endif
 using System.Linq;
+#if NET
 using System.Runtime.InteropServices;
+#endif
 using System.Security.Claims;
+#if NET
 using System.Security.Cryptography;
 using System.Text;
+#endif
 
 #if MVC_TAGHELPERS
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
@@ -24,11 +30,13 @@ namespace Microsoft.Extensions.Internal;
 /// </summary>
 internal static class SecurityHelper
 {
+#if NET
     private const string SubjectClaimType = "sub";
     private const int StackAllocThreshold = 256;
     private const int InitialPoolSize = 8;
 
-    internal const int UserIdentifierSize = SHA256.HashSizeInBytes;
+    internal const int UserIdentifierSize = 32;
+#endif
 
     /// <summary>
     /// Add all ClaimsIdentities from an additional ClaimPrincipal to the ClaimsPrincipal
@@ -72,6 +80,7 @@ internal static class SecurityHelper
     public static bool IsAuthenticated(ClaimsPrincipal? user)
         => user?.Identity is not null && user.Identities.Any(static identity => identity.IsAuthenticated);
 
+#if NET
     /// <summary>
     /// Computes a stable identifier from claims on authenticated identities.
     /// </summary>
@@ -407,4 +416,5 @@ internal static class SecurityHelper
         target[index++] = (byte)value;
         return index;
     }
+#endif
 }
