@@ -26,6 +26,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+Import-Module -Scope Local -Force (Join-Path $PSScriptRoot "PRAttentionPulseContract.psm1")
 $pulseSchemaVersion = "1.0.0"
 $scopeContract = if ([string]::Equals($Scope, "blazor", [StringComparison]::Ordinal))
 {
@@ -444,6 +445,10 @@ function ConvertTo-SanitizedItem
 
         $result["discussionAssessment"] = ConvertTo-SanitizedDiscussion -Assessment $assessmentSource
     }
+    if ($result.bucket -ceq "ReadyToMerge" -and $Item.PSObject.Properties["mergeEligibility"])
+    {
+        $result["mergeEligibility"] = Get-RequiredString -Object $Item -Name "mergeEligibility"
+    }
 
     return $result
 }
@@ -572,6 +577,16 @@ function ConvertTo-SanitizedResult
     $assessedCandidateCount = 0
     $verificationNeededCount = 0
     $unassessedReviewNowCount = 0
+    $hasMergeExtension = $null -ne $Raw.PSObject.Properties["mergeDiscussion"]
+    $mergeCounts = [ordered]@{
+        candidateLimit = 0
+        assessedCandidateCount = 0
+        verificationNeededCount = 0
+        unassessedCandidateCount = 0
+        eligibleCount = 0
+        excludedCandidateCount = 0
+        verificationLimit = 0
+    }
     $itemNumbers = @(
         foreach ($item in $items)
         {
@@ -618,7 +633,7 @@ function ConvertTo-SanitizedResult
                     }
                 }
             }
-            elseif ($null -ne $assessment)
+            elseif ($null -ne $assessment -and -not ($hasMergeExtension -and $bucket -ceq "ReadyToMerge"))
             {
                 Throw-ContractError "invalid-contract"
             }
@@ -629,6 +644,70 @@ function ConvertTo-SanitizedResult
                     (Test-OrdinalIn -Value $assessmentState -AllowedValues @("verification-needed", "not-assessed"))))
             {
                 Throw-ContractError "invalid-contract"
+            }
+
+            if (-not $hasMergeExtension)
+            {
+                foreach ($name in @("mergeEligibility", "shownInMergeVerification", "mergeVerificationRank"))
+                {
+                    if ($item.PSObject.Properties[$name])
+                    {
+                        Throw-ContractError "invalid-contract"
+                    }
+                }
+                if ($bucket -ceq "ReadyToMerge")
+                {
+                    $mergeCounts.unassessedCandidateCount++
+                }
+            }
+            else
+            {
+                $eligibility = Get-RequiredString -Object $item -Name "mergeEligibility"
+                $shownInMergeVerification = Get-RequiredBoolean -Object $item -Name "shownInMergeVerification"
+                $mergeRank = Get-RequiredNullableInteger -Object $item -Name "mergeVerificationRank" -Minimum 1
+                if ($shownInMergeVerification -ne ($null -ne $mergeRank) -or
+                    ($shownInMergeVerification -and ($shownInDigest -or $shownInDiscussion)) -or
+                    ($bucket -cne "ReadyToMerge" -and ($eligibility -cne "not-candidate" -or $shownInMergeVerification)))
+                {
+                    Throw-ContractError "invalid-contract"
+                }
+                if ($bucket -ceq "ReadyToMerge")
+                {
+                    $excluded = $false
+                    if ($item.PSObject.Properties["digestExclusionReasons"])
+                    {
+                        $exclusions = ConvertTo-StableCodes -Values (Get-RequiredArray -Object $item -Name "digestExclusionReasons" -MaximumCount 20)
+                        $excluded = @($exclusions | Where-Object { $_ -cin @("excluded-author", "stacked-on-unhealthy-pr") }).Count -gt 0
+                    }
+                    if ($excluded)
+                    {
+                        if ($eligibility -cne "not-assessed" -or $null -ne $assessment -or $shownInDigest -or $shownInMergeVerification)
+                        {
+                            Throw-ContractError "invalid-contract"
+                        }
+                        $mergeCounts.excludedCandidateCount++
+                    }
+                    else
+                    {
+                        if ($null -eq $assessment)
+                        {
+                            Throw-ContractError "invalid-contract"
+                        }
+                        $null = ConvertTo-SanitizedDiscussion -Assessment $assessment
+                        Assert-PulseMergeAssessment -Assessment $assessment -Eligibility $eligibility
+                        switch -CaseSensitive ($eligibility)
+                        {
+                            "eligible" { $mergeCounts.eligibleCount++; $mergeCounts.assessedCandidateCount++ }
+                            "verification-needed" { $mergeCounts.verificationNeededCount++; $mergeCounts.assessedCandidateCount++ }
+                            "not-assessed" { $mergeCounts.unassessedCandidateCount++ }
+                        }
+                    }
+                    if (($shownInDigest -and $eligibility -cne "eligible") -or
+                        ($shownInMergeVerification -and $eligibility -cnotin @("verification-needed", "not-assessed")))
+                    {
+                        Throw-ContractError "invalid-contract"
+                    }
+                }
             }
 
             Get-RequiredInteger -Object $item -Name "number" -Minimum 1
@@ -667,6 +746,23 @@ function ConvertTo-SanitizedResult
     {
         Throw-ContractError "invalid-contract"
     }
+    $mergeCounts.candidateLimit = $discussionCandidateLimit
+    $mergeCounts.verificationLimit = $caps.readyToMerge
+    if ($hasMergeExtension)
+    {
+        $mergeDiscussion = Get-RequiredProperty -Object $Raw -Name "mergeDiscussion"
+        foreach ($name in $mergeCounts.Keys)
+        {
+            if ((Get-RequiredInteger -Object $mergeDiscussion -Name $name) -ne $mergeCounts[$name])
+            {
+                Throw-ContractError "invalid-contract"
+            }
+        }
+        if ($mergeCounts.assessedCandidateCount -gt $mergeCounts.candidateLimit)
+        {
+            Throw-ContractError "invalid-contract"
+        }
+    }
 
     $reviewNow = ConvertTo-SanitizedView `
         -Items $items `
@@ -692,10 +788,32 @@ function ConvertTo-SanitizedResult
         -Bucket "ReadyToMerge" `
         -ShownProperty "shownInDigest" `
         -RankProperty "digestRank" `
-        -MaximumCount $caps.readyToMerge
+        -MaximumCount $caps.readyToMerge `
+        -IncludeDiscussion:$hasMergeExtension
+    $verifyMerge = @()
+    if ($hasMergeExtension)
+    {
+        $verifyMerge = ConvertTo-SanitizedView `
+            -Items $items `
+            -Bucket "ReadyToMerge" `
+            -ShownProperty "shownInMergeVerification" `
+            -RankProperty "mergeVerificationRank" `
+            -MaximumCount $mergeCounts.verificationLimit `
+            -IncludeDiscussion
+    }
+    else
+    {
+        $verifyMerge = @($readyToMerge | Select-Object -First $mergeCounts.verificationLimit)
+        foreach ($item in $verifyMerge)
+        {
+            $item["mergeEligibility"] = "not-assessed"
+            $item["discussionAssessment"] = New-PulseUnassessedMergeAssessment
+        }
+        $readyToMerge = @()
+    }
 
     $selectedNumbers = @(
-        @($reviewNow) + @($verifyDiscussion) + @($needsRescue) + @($readyToMerge) |
+        @($reviewNow) + @($verifyDiscussion) + @($needsRescue) + @($readyToMerge) + @($verifyMerge) |
             ForEach-Object { $_["number"] }
     )
     if (@($selectedNumbers | Select-Object -Unique).Count -ne $selectedNumbers.Count)
@@ -722,8 +840,23 @@ function ConvertTo-SanitizedResult
     {
         Throw-ContractError "invalid-contract"
     }
+    foreach ($bucket in $knownBuckets)
+    {
+        if ($census.byBucket[$bucket] -ne @($items | Where-Object bucket -CEQ $bucket).Count)
+        {
+            Throw-ContractError "invalid-contract"
+        }
+    }
+    if (($mergeCounts.eligibleCount + $mergeCounts.verificationNeededCount + $mergeCounts.unassessedCandidateCount + $mergeCounts.excludedCandidateCount) -ne $census.byBucket.ReadyToMerge)
+    {
+        Throw-ContractError "invalid-contract"
+    }
 
     $overflowSource = Get-RequiredProperty -Object $Raw -Name "overflow"
+    if ($hasMergeExtension -and (Get-RequiredInteger -Object $overflowSource -Name "readyToMerge") -ne ($census.byBucket.ReadyToMerge - $readyToMerge.Count))
+    {
+        Throw-ContractError "invalid-contract"
+    }
     $warnings = ConvertTo-SafeDisplayArray `
         -Values (Get-RequiredArray -Object $Raw -Name "warnings" -MaximumCount 20) `
         -MaximumCount 20 `
@@ -757,6 +890,7 @@ function ConvertTo-SanitizedResult
                 verificationNeededCount = $sourceVerificationNeededCount
                 unassessedReviewNowCount = $sourceUnassessedReviewNowCount
             }
+            mergeDiscussion = $mergeCounts
             census = $census
             overflow = [ordered]@{
                 reviewNow = Get-RequiredInteger -Object $overflowSource -Name "reviewNow"
@@ -771,6 +905,7 @@ function ConvertTo-SanitizedResult
             verifyDiscussionBeforeReview = @($verifyDiscussion)
             needsRescue = @($needsRescue)
             readyToMerge = @($readyToMerge)
+            verifyDiscussionBeforeMerge = @($verifyMerge)
         }
     }
 }
