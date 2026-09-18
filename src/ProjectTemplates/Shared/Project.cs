@@ -20,6 +20,8 @@ public class Project : IDisposable
 {
     private const string _urlsNoHttps = "http://127.0.0.1:0";
     private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+    // Generated projects run with a copied SDK. Do not let the parent MSBuild process redirect that host back to the repository SDK.
+    private const string _msBuildSdksPathEnvironmentVariable = "MSBuildSDKsPath";
 
     public static string ArtifactsLogDir
     {
@@ -168,7 +170,13 @@ public class Project : IDisposable
 
         var restoreArgs = noRestore ? "--no-restore" : null;
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"publish {restoreArgs} -c Release /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);
@@ -192,7 +200,13 @@ public class Project : IDisposable
         // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
         // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"build --no-restore -c Debug /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);

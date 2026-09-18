@@ -38,11 +38,35 @@ public class GenerateAdditionalXmlFilesForOpenApiTests
             UseShellExecute = false
         };
 
-        using var process = Process.Start(startInfo);
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start the generated OpenAPI project build.");
         var standardOutputTask = process.StandardOutput.ReadToEndAsync();
         var standardErrorTask = process.StandardError.ReadToEndAsync();
         using var timeoutTokenSource = new CancellationTokenSource(_defaultProcessTimeout);
-        await process.WaitForExitAsync(timeoutTokenSource.Token);
+        try
+        {
+            await process.WaitForExitAsync(timeoutTokenSource.Token);
+        }
+        catch (OperationCanceledException) when (timeoutTokenSource.IsCancellationRequested)
+        {
+            if (!process.HasExited)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException) when (process.HasExited)
+                {
+                }
+
+                await process.WaitForExitAsync();
+            }
+
+            var timeoutOutput = await standardOutputTask;
+            var timeoutError = await standardErrorTask;
+            throw new TimeoutException(
+                $"Generated OpenAPI project build timed out after {_defaultProcessTimeout}.{Environment.NewLine}{timeoutOutput}{Environment.NewLine}{timeoutError}");
+        }
 
         var output = await standardOutputTask;
         var error = await standardErrorTask;
