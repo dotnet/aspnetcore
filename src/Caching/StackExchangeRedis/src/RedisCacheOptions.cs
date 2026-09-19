@@ -42,6 +42,17 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
     /// </summary>
     public Func<ProfilingSession>? ProfilingSession { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value that indicates whether sliding expiration is refreshed on read operations.
+    /// </summary>
+    /// <remarks>
+    /// When <see langword="true"/>, read operations will not issue an <c>EXPIRE</c> command to refresh
+    /// the sliding expiration. This is useful when the Redis instance is temporarily in a read-only state
+    /// (for example, during failover/leader election) so that reads continue to succeed instead of failing
+    /// because of the additional <c>EXPIRE</c> command. The default is <see langword="false"/>.
+    /// </remarks>
+    public bool DisableSlidingExpirationRefresh { get; set; }
+
     RedisCacheOptions IOptions<RedisCacheOptions>.Value
     {
         get { return this; }
