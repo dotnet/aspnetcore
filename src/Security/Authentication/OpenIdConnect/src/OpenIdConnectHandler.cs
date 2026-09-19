@@ -331,6 +331,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             properties = Options.StateDataFormat.Unprotect(message.State);
         }
 
+        if (properties?.RedirectUri is { } redirectUri)
+        {
+            // Normalized here rather than at the redirect below: a SignedOutCallbackRedirect handler can both
+            // observe this value and take over the response, in which case the redirect below never runs.
+            properties.RedirectUri = RedirectUriNormalizer.CollapseLeadingSlashes(redirectUri);
+        }
+
         var signOut = new RemoteSignOutContext(Context, Scheme, Options, message)
         {
             Properties = properties,
@@ -358,7 +365,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         properties = signOut.Properties;
         if (!string.IsNullOrEmpty(properties?.RedirectUri))
         {
-            Response.Redirect(properties.RedirectUri);
+            Response.Redirect(RedirectUriNormalizer.CollapseLeadingSlashes(properties.RedirectUri));
         }
 
         return true;
