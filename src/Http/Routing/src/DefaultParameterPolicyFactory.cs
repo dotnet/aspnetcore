@@ -64,7 +64,11 @@ internal sealed class DefaultParameterPolicyFactory : ParameterPolicyFactory
     {
         if (optional)
         {
-            routeConstraint = new OptionalRouteConstraint(routeConstraint);
+            // Wrapping the constraint must not hide an IOutboundParameterTransformer it implements,
+            // otherwise TransformOutbound is never called when generating a URL for this parameter.
+            routeConstraint = routeConstraint is IOutboundParameterTransformer
+                ? new OptionalOutboundParameterTransformerRouteConstraint(routeConstraint)
+                : new OptionalRouteConstraint(routeConstraint);
         }
 
         return routeConstraint;
