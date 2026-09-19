@@ -6,7 +6,9 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
+using Microsoft.AspNetCore.Components.Endpoints.Tests;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -1491,6 +1494,35 @@ public class EndpointHtmlRendererTest
 
         var prerenderedContent = match.Groups["content"].Value;
         Assert.Equal("<h1>This is InteractiveWithInteractiveChild</h1>\n\n<p>Hello from InteractiveGreetingServer!</p>", prerenderedContent.Replace("\r\n", "\n"));
+    }
+
+    [Fact]
+    public async Task MappedAssembliesAreRestoredFromEndpointMetadata()
+    {
+        var endpointDataSource = new RazorComponentEndpointDataSource<App>(
+            [],
+            Mock.Of<IEndpointRouteBuilder>(),
+            new RazorComponentEndpointFactory());
+        endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            IRazorComponentApplication.GetBuilderForAssembly(builder, typeof(App).Assembly);
+            builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+                typeof(string).Assembly.FullName!,
+                [],
+                []));
+        });
+        var endpoint = endpointDataSource.Endpoints.First(
+            endpoint => endpoint.Metadata.GetMetadata<ComponentTypeMetadata>() is not null);
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), null, ParameterView.Empty);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+        var assemblyProvider = new RazorComponentApplicationAssemblyProvider(state);
+
+        Assert.Equal(
+            [typeof(App).Assembly.GetName().Name, typeof(string).Assembly.GetName().Name],
+            assemblyProvider.GetAssemblies().Select(assembly => assembly.GetName().Name));
     }
 
     [Fact]

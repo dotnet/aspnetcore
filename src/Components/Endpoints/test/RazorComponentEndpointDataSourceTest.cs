@@ -28,11 +28,24 @@ public class RazorComponentEndpointDataSourceTest
         {
             var assembly = typeof(App).Assembly;
             IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+            builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+                typeof(string).Assembly.FullName!,
+                [],
+                []));
         });
 
         var endpoints = endpointDataSource.Endpoints;
 
         Assert.Equal(3, endpoints.Count);
+        Assert.All(
+            endpoints.Where(endpoint => endpoint.Metadata.GetMetadata<ComponentTypeMetadata>() is not null),
+            endpoint => Assert.Equal(
+                new[]
+                {
+                    typeof(App).Assembly.GetName().Name!,
+                    typeof(string).Assembly.GetName().Name!,
+                },
+                endpoint.Metadata.GetRequiredMetadata<RazorComponentApplicationAssembliesMetadata>().AssemblyNames));
     }
 
     [Fact]
