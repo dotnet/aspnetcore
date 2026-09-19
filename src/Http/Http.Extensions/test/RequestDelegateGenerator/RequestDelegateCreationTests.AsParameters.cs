@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -243,6 +244,35 @@ app.MapGet("/{id}", TestAction);
         var requiredAttributes = CustomAttributeExtensions.GetCustomAttributes<RequiredAttribute>(parameterBindingMetadata.ParameterInfo).ToArray();
 
         Assert.Equal(2, requiredAttributes.Length);
+    }
+
+    [Fact]
+    public async Task RequestDelegateGenerator_AsParameters_InheritsFromServicesFromOverriddenProperty()
+    {
+        var source = """
+void TestAction([AsParameters] InheritedFromServicesParameterList args)
+{
+    args.Service.TestServiceMethod();
+}
+
+app.MapGet("/", TestAction);
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<TestService>()
+            .BuildServiceProvider();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var serviceMetadata = Assert.Single(
+            endpoint.Metadata.OfType<Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata>(),
+            metadata => metadata.Name == "Service");
+        Assert.Contains(
+            serviceMetadata.ParameterInfo.GetCustomAttributes(true),
+            attribute => attribute is Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata);
     }
 
     [Fact]
