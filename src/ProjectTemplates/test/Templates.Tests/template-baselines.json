@@ -3168,6 +3168,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.fs",
+        "MvcBuilderExtensions.fs",
         "Controllers/HomeController.fs",
         "Models/ErrorViewModel.fs",
         "Properties/launchSettings.json",

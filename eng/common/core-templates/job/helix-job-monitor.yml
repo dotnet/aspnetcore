@@ -52,8 +52,20 @@ parameters:
   type: string
   default: https://helix.dot.net/
 
-# Helix API access token forwarded to the tool via the HELIX_ACCESSTOKEN environment variable.
+# Helix API access token forwarded via HELIX_ACCESSTOKEN. Not forwarded when
+# useEntraAuthentication is true.
 - name: helixAccessToken
+  type: string
+  default: ''
+
+# Use a refreshable Entra credential instead of a PAT or anonymous access.
+- name: useEntraAuthentication
+  type: boolean
+  default: false
+
+# Azure service connection ID authorized for Helix. Required when
+# useEntraAuthentication is true.
+- name: azureSubscription
   type: string
   default: ''
 
@@ -141,6 +153,26 @@ jobs:
   - checkout: self
     fetchDepth: 1
 
+  - ${{ if and(eq(parameters.useEntraAuthentication, true), eq(parameters.azureSubscription, '')) }}:
+    - pwsh: throw "azureSubscription must be set when useEntraAuthentication is true."
+      displayName: Validate Helix Entra authentication
+
+  - ${{ if eq(parameters.useEntraAuthentication, true) }}:
+    - task: AzureCLI@2
+      displayName: Initialize Helix Entra authentication
+      inputs:
+        azureSubscription: ${{ parameters.azureSubscription }}
+        addSpnToEnvironment: true
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          if ([string]::IsNullOrWhiteSpace($env:servicePrincipalId) -or [string]::IsNullOrWhiteSpace($env:tenantId)) {
+            throw "The Helix Azure service connection did not provide a service principal or tenant ID."
+          }
+
+          Write-Host "##vso[task.setvariable variable=HelixEntraClientId]$env:servicePrincipalId"
+          Write-Host "##vso[task.setvariable variable=HelixEntraTenantId]$env:tenantId"
+
   - ${{ if ne(parameters.toolNupkgArtifactName, '') }}:
     - task: DownloadPipelineArtifact@2
       displayName: Download Helix Job Monitor artifact
@@ -214,6 +246,7 @@ jobs:
 
       toolArgs=(
         --helix-base-uri              '${{ parameters.helixBaseUri }}'
+        --use-entra-authentication    '${{ parameters.useEntraAuthentication }}'
         --polling-interval-seconds    '${{ parameters.pollingIntervalSeconds }}'
         --fail-on-failed-tests        '${{ parameters.failWorkItemsWithFailedTests }}'
         --allow-no-helix-jobs         '${{ parameters.allowNoHelixJobs }}'
@@ -275,4 +308,9 @@ jobs:
     displayName: Monitor Helix Jobs
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}
+      ${{ if eq(parameters.useEntraAuthentication, false) }}:
+        HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}
+      ${{ if eq(parameters.useEntraAuthentication, true) }}:
+        AZURESUBSCRIPTION_CLIENT_ID: $(HelixEntraClientId)
+        AZURESUBSCRIPTION_TENANT_ID: $(HelixEntraTenantId)
+        AZURESUBSCRIPTION_SERVICE_CONNECTION_ID: ${{ parameters.azureSubscription }}
