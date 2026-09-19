@@ -34,6 +34,22 @@ public class LongPollingTransportTest {
         assertFalse(transport.isActive());
     }
 
+    // stop() sends DELETE and then waits on receiveLoopSubject. The receive loop only starts once the
+    // first poll succeeds, so stopping after a failed start used to wait on a loop that never ran.
+    @Test
+    public void LongPollingTransportStopDoesNotHangWhenStartFails() {
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> Single.just(new HttpResponse(500, "", TestUtils.emptyByteBuffer)))
+                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer)));
+
+        Map<String, String> headers = new HashMap<>();
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+        assertThrows(RuntimeException.class, () -> transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait());
+        assertFalse(transport.isActive());
+
+        transport.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+    }
+
     @Test
     public void LongPollingTransportCantSendBeforeStart() {
         TestHttpClient client = new TestHttpClient()

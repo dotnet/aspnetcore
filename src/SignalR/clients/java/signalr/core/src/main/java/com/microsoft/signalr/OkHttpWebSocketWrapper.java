@@ -6,6 +6,7 @@ package com.microsoft.signalr;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -22,6 +23,10 @@ import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 class OkHttpWebSocketWrapper extends WebSocketWrapper {
+    // How long to wait for the peer to answer a close frame before tearing the socket down anyway.
+    // Matches the .NET client's HttpConnectionOptions.CloseTimeout default.
+    private static final long CLOSE_TIMEOUT_MILLIS = 5 * 1000;
+
     private WebSocket websocketClient;
     private String url;
     private Map<String, String> headers;
@@ -59,7 +64,21 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     @Override
     public Completable stop() {
         websocketClient.close(1000, "HubConnection stopped.");
-        return closeSubject;
+
+        // OkHttp waits a minute before it cancels a close the peer never answered, which leaves a stop
+        // stalled behind an unresponsive peer. Bound that wait like the .NET client, which arms the same
+        // kind of ungraceful close timer from HttpConnectionOptions.CloseTimeout.
+        Completable cancel = Completable.fromAction(() -> {
+                    logger.warn("The WebSocket did not close within {}ms, cancelling it.", CLOSE_TIMEOUT_MILLIS);
+                    websocketClient.cancel();
+                })
+                // Cancelling fails the socket, which terminates closeSubject, so the close callbacks still
+                // run before the stop reports back. That wait is bounded too, because nothing here may
+                // leave a stop hanging.
+                .andThen(closeSubject.onErrorComplete())
+                .timeout(CLOSE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS, Completable.complete());
+
+        return closeSubject.timeout(CLOSE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS, cancel);
     }
 
     @Override

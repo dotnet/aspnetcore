@@ -28,6 +28,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.CompletableSubject;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -3322,6 +3323,281 @@ class HubConnectionTest {
         hubConnection.stop();
         closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
         blockGet.onComplete();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    // Regression test for stop() hanging when it races with a failing start. stop() waits on the start
+    // task, then stops the transport. The initial poll had already been issued, so LongPollingTransport
+    // sent DELETE and waited on a receive loop that never started.
+    @Test
+    public void stopDuringFailingInitialLongPollDoesNotHang() throws Exception {
+        CompletableSubject initialPollArrived = CompletableSubject.create();
+        // Leave the initial poll unresolved so start() returns while it is still in flight.
+        SingleSubject<HttpResponse> initialPoll = SingleSubject.create();
+        AtomicBoolean deleteSent = new AtomicBoolean(false);
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                initialPollArrived.onComplete();
+                return initialPoll;
+            })
+            .on("DELETE", (req) -> {
+                deleteSent.set(true);
+                return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        TestObserver<Void> start = hubConnection.start().test();
+        assertTrue(initialPollArrived.blockingAwait(30, TimeUnit.SECONDS));
+
+        // stop() has to observe the in-progress start, so it waits on the start task.
+        TestObserver<Void> stop = hubConnection.stop().test();
+
+        // Fail the poll from another thread so a hang shows up as a failed assertion below rather than
+        // blocking the test thread inside onSuccess.
+        Thread poller = new Thread(() -> initialPoll.onSuccess(new HttpResponse(500, "", TestUtils.emptyByteBuffer)));
+        poller.setDaemon(true);
+        poller.start();
+
+        assertTrue(start.await(30, TimeUnit.SECONDS), "start() never terminated.");
+        start.assertError(e -> e instanceof Exception && "Failed to connect.".equals(e.getMessage()));
+        assertTrue(stop.await(30, TimeUnit.SECONDS), "stop() never terminated.");
+        assertTrue(deleteSent.get());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    // A failed start used to leave the transport running, and because the hub was already DISCONNECTED a
+    // later stop() did nothing, so the abandoned transport kept polling.
+    @Test
+    public void failedStartStopsTheTransport() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        MockTransport transport = new MockTransport(false);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        // Never send a handshake response, so start fails on the handshake timeout.
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+
+        transport.getStopTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    // A start that fails must not report failure while the transport it brought up is still shutting
+    // down, which is what the .NET and TypeScript clients do. stop() then has nothing left to wait for.
+    @Test
+    public void failedStartWaitsForTheTransportToStop() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        CompletableSubject releaseTransportStop = CompletableSubject.create();
+        CompletableSubject transportStopCalled = CompletableSubject.create();
+        AtomicBoolean transportStopped = new AtomicBoolean(false);
+
+        Transport transport = new Transport() {
+            @Override
+            public Completable start(String url) {
+                return Completable.complete();
+            }
+
+            @Override
+            public Completable send(ByteBuffer message) {
+                return Completable.complete();
+            }
+
+            @Override
+            public void setOnReceive(OnReceiveCallBack callback) {
+            }
+
+            @Override
+            public void onReceive(ByteBuffer message) {
+            }
+
+            @Override
+            public void setOnClose(TransportOnClosedCallback onCloseCallback) {
+            }
+
+            @Override
+            public Completable stop() {
+                // Take as long to shut down as a transport whose peer never answers the close.
+                transportStopCalled.onComplete();
+                return releaseTransportStop.doOnComplete(() -> transportStopped.set(true));
+            }
+        };
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        // Never send a handshake response, so start fails on the handshake timeout.
+        TestObserver<Void> start = hubConnection.start().test();
+
+        // The handshake has failed and teardown is under way, but it has not finished.
+        assertTrue(transportStopCalled.blockingAwait(30, TimeUnit.SECONDS));
+        start.assertNoErrors().assertNotComplete();
+        assertFalse(transportStopped.get());
+
+        releaseTransportStop.onComplete();
+
+        start.awaitDone(30, TimeUnit.SECONDS).assertError(TimeoutException.class);
+        assertTrue(transportStopped.get());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        // Nothing is left running, so stopping is immediate.
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    // The abandoned attempt also leaves behind the close callback that tears the hub down. Releasing it
+    // has to detach that callback, otherwise a late close from the abandoned transport closes whichever
+    // connection is current by then.
+    @Test
+    public void closeFromAbandonedTransportDoesNotCloseALaterConnection() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        AtomicReference<TransportOnClosedCallback> onClose = new AtomicReference<>();
+        AtomicReference<OnReceiveCallBack> onReceive = new AtomicReference<>();
+        AtomicInteger startCount = new AtomicInteger(0);
+        CompletableSubject stopped = CompletableSubject.create();
+
+        Transport transport = new Transport() {
+            @Override
+            public Completable start(String url) {
+                // Only answer the handshake from the second attempt on, so the first start fails.
+                if (startCount.incrementAndGet() > 1) {
+                    onReceive.get().invoke(TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR));
+                }
+                return Completable.complete();
+            }
+
+            @Override
+            public Completable send(ByteBuffer message) {
+                return Completable.complete();
+            }
+
+            @Override
+            public void setOnReceive(OnReceiveCallBack callback) {
+                onReceive.set(callback);
+            }
+
+            @Override
+            public void onReceive(ByteBuffer message) {
+            }
+
+            @Override
+            public void setOnClose(TransportOnClosedCallback onCloseCallback) {
+                onClose.set(onCloseCallback);
+            }
+
+            @Override
+            public Completable stop() {
+                stopped.onComplete();
+                return Completable.complete();
+            }
+        };
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHandshakeResponseTimeout(100)
+                .build();
+
+        assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+        stopped.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        // Whatever the failed attempt left on the transport must no longer reach the hub.
+        TransportOnClosedCallback abandonedCallback = onClose.get();
+
+        AtomicBoolean closed = new AtomicBoolean(false);
+        hubConnection.onClosed((e) -> closed.set(true));
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        abandonedCallback.invoke("Late close from the abandoned attempt.");
+
+        assertFalse(closed.get(), "A close from the abandoned transport closed the new connection.");
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    // A transport that failed to start can also throw from stop(), for example a WebSocket that never
+    // created its underlying client. Cleaning up after the failure must not stop start() from completing.
+    @Test
+    public void failedStartCompletesWhenStoppingTheTransportThrows() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+
+        Transport transport = new Transport() {
+            @Override
+            public Completable start(String url) {
+                return Completable.error(new RuntimeException("Failed to start the transport."));
+            }
+
+            @Override
+            public Completable send(ByteBuffer message) {
+                return Completable.complete();
+            }
+
+            @Override
+            public void setOnReceive(OnReceiveCallBack callback) {
+            }
+
+            @Override
+            public void onReceive(ByteBuffer message) {
+            }
+
+            @Override
+            public void setOnClose(TransportOnClosedCallback onCloseCallback) {
+            }
+
+            @Override
+            public Completable stop() {
+                throw new NullPointerException("The transport was never started.");
+            }
+        };
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
+
+        // The caller has to see the original startup failure, not a cleanup failure or a timeout.
+        assertEquals("Failed to start the transport.", exception.getMessage());
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
