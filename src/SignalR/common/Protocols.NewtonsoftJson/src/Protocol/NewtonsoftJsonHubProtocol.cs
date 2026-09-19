@@ -121,12 +121,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
             int? type = null;
             string? invocationId = null;
+            var hasInvocationId = false;
             string? target = null;
             string? error = null;
+            var hasError = false;
             var hasItem = false;
             object? item = null;
             JToken? itemToken = null;
             var hasResult = false;
+            var hasResultProperty = false;
             object? result = null;
             JToken? resultToken = null;
             var hasArguments = false;
@@ -137,6 +140,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
             Dictionary<string, string>? headers = null;
             var completed = false;
             var allowReconnect = false;
+            var hasAllowReconnect = false;
             long? sequenceId = null;
 
             using (var reader = JsonUtils.CreateJsonTextReader(textReader))
@@ -158,6 +162,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                             switch (memberName)
                             {
                                 case TypePropertyName:
+                                    ThrowIfDuplicateProperty(type is not null, TypePropertyName);
                                     var messageType = JsonUtils.ReadAsInt32(reader, TypePropertyName);
 
                                     if (messageType == null)
@@ -168,9 +173,12 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     type = messageType.Value;
                                     break;
                                 case InvocationIdPropertyName:
+                                    ThrowIfDuplicateProperty(hasInvocationId, InvocationIdPropertyName);
+                                    hasInvocationId = true;
                                     invocationId = JsonUtils.ReadAsString(reader, InvocationIdPropertyName);
                                     break;
                                 case StreamIdsPropertyName:
+                                    ThrowIfDuplicateProperty(streamIds is not null, StreamIdsPropertyName);
                                     JsonUtils.CheckRead(reader);
 
                                     if (reader.TokenType != JsonToken.StartArray)
@@ -190,15 +198,22 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                                     break;
                                 case TargetPropertyName:
+                                    ThrowIfDuplicateProperty(target is not null, TargetPropertyName);
                                     target = JsonUtils.ReadAsString(reader, TargetPropertyName);
                                     break;
                                 case ErrorPropertyName:
+                                    ThrowIfDuplicateProperty(hasError, ErrorPropertyName);
+                                    hasError = true;
                                     error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
                                     break;
                                 case AllowReconnectPropertyName:
+                                    ThrowIfDuplicateProperty(hasAllowReconnect, AllowReconnectPropertyName);
+                                    hasAllowReconnect = true;
                                     allowReconnect = JsonUtils.ReadAsBoolean(reader, AllowReconnectPropertyName);
                                     break;
                                 case ResultPropertyName:
+                                    ThrowIfDuplicateProperty(hasResultProperty, ResultPropertyName);
+                                    hasResultProperty = true;
                                     hasResult = true;
 
                                     if (string.IsNullOrEmpty(invocationId))
@@ -245,6 +260,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     }
                                     break;
                                 case ItemPropertyName:
+                                    ThrowIfDuplicateProperty(hasItem, ItemPropertyName);
                                     JsonUtils.CheckRead(reader);
 
                                     hasItem = true;
@@ -272,6 +288,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     }
                                     break;
                                 case ArgumentsPropertyName:
+                                    ThrowIfDuplicateProperty(hasArguments, ArgumentsPropertyName);
                                     JsonUtils.CheckRead(reader);
 
                                     int initialDepth = reader.Depth;
@@ -309,10 +326,12 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     }
                                     break;
                                 case HeadersPropertyName:
+                                    ThrowIfDuplicateProperty(headers is not null, HeadersPropertyName);
                                     JsonUtils.CheckRead(reader);
                                     headers = ReadHeaders(reader);
                                     break;
                                 case SequenceIdPropertyName:
+                                    ThrowIfDuplicateProperty(sequenceId is not null, SequenceIdPropertyName);
                                     sequenceId = JsonUtils.ReadAsInt64(reader, SequenceIdPropertyName);
                                     if (sequenceId is null)
                                     {
@@ -472,6 +491,14 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         catch (JsonReaderException jrex)
         {
             throw new InvalidDataException("Error reading JSON.", jrex);
+        }
+    }
+
+    private static void ThrowIfDuplicateProperty(bool isDuplicate, string propertyName)
+    {
+        if (isDuplicate)
+        {
+            throw new InvalidDataException($"Duplicate '{propertyName}' property is not allowed.");
         }
     }
 

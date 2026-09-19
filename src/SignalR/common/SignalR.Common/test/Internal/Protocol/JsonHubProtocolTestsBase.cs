@@ -197,6 +197,27 @@ public abstract class JsonHubProtocolTestsBase
         Assert.Equal(expectedMessage, ex.Message);
     }
 
+    [Theory]
+    [InlineData("{\"type\":6,\"type\":6}", "type")]
+    [InlineData("{\"type\":6,\"invocationId\":\"1\",\"invocationId\":\"2\"}", "invocationId")]
+    [InlineData("{\"type\":6,\"streamIds\":[],\"streamIds\":[]}", "streamIds")]
+    [InlineData("{\"type\":7,\"error\":\"first\",\"error\":\"second\"}", "error")]
+    [InlineData("{\"type\":7,\"allowReconnect\":false,\"allowReconnect\":true}", "allowReconnect")]
+    [InlineData("{\"type\":3,\"invocationId\":\"1\",\"result\":1,\"result\":2}", "result")]
+    [InlineData("{\"type\":2,\"invocationId\":\"1\",\"item\":1,\"item\":2}", "item")]
+    [InlineData("{\"type\":1,\"target\":\"target\",\"arguments\":[],\"arguments\":[]}", "arguments")]
+    [InlineData("{\"type\":6,\"headers\":{},\"headers\":{}}", "headers")]
+    [InlineData("{\"type\":8,\"sequenceId\":1,\"sequenceId\":2}", "sequenceId")]
+    public void DuplicatePropertiesAreRejected(string input, string propertyName)
+    {
+        input = Frame(input);
+
+        var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+        var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, binder, out var _));
+        Assert.Equal($"Duplicate '{propertyName}' property is not allowed.", ex.Message);
+    }
+
     [Fact]
     public void EmptyStreamIdsDoesNotAllocateNewArray()
     {

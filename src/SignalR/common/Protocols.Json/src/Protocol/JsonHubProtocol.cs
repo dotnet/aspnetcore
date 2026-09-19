@@ -122,11 +122,14 @@ public sealed class JsonHubProtocol : IHubProtocol
 
             int? type = null;
             string? invocationId = null;
+            var hasInvocationId = false;
             string? target = null;
             string? error = null;
+            var hasError = false;
             var hasItem = false;
             object? item = null;
             var hasResult = false;
+            var hasResultProperty = false;
             object? result = null;
             var hasArguments = false;
             object?[]? arguments = null;
@@ -141,6 +144,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             Dictionary<string, string>? headers = null;
             var completed = false;
             var allowReconnect = false;
+            var hasAllowReconnect = false;
             long? sequenceId = null;
 
             var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
@@ -157,6 +161,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                     case JsonTokenType.PropertyName:
                         if (reader.ValueTextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(type is not null, TypePropertyName);
                             type = reader.ReadAsInt32(TypePropertyName);
 
                             if (type == null)
@@ -166,10 +171,13 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(InvocationIdPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasInvocationId, InvocationIdPropertyName);
+                            hasInvocationId = true;
                             invocationId = reader.ReadAsString(InvocationIdPropertyName);
                         }
                         else if (reader.ValueTextEquals(StreamIdsPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(streamIds is not null, StreamIdsPropertyName);
                             reader.CheckRead();
 
                             if (reader.TokenType != JsonTokenType.StartArray)
@@ -191,6 +199,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(target is not null, TargetPropertyName);
 #if NETCOREAPP
                             reader.Read();
 
@@ -213,14 +222,20 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasError, ErrorPropertyName);
+                            hasError = true;
                             error = reader.ReadAsString(ErrorPropertyName);
                         }
                         else if (reader.ValueTextEquals(AllowReconnectPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasAllowReconnect, AllowReconnectPropertyName);
+                            hasAllowReconnect = true;
                             allowReconnect = reader.ReadAsBoolean(AllowReconnectPropertyName);
                         }
                         else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasResultProperty, ResultPropertyName);
+                            hasResultProperty = true;
                             hasResult = true;
 
                             if (string.IsNullOrEmpty(invocationId))
@@ -255,6 +270,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasItem, ItemPropertyName);
                             reader.CheckRead();
 
                             hasItem = true;
@@ -285,6 +301,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(ArgumentsPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(hasArguments, ArgumentsPropertyName);
                             reader.CheckRead();
 
                             int initialDepth = reader.CurrentDepth;
@@ -325,11 +342,13 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(HeadersPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(headers is not null, HeadersPropertyName);
                             reader.CheckRead();
                             headers = ReadHeaders(ref reader);
                         }
                         else if (reader.ValueTextEquals(SequenceIdPropertyNameBytes.EncodedUtf8Bytes))
                         {
+                            ThrowIfDuplicateProperty(sequenceId is not null, SequenceIdPropertyName);
                             sequenceId = reader.ReadAsInt64(SequenceIdPropertyName);
                         }
                         else
@@ -475,6 +494,14 @@ public sealed class JsonHubProtocol : IHubProtocol
         catch (JsonException jrex)
         {
             throw new InvalidDataException("Error reading JSON.", jrex);
+        }
+    }
+
+    private static void ThrowIfDuplicateProperty(bool isDuplicate, string propertyName)
+    {
+        if (isDuplicate)
+        {
+            throw new InvalidDataException($"Duplicate '{propertyName}' property is not allowed.");
         }
     }
 
