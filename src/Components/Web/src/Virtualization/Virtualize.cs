@@ -50,6 +50,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private TItem? _previousFirstLoadedItem;
 
+    private int _previousFirstLoadedItemIndex = -1;
+
     private bool CanDetectPrepend => _previousFirstLoadedItem is not null;
 
     private CancellationTokenSource? _refreshCts;
@@ -597,6 +599,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 if (isFirstRenderedItem && _itemsProvider != DefaultItemsProvider)
                 {
                     _previousFirstLoadedItem = item;
+                    _previousFirstLoadedItemIndex = renderIndex;
                     isFirstRenderedItem = false;
                 }
             }
@@ -916,6 +919,23 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return (int)Math.Min((long)maxItemCount + (long)OverscanCount * 2, int.MaxValue);
     }
 
+    private int GetItemsProviderRequestCount()
+    {
+        var isAtLoadedTail = _itemCount > 0 && _itemsBefore + _visibleItemCapacity >= _itemCount;
+        if (_itemsProvider != DefaultItemsProvider
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && isAtLoadedTail)
+        {
+            // A bounded look-ahead lets small appends reuse this result when shifting the
+            // rendered window to the new tail, avoiding a second provider request.
+            return (int)Math.Min(
+                (long)GetMaximumItemCapacity(),
+                (long)_visibleItemCapacity + Math.Max(1, OverscanCount));
+        }
+
+        return _visibleItemCapacity;
+    }
+
     private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
     {
         // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
@@ -985,7 +1005,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _loading = true;
         }
 
-        var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+        var request = new ItemsProviderRequest(_itemsBefore, GetItemsProviderRequestCount(), cancellationToken);
 
         try
         {
@@ -1034,22 +1054,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             else if (itemsAdded && !isDefaultProvider && CanDetectPrepend)
             {
                 using var enumerator = result.Items.GetEnumerator();
-                if (enumerator.MoveNext())
+                // Compare the same global item index across provider windows. During scrolling,
+                // the first item in the new window is not comparable to the previously rendered first item.
+                var comparisonItemOffset = _previousFirstLoadedItemIndex - request.StartIndex;
+                var hasComparableItem = comparisonItemOffset >= 0;
+                for (var i = 0; hasComparableItem && i <= comparisonItemOffset; i++)
                 {
-                    var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current);
+                    hasComparableItem = enumerator.MoveNext();
+                }
 
-                    if (itemsShifted)
+                if (hasComparableItem && !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current))
+                {
+                    if (!await ShouldFollowPrependedHeadAsync())
                     {
                         result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                     }
-                    else if (ShouldAnchorForAppend(countDelta, previousItemCount))
-                    {
-                        _pendingAnchorRestore = true;
-                    }
-                    else if (await ShouldFollowAppendedTailAsync(previousItemCount))
-                    {
-                        (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
-                    }
+                }
+                else if (ShouldAnchorForAppend(countDelta, previousItemCount))
+                {
+                    _pendingAnchorRestore = true;
+                }
+                else if (await ShouldFollowAppendedTailAsync(previousItemCount))
+                {
+                    (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
                 }
             }
             else if (itemsAdded
@@ -1155,6 +1182,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && (AnchorMode & VirtualizeAnchorMode.End) != 0
             && previousItemCount <= _visibleItemCapacity;
 
+    private async ValueTask<bool> ShouldFollowPrependedHeadAsync()
+    {
+        if ((AnchorMode & VirtualizeAnchorMode.Start) == 0
+            || _itemsBefore != 0
+            || _jsInterop is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await _jsInterop.IsFollowingTopAsync();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
     private async ValueTask<bool> ShouldFollowAppendedTailAsync(int previousItemCount)
     {
         if ((AnchorMode & VirtualizeAnchorMode.End) == 0
@@ -1175,18 +1221,28 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    // Advances the window to the appended tail and refetches it in the current refresh pass, so the
-    // applied result already holds the real tail rows. Otherwise the window advances later via the
-    // async spacer round-trip, which first flashes with placeholder rows.
+    // Advances the window to the appended tail using prefetched rows when available. Large bursts
+    // that exceed the bounded prefetch fall back to one replacement request. The new window is
+    // published only after its rows are available, so renders never combine it with stale data.
     private async ValueTask<(ItemsProviderResult<TItem> Result, ItemsProviderRequest Request)> AdvanceWindowToAppendedTailAsync(
         ItemsProviderResult<TItem> result, ItemsProviderRequest request, CancellationToken cancellationToken)
     {
         var tailItemsBefore = Math.Max(0, result.TotalItemCount - _visibleItemCapacity);
         if (tailItemsBefore != _itemsBefore)
         {
+            var tailItemCount = Math.Min(_visibleItemCapacity, result.TotalItemCount - tailItemsBefore);
+            var prefetchedTail = request.StartIndex <= tailItemsBefore
+                ? result.Items
+                    .Skip(tailItemsBefore - request.StartIndex)
+                    .Take(tailItemCount)
+                    .ToList()
+                : [];
+
+            request = new ItemsProviderRequest(tailItemsBefore, _visibleItemCapacity, cancellationToken);
+            result = prefetchedTail.Count == tailItemCount
+                ? new ItemsProviderResult<TItem>(prefetchedTail, result.TotalItemCount)
+                : await _itemsProvider(request);
             _itemsBefore = tailItemsBefore;
-            request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
-            result = await _itemsProvider(request);
         }
 
         _pendingScrollToBottom = true;

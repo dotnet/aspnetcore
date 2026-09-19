@@ -1,0 +1,89 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<p>
+    This tests rapid user scrolling while an async table virtualizer receives appended items.
+</p>
+
+<button id="table-scroll-append" @onclick="AppendItem">Append item</button>
+<button id="table-scroll-prepend" @onclick="PrependItem">Prepend item</button>
+<button id="table-scroll-use-start" @onclick="UseStartAnchor">Use Start anchor</button>
+
+<div id="table-scroll-container" style="height: 300px; overflow-y: auto;">
+    <table>
+        <tbody>
+            <Virtualize @ref="virtualize"
+                        ItemsProvider="GetItemsAsync"
+                        ItemComparer="itemComparer"
+                        ItemSize="40"
+                        OverscanCount="15"
+                        AnchorMode="anchorMode"
+                        SpacerElement="tr">
+                <ItemContent>
+                    <tr class="table-scroll-item" style="height: 40px;">
+                        <td data-index="@context.Index">Item @context.Index</td>
+                    </tr>
+                </ItemContent>
+                <Placeholder>
+                    <tr class="table-scroll-placeholder" style="height: 40px;">
+                        <td>Loading @context.Index</td>
+                    </tr>
+                </Placeholder>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+<p id="table-scroll-total-items">Total items: @items.Count</p>
+<p id="table-scroll-status">@status</p>
+<p id="table-scroll-anchor-mode">@anchorMode</p>
+
+@code {
+    private readonly List<ScrollItem> items =
+        Enumerable.Range(0, 500).Select(index => new ScrollItem { Index = index }).ToList();
+    private readonly IEqualityComparer<ScrollItem> itemComparer =
+        EqualityComparer<ScrollItem>.Create((left, right) => left.Index == right.Index, item => item.Index);
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.End;
+    private int nextPrependIndex = -1;
+    private Virtualize<ScrollItem> virtualize;
+    private string status = "Ready";
+
+    private async ValueTask<ItemsProviderResult<ScrollItem>> GetItemsAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(500, request.CancellationToken);
+
+        var result = items
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .Select(item => new ScrollItem { Index = item.Index })
+            .ToList();
+
+        return new ItemsProviderResult<ScrollItem>(result, items.Count);
+    }
+
+    private async Task AppendItem()
+    {
+        var index = items.Count;
+        items.Add(new ScrollItem { Index = index });
+        await virtualize.RefreshDataAsync();
+        status = $"Appended item {index}";
+    }
+
+    private async Task PrependItem()
+    {
+        var index = nextPrependIndex--;
+        items.Insert(0, new ScrollItem { Index = index });
+        await virtualize.RefreshDataAsync();
+        status = $"Prepended item {index}";
+    }
+
+    private void UseStartAnchor()
+    {
+        anchorMode = VirtualizeAnchorMode.Start;
+        status = "Using Start anchor";
+    }
+
+    private sealed class ScrollItem
+    {
+        public int Index { get; set; }
+    }
+}

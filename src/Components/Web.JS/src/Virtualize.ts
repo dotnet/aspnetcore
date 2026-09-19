@@ -12,6 +12,7 @@ export const Virtualize = {
   restoreAnchor,
   alignToItem,
   beginProgrammaticScroll,
+  isFollowingTop,
   isFollowingBottom,
 };
 
@@ -228,6 +229,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Follow intent: true in End mode (or after a user-initiated End-key jump) until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
     following: (anchorMode & 2) !== 0,
   };
+  const topTracking = {
+    following: (anchorMode & 1) !== 0,
+  };
+  const clearTopFollow = () => {
+    topTracking.following = false;
+  };
   const clearBottomFollow = () => {
     bottomTracking.following = false;
     bottomTracking.reached = false;
@@ -254,6 +261,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Called by C# at the start of a programmatic ScrollToItem, before the align scroll itself.
   function beginProgrammaticScroll(): void {
     stopConvergenceObserving();
+    clearTopFollow();
     clearBottomFollow();
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
@@ -548,6 +556,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (ke.key === 'End') {
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
+      clearTopFollow();
       pendingJumpToEnd = true;
       pendingJumpToStart = false;
       if (!anchorModeIs.end) {
@@ -560,6 +569,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     } else if (ke.key === 'Home') {
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
+      topTracking.following = true;
       pendingJumpToStart = true;
       pendingJumpToEnd = false;
       clearBottomFollow();
@@ -607,6 +617,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollActivity.source = ScrollSource.UserScroll;
 
     // A user scroll is the only thing that (re)sets follow state (self-scrolls early-return above).
+    if (anchorModeIs.beginning || topTracking.following) {
+      topTracking.following = isAtScrollTop();
+    }
     if (anchorModeIs.end || bottomTracking.following) {
       const atBottom = isViewportAtBottom();
       bottomTracking.following = atBottom;
@@ -717,8 +730,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     refreshObservedElements,
     scrollElement,
     startConvergenceObserving,
+    isFollowingTop: () => topTracking.following,
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
+    setAnchorMode: (mode: number) => {
+      anchorMode = mode;
+      topTracking.following = (mode & 1) !== 0 && isAtScrollTop();
+      bottomTracking.following = (mode & 2) !== 0;
+      bottomTracking.reached = isViewportAtBottom();
+    },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
@@ -986,6 +1005,11 @@ function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): num
 function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
+}
+
+function isFollowingTop(dotNetHelper: DotNet.DotNetObject): boolean {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  return observersByDotNetObjectId[id]?.isFollowingTop?.() ?? false;
 }
 
 function isFollowingBottom(dotNetHelper: DotNet.DotNetObject): boolean {
