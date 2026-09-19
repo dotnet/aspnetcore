@@ -32,4 +32,17 @@ public class ServerComponentRenderingTest : ComponentRenderingTestBase
             $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.",
             () => result.Text);
     }
+
+    [Fact]
+    public void RestoresContextWhenQueuedWorkDoesNotFlowExecutionContext()
+    {
+        var appElement = Browser.MountTestComponent<DispatchingComponent>();
+        var result = appElement.FindElement(By.Id("suppressed-execution-context-result"));
+
+        appElement.FindElement(By.Id("run-with-suppressed-execution-context")).Click();
+
+        Browser.Equal(
+            "Context leaked: False; Dispatcher overlapped: False",
+            () => result.Text);
+    }
 }
