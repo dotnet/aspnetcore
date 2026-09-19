@@ -456,6 +456,10 @@ internal sealed class OpenApiDocumentService(
                     else
                     {
                         schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        if (apiResponseType.ShouldApplyNullableResponseArrayElementSchema(apiDescription))
+                        {
+                            schema.MakeArrayItemsNullable();
+                        }
                         schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
                             ? schema.CreateOneOfNullableWrapper()
                             : schema;
