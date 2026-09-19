@@ -308,9 +308,11 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user login if it exists.</returns>
-    protected override Task<TUserLogin?> FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, CancellationToken cancellationToken)
+    protected override async Task<TUserLogin?> FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, CancellationToken cancellationToken)
     {
-        return UserLogins.SingleOrDefaultAsync(userLogin => userLogin.UserId.Equals(userId) && userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
+        var userLogin = await UserLogins.SingleOrDefaultAsync(userLogin => userLogin.UserId.Equals(userId) && userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
+
+        return IsMatchingUserLogin(userLogin, loginProvider, providerKey) ? userLogin : null;
     }
 
     /// <summary>
@@ -320,10 +322,17 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user login if it exists.</returns>
-    protected override Task<TUserLogin?> FindUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+    protected override async Task<TUserLogin?> FindUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
     {
-        return UserLogins.SingleOrDefaultAsync(userLogin => userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
+        var userLogin = await UserLogins.SingleOrDefaultAsync(userLogin => userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
+
+        return IsMatchingUserLogin(userLogin, loginProvider, providerKey) ? userLogin : null;
     }
+
+    private static bool IsMatchingUserLogin(TUserLogin? userLogin, string loginProvider, string providerKey)
+        => userLogin is not null &&
+            string.Equals(userLogin.LoginProvider, loginProvider, StringComparison.Ordinal) &&
+            string.Equals(userLogin.ProviderKey, providerKey, StringComparison.Ordinal);
 
     /// <summary>
     /// Get the claims associated with the specified <paramref name="user"/> as an asynchronous operation.
