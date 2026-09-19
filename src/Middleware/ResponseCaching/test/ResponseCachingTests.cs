@@ -791,6 +791,48 @@ public class ResponseCachingTests
         }
     }
 
+    [Theory]
+    [InlineData(2048, false, 0)] // The non-varied response key exceeds the limit.
+    [InlineData(2048, true, 1)] // The base key rejects the vary rules, while the varied response fits.
+    [InlineData(1, true, 2048)] // The vary rules fit, while the varied response key exceeds the limit.
+    public async Task ServesFreshContent_IfCacheEntryKeyExceedsSizeLimit(
+        int pathLength,
+        bool varyByHeader,
+        int headerValueLength)
+    {
+        var builders = TestUtils.CreateBuildersWithResponseCaching(
+            options: new ResponseCachingOptions { SizeLimit = 1024 },
+            contextAction: context =>
+            {
+                if (varyByHeader)
+                {
+                    context.Response.Headers.Vary = HeaderNames.From;
+                }
+            });
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                if (headerValueLength > 0)
+                {
+                    client.DefaultRequestHeaders.From = new string('a', headerValueLength);
+                }
+
+                var path = new string('p', pathLength);
+                var initialResponse = await client.GetAsync(path);
+                var subsequentResponse = await client.GetAsync(path);
+
+                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
+            }
+        }
+    }
+
     [Fact]
     public async Task ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
     {
