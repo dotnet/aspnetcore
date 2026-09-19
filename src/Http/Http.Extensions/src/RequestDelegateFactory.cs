@@ -276,7 +276,8 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-        var formDataMapperOptions = new FormDataMapperOptions();
+        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+        var formDataMapperOptions = loggerFactory is null ? new FormDataMapperOptions() : new FormDataMapperOptions(loggerFactory);
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -2202,6 +2203,21 @@ public static partial class RequestDelegateFactory
             formDataMapperOptions.MaxRecursionDepth = formMappingOptionsMetadata.MaxRecursionDepth ?? formDataMapperOptions.MaxRecursionDepth;
             formDataMapperOptions.MaxCollectionSize = formMappingOptionsMetadata.MaxCollectionSize ?? formDataMapperOptions.MaxCollectionSize;
             formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
+        }
+
+        if (parameter.ParameterType.GetConstructors().Length > 1)
+        {
+            try
+            {
+                formDataMapperOptions.ResolveConverter(parameter.ParameterType);
+            }
+            catch (InvalidOperationException exception)
+            {
+                var parameterTypeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
+                throw new InvalidOperationException(
+                    $"The form parameter '{parameter.Name}' has type '{parameterTypeName}', which has multiple public constructors. Only a single public constructor is supported.",
+                    exception);
+            }
         }
 
         // var name_reader;
