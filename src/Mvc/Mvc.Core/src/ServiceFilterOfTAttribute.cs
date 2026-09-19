@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 /// <inheritdoc />
 /// <typeparam name="TFilter">The <see cref="Type"/> of filter to find.</typeparam>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 [DebuggerDisplay("Type = {ServiceType}, Order = {Order}")]
 public class ServiceFilterAttribute<TFilter> : ServiceFilterAttribute where TFilter : IFilterMetadata
 {
