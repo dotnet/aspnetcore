@@ -66,4 +66,14 @@ public class OidcProviderOptions
     /// </remarks>
     [JsonPropertyName("extraQueryParams")]
     public IDictionary<string, string> AdditionalProviderParameters { get; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Gets or sets where authentication tokens are stored in the browser.
+    /// </summary>
+    /// <value>Defaults to <see cref="RemoteAuthenticationTokenStorage.SessionStorage" />.</value>
+    [JsonPropertyName("tokenStorage")]
+    [JsonConverter(typeof(JsonStringEnumConverter<RemoteAuthenticationTokenStorage>))]
+    public RemoteAuthenticationTokenStorage TokenStorage { get; set; } =
+        RemoteAuthenticationTokenStorage.SessionStorage;
+
 }
