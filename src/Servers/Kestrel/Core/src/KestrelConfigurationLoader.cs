@@ -45,6 +45,11 @@ public class KestrelConfigurationLoader
 
         ConfigurationReader = new ConfigurationReader(configuration);
 
+        // Bound here, rather than in Reload, so that it happens while the IConfigureOptions<KestrelServerOptions>
+        // pipeline is still running. Anything the app sets afterwards (e.g. services.Configure<KestrelServerOptions>
+        // in Program.cs) runs later and therefore wins over configuration.
+        ServerOptionsConfigurationBinder.Bind(configuration, options);
+
         _httpsConfigurationService = httpsConfigurationService;
         _certificatePathWatcher = certificatePathWatcher;
         Debug.Assert(reloadOnChange || (certificatePathWatcher is null), "If reloadOnChange is false, then certificatePathWatcher should be null");
@@ -332,6 +337,8 @@ public class KestrelConfigurationLoader
 
     // Adds endpoints from config to KestrelServerOptions.ConfigurationBackedListenOptions and configures some other options.
     // Any endpoints that were removed from the last time endpoints were loaded are returned.
+    // Note that only endpoints are (re)read here: the rest of KestrelServerOptions is bound once in the constructor so
+    // that a reload can't clobber values the app configured in code.
     internal (List<ListenOptions>, List<ListenOptions>) Reload()
     {
         if (ReloadOnChange)
