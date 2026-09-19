@@ -904,6 +904,34 @@ public class WebHostBuilderTests
 
     [Theory]
     [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+    public async Task Build_RunsRemainingHostingStartupsInAssemblyWhenOneThrows(IWebHostBuilder builder)
+    {
+        var provider = new TestLoggerProvider();
+        builder = builder
+            .ConfigureLogging((_, factory) => factory.AddProvider(provider))
+            .CaptureStartupErrors(true)
+            .UseSetting(TestStartupAssembly1.TestThrowingHostingStartup.ThrowSettingKey, "true")
+            .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(TestStartupAssembly1.TestHostingStartup1).GetTypeInfo().Assembly.FullName)
+            .Configure(app => { })
+            .UseServer(new TestServer());
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+
+            // TestThrowingHostingStartup is declared ahead of TestHostingStartup1 in the same
+            // assembly and throws. The rest of that assembly's hosting startups still have to run.
+            Assert.Equal("1", builder.GetSetting("testhostingstartup1"));
+
+            // The failure is reported rather than swallowed.
+            var write = provider.Sink.Writes.FirstOrDefault(s => s.EventId.Id == LoggerEventIds.HostingStartupAssemblyException);
+            Assert.NotNull(write);
+            Assert.Contains(TestStartupAssembly1.TestThrowingHostingStartup.ExceptionMessage, write.Exception.ToString());
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
     public void Build_RunsDeduplicatedHostingStartupAssembliesIfSpecified(IWebHostBuilder builder)
     {
         var fullName = typeof(TestStartupAssembly1.TestHostingStartup1).Assembly.FullName;
