@@ -158,10 +158,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   mutationObserver.observe(spacerBefore, spacerObserverOptions);
   mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
-  const intersectionObserver = new IntersectionObserver(intersectionCallback, {
+  const intersectionObserverOptions: IntersectionObserverInit = {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
-  });
+  };
+  const intersectionObserver = new IntersectionObserver(intersectionCallback, intersectionObserverOptions);
 
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
@@ -251,10 +252,36 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver.observe(spacerAfter);
   }
 
+  let userScrollObserver: IntersectionObserver | null = null;
+
+  function cancelPendingUserScrollObservation(): void {
+    userScrollObserver?.disconnect();
+    userScrollObserver = null;
+  }
+
+  function observeSpacersAfterUserScroll(): void {
+    cancelPendingUserScrollObservation();
+    if (spacerBefore.isConnected && spacerAfter.isConnected) {
+      const observer = new IntersectionObserver((entries): void => {
+        if (userScrollObserver !== observer) {
+          return;
+        }
+        userScrollObserver = null;
+        scrollActivity.source = ScrollSource.UserScroll;
+        processIntersectionEntries(entries);
+        observer.disconnect();
+      }, intersectionObserverOptions);
+      userScrollObserver = observer;
+      observer.observe(spacerBefore);
+      observer.observe(spacerAfter);
+    }
+  }
+
   // Called by C# at the start of a programmatic ScrollToItem, before the align scroll itself.
   function beginProgrammaticScroll(): void {
     stopConvergenceObserving();
     clearBottomFollow();
+    cancelPendingUserScrollObservation();
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
     pendingCallbacks.delete(spacerAfter);
@@ -522,14 +549,25 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToEnd = false;
   let pendingJumpToStart = false;
 
+  function interruptProgrammaticScroll(): void {
+    if (scrollActivity.source !== ScrollSource.AlignToItem
+      && scrollActivity.source !== ScrollSource.RestoreSnapshot
+      && !convergence.isConverging()
+      && pendingAlignLocalIndex === null) {
+      return;
+    }
+
+    stopConvergenceObserving();
+    pendingJumpToStart = false;
+    pendingJumpToEnd = false;
+    pendingAlignLocalIndex = null;
+    observeSpacersAfterUserScroll();
+  }
+
   function handleUserScrollInput(): void {
-    const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
-      || scrollActivity.source === ScrollSource.RestoreSnapshot;
+    interruptProgrammaticScroll();
     scrollActivity.consumeIgnoreScroll();
     scrollActivity.source = ScrollSource.UserScroll;
-    if (selfScrollInProgress) {
-      reobserveSpacers();
-    }
   }
 
   function handleUserPointerMove(e: Event): void {
@@ -546,6 +584,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     if (ke.key === 'End') {
+      interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
       pendingJumpToEnd = true;
@@ -558,6 +597,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         startConvergenceObserving('bottom');
       }
     } else if (ke.key === 'Home') {
+      interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
       pendingJumpToStart = true;
@@ -724,6 +764,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     beginProgrammaticScroll: beginProgrammaticScroll,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
+      cancelPendingUserScrollObservation();
       mutationObserver.disconnect();
       stopConvergenceObserving();
       anchoredItems.clear();
