@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Threading.Channels;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -21,6 +22,7 @@ public class HubConnectionSendBenchmark
     private TestDuplexPipe _pipe;
     private TaskCompletionSource<ReadResult> _tcs;
     private object[] _arguments;
+    private object[] _streamingArguments;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -72,6 +74,12 @@ public class HubConnectionSendBenchmark
         {
             _arguments[i] = "Hello world!";
         }
+
+        // A single completed stream reader plus a few normal args, to exercise
+        // PackageStreamingParams' stream-id packaging without any live streaming work.
+        var streamChannel = Channel.CreateUnbounded<int>();
+        streamChannel.Writer.Complete();
+        _streamingArguments = new object[] { "Hello world!", streamChannel.Reader, "Hello world!" };
     }
 
     [Params(0, 1, 10, 100)]
@@ -91,5 +99,11 @@ public class HubConnectionSendBenchmark
     public Task SendAsync()
     {
         return _hubConnection.SendCoreAsync("Dummy", _arguments);
+    }
+
+    [Benchmark]
+    public Task SendStreamingAsync()
+    {
+        return _hubConnection.SendCoreAsync("Dummy", _streamingArguments);
     }
 }
