@@ -71,9 +71,8 @@ public class ComponentsActivitySourceTest
     }
 
     [Fact]
-    public void StartEventActivity_CreatesAndStartsActivity()
+    public void StartEventActivity_WithSharedLinkStore_LinksToRoute()
     {
-        // Arrange
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
@@ -81,15 +80,13 @@ public class ComponentsActivitySourceTest
         var methodName = "OnClick";
         var attributeName = "onclick";
 
-        // First set up a circuit and route context
         linkstore.SetActivityContext(ComponentsActivityLinkStore.Circuit, default, new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
-        componentsActivitySource.StartNavigateActivity("ParentComponent", "/parent");
+        var routeActivityHandle = componentsActivitySource.StartNavigateActivity("ParentComponent", "/parent");
+        componentsActivitySource.StopNavigateActivity(routeActivityHandle, null);
 
-        // Act
         var activityHandle = ComponentsActivitySource.StartHandleEventActivity(componentType, methodName, attributeName);
         var activity = activityHandle.Activity;
 
-        // Assert
         Assert.NotNull(activity);
         Assert.Equal(ComponentsActivitySource.OnEventName, activity.OperationName);
         Assert.Equal($"Event {attributeName} -> {componentType}.{methodName}", activity.DisplayName);
@@ -100,10 +97,33 @@ public class ComponentsActivitySourceTest
         Assert.Equal(attributeName, activity.GetTagItem("aspnetcore.components.attribute.name"));
         Assert.False(activity.IsStopped);
 
-        componentsActivitySource.StopNavigateActivity(activityHandle, null);
+        componentsActivitySource.StopHandleEventActivity(activityHandle, null);
         Assert.True(activity.IsStopped);
         Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
-        Assert.Empty(activity.Links);
+        Assert.Collection(activity.Links, link => Assert.Equal(routeActivityHandle.Activity.Context, link.Context));
+    }
+
+    [Fact]
+    public void StartEventActivity_WithSeparateLinkStores_DoesNotLinkToRoute()
+    {
+        var endpointActivitySource = new ComponentsActivitySource();
+        var endpointLinkStore = new ComponentsActivityLinkStore(null);
+        endpointActivitySource.Init(endpointLinkStore);
+
+        var routeActivityHandle = endpointActivitySource.StartNavigateActivity("ParentComponent", "/parent");
+        endpointActivitySource.StopNavigateActivity(routeActivityHandle, null);
+        Assert.NotNull(routeActivityHandle.Activity);
+
+        var circuitActivitySource = new ComponentsActivitySource();
+        var circuitLinkStore = new ComponentsActivityLinkStore(null);
+        circuitActivitySource.Init(circuitLinkStore);
+
+        var eventActivityHandle = ComponentsActivitySource.StartHandleEventActivity("TestComponent", "OnClick", "onclick");
+        circuitActivitySource.StopHandleEventActivity(eventActivityHandle, null);
+        Assert.NotNull(eventActivityHandle.Activity);
+
+        Assert.Empty(eventActivityHandle.Activity.Links);
+        Assert.DoesNotContain(eventActivityHandle.Activity.Links, link => link.Context == routeActivityHandle.Activity.Context);
     }
 
     [Fact]
