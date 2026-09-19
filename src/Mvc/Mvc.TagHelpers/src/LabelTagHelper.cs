@@ -64,7 +64,7 @@ public class LabelTagHelper : TagHelper
             output.MergeAttributes(tagBuilder);
 
             // Do not update the content if another tag helper targeting this element has already done so.
-            if (!output.IsContentModified)
+            if (!output.Content.IsModified)
             {
                 // We check for whitespace to detect scenarios such as:
                 // <label for="Name">
