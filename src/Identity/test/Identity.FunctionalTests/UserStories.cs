@@ -131,6 +131,25 @@ public class UserStories
         return await contosoLogin.SendExistingUserNameAsync(userName);
     }
 
+    // Covers the case where an existing external-login account has two-factor authentication
+    // enabled: the sign-in must route through the two-factor page before completing.
+    internal static async Task<Index> LoginWithSocialLogin2FaAsync(HttpClient client, string userName, string twoFactorKey)
+    {
+        var index = await Index.CreateAsync(
+            client,
+            new DefaultUIContext()
+                .WithSocialLoginEnabled()
+                .WithExistingUser());
+
+        var login = await index.ClickLoginLinkAsync();
+
+        var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+        var login2Fa = await contosoLogin.SendExistingUserNameWith2FaAsync(userName);
+
+        return await login2Fa.Send2FACodeAsync(twoFactorKey);
+    }
+
     internal static async Task<Index> LoginExistingUser2FaAsync(HttpClient client, string userName, string password, string twoFactorKey)
     {
         var index = await Index.CreateAsync(client);
