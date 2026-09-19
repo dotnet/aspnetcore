@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace AutobahnTestApp;
 
@@ -61,6 +62,7 @@ public class Program
                             {
                                 scenarioName = "Kestrel(SSL)";
                                 var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
+                                EnsureTestCertificate(certPath);
                                 Console.WriteLine($"Using SSL with certificate: {certPath}");
                                 listenOptions.UseHttps(certPath, "testPassword");
                             }
@@ -82,5 +84,14 @@ public class Program
 
         Console.WriteLine($"Starting Server for Scenario: {scenarioName}");
         return host.RunAsync();
+    }
+
+    private static void EnsureTestCertificate(string path)
+    {
+        using var certificate = TestCertificateFactory.CreateRsaCertificate(
+            enhancedKeyUsages: [TestCertificateFactory.ServerAuthentication],
+            includeSubjectAlternativeName: true,
+            configureSubjectAlternativeNames: TestCertificateFactory.ConfigureLocalhostSubjectAlternativeNames);
+        TestCertificateFactory.WritePfxFile(certificate, path);
     }
 }

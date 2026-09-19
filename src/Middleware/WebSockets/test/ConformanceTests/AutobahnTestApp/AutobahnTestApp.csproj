@@ -6,10 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="TestResources\testCert.pfx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)TestCertificateFactory.cs" LinkBase="Shared" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
