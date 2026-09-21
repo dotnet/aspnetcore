@@ -2206,8 +2206,9 @@ public static partial class RequestDelegateFactory
             formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
         }
 
-        // Preserve the existing request-time behavior for other unsupported model shapes by eagerly validating only
-        // the ambiguous constructor case. Resolve the converter because an earlier converter factory may support the type.
+        // Eagerly validate only the ambiguous constructor case so other unsupported model shapes retain their existing
+        // request-time behavior. Preserve the original converter failure because another factory may own the root type
+        // or the failure may come from a nested type.
         if (parameter.ParameterType.GetConstructors().Length > 1)
         {
             formDataMapperOptions.ResolveConverter(parameter.ParameterType);
