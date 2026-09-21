@@ -12,10 +12,6 @@ internal abstract class TypedCollectionConverterFactory : IFormDataConverterFact
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal abstract bool SupportsCollectionType();
-
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public abstract bool CanConvert(Type type, FormDataMapperOptions options);
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
@@ -35,13 +31,6 @@ internal sealed class TypedCollectionConverterFactory<TCollection, TElement> : T
             return false;
         }
 
-        return SupportsCollectionType();
-    }
-
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal override bool SupportsCollectionType()
-    {
         // Arrays
         var type = typeof(TCollection);
         if (type.IsArray && type.GetArrayRank() == 1)

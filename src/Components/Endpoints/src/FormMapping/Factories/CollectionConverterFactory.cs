@@ -14,20 +14,19 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        if (!TryCreateCollectionConverterFactory(type, out var factory))
+        var element = ResolveElementType(type);
+        if (element == null)
+        {
+            return false;
+        }
+
+        if (Activator.CreateInstance(typeof(TypedCollectionConverterFactory<,>)
+            .MakeGenericType(type, element!)) is not IFormDataConverterFactory factory)
         {
             return false;
         }
 
         return factory.CanConvert(type, options);
-    }
-
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal static bool SupportsCollectionType(Type type)
-    {
-        return TryCreateCollectionConverterFactory(type, out var factory) &&
-            factory.SupportsCollectionType();
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
@@ -41,24 +40,6 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
         }
 
         return enumerable != null ? enumerable.GetGenericArguments()[0] : type.GetElementType()!;
-    }
-
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    private static bool TryCreateCollectionConverterFactory(
-        Type type,
-        [NotNullWhen(true)] out TypedCollectionConverterFactory? factory)
-    {
-        var element = ResolveElementType(type);
-        if (element is null)
-        {
-            factory = null;
-            return false;
-        }
-
-        factory = Activator.CreateInstance(typeof(TypedCollectionConverterFactory<,>)
-            .MakeGenericType(type, element)) as TypedCollectionConverterFactory;
-        return factory is not null;
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]

@@ -2210,20 +2210,7 @@ public static partial class RequestDelegateFactory
         // the ambiguous constructor case. Resolve the converter because an earlier converter factory may support the type.
         if (parameter.ParameterType.GetConstructors().Length > 1)
         {
-            try
-            {
-                formDataMapperOptions.ResolveConverter(parameter.ParameterType);
-            }
-            // Collection and dictionary converter failures can originate from a nested type and must remain unchanged.
-            catch (InvalidOperationException exception) when (
-                !DictionaryConverterFactory.SupportsDictionaryType(parameter.ParameterType) &&
-                !CollectionConverterFactory.SupportsCollectionType(parameter.ParameterType))
-            {
-                var parameterTypeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
-                throw new InvalidOperationException(
-                    $"The form parameter '{parameter.Name}' has type '{parameterTypeName}', which has multiple public constructors. Only a single public constructor is supported.",
-                    exception);
-            }
+            formDataMapperOptions.ResolveConverter(parameter.ParameterType);
         }
 
         // var name_reader;
