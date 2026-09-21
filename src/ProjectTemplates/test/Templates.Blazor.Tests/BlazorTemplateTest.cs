@@ -174,7 +174,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 {
                     protocol = "ctap2",
                     transport = "internal",
-                    hasResidentKey = false,
+                    hasResidentKey = true,
                     hasUserVerification = true,
                     isUserVerified = true,
                     automaticPresenceSimulation = true,
@@ -372,6 +372,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ClickAsync("text=Continue");
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: false);
 
                 // The page signals the browser's passkey provider with the passkeys that are
                 // still valid, so that deleted ones stop being offered at sign-in.
@@ -413,10 +414,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
                 await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
                 await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: true);
                 await page.ClickAsync("text=Log in with a passkey");
 
                 // Verify that we return to the home page
                 await page.WaitForSelectorAsync("text=Hello, world!");
+                await SetAutomaticPresenceSimulationAsync(cdpSession, authenticatorId, enabled: false);
 
                 // Verify that we can visit the "Auth Required" page again
                 await page.ClickAsync("text=Auth Required");
@@ -575,6 +578,13 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             // navigation does not start one.
             return page.EvaluateAsync("() => { window.__passkeySignals = []; }");
         }
+
+        static Task SetAutomaticPresenceSimulationAsync(ICDPSession cdpSession, string authenticatorId, bool enabled)
+            => cdpSession.SendAsync("WebAuthn.setAutomaticPresenceSimulation", new Dictionary<string, object>
+            {
+                ["authenticatorId"] = authenticatorId,
+                ["enabled"] = enabled,
+            });
 
         static async Task<JsonElement> GetPasskeySignalAsync(IPage page, string name)
         {

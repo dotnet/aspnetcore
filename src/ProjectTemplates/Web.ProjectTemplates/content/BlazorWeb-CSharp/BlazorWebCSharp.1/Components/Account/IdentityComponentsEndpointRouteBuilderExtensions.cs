@@ -79,7 +79,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
         accountGroup.MapPost("/PasskeyRequestOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
-            [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromQuery] string? username) =>
         {
@@ -89,8 +88,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
 
-            var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
-            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user: null);
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
