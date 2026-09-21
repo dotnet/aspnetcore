@@ -56,11 +56,7 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos, issues, pull_requests]
-    github-app:
-      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
-      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
-      owner: dotnet
-      repositories: ["aspnetcore", "AspNetCore.Docs"]
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     min-integrity: merged
     allowed-repos:
       - dotnet/aspnetcore
@@ -163,6 +159,8 @@ safe-outputs:
       needs: [safe_outputs]
       permissions:
         contents: read
+        issues: write
+        pull-requests: read
       inputs:
         source_pr_number:
           description: "Analyzed source pull request number."
@@ -232,9 +230,7 @@ safe-outputs:
             client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
             private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
             owner: dotnet
-            repositories: |
-              aspnetcore
-              AspNetCore.Docs
+            repositories: AspNetCore.Docs
         - name: Read resulting docs pull request
           uses: actions/github-script@v9.0.0
           env:
@@ -302,19 +298,19 @@ safe-outputs:
             --safe-outputs-items-failed "${SAFE_OUTPUTS_ITEMS_FAILED}"
             --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
             --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
-        - name: Publish trusted documentation outcome
+        - name: Publish trusted source outcome
+          id: source-outcome
           uses: actions/github-script@v9.0.0
           env:
             EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
             CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
           with:
-            github-token: ${{ steps.docs-bot-token.outputs.token }}
+            github-token: ${{ github.token }}
             script: |
               const fs = require('fs');
 
               const marker = '<!-- aspnetcore-pr-docs-check -->';
-              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
               const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
               const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
 
@@ -352,6 +348,7 @@ safe-outputs:
 
               const author = sourcePr.data.user;
               const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
+              core.setOutput('source-author', sourceAuthor);
               const surfaces = (outcome.surfaces || []).map(surface =>
                 `* **${surface.name}:** ${surface.required ? 'Required' : 'Not required'} — ${surface.reason}`);
 
@@ -421,6 +418,25 @@ safe-outputs:
                 issue_number: expectedPrNumber,
                 body: sourceComment,
               });
+        - name: Notify source author on docs pull request
+          uses: actions/github-script@v9.0.0
+          env:
+            EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+            EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+            CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
+            SOURCE_AUTHOR: ${{ steps.source-outcome.outputs.source-author }}
+          with:
+            github-token: ${{ steps.docs-bot-token.outputs.token }}
+            script: |
+              const fs = require('fs');
+
+              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
+              const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
+              const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
+              const sourceAuthor = process.env.SOURCE_AUTHOR;
+              const outcome = JSON.parse(fs.readFileSync(process.env.CANONICAL_OUTCOME_PATH, 'utf8'));
+              const renderKind = String(outcome.render_kind || 'invalid');
+              const docsPrNumber = Number(outcome.docs_pr_number);
 
               if (renderKind !== 'drafted' || !sourceAuthor || !Number.isInteger(docsPrNumber) || docsPrNumber <= 0) {
                 return;
@@ -471,12 +487,12 @@ pre-agent-steps:
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: |
-        aspnetcore
         AspNetCore.Docs
         AspNetCore.Docs.Automation
   - name: Resolve source version and existing docs draft
     env:
-      GH_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
+      GH_TOKEN: ${{ github.token }}
+      DOCS_GITHUB_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
       DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
       SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
       SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -509,7 +525,7 @@ pre-agent-steps:
         --release-branches "${CONTEXT_DIR}/source-branches.json" \
         --output "${CONTEXT_DIR}/target-version.json"
 
-      gh api --method GET --paginate --slurp \
+      GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api --method GET --paginate --slurp \
         "/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
         | jq '[.[][]]' \
         > "${CONTEXT_DIR}/open-docs-pulls.json"
@@ -524,7 +540,7 @@ pre-agent-steps:
 
       if [ "$(jq -r '.found' "${CONTEXT_DIR}/existing-draft.json")" = "true" ]; then
         HEAD_REF="$(jq -r '.selected.head_ref' "${CONTEXT_DIR}/existing-draft.json")"
-        git \
+        GH_TOKEN="${DOCS_GITHUB_TOKEN}" git \
           -c credential.helper= \
           -c "credential.helper=!gh auth git-credential" \
           fetch --no-tags \
