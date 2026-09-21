@@ -1054,17 +1054,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
             else if (itemsAdded && !isDefaultProvider && CanDetectPrepend)
             {
-                using var enumerator = result.Items.GetEnumerator();
+                var items = result.Items as IReadOnlyList<TItem> ?? result.Items.ToList();
+                result = new ItemsProviderResult<TItem>(items, result.TotalItemCount);
+
                 // Compare the same global item index across provider windows. During scrolling,
                 // the first item in the new window is not comparable to the previously rendered first item.
                 var comparisonItemOffset = _previousFirstLoadedItemIndex - request.StartIndex;
-                var hasComparableItem = comparisonItemOffset >= 0;
-                for (var i = 0; hasComparableItem && i <= comparisonItemOffset; i++)
-                {
-                    hasComparableItem = enumerator.MoveNext();
-                }
+                var hasComparableItem = comparisonItemOffset >= 0 && comparisonItemOffset < items.Count;
 
-                if (hasComparableItem && !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current))
+                if (hasComparableItem && !ItemComparer.Equals(_previousFirstLoadedItem, items[comparisonItemOffset]))
                 {
                     if (!await ShouldFollowPrependedHeadAsync())
                     {

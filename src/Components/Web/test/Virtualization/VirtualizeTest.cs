@@ -1031,6 +1031,82 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_ItemsProvider_PrependedSinglePassEnumerable_IsNotEnumeratedMoreThanOnce()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var items = Enumerable.Range(0, 100).ToList();
+        var returnSinglePassEnumerable = false;
+        var singlePassEnumerationCount = 0;
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            var requestedItems = items
+                .Skip(request.StartIndex)
+                .Take(Math.Min(request.Count, items.Count - request.StartIndex))
+                .ToList();
+            var resultItems = returnSinglePassEnumerable
+                ? SinglePass(requestedItems)
+                : requestedItems;
+            return ValueTask.FromResult(new ItemsProviderResult<int>(resultItems, items.Count));
+        }
+
+        IEnumerable<int> SinglePass(IEnumerable<int> source)
+        {
+            var enumerated = false;
+            return Enumerate();
+
+            IEnumerable<int> Enumerate()
+            {
+                singlePassEnumerationCount++;
+                if (enumerated)
+                {
+                    throw new InvalidOperationException("The provider result was enumerated more than once.");
+                }
+
+                enumerated = true;
+                foreach (var item in source)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(
+                50f,
+                (ItemsProviderDelegate<int>)provider,
+                null,
+                v => renderedVirtualize = v,
+                item => builder => builder.AddContent(0, item))
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
+
+        var itemsBeforePrepend = renderedVirtualize._itemsBefore;
+        items.InsertRange(0, Enumerable.Range(-20, 20));
+        returnSinglePassEnumerable = true;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            renderedVirtualize.RefreshDataAsync());
+
+        Assert.Equal(itemsBeforePrepend + 20, renderedVirtualize._itemsBefore);
+        Assert.Equal(1, singlePassEnumerationCount);
+    }
+
+    [Fact]
     public async Task Virtualize_DefaultProvider_ValueTypeItem_AppendDoesNotAssumePrepend()
     {
         Virtualize<int> renderedVirtualize = null;

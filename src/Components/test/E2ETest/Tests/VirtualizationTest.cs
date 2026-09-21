@@ -3072,8 +3072,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Assert.True(placeholderFrames > 0,
             "Precondition failed: rapid scrolling should overlap an async provider request and render placeholders.");
-        Assert.True(maxBackwardJump <= 80,
-            $"Upward wheel scrolling must not jump backward by more than two item heights. " +
+        Assert.True(backwardJumps == 0,
+            $"Upward wheel scrolling must not jump backward. " +
             $"Backward jumps: {backwardJumps}, maximum: {maxBackwardJump}px. " +
             $"Samples: [{result["backwardJumpSamples"]}]. Frames: {sampleCount}, placeholders: {placeholderFrames}, " +
             $"initial scroll height: {initialScrollHeight}px, minimum scroll height: {minScrollHeight}px.");
