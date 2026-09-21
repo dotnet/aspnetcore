@@ -1,4 +1,8 @@
 ---
+features:
+  # Use the legacy inline detector until https://github.com/github/gh-aw/issues/61857 ships in a gh-aw release.
+  gh-aw-detection: false
+
 on:
   schedule: daily
   workflow_dispatch:
