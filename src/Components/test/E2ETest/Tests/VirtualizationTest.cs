@@ -5820,7 +5820,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68644")]
     public void ScrollToItem_AfterEndJump_LandsAtTarget()
     {
         const int targetIndex = 200;
