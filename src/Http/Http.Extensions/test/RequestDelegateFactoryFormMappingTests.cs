@@ -18,6 +18,38 @@ public class RequestDelegateFactoryFormMappingTests
     }
 
     [Fact]
+    public void CreatePreservesConverterFailureForFormCollectionWithUnsupportedElementType()
+    {
+        static void TestAction([FromForm] List<FormClassWithoutPublicConstructors> value) { }
+
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestAction));
+
+        Assert.Equal($"No converter registered for type '{typeof(List<FormClassWithoutPublicConstructors>).FullName}'.", exception.Message);
+    }
+
+    [Fact]
+    public void CreatePreservesConverterFailureForFormDictionaryWithUnsupportedValueType()
+    {
+        static void TestAction([FromForm] Dictionary<string, FormClassWithoutPublicConstructors> value) { }
+
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestAction));
+
+        Assert.Equal($"No converter registered for type '{typeof(FormClassWithoutPublicConstructors).FullName}'.", exception.Message);
+    }
+
+    [Fact]
+    public void CreateThrowsForEnumerableFormClassWithMultiplePublicConstructors()
+    {
+        static void TestAction([FromForm] EnumerableFormClassWithMultipleConstructors value) { }
+
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestAction));
+
+        Assert.Equal(
+            "The form parameter 'value' has type 'EnumerableFormClassWithMultipleConstructors', which has multiple public constructors. Only a single public constructor is supported.",
+            exception.Message);
+    }
+
+    [Fact]
     public void CreateThrowsForFormClassWithMultiplePublicConstructors()
     {
         static void TestAction([FromForm] FormClassWithMultipleConstructors value) { }
@@ -57,6 +89,21 @@ public class RequestDelegateFactoryFormMappingTests
         private FormClassWithoutPublicConstructors()
         {
         }
+    }
+
+    private sealed class EnumerableFormClassWithMultipleConstructors : IEnumerable<int>
+    {
+        public EnumerableFormClassWithMultipleConstructors(int value)
+        {
+        }
+
+        public EnumerableFormClassWithMultipleConstructors(string value)
+        {
+        }
+
+        public IEnumerator<int> GetEnumerator() => Enumerable.Empty<int>().GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private struct FormStructWithMultipleConstructors

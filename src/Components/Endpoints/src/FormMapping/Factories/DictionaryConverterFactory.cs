@@ -28,13 +28,22 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
             return false;
         }
 
-        if (Activator.CreateInstance(typeof(TypedDictionaryConverterFactory<,,>)
-            .MakeGenericType(type, keyType, valueType)) is not IFormDataConverterFactory factory)
+        if (!TryCreateDictionaryConverterFactory(type, keyType, valueType, out var factory))
         {
             return false;
         }
 
         return factory.CanConvert(type, options);
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal static bool SupportsDictionaryType(Type type)
+    {
+        var (keyType, valueType) = ResolveDictionaryTypes(type);
+        return valueType is not null &&
+            TryCreateDictionaryConverterFactory(type, keyType, valueType, out var factory) &&
+            factory.SupportsDictionaryType();
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
@@ -66,6 +75,19 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
 
         var valueType = dictionaryType.GetGenericArguments()[1];
         return (keyType, valueType);
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static bool TryCreateDictionaryConverterFactory(
+        Type type,
+        Type keyType,
+        Type valueType,
+        [NotNullWhen(true)] out TypedDictionaryConverterFactory? factory)
+    {
+        factory = Activator.CreateInstance(typeof(TypedDictionaryConverterFactory<,,>)
+            .MakeGenericType(type, keyType, valueType)) as TypedDictionaryConverterFactory;
+        return factory is not null;
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]

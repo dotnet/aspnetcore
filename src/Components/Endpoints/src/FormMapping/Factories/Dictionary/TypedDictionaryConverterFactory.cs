@@ -8,12 +8,27 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
+internal abstract class TypedDictionaryConverterFactory : IFormDataConverterFactory
+{
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal abstract bool SupportsDictionaryType();
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public abstract bool CanConvert(Type type, FormDataMapperOptions options);
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public abstract FormDataConverter CreateConverter(Type type, FormDataMapperOptions options);
+}
+
+internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : TypedDictionaryConverterFactory
     where TKey : ISpanParsable<TKey>
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    public bool CanConvert(Type type, FormDataMapperOptions options)
+    public override bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
         if (!options.CanConvert(typeof(TValue)))
@@ -21,6 +36,14 @@ internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TVa
             return false;
         }
 
+        return SupportsDictionaryType();
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal override bool SupportsDictionaryType()
+    {
+        var type = typeof(TDictionaryType);
         if (type.IsInterface)
         {
             // At this point we are dealing with an interface. We test from the most specific to the least specific
@@ -68,7 +91,7 @@ internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TVa
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
+    public override FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
         var valueTypeConverter = options.ResolveConverter<TValue>();

@@ -2214,7 +2214,10 @@ public static partial class RequestDelegateFactory
             {
                 formDataMapperOptions.ResolveConverter(parameter.ParameterType);
             }
-            catch (InvalidOperationException exception)
+            // Collection and dictionary converter failures can originate from a nested type and must remain unchanged.
+            catch (InvalidOperationException exception) when (
+                !DictionaryConverterFactory.SupportsDictionaryType(parameter.ParameterType) &&
+                !CollectionConverterFactory.SupportsCollectionType(parameter.ParameterType))
             {
                 var parameterTypeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
                 throw new InvalidOperationException(
