@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Internal;
 internal sealed class ProcessEx : IDisposable
 {
     private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
-    private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
 
     private readonly ITestOutputHelper _output;
     private readonly Process _process;
@@ -100,6 +99,8 @@ internal sealed class ProcessEx : IDisposable
 
     public object Id => _process.Id;
 
+    internal static string NuGetPackagesRestorePath { get; } = GetNuGetPackagesRestorePath();
+
     public static ProcessEx Run(
         ITestOutputHelper output,
         string workingDirectory,
@@ -131,7 +132,7 @@ internal sealed class ProcessEx : IDisposable
             startInfo.EnvironmentVariables.Remove(envVarToRemove);
         }
 
-        startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
+        startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NuGetPackagesRestorePath;
 
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
         {
@@ -237,7 +238,7 @@ internal sealed class ProcessEx : IDisposable
         }
     }
 
-    private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE")))
+    private static string GetNuGetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE")))
         ? typeof(ProcessEx).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(attribute => attribute.Key == "TestPackageRestorePath")
