@@ -143,9 +143,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement.style.overflowAnchor = 'none';
   }
 
+  let restoreAnchorOnMutation = false;
   // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
   // so on each spacer mutation we walk the sibling chain to reapply styles.
-  const mutationObserver = new MutationObserver(applyLayoutAttrsBetweenSpacers);
+  const mutationObserver = new MutationObserver(() => {
+    applyLayoutAttrsBetweenSpacers();
+    if (restoreAnchorOnMutation) {
+      restoreAnchorOnMutation = false;
+      restoreAnchorForShift();
+    }
+  });
 
   function flushPendingStyleMutations(): void {
     if (mutationObserver.takeRecords().length > 0) {
@@ -736,7 +743,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       bottomTracking.following = (mode & 2) !== 0;
       bottomTracking.reached = isViewportAtBottom();
     },
-    restoreAnchor: restoreAnchorForShift,
+    restoreAnchor: (onNextMutation: boolean) => {
+      if (onNextMutation && !useNativeAnchoring) {
+        updateAnchorSnapshot();
+        restoreAnchorOnMutation = true;
+      } else {
+        restoreAnchorOnMutation = false;
+        restoreAnchorForShift();
+      }
+    },
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
@@ -989,10 +1004,10 @@ function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
   entry?.setAnchorMode?.(mode);
 }
 
-function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
+function restoreAnchor(dotNetHelper: DotNet.DotNetObject, onNextMutation = false): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  entry?.restoreAnchor?.();
+  entry?.restoreAnchor?.(onNextMutation);
 }
 
 function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): number | null {

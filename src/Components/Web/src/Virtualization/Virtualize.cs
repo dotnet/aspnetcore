@@ -922,12 +922,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private int GetItemsProviderRequestCount()
     {
         var isAtLoadedTail = _itemCount > 0 && _itemsBefore + _visibleItemCapacity >= _itemCount;
+        var shouldPrefetchForPrepend = (AnchorMode & VirtualizeAnchorMode.Start) != 0 && CanDetectPrepend;
         if (_itemsProvider != DefaultItemsProvider
-            && (AnchorMode & VirtualizeAnchorMode.End) != 0
-            && isAtLoadedTail)
+            && (shouldPrefetchForPrepend
+                || ((AnchorMode & VirtualizeAnchorMode.End) != 0 && isAtLoadedTail)))
         {
-            // A bounded look-ahead lets small appends reuse this result when shifting the
-            // rendered window to the new tail, avoiding a second provider request.
+            // A bounded look-ahead lets small prepends/appends reuse this result when shifting
+            // the rendered window, avoiding a second provider request.
             return (int)Math.Min(
                 (long)GetMaximumItemCapacity(),
                 (long)_visibleItemCapacity + Math.Max(1, OverscanCount));
@@ -1067,7 +1068,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 {
                     if (!await ShouldFollowPrependedHeadAsync())
                     {
-                        result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                        result = await AdjustProviderForPrependAsync(countDelta, result, request, cancellationToken);
                     }
                 }
                 else if (ShouldAnchorForAppend(countDelta, previousItemCount))
@@ -1160,12 +1161,55 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         int countDelta, int newTotalCount, CancellationToken cancellationToken)
     {
         var wasAtTop = _itemsBefore == 0;
-        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        var adjustedItemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        var adjustedRequest = new ItemsProviderRequest(adjustedItemsBefore, _visibleItemCapacity, cancellationToken);
+        var result = await _itemsProvider(adjustedRequest);
+
+        _itemsBefore = adjustedItemsBefore;
         _pendingAnchorRestore = true;
         _deferPrependAnchorClear = !wasAtTop;
+        return result;
+    }
 
-        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
-        return await _itemsProvider(adjustedRequest);
+    private async ValueTask<ItemsProviderResult<TItem>> AdjustProviderForPrependAsync(
+        int countDelta,
+        ItemsProviderResult<TItem> result,
+        ItemsProviderRequest request,
+        CancellationToken cancellationToken)
+    {
+        var wasAtTop = _itemsBefore == 0;
+        var adjustedItemsBefore = Math.Min(
+            _itemsBefore + countDelta,
+            Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+        var adjustedItemCount = Math.Min(
+            _visibleItemCapacity,
+            result.TotalItemCount - adjustedItemsBefore);
+        var prefetchedItems = request.StartIndex <= adjustedItemsBefore
+            ? result.Items
+                .Skip(adjustedItemsBefore - request.StartIndex)
+                .Take(adjustedItemCount)
+                .ToList()
+            : [];
+
+        if (prefetchedItems.Count == adjustedItemCount)
+        {
+            result = new ItemsProviderResult<TItem>(prefetchedItems, result.TotalItemCount);
+        }
+        else
+        {
+            result = await _itemsProvider(
+                new ItemsProviderRequest(adjustedItemsBefore, _visibleItemCapacity, cancellationToken));
+        }
+
+        if (_jsInterop is not null)
+        {
+            await _jsInterop.RestoreAnchorAsync(onNextMutation: true);
+        }
+
+        _itemsBefore = adjustedItemsBefore;
+        _pendingAnchorRestore = true;
+        _deferPrependAnchorClear = !wasAtTop;
+        return result;
     }
 
     // Items appended at the bottom while viewport is near the end.

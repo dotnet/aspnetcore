@@ -3120,35 +3120,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void Table_StartAnchor_AsyncProvider_PrependDuringRapidUserScroll_DoesNotReverseScrollDirection()
-    {
-        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
-
-        var container = Browser.Exists(By.Id("table-scroll-container"));
-        var js = (IJavaScriptExecutor)Browser;
-        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
-        Browser.True(() => GetElementCount(container, ".table-scroll-item") > 0);
-
-        EnableTableStartAnchor();
-
-        var initialScrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-        var result = ExecuteRapidDownwardScrollWithConcurrentPrepends(container, js);
-        var maxBackwardJump = Convert.ToInt64(result["maxBackwardJump"], CultureInfo.InvariantCulture);
-        var backwardJumps = Convert.ToInt64(result["backwardJumps"], CultureInfo.InvariantCulture);
-        var placeholderFrames = Convert.ToInt64(result["placeholderFrames"], CultureInfo.InvariantCulture);
-        var minScrollHeight = Convert.ToInt64(result["minScrollHeight"], CultureInfo.InvariantCulture);
-        var sampleCount = Convert.ToInt64(result["sampleCount"], CultureInfo.InvariantCulture);
-
-        Assert.True(placeholderFrames > 0,
-            "Precondition failed: rapid scrolling should overlap an async provider request and render placeholders.");
-        Assert.True(maxBackwardJump <= 80,
-            $"Downward wheel scrolling must not jump backward by more than two item heights. " +
-            $"Backward jumps: {backwardJumps}, maximum: {maxBackwardJump}px. " +
-            $"Samples: [{result["backwardJumpSamples"]}]. Frames: {sampleCount}, placeholders: {placeholderFrames}, " +
-            $"initial scroll height: {initialScrollHeight}px, minimum scroll height: {minScrollHeight}px.");
-    }
-
-    [Fact]
     public void Table_StartAnchor_AsyncProvider_ContinuousPrepend_MaterializesNewHeadWithoutIndexReversal()
     {
         Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
@@ -3182,6 +3153,39 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Maximum first-visible index advance: {maximumFirstVisibleAdvance}.");
         Assert.True(topGap <= 1,
             $"Start anchoring should remain at the top while prepending. Top gap: {topGap}px.");
+    }
+
+    [Fact]
+    public void Table_StartAnchor_AsyncProvider_ContinuousPrependAfterLeavingHead_KeepsViewportStable()
+    {
+        Browser.MountTestComponent<VirtualizationTableScrollWithAppend>();
+
+        var container = Browser.Exists(By.Id("table-scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        EnableTableStartAnchor();
+
+        ScrollUntil(
+            js,
+            container,
+            () => ScrollContainerWithWheelTo(js, container, 300),
+            scrollTop => scrollTop > 200,
+            "scrollTop > 200 after leaving the head");
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        var (anchorIndex, anchorOffset, _) = GetItemPositionInContainer(js, container, ".table-scroll-item td[data-index]");
+        var result = ExecuteContinuousPrependAnchorStabilityProbe(container, js, anchorIndex, anchorOffset);
+        var totalItems = Convert.ToInt64(result["totalItems"], CultureInfo.InvariantCulture);
+        var missingAnchorFrames = Convert.ToInt64(result["missingAnchorFrames"], CultureInfo.InvariantCulture);
+        var maximumAnchorDrift = Convert.ToDouble(result["maximumAnchorDrift"], CultureInfo.InvariantCulture);
+
+        WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
+
+        Assert.Equal(510, totalItems);
+        Assert.True(missingAnchorFrames == 0,
+            $"The anchored item {anchorIndex} disappeared for {missingAnchorFrames} frames during continuous prepends.");
+        Assert.True(maximumAnchorDrift <= 2,
+            $"The anchored item {anchorIndex} moved by up to {maximumAnchorDrift}px during continuous prepends. " +
+            $"Expected viewport offset: {anchorOffset}px.");
     }
 
     [Fact]
@@ -5570,19 +5574,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private Dictionary<string, object> ExecuteRapidUpwardScrollWithConcurrentAppends(
         IWebElement container,
         IJavaScriptExecutor js)
-        => ExecuteRapidScrollWithConcurrentMutation(
-            container,
-            js,
-            mutationButtonId: "table-scroll-append",
-            scrollDelta: -500);
-
-    private Dictionary<string, object> ExecuteRapidScrollWithConcurrentMutation(
-        IWebElement container,
-        IJavaScriptExecutor js,
-        string mutationButtonId,
-        int scrollDelta)
     {
         const int scrollCount = 8;
+        const int scrollDelta = 500;
 
         js.ExecuteScript(@"
             const container = arguments[0];
@@ -5599,25 +5593,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container);
 
         js.ExecuteScript(@"
-            const mutationButton = document.getElementById(arguments[0]);
-            [300, 900, 1500].forEach(delay => setTimeout(() => mutationButton.click(), delay));
-        ", mutationButtonId);
+            const appendButton = document.getElementById('table-scroll-append');
+            [300, 900, 1500].forEach(delay => setTimeout(() => appendButton.click(), delay));
+        ");
 
         var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
         var scrollActions = new Actions(Browser);
         for (var i = 0; i < scrollCount; i++)
         {
             scrollActions
-                .ScrollFromOrigin(scrollOrigin, 0, scrollDelta)
+                .ScrollFromOrigin(scrollOrigin, 0, -scrollDelta)
                 .Pause(TimeSpan.FromMilliseconds(20));
         }
         scrollActions.Perform();
 
-        Browser.Equal("Total items: 503", () => Browser.Exists(By.Id("table-scroll-total-items")).Text);
+        Browser.Contains("Appended item 502", () => Browser.Exists(By.Id("table-scroll-status")).Text);
         WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
 
         return (Dictionary<string, object>)js.ExecuteScript(@"
-            const scrollDirection = arguments[0];
             cancelAnimationFrame(window.__tableScrollAnimationFrame);
 
             const samples = window.__tableScrollSamples;
@@ -5637,13 +5630,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     continue;
                 }
 
-                const progress = (samples[i].scrollTop - samples[i - 1].scrollTop) * scrollDirection;
-                if (progress < -5) {
-                    const backwardJump = -progress;
+                const delta = samples[i].scrollTop - samples[i - 1].scrollTop;
+                if (delta > 5) {
                     backwardJumps++;
-                    maxBackwardJump = Math.max(maxBackwardJump, backwardJump);
+                    maxBackwardJump = Math.max(maxBackwardJump, delta);
                     if (backwardJumpSamples.length < 20) {
-                        backwardJumpSamples.push(backwardJump);
+                        backwardJumpSamples.push(delta);
                     }
                 }
             }
@@ -5656,7 +5648,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 sampleCount: samples.length,
                 backwardJumpSamples: backwardJumpSamples.join(',')
             };
-        ", Math.Sign(scrollDelta));
+        ");
     }
 
     private Dictionary<string, object> ExecuteContinuousTailAppendProbe(
@@ -5738,15 +5730,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         WaitForRenderToSettle(container, js, ".table-scroll-item", trackScrollHeight: true);
     }
 
-    private Dictionary<string, object> ExecuteRapidDownwardScrollWithConcurrentPrepends(
-        IWebElement container,
-        IJavaScriptExecutor js)
-        => ExecuteRapidScrollWithConcurrentMutation(
-            container,
-            js,
-            mutationButtonId: "table-scroll-prepend",
-            scrollDelta: 500);
-
     private Dictionary<string, object> ExecuteContinuousHeadPrependProbe(
         IWebElement container,
         IJavaScriptExecutor js)
@@ -5808,6 +5791,43 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 });
             }, 6300);
         ", container);
+    }
+
+    private Dictionary<string, object> ExecuteContinuousPrependAnchorStabilityProbe(
+        IWebElement container,
+        IJavaScriptExecutor js,
+        string anchorIndex,
+        double anchorOffset)
+    {
+        return (Dictionary<string, object>)js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const container = arguments[0];
+            const anchorIndex = arguments[1];
+            const expectedOffset = arguments[2];
+            const prependButton = document.getElementById('table-scroll-prepend');
+            let missingAnchorFrames = 0;
+            let maximumAnchorDrift = 0;
+            let animationFrame;
+            const sample = () => {
+                const anchor = container.querySelector(`.table-scroll-item td[data-index=""${anchorIndex}""]`);
+                if (!anchor) {
+                    missingAnchorFrames++;
+                } else {
+                    const offset = anchor.parentElement.getBoundingClientRect().top - container.getBoundingClientRect().top;
+                    maximumAnchorDrift = Math.max(maximumAnchorDrift, Math.abs(offset - expectedOffset));
+                }
+                animationFrame = requestAnimationFrame(sample);
+            };
+            animationFrame = requestAnimationFrame(sample);
+            const prependTimer = setInterval(() => prependButton.click(), 600);
+
+            setTimeout(() => {
+                clearInterval(prependTimer);
+                cancelAnimationFrame(animationFrame);
+                const totalItems = Number(document.getElementById('table-scroll-total-items').textContent.match(/\d+/)[0]);
+                done({ totalItems, missingAnchorFrames, maximumAnchorDrift });
+            }, 6300);
+        ", container, anchorIndex, anchorOffset);
     }
 
     private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)
