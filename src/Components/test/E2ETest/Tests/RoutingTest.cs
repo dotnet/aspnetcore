@@ -1160,6 +1160,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_CanBlockExternalNavigation()
     {
+        InitializeBrowser(BrowserFixture.NavigationPromptContext);
+        InitializeAsyncCore();
+
         SetUrlViaPushState("/");
 
         var app = Browser.MountTestComponent<NavigationManagerComponent>();

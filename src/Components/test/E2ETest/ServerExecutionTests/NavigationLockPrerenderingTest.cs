@@ -26,6 +26,8 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void ExternalNavigationIsLockedAfterPrerendering()
     {
+        InitializeBrowser(BrowserFixture.NavigationPromptContext);
+
         Navigate("/locked-navigation");
 
         // Assert that the component rendered successfully
