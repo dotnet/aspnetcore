@@ -1,0 +1,374 @@
+name: review-pull-request-local-guidance
+description: Local criteria loading and concise presentation, not full-panel review quality.
+version: "1"
+type: capability
+
+environment:
+  skills:
+    - ../../../.github/skills/review-pull-request
+  files:
+    - { src: fixtures/prepare.py, dest: .eval/prepare.py }
+    - { src: fixtures/gh, dest: .eval/gh }
+    - { src: fixtures/pr69401.json, dest: .eval/pr69401.json }
+    - { src: fixtures/analysis.json, dest: .eval/analysis.json }
+    - { src: fixtures/CrossCuttingGuidance.md, dest: .eval/CrossCuttingGuidance.md }
+    - { src: fixtures/BlazorComponentsGuidance.md, dest: .eval/BlazorComponentsGuidance.md }
+    - { src: fixtures/Policy.md, dest: .eval/Policy.md }
+    - { src: ../../../docs/CrossCuttingGuidance.md, dest: .eval/real/docs/CrossCuttingGuidance.md }
+    - { src: ../../../docs/BlazorComponentsGuidance.md, dest: .eval/real/docs/BlazorComponentsGuidance.md }
+    - { src: ../../../CONTRIBUTING.md, dest: .eval/real/CONTRIBUTING.md }
+    - { src: ../../../.github/copilot-instructions.md, dest: .eval/real/.github/copilot-instructions.md }
+    - { src: ../../../src/Components/AGENTS.md, dest: .eval/real/src/Components/AGENTS.md }
+    - { src: ../../../docs/APIReviewProcess.md, dest: .eval/real/docs/APIReviewProcess.md }
+    - { src: ../../../docs/Trimming.md, dest: .eval/real/docs/Trimming.md }
+
+defaults:
+  runs: 1
+  timeout: 300s
+  executor: copilot-sdk
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+
+scoring:
+  threshold: 1
+
+stimuli:
+  - name: no-pr
+    tags:
+      suite: smoke
+      network: none
+    prompt: |
+      Invoke review-pull-request. I have only a local diff and no GitHub pull request.
+      Do not create a PR or review the local diff. Explain the prerequisite briefly and stop.
+    graders:
+      - &activation
+        type: skill-invocation
+        config:
+          required: [review-pull-request]
+      - type: output-matches
+        config:
+          pattern: '(?i)(pull request|\bPR\b)'
+      - &concise
+        type: output-matches
+        config:
+          pattern: '(?i)(HEAD_SHA|BASE_REPO|BASE_REF|BASE_SHA|GUIDANCE_\w+|REVIEWER_\w+|SKILL_LOADING|GUIDES|TOPICS|PATH|MANIFEST|POLICY_INPUTS|DISCARDED|TEST_BOUNDARY):|(expected|launched|returned|retried|fallback)\s*[:=]?\s*\d'
+          negate: true
+
+  # These two stimuli alone are also run with the historical skill.
+  - name: historical-release-preflight
+    tags: { suite: loading, comparison: regression, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py historical]
+    prompt: &preflight |
+      Invoke review-pull-request for a bounded criteria-loading preflight evaluation only.
+      Read .eval/target.json: it is a recorded or synthetic frozen routing projection,
+      not a claim that complete PR evidence was retrieved. Use its PR identity, SHAs and
+      changed-file list as Step 2 input. Exercise only routing, loading and validation of
+      guides and directly delegated policy inputs. The separate authoritative-target-
+      documents evidence table is outside this probe. Do not run Step 1, review product
+      code, dispatch workers, or publish anything. Read the actual required criteria.
+      Use shell for file I/O in this isolated workspace.
+      There is no live GitHub access. If the skill requires GitHub retrieval, use only
+      `python3 .eval/gh api <endpoint>` for the recorded responses; never use real gh,
+      curl, another transport, or credentials. Do not edit files or prepare the workspace.
+      On success, return PRE_DISPATCH_READY, the guide paths and discovered topic count,
+      and the complete captured principles/topic/policy text for the first topic of each
+      routed guide as a prepared worker brief. Otherwise explain the blocking prerequisite.
+      This stopping point proves criteria readiness only, not complete PR preflight,
+      completed review, or a no-findings result.
+    graders:
+      - *activation
+      - &ready
+        type: output-matches
+        config: { pattern: '(?m)^(?:#{1,6} )?\*{0,2}PRE_DISPATCH_READY\*{0,2}(?:\s|$)' }
+      - type: output-contains
+        config: { substring: docs/CrossCuttingGuidance.md }
+      - type: output-contains
+        config: { substring: docs/BlazorComponentsGuidance.md }
+      - &unchanged
+        type: run-command
+        config:
+          command: python3
+          args: [.eval/prepare.py, verify]
+          expected_exit_code: 0
+      - &no-mutations
+        type: tool-calls
+        config:
+          disallowed:
+            - { name: '^(task|rename_branch|rename_session|edit|create|apply_patch)$' }
+            - { name: '^(bash|shell|powershell)$', command: 'git\s+(checkout|switch|commit|reset|clean|merge|pull|fetch|push|rebase|branch|status|diff)\b' }
+
+  - name: concise-findings
+    tags: { suite: presentation, comparison: regression, network: none }
+    prompt: &presentation |
+      Invoke review-pull-request for an output-contract evaluation only. Read
+      .eval/analysis.json using shell, a controlled completed-analysis record for a synthetic PR.
+      Render its result according to the skill's Step 6. Do not redo the review or
+      retrieve evidence, dispatch workers, edit files, or publish. The record is
+      supplied input to a presentation test, not a real review you performed.
+    graders:
+      - *activation
+      - *concise
+      - &substance
+        type: output-matches
+        config: { pattern: '(?is)(?=.*event handler)(?=.*(?:registered|unregister|subscribed|detach|unsubscribe|attached))' }
+      - &limitation
+        type: output-matches
+        config: { pattern: '(?i)Windows.{0,80}(not reviewed|unreviewed|not assessed|not verified)' }
+      - type: output-matches
+        config: { pattern: 'src/Example\.cs(?::12|.{0,30}line 12)' }
+      - type: output-matches
+        config: { pattern: '(?is)publisher.*(retain|invoke)' }
+      - type: output-matches
+        config: { pattern: '(?s)^.{1,1400}$' }
+      - *no-mutations
+
+  - name: main-local-capture
+    tags: { suite: loading, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py main]
+    prompt: *preflight
+    graders: &local-capture
+      - *activation
+      - *ready
+      - type: output-contains
+        config: { substring: WORKSPACE-CRITERION }
+      - type: output-contains
+        config: { substring: CAPTURED-POLICY }
+      - type: output-contains
+        config: { substring: SECOND-HEADING }
+      - type: output-contains
+        config: { substring: FIRST-HEADING, negate: true }
+      - type: output-contains
+        config: { substring: BLAZOR-CRITERION, negate: true }
+      - type: tool-calls
+        config:
+          required:
+            - { name: '.*', result: WORKSPACE-CRITERION }
+            - { name: '.*', result: CAPTURED-POLICY }
+      - *unchanged
+      - *no-mutations
+
+  - name: subdirectory-root
+    tags: { suite: loading, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py main]
+    prompt: |
+      Invoke review-pull-request for Step 2 only, using .eval/target.json as the supplied
+      synthetic PR routing input. Use shell for file I/O. First discover the root from an actual subdirectory
+      with `cd work/nested && git rev-parse --show-toplevel`, then use that resolved root.
+      Do not perform a review or contact GitHub. On success return PRE_DISPATCH_READY
+      and the complete captured first-topic brief with policy clauses; otherwise explain
+      the block. Do not edit files, prepare the workspace, or dispatch workers.
+    graders:
+      - *activation
+      - *ready
+      - type: tool-calls
+        config:
+          required:
+            - { name: '^(bash|shell|powershell)$', command: 'cd work/nested && git rev-parse --show-toplevel' }
+      - type: output-contains
+        config: { substring: WORKSPACE-CRITERION }
+      - type: output-contains
+        config: { substring: SECOND-HEADING }
+      - *unchanged
+      - *no-mutations
+
+  - name: uncommitted-criteria
+    tags: { suite: loading, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py dirty]
+    prompt: *preflight
+    graders:
+      - *activation
+      - *ready
+      - type: output-contains
+        config: { substring: UNCOMMITTED-CRITERION }
+      - type: output-contains
+        config: { substring: WORKSPACE-CRITERION, negate: true }
+      - type: output-contains
+        config: { substring: UNCOMMITTED-PRODUCT, negate: true }
+      - type: tool-calls
+        config:
+          required:
+            - { name: '.*', result: UNCOMMITTED-CRITERION }
+          disallowed:
+            - { name: '^(bash|shell|powershell)$', command: 'git\s+show\b' }
+      - *unchanged
+      - *no-mutations
+
+  - name: components-routing
+    tags: { suite: loading, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py components]
+    prompt: *preflight
+    graders:
+      - *activation
+      - *ready
+      - type: output-contains
+        config: { substring: WORKSPACE-CRITERION }
+      - type: output-contains
+        config: { substring: BLAZOR-CRITERION }
+      - type: output-contains
+        config: { substring: COMPONENT-POLICY }
+      - *unchanged
+      - *no-mutations
+
+  - name: jsinterop-policy-scope
+    tags: { suite: loading, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py jsinterop]
+    prompt: *preflight
+    graders:
+      - *activation
+      - *ready
+      - type: output-contains
+        config: { substring: BLAZOR-CRITERION }
+      - type: output-contains
+        config: { substring: CAPTURED-POLICY }
+      - *unchanged
+      - *no-mutations
+
+  - name: missing-guide
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py missing-guide]
+    prompt: *preflight
+    graders: &invalid
+      - *activation
+      - type: output-contains
+        config: { substring: BLOCKED }
+      - type: output-matches
+        config: { pattern: '(?m)^(?:#{1,6} )?\*{0,2}PRE_DISPATCH_READY\*{0,2}(?:\s|$)', negate: true }
+      - type: output-matches
+        config: { pattern: '(?i)(missing|unreadable|empty|invalid|malformed|ambiguous|duplicate|outside|out.of.root|not found|cannot|unable)' }
+      - *concise
+      - *unchanged
+      - *no-mutations
+
+  - name: unreadable-guide
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py unreadable-guide]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: empty-guide
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py empty-guide]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: malformed-guide
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py malformed-guide]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: missing-policy
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py missing-policy]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: empty-policy
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py empty-policy]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: missing-anchor
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py missing-anchor]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: ambiguous-policy-clauses
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py ambiguous-clauses]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: out-of-root-policy
+    tags: { suite: invalid, network: none }
+    environment:
+      commands: [python3 .eval/prepare.py out-of-root]
+    prompt: *preflight
+    graders: *invalid
+
+  - name: structured-result
+    tags: { suite: presentation, network: none }
+    prompt: |
+      Invoke review-pull-request for an output-contract evaluation only. Read
+      .eval/analysis.json using shell, a controlled completed-analysis record for a synthetic PR.
+      I explicitly request the detailed structured output from Step 6.
+      Do not redo the review, retrieve evidence, dispatch workers, edit files, or publish.
+    graders:
+      - *activation
+      - *substance
+      - *limitation
+      - type: output-matches
+        config: { pattern: '(?s)HEAD_SHA:.*MANIFEST:.*FINDINGS:.*LIMITATIONS:' }
+      - type: output-matches
+        config: { pattern: '(GUIDANCE_|REVIEWER_)', negate: true }
+      - *no-mutations
+
+  - name: concise-no-findings
+    tags: { suite: presentation, network: none }
+    prompt: |
+      Invoke review-pull-request for an output-contract evaluation only. Read
+      .eval/analysis.json using shell as controlled input, with this case's findings replaced by
+      an empty list. Keep the supplied limitation. Render the completed result using
+      Step 6; do not perform a new review, retrieve evidence, dispatch, edit, or publish.
+    graders:
+      - *activation
+      - *concise
+      - *limitation
+      - type: output-matches
+        config: { pattern: '(?i)no.{0,35}findings' }
+      - *no-mutations
+
+  - name: concise-incomplete
+    tags: { suite: presentation, network: none }
+    prompt: |
+      Invoke review-pull-request for an output-contract evaluation only. Read
+      .eval/analysis.json using shell as controlled input, but for this case use no findings,
+      expected=1, launched=1, returned=0, and coverage=incomplete because the worker
+      did not finish. Keep the supplied Windows limitation. Render using Step 6;
+      do not perform a new review, retrieve evidence, dispatch, edit, or publish.
+    graders:
+      - *activation
+      - *concise
+      - *limitation
+      - type: output-matches
+        config: { pattern: '(?i)incomplete|did not complete|could not complete' }
+      - type: output-matches
+        config: { pattern: '(?i)NO_FINDINGS|no (actionable |verified )?findings (were )?(found|identified)', negate: true }
+      - *no-mutations
+
+  - name: truncated-worker-criteria
+    tags: { suite: capture, network: none }
+    prompt: |
+      Invoke review-pull-request for a bounded Step 4 worker-input validation test only.
+      A prepared brief for synthetic PR dotnet/aspnetcore#1 has frozen evidence, but its
+      captured common principles are "[truncated]" and its required delegated policy
+      excerpt is missing. Decide whether that brief is ready for a worker under the
+      skill's contract. Do not run a panel, retrieve PR evidence, edit, or publish.
+    graders:
+      - *activation
+      - type: output-contains
+        config: { substring: BLOCKED }
+      - type: output-matches
+        config: { pattern: '(?i)missing|truncated' }
+      - *concise
+      - *no-mutations
+      - type: tool-calls
+        config:
+          disallowed:
+            - { name: '^(bash|shell|powershell|view|read_file|web_fetch)$' }

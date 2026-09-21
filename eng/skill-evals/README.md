@@ -202,6 +202,42 @@ rules. Do not approximate those checks with prose matching.
 Specialized suites own case promotion, consolidation, retirement, and held-out
 refresh to keep coverage representative and bounded.
 
+### Local PR reviewer criteria and presentation
+
+`review-pull-request/guidance-source.vally.yaml` is a specialized local suite.
+It explicitly loads the selected tree's reviewer skill and uses `gpt-5.6-sol`;
+it does not use the central experiment or other suites' model defaults.
+
+```powershell
+./eng/skill-evals/run.ps1 Lint -Eval eng/skill-evals/review-pull-request/guidance-source.vally.yaml
+./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/guidance-source.vally.yaml --tag suite=smoke --workers 1 --max-retries 0
+./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/guidance-source.vally.yaml --workers 4 --max-retries 0
+```
+
+Use `--tag comparison=regression` for only the historical guide-loading failure
+and interactive-output comparison. To compare revisions, stage separate trees
+with identical eval assets and referenced contributor docs, placing each skill
+revision at `.github/skills/review-pull-request/SKILL.md`. Pass `-Root` for each
+tree and use separate output directories. Do not replace the working skill to
+run a baseline. Other controls run only against the candidate.
+
+The fixtures prepare isolated repositories before agent execution. The historical
+input preserves the immutable #69401 changed-path projection, not complete PR
+evidence; its offline transport reproduces only the two guide 404s. This probe
+stops at criteria readiness, before authoritative target-document lookup and
+worker dispatch. Local files, uncommitted edits, paths and anchors are real;
+completed-analysis records test rendering only. Shell reads avoid the pinned
+executor's workspace-path mismatch in native file tools.
+
+Deterministic graders check output shape/content, activation, observed calls,
+and unchanged branch/HEAD/files. Inspect retained traces for actual reads,
+captured excerpts and each failure's cause; a passing aggregate is insufficient.
+Read-once capture, missing worker inputs, and the distinction between criteria
+and target evidence do not establish review quality. Session-name behavior is
+observable only when the host exposes it. This suite does not test a hosted
+runtime, enforce tool grants, publish, run a full panel, or supply statistical
+quality evidence. It is not included in hosted standard-eval staging.
+
 Validation does not judge prompt or rubric quality, run a model, validate
 runtime skill behavior, or decide whether a specialized suite is statistically
 persuasive. Those concerns belong in skill-specific review and runtime

@@ -38,3 +38,14 @@ The following shared guidance is available for contributors working in the corre
 
 - [Blazor and Components guidance](BlazorComponentsGuidance.md) for `src/Components/**` and `src/JSInterop/**`
 - [Cross-cutting guidance](CrossCuttingGuidance.md) for ordinary `src/**` work
+
+The optional `review-pull-request` skill reviews a GitHub PR using these guides and applicable
+delegated policies from the current repository workspace, including uncommitted edits. The PR's
+frozen GitHub evidence defines the reviewed code; local product edits do not change its scope.
+This also supports servicing PRs whose target branches lack the guides, provided the required
+files exist locally. The caller prepares those files; the reviewer does not change branches,
+update the workspace, or retrieve alternative guidance when a required local input is missing.
+
+Interactive results are concise by default. Explicitly request structured output or full
+diagnostics for detailed evidence and accounting from that review; the skill does not retain
+a persistent report for later retrieval.

@@ -1,0 +1,18 @@
+{
+  "boundary": "Historical routing projection, not complete PR review evidence or a current PR snapshot.",
+  "source": "https://github.com/dotnet/aspnetcore/compare/13909f3b7ddbfeab04aac1c290f8abf4b75fe42c...3870288f23f7c80644e71b049f797ce783754aaa",
+  "pr": "dotnet/aspnetcore#69401",
+  "head": "3870288f23f7c80644e71b049f797ce783754aaa",
+  "base_repository": "dotnet/aspnetcore",
+  "base_ref": "release/11.0",
+  "base": "13909f3b7ddbfeab04aac1c290f8abf4b75fe42c",
+  "files": [
+    "eng/Versions.props",
+    "src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj",
+    "src/Components/test/E2ETest/Tests/StandaloneAppTelemetryTest.cs",
+    "src/ProjectTemplates/Web.ProjectTemplates/BlazorWasmServiceDefaults-CSharp.csproj.in",
+    "src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWasmServiceDefaults-CSharp/BackgroundExportHandler.cs",
+    "src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWasmServiceDefaults-CSharp/Extensions.cs",
+    "src/ProjectTemplates/test/Templates.Tests/template-baselines.json"
+  ]
+}
