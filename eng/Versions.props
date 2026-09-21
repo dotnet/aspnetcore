@@ -218,16 +218,6 @@
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>[3.10.2,4.0.0)</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>[3.10.2,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
-    <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
-    <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
-    <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
-    <MicrosoftExtensionsAIOpenAIVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIOpenAIVersion>
-    <!-- AG-UI packages (used by the Components.AI dojo test assets) -->
-    <AGUIVersion>0.0.5</AGUIVersion>
-    <AGUIAbstractionsVersion>$(AGUIVersion)</AGUIAbstractionsVersion>
-    <AGUIClientVersion>$(AGUIVersion)</AGUIClientVersion>
-    <AGUIFormattingVersion>$(AGUIVersion)</AGUIFormattingVersion>
-    <AGUIServerVersion>$(AGUIVersion)</AGUIServerVersion>
     <!-- Playwright CLI version -->
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
