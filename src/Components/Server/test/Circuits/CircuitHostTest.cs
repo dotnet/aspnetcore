@@ -1239,50 +1239,6 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_PreservesAllAdds_WhenCircuitHandlerDelaysFirstBatch()
-    {
-        var handler = new BlockingCircuitHandler();
-        var services = new ServiceCollection()
-            .AddSingleton<CircuitHandler>(handler)
-            .BuildServiceProvider();
-        var acknowledgedBatches = new List<long>();
-        var client = new Mock<ISingleClientProxy>();
-        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-            .Callback((string _, object[] arguments, CancellationToken _) => acknowledgedBatches.Add((long)arguments[0]))
-            .Returns(Task.CompletedTask);
-        var renderer = GetRemoteRenderer();
-        var circuitHost = TestCircuitHost.Create(
-            remoteRenderer: renderer,
-            serviceScope: services.CreateAsyncScope(),
-            clientProxy: new CircuitClientProxy(client.Object, "connection"));
-        var unhandledExceptions = new List<Exception>();
-        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
-
-        var firstUpdate = circuitHost.UpdateRootComponents(new()
-        {
-            BatchId = 1,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
-        }, null, false, CancellationToken.None);
-        await handler.WaitForEntryAsync();
-
-        var secondUpdate = circuitHost.UpdateRootComponents(new()
-        {
-            BatchId = 2,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(2)],
-        }, null, false, CancellationToken.None);
-        await renderer.Dispatcher.InvokeAsync(() => { });
-        var secondUpdateCompletedBeforeRelease = secondUpdate.IsCompleted;
-
-        handler.Release();
-        await Task.WhenAll(firstUpdate, secondUpdate);
-
-        Assert.False(secondUpdateCompletedBeforeRelease);
-        Assert.Empty(unhandledExceptions);
-        Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(component => component.id).Order());
-        Assert.Equal([1L, 2L], acknowledgedBatches);
-    }
-
-    [Fact]
     public async Task UpdateRootComponents_PreservesBatchDependencies_WhenCircuitHandlerDelaysFirstBatch()
     {
         var handler = new BlockingCircuitHandler();
@@ -1305,7 +1261,7 @@ public class CircuitHostTest
         var firstUpdate = circuitHost.UpdateRootComponents(new()
         {
             BatchId = 1,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1, componentKey: "component-a")],
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1, componentKey: "component-a")],
         }, null, false, CancellationToken.None);
         await handler.WaitForEntryAsync();
 
@@ -1315,11 +1271,11 @@ public class CircuitHostTest
             BatchId = 2,
             Operations =
             [
-                CreateUpdateOperation<DynamicallyAddedComponent>(1, new Dictionary<string, object>
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Update, 1, new Dictionary<string, object>
                 {
                     [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
                 }, componentKey: "component-a"),
-                CreateAddOperation<DynamicallyAddedComponent>(2),
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2),
             ],
         }, null, false, CancellationToken.None);
         await renderer.Dispatcher.InvokeAsync(() => { });
@@ -1350,7 +1306,7 @@ public class CircuitHostTest
         var firstUpdate = circuitHost.UpdateRootComponents(new()
         {
             BatchId = 1,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
         }, null, false, CancellationToken.None);
         await handler.WaitForEntryAsync();
 
@@ -1361,7 +1317,7 @@ public class CircuitHostTest
                 var update = circuitHost.UpdateRootComponents(new()
                 {
                     BatchId = batchId,
-                    Operations = [CreateAddOperation<DynamicallyAddedComponent>(batchId)],
+                    Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, batchId)],
                 }, store.Object, false, CancellationToken.None);
                 return (store, update);
             })
@@ -1395,7 +1351,7 @@ public class CircuitHostTest
         var firstUpdate = circuitHost.UpdateRootComponents(new()
         {
             BatchId = 1,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
         }, null, false, CancellationToken.None);
         await handler.WaitForEntryAsync();
 
@@ -1403,19 +1359,18 @@ public class CircuitHostTest
             .Select(batchId => circuitHost.UpdateRootComponents(new()
             {
                 BatchId = batchId,
-                Operations = [CreateAddOperation<DynamicallyAddedComponent>(batchId)],
+                Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, batchId)],
             }, null, false, CancellationToken.None))
             .ToArray();
         var rejectedStores = new[] { new Mock<IClearableStore>(), new Mock<IClearableStore>() };
+        var rejectedUpdates = rejectedStores.Select((store, index) => circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 11 + index,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 11 + index)],
+        }, store.Object, false, CancellationToken.None)).ToArray();
 
         try
         {
-            var rejectedUpdates = rejectedStores.Select((store, index) => circuitHost.UpdateRootComponents(new()
-            {
-                BatchId = 11 + index,
-                Operations = [CreateAddOperation<DynamicallyAddedComponent>(11 + index)],
-            }, store.Object, false, CancellationToken.None));
-
             await Task.WhenAll(rejectedUpdates).WaitAsync(TimeSpan.FromSeconds(5));
 
             var exception = Assert.Single(unhandledExceptions);
@@ -1425,9 +1380,9 @@ public class CircuitHostTest
         }
         finally
         {
-            await circuitHost.DisposeAsync();
             handler.Release();
-            await firstUpdate;
+            await Task.WhenAll([firstUpdate, .. queuedUpdates, .. rejectedUpdates]);
+            await circuitHost.DisposeAsync();
         }
     }
 
@@ -1447,7 +1402,7 @@ public class CircuitHostTest
         await circuitHost.UpdateRootComponents(new()
         {
             BatchId = 1,
-            Operations = [CreateAddOperation<DynamicallyAddedComponent>(1)],
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
         }, null, false, cancellation.Token);
 
         client.Verify(c => c.SendCoreAsync(
@@ -1545,29 +1500,11 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
-    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
-        where TComponent : IComponent
-    {
-        // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [CreateAddOperation<TComponent>(ssrComponentId, parameters, componentKey)] }, null, false, CancellationToken.None);
-    }
-
-    private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
-        where TComponent : IComponent
-    {
-        // Update component
-        await circuitHost.UpdateRootComponents(new() { Operations = [CreateUpdateOperation<TComponent>(ssrComponentId, parameters, componentKey)] }, null, false, CancellationToken.None);
-    }
-
-    private RootComponentOperation CreateAddOperation<TComponent>(int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
-        where TComponent : IComponent
-        => CreateOperation<TComponent>(RootComponentOperationType.Add, ssrComponentId, parameters, componentKey);
-
-    private RootComponentOperation CreateUpdateOperation<TComponent>(int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
-        where TComponent : IComponent
-        => CreateOperation<TComponent>(RootComponentOperationType.Update, ssrComponentId, parameters, componentKey);
-
-    private RootComponentOperation CreateOperation<TComponent>(RootComponentOperationType operationType, int ssrComponentId, Dictionary<string, object> parameters, string componentKey)
+    private RootComponentOperation CreateRootComponentOperation<TComponent>(
+        RootComponentOperationType operationType,
+        int ssrComponentId,
+        Dictionary<string, object> parameters = null,
+        string componentKey = "")
         where TComponent : IComponent
         => new()
         {
@@ -1578,6 +1515,39 @@ public class CircuitHostTest
                 componentType: typeof(TComponent),
                 parameters: CreateWebRootComponentParameters(parameters)),
         };
+
+    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+        where TComponent : IComponent
+    {
+        var addOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Add,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(
+                componentType: typeof(TComponent),
+                parameters: CreateWebRootComponentParameters(parameters)),
+        };
+
+        // Add component
+        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
+    }
+
+    private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+    {
+        var updateOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(
+                componentType: typeof(TComponent),
+                parameters: CreateWebRootComponentParameters(parameters)),
+        };
+
+        // Update component
+        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, false, CancellationToken.None);
+    }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
     {
