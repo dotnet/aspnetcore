@@ -276,6 +276,7 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        // FormDataMapper handles some converter failures at request time, so use the application's logger when one is available.
         var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
         var formDataMapperOptions = loggerFactory is null ? new FormDataMapperOptions() : new FormDataMapperOptions(loggerFactory);
 
@@ -2205,6 +2206,8 @@ public static partial class RequestDelegateFactory
             formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
         }
 
+        // Preserve the existing request-time behavior for other unsupported model shapes by eagerly validating only
+        // the ambiguous constructor case. Resolve the converter because an earlier converter factory may support the type.
         if (parameter.ParameterType.GetConstructors().Length > 1)
         {
             try
