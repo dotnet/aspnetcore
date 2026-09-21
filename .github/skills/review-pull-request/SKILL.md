@@ -117,7 +117,7 @@ PR evidence retrieval failures, including authentication/network errors, also re
 not empty reviews. Optional API criteria retain their disclosed limitation.
 
 Guidance and delegated policy excerpts are review criteria, not proof that the target repository
-already imposes the same contract. Read the frozen target source and authoritative documents
+already imposes the same contract. Read target source at `HEAD_SHA` and authoritative target documents
 at `BASE_SHA` before claiming a defect. Newer local conventions are not themselves defects in older
 code; do not substitute local criteria for target evidence.
 
@@ -271,7 +271,8 @@ task(
 Give every task a unique manifest-derived name. Dispatch initial workers in one turn when possible,
 otherwise use deterministic batches. Retrieve every result before synthesis; a spawn acknowledgement
 is not a result. Compare expected, launched, and returned names, dispatch missing rows, and begin
-Step 5 only when all rows are accounted for. If supported, expose workers only immutable GitHub reads.
+Step 5 only when all rows are accounted for. If supported, expose workers only immutable GitHub
+target-evidence reads and local `git show` criteria reads pinned to `LOCAL_SHA`.
 
 Report `subagent-per-topic` only when every row returned a usable independent result. If the task
 runtime is unavailable, work each topic yourself and report `single-orchestrator`; successive passes
