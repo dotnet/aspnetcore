@@ -134,13 +134,13 @@ public class BrowserFixture : IAsyncLifetime
 
         if (context?.StartsWith(RoutingTestContext, StringComparison.Ordinal) == true)
         {
-            // Enables WebDriver BiDi, which is required to allow the 'beforeunload' event
-            // to display an alert dialog. This is needed by some of our routing tests.
+            // Dismiss 'beforeunload' prompts to cancel external navigation in routing tests.
             // See: https://w3c.github.io/webdriver/#user-prompts
-            // We could consider making this the default for all tests when the BiDi spec
-            // becomes standard (it's in draft at the time of writing).
-            // See: https://w3c.github.io/webdriver-bidi/
             opts.UseWebSocketUrl = true;
+            opts.UnhandledPromptBehavior = new UserPromptHandler.PerPromptType
+            {
+                BeforeUnload = UnhandledPromptBehavior.Dismiss,
+            };
         }
 
         if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
