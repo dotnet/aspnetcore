@@ -229,7 +229,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // re-render afterwards anyway. It's not desirable to re-render twice.
         _totalMeasuredHeight = 0;
         _measuredItemCount = 0;
-        await RefreshDataCoreAsync(renderOnSuccess: false);
+        await RefreshDataCoreAsync(renderOnSuccess: false, prefetchForPotentialPrepend: true);
     }
 
     /// <summary>
@@ -930,10 +930,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return (int)Math.Min((long)maxItemCount + (long)OverscanCount * 2, int.MaxValue);
     }
 
-    private int GetItemsProviderRequestCount()
+    private int GetItemsProviderRequestCount(bool prefetchForPotentialPrepend)
     {
         var isAtLoadedTail = _itemCount > 0 && _itemsBefore + _visibleItemCapacity >= _itemCount;
-        var shouldPrefetchForPrepend = (AnchorMode & VirtualizeAnchorMode.Start) != 0 && CanDetectPrepend;
+        var shouldPrefetchForPrepend = prefetchForPotentialPrepend
+            && (AnchorMode & VirtualizeAnchorMode.Start) != 0
+            && CanDetectPrepend;
         if (_itemsProvider != DefaultItemsProvider
             && (shouldPrefetchForPrepend
                 || ((AnchorMode & VirtualizeAnchorMode.End) != 0 && isAtLoadedTail)))
@@ -990,10 +992,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    private ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
-        => RefreshDataCoreAsync(renderOnSuccess, CancellationToken.None);
+    private ValueTask RefreshDataCoreAsync(
+        bool renderOnSuccess,
+        bool prefetchForPotentialPrepend = false)
+        => RefreshDataCoreAsync(
+            renderOnSuccess,
+            CancellationToken.None,
+            prefetchForPotentialPrepend);
 
-    private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess, CancellationToken ownerCancellationToken)
+    private async ValueTask RefreshDataCoreAsync(
+        bool renderOnSuccess,
+        CancellationToken ownerCancellationToken,
+        bool prefetchForPotentialPrepend = false)
     {
         _refreshCts?.Cancel();
         CancellationTokenSource? refreshCts = null;
@@ -1017,7 +1027,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _loading = true;
         }
 
-        var request = new ItemsProviderRequest(_itemsBefore, GetItemsProviderRequestCount(), cancellationToken);
+        var request = new ItemsProviderRequest(
+            _itemsBefore,
+            GetItemsProviderRequestCount(prefetchForPotentialPrepend),
+            cancellationToken);
 
         try
         {
