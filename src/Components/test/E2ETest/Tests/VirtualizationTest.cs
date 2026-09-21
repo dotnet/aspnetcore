@@ -5996,10 +5996,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus($"Completed: {targetIndex}");
 
-        var actualTopRenderedIndex = GetTopRenderedIndex(js);
-        Browser.True(() => GetTopRenderedIndex(js) == targetIndex,
-            $"Top rendered item should be {targetIndex} but was {actualTopRenderedIndex} " +
-            $"(index delta: {actualTopRenderedIndex - targetIndex}), scrollTop={GetScrollTop(js, container)}");
+        long actualTopRenderedIndex = -1;
+        double scrollTop = -1;
+        try
+        {
+            Browser.True(() =>
+            {
+                actualTopRenderedIndex = GetTopRenderedIndex(js);
+                scrollTop = GetScrollTop(js, container);
+
+                return actualTopRenderedIndex == targetIndex;
+            });
+        }
+        catch (BrowserAssertFailedException ex)
+        {
+            throw new Exception(
+                $"Top rendered item should be {targetIndex} but was {actualTopRenderedIndex} " +
+                $"(index delta: {actualTopRenderedIndex - targetIndex}), scrollTop={scrollTop}.", ex);
+        }
     }
 
     [Theory]
