@@ -5836,7 +5836,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus($"Completed: {targetIndex}");
 
-        Browser.True(() => GetTopRenderedIndex(js) == targetIndex);
+        var actualTopRenderedIndex = GetTopRenderedIndex(js);
+        Browser.True(() => GetTopRenderedIndex(js) == targetIndex,
+            $"Top rendered item should be {targetIndex} but was {actualTopRenderedIndex} " +
+            $"(index delta: {actualTopRenderedIndex - targetIndex}), scrollTop={GetScrollTop(js, container)}");
     }
 
     [Theory]
