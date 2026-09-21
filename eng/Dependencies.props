@@ -256,6 +256,15 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <!-- Components.AI (Microsoft.Extensions.AI) -->
+    <LatestPackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
+    <!-- Components.AI dojo test assets (AG-UI protocol client and server) -->
+    <LatestPackageReference Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
+    <LatestPackageReference Include="AGUI.Client" Version="$(AGUIClientVersion)" />
+    <LatestPackageReference Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
+    <LatestPackageReference Include="AGUI.Server" Version="$(AGUIServerVersion)" />
     <!-- Components.Gateway OpenTelemetry + resilience dependencies -->
     <LatestPackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <LatestPackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
