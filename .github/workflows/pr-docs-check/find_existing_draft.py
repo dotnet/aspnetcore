@@ -15,7 +15,8 @@ def find_existing_draft(
     pulls: Any,
     source_repository: str,
     source_pr_number: int,
-    docs_repository: str,
+    target_repository: str,
+    head_repository: str,
     allowed_author: str,
 ) -> dict[str, Any]:
     if not isinstance(pulls, list):
@@ -35,6 +36,7 @@ def find_existing_draft(
             continue
         body = pull.get("body")
         base = pull.get("base")
+        base_repo = base.get("repo") if isinstance(base, dict) else None
         head = pull.get("head")
         head_repo = head.get("repo") if isinstance(head, dict) else None
         labels = pull.get("labels")
@@ -49,9 +51,11 @@ def find_existing_draft(
             and marker in body.splitlines()
             and isinstance(base, dict)
             and base.get("ref") == "main"
+            and isinstance(base_repo, dict)
+            and base_repo.get("full_name", "").lower() == target_repository.lower()
             and isinstance(head, dict)
             and isinstance(head_repo, dict)
-            and head_repo.get("full_name", "").lower() == docs_repository.lower()
+            and head_repo.get("full_name", "").lower() == head_repository.lower()
             and isinstance(head.get("ref"), str)
             and expected_branch.fullmatch(head["ref"])
             and "documentation" in label_names
@@ -93,7 +97,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--pull-requests", required=True, type=Path)
     parser.add_argument("--source-repository", required=True)
     parser.add_argument("--source-pr-number", required=True, type=int)
-    parser.add_argument("--docs-repository", required=True)
+    parser.add_argument("--target-repository", required=True)
+    parser.add_argument("--head-repository", required=True)
     parser.add_argument("--allowed-author", required=True)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
@@ -104,7 +109,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             pulls,
             args.source_repository,
             args.source_pr_number,
-            args.docs_repository,
+            args.target_repository,
+            args.head_repository,
             args.allowed_author,
         )
     except (FileNotFoundError, json.JSONDecodeError, DraftResolutionError) as error:

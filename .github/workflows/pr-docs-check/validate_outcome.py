@@ -12,7 +12,7 @@ class OutcomeValidationError(ValueError):
 
 
 DOCS_REPOSITORY = "dotnet/AspNetCore.Docs"
-DOCS_PR_AUTHOR = "aspnetcore-docs-bot[bot]"
+DOCS_HEAD_REPOSITORY = "dotnet/AspNetCore.Docs.Automation"
 DOCS_PR_URL = re.compile(r"^https://github\.com/dotnet/AspNetCore\.Docs/pull/([1-9][0-9]*)$")
 
 
@@ -54,6 +54,7 @@ def _validate_docs_pr(
     expected_number: int,
     source_repository: str,
     source_pr_number: int,
+    docs_pr_author: str,
 ) -> str:
     if not isinstance(metadata, dict):
         raise OutcomeValidationError("Docs PR metadata must be a JSON object.")
@@ -66,19 +67,27 @@ def _validate_docs_pr(
     if metadata.get("state") != "open" or metadata.get("draft") is not True:
         raise OutcomeValidationError("The documentation pull request must be open and draft.")
     base = metadata.get("base")
-    if not isinstance(base, dict) or base.get("ref") != "main":
-        raise OutcomeValidationError("The documentation pull request must target main.")
+    base_repo = base.get("repo") if isinstance(base, dict) else None
+    if (
+        not isinstance(base, dict)
+        or base.get("ref") != "main"
+        or not isinstance(base_repo, dict)
+        or str(base_repo.get("full_name", "")).lower() != DOCS_REPOSITORY.lower()
+    ):
+        raise OutcomeValidationError("The documentation pull request must target main in the configured docs repository.")
     head = metadata.get("head")
     head_repo = head.get("repo") if isinstance(head, dict) else None
-    if not isinstance(head_repo, dict) or str(head_repo.get("full_name", "")).lower() != DOCS_REPOSITORY.lower():
-        raise OutcomeValidationError("The documentation pull request head must belong to the configured docs repository.")
+    if not isinstance(head_repo, dict) or str(head_repo.get("full_name", "")).lower() != DOCS_HEAD_REPOSITORY.lower():
+        raise OutcomeValidationError("The documentation pull request head must belong to the configured automation fork.")
     if not isinstance(head.get("ref"), str) or re.fullmatch(
         rf"docs/aspnetcore-pr-{source_pr_number}(?:-[a-f0-9]+)?",
         head["ref"],
     ) is None:
         raise OutcomeValidationError(f"Unexpected documentation branch: {head.get('ref')!r}.")
     author = metadata.get("user")
-    if not isinstance(author, dict) or author.get("login") != DOCS_PR_AUTHOR:
+    if not docs_pr_author:
+        raise OutcomeValidationError("The configured documentation pull request author is missing.")
+    if not isinstance(author, dict) or author.get("login") != docs_pr_author:
         raise OutcomeValidationError("The documentation pull request must be owned by the configured automation identity.")
     title = metadata.get("title")
     if not isinstance(title, str) or not title.startswith("[docs] "):
@@ -105,6 +114,7 @@ def build_outcome(
     created_pr_url: str,
     docs_pr_metadata: Any | None,
     expected_existing_draft: Any | None = None,
+    docs_pr_author: str = "",
 ) -> dict[str, Any]:
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
@@ -229,6 +239,7 @@ def build_outcome(
         number,
         source_repository,
         source_pr_number,
+        docs_pr_author,
     )
     return canonical
 
@@ -335,6 +346,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--source-pr-number", required=True, type=int)
     parser.add_argument("--created-pr-url", default="")
     parser.add_argument("--docs-pr-metadata", type=Path)
+    parser.add_argument("--docs-pr-author", default="")
     parser.add_argument("--expected-existing-draft", type=Path)
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--output", type=Path)
@@ -362,6 +374,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.created_pr_url,
             metadata,
             expected_existing_draft,
+            args.docs_pr_author,
         )
     except OutcomeValidationError as error:
         if args.preflight:

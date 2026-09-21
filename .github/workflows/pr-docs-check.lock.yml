@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"241112ecdca68bb2a475a87bb51305051822bfa1be38d9a165ab8ffa411553b9","body_hash":"aeec3a50d55c023dda5347daddfd86f64db7bf4552f91567982f660166d40490","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"5e508589e03a7757a7e05b26e834292f5445bfb6","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch","update_pull_request"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"0b1e5c5f439ccfd02a38bcdcb26588ccfc5b7c223964a288818ea17171193052","body_hash":"56c95486d298ce3ac2ff75bedc8ba4aa01046f9912b4f60bd803927e071a3e91","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
+# gh-aw-manifest: {"version":1,"secrets":["ASPNETCORE_DOCS_BOT_PRIVATE_KEY","COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/create-github-app-token","sha":"bcd2ba49218906704ab6c1aa796996da409d3eb1","version":"v3.2.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"5e508589e03a7757a7e05b26e834292f5445bfb6","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch","update_pull_request"]}]}
 # This file was automatically generated by gh-aw (v0.88.7). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,9 +23,10 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
+# Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 #
 # Secrets used:
+#   - ASPNETCORE_DOCS_BOT_PRIVATE_KEY
 #   - COPILOT_GITHUB_TOKEN
 #   - GH_AW_CI_TRIGGER_TOKEN
 #   - GH_AW_DEFAULT_OTLP_HEADERS
@@ -37,6 +38,7 @@
 #   - actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
 #   - actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
 #   - actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#   - actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
@@ -476,6 +478,18 @@ jobs:
         run: bash "${RUNNER_TEMP}/gh-aw/actions/mask_otlp_headers.sh"
       - name: Check OTLP telemetry configuration
         run: bash "${RUNNER_TEMP}/gh-aw/actions/check_otlp_default_credentials.sh"
+      - name: Generate GitHub App token for checkout (0)
+        id: checkout-app-token-0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: AspNetCore.Docs
+          github-api-url: ${{ github.api_url }}
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -485,10 +499,10 @@ jobs:
         with:
           persist-credentials: false
           repository: dotnet/AspNetCore.Docs
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          token: ${{ steps.checkout-app-token-0.outputs.token }}
       - name: Fetch additional refs for dotnet/AspNetCore.Docs
         env:
-          GH_AW_FETCH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GH_AW_FETCH_TOKEN: ${{ steps.checkout-app-token-0.outputs.token }}
         run: |
           header=$(printf "x-access-token:%s" "${GH_AW_FETCH_TOKEN}" | base64 -w 0)
           git -c "http.extraheader=Authorization: Basic ${header}" fetch origin --depth=1 '+refs/heads/*:refs/remotes/origin/*'
@@ -499,7 +513,7 @@ jobs:
           GH_AW_CHECKOUT_MANIFEST_COUNT: "1"
           GH_AW_CHECKOUT_REPO_0: "dotnet/AspNetCore.Docs"
           GH_AW_CHECKOUT_PATH_0: ""
-          GH_AW_CHECKOUT_TOKEN_0: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GH_AW_CHECKOUT_TOKEN_0: ${{ steps.checkout-app-token-0.outputs.token }}
         with:
           script: |
             const path = require('path');
@@ -529,9 +543,9 @@ jobs:
           github.event.pull_request || github.event.issue.pull_request || github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.aw_context || '{}').item_type == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -546,6 +560,20 @@ jobs:
           GH_AW_COMPILED_VERSION: v0.88.7
       - name: Install AWF binary
         run: bash "${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh" v0.28.14 --rootless
+      - name: Generate GitHub App token
+        id: github-mcp-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: |-
+            aspnetcore
+            AspNetCore.Docs
+          github-api-url: ${{ github.api_url }}
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
@@ -589,13 +617,24 @@ jobs:
           persist-credentials: false
           sparse-checkout: .github/workflows/pr-docs-check
           sparse-checkout-cone-mode: false
+      - id: docs-bot-token
+        name: Mint ASP.NET Core docs bot token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          owner: dotnet
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          repositories: |
+            aspnetcore
+            AspNetCore.Docs
+            AspNetCore.Docs.Automation
       - env:
-          DOCS_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
+          GH_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
           SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
           SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
         name: Resolve source version and existing docs draft
-        run: "set -euo pipefail\ntrap 'rm -rf -- _workflow-source' EXIT\n\ncase \"${SOURCE_REPOSITORY}\" in\n  dotnet/aspnetcore) ;;\n  *)\n    echo \"ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}\" >&2\n    exit 1\n    ;;\nesac\nif ! [[ \"${SOURCE_PR_NUMBER}\" =~ ^[1-9][0-9]*$ ]]; then\n  echo \"ERROR: SOURCE_PR_NUMBER must be a positive integer.\" >&2\n  exit 1\nfi\n\nCONTEXT_DIR=/tmp/gh-aw/pr-docs-check\nmkdir -p \"${CONTEXT_DIR}\"\ngh api \"/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}\" \\\n  > \"${CONTEXT_DIR}/source-pr.json\"\ngh api --method GET --paginate --slurp \"/repos/dotnet/aspnetcore/branches?per_page=100\" \\\n  | jq '[.[][] | .name]' \\\n  > \"${CONTEXT_DIR}/source-branches.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/resolve_target_version.py \\\n  --policy _workflow-source/.github/workflows/pr-docs-check/version-policy.json \\\n  --pull-request \"${CONTEXT_DIR}/source-pr.json\" \\\n  --release-branches \"${CONTEXT_DIR}/source-branches.json\" \\\n  --output \"${CONTEXT_DIR}/target-version.json\"\n\nGH_TOKEN=\"${DOCS_GITHUB_TOKEN}\" gh api --method GET --paginate --slurp \\\n  \"/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100\" \\\n  | jq '[.[][]]' \\\n  > \"${CONTEXT_DIR}/open-docs-pulls.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \\\n  --pull-requests \"${CONTEXT_DIR}/open-docs-pulls.json\" \\\n  --source-repository \"${SOURCE_REPOSITORY}\" \\\n  --source-pr-number \"${SOURCE_PR_NUMBER}\" \\\n  --docs-repository dotnet/AspNetCore.Docs \\\n  --allowed-author 'aspnetcore-docs-bot[bot]' \\\n  --output \"${CONTEXT_DIR}/existing-draft.json\"\n\nif [ \"$(jq -r '.found' \"${CONTEXT_DIR}/existing-draft.json\")\" = \"true\" ]; then\n  HEAD_REF=\"$(jq -r '.selected.head_ref' \"${CONTEXT_DIR}/existing-draft.json\")\"\n  git fetch origin \"refs/heads/${HEAD_REF}:refs/remotes/origin/${HEAD_REF}\"\n  git checkout -B \"${HEAD_REF}\" \"refs/remotes/origin/${HEAD_REF}\"\nfi\n"
+        run: "set -euo pipefail\ntrap 'rm -rf -- _workflow-source' EXIT\n\ncase \"${SOURCE_REPOSITORY}\" in\n  dotnet/aspnetcore) ;;\n  *)\n    echo \"ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}\" >&2\n    exit 1\n    ;;\nesac\nif ! [[ \"${SOURCE_PR_NUMBER}\" =~ ^[1-9][0-9]*$ ]]; then\n  echo \"ERROR: SOURCE_PR_NUMBER must be a positive integer.\" >&2\n  exit 1\nfi\n\nCONTEXT_DIR=/tmp/gh-aw/pr-docs-check\nmkdir -p \"${CONTEXT_DIR}\"\ngh api \"/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}\" \\\n  > \"${CONTEXT_DIR}/source-pr.json\"\ngh api --method GET --paginate --slurp \"/repos/dotnet/aspnetcore/branches?per_page=100\" \\\n  | jq '[.[][] | .name]' \\\n  > \"${CONTEXT_DIR}/source-branches.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/resolve_target_version.py \\\n  --policy _workflow-source/.github/workflows/pr-docs-check/version-policy.json \\\n  --pull-request \"${CONTEXT_DIR}/source-pr.json\" \\\n  --release-branches \"${CONTEXT_DIR}/source-branches.json\" \\\n  --output \"${CONTEXT_DIR}/target-version.json\"\n\ngh api --method GET --paginate --slurp \\\n  \"/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100\" \\\n  | jq '[.[][]]' \\\n  > \"${CONTEXT_DIR}/open-docs-pulls.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \\\n  --pull-requests \"${CONTEXT_DIR}/open-docs-pulls.json\" \\\n  --source-repository \"${SOURCE_REPOSITORY}\" \\\n  --source-pr-number \"${SOURCE_PR_NUMBER}\" \\\n  --target-repository dotnet/AspNetCore.Docs \\\n  --head-repository dotnet/AspNetCore.Docs.Automation \\\n  --allowed-author \"${DOCS_BOT_APP_SLUG}[bot]\" \\\n  --output \"${CONTEXT_DIR}/existing-draft.json\"\n\nif [ \"$(jq -r '.found' \"${CONTEXT_DIR}/existing-draft.json\")\" = \"true\" ]; then\n  HEAD_REF=\"$(jq -r '.selected.head_ref' \"${CONTEXT_DIR}/existing-draft.json\")\"\n  git \\\n    -c credential.helper= \\\n    -c \"credential.helper=!gh auth git-credential\" \\\n    fetch --no-tags \\\n    \"https://github.com/dotnet/AspNetCore.Docs.Automation.git\" \\\n    \"+refs/heads/${HEAD_REF}:refs/remotes/automation/${HEAD_REF}\"\n  git checkout -B \"${HEAD_REF}\" \"refs/remotes/automation/${HEAD_REF}\"\nfi\n"
       - name: Preserve trusted draft context
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -616,7 +655,7 @@ jobs:
         env:
           GH_AW_FILE_ROOT: "${{ runner.temp }}/gh-aw"
           GH_AW_FILE_CONFIG: "{\"files\":[{\"path\":\"safeoutputs/config.json\",\"content_env\":\"GH_AW_SAFE_OUTPUTS_CONFIG\"}]}"
-          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"notify-source-pr\":{\"description\":\"Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.\\n\\nUse `result: \\\"restricted\\\"` when the source PR is excluded by the security-concern rules. Use `result: \\\"drafted\\\"` when documentation confidence is at least 60 and you either emitted `create_pull_request` or updated the one trusted existing draft. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: \\\"skipped\\\"` when confidence is below 60 and no docs PR was requested. Use `result: \\\"draft_failed\\\"` only when confidence is at least 60 but you could not request a docs PR operation.\\n\",\"inputs\":{\"breaking_change_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the breaking-change decision.\",\"required\":true,\"type\":\"string\"},\"breaking_change_required\":{\"default\":null,\"description\":\"Whether a compatibility-breaking change entry is required.\",\"required\":true,\"type\":\"boolean\"},\"conceptual_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the conceptual decision.\",\"required\":true,\"type\":\"string\"},\"conceptual_required\":{\"default\":null,\"description\":\"Whether durable conceptual documentation is required.\",\"required\":true,\"type\":\"boolean\"},\"docs_needed_confidence\":{\"default\":null,\"description\":\"Integer confidence from 0 through 100 that documentation is needed.\",\"required\":true,\"type\":\"number\"},\"docs_pr_action\":{\"default\":null,\"description\":\"One of: created, updated, none.\",\"required\":true,\"type\":\"string\"},\"existing_docs_pr_number\":{\"default\":null,\"description\":\"Existing docs PR number when docs_pr_action is updated.\",\"required\":false,\"type\":\"number\"},\"migration_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the migration decision.\",\"required\":true,\"type\":\"string\"},\"migration_required\":{\"default\":null,\"description\":\"Whether version-to-version migration guidance is required.\",\"required\":true,\"type\":\"boolean\"},\"result\":{\"default\":null,\"description\":\"One of: drafted, skipped, draft_failed, restricted.\",\"required\":true,\"type\":\"string\"},\"source_pr_number\":{\"default\":null,\"description\":\"Analyzed source pull request number.\",\"required\":true,\"type\":\"number\"},\"summary\":{\"default\":null,\"description\":\"A concise explanation of the overall decision.\",\"required\":true,\"type\":\"string\"}}},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"fallback_as_pull_request\":false,\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":true,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
+          GH_AW_SAFE_OUTPUTS_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"notify-source-pr\":{\"description\":\"Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.\\n\\nUse `result: \\\"restricted\\\"` when the source PR is excluded by the security-concern rules. Use `result: \\\"drafted\\\"` when documentation confidence is at least 60 and you either emitted `create_pull_request` or updated the one trusted existing draft. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: \\\"skipped\\\"` when confidence is below 60 and no docs PR was requested. Use `result: \\\"draft_failed\\\"` only when confidence is at least 60 but you could not request a docs PR operation.\\n\",\"inputs\":{\"breaking_change_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the breaking-change decision.\",\"required\":true,\"type\":\"string\"},\"breaking_change_required\":{\"default\":null,\"description\":\"Whether a compatibility-breaking change entry is required.\",\"required\":true,\"type\":\"boolean\"},\"conceptual_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the conceptual decision.\",\"required\":true,\"type\":\"string\"},\"conceptual_required\":{\"default\":null,\"description\":\"Whether durable conceptual documentation is required.\",\"required\":true,\"type\":\"boolean\"},\"docs_needed_confidence\":{\"default\":null,\"description\":\"Integer confidence from 0 through 100 that documentation is needed.\",\"required\":true,\"type\":\"number\"},\"docs_pr_action\":{\"default\":null,\"description\":\"One of: created, updated, none.\",\"required\":true,\"type\":\"string\"},\"existing_docs_pr_number\":{\"default\":null,\"description\":\"Existing docs PR number when docs_pr_action is updated.\",\"required\":false,\"type\":\"number\"},\"migration_reason\":{\"default\":null,\"description\":\"Short evidence-based reason for the migration decision.\",\"required\":true,\"type\":\"string\"},\"migration_required\":{\"default\":null,\"description\":\"Whether version-to-version migration guidance is required.\",\"required\":true,\"type\":\"boolean\"},\"result\":{\"default\":null,\"description\":\"One of: drafted, skipped, draft_failed, restricted.\",\"required\":true,\"type\":\"string\"},\"source_pr_number\":{\"default\":null,\"description\":\"Analyzed source pull request number.\",\"required\":true,\"type\":\"number\"},\"summary\":{\"default\":null,\"description\":\"A concise explanation of the overall decision.\",\"required\":true,\"type\":\"string\"}}},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":true,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
         with:
           script: |
             const path = require('path');
@@ -634,7 +673,16 @@ jobs:
                 "push_to_pull_request_branch": " CONSTRAINTS: The target pull request title must start with \"[docs] \".",
                 "update_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be updated. Target: *. Only PRs with labels [documentation] can be updated. Only PRs with title prefix \"[docs] \" can be updated."
               },
-              "repo_params": {},
+              "repo_params": {
+                "create_pull_request": {
+                  "description": "Target repository for this operation in 'owner/repo' format. Default is \"dotnet/AspNetCore.Docs\". Must be the target-repo or in the allowed-repos list.",
+                  "type": "string"
+                },
+                "push_to_pull_request_branch": {
+                  "description": "Target repository for this operation in 'owner/repo' format. Default is \"dotnet/AspNetCore.Docs\". Must be the target-repo or in the allowed-repos list.",
+                  "type": "string"
+                }
+              },
               "dynamic_tools": [
                 {
                   "description": "Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.\n\nUse `result: \"restricted\"` when the source PR is excluded by the security-concern rules. Use `result: \"drafted\"` when documentation confidence is at least 60 and you either emitted `create_pull_request` or updated the one trusted existing draft. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: \"skipped\"` when confidence is below 60 and no docs PR was requested. Use `result: \"draft_failed\"` only when confidence is at least 60 but you could not request a docs PR operation.\n",
@@ -1049,7 +1097,7 @@ jobs:
         run: bash "${RUNNER_TEMP}/gh-aw/actions/audit_pre_agent_workspace.sh"
       - name: Start CLI Proxy
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
           GH_HOST: ${{ env.GH_HOST }}
@@ -1169,7 +1217,7 @@ jobs:
           GITHUB_AW: true
           GITHUB_COPILOT_INTEGRATION_ID: agentic-workflows
           GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ steps.github-mcp-app-token.outputs.token }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
@@ -1231,7 +1279,8 @@ jobs:
             const { main } = require(path.join(actionsDir, 'redact_secrets.cjs'));
             await main();
         env:
-          GH_AW_SECRET_NAMES: 'COPILOT_GITHUB_TOKEN,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
+          GH_AW_SECRET_NAMES: 'ASPNETCORE_DOCS_BOT_PRIVATE_KEY,COPILOT_GITHUB_TOKEN,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
+          SECRET_ASPNETCORE_DOCS_BOT_PRIVATE_KEY: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
           SECRET_COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           SECRET_GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
           SECRET_GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
@@ -1420,6 +1469,18 @@ jobs:
           GH_AW_INFO_VERSION: "1.0.80"
           GH_AW_INFO_AWF_VERSION: "v0.28.14"
           GH_AW_INFO_ENGINE_ID: "copilot"
+      - name: Generate GitHub App token
+        id: safe-outputs-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: AspNetCore.Docs
+          github-api-url: ${{ github.api_url }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
@@ -1534,7 +1595,7 @@ jobs:
           GH_AW_AMBIENT_CONTEXT: ${{ needs.agent.outputs.ambient_context }}
           GH_AW_WORKFLOW_ID: "pr-docs-check"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1553,7 +1614,7 @@ jobs:
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1570,7 +1631,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "PR Documentation Check"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pr-docs-check.md"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1587,7 +1648,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "PR Documentation Check"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pr-docs-check.md"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1629,6 +1690,8 @@ jobs:
           GH_AW_ENGINE_API_HOSTS: "api.enterprise.githubcopilot.com,api.githubcopilot.com,api.business.githubcopilot.com,api.individual.githubcopilot.com"
           GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
           GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
+          GH_AW_SAFE_OUTPUTS_APP_TOKEN_MINTING_FAILED: ${{ needs.safe_outputs.outputs.app_token_minting_failed }}
+          GH_AW_CONCLUSION_APP_TOKEN_MINTING_FAILED: ${{ steps.safe-outputs-app-token.outcome == 'failure' }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_OAUTH_TOKEN_CHECK_FAILED: ${{ needs.activation.outputs.oauth_token_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
@@ -1641,7 +1704,7 @@ jobs:
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
           GH_AW_TIMEOUT_MINUTES: "20"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1660,7 +1723,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_REPORT_FAILED_JOBS: "true"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1764,7 +1827,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "PR Documentation Check"
-          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
+          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
           GH_AW_DETECTION_SKIP_PROMPT_SUMMARY: "true"
@@ -1832,7 +1895,7 @@ jobs:
           RUNNER_TEMP: ${{ runner.temp }}
           TRACEPARENT: ${{ env.GITHUB_AW_OTEL_TRACE_ID != '' && env.GITHUB_AW_OTEL_PARENT_SPAN_ID != '' && format('00-{0}-{1}-01', env.GITHUB_AW_OTEL_TRACE_ID, env.GITHUB_AW_OTEL_PARENT_SPAN_ID) || '' }}
           WORKFLOW_NAME: "PR Documentation Check"
-          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
+          WORKFLOW_DESCRIPTION: "Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
         run: |
@@ -1965,6 +2028,18 @@ jobs:
         with:
           name: pr-docs-check-context-${{ github.run_attempt }}
           path: ${{ runner.temp }}/pr-docs-check-context
+      - name: Mint ASP.NET Core docs bot token
+        id: docs-bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          owner: dotnet
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          repositories: |
+            aspnetcore
+            AspNetCore.Docs
       - name: Read resulting docs pull request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -1972,7 +2047,7 @@ jobs:
           DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.docs-bot-token.outputs.token }}
           script: |
             const fs = require('fs');
 
@@ -2013,9 +2088,10 @@ jobs:
 
             fs.writeFileSync(process.env.DOCS_PR_METADATA_PATH, JSON.stringify(metadata));
       - name: Prepare trusted documentation outcome
-        run: python3 _validator/.github/workflows/pr-docs-check/validate_outcome.py --agent-output "${GH_AW_AGENT_OUTPUT}" --source-repository "${EXPECTED_SOURCE_REPOSITORY}" --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}" --created-pr-url "${CREATED_DOCS_PR_URL}" --docs-pr-metadata "${DOCS_PR_METADATA_PATH}" --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json" --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
+        run: python3 _validator/.github/workflows/pr-docs-check/validate_outcome.py --agent-output "${GH_AW_AGENT_OUTPUT}" --source-repository "${EXPECTED_SOURCE_REPOSITORY}" --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}" --created-pr-url "${CREATED_DOCS_PR_URL}" --docs-pr-metadata "${DOCS_PR_METADATA_PATH}" --docs-pr-author "${DOCS_BOT_APP_SLUG}[bot]" --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json" --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
         env:
           CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
+          DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
           DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
           EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
           EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
@@ -2028,7 +2104,7 @@ jobs:
           EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.docs-bot-token.outputs.token }}
           script: |
             const fs = require('fs');
 
@@ -2240,6 +2316,7 @@ jobs:
       GH_AW_WORKFLOW_NAME: "PR Documentation Check"
       GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pr-docs-check.md"
     outputs:
+      app_token_minting_failed: ${{ steps.safe-outputs-app-token.outcome == 'failure' }}
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
@@ -2298,23 +2375,57 @@ jobs:
         with:
           name: agent
           path: /tmp/gh-aw/
+      - name: Generate GitHub App token
+        id: safe-outputs-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: AspNetCore.Docs
+          github-api-url: ${{ github.api_url }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+      - name: Generate GitHub App head token
+        id: safe-outputs-head-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: AspNetCore.Docs.Automation
+          github-api-url: ${{ github.api_url }}
+      - name: Generate GitHub App token for checkout (0)
+        if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') || (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
+        id: checkout-app-token-0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+          owner: dotnet
+          repositories: AspNetCore.Docs
+          github-api-url: ${{ github.api_url }}
+          permission-contents: read
+          permission-issues: read
+          permission-pull-requests: read
       - name: Checkout repository
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') || (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: true
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Checkout dotnet/AspNetCore.Docs
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') || (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: true
           repository: dotnet/AspNetCore.Docs
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          token: ${{ steps.checkout-app-token-0.outputs.token }}
       - name: Fetch additional refs for dotnet/AspNetCore.Docs
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') || (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         env:
-          GH_AW_FETCH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GH_AW_FETCH_TOKEN: ${{ steps.checkout-app-token-0.outputs.token }}
         run: |
           header=$(printf "x-access-token:%s" "${GH_AW_FETCH_TOKEN}" | base64 -w 0)
           git -c "http.extraheader=Authorization: Basic ${header}" fetch origin --depth=1 '+refs/heads/*:refs/remotes/origin/*'
@@ -2323,7 +2434,7 @@ jobs:
         env:
           GITHUB_REPOSITORY: dotnet/AspNetCore.Docs
           GITHUB_SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GIT_TOKEN: ${{ steps.safe-outputs-app-token.outputs.token }}
         run: bash "${RUNNER_TEMP}/gh-aw/actions/configure_git_credentials.sh"
       - name: Configure GH_HOST for enterprise compatibility
         id: ghes-host-config
@@ -2362,11 +2473,11 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
           GH_AW_SAFE_OUTPUT_JOBS: "{\"notify_source_pr\":\"\"}"
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"fallback_as_pull_request\":false,\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":true,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"allowed_branches\":[\"docs/aspnetcore-pr-*\"],\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"auto_close_issue\":false,\"base_branch\":\"main\",\"draft\":true,\"fallback_as_issue\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"labels\":[\"documentation\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":4096,\"preserve_branch_name\":true,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"push_to_pull_request_branch\":{\"allowed_files\":[\"aspnetcore/**\"],\"allowed_repos\":[\"dotnet/AspNetCore.Docs\",\"dotnet/AspNetCore.Docs.Automation\"],\"check_branch_protection\":false,\"fallback_as_pull_request\":false,\"head-github-token\":\"${{ steps.safe-outputs-head-app-token.outputs.token }}\",\"head-repo\":\"dotnet/AspNetCore.Docs.Automation\",\"if_no_changes\":\"warn\",\"max_patch_size\":4096,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\"],\"protected_files_policy\":\"blocked\",\"required_labels\":[\"documentation\"],\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"title_prefix\":\"[docs] \"},\"report_incomplete\":{},\"update_pull_request\":{\"allow_body\":true,\"allow_title\":true,\"max\":1,\"required_labels\":[\"documentation\"],\"required_title_prefix\":\"[docs] \",\"target\":\"*\",\"target-repo\":\"dotnet/AspNetCore.Docs\",\"update_branch\":false,\"update_branch_stacks\":true}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.safe-outputs-app-token.outputs.token }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+          github-token: ${{ steps.safe-outputs-app-token.outputs.token }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');

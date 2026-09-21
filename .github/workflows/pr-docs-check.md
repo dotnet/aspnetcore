@@ -2,7 +2,7 @@
 name: "PR Documentation Check"
 
 description: >
-  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
+  Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 
 max-turns: 100
 
@@ -44,7 +44,11 @@ engine:
 checkout:
   - repository: dotnet/AspNetCore.Docs
     path: .
-    github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+    github-app:
+      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+      owner: dotnet
+      repositories: ["AspNetCore.Docs"]
     fetch: ["*"]
     current: true
 
@@ -52,7 +56,11 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos, issues, pull_requests]
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-app:
+      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+      owner: dotnet
+      repositories: ["aspnetcore", "AspNetCore.Docs"]
     min-integrity: merged
     allowed-repos:
       - dotnet/aspnetcore
@@ -64,7 +72,11 @@ network:
     - github
 
 safe-outputs:
-  github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+  github-app:
+    client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+    private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+    owner: dotnet
+    repositories: ["AspNetCore.Docs"]
   report-failure-as-issue: false
   noop:
     report-as-issue: false
@@ -95,6 +107,15 @@ safe-outputs:
         --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
   create-pull-request:
     target-repo: "dotnet/AspNetCore.Docs"
+    head-repo: "dotnet/AspNetCore.Docs.Automation"
+    allowed-repos:
+      - "dotnet/AspNetCore.Docs"
+      - "dotnet/AspNetCore.Docs.Automation"
+    head-github-app:
+      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+      owner: dotnet
+      repositories: ["AspNetCore.Docs.Automation"]
     base-branch: main
     title-prefix: "[docs] "
     labels: [documentation]
@@ -110,9 +131,19 @@ safe-outputs:
   push-to-pull-request-branch:
     target: "*"
     target-repo: "dotnet/AspNetCore.Docs"
+    head-repo: "dotnet/AspNetCore.Docs.Automation"
+    allowed-repos:
+      - "dotnet/AspNetCore.Docs"
+      - "dotnet/AspNetCore.Docs.Automation"
+    head-github-app:
+      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+      owner: dotnet
+      repositories: ["AspNetCore.Docs.Automation"]
     required-title-prefix: "[docs] "
     required-labels: [documentation]
     fallback-as-pull-request: false
+    check-branch-protection: false
     allowed-files:
       - "aspnetcore/**"
     protected-files: blocked
@@ -194,13 +225,23 @@ safe-outputs:
           with:
             name: pr-docs-check-context-${{ github.run_attempt }}
             path: ${{ runner.temp }}/pr-docs-check-context
+        - name: Mint ASP.NET Core docs bot token
+          id: docs-bot-token
+          uses: actions/create-github-app-token@v3.2.0
+          with:
+            client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+            private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+            owner: dotnet
+            repositories: |
+              aspnetcore
+              AspNetCore.Docs
         - name: Read resulting docs pull request
           uses: actions/github-script@v9.0.0
           env:
             CREATED_DOCS_PR_URL: ${{ needs.safe_outputs.outputs.created_pr_url }}
             DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
           with:
-            github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+            github-token: ${{ steps.docs-bot-token.outputs.token }}
             script: |
               const fs = require('fs');
 
@@ -246,6 +287,7 @@ safe-outputs:
             DOCS_PR_METADATA_PATH: ${{ runner.temp }}/pr-docs-check-docs-pr.json
             EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+            DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
           run: >-
             python3 _validator/.github/workflows/pr-docs-check/validate_outcome.py
             --agent-output "${GH_AW_AGENT_OUTPUT}"
@@ -253,6 +295,7 @@ safe-outputs:
             --source-pr-number "${EXPECTED_SOURCE_PR_NUMBER}"
             --created-pr-url "${CREATED_DOCS_PR_URL}"
             --docs-pr-metadata "${DOCS_PR_METADATA_PATH}"
+            --docs-pr-author "${DOCS_BOT_APP_SLUG}[bot]"
             --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
             --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
         - name: Publish trusted documentation outcome
@@ -262,7 +305,7 @@ safe-outputs:
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
             CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
           with:
-            github-token: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+            github-token: ${{ steps.docs-bot-token.outputs.token }}
             script: |
               const fs = require('fs');
 
@@ -416,10 +459,21 @@ pre-agent-steps:
       path: _workflow-source
       sparse-checkout: .github/workflows/pr-docs-check
       sparse-checkout-cone-mode: false
+  - name: Mint ASP.NET Core docs bot token
+    id: docs-bot-token
+    uses: actions/create-github-app-token@v3.2.0
+    with:
+      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
+      owner: dotnet
+      repositories: |
+        aspnetcore
+        AspNetCore.Docs
+        AspNetCore.Docs.Automation
   - name: Resolve source version and existing docs draft
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      DOCS_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+      GH_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
+      DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
       SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
       SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
     run: |
@@ -451,7 +505,7 @@ pre-agent-steps:
         --release-branches "${CONTEXT_DIR}/source-branches.json" \
         --output "${CONTEXT_DIR}/target-version.json"
 
-      GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api --method GET --paginate --slurp \
+      gh api --method GET --paginate --slurp \
         "/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
         | jq '[.[][]]' \
         > "${CONTEXT_DIR}/open-docs-pulls.json"
@@ -459,14 +513,20 @@ pre-agent-steps:
         --pull-requests "${CONTEXT_DIR}/open-docs-pulls.json" \
         --source-repository "${SOURCE_REPOSITORY}" \
         --source-pr-number "${SOURCE_PR_NUMBER}" \
-        --docs-repository dotnet/AspNetCore.Docs \
-        --allowed-author 'aspnetcore-docs-bot[bot]' \
+        --target-repository dotnet/AspNetCore.Docs \
+        --head-repository dotnet/AspNetCore.Docs.Automation \
+        --allowed-author "${DOCS_BOT_APP_SLUG}[bot]" \
         --output "${CONTEXT_DIR}/existing-draft.json"
 
       if [ "$(jq -r '.found' "${CONTEXT_DIR}/existing-draft.json")" = "true" ]; then
         HEAD_REF="$(jq -r '.selected.head_ref' "${CONTEXT_DIR}/existing-draft.json")"
-        git fetch origin "refs/heads/${HEAD_REF}:refs/remotes/origin/${HEAD_REF}"
-        git checkout -B "${HEAD_REF}" "refs/remotes/origin/${HEAD_REF}"
+        git \
+          -c credential.helper= \
+          -c "credential.helper=!gh auth git-credential" \
+          fetch --no-tags \
+          "https://github.com/dotnet/AspNetCore.Docs.Automation.git" \
+          "+refs/heads/${HEAD_REF}:refs/remotes/automation/${HEAD_REF}"
+        git checkout -B "${HEAD_REF}" "refs/remotes/automation/${HEAD_REF}"
       fi
   - name: Preserve trusted draft context
     uses: actions/upload-artifact@v7.0.1
@@ -483,7 +543,7 @@ timeout-minutes: 20
 
 Analyze pull request #${{ inputs.pr_number }} in `${{ inputs.source_repository }}` and decide whether it requires an update to the ASP.NET Core documentation in the current workspace, `dotnet/AspNetCore.Docs`.
 
-This workflow is manually dispatched. Do not modify `dotnet/aspnetcore` directly. Before analysis, trusted pre-agent steps resolve the source version and search for an existing automated documentation draft. Your only permitted visible outcomes are:
+This workflow is manually dispatched. Do not modify `dotnet/aspnetcore` or push directly to `dotnet/AspNetCore.Docs`. Before analysis, trusted pre-agent steps resolve the source version and search for an existing automated documentation draft. Trusted safe outputs push documentation branches to `dotnet/AspNetCore.Docs.Automation` and open or update draft pull requests against `dotnet/AspNetCore.Docs`. Your only permitted visible outcomes are:
 
 1. When documentation confidence is at least 60%, one new or updated draft pull request in `dotnet/AspNetCore.Docs` and one `notify_source_pr` result.
 2. When documentation confidence is below 60%, one `noop` result and one `notify_source_pr` result explaining why no documentation PR was created.
@@ -656,7 +716,7 @@ When an existing draft was found, the trusted pre-agent step has checked out its
 2. Emit `update_pull_request` exactly once for the same number, replacing its title with `[docs] ` followed by the current concise title and replacing its body with the same body structure required above.
 3. Emit `notify_source_pr` exactly once with `result: "drafted"`, `docs_pr_action: "updated"`, `existing_docs_pr_number` set to the selected number, the confidence score, all three surface decisions and reasons, and a concise summary.
 
-The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main`, belongs to `dotnet/AspNetCore.Docs`, has the required title prefix and label, carries the exact source marker, and is owned by `aspnetcore-docs-bot[bot]`. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
+The trusted notification job independently verifies that the resulting pull request is open, draft, targets `main` in `dotnet/AspNetCore.Docs`, uses a head branch in `dotnet/AspNetCore.Docs.Automation`, has the required title prefix and label, carries the exact source marker, and is owned by the configured GitHub App bot. It obtains the source PR author directly from GitHub and creates or refreshes one author-notification comment on the docs PR.
 
 If confidence is below 60, make no file changes and emit `noop` exactly once with:
 

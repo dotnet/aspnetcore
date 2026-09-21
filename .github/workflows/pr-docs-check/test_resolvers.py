@@ -72,6 +72,7 @@ class FindExistingDraftTests(unittest.TestCase):
             "dotnet/aspnetcore",
             42,
             "dotnet/AspNetCore.Docs",
+            "dotnet/AspNetCore.Docs.Automation",
             "aspnetcore-docs-bot[bot]",
         )
 
@@ -90,6 +91,7 @@ class FindExistingDraftTests(unittest.TestCase):
             "dotnet/aspnetcore",
             42,
             "dotnet/AspNetCore.Docs",
+            "dotnet/AspNetCore.Docs.Automation",
             "aspnetcore-docs-bot[bot]",
         )
 
@@ -102,6 +104,35 @@ class FindExistingDraftTests(unittest.TestCase):
             "dotnet/aspnetcore",
             42,
             "dotnet/AspNetCore.Docs",
+            "dotnet/AspNetCore.Docs.Automation",
+            "aspnetcore-docs-bot[bot]",
+        )
+
+        self.assertFalse(result["found"])
+        self.assertFalse(result["blocked"])
+
+    def test_ignores_same_repository_and_other_fork_heads(self):
+        pulls = [
+            self._pull(
+                1,
+                "2026-01-01T00:00:00Z",
+                "docs/aspnetcore-pr-42",
+                head_repo="dotnet/AspNetCore.Docs",
+            ),
+            self._pull(
+                2,
+                "2026-01-01T00:00:00Z",
+                "docs/aspnetcore-pr-42",
+                head_repo="someone/AspNetCore.Docs",
+            ),
+        ]
+
+        result = find_existing_draft(
+            pulls,
+            "dotnet/aspnetcore",
+            42,
+            "dotnet/AspNetCore.Docs",
+            "dotnet/AspNetCore.Docs.Automation",
             "aspnetcore-docs-bot[bot]",
         )
 
@@ -115,7 +146,7 @@ class FindExistingDraftTests(unittest.TestCase):
         head_ref,
         *,
         draft=True,
-        head_repo="dotnet/AspNetCore.Docs",
+        head_repo="dotnet/AspNetCore.Docs.Automation",
     ):
         return {
             "number": number,
@@ -124,7 +155,10 @@ class FindExistingDraftTests(unittest.TestCase):
             "draft": draft,
             "updated_at": updated_at,
             "body": "Source: dotnet/aspnetcore#42\n\nDetails",
-            "base": {"ref": "main"},
+            "base": {
+                "ref": "main",
+                "repo": {"full_name": "dotnet/AspNetCore.Docs"},
+            },
             "head": {"ref": head_ref, "repo": {"full_name": head_repo}},
             "user": {"login": "aspnetcore-docs-bot[bot]"},
             "labels": [{"name": "documentation"}],

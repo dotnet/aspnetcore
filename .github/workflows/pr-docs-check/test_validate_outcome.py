@@ -21,6 +21,7 @@ class ValidateOutcomeTests(unittest.TestCase):
             "https://github.com/dotnet/AspNetCore.Docs/pull/9",
             self._metadata(9, "docs/aspnetcore-pr-42"),
             {"found": False, "blocked": False},
+            "aspnetcore-docs-bot[bot]",
         )
 
         self.assertEqual("drafted", result["render_kind"])
@@ -46,6 +47,7 @@ class ValidateOutcomeTests(unittest.TestCase):
                 "blocked": False,
                 "selected": {"number": 9},
             },
+            "aspnetcore-docs-bot[bot]",
         )
 
         self.assertEqual("updated", result["docs_pr_action"])
@@ -100,6 +102,46 @@ class ValidateOutcomeTests(unittest.TestCase):
                     "blocked": False,
                     "selected": {"number": 9},
                 },
+            )
+
+    def test_rejects_wrong_head_repository(self):
+        payload = self._payload(
+            "drafted",
+            "created",
+            {"type": "create_pull_request", "branch": "docs/aspnetcore-pr-42"},
+        )
+        metadata = self._metadata(9, "docs/aspnetcore-pr-42")
+        metadata["head"]["repo"]["full_name"] = "dotnet/AspNetCore.Docs"
+
+        with self.assertRaisesRegex(OutcomeValidationError, "automation fork"):
+            build_outcome(
+                payload,
+                "dotnet/aspnetcore",
+                42,
+                "https://github.com/dotnet/AspNetCore.Docs/pull/9",
+                metadata,
+                {"found": False, "blocked": False},
+                "aspnetcore-docs-bot[bot]",
+            )
+
+    def test_rejects_wrong_base_repository(self):
+        payload = self._payload(
+            "drafted",
+            "created",
+            {"type": "create_pull_request", "branch": "docs/aspnetcore-pr-42"},
+        )
+        metadata = self._metadata(9, "docs/aspnetcore-pr-42")
+        metadata["base"]["repo"]["full_name"] = "someone/AspNetCore.Docs"
+
+        with self.assertRaisesRegex(OutcomeValidationError, "configured docs repository"):
+            build_outcome(
+                payload,
+                "dotnet/aspnetcore",
+                42,
+                "https://github.com/dotnet/AspNetCore.Docs/pull/9",
+                metadata,
+                {"found": False, "blocked": False},
+                "aspnetcore-docs-bot[bot]",
             )
 
     def test_preflight_validation_error_returns_failure(self):
@@ -165,10 +207,13 @@ class ValidateOutcomeTests(unittest.TestCase):
             "draft": True,
             "title": "[docs] Update docs",
             "body": "Source: dotnet/aspnetcore#42\n\nDetails",
-            "base": {"ref": "main"},
+            "base": {
+                "ref": "main",
+                "repo": {"full_name": "dotnet/AspNetCore.Docs"},
+            },
             "head": {
                 "ref": head_ref,
-                "repo": {"full_name": "dotnet/AspNetCore.Docs"},
+                "repo": {"full_name": "dotnet/AspNetCore.Docs.Automation"},
             },
             "user": {"login": "aspnetcore-docs-bot[bot]"},
             "labels": [{"name": "documentation"}],
