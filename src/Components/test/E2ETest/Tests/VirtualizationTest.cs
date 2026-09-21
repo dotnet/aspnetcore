@@ -5991,12 +5991,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         container.SendKeys(Keys.End);
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0);
+        WaitForRenderToSettle(container, js);
 
         SetScrollTargetIndex(targetIndex);
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus($"Completed: {targetIndex}");
 
-        Browser.True(() => GetTopRenderedIndex(js) == targetIndex);
+        Browser.True(() => GetTopRenderedIndex(js) == targetIndex,
+            $"Top rendered item should be {targetIndex} but was {GetTopRenderedIndex(js)} " +
+            $"(index delta: {GetTopRenderedIndex(js) - targetIndex}), scrollTop={GetScrollTop(js, container)}.");
     }
 
     [Theory]
