@@ -1106,6 +1106,48 @@ public class VirtualizeTest
         Assert.Equal(1, singlePassEnumerationCount);
     }
 
+    [Theory]
+    [InlineData(false, 130)]
+    [InlineData(true, 140)]
+    public async Task Virtualize_ItemsProvider_GrowthWhileWindowMovesPastPreviousFirstItem_DistinguishesPrependFromAppend(
+        bool prepend,
+        int expectedItemsBefore)
+    {
+        var items = Enumerable.Range(0, 200).ToList();
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+            => ValueTask.FromResult(new ItemsProviderResult<int>(
+                items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+                items.Count));
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            items.Count,
+            provider,
+            item => builder => builder.AddContent(0, item));
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((100 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+
+        if (prepend)
+        {
+            items.InsertRange(0, Enumerable.Range(-10, 10));
+        }
+        else
+        {
+            items.AddRange(Enumerable.Range(200, 10));
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((130 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+
+        Assert.Equal(expectedItemsBefore, virtualize._itemsBefore);
+    }
+
     [Fact]
     public async Task Virtualize_DefaultProvider_ValueTypeItem_AppendDoesNotAssumePrepend()
     {

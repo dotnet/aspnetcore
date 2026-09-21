@@ -52,6 +52,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _previousFirstLoadedItemIndex = -1;
 
+    private TItem? _previousLastLoadedItem;
+
+    private int _previousLastLoadedItemIndex = -1;
+
     private bool CanDetectPrepend => _previousFirstLoadedItem is not null;
 
     private CancellationTokenSource? _refreshCts;
@@ -602,6 +606,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     _previousFirstLoadedItemIndex = renderIndex;
                     isFirstRenderedItem = false;
                 }
+
+                if (_itemsProvider != DefaultItemsProvider)
+                {
+                    _previousLastLoadedItem = item;
+                    _previousLastLoadedItemIndex = renderIndex + _lastRenderedItemCount - 1;
+                }
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -1057,12 +1067,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 var items = result.Items as IReadOnlyList<TItem> ?? result.Items.ToList();
                 result = new ItemsProviderResult<TItem>(items, result.TotalItemCount);
 
-                // Compare the same global item index across provider windows. During scrolling,
-                // the first item in the new window is not comparable to the previously rendered first item.
+                // Compare the same global item index across provider windows. If scrolling moved
+                // past the previous first item, use the previous last item when the windows overlap.
+                var comparisonItem = _previousFirstLoadedItem;
                 var comparisonItemOffset = _previousFirstLoadedItemIndex - request.StartIndex;
+                if (comparisonItemOffset < 0 || comparisonItemOffset >= items.Count)
+                {
+                    comparisonItem = _previousLastLoadedItem;
+                    comparisonItemOffset = _previousLastLoadedItemIndex - request.StartIndex;
+                }
+
                 var hasComparableItem = comparisonItemOffset >= 0 && comparisonItemOffset < items.Count;
 
-                if (hasComparableItem && !ItemComparer.Equals(_previousFirstLoadedItem, items[comparisonItemOffset]))
+                if (hasComparableItem && !ItemComparer.Equals(comparisonItem, items[comparisonItemOffset]))
                 {
                     if (!await ShouldFollowPrependedHeadAsync())
                     {
