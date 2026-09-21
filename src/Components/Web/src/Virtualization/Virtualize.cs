@@ -92,7 +92,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // so the viewport stays stable after a prepend or append.
     private bool _pendingAnchorRestore;
 
-    private bool _deferPrependAnchorClear;
+    private bool _deferAnchorRestoreClear;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -496,7 +496,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             var deferAnchorRestoreClear = shouldRestore
                 && (AnchorMode == VirtualizeAnchorMode.None
                     || AnchorMode == VirtualizeAnchorMode.End
-                    || ((AnchorMode & VirtualizeAnchorMode.Start) != 0 && _deferPrependAnchorClear));
+                    || ((AnchorMode & VirtualizeAnchorMode.Start) != 0 && _deferAnchorRestoreClear));
             if (!deferAnchorRestoreClear)
             {
                 _pendingAnchorRestore = false;
@@ -508,7 +508,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
 
             _pendingAnchorRestore = false;
-            _deferPrependAnchorClear = false;
+            _deferAnchorRestoreClear = false;
 
             await _jsInterop.RefreshObserversAsync(_loading);
         }
@@ -1070,6 +1070,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                 {
                     _pendingAnchorRestore = true;
+                    _deferAnchorRestoreClear = true;
                 }
                 else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
                 {
@@ -1106,6 +1107,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                 {
                     _pendingAnchorRestore = true;
+                    _deferAnchorRestoreClear = true;
                 }
                 else
                 {
@@ -1213,7 +1215,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _itemsBefore = adjustedItemsBefore;
         _pendingAnchorRestore = true;
-        _deferPrependAnchorClear = !wasAtTop;
+        _deferAnchorRestoreClear = !wasAtTop;
         return result;
     }
 
@@ -1258,7 +1260,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _itemsBefore = adjustedItemsBefore;
         _pendingAnchorRestore = true;
-        _deferPrependAnchorClear = !wasAtTop;
+        _deferAnchorRestoreClear = !wasAtTop;
         return result;
     }
 
