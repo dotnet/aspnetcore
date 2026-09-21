@@ -45,7 +45,7 @@ checkout:
   - repository: dotnet/AspNetCore.Docs
     path: .
     github-app:
-      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: ["AspNetCore.Docs"]
@@ -57,7 +57,7 @@ tools:
     mode: gh-proxy
     toolsets: [repos, issues, pull_requests]
     github-app:
-      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: ["aspnetcore", "AspNetCore.Docs"]
@@ -73,7 +73,7 @@ network:
 
 safe-outputs:
   github-app:
-    client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+    client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
     private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
     owner: dotnet
     repositories: ["AspNetCore.Docs"]
@@ -112,7 +112,7 @@ safe-outputs:
       - "dotnet/AspNetCore.Docs"
       - "dotnet/AspNetCore.Docs.Automation"
     head-github-app:
-      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: ["AspNetCore.Docs.Automation"]
@@ -136,7 +136,7 @@ safe-outputs:
       - "dotnet/AspNetCore.Docs"
       - "dotnet/AspNetCore.Docs.Automation"
     head-github-app:
-      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: ["AspNetCore.Docs.Automation"]
@@ -229,7 +229,7 @@ safe-outputs:
           id: docs-bot-token
           uses: actions/create-github-app-token@v3.2.0
           with:
-            client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+            client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
             private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
             owner: dotnet
             repositories: |
@@ -288,6 +288,8 @@ safe-outputs:
             EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
             DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
+            SAFE_OUTPUTS_RESULT: ${{ needs.safe_outputs.result }}
+            SAFE_OUTPUTS_ITEMS_FAILED: ${{ needs.safe_outputs.outputs.process_safe_outputs_items_failed }}
           run: >-
             python3 _validator/.github/workflows/pr-docs-check/validate_outcome.py
             --agent-output "${GH_AW_AGENT_OUTPUT}"
@@ -296,6 +298,8 @@ safe-outputs:
             --created-pr-url "${CREATED_DOCS_PR_URL}"
             --docs-pr-metadata "${DOCS_PR_METADATA_PATH}"
             --docs-pr-author "${DOCS_BOT_APP_SLUG}[bot]"
+            --safe-outputs-result "${SAFE_OUTPUTS_RESULT}"
+            --safe-outputs-items-failed "${SAFE_OUTPUTS_ITEMS_FAILED}"
             --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
             --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
         - name: Publish trusted documentation outcome
@@ -463,7 +467,7 @@ pre-agent-steps:
     id: docs-bot-token
     uses: actions/create-github-app-token@v3.2.0
     with:
-      client-id: ${{ vars.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
+      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: |

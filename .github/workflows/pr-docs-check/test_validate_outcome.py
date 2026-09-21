@@ -53,6 +53,75 @@ class ValidateOutcomeTests(unittest.TestCase):
         self.assertEqual("updated", result["docs_pr_action"])
         self.assertEqual("https://github.com/dotnet/AspNetCore.Docs/pull/9", result["docs_pr_url"])
 
+    def test_preflight_rejects_low_confidence_creation(self):
+        payload = self._payload(
+            "drafted",
+            "created",
+            {"type": "create_pull_request", "branch": "docs/aspnetcore-pr-42"},
+            confidence=59,
+        )
+
+        with self.assertRaisesRegex(OutcomeValidationError, "at least 60"):
+            validate_preflight(payload, 42, {"found": False, "blocked": False})
+
+    def test_preflight_rejects_update_targeting_another_pull_request(self):
+        for mismatched_type in ("push_to_pull_request_branch", "update_pull_request"):
+            with self.subTest(mismatched_type=mismatched_type):
+                payload = self._payload(
+                    "drafted",
+                    "updated",
+                    {
+                        "type": "push_to_pull_request_branch",
+                        "pull_request_number": 10 if mismatched_type == "push_to_pull_request_branch" else 9,
+                    },
+                    {
+                        "type": "update_pull_request",
+                        "pull_request_number": 10 if mismatched_type == "update_pull_request" else 9,
+                    },
+                    existing_docs_pr_number=9,
+                )
+
+                with self.assertRaisesRegex(OutcomeValidationError, "targeted 10; expected 9"):
+                    validate_preflight(
+                        payload,
+                        42,
+                        {
+                            "found": True,
+                            "blocked": False,
+                            "selected": {"number": 9},
+                        },
+                    )
+
+    def test_failed_safe_output_does_not_report_successful_update(self):
+        for result_value, failed_count in (("failure", "0"), ("success", "1")):
+            with self.subTest(result=result_value, failed_count=failed_count):
+                payload = self._payload(
+                    "drafted",
+                    "updated",
+                    {"type": "push_to_pull_request_branch", "pull_request_number": 9},
+                    {"type": "update_pull_request", "pull_request_number": 9},
+                    existing_docs_pr_number=9,
+                )
+
+                result = build_outcome(
+                    payload,
+                    "dotnet/aspnetcore",
+                    42,
+                    "",
+                    self._metadata(9, "docs/aspnetcore-pr-42"),
+                    {
+                        "found": True,
+                        "blocked": False,
+                        "selected": {"number": 9},
+                    },
+                    "aspnetcore-docs-bot[bot]",
+                    result_value,
+                    failed_count,
+                )
+
+                self.assertEqual("draft_failed", result["render_kind"])
+                self.assertEqual("none", result["docs_pr_action"])
+
     def test_restricted_outcome_rejects_code_output(self):
         payload = self._payload(
             "restricted",
@@ -65,7 +134,7 @@ class ValidateOutcomeTests(unittest.TestCase):
         with self.assertRaisesRegex(OutcomeValidationError, "cannot request documentation"):
             build_outcome(payload, "dotnet/aspnetcore", 42, "", None)
 
-        with self.assertRaisesRegex(OutcomeValidationError, "cannot include docs code-writing outputs"):
+        with self.assertRaisesRegex(OutcomeValidationError, "cannot request documentation or code-writing outputs"):
             validate_preflight(
                 payload,
                 42,

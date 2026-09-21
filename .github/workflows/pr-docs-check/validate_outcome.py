@@ -49,6 +49,33 @@ def _positive_int(value: Any, field_name: str) -> int:
     return value
 
 
+def _confidence(notification: dict[str, Any]) -> int:
+    value = notification.get("docs_needed_confidence")
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 100:
+        raise OutcomeValidationError(f"Confidence must be an integer from 0 through 100; received {value!r}.")
+    return value
+
+
+def _nonnegative_int(value: Any, field_name: str) -> int:
+    if value is None or value == "":
+        return 0
+    if isinstance(value, str) and value.isdigit():
+        value = int(value)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise OutcomeValidationError(f"{field_name} must be a nonnegative integer; received {value!r}.")
+    return value
+
+
+def _validate_update_targets(payload: Any, expected_number: int) -> None:
+    for item_type in ("push_to_pull_request_branch", "update_pull_request"):
+        item = _one_item(payload, item_type)
+        actual_number = _positive_int(item.get("pull_request_number"), f"{item_type} pull_request_number")
+        if actual_number != expected_number:
+            raise OutcomeValidationError(f"{item_type} targeted {actual_number}; expected {expected_number}.")
+
+
 def _validate_docs_pr(
     metadata: Any,
     expected_number: int,
@@ -115,6 +142,8 @@ def build_outcome(
     docs_pr_metadata: Any | None,
     expected_existing_draft: Any | None = None,
     docs_pr_author: str = "",
+    safe_outputs_result: str = "success",
+    safe_outputs_items_failed: Any = 0,
 ) -> dict[str, Any]:
     notification = _one_item(payload, "notify_source_pr")
     notification_source_pr_number = _positive_int(
@@ -128,16 +157,11 @@ def build_outcome(
 
     result = str(notification.get("result") or "")
     action = str(notification.get("docs_pr_action") or "")
-    confidence = notification.get("docs_needed_confidence")
+    confidence = _confidence(notification)
     if result not in {"drafted", "skipped", "draft_failed", "restricted"}:
         raise OutcomeValidationError(f"Unsupported result: {result!r}.")
     if action not in {"none", "created", "updated"}:
         raise OutcomeValidationError(f"Unsupported docs_pr_action: {action!r}.")
-    if isinstance(confidence, float) and confidence.is_integer():
-        confidence = int(confidence)
-    if not isinstance(confidence, int) or isinstance(confidence, bool) or not 0 <= confidence <= 100:
-        raise OutcomeValidationError(f"Confidence must be an integer from 0 through 100; received {confidence!r}.")
-
     summary = str(notification.get("summary") or "").strip()
     if not summary or len(summary) > 2000:
         raise OutcomeValidationError("Summary must contain between 1 and 2000 characters.")
@@ -207,9 +231,33 @@ def build_outcome(
     if confidence < 60:
         raise OutcomeValidationError("Drafted outcomes require confidence of at least 60.")
 
+    number: int | None = None
     if action == "created":
         if create_count != 1 or push_count != 0 or update_count != 0:
             raise OutcomeValidationError("Creating a draft requires one create_pull_request and no update outputs.")
+    elif action == "updated":
+        if create_count != 0 or push_count != 1 or update_count != 1:
+            raise OutcomeValidationError(
+                "Updating a draft requires one push_to_pull_request_branch, one update_pull_request, and no create output."
+            )
+        number = _positive_int(notification.get("existing_docs_pr_number"), "existing_docs_pr_number")
+        _validate_update_targets(payload, number)
+        if created_pr_url:
+            raise OutcomeValidationError("Updating an existing draft must not report a newly created PR URL.")
+    else:
+        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created or updated.")
+
+    safe_outputs_failed = (
+        safe_outputs_result != "success"
+        or _nonnegative_int(safe_outputs_items_failed, "Safe-output failed item count") != 0
+    )
+    if safe_outputs_failed:
+        canonical["render_kind"] = "draft_failed"
+        canonical["docs_pr_action"] = "none"
+        canonical["diagnostic"] = "The requested documentation operation did not complete successfully."
+        return canonical
+
+    if action == "created":
         if not created_pr_url:
             canonical["render_kind"] = "drafted_missing_pr"
             canonical["diagnostic"] = "The agent requested a docs PR, but safe outputs did not create one."
@@ -218,21 +266,9 @@ def build_outcome(
         if match is None:
             raise OutcomeValidationError(f"Unexpected created docs PR URL: {created_pr_url}.")
         number = int(match.group(1))
-    elif action == "updated":
-        if create_count != 0 or push_count != 1 or update_count != 1:
-            raise OutcomeValidationError(
-                "Updating a draft requires one push_to_pull_request_branch, one update_pull_request, and no create output."
-            )
-        number = _positive_int(notification.get("existing_docs_pr_number"), "existing_docs_pr_number")
-        for item_type in ("push_to_pull_request_branch", "update_pull_request"):
-            item = _one_item(payload, item_type)
-            if item.get("pull_request_number") != number:
-                raise OutcomeValidationError(f"{item_type} targeted {item.get('pull_request_number')!r}; expected {number}.")
-        if created_pr_url:
-            raise OutcomeValidationError("Updating an existing draft must not report a newly created PR URL.")
-    else:
-        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created or updated.")
 
+    if number is None:
+        raise OutcomeValidationError("The documentation pull request number could not be determined.")
     canonical["docs_pr_number"] = number
     canonical["docs_pr_url"] = _validate_docs_pr(
         docs_pr_metadata,
@@ -252,9 +288,9 @@ def _validate_expected_draft_contract(
     push_count: int,
     update_count: int,
     expected_existing_draft: Any | None,
-) -> None:
+) -> int | None:
     if expected_existing_draft is None:
-        return
+        return None
     if not isinstance(expected_existing_draft, dict):
         raise OutcomeValidationError("Expected existing draft data must be a JSON object.")
 
@@ -269,7 +305,7 @@ def _validate_expected_draft_contract(
     if blocked and code_output_count:
         raise OutcomeValidationError("A matching non-draft docs PR exists and must not be modified or replaced.")
     if result != "drafted":
-        return
+        return None
     if blocked:
         raise OutcomeValidationError("A drafted outcome is not allowed while a matching non-draft docs PR exists.")
     if found:
@@ -290,8 +326,10 @@ def _validate_expected_draft_contract(
             raise OutcomeValidationError(
                 f"Existing docs PR #{expected_number} must be updated instead of creating a duplicate."
             )
+        return expected_number
     elif action == "updated":
         raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
+    return None
 
 
 def validate_preflight(
@@ -310,6 +348,7 @@ def validate_preflight(
         )
     result = str(notification.get("result") or "")
     action = str(notification.get("docs_pr_action") or "")
+    confidence = _confidence(notification)
     if result not in {"drafted", "skipped", "draft_failed", "restricted"}:
         raise OutcomeValidationError(f"Unsupported result: {result!r}.")
     if action not in {"none", "created", "updated"}:
@@ -318,7 +357,7 @@ def validate_preflight(
     create_count = _count(payload, "create_pull_request")
     push_count = _count(payload, "push_to_pull_request_branch")
     update_count = _count(payload, "update_pull_request")
-    _validate_expected_draft_contract(
+    expected_draft_number = _validate_expected_draft_contract(
         result,
         action,
         notification,
@@ -329,14 +368,29 @@ def validate_preflight(
     )
 
     code_output_count = create_count + push_count + update_count
-    if result in {"restricted", "skipped", "draft_failed"} and code_output_count:
-        raise OutcomeValidationError(f"{result} outcomes cannot include docs code-writing outputs.")
-    if result == "drafted" and action == "created" and (create_count, push_count, update_count) != (1, 0, 0):
+    if result == "restricted":
+        if confidence != 0 or action != "none" or code_output_count:
+            raise OutcomeValidationError("Restricted outcomes cannot request documentation or code-writing outputs.")
+    elif result == "skipped":
+        if confidence >= 60 or action != "none" or code_output_count:
+            raise OutcomeValidationError("Skipped outcomes require confidence below 60 and no docs PR operation.")
+    elif result == "draft_failed":
+        if confidence < 60 or action != "none" or code_output_count:
+            raise OutcomeValidationError("draft_failed requires confidence of at least 60 and no docs PR operation.")
+    elif confidence < 60:
+        raise OutcomeValidationError("Drafted outcomes require confidence of at least 60.")
+    elif action == "created" and (create_count, push_count, update_count) != (1, 0, 0):
         raise OutcomeValidationError("Creating a draft requires exactly one create_pull_request output.")
-    if result == "drafted" and action == "updated" and (create_count, push_count, update_count) != (0, 1, 1):
+    elif action == "updated" and (create_count, push_count, update_count) != (0, 1, 1):
         raise OutcomeValidationError(
             "Updating a draft requires exactly one push_to_pull_request_branch and one update_pull_request output."
         )
+    elif action == "updated":
+        if expected_draft_number is None:
+            raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
+        _validate_update_targets(payload, expected_draft_number)
+    else:
+        raise OutcomeValidationError("Drafted outcomes must use docs_pr_action created or updated.")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -347,6 +401,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--created-pr-url", default="")
     parser.add_argument("--docs-pr-metadata", type=Path)
     parser.add_argument("--docs-pr-author", default="")
+    parser.add_argument("--safe-outputs-result", default="success")
+    parser.add_argument("--safe-outputs-items-failed", default="0")
     parser.add_argument("--expected-existing-draft", type=Path)
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--output", type=Path)
@@ -375,6 +431,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             metadata,
             expected_existing_draft,
             args.docs_pr_author,
+            args.safe_outputs_result,
+            args.safe_outputs_items_failed,
         )
     except OutcomeValidationError as error:
         if args.preflight:
