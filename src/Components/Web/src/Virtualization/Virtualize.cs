@@ -181,8 +181,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     /// <summary>
     /// Gets or sets a comparer used to detect whether items were prepended or appended
-    /// when using <see cref="ItemsProvider"/>. The comparer determines if the first loaded
-    /// item changed between provider calls, which indicates items were inserted above.
+    /// when using <see cref="ItemsProvider"/>. When provider windows overlap, the comparer
+    /// determines whether a previously rendered item changed at the same global index,
+    /// which indicates items were inserted above.
     ///
     /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
     /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For classes
