@@ -38,7 +38,7 @@ public class RequestDelegateFactoryFormMappingTests
     }
 
     [Fact]
-    public void CreateThrowsForFormClassWithMultiplePublicConstructors()
+    public void CreatePreservesConverterFailureForFormClassWithMultiplePublicConstructors()
     {
         static void TestAction([FromForm] FormClassWithMultipleConstructors value) { }
 
@@ -48,7 +48,7 @@ public class RequestDelegateFactoryFormMappingTests
     }
 
     [Fact]
-    public void CreateThrowsForFormStructWithMultiplePublicConstructors()
+    public void CreatePreservesConverterFailureForFormStructWithMultiplePublicConstructors()
     {
         static void TestAction([FromForm] FormStructWithMultipleConstructors value) { }
 

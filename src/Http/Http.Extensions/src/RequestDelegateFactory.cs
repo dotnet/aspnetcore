@@ -276,9 +276,7 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-        // FormDataMapper handles some converter failures at request time, so use the application's logger when one is available.
-        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-        var formDataMapperOptions = loggerFactory is null ? new FormDataMapperOptions() : new FormDataMapperOptions(loggerFactory);
+        var formDataMapperOptions = new FormDataMapperOptions();
 
         var factoryContext = new RequestDelegateFactoryContext
         {
