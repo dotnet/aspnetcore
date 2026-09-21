@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.AI.Tests.Engine;
 
@@ -87,6 +89,35 @@ public class AgentContextTests
 
         Assert.Equal(ConversationStatus.Error, context.Status);
         Assert.IsType<InvalidOperationException>(context.Error);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_Failure_LogsException()
+    {
+        var exception = new InvalidOperationException("boom");
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var client = new DelegatingStreamingChatClient();
+
+        client.SetHandler((messages, options, cancellationToken) =>
+            ResponseEmitters.EmitErrorAfterTokens(
+                ["partial"],
+                exception,
+                cancellationToken));
+
+        using var agent = new UIAgent(client, configure: null, loggerFactory);
+        using var context = new AgentContext(agent);
+
+        await context.SendMessageAsync("Hello");
+
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        Assert.Same(exception, context.Error);
+
+        var log = Assert.Single(
+            sink.Writes,
+            write => write.LogLevel == LogLevel.Error);
+
+        Assert.Same(exception, log.Exception);
     }
 
     [Fact]

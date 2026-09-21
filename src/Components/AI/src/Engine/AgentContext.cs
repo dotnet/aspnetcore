@@ -296,6 +296,7 @@ public class AgentContext : IDisposable
             // A failing turn is surfaced as conversation state (Status/Error) rather than a
             // faulted Task: the UI renders the error and RetryAsync replays the last message.
             // This is the engine's error contract, not a swallowed exception.
+            _agent.LogProcessingError(ex);
             _agent.RejectPendingPredictiveState();
             Error = ex;
             Status = ConversationStatus.Error;
