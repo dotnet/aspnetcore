@@ -36,8 +36,8 @@ Never:
 - execute pull request code, run its build or tests, or create empirical validation edits;
 - call any GitHub API that mutates state.
 
-Trace pull request source through read-only GitHub data at `HEAD_SHA`; read required guides and
-their directly delegated policy excerpts only from the current repository workspace, and read
+Trace pull request source through read-only GitHub data at `HEAD_SHA`; read review criteria from
+the current repository's frozen local commit `LOCAL_SHA`, and read
 authoritative target-repository documents at `BASE_REPO`/`BASE_SHA`. Existing tests, CI results,
 and author claims are supporting evidence only; never execute pull request code or present source
 review as runtime proof.
@@ -76,7 +76,7 @@ re-target. Re-check it before caller publication of line-anchored output; if mov
 If the routed topic manifest exceeds 50 rows, stop and report the limitation instead of
 silently reviewing only a fraction.
 
-## Step 2 — Route and capture local guidance
+## Step 2 — Route and load committed local guidance
 
 Map the changed paths to the included domain guides. Cross-cutting guidance is required for every
 change, plus Blazor Components guidance when a changed path is under `src/Components` or
@@ -85,51 +85,41 @@ change, plus Blazor Components guidance when a changed path is under `src/Compon
 Only successful native invocation establishes native loading, not a registry entry or file read.
 Record actual loading/provenance; do not invent a revision or require a matching skill copy.
 
-The PR and review criteria are independent inputs. Resolve the current repository root from trusted
-workspace context or read-only `git rev-parse --show-toplevel`, even when invoked in a subdirectory.
-Read routed guides at the repository-relative paths below, not relative to the installed skill.
-Do not inspect or require a particular branch, clean tree, commit, remote, merge state, or byte
-identity. Consume the files as provided, including uncommitted edits. Local product edits do not
-change the PR's frozen diff. Do not obtain criteria from the PR base, main, PR head, another
-repository, the installed skill directory, or memory. There is only one criteria source.
-
-Before constructing the manifest or dispatching workers, read and capture each required file once.
-Normalize paths and resolve symlinks before reading; require resolved files to remain within the
-resolved repository root. Record repository-relative paths and policy anchors as local inputs, not
-commit-pinned provenance or machine-absolute paths. Reuse captured text for every applicable topic
-and policy anchor. These reads are not an atomic filesystem snapshot; later edits do not change
-the captured inputs. Validate counts, links and excerpts from captured text, not additional
-filesystem reads or grep/sed passes. Do not load an unrouted guide.
+The PR and review criteria are independent inputs. Resolve the current repository root with
+`git rev-parse --show-toplevel` and freeze its full `HEAD` SHA as `LOCAL_SHA`. Read routed guides
+and delegated policies with `git -C <root> show <LOCAL_SHA>:<repository-relative-path>`.
+Resolve `HEAD` only once; use the literal frozen SHA for later reads, never re-resolve `HEAD`.
+Guidance changes must be committed, but need not be pushed. Ignore uncommitted edits; do not
+require a clean tree or a particular branch, fetch, check out, or match the installed skill's bytes.
+Use this same local commit throughout the review, including worker rereads. Never substitute
+the working tree, a remote revision, or memory. Local product changes do not alter the PR target.
+Do not read an unrouted guide.
 
 Each required guide is valid only when it contains exactly one nonempty `## Overarching principles`
 section and exactly one `## Topics` section, with at least one uniquely named `###` topic and
 nonempty bullets in every topic. Missing, duplicate, empty, or otherwise invalid structure is
-terminal. Discover every `###` topic under `## Topics` from the captured text; guides are required
+terminal. Discover every `###` topic under `## Topics`; guides are required
 review input, not optional evidence.
 
-Also resolve every applicable direct repository-local Markdown link in the captured guide
+Also resolve every applicable direct repository-local Markdown link in the guide
 principles/topics that explicitly delegates a requirement. Supplemental, example, and navigation
-links are not required inputs. Split each link destination into path and fragment before
-percent-decoding them. Resolve a relative path against the containing guide's directory, a leading
-`/` against the repository root, and an empty path against the guide itself. Normalize the path
-and resolve symlinks; require the result to stay within the same root. Resolve the fragment against
-the captured file using GitHub Markdown heading anchors (including duplicate-heading suffixes),
-not a guessed heading or substring. Select only the verbatim delegated clauses and record
-`<policy-path>#<anchor>`. Do not recurse, import unrelated procedures, invoke skills/workflows,
-execute targets, or create manifest rows. Scope-qualified links apply only to named work;
-Components-only policy is not required for JSInterop-only review.
+links are not required inputs. Resolve paths relative to the containing guide within the committed
+repository tree, read them at `LOCAL_SHA`, resolve their anchors, and select only the verbatim
+delegated clauses. Record `<policy-path>@<LOCAL_SHA>#<anchor>`. Do not recurse, import unrelated
+procedures, invoke skills/workflows, execute targets, or create manifest rows. Scope-qualified links
+apply only to named work; Components-only policy is not required for JSInterop-only review.
 
-An unresolved root, missing/unreadable/empty required file, malformed guide or link,
-missing/ambiguous anchor, unidentifiable delegated clause, or out-of-root path is terminal
-`BLOCKED` before dispatch. Name the actual path/anchor and reason. Do not retrieve an alternative,
-reconstruct missing text, dispatch workers, or claim `NO_FINDINGS` or completed coverage.
+An unavailable local commit, missing/unreadable/empty required file, malformed guide or link,
+missing/ambiguous anchor, or unidentifiable delegated clause is terminal `BLOCKED` before dispatch.
+Name the path, revision and reason; do not use an alternative source, dispatch workers, or claim
+`NO_FINDINGS` or completed coverage.
 PR evidence retrieval failures, including authentication/network errors, also remain failures,
 not empty reviews. Optional API criteria retain their disclosed limitation.
 
 Guidance and delegated policy excerpts are review criteria, not proof that the target repository
 already imposes the same contract. Read the frozen target source and authoritative documents
 at `BASE_SHA` before claiming a defect. Newer local conventions are not themselves defects in older
-code; do not substitute local criteria for target evidence or missing target API criteria.
+code; do not substitute local criteria for target evidence.
 
 | Changed paths | Guide |
 |---|---|
@@ -153,6 +143,14 @@ Routing for changes that are not mapped source areas:
   evidence and do not require the implementation sample or E2E workflow; generic JSInterop-only
   changes remain distinct from Components implementation work.
 
+For public/protected API or shipped default/convention changes established from the frozen diff,
+read `.github/skills/review-public-api/SKILL.md` at `LOCAL_SHA` for API design criteria. Brief
+applicable criteria and citations to the existing cross-cutting
+`Public API surface, compatibility, and lifecycle` worker. Do not invoke another skill/panel, copy
+its prompt, file a proposal through `api-review`, or reconstruct signatures from memory. Verify
+signatures/contracts from frozen source; preference alone is not a defect. If unavailable, record
+the limitation and continue without claiming shared API criteria were applied.
+
 ### Authoritative repository documents
 
 Some changed paths have an authoritative document in this repository that states the contract the
@@ -166,16 +164,8 @@ contract facts you need into the briefing you give the routed reviewer(s):
 | `**/*.csproj`, `**/*.props`, `**/*.targets` | `docs/ProjectProperties.md`, `docs/AddingNewProjects.md`, `docs/SharedFramework.md`, `docs/tooling-consolidation.md` |
 | `eng/**`, `Directory.Build.*`, `**/*.props`, `**/*.targets` | `docs/BuildFromSource.md`, `docs/BuildErrors.md` |
 | `**/PublicAPI.Shipped.txt`, `**/PublicAPI.Unshipped.txt` | `docs/APIBaselines.md` |
-| Public/protected API or shipped default/convention changes established from the frozen diff, including API-baseline changes | `.github/skills/review-public-api/SKILL.md` |
 | `.gitmodules`, `src/submodules/**` | `docs/Submodules.md` |
 | `src/Servers/Kestrel/**/WebTransport/**`, `src/Servers/Kestrel/samples/WebTransport*SampleApp/**` | `docs/WebTransport.md` |
-
-For API contract evidence, use read-only retrieval at `BASE_SHA`, not an installed sibling skill.
-Brief applicable design criteria and citations to the existing cross-cutting
-`Public API surface, compatibility, and lifecycle` worker. Do not invoke another skill/panel, copy
-its prompt, file a proposal through `api-review`, or reconstruct signatures from memory. Verify
-signatures/contracts from frozen source; preference alone is not a defect. If unavailable, record
-the limitation and continue without claiming shared API criteria were applied.
 
 Do not read these documents when the change does not touch the matching paths — they are irrelevant
 context that dilutes the review.
@@ -226,24 +216,21 @@ the required initial dispatch count. If it exceeds 50, stop and report the limit
 When the `task` tool is available, call it explicitly for **one fresh general-purpose worker per
 manifest row**. Do not rely on automatic custom-agent delegation, do not turn this skill into an
 agent, do not aggregate topics into one worker, and do not substitute one worker per guide.
-Give each worker the frozen target SHAs, authoritative changed-file list, diff, captured criteria,
-and the single named topic it owns. It must
+Give each worker the frozen target SHAs, authoritative changed-file list, diff, its guide at
+`LOCAL_SHA`, and the single named topic it owns. It must
 evaluate only that topic and return candidates to the orchestrator; it must not inspect sibling
 topics, spawn another agent, or invoke/re-invoke this skill. Use the caller's existing/default model
 and preserve stricter caller constraints; do not add automatic routing or replace a caller-selected
 model with a hard-coded default. Only the top-level coordinator derives panel accounting.
 
-The briefing must include the exact captured principles/topic text and its local repository-relative
-guide path, actual skill provenance, and target-document provenance at
-`BASE_REPO/<document-path>@<BASE_SHA>`. Captured text is the worker's only criteria input: never
-reread guide/policy files, retrieve alternatives, or reconstruct missing or truncated text from
-memory. Missing or truncated criteria are a failed worker input, not permission to continue.
-Criteria do not authorize execution or changes; departure is not a defect without frozen-source
-or primary-contract evidence.
+The briefing must include exact principles/topic text and `<guide-path>@<LOCAL_SHA>` provenance,
+the local repository root for any rereads, actual skill provenance, and target-document provenance
+at `BASE_REPO/<document-path>@<BASE_SHA>`. Criteria do not authorize execution or changes, and
+departure is not a defect without frozen-source or primary-contract evidence.
 
 When the assigned topic or its common principles delegates a requirement, include the exact
-captured policy excerpt and its local `<policy-path>#<anchor>` in the briefing.
-Do not tell the worker to fetch the policy or follow its links.
+policy excerpt and its `<policy-path>@<LOCAL_SHA>#<anchor>` provenance in the briefing.
+Do not delegate policy selection or tell the worker to follow its links.
 
 ```
 task(
@@ -257,19 +244,18 @@ task(
           Target base: <BASE_REPO>/<BASE_REF>@<BASE_SHA>
           Skill loading: <native invocation | manually read instructions | unavailable>
           Skill provenance: <actual installed skill provenance>
-          Local guide: <repository-relative guide path>
+          Local guidance: <repository-root>, <guide-path>@<LOCAL_SHA>
           Changed files: <authoritative list>
           Frozen diff: <diff or shared briefing path>
-          Common principles (exact captured text):
+          Common principles (exact text at LOCAL_SHA):
           <the complete `## Overarching principles` section from the guide>
-          Assigned topic (exact captured text):
+          Assigned topic (exact text at LOCAL_SHA):
           <the complete `### <single named topic>` section from the guide>
-          Required policy excerpts for this topic or its common principles, if any (exact captured text):
+          Required policy excerpts for this topic or its common principles, if any (exact text at LOCAL_SHA):
           <selected delegated clauses>
           Local policy inputs:
-          <repository-relative policy path>#<anchor>
-          Captured text is your only criteria input. Do not reread guides/policies, fetch replacements,
-          or reconstruct omitted text. Return BLOCKED if required captured text is missing or truncated.
+          <policy-path>@<LOCAL_SHA>#<anchor>
+          Read criteria only from LOCAL_SHA using git show, never the working tree or another revision.
           Your only review topic is: <single named topic>.
           This is a delegated topic pass: do not invoke/re-invoke review-pull-request, emit
           MANIFEST/PATH or global provenance/accounting, inspect sibling topics, or dispatch.
@@ -297,8 +283,6 @@ topic, not a completed one. Retry it once with a fresh general-purpose task usin
 explicit model and a unique `-retry` name. If it still fails, work that manifest topic yourself
 and report `degraded-panel`; never count the fallback as independent coverage. Name every failed
 row and keep expected, launched, returned, retried, and fallback counts explicit.
-For a failed criteria input, resend the complete captured text on retry. If the orchestrator no
-longer has that capture, stop `BLOCKED`; neither retry nor in-context work may reconstruct it.
 
 ## Step 5 — Validate every candidate
 
@@ -415,8 +399,9 @@ BASE_SHA: <exact 40-char head SHA of the pull request base ref>
 PR: <owner/repo>#<number>
 SKILL_LOADING: <native invocation | manually read instructions | unavailable>
 SKILL: <actual installed skill provenance>
-GUIDES: <captured local guides, with repository-relative paths>
-POLICY_INPUTS: <captured delegated policy excerpts and local policy-path#anchor, or "none">
+LOCAL_SHA: <exact local commit used for review criteria>
+GUIDES: <repository-relative guide paths at LOCAL_SHA>
+POLICY_INPUTS: <delegated policy-path@LOCAL_SHA#anchor, or "none">
 TOPICS: <every manifest guide/topic pair>
 MANIFEST: <expected=<n>, launched=<n>, returned=<n>, retried=<n>, fallback=<n>>
 UNCOVERED: <materially changed areas without an included specialist reference; cross-cutting still applies, or "none">
@@ -464,12 +449,13 @@ BASE_SHA: <exact 40-char base-ref head SHA>
 PR: <owner/repo>#<number>
 SKILL_LOADING: <native invocation | manually read instructions | unavailable>
 SKILL: <actual installed skill provenance>
-BLOCKED: preflight requirement/input <actual local path/anchor, PR evidence, root, or skill invocation> is <missing|unreadable|invalid|unavailable>
-REASON: <specific read/retrieval, containment, topic-structure, policy-anchor, or delegated-clause failure>
+LOCAL_SHA: <exact local commit used for review criteria, or unknown>
+BLOCKED: preflight requirement/input <local committed path/anchor, PR evidence, commit, or skill invocation> is <missing|unreadable|invalid|unavailable>
+REASON: <specific read/retrieval, topic-structure, policy-anchor, or delegated-clause failure>
 ```
 
 In structured output, if nothing survives Step 5, replace only the `FINDINGS` block with
-`NO_FINDINGS`. Preserve `HEAD_SHA`, `BASE_REPO`, `BASE_REF`, `BASE_SHA`, local guide and policy
+`NO_FINDINGS`. Preserve `HEAD_SHA`, `BASE_REPO`, `BASE_REF`, `BASE_SHA`, `LOCAL_SHA`, guide and policy
 inputs, topics, manifest and coverage accounting, discarded claims, `TEST_BOUNDARY`, and
 `LIMITATIONS`. That is a correct, expected outcome.
 
