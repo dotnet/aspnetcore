@@ -156,4 +156,22 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeWithoutIDisposable = new(
+        "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeAsyncWithoutIAsyncDisposable = new(
+        "BL0018",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
 }

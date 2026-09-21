@@ -82,11 +82,11 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
-  // Client-side validation is initialized only when the page contains the
-  // SSR-rendered custom element bearing the client validation data.
-  // This avoids adding event listeners in interactive-only apps that never use client validation.
+  Blazor.formValidation = createBlazorValidation();
+
   jsEventRegistry.addEventListener('enhancedload', () => {
-    initFormValidationIfNeeded();
+    // An enhanced-navigation morph reuses forms in place and strips the JS-added novalidate, so re-add it.
+    ensureNovalidateOnForms();
   });
 
   // Wait until the initial page response completes before activating interactive components.
@@ -118,9 +118,6 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   registerAllComponentDescriptors(document);
 
   rootComponentManager.onDocumentUpdated();
-
-  // Initialize client-side validation if the page has validatable fields.
-  initFormValidationIfNeeded();
 
   callAfterStartedCallbacks(initializersPromise);
 }
@@ -177,17 +174,6 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
       });
     }
   }
-}
-
-function initFormValidationIfNeeded(): void {
-  if (Blazor.formValidation) {
-    // The service already exists. An enhanced-navigation morph reuses forms in place and strips the
-    // JS-added novalidate, so re-add it.
-    ensureNovalidateOnForms();
-    return;
-  }
-
-  Blazor.formValidation = createBlazorValidation();
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {

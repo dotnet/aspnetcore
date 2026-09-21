@@ -910,7 +910,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         SetupSignIn(context, auth, user.Id, isPersistent);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
@@ -928,6 +928,39 @@ public class SignInManagerTest
 
         // Assert
         Assert.True(result.Succeeded);
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task TwoFactorAuthenticatorSignInFailsAfterSecurityStampChanges()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        const string code = "3123";
+        var manager = SetupUserManager(user);
+        manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true);
+        var stamp = "old-stamp";
+        manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync(() => stamp);
+        manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, code)).Throws(new Exception("Should not get called"));
+
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // The two-factor cookie is issued while the current (old) security stamp is in effect.
+        var id = await helper.StoreTwoFactorInfo(user, null);
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+        // Simulate a password reset changing the security stamp before the 2FA code is submitted.
+        stamp = "new-stamp";
+
+        // Act
+        var result = await helper.TwoFactorAuthenticatorSignInAsync(code, isPersistent: false, rememberClient: false);
+
+        // Assert
+        Assert.Same(SignInResult.Failed, result);
         manager.Verify();
         auth.Verify();
     }
@@ -952,7 +985,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -991,7 +1024,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -1067,7 +1100,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { User = user };
         var loginProvider = "loginprovider";
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = await helper.StoreTwoFactorInfo(user, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,
@@ -1319,7 +1352,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { User = user };
         var loginProvider = "loginprovider";
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = await helper.StoreTwoFactorInfo(user, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,
@@ -1379,7 +1412,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, loginProvider: null);
+        var id = await helper.StoreTwoFactorInfo(user, loginProvider: null);
 
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
@@ -1938,7 +1971,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -2004,7 +2037,7 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);
-        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        var id = await helper.StoreTwoFactorInfo(user, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 

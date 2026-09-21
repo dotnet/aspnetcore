@@ -6,6 +6,8 @@ param(
 
     [string]$Eval,
 
+    [string]$Experiment,
+
     [string]$OutputDirectory,
 
     [string]$Root,
@@ -15,7 +17,7 @@ param(
     [string[]]$VallyPrefix = @(
         '--yes',
         '--registry=https://packagefeedproxy.microsoft.io/npm/',
-        '@microsoft/vally-cli@0.13.0'
+        '@microsoft/vally-cli@0.14.0'
     ),
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -25,6 +27,27 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
+if (-not $PSBoundParameters.ContainsKey('Vally')) {
+    $installedVally = if ($IsWindows) {
+        Join-Path $PSScriptRoot 'evaluation-tools/node_modules/.bin/vally.cmd'
+    } else {
+        Join-Path $PSScriptRoot 'evaluation-tools/node_modules/.bin/vally'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:SKILL_EVAL_VALLY)) {
+        $Vally = $env:SKILL_EVAL_VALLY
+        if (-not $PSBoundParameters.ContainsKey('VallyPrefix')) {
+            $VallyPrefix = @()
+        }
+    } elseif (Test-Path $installedVally -PathType Leaf) {
+        $Vally = $installedVally
+        if (-not $PSBoundParameters.ContainsKey('VallyPrefix')) {
+            $VallyPrefix = @()
+        }
+    } elseif ($Action -eq 'Run') {
+        throw 'Run requires the pinned evaluation tools. Run npm ci --prefix eng/skill-evals/evaluation-tools first.'
+    }
+}
+
 $repoRoot = if ($Root) {
     (Resolve-Path $Root).Path
 } else {
@@ -32,7 +55,19 @@ $repoRoot = if ($Root) {
 }
 $evalRoot = Join-Path $repoRoot 'eng/skill-evals'
 $runtimeRoot = Join-Path $repoRoot '.github/skills'
-$experiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
+$standardExperiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
+$smokeExperiment = Join-Path $evalRoot 'skills-smoke.experiment.yaml'
+$hasExplicitExperiment = -not [string]::IsNullOrWhiteSpace($Experiment)
+$selectedExperiment = if ($hasExplicitExperiment) {
+    $candidate = if ([IO.Path]::IsPathRooted($Experiment)) {
+        $Experiment
+    } else {
+        Join-Path $repoRoot $Experiment
+    }
+    (Resolve-Path $candidate).Path
+} else {
+    $standardExperiment
+}
 $script:vallyInitialized = $false
 
 function Resolve-Eval {
@@ -125,9 +160,11 @@ function Invoke-VallyIsolated {
 }
 
 function Invoke-VallyExperimentDryRun {
+    param([string]$ExperimentPath)
+
     Invoke-VallyIsolated @(
         'experiment',
-        'run', $experiment,
+        'run', $ExperimentPath,
         '--compare',
         '--dry-run',
         '--output-dir', 'plan-results'
@@ -155,8 +192,11 @@ function Test-IsLink {
 
 function Get-LayoutErrors {
     $errors = [Collections.Generic.List[string]]::new()
-    if (-not (Test-Path $experiment -PathType Leaf)) {
-        $errors.Add("Missing standard experiment: $experiment")
+    if (-not (Test-Path $standardExperiment -PathType Leaf)) {
+        $errors.Add("Missing standard experiment: $standardExperiment")
+    }
+    if (-not (Test-Path $smokeExperiment -PathType Leaf)) {
+        $errors.Add("Missing smoke experiment: $smokeExperiment")
     }
 
     $standardSpecs = @(
@@ -232,11 +272,19 @@ switch ($Action) {
     'Validate' {
         Invoke-LayoutValidation
         Invoke-VallyLint
-        Invoke-VallyExperimentDryRun
+        if ($hasExplicitExperiment) {
+            Invoke-VallyExperimentDryRun $selectedExperiment
+        } else {
+            Invoke-VallyExperimentDryRun $standardExperiment
+            Invoke-VallyExperimentDryRun $smokeExperiment
+        }
     }
     'Test' {
         & (Join-Path $PSScriptRoot 'test_validate.ps1')
         & (Join-Path $PSScriptRoot 'test_run.ps1')
+        & (Join-Path $PSScriptRoot 'test_assert_results.ps1')
+        & (Join-Path $PSScriptRoot 'test_stage_run.ps1')
+        & (Join-Path $PSScriptRoot 'test_workflow.ps1')
     }
     'Lint' {
         Invoke-VallyLint
@@ -256,7 +304,7 @@ switch ($Action) {
         if (-not $resolvedEval -or (Split-Path $resolvedEval -Leaf) -eq 'eval.vally.yaml') {
             $vallyArguments = @(
                 'experiment',
-                'run', $experiment,
+                'run', $selectedExperiment,
                 '--compare',
                 '--output-dir', $output
             )
