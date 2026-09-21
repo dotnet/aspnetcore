@@ -1082,7 +1082,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
                 if (hasComparableItem && !ItemComparer.Equals(comparisonItem, items[comparisonItemOffset]))
                 {
-                    if (!await ShouldFollowPrependedHeadAsync())
+                    var shouldFollowPrependedHead = await ShouldFollowPrependedHeadAsync();
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!shouldFollowPrependedHead)
                     {
                         result = await AdjustProviderForPrependAsync(countDelta, result, request, cancellationToken);
                     }
@@ -1091,17 +1094,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 {
                     _pendingAnchorRestore = true;
                 }
-                else if (await ShouldFollowAppendedTailAsync(previousItemCount))
+                else
+                {
+                    var shouldFollowAppendedTail = await ShouldFollowAppendedTailAsync(previousItemCount);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (shouldFollowAppendedTail)
+                    {
+                        (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
+                    }
+                }
+            }
+            else if (itemsAdded && !isDefaultProvider)
+            {
+                var shouldFollowAppendedTail = await ShouldFollowAppendedTailAsync(previousItemCount);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (shouldFollowAppendedTail)
                 {
                     (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
                 }
             }
-            else if (itemsAdded
-                && !isDefaultProvider
-                && await ShouldFollowAppendedTailAsync(previousItemCount))
-            {
-                (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
-            }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             _itemCount = result.TotalItemCount;
             _loadedItems = result.Items;
@@ -1181,6 +1196,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var adjustedRequest = new ItemsProviderRequest(adjustedItemsBefore, _visibleItemCapacity, cancellationToken);
         var result = await _itemsProvider(adjustedRequest);
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         _itemsBefore = adjustedItemsBefore;
         _pendingAnchorRestore = true;
         _deferPrependAnchorClear = !wasAtTop;
@@ -1217,10 +1234,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 new ItemsProviderRequest(adjustedItemsBefore, _visibleItemCapacity, cancellationToken));
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (_jsInterop is not null)
         {
             await _jsInterop.RestoreAnchorAsync(onNextMutation: true);
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         _itemsBefore = adjustedItemsBefore;
         _pendingAnchorRestore = true;
@@ -1302,8 +1323,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             result = prefetchedTail.Count == tailItemCount
                 ? new ItemsProviderResult<TItem>(prefetchedTail, result.TotalItemCount)
                 : await _itemsProvider(request);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             _itemsBefore = tailItemsBefore;
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         _pendingScrollToBottom = true;
         return (result, request);

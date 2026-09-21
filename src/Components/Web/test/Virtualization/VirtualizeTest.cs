@@ -788,6 +788,69 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_CanceledPrependAdjustment_DoesNotOverwriteNewerWindow()
+    {
+        var items = Enumerable.Range(0, 200).ToList();
+        var blockAdjustedRequest = false;
+        var blockedRequestStarted = new TaskCompletionSource<ItemsProviderRequest>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseBlockedRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            if (blockAdjustedRequest && request.StartIndex == 120)
+            {
+                blockAdjustedRequest = false;
+                blockedRequestStarted.SetResult(request);
+                await releaseBlockedRequest.Task;
+            }
+
+            return new ItemsProviderResult<int>(
+                items.Skip(request.StartIndex).Take(request.Count).ToArray(),
+                items.Count);
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            items.Count,
+            provider,
+            item => builder => builder.AddContent(0, item));
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible((100 + 15) * 50f, 40 * 50f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+
+        items.InsertRange(0, Enumerable.Range(-20, 20));
+        blockAdjustedRequest = true;
+
+        Task canceledRefresh = null;
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            canceledRefresh = virtualize.RefreshDataAsync();
+        });
+
+        var blockedRequest = await blockedRequestStarted.Task;
+
+        Task newerRefresh = null;
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            virtualize._itemsBefore = 130;
+            newerRefresh = virtualize.RefreshDataAsync();
+        });
+        await newerRefresh;
+
+        Assert.True(blockedRequest.CancellationToken.IsCancellationRequested);
+        Assert.Equal(150, virtualize._itemsBefore);
+
+        releaseBlockedRequest.SetResult();
+        await canceledRefresh;
+
+        Assert.Equal(150, virtualize._itemsBefore);
+    }
+
+    [Fact]
     public async Task MaxItemCount_ClampsVisibleItemCapacity()
     {
         var requests = new List<ItemsProviderRequest>();
