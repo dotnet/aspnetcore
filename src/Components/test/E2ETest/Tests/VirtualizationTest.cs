@@ -5679,9 +5679,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 animationFrame = requestAnimationFrame(sample);
             };
             animationFrame = requestAnimationFrame(sample);
-            const appendTimer = setInterval(() => appendButton.click(), 600);
+            let scheduledUpdates = 0;
+            const appendTimer = setInterval(() => {
+                appendButton.click();
+                if (++scheduledUpdates === 10) {
+                    clearInterval(appendTimer);
+                }
+            }, 600);
 
-            setTimeout(() => {
+            const finish = () => {
                 clearInterval(appendTimer);
                 cancelAnimationFrame(animationFrame);
 
@@ -5710,7 +5716,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     lastVisibleBackwardJumps,
                     maximumLastVisibleAdvance
                 });
-            }, 6300);
+            };
+
+            const completionTimer = setInterval(() => {
+                const completedUpdates = Number(document.getElementById('table-scroll-completed-updates').textContent.match(/\d+/)[0]);
+                if (completedUpdates >= 10) {
+                    clearInterval(completionTimer);
+                    requestAnimationFrame(() => requestAnimationFrame(finish));
+                }
+            }, 50);
         ", container);
     }
 
@@ -5758,9 +5772,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 animationFrame = requestAnimationFrame(sample);
             };
             animationFrame = requestAnimationFrame(sample);
-            const prependTimer = setInterval(() => prependButton.click(), 600);
+            let scheduledUpdates = 0;
+            const prependTimer = setInterval(() => {
+                prependButton.click();
+                if (++scheduledUpdates === 10) {
+                    clearInterval(prependTimer);
+                }
+            }, 600);
 
-            setTimeout(() => {
+            const finish = () => {
                 clearInterval(prependTimer);
                 cancelAnimationFrame(animationFrame);
 
@@ -5789,7 +5809,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     lastVisibleBackwardJumps,
                     maximumFirstVisibleAdvance
                 });
-            }, 6300);
+            };
+
+            const completionTimer = setInterval(() => {
+                const completedUpdates = Number(document.getElementById('table-scroll-completed-updates').textContent.match(/\d+/)[0]);
+                if (completedUpdates >= 10) {
+                    clearInterval(completionTimer);
+                    requestAnimationFrame(() => requestAnimationFrame(finish));
+                }
+            }, 50);
         ", container);
     }
 
@@ -5819,14 +5847,28 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 animationFrame = requestAnimationFrame(sample);
             };
             animationFrame = requestAnimationFrame(sample);
-            const prependTimer = setInterval(() => prependButton.click(), 600);
+            let scheduledUpdates = 0;
+            const prependTimer = setInterval(() => {
+                prependButton.click();
+                if (++scheduledUpdates === 10) {
+                    clearInterval(prependTimer);
+                }
+            }, 600);
 
-            setTimeout(() => {
+            const finish = () => {
                 clearInterval(prependTimer);
                 cancelAnimationFrame(animationFrame);
                 const totalItems = Number(document.getElementById('table-scroll-total-items').textContent.match(/\d+/)[0]);
                 done({ totalItems, missingAnchorFrames, maximumAnchorDrift });
-            }, 6300);
+            };
+
+            const completionTimer = setInterval(() => {
+                const completedUpdates = Number(document.getElementById('table-scroll-completed-updates').textContent.match(/\d+/)[0]);
+                if (completedUpdates >= 10) {
+                    clearInterval(completionTimer);
+                    requestAnimationFrame(() => requestAnimationFrame(finish));
+                }
+            }, 50);
         ", container, anchorIndex, anchorOffset);
     }
 
