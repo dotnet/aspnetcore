@@ -308,11 +308,7 @@ public class Project : IDisposable
 
     private static string ResolveGatewayAssemblyPath()
     {
-        var packageRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
-            ?? typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(attribute => attribute.Key == "TestPackageRestorePath")?.Value
-            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-
+        var packageRoot = ProcessEx.NuGetPackagesRestorePath;
         if (!string.IsNullOrEmpty(packageRoot))
         {
             var gatewayPackageRoot = Path.Combine(packageRoot, "microsoft.aspnetcore.components.gateway");
