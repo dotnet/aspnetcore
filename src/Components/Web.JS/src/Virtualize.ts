@@ -744,13 +744,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       bottomTracking.reached = isViewportAtBottom();
     },
     restoreAnchor: (onNextMutation: boolean) => {
-      if (onNextMutation && !useNativeAnchoring) {
-        updateAnchorSnapshot();
-        restoreAnchorOnMutation = true;
-      } else {
-        restoreAnchorOnMutation = false;
-        restoreAnchorForShift();
+      if (onNextMutation) {
+        if (!useNativeAnchoring) {
+          updateAnchorSnapshot();
+          restoreAnchorOnMutation = true;
+        }
+        return;
       }
+      restoreAnchorOnMutation = false;
+      restoreAnchorForShift();
     },
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScroll,
