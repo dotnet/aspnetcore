@@ -1,0 +1,178 @@
+.plan-progress-card {
+    position: relative;
+    width: min(700px, 100%);
+    border: 1px solid rgb(229 231 235 / 80%);
+    border-radius: 12px;
+    margin: 8px 0;
+    padding: 24px;
+    background: linear-gradient(to bottom right, #fff, #f9fafb, #fff);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+}
+
+.plan-progress-card__summary {
+    margin-bottom: 20px;
+}
+
+.plan-progress-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.plan-progress-card__header h3 {
+    margin: 0;
+    color: #7c3aed;
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+.plan-progress-card__count {
+    color: #6b7280;
+    font-size: 0.875em;
+}
+
+.plan-progress-card__bar {
+    position: relative;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: #e5e7eb;
+}
+
+.plan-progress-card__bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #3b82f6, #a855f7);
+    transition: width 1s ease-out;
+}
+
+.plan-progress-card__bar-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, transparent, rgb(255 255 255 / 40%), transparent);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.plan-progress-card__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.plan-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    margin-bottom: 8px;
+    border: 1px solid rgb(229 231 235 / 60%);
+    border-radius: 8px;
+    padding: 10px;
+    background: rgb(249 250 251 / 50%);
+    transition: all 0.5s;
+}
+
+.plan-step:last-child {
+    margin-bottom: 0;
+}
+
+.plan-step__icon {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 8px;
+    font-size: 0.75em;
+}
+
+.plan-step__description {
+    color: #6b7280;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+
+.plan-step__content {
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.plan-step__processing {
+    margin-top: 4px;
+    color: #2563eb;
+    font-size: 0.875em;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.plan-step--completed {
+    border-color: rgb(187 247 208 / 60%);
+    background: linear-gradient(to right, #f0fdf4, #ecfdf5);
+}
+
+.plan-step--completed .plan-step__description {
+    color: #15803d;
+}
+
+.plan-step--completed .plan-step__icon {
+    color: white;
+    background: linear-gradient(to bottom right, #22c55e, #059669);
+    box-shadow: 0 4px 6px -1px rgb(187 247 208), 0 2px 4px -2px rgb(187 247 208);
+}
+
+.plan-step--current {
+    border-color: rgb(191 219 254 / 60%);
+    background: linear-gradient(to right, #eff6ff, #faf5ff);
+    box-shadow: 0 4px 6px -1px rgb(191 219 254 / 50%), 0 2px 4px -2px rgb(191 219 254 / 50%);
+}
+
+.plan-step--current::after {
+    position: absolute;
+    border-radius: 8px;
+    background: linear-gradient(to right, rgb(219 234 254 / 50%), rgb(243 232 255 / 50%));
+    content: "";
+    inset: 0;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.plan-step--current .plan-step__description {
+    color: #1d4ed8;
+    font-size: 1em;
+}
+
+.plan-step--current .plan-step__icon {
+    z-index: 1;
+    color: white;
+    background: linear-gradient(to bottom right, #3b82f6, #9333ea);
+    box-shadow: 0 4px 6px -1px rgb(191 219 254), 0 2px 4px -2px rgb(191 219 254);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.plan-step--pending .plan-step__icon {
+    border: 1px solid #9ca3af;
+    color: #4b5563;
+    background: #d1d5db;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: 0.5;
+    }
+}

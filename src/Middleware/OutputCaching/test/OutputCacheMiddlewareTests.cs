@@ -1146,6 +1146,54 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_InvalidCacheKey_DoesNotCoalesceRequests()
+    {
+        var responseCounter = 0;
+
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(
+            options: options,
+            keyProvider: new TestResponseCachingKeyProvider(string.Empty),
+            next: async c =>
+            {
+                var index = Interlocked.Increment(ref responseCounter);
+                if (index == 1)
+                {
+                    blocker1.SetResult(true);
+                    await blocker2.Task;
+                }
+                else if (index == 2)
+                {
+                    blocker2.SetResult(true);
+                }
+            });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/a";
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/b";
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for the first request to enter the pipeline.
+        await blocker1.Task;
+
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(2, responseCounter);
+    }
+
+    [Fact]
     public async Task AbortedRequest_DoesNotReExecuteRequest()
     {
         var responseCounter = 0;
