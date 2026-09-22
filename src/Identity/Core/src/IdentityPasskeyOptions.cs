@@ -52,7 +52,9 @@ public class IdentityPasskeyOptions
     /// This option applies to both creating a new passkey and requesting an existing passkey.
     /// </para>
     /// <para>
-    /// If left <see langword="null"/>, the server's origin may be used instead.
+    /// If left <see langword="null"/>, the server's origin may be used instead, which could
+    /// have security implications. For more information, see Host header validation and Subdomain security
+    /// in <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys" />.
     /// </para>
     /// <para>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#rp-id"/>.
@@ -166,7 +168,8 @@ public class IdentityPasskeyOptions
     /// </para>
     /// <para>
     /// If left <see langword="null"/>, cross-origin requests are disallowed, and the request is only
-    /// considered valid if the request's origin header matches the credential's origin.
+    /// considered valid if the request's origin header matches the credential's origin, which could have security implications.
+    /// For more information, see Subdomain security in <see href="https://learn.microsoft.com/aspnet/core/security/authentication/passkeys" />.
     /// </para>
     /// </remarks>
     public Func<PasskeyOriginValidationContext, ValueTask<bool>>? ValidateOrigin { get; set; }
