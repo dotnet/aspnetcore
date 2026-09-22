@@ -1,0 +1,46 @@
+﻿<p id="interactive">Interactive: @(!RunningOnServer)</p>
+<p id="interactive-runtime">Interactive runtime: @_interactiveRuntime</p>
+<p id="state-found">State found:@_stateFound</p>
+<p id="state-value">State value:@_stateValue</p>
+
+@code {
+    private bool _stateFound;
+    private string _stateValue;
+    private string _interactiveRuntime;
+
+    [Inject] public PersistentComponentState PersistentComponentState { get; set; }
+
+    [CascadingParameter(Name = nameof(RunningOnServer))] public bool RunningOnServer { get; set; }
+
+    [Parameter] public string ServerState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PersistentComponentState.RegisterOnPersisting(PersistState);
+
+        await Task.Yield();
+        _stateFound = PersistentComponentState.TryTakeFromJson<string>(nameof(AsyncChildComponentWithPersistentState), out _stateValue);
+
+        if (!_stateFound)
+        {
+            _stateValue = "fresh";
+        }
+
+        if (RunningOnServer)
+        {
+            _interactiveRuntime = "none";
+            _stateFound = true;
+            _stateValue = ServerState ?? "restored";
+        }
+        else
+        {
+            _interactiveRuntime = OperatingSystem.IsBrowser() ? "wasm" : "server";
+        }
+    }
+
+    private Task PersistState()
+    {
+        PersistentComponentState.PersistAsJson(nameof(AsyncChildComponentWithPersistentState), _stateValue);
+        return Task.CompletedTask;
+    }
+}

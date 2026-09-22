@@ -31,6 +31,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly bool _useOutOfProcessRendering;
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
     private bool _isDeferringInitialRootComponentRender;
+    private TaskCompletionSource? _deferredInitialRootComponentRenderCompletionSource;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -153,7 +154,15 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
 
         _isDeferringInitialRootComponentRender = false;
-        ProcessPendingRender();
+        try
+        {
+            ProcessPendingRender();
+        }
+        finally
+        {
+            _deferredInitialRootComponentRenderCompletionSource?.SetResult();
+            _deferredInitialRootComponentRenderCompletionSource = null;
+        }
     }
 
     protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
@@ -174,6 +183,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     {
         if (_isDeferringInitialRootComponentRender)
         {
+            _deferredInitialRootComponentRenderCompletionSource ??= new(TaskCreationOptions.RunContinuationsAsynchronously);
+            AddPendingTask(componentState: null, _deferredInitialRootComponentRenderCompletionSource.Task);
             return;
         }
 
