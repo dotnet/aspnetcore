@@ -29,6 +29,8 @@ public enum OpenApiSchemaGenerationMode
 /// </summary>
 public sealed class OpenApiOptions
 {
+    private Func<JsonTypeInfo, string?> _createSchemaReferenceId = CreateDefaultSchemaReferenceId;
+
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
     internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
@@ -76,8 +78,20 @@ public sealed class OpenApiOptions
     /// <remarks>
     /// The default implementation uses the <see cref="CreateDefaultSchemaReferenceId"/> method to generate reference IDs. When
     /// the provided delegate returns <see langword="null"/>, the schema associated with the <see cref="JsonTypeInfo"/> will always be inlined.
+    /// In <see cref="OpenApiSchemaGenerationMode.Inferred"/> mode, non-null custom IDs must be valid OpenAPI component keys and unique
+    /// for each distinct serializer contract type, except for framework-defined aliases that intentionally share a schema.
     /// </remarks>
-    public Func<JsonTypeInfo, string?> CreateSchemaReferenceId { get; set; } = CreateDefaultSchemaReferenceId;
+    public Func<JsonTypeInfo, string?> CreateSchemaReferenceId
+    {
+        get => _createSchemaReferenceId;
+        set
+        {
+            _createSchemaReferenceId = value;
+            UsesDefaultSchemaReferenceId = value == CreateDefaultSchemaReferenceId;
+        }
+    }
+
+    internal bool UsesDefaultSchemaReferenceId { get; private set; } = true;
 
     /// <summary>
     /// Registers a new document transformer on the current <see cref="OpenApiOptions"/> instance.

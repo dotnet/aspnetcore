@@ -58,6 +58,17 @@ Schema transformers continue to run once for the composed derived schema and onc
 serialized property, in serializer order. The synthetic base and local `allOf` branches do not
 introduce additional transformer callbacks.
 
+The inferred mode also resolves component names from the complete set of serializer contracts
+used by the document before schemas are emitted. A default name that is unique is unchanged. Name
+collisions are resolved deterministically by adding declaring-type or namespace segments, with a
+stable canonical fallback, so endpoint registration order does not affect component keys or
+references. JSON Patch document variants retain their intentional shared component.
+
+Custom `CreateSchemaReferenceId` values are authoritative in inferred mode. A `null` value still
+inlines the schema. Empty or invalid values, or the same non-null value returned for distinct
+non-aliased serializer contract types, cause document generation to fail rather than silently
+selecting or overwriting a component.
+
 For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 
 ## Build-time Document Generation

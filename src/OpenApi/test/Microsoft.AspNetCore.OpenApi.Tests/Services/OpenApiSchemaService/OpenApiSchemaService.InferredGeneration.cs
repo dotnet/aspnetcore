@@ -104,7 +104,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     new(new(typeof(DuplicateEmitterTwo)), "same"),
                 ]));
 
-        schema.ApplyCompositionDecision(decision, _ => null, new JsonSerializerOptions());
+        schema.ApplyCompositionDecision(decision, static (_, branchType) => branchType.Name);
 
         Assert.Same(alternatives, schema[OpenApiSchemaKeywords.AnyOfKeyword]);
         Assert.Null(schema[OpenApiSchemaKeywords.OneOfKeyword]);

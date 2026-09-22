@@ -76,7 +76,12 @@ internal sealed class OpenApiDocumentService(
             Info = GetOpenApiInfo(),
             Servers = GetOpenApiServers(httpRequest)
         };
-        document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+        var apiDescriptions = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
+            .SelectMany(group => group.Items)
+            .Where(_options.ShouldInclude)
+            .ToArray();
+        _componentService.InitializeInferredReferenceIds(document, GetSchemaRootTypes(apiDescriptions));
+        document.Paths = await GetOpenApiPathsAsync(document, apiDescriptions, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
         try
         {
             await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, cancellationToken);
@@ -246,14 +251,13 @@ internal sealed class OpenApiDocumentService(
     /// </remarks>
     private async Task<OpenApiPaths> GetOpenApiPathsAsync(
         OpenApiDocument document,
+        IReadOnlyList<ApiDescription> apiDescriptions,
         IServiceProvider scopedServiceProvider,
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
-        var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
-            .SelectMany(group => group.Items)
-            .Where(_options.ShouldInclude)
+        var descriptionsByPath = apiDescriptions
             .GroupBy(apiDescription => apiDescription.MapRelativePathToItemPath());
         var paths = new OpenApiPaths();
         foreach (var descriptions in descriptionsByPath)
@@ -267,6 +271,36 @@ internal sealed class OpenApiDocumentService(
         }
 
         return paths;
+    }
+
+    private static IEnumerable<Type> GetSchemaRootTypes(IReadOnlyList<ApiDescription> apiDescriptions)
+    {
+        foreach (var description in apiDescriptions)
+        {
+            foreach (var parameter in description.ParameterDescriptions)
+            {
+                if (parameter.Source != BindingSource.Header || !_disallowedHeaderParameters.Contains(parameter.Name))
+                {
+                    yield return GetTargetType(description, parameter);
+                }
+            }
+
+            foreach (var response in description.SupportedResponseTypes)
+            {
+                if (response.Type is not { } responseType ||
+                    responseType == typeof(void) ||
+                    response.ApiResponseFormats.Count == 0)
+                {
+                    continue;
+                }
+
+                var eventDataType = response.ApiResponseFormats
+                    .Select(format => format.MediaType)
+                    .Select(contentType => IsServerSentEventsResponse(contentType, responseType, out var type) ? type : null)
+                    .FirstOrDefault(type => type is not null);
+                yield return eventDataType ?? responseType;
+            }
+        }
     }
 
     private async Task<Dictionary<HttpMethod, OpenApiOperation>> GetOperationsAsync(
