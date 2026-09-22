@@ -190,14 +190,18 @@ public partial class OpenApiSchemaServiceTests
     }
 
     [Fact]
-    public void CompositionDecision_CSharpUnion_UsesAnyOfInDeclaredOrder()
+    public void CompositionDecision_CSharpUnion_UsesOneOfForDisjointDomainsInDeclaredOrder()
     {
         var document = BuildCompositionShape<ReverseShapeUnion>();
 
         var decision = document.CompositionDecisions[typeof(ReverseShapeUnion)].Alternatives;
-        Assert.Equal(InferredAlternativeCompositionKind.AnyOf, decision.Kind);
-        Assert.Equal(InferredAlternativeReason.UnionCasesAreNotProvenExclusive, decision.Reason);
+        Assert.Equal(InferredAlternativeSource.Union, decision.Source);
+        Assert.Equal(InferredAlternativeCompositionKind.OneOf, decision.Kind);
+        Assert.Equal(InferredAlternativeReason.UnionCasesHaveDisjointJsonDomains, decision.Reason);
         Assert.Equal([typeof(string), typeof(int)], decision.Branches.Select(branch => branch.Identity.Type));
+        Assert.Equal(
+            [InferredJsonValueDomain.String, InferredJsonValueDomain.Integer],
+            decision.Branches.Select(branch => branch.JsonDomain!.Value.Domains));
     }
 
     [Fact]

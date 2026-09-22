@@ -475,7 +475,8 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
-        if (decision.Reason == InferredAlternativeReason.UnionCasesAreNotProvenExclusive)
+        if (decision.Source == InferredAlternativeSource.Union &&
+            decision.Kind == InferredAlternativeCompositionKind.AnyOf)
         {
             return;
         }
@@ -510,30 +511,32 @@ internal static class JsonNodeSchemaExtensions
                 $"The inferred alternative branches for '{compositionDecision.Identity.Type}' do not match the exported schema.");
         }
 
-        for (var i = 0; i < decision.Branches.Count; i++)
+        if (decision.Source == InferredAlternativeSource.Polymorphism)
         {
-            if (alternatives[i] is not JsonObject branchSchema)
+            for (var i = 0; i < decision.Branches.Count; i++)
             {
-                throw new InvalidOperationException(
-                    $"The inferred alternative branch for '{decision.Branches[i].Identity.Type}' is not an object schema.");
-            }
+                if (alternatives[i] is not JsonObject branchSchema)
+                {
+                    throw new InvalidOperationException(
+                        $"The inferred alternative branch for '{decision.Branches[i].Identity.Type}' is not an object schema.");
+                }
 
-            if (getPolymorphicReferenceId(
-                compositionDecision.Identity.Type,
-                decision.Branches[i].Identity.Type) is { } branchReferenceId)
-            {
-                branchSchema[OpenApiConstants.SchemaId] = branchReferenceId;
+                if (getPolymorphicReferenceId(
+                    compositionDecision.Identity.Type,
+                    decision.Branches[i].Identity.Type) is { } branchReferenceId)
+                {
+                    branchSchema[OpenApiConstants.SchemaId] = branchReferenceId;
+                }
             }
         }
-        schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
 
         if (decision.Kind == InferredAlternativeCompositionKind.AnyOf)
         {
+            schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
             return;
         }
 
-        if (decision.Kind != InferredAlternativeCompositionKind.OneOf ||
-            decision.DiscriminatorPropertyName is not { } discriminatorPropertyName)
+        if (decision.Kind != InferredAlternativeCompositionKind.OneOf)
         {
             throw new InvalidOperationException("The inferred alternative composition decision is not supported.");
         }
@@ -543,6 +546,28 @@ internal static class JsonNodeSchemaExtensions
             throw new InvalidOperationException("The exported schema contains both inferred and explicit oneOf alternatives.");
         }
 
+        schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
+        schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
+
+        if (decision.Source == InferredAlternativeSource.Union)
+        {
+            if (decision.DiscriminatorPropertyName is not null ||
+                decision.Branches.Any(branch => branch.Discriminator is not null))
+            {
+                throw new InvalidOperationException("An inferred union oneOf cannot define a discriminator.");
+            }
+
+            schemaObject[OpenApiConstants.SchemaIsInferredUnion] = true;
+            return;
+        }
+
+        if (decision.Source != InferredAlternativeSource.Polymorphism ||
+            decision.DiscriminatorPropertyName is not { } discriminatorPropertyName)
+        {
+            throw new InvalidOperationException("The inferred oneOf alternative source is not supported.");
+        }
+
+        schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
         var mappings = new JsonObject();
         foreach (var branch in decision.Branches)
         {
@@ -560,8 +585,6 @@ internal static class JsonNodeSchemaExtensions
             mappings[Convert.ToString(branch.Discriminator, CultureInfo.InvariantCulture)!] = branchReferenceId;
         }
 
-        schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
-        schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
         schemaObject[OpenApiSchemaKeywords.DiscriminatorKeyword] = discriminatorPropertyName;
         schemaObject[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
     }

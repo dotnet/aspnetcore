@@ -261,7 +261,9 @@ internal static class InferredSchemaShapeBuilder
         }
 
         var unionCases = typeInfo.UnionCases
-            .Select(unionCase => CreateTypeUse(unionCase.CaseType))
+            .Select(unionCase => new InferredSchemaTypeUse(
+                new(Nullable.GetUnderlyingType(unionCase.CaseType) ?? unionCase.CaseType),
+                unionCase.IsNullable))
             .ToArray();
         return Array.AsReadOnly(unionCases);
     }

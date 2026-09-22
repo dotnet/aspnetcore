@@ -3,6 +3,8 @@
 
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -34,20 +36,64 @@ internal enum InferredAlternativeCompositionKind
     OneOf,
 }
 
+internal enum InferredAlternativeSource
+{
+    None,
+    Polymorphism,
+    Union,
+}
+
 internal enum InferredAlternativeReason
 {
     NoAlternatives,
-    UnionCasesAreNotProvenExclusive,
+    UnionCaseJsonDomainIsUnknown,
+    UnionCasesHaveOverlappingJsonDomains,
+    UnionCasesHaveDisjointJsonDomains,
     MissingDiscriminator,
     DuplicateDiscriminator,
     DistinctExplicitDiscriminators,
 }
 
+[Flags]
+internal enum InferredJsonValueDomain
+{
+    None = 0,
+    Null = 1 << 0,
+    Boolean = 1 << 1,
+    String = 1 << 2,
+    Integer = 1 << 3,
+    NonIntegerNumber = 1 << 4,
+    Object = 1 << 5,
+    Array = 1 << 6,
+    Any = Null | Boolean | String | Integer | NonIntegerNumber | Object | Array,
+}
+
+internal enum InferredJsonDomainReason
+{
+    KnownPrimitive,
+    SerializerObject,
+    SerializerArray,
+    UnionOfKnownDomains,
+    CustomConverter,
+    EnumRepresentation,
+    PolymorphicContract,
+    ArbitraryJsonValue,
+    UnsupportedScalar,
+    RecursiveUnion,
+}
+
+internal readonly record struct InferredJsonDomainFact(
+    InferredJsonValueDomain Domains,
+    bool IsExact,
+    InferredJsonDomainReason Reason);
+
 internal sealed record InferredAlternativeBranch(
     InferredSchemaTypeIdentity Identity,
-    object? Discriminator);
+    object? Discriminator,
+    InferredJsonDomainFact? JsonDomain);
 
 internal sealed record InferredAlternativeCompositionDecision(
+    InferredAlternativeSource Source,
     InferredAlternativeCompositionKind Kind,
     InferredAlternativeReason Reason,
     string? DiscriminatorPropertyName,
@@ -93,12 +139,13 @@ internal static class InferredSchemaCompositionDecisionBuilder
     public static InferredSchemaCompositionDecisions Build(InferredSchemaDocument document)
     {
         var decisions = new List<InferredSchemaCompositionDecision>(document.Shapes.Count);
+        var jsonDomains = new InferredJsonDomainResolver(document);
         foreach (var shape in document.Shapes)
         {
             decisions.Add(new(
                 shape.Identity,
                 DecideInheritance(document, shape),
-                DecideAlternatives(shape),
+                DecideAlternatives(shape, jsonDomains),
                 DecideObjectContract(shape)));
         }
 
@@ -207,23 +254,59 @@ internal static class InferredSchemaCompositionDecisionBuilder
         }
     }
 
-    private static InferredAlternativeCompositionDecision DecideAlternatives(InferredSchemaShape shape)
+    private static InferredAlternativeCompositionDecision DecideAlternatives(
+        InferredSchemaShape shape,
+        InferredJsonDomainResolver jsonDomains)
     {
         if (shape.Kind == InferredSchemaShapeKind.Union)
         {
             var unionBranches = shape.UnionCases
-                .Select(unionCase => new InferredAlternativeBranch(unionCase.Identity, null))
+                .Select(unionCase => new InferredAlternativeBranch(
+                    unionCase.Identity,
+                    null,
+                    jsonDomains.GetDomain(unionCase)))
                 .ToArray();
-            return new(
-                InferredAlternativeCompositionKind.AnyOf,
-                InferredAlternativeReason.UnionCasesAreNotProvenExclusive,
-                null,
-                Array.AsReadOnly(unionBranches));
+
+            if (unionBranches.Any(branch => branch.JsonDomain is not { IsExact: true }))
+            {
+                return UnionDecision(
+                    InferredAlternativeCompositionKind.AnyOf,
+                    InferredAlternativeReason.UnionCaseJsonDomainIsUnknown);
+            }
+
+            for (var i = 0; i < unionBranches.Length; i++)
+            {
+                for (var j = i + 1; j < unionBranches.Length; j++)
+                {
+                    if ((unionBranches[i].JsonDomain!.Value.Domains &
+                        unionBranches[j].JsonDomain!.Value.Domains) != InferredJsonValueDomain.None)
+                    {
+                        return UnionDecision(
+                            InferredAlternativeCompositionKind.AnyOf,
+                            InferredAlternativeReason.UnionCasesHaveOverlappingJsonDomains);
+                    }
+                }
+            }
+
+            return UnionDecision(
+                InferredAlternativeCompositionKind.OneOf,
+                InferredAlternativeReason.UnionCasesHaveDisjointJsonDomains);
+
+            InferredAlternativeCompositionDecision UnionDecision(
+                InferredAlternativeCompositionKind kind,
+                InferredAlternativeReason reason)
+                => new(
+                    InferredAlternativeSource.Union,
+                    kind,
+                    reason,
+                    null,
+                    Array.AsReadOnly(unionBranches));
         }
 
         if (shape.DerivedTypes.Count == 0)
         {
             return new(
+                InferredAlternativeSource.None,
                 InferredAlternativeCompositionKind.None,
                 InferredAlternativeReason.NoAlternatives,
                 null,
@@ -231,7 +314,7 @@ internal static class InferredSchemaCompositionDecisionBuilder
         }
 
         var branches = shape.DerivedTypes
-            .Select(derivedType => new InferredAlternativeBranch(derivedType.Identity, derivedType.Discriminator))
+            .Select(derivedType => new InferredAlternativeBranch(derivedType.Identity, derivedType.Discriminator, null))
             .ToArray();
         var discriminatorPropertyName = shape.DiscriminatorPropertyName;
         if (branches.Any(branch => branch.Discriminator is null))
@@ -245,6 +328,7 @@ internal static class InferredSchemaCompositionDecisionBuilder
         }
 
         return new(
+            InferredAlternativeSource.Polymorphism,
             InferredAlternativeCompositionKind.OneOf,
             InferredAlternativeReason.DistinctExplicitDiscriminators,
             discriminatorPropertyName,
@@ -252,6 +336,7 @@ internal static class InferredSchemaCompositionDecisionBuilder
 
         InferredAlternativeCompositionDecision AnyOf(InferredAlternativeReason reason)
             => new(
+                InferredAlternativeSource.Polymorphism,
                 InferredAlternativeCompositionKind.AnyOf,
                 reason,
                 discriminatorPropertyName,
@@ -288,5 +373,145 @@ internal static class InferredSchemaCompositionDecisionBuilder
         return shape.DisallowsUnmappedMembers
             ? new(InferredObjectContractKind.DisallowUnmappedMembers, null, null)
             : new(InferredObjectContractKind.Closed, null, null);
+    }
+
+    private sealed class InferredJsonDomainResolver(InferredSchemaDocument document)
+    {
+        private readonly Dictionary<Type, InferredJsonDomainFact> _domains = [];
+        private readonly HashSet<Type> _activeUnions = [];
+
+        public InferredJsonDomainFact GetDomain(InferredSchemaTypeUse typeUse)
+        {
+            var domain = GetNonNullDomain(typeUse.Identity.Type);
+            return typeUse.AllowsNull && domain.IsExact
+                ? domain with { Domains = domain.Domains | InferredJsonValueDomain.Null }
+                : domain;
+        }
+
+        private InferredJsonDomainFact GetNonNullDomain(Type type)
+        {
+            if (_domains.TryGetValue(type, out var domain))
+            {
+                return domain;
+            }
+
+            domain = Classify(type);
+            _domains.Add(type, domain);
+            return domain;
+        }
+
+        private InferredJsonDomainFact Classify(Type type)
+        {
+            if (!document.TryGetShape(type, out var shape))
+            {
+                return Unknown(InferredJsonDomainReason.UnsupportedScalar);
+            }
+
+            if (shape.HasCustomConverter)
+            {
+                return Unknown(InferredJsonDomainReason.CustomConverter);
+            }
+
+            if (shape.DerivedTypes.Count > 0)
+            {
+                return Unknown(InferredJsonDomainReason.PolymorphicContract);
+            }
+
+            if (type.IsEnum)
+            {
+                return Unknown(InferredJsonDomainReason.EnumRepresentation);
+            }
+
+            if (type == typeof(object) ||
+                type == typeof(JsonElement) ||
+                type == typeof(JsonDocument) ||
+                typeof(JsonNode).IsAssignableFrom(type))
+            {
+                return Unknown(InferredJsonDomainReason.ArbitraryJsonValue);
+            }
+
+            if (type == typeof(string) || type == typeof(char) || type == typeof(byte[]))
+            {
+                return Exact(InferredJsonValueDomain.String, InferredJsonDomainReason.KnownPrimitive);
+            }
+
+            if (type == typeof(bool))
+            {
+                return Exact(InferredJsonValueDomain.Boolean, InferredJsonDomainReason.KnownPrimitive);
+            }
+
+            if (type == typeof(byte) ||
+                type == typeof(sbyte) ||
+                type == typeof(short) ||
+                type == typeof(ushort) ||
+                type == typeof(int) ||
+                type == typeof(uint) ||
+                type == typeof(long) ||
+                type == typeof(ulong) ||
+                type == typeof(nint) ||
+                type == typeof(nuint) ||
+                type == typeof(Int128) ||
+                type == typeof(UInt128))
+            {
+                return Exact(InferredJsonValueDomain.Integer, InferredJsonDomainReason.KnownPrimitive);
+            }
+
+            if (type == typeof(float) ||
+                type == typeof(double) ||
+                type == typeof(decimal) ||
+                type == typeof(Half))
+            {
+                return Exact(
+                    InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
+                    InferredJsonDomainReason.KnownPrimitive);
+            }
+
+            return shape.Kind switch
+            {
+                InferredSchemaShapeKind.Object or InferredSchemaShapeKind.Dictionary =>
+                    Exact(InferredJsonValueDomain.Object, InferredJsonDomainReason.SerializerObject),
+                InferredSchemaShapeKind.Collection =>
+                    Exact(InferredJsonValueDomain.Array, InferredJsonDomainReason.SerializerArray),
+                InferredSchemaShapeKind.Union => ClassifyUnion(shape),
+                _ => Unknown(InferredJsonDomainReason.UnsupportedScalar),
+            };
+        }
+
+        private InferredJsonDomainFact ClassifyUnion(InferredSchemaShape shape)
+        {
+            if (!_activeUnions.Add(shape.Identity.Type))
+            {
+                return Unknown(InferredJsonDomainReason.RecursiveUnion);
+            }
+
+            try
+            {
+                var domains = InferredJsonValueDomain.None;
+                foreach (var unionCase in shape.UnionCases)
+                {
+                    var domain = GetDomain(unionCase);
+                    if (!domain.IsExact)
+                    {
+                        return domain;
+                    }
+
+                    domains |= domain.Domains;
+                }
+
+                return Exact(domains, InferredJsonDomainReason.UnionOfKnownDomains);
+            }
+            finally
+            {
+                _activeUnions.Remove(shape.Identity.Type);
+            }
+        }
+
+        private static InferredJsonDomainFact Exact(
+            InferredJsonValueDomain domains,
+            InferredJsonDomainReason reason)
+            => new(domains, IsExact: true, reason);
+
+        private static InferredJsonDomainFact Unknown(InferredJsonDomainReason reason)
+            => new(InferredJsonValueDomain.Any, IsExact: false, reason);
     }
 }

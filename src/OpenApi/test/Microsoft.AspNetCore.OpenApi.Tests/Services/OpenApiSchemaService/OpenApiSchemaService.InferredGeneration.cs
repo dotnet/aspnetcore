@@ -96,12 +96,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             new(typeof(DuplicateEmitterBase)),
             new(false, null, InferredInheritanceReason.NoBaseType),
             new(
+                InferredAlternativeSource.Polymorphism,
                 InferredAlternativeCompositionKind.AnyOf,
                 InferredAlternativeReason.DuplicateDiscriminator,
                 "kind",
                 [
-                    new(new(typeof(DuplicateEmitterOne)), "same"),
-                    new(new(typeof(DuplicateEmitterTwo)), "same"),
+                    new(new(typeof(DuplicateEmitterOne)), "same", null),
+                    new(new(typeof(DuplicateEmitterTwo)), "same", null),
                 ]),
             new(InferredObjectContractKind.NotObject, null, null));
 
@@ -113,7 +114,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task SchemaGenerationMode_Inferred_CSharpUnionRemainsAnyOf()
+    public async Task SchemaGenerationMode_Inferred_CSharpUnionUsesOneOfWhenDomainsAreDisjoint()
     {
         var builder = CreateBuilder();
         builder.MapGet("/api", () => new UnionIntString(42));
@@ -121,8 +122,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
         {
             var schema = document.Components.Schemas[nameof(UnionIntString)];
-            Assert.Equal(2, schema.AnyOf.Count);
-            Assert.Null(schema.OneOf);
+            Assert.Null(schema.AnyOf);
+            Assert.Collection(
+                schema.OneOf,
+                branch => Assert.Equal(JsonSchemaType.Integer, branch.Type),
+                branch => Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, branch.Type));
+            Assert.Null(schema.Discriminator);
         });
     }
 

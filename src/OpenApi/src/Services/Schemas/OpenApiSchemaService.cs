@@ -609,7 +609,11 @@ internal sealed class OpenApiSchemaService(
             InferredAlternativeCompositionKind.AnyOf => schema.AnyOf,
             _ => null,
         };
-        if (alternativeSchemas is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        var traverseAlternativeBranches = jsonTypeInfo.PolymorphismOptions is not null ||
+            inferredMode &&
+            alternativeDecision.Source == InferredAlternativeSource.Union &&
+            alternativeDecision.Kind == InferredAlternativeCompositionKind.OneOf;
+        if (alternativeSchemas is { Count: > 0 } && traverseAlternativeBranches)
         {
             if (inferredMode && alternativeSchemas.Count < alternativeDecision.Branches.Count)
             {

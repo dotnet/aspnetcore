@@ -365,6 +365,11 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaIsInferredPolymorphism, reader.GetBoolean());
                 break;
+            case OpenApiConstants.SchemaIsInferredUnion:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredUnion, reader.GetBoolean());
+                break;
             case OpenApiConstants.SchemaIsInferredInheritance:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();

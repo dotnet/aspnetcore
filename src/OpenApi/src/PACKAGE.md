@@ -49,6 +49,13 @@ builder.Services.AddOpenApi(options =>
 
 This mode emits `oneOf` for System.Text.Json polymorphic contracts only when every configured
 branch has a distinct, explicit discriminator. Other alternatives continue to use `anyOf`.
+It also emits ordered `oneOf` branches for C# unions only when immutable serializer-contract facts
+prove every pair of JSON instance domains disjoint. The proof distinguishes null, boolean, string,
+integer, non-integer number, object, and array domains; unrestricted numbers overlap integers.
+Object-object and array-array branches overlap, and multiple nullable branches overlap on null.
+Enums, arbitrary JSON values (`object`, `JsonElement`, and JSON nodes), polymorphic contracts,
+custom converters, and unsupported scalar representations remain `anyOf` because their domains
+are not proven exact. Union `oneOf` schemas do not add discriminators.
 It also emits `allOf` for inheritance only when the serializer contracts can be separated
 losslessly into a reusable base component and local derived properties. Contracts with custom
 converters, property collisions or hiding, extension data, additional-properties constraints,
