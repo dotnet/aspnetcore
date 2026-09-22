@@ -18,6 +18,26 @@ public class RequestDelegateFactoryFormMappingTests
     }
 
     [Fact]
+    public void CreateSupportsFormCollectionWithMultiplePublicConstructors()
+    {
+        static void TestAction([FromForm] List<int> value) { }
+
+        var result = RequestDelegateFactory.Create(TestAction);
+
+        Assert.NotNull(result.RequestDelegate);
+    }
+
+    [Fact]
+    public void CreateSupportsFormDictionaryWithMultiplePublicConstructors()
+    {
+        static void TestAction([FromForm] Dictionary<string, int> value) { }
+
+        var result = RequestDelegateFactory.Create(TestAction);
+
+        Assert.NotNull(result.RequestDelegate);
+    }
+
+    [Fact]
     public void CreatePreservesConverterFailureForFormCollectionWithUnsupportedElementType()
     {
         static void TestAction([FromForm] List<FormClassWithoutPublicConstructors> value) { }
