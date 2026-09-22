@@ -57,7 +57,10 @@ internal sealed class HttpsConnectionMiddleware
 
     // Shared across connections on this endpoint: creating one per connection would throw away
     // the session cache and make every handshake a full one. Only used on the sans-IO path.
-    private TlsContext? _sansIoContext;
+    // Volatile because both are published from inside the lock but read without it; the options
+    // are written first so a reader that sees the context also sees the options it was built from.
+    private volatile TlsContext? _sansIoContext;
+    private volatile SslServerAuthenticationOptions? _sansIoSslOptions;
     private readonly object _sansIoContextLock = new();
 
     public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, KestrelMetrics metrics)
@@ -389,10 +392,16 @@ internal sealed class HttpsConnectionMiddleware
                 await _tlsListener.OnTlsClientHelloAsync(context, cancellationTokenSource.Token);
             }
 
+            // Resolve the context first so the start event can report the protocols it was
+            // actually built with, matching what the SslStream path reports from its
+            // per-connection options.
+            var tlsContext = GetOrCreateSansIoContext();
+
+            KestrelEventSource.Log.TlsHandshakeStart(context, _sansIoSslOptions!);
             _metrics.TlsHandshakeStart(metricsContext);
 
             await tlsPipe.HandshakeAsync(
-                GetOrCreateSansIoContext(),
+                tlsContext,
                 // Runs the built-in chain build together with the RemoteCertificateValidationCallback
                 // set above, which is how the SslStream path enforces ClientCertificateMode.
                 onCertificateValidation: static session => session.AcceptWithDefaultValidation(),
@@ -485,7 +494,17 @@ internal sealed class HttpsConnectionMiddleware
 
         lock (_sansIoContextLock)
         {
-            return _sansIoContext ??= TlsContext.CreateServer(BuildServerAuthenticationOptions());
+            if (_sansIoContext is null)
+            {
+                var sslOptions = BuildServerAuthenticationOptions();
+
+                // Publish the options before the context so a connection that observes the
+                // context always observes the options it was built from.
+                _sansIoSslOptions = sslOptions;
+                _sansIoContext = TlsContext.CreateServer(sslOptions);
+            }
+
+            return _sansIoContext;
         }
     }
 
