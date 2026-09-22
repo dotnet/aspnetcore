@@ -10,6 +10,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -115,6 +116,7 @@ public class Startup
         // Must happen before the first connection is accepted: the middleware reads this switch
         // per connection to decide which TLS layer to build.
         var sansIo = string.Equals(mode, "sansio", StringComparison.OrdinalIgnoreCase);
+        var proto = string.Equals(mode, "proto", StringComparison.OrdinalIgnoreCase);
         AppContext.SetSwitch(SansIoSwitch, sansIo);
 
         // Every lab profile drives load from a separate machine. Binding loopback-only there
@@ -137,7 +139,54 @@ public class Startup
                         options.Listen(bindAddress, port, listenOptions =>
                         {
                             listenOptions.Protocols = HttpProtocols.Http1;
-                            listenOptions.UseHttps(certificate);
+
+                            if (proto)
+                            {
+                                // The standalone prototype adapter, swapped in as connection
+                                // middleware exactly as the original PoC server did. Kestrel's
+                                // own HTTPS middleware is bypassed entirely, so this measures
+                                // the adapter without the integrated path around it.
+                                var serverOptions = new SslServerAuthenticationOptions
+                                {
+                                    ServerCertificate = certificate,
+                                    EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
+                                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11 },
+                                };
+                                var tlsContext = TlsContext.CreateServer(serverOptions);
+
+                                listenOptions.Use(next => async connection =>
+                                {
+                                    var tls = new ProtoTlsSessionDuplexPipe(connection.Transport);
+                                    var original = connection.Transport;
+
+                                    try
+                                    {
+                                        await tls.HandshakeAsync(tlsContext);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.Error.WriteLine($"[proto] handshake failed: {ex.GetType().Name}: {ex.Message}");
+                                        connection.Abort();
+                                        return;
+                                    }
+
+                                    connection.Transport = tls;
+
+                                    try
+                                    {
+                                        await next(connection);
+                                    }
+                                    finally
+                                    {
+                                        connection.Transport = original;
+                                        await tls.DisposeAsync();
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                listenOptions.UseHttps(certificate);
+                            }
                         });
                     })
                     .UseContentRoot(Directory.GetCurrentDirectory())
