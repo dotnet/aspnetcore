@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.Identity.Data;
 public sealed class PasskeyRequestOptionsRequest
 {
     /// <summary>
-    /// The optional email address of the user requesting passkey options.
+    /// Gets or initializes an email address reserved for a future opt-in mode that identifies the user.
     /// </summary>
+    /// <remarks>
+    /// This value is currently ignored. Request options only support discoverable credentials.
+    /// </remarks>
     public string? Email { get; init; }
 }

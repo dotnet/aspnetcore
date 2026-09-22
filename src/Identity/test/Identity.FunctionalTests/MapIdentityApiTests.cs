@@ -3,12 +3,16 @@
 
 #nullable enable
 
+using System.Buffers.Binary;
 using System.Diagnostics.Metrics;
+using System.Formats.Cbor;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Identity.DefaultUI.WebSite;
@@ -317,6 +321,56 @@ public class MapIdentityApiTests : LoggedTest
         var passkey = Assert.Single(await userManager.GetPasskeysAsync(user));
         Assert.Equal([1, 2, 3], passkey.CredentialId);
         Assert.Equal("Laptop", passkey.Name);
+    }
+
+    [Fact]
+    public async Task CanRegisterAndLoginWithPasskeyUsingProductionHandler()
+    {
+        await using var app = await CreatePasskeyAppAsync(
+            useTestPasskeyHandler: false,
+            configureServices: services => services.Configure<IdentityPasskeyOptions>(
+                options => options.ResidentKeyRequirement = "required"));
+        using var registrationClient = app.GetTestClient();
+        registrationClient.DefaultRequestHeaders.Add(HeaderNames.Origin, BaseAddress.GetLeftPart(UriPartial.Authority));
+
+        await RegisterAsync(registrationClient);
+        await LoginAsync(registrationClient);
+
+        using var credential = new TestPasskeyCredential();
+        var creationOptionsResponse = await registrationClient.PostAsync(
+            "/identity/manage/passkeys/creationOptions",
+            content: null);
+        ApplyCookies(registrationClient, creationOptionsResponse);
+        var creationOptions = await creationOptionsResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        var registrationResponse = await registrationClient.PostAsJsonAsync("/identity/manage/passkeys", new
+        {
+            CredentialJson = credential.CreateAttestationCredentialJson(creationOptions),
+            Name = "Laptop",
+        });
+        AssertOk(registrationResponse);
+
+        using var loginClient = app.GetTestClient();
+        loginClient.DefaultRequestHeaders.Add(HeaderNames.Origin, BaseAddress.GetLeftPart(UriPartial.Authority));
+
+        var requestOptionsResponse = await loginClient.PostAsJsonAsync(
+            "/identity/passkeys/requestOptions",
+            new { Email });
+        ApplyCookies(loginClient, requestOptionsResponse);
+        var requestOptions = await requestOptionsResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        var loginResponse = await loginClient.PostAsJsonAsync("/identity/passkeys/login", new
+        {
+            CredentialJson = credential.CreateAssertionCredentialJson(requestOptions),
+        });
+
+        AssertOk(loginResponse);
+        var login = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var accessToken = login.GetProperty("accessToken").GetString();
+        Assert.NotNull(accessToken);
+
+        loginClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
+        Assert.Equal($"Hello, {Email}!", await loginClient.GetStringAsync("/auth/hello"));
     }
 
     [Fact]
@@ -1893,6 +1947,7 @@ public class MapIdentityApiTests : LoggedTest
 
     private Task<WebApplication> CreatePasskeyAppAsync(
         bool bearerOnly = false,
+        bool useTestPasskeyHandler = true,
         Action<IServiceCollection>? configureServices = null)
     {
         return CreateAppAsync<ApplicationUser, PasskeyDbContext>(services =>
@@ -1910,7 +1965,10 @@ public class MapIdentityApiTests : LoggedTest
             {
                 options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             });
-            services.AddScoped<IPasskeyHandler<ApplicationUser>, TestPasskeyHandler>();
+            if (useTestPasskeyHandler)
+            {
+                services.AddScoped<IPasskeyHandler<ApplicationUser>, TestPasskeyHandler>();
+            }
             configureServices?.Invoke(services);
         });
     }
@@ -2075,6 +2133,187 @@ public class MapIdentityApiTests : LoggedTest
             {
                 client.DefaultRequestHeaders.Add(HeaderNames.Cookie, cookie);
             }
+        }
+    }
+
+    private sealed class TestPasskeyCredential : IDisposable
+    {
+        private const byte UserPresentFlag = 1 << 0;
+        private const byte UserVerifiedFlag = 1 << 2;
+        private const byte AttestedCredentialDataFlag = 1 << 6;
+        private static readonly byte[] _credentialId = [1, 2, 3, 4, 5, 6, 7, 8];
+        private readonly ECDsa _key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        private string? _userHandle;
+
+        public string CreateAttestationCredentialJson(JsonElement creationOptions)
+        {
+            var rpId = creationOptions.GetProperty("rp").GetProperty("id").GetString()
+                ?? throw new InvalidOperationException("The relying party ID is missing.");
+            _userHandle = creationOptions.GetProperty("user").GetProperty("id").GetString()
+                ?? throw new InvalidOperationException("The user handle is missing.");
+
+            var publicKey = EncodePublicKey();
+            var attestedCredentialData = new byte[16 + sizeof(ushort) + _credentialId.Length + publicKey.Length];
+            var offset = 16;
+            BinaryPrimitives.WriteUInt16BigEndian(attestedCredentialData.AsSpan(offset), (ushort)_credentialId.Length);
+            offset += sizeof(ushort);
+            _credentialId.CopyTo(attestedCredentialData.AsSpan(offset));
+            offset += _credentialId.Length;
+            publicKey.CopyTo(attestedCredentialData.AsSpan(offset));
+
+            var authenticatorData = CreateAuthenticatorData(
+                rpId,
+                UserPresentFlag | UserVerifiedFlag | AttestedCredentialDataFlag,
+                signCount: 1,
+                attestedCredentialData);
+            var attestationObject = CreateAttestationObject(authenticatorData);
+            var clientDataJson = CreateClientDataJson(creationOptions, "webauthn.create");
+
+            return JsonSerializer.Serialize(new
+            {
+                id = WebEncoders.Base64UrlEncode(_credentialId),
+                response = new
+                {
+                    attestationObject = WebEncoders.Base64UrlEncode(attestationObject),
+                    clientDataJSON = WebEncoders.Base64UrlEncode(clientDataJson),
+                    transports = new[] { "internal" },
+                },
+                type = "public-key",
+                clientExtensionResults = new { },
+                authenticatorAttachment = "platform",
+            });
+        }
+
+        public string CreateAssertionCredentialJson(JsonElement requestOptions)
+        {
+            var rpId = requestOptions.GetProperty("rpId").GetString()
+                ?? throw new InvalidOperationException("The relying party ID is missing.");
+            var userHandle = _userHandle
+                ?? throw new InvalidOperationException("An attestation credential must be created first.");
+            var authenticatorData = CreateAuthenticatorData(
+                rpId,
+                UserPresentFlag | UserVerifiedFlag,
+                signCount: 2);
+            var clientDataJson = CreateClientDataJson(requestOptions, "webauthn.get");
+            var clientDataHash = SHA256.HashData(clientDataJson);
+            var dataToSign = new byte[authenticatorData.Length + clientDataHash.Length];
+            authenticatorData.CopyTo(dataToSign, 0);
+            clientDataHash.CopyTo(dataToSign, authenticatorData.Length);
+            var signature = _key.SignData(
+                dataToSign,
+                HashAlgorithmName.SHA256,
+                DSASignatureFormat.Rfc3279DerSequence);
+
+            return JsonSerializer.Serialize(new
+            {
+                id = WebEncoders.Base64UrlEncode(_credentialId),
+                response = new
+                {
+                    authenticatorData = WebEncoders.Base64UrlEncode(authenticatorData),
+                    clientDataJSON = WebEncoders.Base64UrlEncode(clientDataJson),
+                    signature = WebEncoders.Base64UrlEncode(signature),
+                    userHandle,
+                },
+                type = "public-key",
+                clientExtensionResults = new { },
+                authenticatorAttachment = "platform",
+            });
+        }
+
+        public void Dispose() => _key.Dispose();
+
+        private byte[] EncodePublicKey()
+        {
+            var parameters = _key.ExportParameters(includePrivateParameters: false);
+            var writer = new CborWriter(CborConformanceMode.Ctap2Canonical);
+            writer.WriteStartMap(5);
+            writer.WriteInt32((int)CoseKeyParameter.KeyType);
+            writer.WriteInt32((int)CoseKeyType.Ec2);
+            writer.WriteInt32((int)CoseKeyParameter.Algorithm);
+            writer.WriteInt32(-7);
+            writer.WriteInt32((int)CoseKeyParameter.Curve);
+            writer.WriteInt32((int)CoseCurve.P256);
+            writer.WriteInt32((int)CoseKeyParameter.X);
+            writer.WriteByteString(parameters.Q.X!);
+            writer.WriteInt32((int)CoseKeyParameter.Y);
+            writer.WriteByteString(parameters.Q.Y!);
+            writer.WriteEndMap();
+
+            return writer.Encode();
+        }
+
+        private static byte[] CreateAuthenticatorData(
+            string rpId,
+            byte flags,
+            uint signCount,
+            byte[]? attestedCredentialData = null)
+        {
+            const int RpIdHashLength = 32;
+            const int FlagsLength = 1;
+            const int SignCountLength = 4;
+            var result = new byte[
+                RpIdHashLength +
+                FlagsLength +
+                SignCountLength +
+                (attestedCredentialData?.Length ?? 0)];
+            var offset = 0;
+
+            SHA256.HashData(Encoding.UTF8.GetBytes(rpId)).CopyTo(result, offset);
+            offset += RpIdHashLength;
+            result[offset] = flags;
+            offset += FlagsLength;
+            BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(offset), signCount);
+            offset += SignCountLength;
+            attestedCredentialData?.CopyTo(result, offset);
+
+            return result;
+        }
+
+        private static byte[] CreateAttestationObject(byte[] authenticatorData)
+        {
+            var writer = new CborWriter(CborConformanceMode.Ctap2Canonical);
+            writer.WriteStartMap(3);
+            writer.WriteTextString("fmt");
+            writer.WriteTextString("none");
+            writer.WriteTextString("attStmt");
+            writer.WriteStartMap(0);
+            writer.WriteEndMap();
+            writer.WriteTextString("authData");
+            writer.WriteByteString(authenticatorData);
+            writer.WriteEndMap();
+
+            return writer.Encode();
+        }
+
+        private static byte[] CreateClientDataJson(JsonElement options, string type)
+        {
+            var challenge = options.GetProperty("challenge").GetString()
+                ?? throw new InvalidOperationException("The challenge is missing.");
+            return JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                challenge,
+                origin = BaseAddress.GetLeftPart(UriPartial.Authority),
+                type,
+            });
+        }
+
+        private enum CoseKeyParameter
+        {
+            Curve = -1,
+            X = -2,
+            Y = -3,
+            KeyType = 1,
+            Algorithm = 3,
+        }
+
+        private enum CoseKeyType
+        {
+            Ec2 = 2,
+        }
+
+        private enum CoseCurve
+        {
+            P256 = 1,
         }
     }
 

@@ -135,7 +135,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user: null);
 
             return TypedResults.Content(optionsJson, contentType: "application/json");
-        });
+        })
+        .WithSummary(
+            "Creates request options for discoverable passkeys. The email is currently ignored and reserved for future opt-in behavior. " +
+            "Configure IdentityPasskeyOptions.ResidentKeyRequirement to \"required\" when registering credentials for this endpoint.");
 
         passkeyGroup.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult, ValidationProblem>>
             ([FromBody] PasskeyLoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
