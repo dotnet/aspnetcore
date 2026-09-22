@@ -190,7 +190,7 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
         if (_input.HasBufferedPlaintext)
         {
             throw new InvalidOperationException(
-                "Cannot request a client certificate while application data is buffered; drain the request body first.");
+                "Client stream needs to be drained before renegotiation.");
         }
 
         // Stage the CertificateRequest (TLS 1.3) or renegotiation (TLS 1.2) and send it, then
@@ -216,9 +216,18 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
             throw new IOException("Peer closed the connection when a client certificate was requested.");
         }
 
-        var scratch = ArrayPool<byte>.Shared.Rent(MaxCipherRecord);
+        // Staging the request re-arms the handshake state machine, so the session must no longer
+        // report the first handshake as complete. A runtime that still reports it complete has not
+        // re-armed, and the Handshake loop below would short-circuit to Complete without ever
+        // reading the peer's certificate - surfacing as a silent "no client certificate" rather
+        // than a failure. Fail loudly instead: a caller that cannot tell those apart may treat an
+        // authenticated peer as anonymous.
+        if (staged && _session.IsHandshakeComplete)
+        {
+            throw new PlatformNotSupportedException(
+                "The runtime does not support post-handshake client authentication on a sans-IO TLS session.");
+        }
 
-        try
         {
             var result = default(ReadResult);
             var buffer = ReadOnlySequence<byte>.Empty;
@@ -302,10 +311,6 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                     _transport.Input.AdvanceTo(buffer.Start, buffer.Start);
                 }
             }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(scratch);
         }
     }
 
