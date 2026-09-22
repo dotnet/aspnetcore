@@ -21,7 +21,7 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<TrimmingServerFixture<W
     }
 
     [Fact]
-    public void CanPrerenderAndHydrateHeadOutletWithoutRemovingTitle()
+    public void CanPrerenderAndHydrateHeadOutletWithoutLeavingTitleMissing()
     {
         Navigate("/");
 
