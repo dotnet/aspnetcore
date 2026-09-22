@@ -11,8 +11,5 @@
     "MD025": {
       "front_matter_title": ""
     }
-  },
-  "csharp-dev-tools.solutionViewer.selectedWorkspaceSolutions": [
-    "AspNetCore.slnx"
-  ]
+  }
 }
