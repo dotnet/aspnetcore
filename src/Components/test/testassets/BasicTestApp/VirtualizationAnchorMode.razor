@@ -50,7 +50,7 @@
     }
     else
     {
-        <p id="list-not-loaded" style="padding: 10px; color: #666;">List not loaded. Set an Initial Index below and click "Load list".</p>
+        <p id="list-not-loaded" style="padding: 10px; color: #666;">List not loaded. Configure the options, then load the list.</p>
     }
 </div>
 
@@ -59,7 +59,8 @@
         <input id="manual-initial-index" type="number" @bind="manualInitialIndex" style="width: 80px;" />
     </label>
     <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
-    <button id="unload-list" @onclick="UnloadList">Unload list</button>
+    <button id="load-list" @onclick="() => listLoaded = true">Load list</button>
+    <button id="unload-list" @onclick="() => listLoaded = false">Unload list</button>
     <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
 </div>
 
@@ -130,7 +131,7 @@
     private Virtualize<DynamicItem> virtualizeRef;
     private int manualInitialIndex;
     private int initialItemIndex;
-    private bool listLoaded = true;
+    private bool listLoaded;
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
     private CancellationTokenSource _userScrollCts;
@@ -492,11 +493,6 @@
         await Task.Yield();
         initialItemIndex = manualInitialIndex;
         listLoaded = true;
-    }
-
-    private void UnloadList()
-    {
-        listLoaded = false;
     }
 
     private async Task ScrollToTarget()

@@ -30,6 +30,8 @@
         <button id="toggle-delay" @onclick="ToggleDelay">
             Provider Delay: @(useProviderDelay ? "500ms" : "None")
         </button>
+        <button id="load-list" @onclick="() => listLoaded = true">Load list</button>
+        <button id="unload-list" @onclick="() => listLoaded = false">Unload list</button>
         <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
         <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     </div>
@@ -40,7 +42,11 @@
 
 <div id="virtualize-root" style="margin-top: 90px;">
     @* No scroll container — uses window/document as the scroll root *@
-    @if (useItemsProvider)
+    @if (!listLoaded)
+    {
+        <p id="list-not-loaded">List not loaded.</p>
+    }
+    else if (useItemsProvider)
     {
         <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
             <div class="item"
@@ -71,6 +77,7 @@
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private bool useProviderDelay = false;
+    private bool listLoaded;
     private Virtualize<DynamicItem> virtualizeRef;
     private int scrollTargetIndex = 100;
     private string scrollStatus = "Idle";
