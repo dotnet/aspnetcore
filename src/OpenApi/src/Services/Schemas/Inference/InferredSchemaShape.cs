@@ -49,6 +49,8 @@ internal sealed class InferredSchemaShape
         InferredSchemaTypeIdentity identity,
         InferredSchemaShapeKind kind,
         Type converterType,
+        bool hasCustomConverter,
+        string? discriminatorPropertyName,
         InferredSchemaTypeIdentity? baseType,
         InferredSchemaTypeUse? elementType,
         InferredSchemaTypeUse? additionalPropertiesType,
@@ -59,6 +61,8 @@ internal sealed class InferredSchemaShape
         Identity = identity;
         Kind = kind;
         ConverterType = converterType;
+        HasCustomConverter = hasCustomConverter;
+        DiscriminatorPropertyName = discriminatorPropertyName;
         BaseType = baseType;
         ElementType = elementType;
         AdditionalPropertiesType = additionalPropertiesType;
@@ -74,6 +78,10 @@ internal sealed class InferredSchemaShape
     public InferredSchemaShapeKind Kind { get; }
 
     public Type ConverterType { get; }
+
+    public bool HasCustomConverter { get; }
+
+    public string? DiscriminatorPropertyName { get; }
 
     public InferredSchemaTypeIdentity? BaseType { get; }
 
@@ -102,13 +110,19 @@ internal sealed class InferredSchemaDocument
         Shapes = shapes;
         _shapes = new ReadOnlyDictionary<Type, InferredSchemaShape>(
             shapes.ToDictionary(shape => shape.Identity.Type));
+        CompositionDecisions = InferredSchemaCompositionDecisionBuilder.Build(this);
     }
 
     public InferredSchemaTypeUse Root { get; }
 
     public IReadOnlyList<InferredSchemaShape> Shapes { get; }
 
+    public InferredSchemaCompositionDecisions CompositionDecisions { get; }
+
     public InferredSchemaShape this[Type type] => _shapes[GetUnderlyingType(type)];
+
+    public bool TryGetShape(Type type, out InferredSchemaShape shape)
+        => _shapes.TryGetValue(GetUnderlyingType(type), out shape!);
 
     private static Type GetUnderlyingType(Type type) => Nullable.GetUnderlyingType(type) ?? type;
 }
@@ -141,6 +155,8 @@ internal static class InferredSchemaShapeBuilder
                 new(type),
                 GetShapeKind(typeInfo),
                 typeInfo.Converter.GetType(),
+                typeInfo.Converter.GetType().Assembly != typeof(JsonSerializerOptions).Assembly,
+                typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,
                 elementType,
                 additionalPropertiesType,

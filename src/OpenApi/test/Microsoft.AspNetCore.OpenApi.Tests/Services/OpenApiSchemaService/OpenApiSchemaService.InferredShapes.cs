@@ -118,6 +118,7 @@ public partial class OpenApiSchemaServiceTests
         var convertedValue = converterDocument[typeof(ConvertedValue)];
         Assert.Equal(InferredSchemaShapeKind.Scalar, convertedValue.Kind);
         Assert.Equal(typeof(ConvertedValueConverter), convertedValue.ConverterType);
+        Assert.True(convertedValue.HasCustomConverter);
         Assert.Empty(convertedValue.Properties);
     }
 
