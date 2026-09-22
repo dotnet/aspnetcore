@@ -520,6 +520,47 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformer_InferredModeTraversesOneOfBranchesInOrder()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/shape", () => new PolymorphicContainer());
+
+        var transformedContexts = new List<(Type Type, string PropertyName)>();
+        var options = new OpenApiOptions();
+#pragma warning disable ASP0040
+        options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(PolymorphicContainer) ||
+                context.JsonTypeInfo.Type == typeof(Shape) ||
+                context.JsonTypeInfo.Type == typeof(Triangle) ||
+                context.JsonTypeInfo.Type == typeof(Square))
+            {
+                transformedContexts.Add((context.JsonTypeInfo.Type, context.JsonPropertyInfo?.Name));
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(
+                [
+                    (typeof(PolymorphicContainer), null),
+                    (typeof(Shape), "someShape"),
+                    (typeof(Triangle), null),
+                    (typeof(Square), null),
+                ],
+                transformedContexts);
+            var schema = document.Paths["/shape"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema.Properties["someShape"];
+            Assert.Collection(
+                schema.OneOf,
+                branch => Assert.Equal("ShapeTriangle", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id),
+                branch => Assert.Equal("ShapeSquare", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
+        });
+    }
+
+    [Fact]
     public async Task SchemaTransformer_CanModifyPropertiesInAnItemsType()
     {
         var builder = CreateBuilder();

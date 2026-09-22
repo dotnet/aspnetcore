@@ -1,4 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Inferred = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Legacy = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

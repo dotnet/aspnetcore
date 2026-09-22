@@ -8,6 +8,22 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 namespace Microsoft.AspNetCore.OpenApi;
 
 /// <summary>
+/// Specifies how schemas are generated for an OpenAPI document.
+/// </summary>
+public enum OpenApiSchemaGenerationMode
+{
+    /// <summary>
+    /// Uses the established schema generation behavior.
+    /// </summary>
+    Legacy = 0,
+
+    /// <summary>
+    /// Uses inferred serializer-contract semantics when selecting schema composition keywords.
+    /// </summary>
+    Inferred = 1,
+}
+
+/// <summary>
 /// Options to support the construction of OpenAPI documents.
 /// </summary>
 public sealed class OpenApiOptions
@@ -36,6 +52,12 @@ public sealed class OpenApiOptions
     /// The version of the OpenAPI specification to use. Defaults to <see cref="OpenApiSpecVersion.OpenApi3_2"/>.
     /// </summary>
     public OpenApiSpecVersion OpenApiVersion { get; set; } = OpenApiSpecVersion.OpenApi3_2;
+
+    /// <summary>
+    /// Gets or sets the mode used to generate schemas. Defaults to <see cref="OpenApiSchemaGenerationMode.Legacy"/>.
+    /// </summary>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public OpenApiSchemaGenerationMode SchemaGenerationMode { get; set; }
 
     /// <summary>
     /// The name of the OpenAPI document this <see cref="OpenApiOptions"/> instance is associated with.

@@ -55,7 +55,11 @@ internal sealed class OpenApiSchemaService(
         })
     };
 
-    private readonly JsonSchemaExporterOptions _configuration = new()
+    private JsonSchemaExporterOptions? _configuration;
+    private JsonSchemaExporterOptions Configuration
+        => LazyInitializer.EnsureInitialized(ref _configuration, CreateConfiguration);
+
+    private JsonSchemaExporterOptions CreateConfiguration() => new()
     {
         TreatNullObliviousAsNonNullable = true,
         TransformSchemaNode = (context, schema) =>
@@ -102,7 +106,18 @@ internal sealed class OpenApiSchemaService(
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
             schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
-            schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            if (optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred &&
+                context.BaseTypeInfo is null)
+#pragma warning restore ASP0040
+            {
+                var compositionDecision = GetInferredSchema(type).CompositionDecisions[type];
+                schema.ApplyCompositionDecision(compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
+            }
+            else
+            {
+                schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+            }
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
@@ -403,9 +418,10 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.OneOf is { Count: > 0 })
         {
+            var branchPrefix = schema.Discriminator is null ? null : schemaId;
             for (var i = 0; i < schema.OneOf.Count; i++)
             {
-                schema.OneOf[i] = ResolveReferenceForSchema(document, schema.OneOf[i], rootSchemaId);
+                schema.OneOf[i] = ResolveReferenceForSchema(document, schema.OneOf[i], rootSchemaId, branchPrefix);
             }
         }
 
@@ -530,20 +546,29 @@ internal sealed class OpenApiSchemaService(
         var schema = UnwrapOpenApiSchema(inputSchema);
         await transformer.TransformAsync(schema, context, cancellationToken);
 
-        // Only apply transformers on polymorphic schemas where we can resolve the derived
-        // types associated with the base type.
-        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        var alternativeDecision = inferredSchema.CompositionDecisions[jsonTypeInfo.Type].Alternatives;
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+        var inferredMode = optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        var alternativeSchemas = alternativeDecision.Kind switch
         {
-            var anyOfIndex = 0;
-            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            InferredAlternativeCompositionKind.OneOf when inferredMode => schema.OneOf,
+            InferredAlternativeCompositionKind.OneOf => schema.AnyOf,
+            InferredAlternativeCompositionKind.AnyOf => schema.AnyOf,
+            _ => null,
+        };
+        if (alternativeSchemas is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            if (alternativeSchemas.Count < alternativeDecision.Branches.Count)
             {
-                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
-                if (schema.AnyOf.Count <= anyOfIndex)
-                {
-                    break;
-                }
-                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], inferredSchema, derivedJsonTypeInfo, null, context, transformer, cancellationToken);
-                anyOfIndex++;
+                throw new InvalidOperationException(
+                    $"The inferred alternative branches for '{jsonTypeInfo.Type}' do not match the generated schema.");
+            }
+
+            for (var i = 0; i < alternativeDecision.Branches.Count; i++)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(alternativeDecision.Branches[i].Identity.Type);
+                await InnerApplySchemaTransformersAsync(alternativeSchemas[i], inferredSchema, derivedJsonTypeInfo, null, context, transformer, cancellationToken);
             }
         }
 
@@ -579,7 +604,7 @@ internal sealed class OpenApiSchemaService(
     {
         // We always create a oneOf nullable wrapper ourselves manually.
         var inferredSchema = GetInferredSchema(type);
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, _configuration);
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, Configuration);
         return ResolveReferences(schema, schema);
     }
 

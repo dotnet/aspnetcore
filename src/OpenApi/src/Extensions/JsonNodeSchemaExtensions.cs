@@ -464,6 +464,83 @@ internal static class JsonNodeSchemaExtensions
         }
     }
 
+    internal static void ApplyCompositionDecision(
+        this JsonNode schema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        JsonSerializerOptions serializerOptions)
+    {
+        var decision = compositionDecision.Alternatives;
+        if (decision.Kind == InferredAlternativeCompositionKind.None)
+        {
+            return;
+        }
+
+        if (decision.Kind == InferredAlternativeCompositionKind.AnyOf)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(
+                $"The inferred alternatives for '{compositionDecision.Identity.Type}' require an object schema.");
+        }
+
+        if (!schemaObject.TryGetPropertyValue(OpenApiSchemaKeywords.AnyOfKeyword, out var alternativesNode))
+        {
+            if (schemaObject.ContainsKey(OpenApiSchemaKeywords.RefKeyword))
+            {
+                return;
+            }
+
+            throw new InvalidOperationException(
+                $"The inferred oneOf alternatives for '{compositionDecision.Identity.Type}' are missing from the exported schema.");
+        }
+
+        if (alternativesNode is not JsonArray alternatives ||
+            alternatives.Count != decision.Branches.Count)
+        {
+            throw new InvalidOperationException(
+                $"The inferred alternative branches for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+        }
+
+        if (decision.Kind != InferredAlternativeCompositionKind.OneOf ||
+            decision.DiscriminatorPropertyName is not { } discriminatorPropertyName)
+        {
+            throw new InvalidOperationException("The inferred alternative composition decision is not supported.");
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.OneOfKeyword))
+        {
+            throw new InvalidOperationException("The exported schema contains both inferred and explicit oneOf alternatives.");
+        }
+
+        var mappings = new JsonObject();
+        var baseReferenceId = createSchemaReferenceId(serializerOptions.GetTypeInfo(compositionDecision.Identity.Type));
+        foreach (var branch in decision.Branches)
+        {
+            if (branch.Discriminator is null)
+            {
+                throw new InvalidOperationException("A oneOf alternative must have an explicit discriminator.");
+            }
+
+            var branchTypeInfo = serializerOptions.GetTypeInfo(branch.Identity.Type);
+            if (createSchemaReferenceId(branchTypeInfo) is not { } branchReferenceId)
+            {
+                throw new InvalidOperationException(
+                    $"A schema reference ID is required for the oneOf alternative '{branch.Identity.Type}'.");
+            }
+
+            mappings[Convert.ToString(branch.Discriminator, CultureInfo.InvariantCulture)!] = $"{baseReferenceId}{branchReferenceId}";
+        }
+
+        schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
+        schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
+        schemaObject[OpenApiSchemaKeywords.DiscriminatorKeyword] = discriminatorPropertyName;
+        schemaObject[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+    }
+
     /// <summary>
     /// Set the x-schema-id property on the schema to the identifier associated with the type.
     /// </summary>

@@ -36,6 +36,21 @@ app.MapOpenApi();
 app.Run();
 ```
 
+To opt in to inferred serializer-contract semantics for schema composition, configure the experimental schema generation mode:
+
+```C#
+#pragma warning disable ASP0040
+builder.Services.AddOpenApi(options =>
+{
+    options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+});
+#pragma warning restore ASP0040
+```
+
+This mode currently emits `oneOf` for System.Text.Json polymorphic contracts only when every
+configured branch has a distinct, explicit discriminator. Other alternatives continue to use
+`anyOf`.
+
 For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 
 ## Build-time Document Generation
