@@ -33,6 +33,7 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
+    private readonly ConcurrentDictionary<Type, InferredSchemaDocument> _inferredSchemaCache = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -497,6 +498,7 @@ internal sealed class OpenApiSchemaService(
         {
             return;
         }
+        var inferredSchema = GetInferredSchema(type);
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
@@ -512,11 +514,12 @@ internal sealed class OpenApiSchemaService(
         {
             // Reset context object to base state before running each transformer.
             var transformer = schemaTransformers[i];
-            await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema, inferredSchema, jsonTypeInfo, null, context, transformer, cancellationToken);
         }
     }
 
     private async Task InnerApplySchemaTransformersAsync(IOpenApiSchema inputSchema,
+        InferredSchemaDocument inferredSchema,
         JsonTypeInfo jsonTypeInfo,
         JsonPropertyInfo? jsonPropertyInfo,
         OpenApiSchemaTransformerContext context,
@@ -539,7 +542,7 @@ internal sealed class OpenApiSchemaService(
                 {
                     break;
                 }
-                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, null, context, transformer, cancellationToken);
+                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], inferredSchema, derivedJsonTypeInfo, null, context, transformer, cancellationToken);
                 anyOfIndex++;
             }
         }
@@ -548,7 +551,7 @@ internal sealed class OpenApiSchemaService(
         if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
-            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema.Items, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 
         if (schema.Properties is { Count: > 0 })
@@ -557,7 +560,9 @@ internal sealed class OpenApiSchemaService(
             {
                 if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
                 {
-                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
+                    var inferredProperty = inferredSchema[jsonTypeInfo.Type].GetProperty(propertyInfo.Name);
+                    var propertyTypeInfo = _jsonSerializerOptions.GetTypeInfo(inferredProperty.DeclaredPropertyType);
+                    await InnerApplySchemaTransformersAsync(propertySchema, inferredSchema, propertyTypeInfo, propertyInfo, context, transformer, cancellationToken);
                 }
             }
         }
@@ -566,18 +571,20 @@ internal sealed class OpenApiSchemaService(
             jsonTypeInfo.ElementType is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
-            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
         }
     }
 
     private JsonNode CreateSchema(Type type)
     {
         // We always create a oneOf nullable wrapper ourselves manually.
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
+        var inferredSchema = GetInferredSchema(type);
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, _configuration);
         return ResolveReferences(schema, schema);
     }
+
+    private InferredSchemaDocument GetInferredSchema(Type type)
+        => _inferredSchemaCache.GetOrAdd(type, static (type, serializerOptions) => InferredSchemaShapeBuilder.Build(serializerOptions, type), _jsonSerializerOptions);
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {
