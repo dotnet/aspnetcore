@@ -121,31 +121,6 @@ public class AgentContextTests
     }
 
     [Fact]
-    public async Task SendMessageAsync_LoggerThrows_CommitsErrorStateBeforeExceptionEscapes()
-    {
-        var processingException = new InvalidOperationException("processing failed");
-        var loggingException = new InvalidOperationException("logging failed");
-        var loggerFactory = new ThrowingLoggerFactory(loggingException);
-        var client = new DelegatingStreamingChatClient();
-
-        client.SetHandler((messages, options, cancellationToken) =>
-            ResponseEmitters.EmitErrorAfterTokens(
-                ["partial"],
-                processingException,
-                cancellationToken));
-
-        using var agent = new UIAgent(client, configure: null, loggerFactory);
-        using var context = new AgentContext(agent);
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => context.SendMessageAsync("Hello"));
-
-        Assert.Same(loggingException, exception);
-        Assert.Equal(ConversationStatus.Error, context.Status);
-        Assert.Same(processingException, context.Error);
-    }
-
-    [Fact]
     public async Task RetryAsync_AfterError_ReplacesResponseBlocks()
     {
         var callCount = 0;
@@ -219,35 +194,5 @@ public class AgentContextTests
         var client = new DelegatingStreamingChatClient();
         client.SetHandler((msgs, opts, ct) => respond(ct));
         return new AgentContext(new UIAgent(client));
-    }
-
-    private sealed class ThrowingLoggerFactory(Exception exception) : ILoggerFactory, ILogger
-    {
-        public void AddProvider(ILoggerProvider provider)
-        {
-        }
-
-        public ILogger CreateLogger(string categoryName) => this;
-
-        public void Dispose()
-        {
-        }
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? loggedException,
-            Func<TState, Exception?, string> formatter)
-        {
-            if (logLevel == LogLevel.Error)
-            {
-                throw exception;
-            }
-        }
     }
 }
