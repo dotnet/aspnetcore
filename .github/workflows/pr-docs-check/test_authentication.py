@@ -26,6 +26,13 @@ class AuthenticationTests(unittest.TestCase):
         self.assertIn(f"COPILOT_GITHUB_TOKEN: {POOL_TOKEN_EXPRESSION}", engine)
         self.assertNotIn("secrets.COPILOT_GITHUB_TOKEN", engine)
 
+    def test_pat_pool_token_is_inference_only(self):
+        repository_mutations = self.workflow.split("safe-outputs:", 1)[1]
+
+        self.assertEqual(1, self.workflow.count(POOL_TOKEN_EXPRESSION))
+        self.assertNotIn("COPILOT_GITHUB_TOKEN", repository_mutations)
+        self.assertNotIn("COPILOT_PAT_", repository_mutations)
+
     def test_copilot_requests_write_is_absent(self):
         self.assertNotIn("copilot-requests: write", self.workflow)
 
@@ -61,7 +68,10 @@ class AuthenticationTests(unittest.TestCase):
 
         self.assertIn("contents: read", job)
         self.assertIn("issues: write", job)
-        self.assertIn("pull-requests: read", job)
+        self.assertIn("pull-requests: write", job)
+        self.assertNotIn("COPILOT_GITHUB_TOKEN", job)
+        self.assertNotIn("COPILOT_PAT_", job)
+        self.assertIn("github-token: ${{ github.token }}", job)
 
     def _section(self, start, end):
         _, section = self.workflow.split(start, 1)
