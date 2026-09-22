@@ -51,6 +51,7 @@ internal sealed class InferredSchemaShape
         InferredSchemaShapeKind kind,
         Type converterType,
         bool hasCustomConverter,
+        JsonNumberHandling numberHandling,
         bool disallowsUnmappedMembers,
         string? discriminatorPropertyName,
         InferredSchemaTypeIdentity? baseType,
@@ -64,6 +65,7 @@ internal sealed class InferredSchemaShape
         Kind = kind;
         ConverterType = converterType;
         HasCustomConverter = hasCustomConverter;
+        NumberHandling = numberHandling;
         DisallowsUnmappedMembers = disallowsUnmappedMembers;
         DiscriminatorPropertyName = discriminatorPropertyName;
         BaseType = baseType;
@@ -83,6 +85,8 @@ internal sealed class InferredSchemaShape
     public Type ConverterType { get; }
 
     public bool HasCustomConverter { get; }
+
+    public JsonNumberHandling NumberHandling { get; }
 
     public bool DisallowsUnmappedMembers { get; }
 
@@ -164,6 +168,7 @@ internal static class InferredSchemaShapeBuilder
                 GetShapeKind(typeInfo),
                 typeInfo.Converter.GetType(),
                 typeInfo.Converter.GetType().Assembly != typeof(JsonSerializerOptions).Assembly,
+                typeInfo.NumberHandling ?? serializerOptions.NumberHandling,
                 typeInfo.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow,
                 typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,

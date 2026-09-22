@@ -52,6 +52,23 @@ branch has a distinct, explicit discriminator. Other alternatives continue to us
 It also emits ordered `oneOf` branches for C# unions only when immutable serializer-contract facts
 prove every pair of JSON instance domains disjoint. The proof distinguishes null, boolean, string,
 integer, non-integer number, object, and array domains; unrestricted numbers overlap integers.
+Numeric domains also follow effective System.Text.Json number handling. Reading or writing numbers
+as strings adds the string domain, and named floating-point literals add it for IEEE floating-point
+types. Consequently, the ASP.NET Web default keeps string-and-number unions as `anyOf`; configuring
+strict number handling can make string-and-number branches provably disjoint.
+
+For minimal APIs, configure the same HTTP JSON options consumed by OpenAPI generation when strict
+numeric contracts are required:
+
+```C#
+using System.Text.Json.Serialization;
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+});
+```
+
 Object-object and array-array branches overlap, and multiple nullable branches overlap on null.
 Enums, arbitrary JSON values (`object`, `JsonElement`, and JSON nodes), polymorphic contracts,
 custom converters, and unsupported scalar representations remain `anyOf` because their domains

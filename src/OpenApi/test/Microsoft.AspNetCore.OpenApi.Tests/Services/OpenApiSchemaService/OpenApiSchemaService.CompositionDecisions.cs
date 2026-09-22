@@ -122,6 +122,7 @@ public partial class OpenApiSchemaServiceTests
             InferredSchemaShapeKind.Object,
             typeof(object),
             hasCustomConverter: false,
+            numberHandling: JsonNumberHandling.Strict,
             disallowsUnmappedMembers: false,
             discriminatorPropertyName: null,
             baseType: new(typeof(UnavailableBase)),
@@ -192,7 +193,12 @@ public partial class OpenApiSchemaServiceTests
     [Fact]
     public void CompositionDecision_CSharpUnion_UsesOneOfForDisjointDomainsInDeclaredOrder()
     {
-        var document = BuildCompositionShape<ReverseShapeUnion>();
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            NumberHandling = JsonNumberHandling.Strict,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        var document = InferredSchemaShapeBuilder.Build(options, typeof(ReverseShapeUnion));
 
         var decision = document.CompositionDecisions[typeof(ReverseShapeUnion)].Alternatives;
         Assert.Equal(InferredAlternativeSource.Union, decision.Source);

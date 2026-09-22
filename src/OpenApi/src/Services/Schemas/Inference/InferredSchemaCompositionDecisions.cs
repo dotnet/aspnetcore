@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -79,6 +80,7 @@ internal enum InferredJsonDomainReason
     PolymorphicContract,
     ArbitraryJsonValue,
     UnsupportedScalar,
+    UnsupportedNumberHandling,
     RecursiveUnion,
 }
 
@@ -453,17 +455,28 @@ internal static class InferredSchemaCompositionDecisionBuilder
                 type == typeof(Int128) ||
                 type == typeof(UInt128))
             {
-                return Exact(InferredJsonValueDomain.Integer, InferredJsonDomainReason.KnownPrimitive);
+                return Numeric(
+                    shape,
+                    InferredJsonValueDomain.Integer,
+                    supportsNamedFloatingPointLiterals: false);
             }
 
             if (type == typeof(float) ||
                 type == typeof(double) ||
-                type == typeof(decimal) ||
                 type == typeof(Half))
             {
-                return Exact(
+                return Numeric(
+                    shape,
                     InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
-                    InferredJsonDomainReason.KnownPrimitive);
+                    supportsNamedFloatingPointLiterals: true);
+            }
+
+            if (type == typeof(decimal))
+            {
+                return Numeric(
+                    shape,
+                    InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
+                    supportsNamedFloatingPointLiterals: false);
             }
 
             return shape.Kind switch
@@ -510,6 +523,30 @@ internal static class InferredSchemaCompositionDecisionBuilder
             InferredJsonValueDomain domains,
             InferredJsonDomainReason reason)
             => new(domains, IsExact: true, reason);
+
+        private static InferredJsonDomainFact Numeric(
+            InferredSchemaShape shape,
+            InferredJsonValueDomain numericDomains,
+            bool supportsNamedFloatingPointLiterals)
+        {
+            const JsonNumberHandling supportedNumberHandling =
+                JsonNumberHandling.AllowReadingFromString |
+                JsonNumberHandling.WriteAsString |
+                JsonNumberHandling.AllowNamedFloatingPointLiterals;
+            if ((shape.NumberHandling & ~supportedNumberHandling) != 0)
+            {
+                return Unknown(InferredJsonDomainReason.UnsupportedNumberHandling);
+            }
+
+            var permitsString =
+                (shape.NumberHandling &
+                    (JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)) != 0 ||
+                supportsNamedFloatingPointLiterals &&
+                (shape.NumberHandling & JsonNumberHandling.AllowNamedFloatingPointLiterals) != 0;
+            return Exact(
+                permitsString ? numericDomains | InferredJsonValueDomain.String : numericDomains,
+                InferredJsonDomainReason.KnownPrimitive);
+        }
 
         private static InferredJsonDomainFact Unknown(InferredJsonDomainReason reason)
             => new(InferredJsonValueDomain.Any, IsExact: false, reason);

@@ -4,10 +4,12 @@
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 
 public partial class OpenApiSchemaServiceTests
 {
@@ -26,15 +28,15 @@ public partial class OpenApiSchemaServiceTests
             InferredAlternativeCompositionKind.AnyOf,
             InferredAlternativeReason.UnionCasesHaveOverlappingJsonDomains,
             [
-                InferredJsonValueDomain.Integer,
-                InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.String,
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber | InferredJsonValueDomain.String,
             ]);
         AssertUnionDecision<UnionIntDecimal>(
             InferredAlternativeCompositionKind.AnyOf,
             InferredAlternativeReason.UnionCasesHaveOverlappingJsonDomains,
             [
-                InferredJsonValueDomain.Integer,
-                InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.String,
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber | InferredJsonValueDomain.String,
             ]);
         AssertUnionDecision<UnionTwoObjects>(
             InferredAlternativeCompositionKind.AnyOf,
@@ -78,23 +80,70 @@ public partial class OpenApiSchemaServiceTests
     [Fact]
     public void CompositionDecision_UnionNullableDomainsIncludeNull()
     {
-        AssertUnionDecision<UnionNullableIntString>(
+        AssertUnionDecision<UnionNullableIntBool>(
             InferredAlternativeCompositionKind.OneOf,
             InferredAlternativeReason.UnionCasesHaveDisjointJsonDomains,
-            [InferredJsonValueDomain.Integer | InferredJsonValueDomain.Null, InferredJsonValueDomain.String]);
+            [
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.String | InferredJsonValueDomain.Null,
+                InferredJsonValueDomain.Boolean,
+            ]);
         AssertUnionDecision<UnionNullableIntNullableBool>(
             InferredAlternativeCompositionKind.AnyOf,
             InferredAlternativeReason.UnionCasesHaveOverlappingJsonDomains,
             [
-                InferredJsonValueDomain.Integer | InferredJsonValueDomain.Null,
+                InferredJsonValueDomain.Integer | InferredJsonValueDomain.String | InferredJsonValueDomain.Null,
                 InferredJsonValueDomain.Boolean | InferredJsonValueDomain.Null,
             ]);
     }
 
     [Fact]
+    public void InferredShape_NumberHandlingUsesTypeInfoBeforeSerializerOptions()
+    {
+        var resolver = new DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            if (typeInfo.Type == typeof(int))
+            {
+                typeInfo.NumberHandling = JsonNumberHandling.Strict;
+            }
+        });
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            TypeInfoResolver = resolver,
+        };
+
+        var document = InferredSchemaShapeBuilder.Build(options, typeof(UnionIntString));
+        var decision = document.CompositionDecisions[typeof(UnionIntString)].Alternatives;
+        var exportedSchema = JsonSchemaExporter.GetJsonSchemaAsNode(
+            options,
+            typeof(int),
+            new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
+
+        Assert.Equal(JsonNumberHandling.Strict, document[typeof(int)].NumberHandling);
+        Assert.Equal("integer", exportedSchema[OpenApiSchemaKeywords.TypeKeyword]!.GetValue<string>());
+        Assert.Null(exportedSchema[OpenApiSchemaKeywords.AnyOfKeyword]);
+        Assert.Equal(InferredAlternativeCompositionKind.OneOf, decision.Kind);
+        Assert.Equal(InferredJsonValueDomain.Integer, decision.Branches[0].JsonDomain!.Value.Domains);
+    }
+
+    [Fact]
+    public void InferredDomains_MatchNumericExporterSchemas()
+    {
+        AssertNumericDomainMatchesExporter<UnionIntString, int>(JsonNumberHandling.Strict);
+        AssertNumericDomainMatchesExporter<UnionIntString, int>(JsonNumberHandling.AllowReadingFromString);
+        AssertNumericDomainMatchesExporter<UnionIntString, int>(JsonNumberHandling.WriteAsString);
+        AssertNumericDomainMatchesExporter<UnionFloatString, float>(JsonNumberHandling.AllowNamedFloatingPointLiterals);
+        AssertNumericDomainMatchesExporter<UnionDoubleString, double>(JsonNumberHandling.AllowReadingFromString);
+        AssertNumericDomainMatchesExporter<UnionHalfString, Half>(JsonNumberHandling.WriteAsString);
+        AssertNumericDomainMatchesExporter<UnionDecimalString, decimal>(JsonNumberHandling.AllowNamedFloatingPointLiterals);
+        AssertNumericDomainMatchesExporter<UnionDecimalString, decimal>(JsonNumberHandling.AllowReadingFromString);
+    }
+
+    [Fact]
     public void SchemaGenerationMode_Inferred_UnionDecisionMismatchThrows()
     {
-        var inferredSchema = BuildCompositionShape<ReverseShapeUnion>();
+        var inferredSchema = BuildUnionShape<ReverseShapeUnion>(JsonNumberHandling.Strict);
         var schema = new JsonObject
         {
             [OpenApiSchemaKeywords.AnyOfKeyword] = new JsonArray(new JsonObject()),
@@ -111,7 +160,12 @@ public partial class OpenApiSchemaServiceTests
     [Fact]
     public async Task SchemaGenerationMode_Inferred_DisjointUnionUsesOrderedOneOfWithoutDiscriminator()
     {
-        var builder = CreateBuilder();
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+        });
+        var builder = CreateBuilder(services, numberHandling: null);
         builder.MapGet("/", () => new ReverseShapeUnion("value"));
 
         var document = await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
@@ -148,6 +202,78 @@ public partial class OpenApiSchemaServiceTests
             var schema = document.Components.Schemas[nameof(ReverseShapeUnion)];
             Assert.Equal(2, schema.AnyOf.Count);
             Assert.Null(schema.OneOf);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_WebNumberHandlingKeepsStringAndIntAsAnyOf()
+    {
+        var builder = CreateBuilder(numberHandling: null);
+        builder.MapGet("/", () => new UnionIntString(42));
+
+        await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
+        {
+            var schema = document.Components.Schemas[nameof(UnionIntString)];
+            Assert.Null(schema.OneOf);
+            Assert.Collection(
+                schema.AnyOf,
+                branch => Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.String, branch.Type),
+                branch => Assert.Equal(JsonSchemaType.Null | JsonSchemaType.String, branch.Type));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_WebNumberHandlingStillProvesBoolAndInt()
+    {
+        var builder = CreateBuilder(numberHandling: null);
+        builder.MapPost("/", (UnionBoolInt value) => { });
+
+        await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
+        {
+            var schema = document.Components.Schemas[nameof(UnionBoolInt)];
+            Assert.Null(schema.AnyOf);
+            Assert.Collection(
+                schema.OneOf,
+                branch => Assert.Equal(JsonSchemaType.Boolean, branch.Type),
+                branch => Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.String, branch.Type));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_WriteAsStringKeepsIntAndStringAsAnyOf()
+    {
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.WriteAsString;
+        });
+        var builder = CreateBuilder(services, numberHandling: null);
+        builder.MapGet("/", () => new UnionIntString(42));
+
+        await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
+        {
+            var schema = document.Components.Schemas[nameof(UnionIntString)];
+            Assert.Equal(2, schema.AnyOf.Count);
+            Assert.Null(schema.OneOf);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_NamedFloatingPointLiteralsAffectOnlyIeeeFloats()
+    {
+        var builder = CreateBuilder(numberHandling: JsonNumberHandling.AllowNamedFloatingPointLiterals);
+        builder.MapPost("/float", (UnionFloatString value) => { });
+        builder.MapPost("/decimal", (UnionDecimalString value) => { });
+
+        await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
+        {
+            var floatSchema = document.Components.Schemas[nameof(UnionFloatString)];
+            Assert.Equal(2, floatSchema.AnyOf.Count);
+            Assert.Null(floatSchema.OneOf);
+
+            var decimalSchema = document.Components.Schemas[nameof(UnionDecimalString)];
+            Assert.Null(decimalSchema.AnyOf);
+            Assert.Equal(2, decimalSchema.OneOf.Count);
         });
     }
 
@@ -340,6 +466,88 @@ public partial class OpenApiSchemaServiceTests
             branch => branch.JsonDomain is { IsExact: false, Reason: var reason } && reason == expectedUnknownReason);
     }
 
+    private static void AssertNumericDomainMatchesExporter<TUnion, TNumber>(JsonNumberHandling numberHandling)
+    {
+        var document = BuildUnionShape<TUnion>(numberHandling);
+        var inferredDomain = document.CompositionDecisions[typeof(TUnion)].Alternatives.Branches
+            .Single(branch => branch.Identity.Type == typeof(TNumber))
+            .JsonDomain!.Value;
+
+        Assert.Equal(numberHandling, document[typeof(TNumber)].NumberHandling);
+        Assert.True(inferredDomain.IsExact);
+        Assert.Equal(GetExporterDomain(typeof(TNumber), numberHandling), inferredDomain.Domains);
+    }
+
+    private static InferredSchemaDocument BuildUnionShape<T>(JsonNumberHandling numberHandling)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            NumberHandling = numberHandling,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        return InferredSchemaShapeBuilder.Build(options, typeof(T));
+    }
+
+    private static InferredJsonValueDomain GetExporterDomain(Type type, JsonNumberHandling numberHandling)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            NumberHandling = numberHandling,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(
+            options,
+            type,
+            new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
+
+        return ReadDomain(schema);
+
+        static InferredJsonValueDomain ReadDomain(JsonNode schema)
+        {
+            if (schema is not JsonObject schemaObject)
+            {
+                return InferredJsonValueDomain.Any;
+            }
+
+            var domains = InferredJsonValueDomain.None;
+            if (schemaObject[OpenApiSchemaKeywords.TypeKeyword] is JsonValue typeValue)
+            {
+                domains |= ReadType(typeValue.GetValue<string>());
+            }
+            else if (schemaObject[OpenApiSchemaKeywords.TypeKeyword] is JsonArray types)
+            {
+                foreach (var typeNode in types)
+                {
+                    domains |= ReadType(typeNode!.GetValue<string>());
+                }
+            }
+
+            if (schemaObject[OpenApiSchemaKeywords.AnyOfKeyword] is JsonArray alternatives)
+            {
+                foreach (var alternative in alternatives)
+                {
+                    domains |= ReadDomain(alternative!);
+                }
+            }
+
+            if (schemaObject[OpenApiSchemaKeywords.EnumKeyword] is JsonArray values &&
+                values.All(value => value?.GetValueKind() == JsonValueKind.String))
+            {
+                domains |= InferredJsonValueDomain.String;
+            }
+
+            return domains;
+        }
+
+        static InferredJsonValueDomain ReadType(string type) => type switch
+        {
+            "integer" => InferredJsonValueDomain.Integer,
+            "number" => InferredJsonValueDomain.Integer | InferredJsonValueDomain.NonIntegerNumber,
+            "string" => InferredJsonValueDomain.String,
+            _ => InferredJsonValueDomain.Any,
+        };
+    }
+
     internal sealed record UnionDomainObject(int Value);
 
     internal sealed record OtherUnionDomainObject(string Value);
@@ -376,6 +584,8 @@ public partial class OpenApiSchemaServiceTests
 
 internal union UnionBoolString(bool, string);
 
+internal union UnionBoolInt(bool, int);
+
 internal union UnionObjectArray(OpenApiSchemaServiceTests.UnionDomainObject, int[]);
 
 internal union UnionIntDouble(int, double);
@@ -400,7 +610,17 @@ internal union UnionEnumString(OpenApiSchemaServiceTests.UnionEnum, string);
 
 internal union UnionNullableIntString(int?, string);
 
+internal union UnionNullableIntBool(int?, bool);
+
 internal union UnionNullableIntNullableBool(int?, bool?);
+
+internal union UnionFloatString(float, string);
+
+internal union UnionDoubleString(double, string);
+
+internal union UnionHalfString(Half, string);
+
+internal union UnionDecimalString(decimal, string);
 
 internal union NestedDisjointUnion(UnionBoolString, int[]);
 
