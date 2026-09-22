@@ -208,14 +208,24 @@ refresh to keep coverage representative and bounded.
 skill and uses `gpt-5.6-sol`, not the standard experiment's model defaults.
 
 ```powershell
+node --test eng/skill-evals/review-pull-request/test_guidance_source.mjs
 ./eng/skill-evals/run.ps1 Lint -Eval eng/skill-evals/review-pull-request/guidance-source.vally.yaml
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/guidance-source.vally.yaml --workers 2 --max-retries 0
 ```
 
-Setup creates an isolated local commit and then distinguishable uncommitted
-edits. Checks cover committed criteria loading and presentation, not complete
-PR preflight, worker execution, or review quality. Inspect retained tool traces
-for reads at the frozen local SHA. This suite is not in hosted standard staging.
+Setup uses Node.js and Git, without Python or a POSIX shell, to create an isolated
+local commit and then distinguishable uncommitted edits. Every case checks that
+the workspace stays unchanged relative to its post-setup state. Deterministic
+controls exercise Vally's real baseline capture and reject restoring dirty
+criteria or deleting the initially untracked guide. Command assertions require
+literal-SHA reads of the expected guide/API paths and reject `git show HEAD:`.
+Blocked output must lead with `BLOCKED`, explain the missing input, and contain
+no `READY` status. Deterministic negative controls check those assertions.
+Checks cover committed criteria loading and presentation, not complete
+PR preflight, worker execution, or review quality. A source-contract check places
+the local freeze before GitHub retrieval; it does not simulate concurrent edits
+during a live PR review. Inspect retained tool traces to confirm that the literal
+SHA matches the frozen local commit throughout. This suite is not in hosted standard staging.
 
 Validation does not judge prompt or rubric quality, run a model, validate
 runtime skill behavior, or decide whether a specialized suite is statistically

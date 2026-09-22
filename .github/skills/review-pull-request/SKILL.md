@@ -49,7 +49,13 @@ requesting changes, mutating issues or labels, or any GitHub API the caller did 
 
 ## Step 1 — Freeze the evidence
 
-Before reading any code, capture and record verbatim:
+At invocation start, before any GitHub retrieval, resolve the current repository root with
+`git rev-parse --show-toplevel` and freeze its full `HEAD` SHA as `LOCAL_SHA`.
+If the root or commit cannot be resolved, return `BLOCKED` with the reason and stop.
+Resolve local `HEAD` only once; retain this root and literal SHA for all later criteria reads,
+even if local `HEAD` advances while retrieving PR evidence.
+
+Then, before reading any code, capture and record verbatim:
 
 1. the **exact head SHA** of the pull request — every later statement is about *this* commit;
 2. the **base repository and base ref** of the pull request, recorded as `BASE_REPO` and
@@ -85,10 +91,9 @@ change, plus Blazor Components guidance when a changed path is under `src/Compon
 Only successful native invocation establishes native loading, not a registry entry or file read.
 Record actual loading/provenance; do not invent a revision or require a matching skill copy.
 
-The PR and review criteria are independent inputs. Resolve the current repository root with
-`git rev-parse --show-toplevel` and freeze its full `HEAD` SHA as `LOCAL_SHA`. Read routed guides
-and delegated policies with `git -C <root> show <LOCAL_SHA>:<repository-relative-path>`.
-Resolve `HEAD` only once; use the literal frozen SHA for later reads, never re-resolve `HEAD`.
+The PR and review criteria are independent inputs. Use the root and `LOCAL_SHA` frozen in Step 1.
+Read routed guides and delegated policies with
+`git -C <root> show <LOCAL_SHA>:<repository-relative-path>`; never re-resolve local `HEAD`.
 Guidance changes must be committed, but need not be pushed. Ignore uncommitted edits; do not
 require a clean tree or a particular branch, fetch, check out, or match the installed skill's bytes.
 Use this same local commit throughout the review, including worker rereads. Never substitute

@@ -6,6 +6,7 @@ type: capability
 environment:
   skills: [../../../.github/skills/review-pull-request]
   files:
+    - { src: fixtures/prepare.mjs, dest: fixtures/prepare.mjs }
     - { src: ../../../docs/CrossCuttingGuidance.md, dest: docs/CrossCuttingGuidance.md }
     - { src: ../../../docs/BlazorComponentsGuidance.md, dest: docs/BlazorComponentsGuidance.md }
     - { src: ../../../CONTRIBUTING.md, dest: CONTRIBUTING.md }
@@ -15,28 +16,7 @@ environment:
     - { src: ../../../docs/Trimming.md, dest: docs/Trimming.md }
     - { src: ../../../.github/skills/review-public-api/SKILL.md, dest: .github/skills/review-public-api/SKILL.md }
   commands:
-    - |
-      set -e
-      git init -q -b eval-review
-      git config user.name "Skill eval"
-      git config user.email "skill-eval@example.invalid"
-      python3 - <<'PY'
-      from pathlib import Path
-      for name, heading, marker in [
-          ('docs/CrossCuttingGuidance.md', '## Overarching principles', 'COMMITTED-CRITERION'),
-          ('.github/skills/review-public-api/SKILL.md', '## The rules reviewers apply most (highlights)', 'COMMITTED-API-CRITERION'),
-      ]:
-          p = Path(name)
-          p.write_text(p.read_text().replace(heading + '\n', heading + '\n\n- ' + marker + '\n'))
-      PY
-      git add docs .github src CONTRIBUTING.md
-      git -c core.hooksPath=/dev/null -c commit.gpgsign=false commit -qm Fixture
-      python3 - <<'PY'
-      from pathlib import Path
-      for name in ['docs/CrossCuttingGuidance.md', '.github/skills/review-public-api/SKILL.md']:
-          p = Path(name)
-          p.write_text(p.read_text().replace('COMMITTED-', 'UNCOMMITTED-'))
-      PY
+    - node fixtures/prepare.mjs prepare
 
 defaults:
   runs: 1
@@ -51,10 +31,10 @@ stimuli:
   - name: committed-main-api-criteria
     tags: { suite: criteria }
     prompt: |
-      Invoke review-pull-request for Step 2 criteria loading only. The supplied synthetic
+      Invoke review-pull-request for the initial local freeze and Step 2 criteria loading only. The supplied synthetic
       frozen routing input is a main-targeting PR changing public APIs in src/Example.cs.
       Include optional API design criteria. No complete PR evidence is supplied: exclude
-      Step 1, authoritative target-document lookup, worker dispatch and actual review.
+      GitHub evidence retrieval, authoritative target-document lookup, worker dispatch and actual review.
       Use shell for file I/O. Do not contact GitHub, edit, or publish.
       Return READY only after reading the applicable guides, delegated policies and API
       criteria; include their local commit provenance, the complete cross-cutting
@@ -74,30 +54,41 @@ stimuli:
       - &no-dirty
         type: output-contains
         config: { substring: UNCOMMITTED-, negate: true }
-      - &git-read
+      - &pinned-cross-read
         type: tool-calls
         config:
-          required: [{ name: '^(bash|shell|powershell)$', command: '\bshow\b' }]
-      - &pinned-read
+          required:
+            - name: '^(bash|shell|powershell)$'
+              command: '\bgit(?:\s+-C\s+(?:"[^"]+"|''[^'']+''|[^\s;&|]+))?\s+show\s+["'']?[0-9a-f]{40}:docs/CrossCuttingGuidance\.md(?=["''\s;&|]|$)'
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|shell|powershell)$'
+              command: '\bgit(?:\s+-C\s+(?:"[^"]+"|''[^'']+''|[^\s;&|]+))?\s+show\s+["'']?[0-9a-f]{40}:\.github/skills/review-public-api/SKILL\.md(?=["''\s;&|]|$)'
+      - &no-head-read
         type: tool-calls
         config:
-          required: [{ name: '^(bash|shell|powershell)$', command: '(?s)(?=.*\bshow\b)(?=.*\b[0-9a-f]{40}\b)' }]
+          disallowed:
+            - name: '^(bash|shell|powershell)$'
+              command: '\bgit(?:\s+-C\s+(?:"[^"]+"|''[^'']+''|[^\s;&|]+))?\s+show\s+["'']?HEAD:'
       - &read-only
         type: tool-calls
         config:
           disallowed:
             - { name: '^(task|rename_branch|rename_session|edit|create|apply_patch)$' }
             - { name: '^(bash|shell|powershell)$', command: 'git\s+(checkout|switch|commit|reset|merge|pull|fetch|push|rebase)\b' }
+      - &unchanged-workspace
+        type: diff-empty
 
   - name: committed-release-criteria
     tags: { suite: criteria }
     prompt: |
-      Invoke review-pull-request for criteria loading only, using this historical #69401
+      Invoke review-pull-request for the initial local freeze and criteria loading only, using this historical #69401
       routing projection, not complete PR evidence: head 3870288f23f7c80644e71b049f797ce783754aaa,
       base dotnet/aspnetcore release/11.0 at 13909f3b7ddbfeab04aac1c290f8abf4b75fe42c.
       Changed paths include eng/Versions.props and src/Components/test/E2ETest/Tests/StandaloneAppTelemetryTest.cs.
       Both guides are absent at that release base. Exercise only local guide and delegated
-      policy loading; exclude Step 1, target-document lookup, workers and actual review.
+      policy loading; exclude GitHub evidence retrieval, target-document lookup, workers and actual review.
       Use shell for file I/O. Do not contact GitHub, edit, or publish.
       Return READY only after reading the required criteria; include both guide paths,
       their local commit provenance and the complete cross-cutting principles.
@@ -106,9 +97,15 @@ stimuli:
       - *ready
       - *committed
       - *no-dirty
-      - *git-read
-      - *pinned-read
+      - *pinned-cross-read
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|shell|powershell)$'
+              command: '\bgit(?:\s+-C\s+(?:"[^"]+"|''[^'']+''|[^\s;&|]+))?\s+show\s+["'']?[0-9a-f]{40}:docs/BlazorComponentsGuidance\.md(?=["''\s;&|]|$)'
+      - *no-head-read
       - *read-only
+      - *unchanged-workspace
       - type: output-contains
         config: { substring: docs/BlazorComponentsGuidance.md }
 
@@ -116,24 +113,26 @@ stimuli:
     tags: { suite: criteria }
     environment:
       commands:
-        - |
-          set -e
-          git rm -qf docs/CrossCuttingGuidance.md
-          git -c core.hooksPath=/dev/null -c commit.gpgsign=false commit -qm "Remove committed guide"
-          git show HEAD^:docs/CrossCuttingGuidance.md > docs/CrossCuttingGuidance.md
+        - node fixtures/prepare.mjs missing-guide
     prompt: |
-      Invoke review-pull-request for Step 2 criteria loading only, with a synthetic frozen
+      Invoke review-pull-request for the initial local freeze and Step 2 criteria loading only, with a synthetic frozen
       main PR changing src/Example.cs. Use shell for file I/O; do not contact GitHub,
       edit, dispatch, or publish. Read the required criteria and report readiness or
       the actual blocking input. Do not perform a review.
     graders:
       - *activation
-      - *git-read
+      - *pinned-cross-read
+      - *no-head-read
       - *read-only
-      - type: output-contains
-        config: { substring: BLOCKED }
+      - *unchanged-workspace
+      - type: output-matches
+        config: { pattern: '^(?:#{1,6}[ \t]+)?\*{0,2}BLOCKED\b' }
+      - type: output-matches
+        config: { pattern: '(?im)^[ \t]*(?:#{1,6}[ \t]+)?\*{0,2}READY\b', negate: true }
       - type: output-contains
         config: { substring: docs/CrossCuttingGuidance.md }
+      - type: output-matches
+        config: { pattern: '(?i)\b(missing|absent|unavailable)\b|not (found|present)|does not exist|exists on disk, but not in' }
       - type: output-contains
         config: { substring: NO_FINDINGS, negate: true }
 
@@ -150,6 +149,7 @@ stimuli:
     graders:
       - *activation
       - *read-only
+      - *unchanged-workspace
       - &concise
         type: output-matches
         config: { pattern: '(HEAD_SHA|BASE_SHA|LOCAL_SHA|GUIDANCE_\w+|MANIFEST|TOPICS|DISCARDED|TEST_BOUNDARY):', negate: true }
@@ -172,6 +172,7 @@ stimuli:
     graders:
       - *activation
       - *read-only
+      - *unchanged-workspace
       - *concise
       - *limitation
       - type: output-matches

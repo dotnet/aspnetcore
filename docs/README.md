@@ -40,7 +40,8 @@ The following shared guidance is available for contributors working in the corre
 - [Cross-cutting guidance](CrossCuttingGuidance.md) for ordinary `src/**` work
 
 The optional `review-pull-request` skill reviews a GitHub PR using guidance from the current
-repository's local `HEAD` commit, frozen when the review starts. Commit guidance changes before
-reviewing; no push is required, and uncommitted edits are ignored. The PR's frozen GitHub evidence
-still defines the reviewed code. Missing required guidance blocks the review; the reviewer does
-not prepare or change the workspace. Results are concise unless structured diagnostics are requested.
+repository's local `HEAD` commit, frozen at invocation start before GitHub retrieval.
+Commit guidance changes before reviewing; no push is required, and uncommitted edits are ignored.
+The PR's frozen GitHub evidence still defines the reviewed code. Missing required guidance blocks
+the review; the reviewer does not prepare or change the workspace. Results are concise unless
+structured diagnostics are requested.
