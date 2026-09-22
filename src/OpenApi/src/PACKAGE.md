@@ -47,9 +47,16 @@ builder.Services.AddOpenApi(options =>
 #pragma warning restore ASP0040
 ```
 
-This mode currently emits `oneOf` for System.Text.Json polymorphic contracts only when every
-configured branch has a distinct, explicit discriminator. Other alternatives continue to use
-`anyOf`.
+This mode emits `oneOf` for System.Text.Json polymorphic contracts only when every configured
+branch has a distinct, explicit discriminator. Other alternatives continue to use `anyOf`.
+It also emits `allOf` for inheritance only when the serializer contracts can be separated
+losslessly into a reusable base component and local derived properties. Contracts with custom
+converters, property collisions or hiding, extension data, additional-properties constraints,
+incompatible base properties, or polymorphic bases remain flattened.
+
+Schema transformers continue to run once for the composed derived schema and once for each
+serialized property, in serializer order. The synthetic base and local `allOf` branches do not
+introduce additional transformer callbacks.
 
 For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 

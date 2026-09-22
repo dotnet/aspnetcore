@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -50,6 +51,7 @@ internal sealed class InferredSchemaShape
         InferredSchemaShapeKind kind,
         Type converterType,
         bool hasCustomConverter,
+        bool disallowsUnmappedMembers,
         string? discriminatorPropertyName,
         InferredSchemaTypeIdentity? baseType,
         InferredSchemaTypeUse? elementType,
@@ -62,6 +64,7 @@ internal sealed class InferredSchemaShape
         Kind = kind;
         ConverterType = converterType;
         HasCustomConverter = hasCustomConverter;
+        DisallowsUnmappedMembers = disallowsUnmappedMembers;
         DiscriminatorPropertyName = discriminatorPropertyName;
         BaseType = baseType;
         ElementType = elementType;
@@ -80,6 +83,8 @@ internal sealed class InferredSchemaShape
     public Type ConverterType { get; }
 
     public bool HasCustomConverter { get; }
+
+    public bool DisallowsUnmappedMembers { get; }
 
     public string? DiscriminatorPropertyName { get; }
 
@@ -156,6 +161,7 @@ internal static class InferredSchemaShapeBuilder
                 GetShapeKind(typeInfo),
                 typeInfo.Converter.GetType(),
                 typeInfo.Converter.GetType().Assembly != typeof(JsonSerializerOptions).Assembly,
+                typeInfo.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow,
                 typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,
                 elementType,

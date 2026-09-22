@@ -52,6 +52,16 @@ public partial class OpenApiSchemaServiceTests
     }
 
     [Fact]
+    public void CompositionDecision_AdditionalPropertiesConstraint_IsRejected()
+    {
+        var document = BuildCompositionShape<DisallowingDerived>();
+
+        var decision = document.CompositionDecisions[typeof(DisallowingDerived)].Inheritance;
+        Assert.False(decision.IsEligible);
+        Assert.Equal(InferredInheritanceReason.AdditionalProperties, decision.Reason);
+    }
+
+    [Fact]
     public void CompositionDecision_CustomConverter_IsRejected()
     {
         var document = BuildCompositionShape<ConvertedDerived>();
@@ -59,6 +69,74 @@ public partial class OpenApiSchemaServiceTests
         var decision = document.CompositionDecisions[typeof(ConvertedDerived)].Inheritance;
         Assert.False(decision.IsEligible);
         Assert.Equal(InferredInheritanceReason.CustomConverter, decision.Reason);
+    }
+
+    [Fact]
+    public void CompositionDecision_PolymorphicBase_IsRejected()
+    {
+        var document = BuildCompositionShape<OrderedZetaDerived>();
+
+        var decision = document.CompositionDecisions[typeof(OrderedZetaDerived)].Inheritance;
+        Assert.False(decision.IsEligible);
+        Assert.Equal(InferredInheritanceReason.PolymorphicHierarchy, decision.Reason);
+    }
+
+    [Theory]
+    [InlineData(typeof(PolymorphicDerivedRoot))]
+    [InlineData(typeof(DeepPolymorphicDerived))]
+    public void CompositionDecision_PolymorphicHierarchy_IsRejected(Type type)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        var document = InferredSchemaShapeBuilder.Build(options, type);
+
+        var decision = document.CompositionDecisions[type].Inheritance;
+        Assert.False(decision.IsEligible);
+        Assert.Equal(InferredInheritanceReason.PolymorphicHierarchy, decision.Reason);
+    }
+
+    [Fact]
+    public void CompositionDecision_BaseContractMismatch_IsRejected()
+    {
+        var resolver = new DefaultJsonTypeInfoResolver().WithAddedModifier(typeInfo =>
+        {
+            if (typeInfo.Type == typeof(MismatchedDerived))
+            {
+                typeInfo.Properties.Single(property => property.Name == "value").IsRequired = true;
+            }
+        });
+        var document = BuildCompositionShape<MismatchedDerived>(resolver);
+
+        var decision = document.CompositionDecisions[typeof(MismatchedDerived)].Inheritance;
+        Assert.False(decision.IsEligible);
+        Assert.Equal(InferredInheritanceReason.BaseContractMismatch, decision.Reason);
+    }
+
+    [Fact]
+    public void CompositionDecision_BaseShapeUnavailable_IsRejected()
+    {
+        var derivedShape = new InferredSchemaShape(
+            new(typeof(UnavailableBaseDerived)),
+            InferredSchemaShapeKind.Object,
+            typeof(object),
+            hasCustomConverter: false,
+            disallowsUnmappedMembers: false,
+            discriminatorPropertyName: null,
+            baseType: new(typeof(UnavailableBase)),
+            elementType: null,
+            additionalPropertiesType: null,
+            properties: Array.Empty<InferredSchemaProperty>(),
+            derivedTypes: Array.Empty<InferredSchemaDerivedType>(),
+            unionCases: Array.Empty<InferredSchemaTypeUse>());
+        var document = new InferredSchemaDocument(
+            new(new(typeof(UnavailableBaseDerived)), AllowsNull: false),
+            [derivedShape]);
+
+        var decision = document.CompositionDecisions[typeof(UnavailableBaseDerived)].Inheritance;
+        Assert.False(decision.IsEligible);
+        Assert.Equal(InferredInheritanceReason.BaseShapeUnavailable, decision.Reason);
     }
 
     [Fact]
@@ -185,6 +263,11 @@ public partial class OpenApiSchemaServiceTests
 
     private sealed class ExtensionDataDerived : ExtensionDataBase;
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private class DisallowingBase;
+
+    private sealed class DisallowingDerived : DisallowingBase;
+
     private class ConvertedBase;
 
     [JsonConverter(typeof(ConvertedDerivedConverter))]
@@ -201,6 +284,28 @@ public partial class OpenApiSchemaServiceTests
         public override void Write(Utf8JsonWriter writer, ConvertedDerived value, JsonSerializerOptions options)
             => writer.WriteStringValue(nameof(ConvertedDerived));
     }
+
+    private class MismatchedBase
+    {
+        public string Value { get; set; } = string.Empty;
+    }
+
+    private sealed class MismatchedDerived : MismatchedBase;
+
+    private class UnavailableBase;
+
+    private sealed class UnavailableBaseDerived : UnavailableBase;
+
+    private class PlainPolymorphicAncestor;
+
+    [JsonDerivedType(typeof(PolymorphicDerivedLeaf), "leaf")]
+    private class PolymorphicDerivedRoot : PlainPolymorphicAncestor;
+
+    private sealed class PolymorphicDerivedLeaf : PolymorphicDerivedRoot;
+
+    private class IntermediatePolymorphicDerived : PolymorphicDerivedRoot;
+
+    private sealed class DeepPolymorphicDerived : IntermediatePolymorphicDerived;
 
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
     [JsonDerivedType(typeof(OrderedZetaDerived), "zeta")]

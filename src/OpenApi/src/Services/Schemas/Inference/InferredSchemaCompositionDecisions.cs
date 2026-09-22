@@ -17,6 +17,8 @@ internal enum InferredInheritanceReason
     PropertyNameCollision,
     PropertyHiding,
     ExtensionData,
+    AdditionalProperties,
+    PolymorphicHierarchy,
     BaseContractMismatch,
 }
 
@@ -122,6 +124,16 @@ internal static class InferredSchemaCompositionDecisionBuilder
             return new(false, baseType, InferredInheritanceReason.ExtensionData);
         }
 
+        if (derivedShape.DisallowsUnmappedMembers || baseShape.DisallowsUnmappedMembers)
+        {
+            return new(false, baseType, InferredInheritanceReason.AdditionalProperties);
+        }
+
+        if (derivedShape.DerivedTypes.Count > 0 || HasPolymorphicAncestor(document, baseShape))
+        {
+            return new(false, baseType, InferredInheritanceReason.PolymorphicHierarchy);
+        }
+
         var basePropertiesByJsonName = baseShape.Properties.ToDictionary(
             property => property.Identity.JsonName,
             StringComparer.Ordinal);
@@ -159,6 +171,25 @@ internal static class InferredSchemaCompositionDecisionBuilder
         }
 
         return new(true, baseType, InferredInheritanceReason.Eligible);
+    }
+
+    private static bool HasPolymorphicAncestor(
+        InferredSchemaDocument document,
+        InferredSchemaShape shape)
+    {
+        while (true)
+        {
+            if (shape.DerivedTypes.Count > 0)
+            {
+                return true;
+            }
+
+            if (shape.BaseType is not { } baseType ||
+                !document.TryGetShape(baseType.Type, out shape))
+            {
+                return false;
+            }
+        }
     }
 
     private static InferredAlternativeCompositionDecision DecideAlternatives(InferredSchemaShape shape)

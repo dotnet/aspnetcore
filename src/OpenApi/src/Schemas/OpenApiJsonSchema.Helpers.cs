@@ -310,6 +310,11 @@ internal sealed partial class OpenApiJsonSchema
                 var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
                 schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
+            case OpenApiConstants.SchemaInferredAllOf:
+                reader.Read();
+                var allOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
+                schema.AllOf = allOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
             case OpenApiSchemaKeywords.OneOfKeyword:
                 reader.Read();
                 var oneOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
@@ -359,6 +364,16 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaIsInferredPolymorphism, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredInheritance:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredInheritance, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredBasePlaceholder:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredBasePlaceholder, reader.GetBoolean());
                 break;
             case OpenApiConstants.NullableProperty:
                 reader.Read();

@@ -591,6 +591,82 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformer_InferredInheritancePreservesPropertyContextsAndOrder()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/inheritance", (TransformerDerived value) => { });
+
+        var transformedContexts = new List<(Type Type, string PropertyName)>();
+        var options = new OpenApiOptions();
+#pragma warning disable ASP0040
+        options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(TransformerDerived) ||
+                context.JsonPropertyInfo?.DeclaringType == typeof(TransformerDerived) ||
+                context.JsonPropertyInfo?.DeclaringType == typeof(TransformerBase))
+            {
+                transformedContexts.Add((context.JsonTypeInfo.Type, context.JsonPropertyInfo?.Name));
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(
+                [
+                    (typeof(TransformerDerived), null),
+                    (typeof(int), "derivedValue"),
+                    (typeof(string), "baseValue"),
+                ],
+                transformedContexts);
+            Assert.Equal(2, document.Components.Schemas[nameof(TransformerDerived)].AllOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_LegacyAuthoredAllOfRetainsReferenceAndCallbackBehavior()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/todo", (Todo todo) => { });
+
+        var transformedProperties = new List<string>();
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo) && context.JsonPropertyInfo is null)
+            {
+                schema.AllOf =
+                [
+                    new OpenApiSchema
+                    {
+                        Type = JsonSchemaType.Object,
+                        Metadata = new Dictionary<string, object>
+                        {
+                            [Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId] = "AuthoredBase",
+                        },
+                    },
+                ];
+            }
+            else if (context.JsonPropertyInfo is not null)
+            {
+                transformedProperties.Add(context.JsonPropertyInfo.Name);
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var schema = document.Paths["/todo"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+            Assert.Equal("AuthoredBase", Assert.IsType<OpenApiSchemaReference>(Assert.Single(schema.AllOf)).Reference.Id);
+            Assert.Contains("AuthoredBase", document.Components.Schemas.Keys);
+            Assert.DoesNotContain("TodoAuthoredBase", document.Components.Schemas.Keys);
+            Assert.NotEmpty(transformedProperties);
+        });
+    }
+
+    [Fact]
     public async Task SchemaTransformer_LegacyAuthoredOneOfWithDiscriminatorDoesNotPrefixBranchReference()
     {
         var builder = CreateBuilder();
@@ -1081,6 +1157,16 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     {
         public string Name { get; }
         public Shape SomeShape { get; }
+    }
+
+    private class TransformerBase
+    {
+        public string BaseValue { get; set; }
+    }
+
+    private sealed class TransformerDerived : TransformerBase
+    {
+        public int DerivedValue { get; set; }
     }
 
     private class ActivatedTransformer : IOpenApiSchemaTransformer

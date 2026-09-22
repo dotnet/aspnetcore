@@ -107,12 +107,20 @@ internal sealed class OpenApiSchemaService(
             schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
 #pragma warning disable ASP0040 // The framework implements this experimental option.
-            if (optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred &&
-                context.BaseTypeInfo is null)
+            if (optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred)
 #pragma warning restore ASP0040
             {
-                var compositionDecision = GetInferredSchema(type).CompositionDecisions[type];
-                schema.ApplyCompositionDecision(compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
+                var inferredSchema = GetInferredSchema(type);
+                var compositionDecision = inferredSchema.CompositionDecisions[type];
+                if (context.BaseTypeInfo is null)
+                {
+                    schema.ApplyCompositionDecision(compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
+                }
+                else
+                {
+                    schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+                }
+                schema.ApplyInheritanceCompositionDecision(inferredSchema, compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
             }
             else
             {
@@ -366,6 +374,18 @@ internal sealed class OpenApiSchemaService(
             {
                 if (!document.AddOpenApiSchemaByReference(targetReferenceId, schema, out resultSchemaReference))
                 {
+                    if (document.Components?.Schemas is { } componentSchemas &&
+                        componentSchemas.TryGetValue(targetReferenceId, out var existingSchema) &&
+                        existingSchema is OpenApiSchema
+                        {
+                            Metadata: not null
+                        } existingOpenApiSchema &&
+                        existingOpenApiSchema.Metadata.TryGetValue(OpenApiConstants.SchemaIsInferredBasePlaceholder, out var isPlaceholder) &&
+                        isPlaceholder is true &&
+                        schema.Metadata?.ContainsKey(OpenApiConstants.SchemaIsInferredBasePlaceholder) != true)
+                    {
+                        componentSchemas[targetReferenceId] = schema;
+                    }
                     // We already added this schema, so it has already been resolved.
                     return resultSchemaReference;
                 }
@@ -583,11 +603,18 @@ internal sealed class OpenApiSchemaService(
             await InnerApplySchemaTransformersAsync(schema.Items, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 
-        if (schema.Properties is { Count: > 0 })
+        var isInferredInheritance = inferredMode &&
+            schema.Metadata?.TryGetValue(OpenApiConstants.SchemaIsInferredInheritance, out var inferredInheritance) == true &&
+            inferredInheritance is true;
+        if (isInferredInheritance || schema.Properties is { Count: > 0 })
         {
             foreach (var propertyInfo in jsonTypeInfo.Properties)
             {
-                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                IOpenApiSchema? propertySchema;
+                var hasPropertySchema = isInferredInheritance
+                    ? TryGetComposedPropertySchema(schema, propertyInfo.Name, out propertySchema)
+                    : schema.Properties!.TryGetValue(propertyInfo.Name, out propertySchema);
+                if (hasPropertySchema && propertySchema is not null)
                 {
                     var inferredProperty = inferredSchema[jsonTypeInfo.Type].GetProperty(propertyInfo.Name);
                     var propertyTypeInfo = _jsonSerializerOptions.GetTypeInfo(inferredProperty.DeclaredPropertyType);
@@ -602,6 +629,31 @@ internal sealed class OpenApiSchemaService(
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
         }
+    }
+
+    private static bool TryGetComposedPropertySchema(
+        OpenApiSchema schema,
+        string propertyName,
+        out IOpenApiSchema propertySchema)
+    {
+        if (schema.Properties?.TryGetValue(propertyName, out propertySchema!) == true)
+        {
+            return true;
+        }
+
+        if (schema.AllOf is not null)
+        {
+            foreach (var branch in schema.AllOf)
+            {
+                if (TryGetComposedPropertySchema(UnwrapOpenApiSchema(branch), propertyName, out propertySchema))
+                {
+                    return true;
+                }
+            }
+        }
+
+        propertySchema = null!;
+        return false;
     }
 
     private JsonNode CreateSchema(Type type)

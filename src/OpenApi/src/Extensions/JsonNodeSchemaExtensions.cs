@@ -542,6 +542,192 @@ internal static class JsonNodeSchemaExtensions
         schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
     }
 
+    internal static void ApplyInheritanceCompositionDecision(
+        this JsonNode schema,
+        InferredSchemaDocument inferredSchema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        JsonSerializerOptions serializerOptions)
+    {
+        var decision = compositionDecision.Inheritance;
+        if (!decision.IsEligible)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(
+                $"The inferred inheritance for '{compositionDecision.Identity.Type}' requires an object schema.");
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.RefKeyword))
+        {
+            return;
+        }
+
+        if (decision.BaseType is not { } baseType ||
+            !inferredSchema.TryGetShape(baseType.Type, out var baseShape))
+        {
+            throw new InvalidOperationException(
+                $"The inferred base schema for '{compositionDecision.Identity.Type}' is unavailable.");
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AllOfKeyword))
+        {
+            throw new InvalidOperationException(
+                $"The exported schema for '{compositionDecision.Identity.Type}' already contains allOf composition.");
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AdditionalPropertiesKeyword))
+        {
+            throw new InvalidOperationException(
+                $"The exported schema for '{compositionDecision.Identity.Type}' contains unsupported additional-properties constraints.");
+        }
+
+        var derivedShape = inferredSchema[compositionDecision.Identity.Type];
+        JsonObject exportedProperties;
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties)
+        {
+            exportedProperties = properties;
+        }
+        else if (derivedShape.Properties.Count == 0)
+        {
+            exportedProperties = new JsonObject();
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"The inferred properties for '{compositionDecision.Identity.Type}' are missing from the exported schema.");
+        }
+
+        var expectedPropertyNames = derivedShape.Properties
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (exportedProperties.Count != expectedPropertyNames.Count ||
+            exportedProperties.Any(property => !expectedPropertyNames.Contains(property.Key)))
+        {
+            throw new InvalidOperationException(
+                $"The inferred properties for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+        }
+
+        var exportedRequiredNode = schemaObject[OpenApiSchemaKeywords.RequiredKeyword];
+        if (exportedRequiredNode is not null && exportedRequiredNode is not JsonArray)
+        {
+            throw new InvalidOperationException(
+                $"The inferred required properties for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+        }
+        var exportedRequired = exportedRequiredNode as JsonArray;
+        var exportedType = schemaObject[OpenApiSchemaKeywords.TypeKeyword];
+        var baseSchema = CreateComponentSchema(baseShape);
+        var localSchema = CreateObjectSchema(
+            derivedShape,
+            property => property.Identity.DeclaringType.Type == derivedShape.Identity.Type);
+
+        schemaObject.Remove(OpenApiSchemaKeywords.PropertiesKeyword);
+        schemaObject.Remove(OpenApiSchemaKeywords.RequiredKeyword);
+        schemaObject[OpenApiConstants.SchemaInferredAllOf] = new JsonArray(baseSchema, localSchema);
+        schemaObject[OpenApiConstants.SchemaIsInferredInheritance] = true;
+
+        JsonObject CreateComponentSchema(InferredSchemaShape shape)
+        {
+            var typeInfo = serializerOptions.GetTypeInfo(shape.Identity.Type);
+            if (createSchemaReferenceId(typeInfo) is not { } schemaReferenceId)
+            {
+                throw new InvalidOperationException(
+                    $"A schema reference ID is required for the inherited base type '{shape.Identity.Type}'.");
+            }
+
+            var componentSchema = new JsonObject
+            {
+                [OpenApiConstants.SchemaId] = schemaReferenceId,
+                [OpenApiConstants.SchemaIsInferredBasePlaceholder] = true,
+            };
+            var inheritanceDecision = inferredSchema.CompositionDecisions[shape.Identity.Type].Inheritance;
+            if (inheritanceDecision.IsEligible)
+            {
+                if (inheritanceDecision.BaseType is not { } inheritedBaseType ||
+                    !inferredSchema.TryGetShape(inheritedBaseType.Type, out var inheritedBaseShape))
+                {
+                    throw new InvalidOperationException(
+                        $"The inferred base schema for '{shape.Identity.Type}' is unavailable.");
+                }
+
+                componentSchema[OpenApiConstants.SchemaInferredAllOf] = new JsonArray(
+                    CreateComponentSchema(inheritedBaseShape),
+                    CreateObjectSchema(shape, property => property.Identity.DeclaringType.Type == shape.Identity.Type));
+                componentSchema[OpenApiConstants.SchemaIsInferredInheritance] = true;
+            }
+            else
+            {
+                CopyObjectSchema(
+                    componentSchema,
+                    shape,
+                    _ => true);
+            }
+
+            return componentSchema;
+        }
+
+        JsonObject CreateObjectSchema(
+            InferredSchemaShape shape,
+            Func<InferredSchemaProperty, bool> includeProperty)
+        {
+            var objectSchema = new JsonObject();
+            CopyObjectSchema(objectSchema, shape, includeProperty);
+            return objectSchema;
+        }
+
+        void CopyObjectSchema(
+            JsonObject target,
+            InferredSchemaShape shape,
+            Func<InferredSchemaProperty, bool> includeProperty)
+        {
+            target[OpenApiSchemaKeywords.TypeKeyword] = exportedType?.DeepClone() ?? JsonValue.Create("object");
+            var includedPropertyNames = shape.Properties
+                .Where(includeProperty)
+                .Select(property => property.Identity.JsonName)
+                .ToHashSet(StringComparer.Ordinal);
+            var properties = new JsonObject();
+            foreach (var property in exportedProperties)
+            {
+                if (includedPropertyNames.Contains(property.Key))
+                {
+                    properties[property.Key] = property.Value?.DeepClone();
+                }
+            }
+
+            if (properties.Count != includedPropertyNames.Count)
+            {
+                throw new InvalidOperationException(
+                    $"The inferred properties for '{shape.Identity.Type}' do not match the exported schema.");
+            }
+
+            if (properties.Count > 0)
+            {
+                target[OpenApiSchemaKeywords.PropertiesKeyword] = properties;
+            }
+
+            if (exportedRequired is not null)
+            {
+                var required = new JsonArray();
+                foreach (var requiredProperty in exportedRequired)
+                {
+                    if (requiredProperty?.GetValue<string>() is { } propertyName &&
+                        includedPropertyNames.Contains(propertyName))
+                    {
+                        required.Add(requiredProperty.DeepClone());
+                    }
+                }
+
+                if (required.Count > 0)
+                {
+                    target[OpenApiSchemaKeywords.RequiredKeyword] = required;
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Set the x-schema-id property on the schema to the identifier associated with the type.
     /// </summary>
