@@ -464,6 +464,19 @@ public class SetCookieHeaderValueTest
     }
 
     [Theory]
+    [InlineData(16)]
+    [InlineData(256)]
+    [InlineData(4096)]
+    public void SetCookieHeaderValue_ParseList_NameWithoutEqualsRecoversFollowingValue(int nameLength)
+    {
+        var input = $"{new string('a', nameLength)}, valid=value";
+
+        var result = SetCookieHeaderValue.ParseList(new[] { input });
+
+        Assert.Equal(new[] { new SetCookieHeaderValue("valid", "value") }, result);
+    }
+
+    [Theory]
     [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
     public void SetCookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters

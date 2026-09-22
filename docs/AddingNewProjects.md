@@ -10,7 +10,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 
   **Note:** (Only applicable to `src/` projects) Depending on what kind of project you are creating, VS will create different files in your project. You might also want to add the following files:
   - `PublicAPI.Shipped.txt`
-    - Lists publically visible APIs that are exported from your final compiled `.dll`.
+    - Lists publicly visible APIs that are exported from your final compiled `.dll`.
     - This only lists APIs that have already been shipped to customers and cannot be changed.
     - There is an empty template at `eng/PublicAPI.empty.txt` for your reference. You can copy and rename the file to add it to your project. Make sure the name is exactly as shown above.
   - `PublicAPI.UnShipped.txt`

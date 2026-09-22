@@ -103,12 +103,12 @@ internal sealed class MethodOptions
     }
 
     /// <summary>
-    /// Creates method options by merging together the settings the specificed <see cref="GrpcServiceOptions"/> collection.
+    /// Creates method options by merging together the settings in the specified <see cref="GrpcServiceOptions"/> collection.
     /// The <see cref="GrpcServiceOptions"/> should be ordered with items arranged in ascending order of precedence.
-    /// When interceptors from multiple options are merged together they will be executed in reverse order of precendence.
+    /// When interceptors from multiple options are merged together they will be executed in reverse order of precedence.
     /// </summary>
     /// <param name="serviceOptions">A collection of <see cref="GrpcServiceOptions"/> instances, arranged in ascending order of precedence.</param>
-    /// <returns>A new <see cref="MethodOptions"/> instanced with settings merged from specifid <see cref="GrpcServiceOptions"/> collection.</returns>
+    /// <returns>A new <see cref="MethodOptions"/> instance with settings merged from the specified <see cref="GrpcServiceOptions"/> collection.</returns>
     public static MethodOptions Create(IEnumerable<GrpcServiceOptions> serviceOptions)
     {
         // This is required to get ensure that service methods without any explicit configuration

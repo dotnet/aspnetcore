@@ -45,7 +45,8 @@ public class ExceptionHandlerOptions
     /// Gets or sets a delegate used to map an exception to an HTTP status code.
     /// </summary>
     /// <remarks>
-    /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code 500 is used.
+    /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code is 500. If the exception
+    /// is a <see cref="BadHttpRequestException"/>, its <see cref="BadHttpRequestException.StatusCode"/> is used instead.
     /// </remarks>
     public Func<Exception, int>? StatusCodeSelector { get; set; }
 

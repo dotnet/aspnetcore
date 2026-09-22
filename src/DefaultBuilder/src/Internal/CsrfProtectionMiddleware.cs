@@ -8,8 +8,10 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
 /// Auto-injected middleware that enforces <see cref="ICsrfProtection"/> on incoming requests.
-/// Skips validation when the matched endpoint opted out via <c>DisableAntiforgery()</c>
-/// (i.e. carries <see cref="IAntiforgeryMetadata"/> with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="false"/>).
+/// Validation only runs when the matched endpoint opts in via <see cref="IAntiforgeryMetadata"/>
+/// with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="true"/>. Endpoints
+/// without any <see cref="IAntiforgeryMetadata"/> (e.g. unannotated minimal-API handlers) and
+/// endpoints that opted out via <c>DisableAntiforgery()</c> pass through unchanged.
 /// </summary>
 internal sealed partial class CsrfProtectionMiddleware
 {
@@ -30,18 +32,31 @@ internal sealed partial class CsrfProtectionMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public Task InvokeAsync(HttpContext context)
     {
-        // Recording that CsrfProtection was invoked
-        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
-
         var endpoint = context.GetEndpoint();
-        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+        if (endpoint is null)
         {
-            await _next(context);
-            return;
+            return _next(context);
         }
 
+        var antiforgeryMetadata = endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>();
+        if (antiforgeryMetadata is null)
+        {
+            return _next(context);
+        }
+
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+        if (!antiforgeryMetadata.RequiresValidation)
+        {
+            return _next(context);
+        }
+
+        return InvokeCoreAsync(context);
+    }
+
+    private async Task InvokeCoreAsync(HttpContext context)
+    {
         // This middleware does not short-circuit, but only records the verdict.
         // When the application also calls UseAntiforgery(),
         // the later AntiforgeryMiddleware may overwrite this verdict with the result of token-based validation.

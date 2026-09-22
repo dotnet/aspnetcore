@@ -48,9 +48,13 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
         return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
     }
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple serialize of primitive types.")]
-    protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state) =>
-        JsonSerializer.SerializeToUtf8Bytes(state);
+    protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
+    {
+        var dictionary = state as Dictionary<string, byte[]> ?? new Dictionary<string, byte[]>(state);
+        return JsonSerializer.SerializeToUtf8Bytes(
+            dictionary,
+            PrerenderComponentApplicationStoreSerializerContext.Default.DictionaryStringByteArray);
+    }
 
     public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
     {
@@ -73,5 +77,5 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
 }
 
-[JsonSerializable(typeof(Dictionary<string, byte[]>), GenerationMode = JsonSourceGenerationMode.Serialization)]
+[JsonSerializable(typeof(Dictionary<string, byte[]>))]
 internal sealed partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext;

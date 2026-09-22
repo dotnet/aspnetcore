@@ -43,7 +43,7 @@ public class OperationBase
         }
     }
 
-    [JsonPropertyName(nameof(from))]
+    [JsonPropertyName(nameof(from)), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string from { get; set; }
 
     public OperationBase()
@@ -60,6 +60,7 @@ public class OperationBase
         this.from = from;
     }
 
+    [Obsolete("This method is obsolete and will be removed in .NET 13. If you were calling this method, replace the call with 'operation.OperationType is OperationType.Move or OperationType.Copy'")]
     public bool ShouldSerializeFrom()
     {
         return (OperationType == OperationType.Move

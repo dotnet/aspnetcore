@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Binary;
+using System.Buffers.Text;
+using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
@@ -11,6 +16,7 @@ namespace BlazorTemplates.Tests;
 public abstract class BlazorTemplateTest : BrowserTestBase
 {
     public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
+    private const string ConditionalCreateRecordKey = "conditional-create-record";
 
     public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
     {
@@ -96,6 +102,25 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         }
 
         await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
+        {
+            await browser.AddInitScriptAsync(script: $$"""
+                PublicKeyCredential.getClientCapabilities = async () => ({ conditionalCreate: true });
+
+                const originalCreate = navigator.credentials.create.bind(navigator.credentials);
+                navigator.credentials.create = async options => {
+                    if (options?.mediation === 'conditional') {
+                        sessionStorage.setItem(
+                            '{{ConditionalCreateRecordKey}}',
+                            `${options.mediation}:${options.publicKey !== undefined}`);
+                        throw new DOMException('Conditional creation intercepted by the test.', 'NotAllowedError');
+                    }
+
+                    return await originalCreate(options);
+                };
+                """);
+        }
+
         var page = await browser.NewPageAsync();
 
         Output.WriteLine($"Opening browser at {listeningUri}...");
@@ -158,6 +183,44 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             Assert.True(result.HasValue);
             var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
+            Assert.NotNull(authenticatorId);
+
+            // Record the WebAuthn signal calls made by each page so that we can assert on them later.
+            // We define the signal methods if they're missing so that the assertions don't depend on
+            // the browser version bundled with Playwright.
+            await page.AddInitScriptAsync("""
+                window.__passkeySignals = [];
+                window.__passkeyAutofillStarted = false;
+                window.__resolveUnknownCredentialSignal = null;
+                if (navigator.credentials) {
+                    const originalGet = navigator.credentials.get.bind(navigator.credentials);
+                    navigator.credentials.get = async function (options) {
+                        const credential = await originalGet(options);
+                        sessionStorage.setItem('__passkeyCredentialJson', JSON.stringify(credential));
+                        return credential;
+                    };
+                }
+                if (window.PublicKeyCredential) {
+                    if (sessionStorage.getItem('__forcePasskeyAutofillOnce')) {
+                        sessionStorage.removeItem('__forcePasskeyAutofillOnce');
+                        window.PublicKeyCredential.isConditionalMediationAvailable = () => {
+                            window.__passkeyAutofillStarted = true;
+                            return new Promise(() => {});
+                        };
+                    } else if (sessionStorage.getItem('__skipPasskeyAutofillOnce')) {
+                        sessionStorage.removeItem('__skipPasskeyAutofillOnce');
+                        window.PublicKeyCredential.isConditionalMediationAvailable = () => Promise.resolve(false);
+                    }
+                    for (const name of ['signalAllAcceptedCredentials', 'signalCurrentUserDetails', 'signalUnknownCredential']) {
+                        window.PublicKeyCredential[name] = function (options) {
+                            window.__passkeySignals.push({ name, options });
+                            return name === 'signalUnknownCredential'
+                                ? new Promise(resolve => window.__resolveUnknownCredentialSignal = resolve)
+                                : Promise.resolve();
+                        };
+                    }
+                }
+                """);
 
             await Task.WhenAll(
                 page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
@@ -203,17 +266,80 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
             {
+                await AssertConditionalCreateAsync(page);
+                await ClearConditionalCreateRecordAsync(page);
+
+                var passkeyUpgradeUrl = new Uri(
+                    new Uri(page.Url),
+                    "/Account/PasskeyUpgrade?returnUrl=/auth");
+                await page.GotoAsync(passkeyUpgradeUrl.AbsoluteUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.WaitForSelectorAsync("text=You are authenticated");
+                Assert.Null(await GetConditionalCreateRecordAsync(page));
+
                 // Navigate to the passkey management page
+                await ClearPasskeySignalsAsync(page);
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage\"]"));
 
                 await page.WaitForSelectorAsync("text=Manage your account");
 
+                // The profile page signals the browser's passkey provider with the user's current details
+                var userDetails = await GetPasskeySignalAsync(page, "signalCurrentUserDetails");
+                Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("name").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("displayName").GetString());
+                await AssertSignalRetriesAfterFailureAsync(
+                    page,
+                    "current-user-details-signal",
+                    "signalCurrentUserDetails");
+
                 // Check that an error is displayed if passkey creation fails
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
+                await AssertSignalRetriesAfterFailureAsync(
+                    page,
+                    "all-accepted-credentials-signal",
+                    "signalAllAcceptedCredentials");
+
+                // Adding a passkey requires a confirmation first, so the add button is not shown yet
+                await page.WaitForSelectorAsync("text=Confirm it's you");
+                Assert.Equal(0, await page.Locator("text=Add a new passkey").CountAsync());
+
+                // The add form is rejected until the confirmation is done
+                await page.EvaluateAsync("""
+                    () => {
+                        const form = document.createElement('form');
+                        form.method = 'post';
+                        form.action = location.pathname;
+                        const fields = {
+                            '_handler': 'add-passkey',
+                            'Input.CredentialJson': '{}',
+                        };
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (token) {
+                            fields['__RequestVerificationToken'] = token.value;
+                        }
+                        for (const [name, value] of Object.entries(fields)) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            input.value = value;
+                            form.appendChild(input);
+                        }
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                    """);
+
+                await page.WaitForSelectorAsync("text=Error: You must confirm your identity before adding a passkey.");
+                await page.WaitForSelectorAsync("text=No passkeys are registered.");
+
+                // Confirm with the account password to unlock the add button
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("text=Confirm password");
+                await page.WaitForSelectorAsync("text=Add a new passkey");
 
                 await page.EvaluateAsync("""
                     () => {
@@ -242,9 +368,18 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 // Now register a passkey with a valid name
                 await page.FillAsync("[name=\"Input.Name\"]", "My passkey");
+                await ClearPasskeySignalsAsync(page);
                 await page.ClickAsync("text=Continue");
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
+
+                // The page signals the browser's passkey provider with the passkeys that are
+                // still valid, so that deleted ones stop being offered at sign-in.
+                var acceptedCredentials = await GetSignalledCredentialIdsAsync(page);
+                var storedCredentials = await GetAuthenticatorCredentialsAsync(cdpSession, authenticatorId);
+                Assert.Single(storedCredentials);
+                Assert.Equal(storedCredentials, acceptedCredentials);
+                var passkeyCredentialId = storedCredentials[0];
 
                 // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
@@ -286,6 +421,191 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 // Verify that we can visit the "Auth Required" page again
                 await page.ClickAsync("text=Auth Required");
                 await page.WaitForSelectorAsync("text=You are authenticated");
+
+                // Enable 2FA so that both completed password sign-in paths exercise
+                // conditional creation after the partial 2FA cookie has been consumed.
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/TwoFactorAuthentication**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/TwoFactorAuthentication\"]"));
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/EnableAuthenticator**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Add authenticator app"));
+
+                var sharedKey = (await page.Locator("kbd").InnerTextAsync()).Replace(" ", string.Empty);
+                await page.FillAsync("[name=\"Input.Code\"]", ComputeAuthenticatorCode(sharedKey));
+                await page.ClickAsync("text=Verify");
+                await page.WaitForSelectorAsync("text=Recovery codes");
+                var recoveryCode = await page.Locator(".recovery-code").First.InnerTextAsync();
+
+                await page.ClickAsync("text=Auth Required");
+                await page.WaitForSelectorAsync("text=You are authenticated");
+                await ClearConditionalCreateRecordAsync(page);
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Logout"));
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/LoginWith2fa**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("button[type=\"submit\"]"));
+                Assert.Null(await GetConditionalCreateRecordAsync(page));
+
+                await page.FillAsync("[name=\"Input.TwoFactorCode\"]", ComputeAuthenticatorCode(sharedKey));
+                await page.ClickAsync("button[type=\"submit\"]");
+                await page.WaitForSelectorAsync("text=You are authenticated");
+                await AssertConditionalCreateAsync(page);
+                await ClearConditionalCreateRecordAsync(page);
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Logout"));
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/LoginWith2fa**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("button[type=\"submit\"]"));
+                Assert.Null(await GetConditionalCreateRecordAsync(page));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/LoginWithRecoveryCode**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=log in with a recovery code"));
+                await page.FillAsync("[name=\"Input.RecoveryCode\"]", recoveryCode);
+                await page.ClickAsync("button[type=\"submit\"]");
+                await page.WaitForSelectorAsync("text=You are authenticated");
+                await AssertConditionalCreateAsync(page);
+
+                // Deleting the passkey signals the provider with an empty credential list,
+                // which is what removes the passkey from the sign-in options
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
+
+                await ClearPasskeySignalsAsync(page);
+                await page.ClickAsync("button[value=\"delete\"]");
+                await page.WaitForSelectorAsync("text=Passkey deleted successfully");
+
+                Assert.Empty(await GetSignalledCredentialIdsAsync(page));
+
+                // Submit the revoked credential again. The unknown credential signal remains pending,
+                // so a conditional autofill request can only start if the template gets the ordering wrong.
+                await page.EvaluateAsync("() => sessionStorage.setItem('__skipPasskeyAutofillOnce', 'true')");
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Logout"));
+
+                await page.EvaluateAsync("""
+                    () => {
+                        const credentialJson = sessionStorage.getItem('__passkeyCredentialJson');
+                        if (!credentialJson) {
+                            throw new Error('The revoked passkey credential was not captured.');
+                        }
+                        sessionStorage.setItem('__forcePasskeyAutofillOnce', 'true');
+                        navigator.credentials.get = () => Promise.resolve(JSON.parse(credentialJson));
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await ClearPasskeySignalsAsync(page);
+                await page.ClickAsync("text=Log in with a passkey");
+                await page.WaitForSelectorAsync("text=Error: Invalid login attempt.");
+                var unknownCredential = await GetPasskeySignalAsync(page, "signalUnknownCredential");
+                Assert.Equal(new Uri(page.Url).Host, unknownCredential.GetProperty("rpId").GetString());
+                Assert.Equal(passkeyCredentialId, unknownCredential.GetProperty("credentialId").GetString());
+                Assert.False(await page.EvaluateAsync<bool>("() => window.__passkeyAutofillStarted"));
+                await page.EvaluateAsync("() => window.__resolveUnknownCredentialSignal()");
+                await page.WaitForFunctionAsync("() => window.__passkeyAutofillStarted");
+
+                // Now check that a second account can be created with a passkey and no password
+                var registerUrl = new Uri(new Uri(page.Url), "/Account/Register").ToString();
+                var loginUrl = new Uri(new Uri(page.Url), "/Account/Login").ToString();
+
+                await page.GotoAsync(registerUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.WaitForSelectorAsync("text=Create a new account.");
+
+                // An address that is already registered is rejected before the browser is asked
+                // for a passkey, so this simulated failure never gets a chance to run
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.ClickAsync("text=Sign up with a passkey");
+                await page.WaitForSelectorAsync("text=Error: Username");
+
+                var passkeyUserName = $"{Guid.NewGuid()}+passkey@example.com";
+
+                // Check that a cancelled ceremony is reported
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var registrationOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRegistrationOptions?", StringComparison.Ordinal));
+                await page.ClickAsync("text=Sign up with a passkey");
+                var registrationOptionsRequest = await registrationOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", registrationOptionsRequest.Url);
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
+
+                // Now register for real, leaving both password boxes empty
+                await page.GotoAsync(registerUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Sign up with a passkey"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Click here to confirm your account"));
+
+                // The account has no password, so a password sign-in cannot succeed
+                await page.GotoAsync(loginUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("button[type=\"submit\"]");
+                await page.WaitForSelectorAsync("text=Error: Invalid login attempt.");
+
+                // The passkey created during registration signs the account in
+                await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
+                var requestOptionsRequestTask = page.WaitForRequestAsync(
+                    request => request.Url.Contains("/Account/PasskeyRequestOptions?", StringComparison.Ordinal));
+                await page.ClickAsync("text=Log in with a passkey");
+                var requestOptionsRequest = await requestOptionsRequestTask;
+                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", requestOptionsRequest.Url);
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // The password page offers to set a password rather than change one, which only
+                // happens when the account has no password stored
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/SetPassword**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/ChangePassword\"]"));
+
+                await page.WaitForSelectorAsync("text=Set your password");
             }
         }
 
@@ -297,6 +617,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");
             Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
+        }
+
+        if (!pagesToExclude.HasFlag(BlazorTemplatePages.Home))
+        {
+            await VerifyNavMenuCollapsesAfterNavigationAsync(page);
         }
 
         static async Task IncrementCounterAsync(IPage page)
@@ -326,6 +651,163 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             Assert.Fail($"The counter did not increment after {MaxIncrementAttempts} attempts");
         }
+
+        static Task ClearPasskeySignalsAsync(IPage page)
+        {
+            // Discards signals recorded so far so that GetPasskeySignalAsync can only see the ones
+            // that follow. AddInitScriptAsync only resets the array on a new document, and enhanced
+            // navigation does not start one.
+            return page.EvaluateAsync("() => { window.__passkeySignals = []; }");
+        }
+
+        static async Task<JsonElement> GetPasskeySignalAsync(IPage page, string name)
+        {
+            await page.WaitForFunctionAsync($"() => window.__passkeySignals.some(s => s.name === '{name}')");
+            // Read the most recent signal, since a single navigation can record more than one.
+            return await page.EvaluateAsync<JsonElement>($"() => window.__passkeySignals.findLast(s => s.name === '{name}').options");
+        }
+
+        static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)
+        {
+            var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
+            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id =>
+            {
+                var credentialId = id.GetString();
+                Assert.NotNull(credentialId);
+                return credentialId;
+            })];
+        }
+
+        static async Task AssertSignalRetriesAfterFailureAsync(IPage page, string selector, string method)
+        {
+            await page.WaitForSelectorAsync(selector, new() { State = WaitForSelectorState.Attached });
+            var attempts = await page.EvaluateAsync<int>(
+                """
+                async ({ selector, method }) => {
+                    const element = document.querySelector(selector);
+                    const originalSignal = window.PublicKeyCredential[method];
+                    let attempts = 0;
+                    window.PublicKeyCredential[method] = function (options) {
+                        attempts++;
+                        return attempts === 1
+                            ? Promise.reject(new Error('Simulated signal failure'))
+                            : originalSignal.call(window.PublicKeyCredential, options);
+                    };
+
+                    try {
+                        const options = ` ${element.getAttribute('options')}`;
+                        element.setAttribute('options', options);
+                        await new Promise(resolve => setTimeout(resolve));
+                        element.removeAttribute('options');
+                        element.setAttribute('options', options);
+
+                        for (let i = 0; i < 10 && attempts < 2; i++) {
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                        }
+
+                        return attempts;
+                    } finally {
+                        window.PublicKeyCredential[method] = originalSignal;
+                    }
+                }
+                """,
+                new { selector, method });
+
+            Assert.Equal(2, attempts);
+        }
+
+        static async Task<string[]> GetAuthenticatorCredentialsAsync(ICDPSession cdpSession, string authenticatorId)
+        {
+            var result = await cdpSession.SendAsync("WebAuthn.getCredentials", new Dictionary<string, object>
+            {
+                ["authenticatorId"] = authenticatorId,
+            });
+            var credentials = result.Value.GetProperty("credentials").EnumerateArray();
+            // The signal API uses base64url while CDP uses base64.
+            return [.. credentials.Select(c =>
+            {
+                var credentialId = c.GetProperty("credentialId").GetString();
+                Assert.NotNull(credentialId);
+                return Base64Url.EncodeToString(Convert.FromBase64String(credentialId));
+            })];
+        }
+    }
+
+    private static async Task VerifyNavMenuCollapsesAfterNavigationAsync(IPage page)
+    {
+        var originalViewportSize = page.ViewportSize;
+
+        // The nav menu only collapses behind the toggler on viewports narrower than 641px.
+        await page.SetViewportSizeAsync(400, 800);
+
+        try
+        {
+            var navMenu = page.Locator(".nav-scrollable");
+
+            await page.ClickAsync(".navbar-toggler");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+            await page.ClickAsync("nav a[href='']");
+            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
+            await navMenu.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        }
+        finally
+        {
+            await page.SetViewportSizeAsync(originalViewportSize.Width, originalViewportSize.Height);
+        }
+    }
+
+    private static async Task AssertConditionalCreateAsync(IPage page)
+    {
+        Assert.Equal("conditional:true", await GetConditionalCreateRecordAsync(page));
+    }
+
+    private static Task ClearConditionalCreateRecordAsync(IPage page)
+        => page.EvaluateAsync($"sessionStorage.removeItem('{ConditionalCreateRecordKey}')");
+
+    private static Task<string> GetConditionalCreateRecordAsync(IPage page)
+        => page.EvaluateAsync<string>($"sessionStorage.getItem('{ConditionalCreateRecordKey}')");
+
+    private static string ComputeAuthenticatorCode(string key)
+    {
+        var keyBytes = DecodeBase32(key);
+        var timestep = (ulong)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 30);
+        Span<byte> timestepBytes = stackalloc byte[sizeof(ulong)];
+        BinaryPrimitives.WriteUInt64BigEndian(timestepBytes, timestep);
+        Span<byte> hash = stackalloc byte[HMACSHA1.HashSizeInBytes];
+        Assert.True(HMACSHA1.TryHashData(keyBytes, timestepBytes, hash, out var written));
+        Assert.Equal(hash.Length, written);
+
+        var offset = hash[^1] & 0xf;
+        var binaryCode = (hash[offset] & 0x7f) << 24
+            | (hash[offset + 1] & 0xff) << 16
+            | (hash[offset + 2] & 0xff) << 8
+            | hash[offset + 3] & 0xff;
+        return (binaryCode % 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
+    }
+
+    private static byte[] DecodeBase32(string value)
+    {
+        const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        var bytes = new List<byte>();
+        var buffer = 0;
+        var bitsLeft = 0;
+
+        foreach (var character in value.ToUpperInvariant())
+        {
+            var index = Base32Chars.IndexOf(character);
+            Assert.True(index >= 0, $"Unexpected base32 character '{character}'.");
+            buffer = buffer << 5 | index;
+            bitsLeft += 5;
+            if (bitsLeft >= 8)
+            {
+                bitsLeft -= 8;
+                bytes.Add((byte)(buffer >> bitsLeft));
+                buffer &= (1 << bitsLeft) - 1;
+            }
+        }
+
+        return bytes.ToArray();
     }
 
     protected void EnsureBrowserAvailable(BrowserKind browserKind)

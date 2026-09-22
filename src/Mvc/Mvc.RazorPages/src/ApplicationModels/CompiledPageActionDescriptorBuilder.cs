@@ -64,7 +64,7 @@ internal static class CompiledPageActionDescriptorBuilder
         var handlerMetatdata = applicationModel.HandlerTypeAttributes;
         var endpointMetadata = applicationModel.EndpointMetadata;
 
-        // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+        // It is critical to get the order in which metadata appears in endpoint metadata correct. More significant metadata
         // must appear later in the sequence.
         // In this case, handlerMetadata is attributes on the Page \ PageModel, and endPointMetadata is configured via conventions. and
         // We consider the latter to be more significant.

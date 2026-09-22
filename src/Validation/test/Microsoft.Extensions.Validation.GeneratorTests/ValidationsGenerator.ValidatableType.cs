@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -18,8 +16,6 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanValidateClassTypesWithAttribute(bool useAsync)
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -106,7 +102,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -114,7 +110,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -125,7 +121,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -133,7 +129,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
-                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -144,7 +140,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -152,7 +148,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
+                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -166,7 +162,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -175,12 +171,12 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -195,7 +191,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -204,17 +200,17 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -247,7 +243,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -256,17 +252,17 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -277,7 +273,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -285,7 +281,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -296,7 +292,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -307,11 +303,11 @@ public class SubTypeWithInheritance : SubType
                     Assert.Collection(kvp.Value,
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error.ErrorMessage);
                         },
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error.ErrorMessage);
                         });
                 });
             }
@@ -323,7 +319,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -331,7 +327,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -373,7 +369,7 @@ public class SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -389,8 +385,6 @@ public class SubTypeWithInheritance : SubType
     public async Task CanValidateRecordTypesWithAttribute(bool useAsync)
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -477,7 +471,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -485,7 +479,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -496,7 +490,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -504,7 +498,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
-                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -515,7 +509,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -523,7 +517,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
+                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -537,7 +531,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -546,12 +540,12 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -566,7 +560,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -575,17 +569,17 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -618,7 +612,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -627,17 +621,17 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -648,7 +642,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -656,7 +650,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -667,7 +661,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -678,11 +672,11 @@ public record SubTypeWithInheritance : SubType
                     Assert.Collection(kvp.Value,
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error.ErrorMessage);
                         },
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error.ErrorMessage);
                         });
                 });
             }
@@ -694,7 +688,7 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
@@ -702,7 +696,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -744,13 +738,66 @@ public record SubTypeWithInheritance : SubType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IValidatableObject_ReceivesValidatedInstanceAsObjectInstance(bool useAsync)
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/67960: the ValidationContext
+        // passed to IValidatableObject.Validate must carry the model being validated as ObjectInstance,
+        // not a placeholder. Otherwise user code that casts ObjectInstance back to the model throws.
+        var source = """
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+app.Run();
+
+[ValidatableType]
+public class ObjectInstanceModel : IValidatableObject
+{
+    public string Name { get; set; } = string.Empty;
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var model = (ObjectInstanceModel)validationContext.ObjectInstance;
+        yield return new ValidationResult($"ObjectInstance.Name = '{model.Name}'.", [nameof(Name)]);
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyValidatableType(compilation, "ObjectInstanceModel", async (validationOptions, type) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
+
+            var instance = Activator.CreateInstance(type);
+            type.GetProperty("Name")!.SetValue(instance, "hello");
+            var context = new ValidateContext
+            {
+                ValidationOptions = validationOptions,
+                ServiceProvider = null,
+            };
+
+            await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
+
+            var error = Assert.Single(context.ValidationErrors!);
+            Assert.Equal("Name", error.Key);
+            Assert.Equal("ObjectInstance.Name = 'hello'.", error.Value.Select(e => e.ErrorMessage).Single());
         });
     }
 }

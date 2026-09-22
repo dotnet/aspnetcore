@@ -13,6 +13,8 @@
     <!-- Reject unsupported architectures via RID suffix match -->
     <_NativeAotSupportedArch Condition="
       '$(TargetArchitecture)' != 'wasm' and
+      '$(TargetArchitecture)' != 's390x' and
+      '$(TargetArchitecture)' != 'ppc64le' and
       ('$(TargetArchitecture)' != 'x86' or '$(TargetOS)' == 'windows')
     ">true</_NativeAotSupportedArch>
 

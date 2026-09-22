@@ -1,0 +1,33 @@
+@page "/persistent-state/auto-pause-background-sync"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Background Sync survives pause</h1>
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<button id="start-sync" data-token="@_token" onclick="window.startGatedBackgroundSync('@_token')">Start Background Sync</button>
+
+<script>
+    window.__syncResult = window.__syncResult || 'idle';
+
+    navigator.serviceWorker.register('/subdir/autopause-test-sw.js', { scope: '/subdir/persistent-state/' })
+        .then(function () { return navigator.serviceWorker.ready; })
+        .then(function () { window.__swReady = true; });
+
+    navigator.serviceWorker.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'sync-result') { window.__syncResult = e.data.value; }
+    });
+
+    window.startGatedBackgroundSync = function (token) {
+        window.__syncResult = 'pending';
+        navigator.serviceWorker.ready.then(function (reg) { reg.sync.register(token); });
+    };
+</script>
+
+@code {
+    private readonly string _token = Guid.NewGuid().ToString("N");
+}

@@ -1,2 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel
+Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel.Legacy = 0 -> Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel
+Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel.Medium = 1 -> Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel
+Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel.Strict = 2 -> Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.HttpAuthenticationHardeningLevel.get -> Microsoft.AspNetCore.Server.HttpSys.HttpAuthenticationHardeningLevel
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.HttpAuthenticationHardeningLevel.set -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetRequestProperty(int propertyId, System.ReadOnlySpan<byte> qualifier, System.Span<byte> output, out int bytesReturned) -> bool

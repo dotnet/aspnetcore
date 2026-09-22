@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Internal;
@@ -545,8 +544,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
             Debug.Assert(_arrayStorage is not null);
             Debug.Assert(_count <= _arrayStorage.Length);
 
-            ref var r = ref MemoryMarshal.GetArrayDataReference(_arrayStorage);
-            return MemoryMarshal.CreateSpan(ref r, _count);
+            return _arrayStorage.AsSpan(0, _count);
         }
     }
 
@@ -558,9 +556,10 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
 
         if (_count > 0)
         {
-            for (var i = 0; i < ArrayStorageSpan.Length; ++i)
+            var localSpan = ArrayStorageSpan; // incur slice + bounds check once upfront instead of within loop
+            for (var i = 0; i < localSpan.Length; ++i)
             {
-                if (_comparer.Equals(ArrayStorageSpan[i].Key, key))
+                if (_comparer.Equals(localSpan[i].Key, key))
                 {
                     return i;
                 }

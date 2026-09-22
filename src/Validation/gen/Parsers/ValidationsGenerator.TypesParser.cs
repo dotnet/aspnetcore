@@ -17,7 +17,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
-        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
+
+        // Validations generator doesn't need an accurate signature.
+        // We don't care about parameter names of the delegate, we don't care about parameter attributes, and we don't care
+        // about the exact delegate type. All we care about is the types of the parameters.
+        // The type of the parameters will always be correct.
+        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, needsAccurateSignature: false, out var method)
             ? method.Parameters
             : [];
 
@@ -59,7 +64,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
-        var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
+        var typeSymbol = incomingTypeSymbol.UnwrapType();
         if (typeSymbol.SpecialType != SpecialType.None)
         {
             return false;
@@ -77,13 +82,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Skip file-local types, which are only accessible within their declaring file
         // and cannot be referenced from generated code in a different file
-        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
-        {
-            return false;
-        }
-
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+        if (typeSymbol.IsInaccessibleFromGeneratedCode())
         {
             return false;
         }
@@ -104,12 +104,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             current = current.BaseType;
         }
 
-        // Extract validatable types discovered in members of this type and add them to the top-level list.
-        ImmutableArray<ValidatableProperty> members = [];
-        if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
+        // Extract validatable types discovered in union cases and add them to the top-level list.
+        var hasValidatableUnionCases = false;
+        if (typeSymbol.IsUnion)
         {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
+            foreach (var unionCaseType in typeSymbol.UnionCaseTypes)
+            {
+                hasValidatableUnionCases |= TryExtractValidatableType(unionCaseType, wellKnownTypes, validatableTypes, visitedTypes);
+            }
         }
+
+        // Extract validatable types discovered in members of this type and add them to the top-level list.
+        ImmutableArray<ValidatableProperty> members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes, hasValidatableUnionCases);
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
         var derivedTypes = typeSymbol.GetJsonDerivedTypes(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonDerivedTypeAttribute));
@@ -120,7 +126,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes && !hasValidatableUnionCases)
         {
             return false;
         }
@@ -139,7 +145,58 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return true;
     }
 
-    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
+    internal static bool ShouldSkipProperty(
+        IPropertySymbol property,
+        WellKnownTypes wellKnownTypes,
+        INamedTypeSymbol skipValidationAttributeSymbol,
+        INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    {
+        // Preserve the synthesized union Value property so validation can traverse to the active case.
+        if (property.IsImplicitlyDeclared && !IsUnionValueProperty(property))
+        {
+            return true;
+        }
+
+        // Skip indexers, static properties, write-only properties (those without a getter),
+        // and the synthesized record EqualityContract property.
+        if (property.IsIndexer
+            || property.IsStatic
+            || property.IsWriteOnly
+            || property.IsEqualityContract(wellKnownTypes))
+        {
+            return true;
+        }
+
+        // Skip property if it or its type are annotated with SkipValidationAttribute
+        if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+        {
+            return true;
+        }
+
+        // Skip properties that have JsonIgnore attribute
+        if (property.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsUnionValueProperty(IPropertySymbol property)
+        => property is
+        {
+            Name: "Value",
+            IsImplicitlyDeclared: true,
+            DeclaredAccessibility: Accessibility.Public,
+            ContainingType: { } containingType,
+        } && containingType.IsUnion;
+
+    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(
+        ITypeSymbol typeSymbol,
+        WellKnownTypes wellKnownTypes,
+        HashSet<ValidatableType> validatableTypes,
+        List<ITypeSymbol> visitedTypes,
+        bool hasValidatableUnionCases)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -238,16 +295,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties, indexers, static properties, properties without
-            // a public getter, and properties already processed via the record processing logic above.
-            if (member.IsImplicitlyDeclared
-                || member.IsIndexer
-                || member.IsStatic
-                || member.IsWriteOnly
-                || member.GetMethod is null
-                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
-                || member.IsEqualityContract(wellKnownTypes)
-                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
+            {
+                continue;
+            }
+
+            if (member.GetMethod is null || member.GetMethod.DeclaredAccessibility is not Accessibility.Public)
+            {
+                continue;
+            }
+
+            // Skip properties already processed via the record processing logic above
+            if (resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
             }
@@ -265,22 +324,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that have JsonIgnore attribute
-            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
-            {
-                continue;
-            }
-
-            // Skip property if it or its type are annotated with SkipValidationAttribute
-            if (member.IsSkippedValidationProperty(skipValidationAttributeSymbol))
-            {
-                continue;
-            }
-
             var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, validatableTypes, visitedTypes);
 
             // If the member has no validation attributes or validatable types, skip it.
-            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType)
+            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType && !(hasValidatableUnionCases && IsUnionValueProperty(member)))
             {
                 continue;
             }

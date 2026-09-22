@@ -29,6 +29,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.JSInterop;
 using Moq;
 
@@ -1442,6 +1443,26 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task SectionOutletAndContentInDifferentRenderModes_LogsWarningDuringPrerendering()
+    {
+        // Arrange
+        var sink = new TestSink();
+        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
+        var httpContext = GetHttpContext();
+
+        // Act
+        var result = await renderer.PrerenderComponentAsync(
+            httpContext,
+            typeof(SectionOutletAndContentWithDifferentRenderModes),
+            null,
+            ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+
+        // Assert
+        Assert.Contains(sink.Writes, w => w.EventId.Name == "SectionRenderModeMismatch" && w.LogLevel == LogLevel.Warning);
+    }
+
+    [Fact]
     public async Task DoesNotEmitNestedRenderModeBoundaries()
     {
         // Arrange
@@ -1934,10 +1955,10 @@ public class EndpointHtmlRendererTest
         return writer.ToString();
     }
 
-    private TestEndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null)
+    private TestEndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null, ILoggerFactory loggerFactory = null)
     {
         var effectiveServices = services ?? _services;
-        return new TestEndpointHtmlRenderer(effectiveServices, NullLoggerFactory.Instance);
+        return new TestEndpointHtmlRenderer(effectiveServices, loggerFactory ?? NullLoggerFactory.Instance);
     }
 
     private class TestEndpointHtmlRenderer : EndpointHtmlRenderer

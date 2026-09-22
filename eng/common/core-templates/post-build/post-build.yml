@@ -236,6 +236,7 @@ stages:
           StageLabel: 'Validation'
           JobLabel: 'Signing'
           BinlogToolVersion: $(BinlogToolVersion)
+          enableInternalRuntimes: false
 
     # SourceLink validation has been removed — the underlying CLI tool
     # (targeting netcoreapp2.1) has not functioned for years.
@@ -295,8 +296,6 @@ stages:
 
       # Populate internal runtime variables.
       - template: /eng/common/templates/steps/enable-internal-sources.yml
-        parameters:
-          legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
       - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 

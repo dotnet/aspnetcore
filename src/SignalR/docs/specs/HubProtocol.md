@@ -531,7 +531,7 @@ Example:
 ```
 
 ### Sequence Message Encoding
-A `Seqeunce` message is a JSON object with the following properties
+A `Sequence` message is a JSON object with the following properties
 
 * `type` - A `Number` with the literal value `9`, indicating that this message is a `Sequence`.
 * `sequenceId` - A `Number` specifying what the new starting message number will be. Only sent on reconnects.

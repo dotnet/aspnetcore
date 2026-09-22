@@ -37,7 +37,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         TBuffer buffer;
         bool foundCurrentValue;
         bool currentElementSuccess;
-        bool succeded = true;
+        bool succeeded = true;
 
         var keys = context.GetKeys();
         found = keys.HasValues();
@@ -60,12 +60,12 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         {
             context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, _elementType, options, out currentValue!, out foundCurrentValue);
-            succeded &= currentElementSuccess;
+            succeeded &= currentElementSuccess;
             context.PopPrefix(key.Span);
 
             if (!TKey.TryParse(key[1..^1].Span, CultureInfo.InvariantCulture, out var keyValue))
             {
-                succeded = false;
+                succeeded = false;
                 var currentPrefix = context.GetPrefix();
                 context.AddMappingError(
                     FormattableStringFactory.Create(FormDataResources.DictionaryUnparsableKey, key[1..^1], currentPrefix),
@@ -80,7 +80,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
                 context.AddMappingError(
                      FormattableStringFactory.Create(FormDataResources.MaxCollectionSizeReached, "dictionary", maxCollectionSize),
                      null);
-                succeded = false;
+                succeeded = false;
                 break;
             }
 
@@ -88,10 +88,10 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         }
 
         result = TDictionaryPolicy.ToResult(buffer);
-        if (!succeded)
+        if (!succeeded)
         {
             context.AttachInstanceToErrors(result!);
         }
-        return succeded;
+        return succeeded;
     }
 }

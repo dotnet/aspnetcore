@@ -89,13 +89,13 @@ internal sealed class HttpRequestStream : Stream
 
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(ReadAsync(buffer, offset, count), callback, state);
     }
 
     /// <inheritdoc />
     public override int EndRead(IAsyncResult asyncResult)
     {
-        return TaskToApm.End<int>(asyncResult);
+        return TaskToAsyncResult.End<int>(asyncResult);
     }
 
     private ValueTask<int> ReadAsyncWrapper(Memory<byte> destination, CancellationToken cancellationToken)

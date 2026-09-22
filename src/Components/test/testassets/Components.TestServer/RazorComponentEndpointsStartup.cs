@@ -8,12 +8,13 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -35,14 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
-
-        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
-        // switch value once at static initialization and won't see subsequent AppContext changes.
-        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
-            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
-        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, enableUrlNavigation);
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(enableUrlNavigation);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
@@ -50,8 +44,18 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-        services.AddValidation();
-        services.AddValidationLocalization();
+        services.AddSingleton<ExternalNavigationTarget>();
+        services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
@@ -96,15 +100,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+            Configuration["Components:UseCultureFromServer"] = "true";
         }
         else
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(options =>
-            {
-                options.UseCultureFromServer = false;
-            });
+            Configuration["Components:UseCultureFromServer"] = "false";
         }
+
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
@@ -129,6 +132,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -201,6 +206,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
         }
 
+        app.UseWebSockets();
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
@@ -257,12 +263,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
-                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
-                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
                     if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
                         || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
                     {
-                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                        config.InteractiveWebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
                     }
                 });
 
@@ -271,6 +277,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 
@@ -381,10 +388,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }

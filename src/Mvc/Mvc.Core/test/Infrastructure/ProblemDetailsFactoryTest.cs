@@ -20,7 +20,7 @@ public class ProblemDetailsFactoryTest
 
         // Assert
         Assert.Equal(500, problemDetails.Status);
-        Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
+        Assert.Equal("Internal Server Error", problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Null(problemDetails.Instance);
         Assert.Null(problemDetails.Detail);

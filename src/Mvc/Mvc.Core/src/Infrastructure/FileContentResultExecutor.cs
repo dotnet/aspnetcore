@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 public partial class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
 {
     /// <summary>
-    /// Intializes a new <see cref="FileContentResultExecutor"/>.
+    /// Initializes a new <see cref="FileContentResultExecutor"/>.
     /// </summary>
     /// <param name="loggerFactory">The factory used to create loggers.</param>
     public FileContentResultExecutor(ILoggerFactory loggerFactory)

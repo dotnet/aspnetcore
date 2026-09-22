@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.DotNet.Open.Api.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetAddOpenAPIReferenceToolsTests</TestGroupName>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
 
   <PropertyGroup>
