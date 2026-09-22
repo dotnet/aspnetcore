@@ -52,6 +52,7 @@ internal sealed class InferredSchemaShape
         Type converterType,
         bool hasCustomConverter,
         JsonNumberHandling numberHandling,
+        InferredJsonFiniteDomainFact? finiteDomain,
         bool disallowsUnmappedMembers,
         string? discriminatorPropertyName,
         InferredSchemaTypeIdentity? baseType,
@@ -66,6 +67,7 @@ internal sealed class InferredSchemaShape
         ConverterType = converterType;
         HasCustomConverter = hasCustomConverter;
         NumberHandling = numberHandling;
+        FiniteDomain = finiteDomain;
         DisallowsUnmappedMembers = disallowsUnmappedMembers;
         DiscriminatorPropertyName = discriminatorPropertyName;
         BaseType = baseType;
@@ -87,6 +89,8 @@ internal sealed class InferredSchemaShape
     public bool HasCustomConverter { get; }
 
     public JsonNumberHandling NumberHandling { get; }
+
+    public InferredJsonFiniteDomainFact? FiniteDomain { get; }
 
     public bool DisallowsUnmappedMembers { get; }
 
@@ -152,6 +156,8 @@ internal static class InferredSchemaShapeBuilder
         while (pending.TryDequeue(out var type))
         {
             var typeInfo = serializerOptions.GetTypeInfo(type);
+            var converterType = typeInfo.Converter.GetType();
+            var hasCustomConverter = converterType.Assembly != typeof(JsonSerializerOptions).Assembly;
             var properties = CreateProperties(typeInfo);
             var derivedTypes = CreateDerivedTypes(typeInfo);
             var unionCases = CreateUnionCases(typeInfo);
@@ -166,9 +172,10 @@ internal static class InferredSchemaShapeBuilder
             shapes.Add(new(
                 new(type),
                 GetShapeKind(typeInfo),
-                typeInfo.Converter.GetType(),
-                typeInfo.Converter.GetType().Assembly != typeof(JsonSerializerOptions).Assembly,
+                converterType,
+                hasCustomConverter,
                 typeInfo.NumberHandling ?? serializerOptions.NumberHandling,
+                InferredJsonFiniteDomainBuilder.Build(typeInfo, hasCustomConverter),
                 typeInfo.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow,
                 typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,

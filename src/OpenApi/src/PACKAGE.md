@@ -70,9 +70,18 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 ```
 
 Object-object and array-array branches overlap, and multiple nullable branches overlap on null.
-Enums, arbitrary JSON values (`object`, `JsonElement`, and JSON nodes), polymorphic contracts,
-custom converters, and unsupported scalar representations remain `anyOf` because their domains
-are not proven exact. Union `oneOf` schemas do not add discriminators.
+For non-flags string enums configured to reject integer values, inferred mode can use the finite
+literal set emitted by System.Text.Json. Two such enum branches are exclusive only when their
+canonical JSON literal sets are disjoint. A finite string enum still overlaps unrestricted string,
+and nullable finite enums overlap on null. Numeric literals use JSON Schema mathematical equality,
+so equivalent forms such as `1` and `1.0` are the same value.
+
+Numeric enums, flags enums, string enum converters that allow integer values, custom converters,
+arbitrary JSON values (`object`, `JsonElement`, and JSON nodes), polymorphic contracts, and
+unsupported scalar representations remain `anyOf` because their accepted values are not proven
+closed. System.Text.Json intentionally omits the integer alternative from a string-enum schema
+even when its converter accepts integers; inferred mode verifies the serializer contract and does
+not mistake that schema for a closed set. Union `oneOf` schemas do not add discriminators.
 It also emits `allOf` for inheritance only when the serializer contracts can be separated
 losslessly into a reusable base component and local derived properties. Contracts with custom
 converters, property collisions or hiding, extension data, additional-properties constraints,

@@ -123,6 +123,7 @@ public partial class OpenApiSchemaServiceTests
             typeof(object),
             hasCustomConverter: false,
             numberHandling: JsonNumberHandling.Strict,
+            finiteDomain: null,
             disallowsUnmappedMembers: false,
             discriminatorPropertyName: null,
             baseType: new(typeof(UnavailableBase)),

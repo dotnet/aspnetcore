@@ -77,6 +77,7 @@ internal enum InferredJsonDomainReason
     UnionOfKnownDomains,
     CustomConverter,
     EnumRepresentation,
+    FiniteSchemaValues,
     PolymorphicContract,
     ArbitraryJsonValue,
     UnsupportedScalar,
@@ -87,7 +88,8 @@ internal enum InferredJsonDomainReason
 internal readonly record struct InferredJsonDomainFact(
     InferredJsonValueDomain Domains,
     bool IsExact,
-    InferredJsonDomainReason Reason);
+    InferredJsonDomainReason Reason,
+    InferredJsonFiniteDomainFact? FiniteDomain = null);
 
 internal sealed record InferredAlternativeBranch(
     InferredSchemaTypeIdentity Identity,
@@ -280,8 +282,9 @@ internal static class InferredSchemaCompositionDecisionBuilder
             {
                 for (var j = i + 1; j < unionBranches.Length; j++)
                 {
-                    if ((unionBranches[i].JsonDomain!.Value.Domains &
-                        unionBranches[j].JsonDomain!.Value.Domains) != InferredJsonValueDomain.None)
+                    if (DomainsOverlap(
+                        unionBranches[i].JsonDomain!.Value,
+                        unionBranches[j].JsonDomain!.Value))
                     {
                         return UnionDecision(
                             InferredAlternativeCompositionKind.AnyOf,
@@ -345,6 +348,24 @@ internal static class InferredSchemaCompositionDecisionBuilder
                 Array.AsReadOnly(branches));
     }
 
+    private static bool DomainsOverlap(
+        InferredJsonDomainFact left,
+        InferredJsonDomainFact right)
+    {
+        if ((left.Domains & right.Domains) == InferredJsonValueDomain.None)
+        {
+            return false;
+        }
+
+        if (left.FiniteDomain is not { IsExact: true } leftFinite ||
+            right.FiniteDomain is not { IsExact: true } rightFinite)
+        {
+            return true;
+        }
+
+        return leftFinite.Values.Intersect(rightFinite.Values).Any();
+    }
+
     private static InferredObjectContractDecision DecideObjectContract(InferredSchemaShape shape)
     {
         if (shape.Kind != InferredSchemaShapeKind.Object)
@@ -385,9 +406,28 @@ internal static class InferredSchemaCompositionDecisionBuilder
         public InferredJsonDomainFact GetDomain(InferredSchemaTypeUse typeUse)
         {
             var domain = GetNonNullDomain(typeUse.Identity.Type);
-            return typeUse.AllowsNull && domain.IsExact
-                ? domain with { Domains = domain.Domains | InferredJsonValueDomain.Null }
-                : domain;
+            if (!typeUse.AllowsNull || !domain.IsExact)
+            {
+                return domain;
+            }
+
+            if (domain.FiniteDomain is { IsExact: true } finiteDomain)
+            {
+                var values = finiteDomain.Values
+                    .Append(new(InferredJsonLiteralKind.Null, "null"))
+                    .OrderBy(literal => literal.Kind)
+                    .ThenBy(literal => literal.CanonicalValue, StringComparer.Ordinal)
+                    .ToArray();
+                domain = domain with
+                {
+                    FiniteDomain = finiteDomain with
+                    {
+                        Values = new ReadOnlyCollection<InferredJsonLiteral>(values),
+                    },
+                };
+            }
+
+            return domain with { Domains = domain.Domains | InferredJsonValueDomain.Null };
         }
 
         private InferredJsonDomainFact GetNonNullDomain(Type type)
@@ -421,7 +461,7 @@ internal static class InferredSchemaCompositionDecisionBuilder
 
             if (type.IsEnum)
             {
-                return Unknown(InferredJsonDomainReason.EnumRepresentation);
+                return ClassifyEnum(shape);
             }
 
             if (type == typeof(object) ||
@@ -500,6 +540,7 @@ internal static class InferredSchemaCompositionDecisionBuilder
             try
             {
                 var domains = InferredJsonValueDomain.None;
+                List<InferredJsonLiteral>? finiteValues = [];
                 foreach (var unionCase in shape.UnionCases)
                 {
                     var domain = GetDomain(unionCase);
@@ -509,14 +550,57 @@ internal static class InferredSchemaCompositionDecisionBuilder
                     }
 
                     domains |= domain.Domains;
+                    if (domain.FiniteDomain is { IsExact: true } caseFiniteDomain)
+                    {
+                        finiteValues?.AddRange(caseFiniteDomain.Values);
+                    }
+                    else
+                    {
+                        finiteValues = null;
+                    }
                 }
 
-                return Exact(domains, InferredJsonDomainReason.UnionOfKnownDomains);
+                var finiteDomain = finiteValues is null
+                    ? null
+                    : new InferredJsonFiniteDomainFact(
+                        IsExact: true,
+                        InferredJsonFiniteDomainReason.UnionOfFiniteDomains,
+                        new ReadOnlyCollection<InferredJsonLiteral>(
+                            finiteValues
+                                .Distinct()
+                                .OrderBy(literal => literal.Kind)
+                                .ThenBy(literal => literal.CanonicalValue, StringComparer.Ordinal)
+                                .ToArray()));
+                return new(domains, IsExact: true, InferredJsonDomainReason.UnionOfKnownDomains, finiteDomain);
             }
             finally
             {
                 _activeUnions.Remove(shape.Identity.Type);
             }
+        }
+
+        private static InferredJsonDomainFact ClassifyEnum(InferredSchemaShape shape)
+        {
+            if (shape.FiniteDomain is not { IsExact: true } finiteDomain)
+            {
+                return Unknown(InferredJsonDomainReason.EnumRepresentation);
+            }
+
+            var domains = InferredJsonValueDomain.None;
+            foreach (var value in finiteDomain.Values)
+            {
+                domains |= value.Kind switch
+                {
+                    InferredJsonLiteralKind.Null => InferredJsonValueDomain.Null,
+                    InferredJsonLiteralKind.Boolean => InferredJsonValueDomain.Boolean,
+                    InferredJsonLiteralKind.Number when value.IsInteger => InferredJsonValueDomain.Integer,
+                    InferredJsonLiteralKind.Number => InferredJsonValueDomain.NonIntegerNumber,
+                    InferredJsonLiteralKind.String => InferredJsonValueDomain.String,
+                    _ => InferredJsonValueDomain.Any,
+                };
+            }
+
+            return new(domains, IsExact: true, InferredJsonDomainReason.FiniteSchemaValues, finiteDomain);
         }
 
         private static InferredJsonDomainFact Exact(
