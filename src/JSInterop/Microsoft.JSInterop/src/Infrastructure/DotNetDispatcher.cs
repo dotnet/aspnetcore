@@ -142,12 +142,17 @@ public static class DotNetDispatcher
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, bool isNonGenericTask)
     {
-        if (!task.IsCompletedSuccessfully)
+        if (task.Exception != null)
         {
-            var exception = task.IsCanceled
-                ? new TaskCanceledException(task)
-                : ExceptionDispatchInfo.Capture(task.Exception!.GetBaseException()).SourceException;
-            var dispatchResult = new DotNetInvocationResult(exception, "InvocationFailure");
+            var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
+            var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
+            jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            return;
+        }
+
+        if (task.IsCanceled)
+        {
+            var dispatchResult = new DotNetInvocationResult(new TaskCanceledException(task), "InvocationFailure");
             jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             return;
         }
@@ -157,12 +162,7 @@ public static class DotNetDispatcher
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
     }
 
-    private static object? InvokeSynchronously(
-        JSRuntime jsRuntime,
-        in DotNetInvocationInfo callInfo,
-        IDotNetObjectReference? objectReference,
-        string argsJson,
-        out Type? returnType)
+    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType)
     {
         returnType = null;
         var assemblyName = callInfo.AssemblyName;
