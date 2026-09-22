@@ -163,6 +163,13 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public SslProtocols Protocol => _snapshotted ? _protocol : _sslStream!.SslProtocol;
 
+    /// <summary>
+    /// Only reachable on an SslStream-backed connection. A session-backed feature is never
+    /// registered as <see cref="ISslStreamFeature"/> - there is no SslStream to hand out, and
+    /// the feature's contract is that it is absent rather than present-but-broken, so
+    /// applications probing for it with <c>Get&lt;ISslStreamFeature&gt;()?.SslStream</c> degrade
+    /// instead of failing. This guard exists so that wiring it up by mistake fails loudly.
+    /// </summary>
     public SslStream SslStream => _sslStream
         ?? throw new NotSupportedException(
             "ISslStreamFeature is not available when Kestrel is using the sans-IO TLS layer; "
