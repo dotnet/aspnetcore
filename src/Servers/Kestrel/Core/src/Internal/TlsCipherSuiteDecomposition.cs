@@ -21,10 +21,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 /// would have to report <see cref="CipherAlgorithmType.None"/> and zero strengths - a visible
 /// behaviour regression against the SslStream path.</para>
 ///
-/// <para>This duplication is deliberate and temporary: delete it in favour of the runtime API
-/// once one exists for turning a cipher suite into its component algorithms. The values here
-/// are legacy (superseded by <c>NegotiatedCipherSuite</c>) and are only needed for
-/// compatibility.</para>
+/// <para>This duplication is deliberate and temporary. It should not stay a Kestrel-private
+/// fork: the intended home is the source-sharing contract already used for the HTTP/2 and
+/// HTTP/3 code, which keeps a single copy in dotnet/runtime and flows it into this repo:</para>
+///
+/// <list type="bullet">
+/// <item><description>runtime: <c>src/libraries/Common/src/System/Net/Http/aspnetcore</c>
+/// (a <c>System/Net/Security/aspnetcore</c> peer would need agreeing)</description></item>
+/// <item><description>aspnetcore: <c>src/Shared/runtime</c>, refreshed by the
+/// <c>runtime-sync</c> GitHub action</description></item>
+/// </list>
+///
+/// <para>Note that sync is <c>rsync --delete</c> driven from the runtime side, so a file added
+/// only here would be removed by the next sync - moving this requires the runtime-side change
+/// first. That route keeps it a private contract between the two repos rather than public API,
+/// which matters because these values are legacy (superseded by <c>NegotiatedCipherSuite</c>)
+/// and only exist for callers emulating the old SslStream surface.</para>
 /// </summary>
 internal static class TlsCipherSuiteDecomposition
 {
