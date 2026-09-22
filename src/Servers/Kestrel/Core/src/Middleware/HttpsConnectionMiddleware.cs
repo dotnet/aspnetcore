@@ -369,6 +369,14 @@ internal sealed class HttpsConnectionMiddleware
 
         var tlsPipe = new TlsSessionDuplexPipe(context.Transport);
 
+        var feature = new Core.Internal.TlsConnectionFeature(tlsPipe.Session, context, _logger);
+        context.Features.Set<ITlsConnectionFeature>(feature);
+        context.Features.Set<ITlsHandshakeFeature>(feature);
+        context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+
+        // Deliberately not set on this path: ISslStreamFeature and the SslStream instance itself
+        // have no meaning without an SslStream. Applications reading either will see them absent.
+
         try
         {
             using var cancellationTokenSource = _ctsPool.Rent();
@@ -381,10 +389,17 @@ internal sealed class HttpsConnectionMiddleware
 
             _metrics.TlsHandshakeStart(metricsContext);
 
-            await tlsPipe.HandshakeAsync(GetOrCreateSansIoContext(context), cancellationToken: cancellationTokenSource.Token);
+            await tlsPipe.HandshakeAsync(
+                GetOrCreateSansIoContext(context),
+                // Runs the built-in chain build together with the RemoteCertificateValidationCallback
+                // set above, which is how the SslStream path enforces ClientCertificateMode.
+                onCertificateValidation: static session => session.AcceptWithDefaultValidation(),
+                cancellationToken: cancellationTokenSource.Token);
         }
         catch (Exception ex) when (ex is OperationCanceledException or IOException or AuthenticationException)
         {
+            feature.Exception = ex;
+
             KestrelEventSource.Log.TlsHandshakeFailed(metricsContext.ConnectionContext.ConnectionId);
             KestrelEventSource.Log.TlsHandshakeStop(metricsContext.ConnectionContext, null);
             KestrelMetrics.AddConnectionEndReason(metricsTagsFeature, ConnectionEndReason.TlsHandshakeFailed);
@@ -403,13 +418,7 @@ internal sealed class HttpsConnectionMiddleware
             return;
         }
 
-        var feature = new Core.Internal.TlsConnectionFeature(tlsPipe.Session, context, _logger);
-        context.Features.Set<ITlsConnectionFeature>(feature);
-        context.Features.Set<ITlsHandshakeFeature>(feature);
-        context.Features.Set<ITlsApplicationProtocolFeature>(feature);
-
-        // Deliberately not set on this path: ISslStreamFeature and the SslStream instance itself
-        // have no meaning without an SslStream. Applications reading either will see them absent.
+        feature.CaptureFromSession();
 
         var protocol = tlsPipe.Session.NegotiatedProtocol;
 
@@ -478,6 +487,9 @@ internal sealed class HttpsConnectionMiddleware
                 || _options.ClientCertificateMode == ClientCertificateMode.RequireCertificate,
             EnabledSslProtocols = _options.SslProtocols,
             CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+            RemoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate
+                ? null
+                : RemoteCertificateValidationCallback,
         };
 
         ConfigureAlpn(sslOptions, _httpProtocols);

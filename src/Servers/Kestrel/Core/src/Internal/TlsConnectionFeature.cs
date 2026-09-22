@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -51,8 +52,10 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     /// <summary>
     /// Creates a feature backed by the sans-IO TLS session instead of an <see cref="SslStream"/>.
-    /// The values are read straight away and the feature is marked snapshotted, so all property
-    /// getters are served from the cached fields.
+    /// It is created before the handshake runs, so that a failed or timed-out handshake still
+    /// leaves a readable feature, and is marked snapshotted so the getters are served from the
+    /// cached fields rather than a stream that does not exist. Call
+    /// <see cref="CaptureFromSession"/> once the handshake succeeds.
     /// </summary>
     internal TlsConnectionFeature(TlsBufferSession session, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
     {
@@ -63,15 +66,25 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         _context = context;
         _logger = logger;
         _snapshotted = true;
+    }
 
-        _protocol = session.NegotiatedProtocol;
-        _negotiatedCipherSuite = session.NegotiatedCipherSuite;
-        _applicationProtocol = session.NegotiatedApplicationProtocol.Protocol.ToArray();
-        _clientCert = session.GetRemoteCertificate();
+    /// <summary>
+    /// Reads the negotiated values off the session after a successful handshake. Until this is
+    /// called the feature reports defaults, which is what the SslStream path also does when the
+    /// handshake fails.
+    /// </summary>
+    internal void CaptureFromSession()
+    {
+        Debug.Assert(_session is not null, "Only valid on a session-backed feature.");
+
+        _protocol = _session.NegotiatedProtocol;
+        _negotiatedCipherSuite = _session.NegotiatedCipherSuite;
+        _applicationProtocol = _session.NegotiatedApplicationProtocol.Protocol.ToArray();
+        _clientCert = _session.GetRemoteCertificate();
 
 #pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
         TlsCipherSuiteDecomposition.Decompose(
-            session.NegotiatedCipherSuite,
+            _session.NegotiatedCipherSuite,
             out _cipherAlgorithm,
             out _cipherStrength,
             out _hashAlgorithm,
