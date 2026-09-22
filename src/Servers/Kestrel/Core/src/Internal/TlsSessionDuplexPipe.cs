@@ -134,6 +134,17 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                         continue;
 
                     case TlsOperationStatus.NeedMoreData:
+                        // The peer has closed and the session could not consume what is left, so
+                        // no further input can arrive to unblock it. Without this the loop would
+                        // spin: ReadAsync returns the same completed, unconsumable buffer every
+                        // time, buffer.IsEmpty is false, and nothing makes progress until the
+                        // handshake timeout fires - burning a core for the whole timeout on any
+                        // client that sends a partial record or an alert and disconnects.
+                        if (holdsResult && result.IsCompleted && consumed == 0)
+                        {
+                            throw new IOException("Transport closed during the TLS handshake.");
+                        }
+
                         if (holdsResult)
                         {
                             // examined == end: park until the peer sends more.
@@ -277,6 +288,13 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                             continue;
 
                         case TlsOperationStatus.NeedMoreData:
+                            // Same spin guard as the initial handshake: a completed transport
+                            // holding bytes the session cannot consume will never make progress.
+                            if (holdsResult && result.IsCompleted && consumed == 0)
+                            {
+                                throw new IOException("Transport closed during client certificate negotiation.");
+                            }
+
                             if (holdsResult)
                             {
                                 _transport.Input.AdvanceTo(buffer.Start, result.Buffer.End);
@@ -508,6 +526,7 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                 }
 
                 var closed = false;
+                var consumedAny = false;
                 while (!buffer.IsEmpty)
                 {
                     var source = owner.GetContiguous(buffer);
@@ -521,6 +540,7 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
 
                     _end += produced;
                     buffer = buffer.Slice(consumed);
+                    consumedAny |= consumed > 0 || produced > 0;
 
                     if (status == TlsOperationStatus.Closed)
                     {
@@ -537,7 +557,11 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
 
                 owner._transport.Input.AdvanceTo(buffer.Start, result.Buffer.End);
 
-                if (closed || (result.IsCompleted && buffer.IsEmpty))
+                // The trailing !consumedAny case is a peer that closed mid-record. The leftover
+                // bytes can never complete, so treating only the empty-buffer case as completion
+                // would spin here: the session keeps asking for data the peer will never send and
+                // ReadAsync keeps returning the same completed buffer.
+                if (closed || (result.IsCompleted && (buffer.IsEmpty || !consumedAny)))
                 {
                     _completed = true;
                 }
