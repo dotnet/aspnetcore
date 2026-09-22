@@ -1,6 +1,11 @@
 #!/usr/bin/env pwsh
 #Requires -Version 7.0
 
+param(
+    [string]$WorkflowPath = (Join-Path $PSScriptRoot "..\pr-attention-pulse.md"),
+    [string]$LockPath = (Join-Path $PSScriptRoot "..\pr-attention-pulse.lock.yml")
+)
+
 $ErrorActionPreference = "Stop"
 
 function Assert-True
@@ -35,10 +40,18 @@ function Invoke-Control
     }
 }
 
+function Get-CompiledJob
+{
+    param([string]$Name)
+
+    $match = [regex]::Match($lock, "(?ms)^  $([regex]::Escape($Name)):\r?\n.*?(?=^  [A-Za-z_][A-Za-z0-9_-]*:\r?$|\z)")
+    Assert-True $match.Success "The generated '$Name' job could not be isolated."
+
+    return $match.Value
+}
+
 $testRoot = $PSScriptRoot
 $workflowRoot = Split-Path -Parent $testRoot
-$workflowPath = Join-Path $workflowRoot "pr-attention-pulse.md"
-$lockPath = Join-Path $workflowRoot "pr-attention-pulse.lock.yml"
 $combinerPath = Join-Path $workflowRoot "pr-attention-pulse/Combine-PRAttentionPulse.ps1"
 $contractPath = Join-Path $workflowRoot "pr-attention-pulse/PRAttentionPulseContract.psm1"
 $publishedFixturePath = Join-Path $testRoot "fixtures/presentation/published-34643961191.pulse.json"
@@ -51,6 +64,58 @@ Assert-True ($agentStepStart -ge 0 -and $agentStepEnd -gt $agentStepStart) "The 
 $agentStep = $lock.Substring($agentStepStart, $agentStepEnd - $agentStepStart)
 
 $failures = [Collections.Generic.List[string]]::new()
+
+Invoke-Control "DetectorUsesSelectedPatPool" {
+    $agentCredential = [regex]::Matches((Get-CompiledJob "agent"), "(?m)^          COPILOT_GITHUB_TOKEN: (.+)\r?$")
+    $detectorCredential = [regex]::Matches((Get-CompiledJob "detection"), "(?m)^          COPILOT_GITHUB_TOKEN: (.+)\r?$")
+    Assert-True ($agentCredential.Count -eq 1 -and $detectorCredential.Count -eq 1) "Each inference job must bind exactly one provider credential."
+    $selectedPat = $agentCredential[0].Groups[1].Value.Trim()
+    Assert-True ($selectedPat.Contains("needs.pat_pool.outputs.pat_number") -and $selectedPat.Contains("secrets.COPILOT_PAT_")) "The main agent must retain the existing PAT-pool selector."
+    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The inline detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
+}
+
+Invoke-Control "DetectorPoolDependencyAndEnvironment" {
+    foreach ($name in @("agent", "detection"))
+    {
+        $job = Get-CompiledJob $name
+        $needs = [regex]::Match($job, "(?m)^    needs:\r?\n(?:      - [^\r\n]+\r?\n)+").Value
+        Assert-True ($needs -match "(?m)^      - pat_pool\r?$") "The '$name' job must depend directly on pat_pool."
+        Assert-True ($job -match "(?m)^    environment: copilot-pat-pool\r?$") "The '$name' job must use the existing PAT-pool environment."
+    }
+}
+
+Invoke-Control "InlineDetectorFailsClosed" {
+    $detector = Get-CompiledJob "detection"
+    Assert-True ($workflow -match "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must remain enabled."
+    Assert-True ($detector.Contains("copilot_harness.cjs") -and $detector.Contains("parse_threat_detection_results.cjs")) "The generated detector must execute and parse inline detection."
+    $continueOnError = [regex]::Matches($detector, '(?m)^          GH_AW_DETECTION_CONTINUE_ON_ERROR: "([^"]+)"\r?$')
+    Assert-True ($continueOnError.Count -eq 2) "Both detection setup and result parsing must declare failure handling."
+    foreach ($match in $continueOnError)
+    {
+        Assert-True ($match.Groups[1].Value -ceq "false") "Detection errors must not be accepted."
+    }
+    Assert-True ((Get-CompiledJob "safe_outputs").Contains("needs.detection.result == 'success'")) "Publication must require successful detection."
+}
+
+Invoke-Control "DetectorModelPolicy" {
+    $detector = Get-CompiledJob "detection"
+    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Inline detection must retain the pinned model."
+    $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
+    Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
+    $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
+    Assert-True (@($apiProxy.allowedModels).Count -eq 1 -and ($apiProxy.allowedModels -join ",") -ceq "gpt-5.6-sol") "The inline detector must enforce the singleton gpt-5.6-sol model policy."
+    foreach ($name in @("enableTokenSteering", "maxAiCredits", "modelFallback"))
+    {
+        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
+    }
+}
+
+Invoke-Control "ProviderCredentialExclusions" {
+    foreach ($name in @("agent", "detection"))
+    {
+        Assert-True ([regex]::Matches((Get-CompiledJob $name), "(?<!\S)--exclude-env COPILOT_GITHUB_TOKEN(?=\s|\\\\)").Count -eq 1) "The '$name' inference command must exclude the provider credential exactly once."
+    }
+}
 
 Invoke-Control "ActivationArtifactBoundary" {
     $activationCleanup = $lock.IndexOf("name: Remove repository data from activation artifact", [StringComparison]::Ordinal)
