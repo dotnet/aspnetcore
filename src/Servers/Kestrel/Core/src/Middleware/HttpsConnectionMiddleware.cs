@@ -392,7 +392,7 @@ internal sealed class HttpsConnectionMiddleware
             _metrics.TlsHandshakeStart(metricsContext);
 
             await tlsPipe.HandshakeAsync(
-                GetOrCreateSansIoContext(context),
+                GetOrCreateSansIoContext(),
                 // Runs the built-in chain build together with the RemoteCertificateValidationCallback
                 // set above, which is how the SslStream path enforces ClientCertificateMode.
                 onCertificateValidation: static session => session.AcceptWithDefaultValidation(),
@@ -460,11 +460,23 @@ internal sealed class HttpsConnectionMiddleware
     /// TLS callback options both choose a certificate per connection, which maps to resolving a
     /// TlsContext from the ClientHello; that is supported by the adapter but not wired up here,
     /// so those configurations stay on SslStream.
+    ///
+    /// <para><see cref="HttpsConnectionAdapterOptions.OnAuthenticate"/> is excluded for a
+    /// different reason. It is documented to run per connection and is handed that connection's
+    /// <see cref="SslServerAuthenticationOptions"/> to modify, but this path resolves one
+    /// <see cref="TlsContext"/> per endpoint and reuses it. Honouring the callback would mean
+    /// building a context per connection, which is exactly the cost the context exists to
+    /// amortise; silently applying the first connection's options to every later connection
+    /// would change behaviour an application can observe. Until per-connection contexts are
+    /// wired up, those configurations stay on SslStream.</para>
     /// </summary>
     private bool CanUseSansIoTls
-        => _options is not null && _tlsCallbackOptions is null && _serverCertificateSelector is null;
+        => _options is not null
+            && _tlsCallbackOptions is null
+            && _serverCertificateSelector is null
+            && _options.OnAuthenticate is null;
 
-    private TlsContext GetOrCreateSansIoContext(ConnectionContext context)
+    private TlsContext GetOrCreateSansIoContext()
     {
         if (_sansIoContext is { } existing)
         {
@@ -473,13 +485,20 @@ internal sealed class HttpsConnectionMiddleware
 
         lock (_sansIoContextLock)
         {
-            return _sansIoContext ??= TlsContext.CreateServer(BuildServerAuthenticationOptions(context));
+            return _sansIoContext ??= TlsContext.CreateServer(BuildServerAuthenticationOptions());
         }
     }
 
-    private SslServerAuthenticationOptions BuildServerAuthenticationOptions(ConnectionContext context)
+    /// <summary>
+    /// Builds the options backing this endpoint's shared <see cref="TlsContext"/>. Every value
+    /// here comes from the endpoint's configuration rather than from a connection, which is what
+    /// makes the resulting context safe to share; <c>CanUseSansIoTls</c> keeps the per-connection
+    /// configurations off this path.
+    /// </summary>
+    private SslServerAuthenticationOptions BuildServerAuthenticationOptions()
     {
         Debug.Assert(_options != null, "Middleware must be created with options.");
+        Debug.Assert(_options.OnAuthenticate is null, "OnAuthenticate is per-connection; CanUseSansIoTls must exclude it.");
 
         var sslOptions = new SslServerAuthenticationOptions
         {
@@ -495,8 +514,6 @@ internal sealed class HttpsConnectionMiddleware
         };
 
         ConfigureAlpn(sslOptions, _httpProtocols);
-
-        _options.OnAuthenticate?.Invoke(context, sslOptions);
 
         return sslOptions;
     }
