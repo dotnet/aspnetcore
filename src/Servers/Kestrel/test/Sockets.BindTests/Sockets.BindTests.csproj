@@ -43,4 +43,8 @@
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(EnableSansIoTls)' == 'true'">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls" Value="true" />
+  </ItemGroup>
+
 </Project>

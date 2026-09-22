@@ -53,4 +53,8 @@
     <Reference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(EnableSansIoTls)' == 'true'">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls" Value="true" />
+  </ItemGroup>
+
 </Project>
