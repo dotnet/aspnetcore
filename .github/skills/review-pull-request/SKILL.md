@@ -51,9 +51,8 @@ requesting changes, mutating issues or labels, or any GitHub API the caller did 
 
 At invocation start, before any GitHub retrieval, resolve the current repository root with
 `git rev-parse --show-toplevel` and freeze its full `HEAD` SHA as `LOCAL_SHA`.
+Use this fixed root and literal SHA for all criteria reads, even if `HEAD` advances.
 If the root or commit cannot be resolved, return `BLOCKED` with the reason and stop.
-Resolve local `HEAD` only once; retain this root and literal SHA for all later criteria reads,
-even if local `HEAD` advances while retrieving PR evidence.
 
 Then, before reading any code, capture and record verbatim:
 
