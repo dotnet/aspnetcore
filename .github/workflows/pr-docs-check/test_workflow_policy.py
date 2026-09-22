@@ -55,10 +55,10 @@ class WorkflowPolicyTests(unittest.TestCase):
     def test_agent_bash_allowlist_remains_narrow(self):
         tools = self.workflow.split("tools:", 1)[1].split("network:", 1)[0]
 
-        self.assertIn("bash: [cat, find, git, grep, head, jq, sed]", tools)
+        self.assertIn("bash: [cat, find, git, grep, head, jq, mkdir, sed]", tools)
         self.assertNotIn("bash: '*'", tools)
         self.assertNotIn("bash: [\"*\"]", tools)
-        for command in ("mkdir", "install", "touch", "cp", "python3", "curl", "base64", "rm"):
+        for command in ("install", "touch", "cp", "python3", "curl", "base64", "rm"):
             self.assertNotRegex(tools, rf"\b{command}\b")
 
     def test_turn_cap_is_not_raised_as_the_fix(self):

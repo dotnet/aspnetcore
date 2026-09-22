@@ -74,7 +74,7 @@ tools:
     min-integrity: merged
     allowed-repos:
       - dotnet/aspnetcore
-  bash: [cat, find, git, grep, head, jq, sed]
+  bash: [cat, find, git, grep, head, jq, mkdir, sed]
 
 network:
   allowed:
