@@ -30,6 +30,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
     private readonly bool _useOutOfProcessRendering;
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
+    private bool _isDeferringInitialRootComponentRender;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -134,6 +135,27 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    internal void BeginInitialRootComponentRender()
+    {
+        if (_isDeferringInitialRootComponentRender)
+        {
+            throw new InvalidOperationException("Initial root component rendering is already being deferred.");
+        }
+
+        _isDeferringInitialRootComponentRender = true;
+    }
+
+    internal void EndInitialRootComponentRender()
+    {
+        if (!_isDeferringInitialRootComponentRender)
+        {
+            throw new InvalidOperationException("Initial root component rendering is not being deferred.");
+        }
+
+        _isDeferringInitialRootComponentRender = false;
+        ProcessPendingRender();
+    }
+
     protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
@@ -150,6 +172,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override void ProcessPendingRender()
     {
+        if (_isDeferringInitialRootComponentRender)
+        {
+            return;
+        }
+
         // For historical reasons, Blazor WebAssembly doesn't enforce that you use InvokeAsync
         // to dispatch calls that originated from outside the system. Changing that now would be
         // too breaking, at least until we can make it a prerequisite for multithreading.
