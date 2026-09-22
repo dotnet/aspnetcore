@@ -16,9 +16,13 @@
 <p id="interop-wire">@_wire</p>
 <p id="interop-event">@_customEvent</p>
 <p id="interop-task-managed">@_taskManaged</p>
+<p id="interop-completed-task-promise">not-started</p>
 <p id="interop-task-promise">not-started</p>
+<p id="interop-completed-value-task-promise">not-started</p>
 <p id="interop-value-task-promise">not-started</p>
+<p id="interop-completed-task-result-promise">not-started</p>
 <p id="interop-task-result-promise">not-started</p>
+<p id="interop-completed-value-task-result-promise">not-started</p>
 <p id="interop-value-task-result-promise">not-started</p>
 
 @code {
@@ -70,25 +74,32 @@
 
         await JS.InvokeVoidAsync("eval", """
             window.__nativeAotStartAsyncCalls = r => {
-                const invoke = (elementId, methodIdentifier, completedText) => {
+                const invoke = (elementId, methodIdentifier, formatResult) => {
                     const status = document.querySelector(elementId);
                     status.textContent = 'pending';
                     r.invokeMethodAsync(methodIdentifier).then(
-                        result => status.textContent = result ?? completedText,
+                        result => status.textContent = formatResult(result),
                         () => status.textContent = 'failed');
                 };
 
-                invoke('#interop-task-promise', 'CompleteTaskAsync', 'completed');
-                invoke('#interop-value-task-promise', 'CompleteValueTaskAsync', 'completed');
-                invoke('#interop-task-result-promise', 'CompleteTaskWithResultAsync');
-                invoke('#interop-value-task-result-promise', 'CompleteValueTaskWithResultAsync');
+                invoke('#interop-completed-task-promise', 'CompletedTask', () => 'completed');
+                invoke('#interop-task-promise', 'AsyncTask', () => 'completed');
+                invoke('#interop-completed-value-task-promise', 'CompletedValueTask', () => 'completed');
+                invoke('#interop-value-task-promise', 'AsyncValueTask', () => 'completed');
+                invoke('#interop-completed-task-result-promise', 'CompletedTaskWithResult', JSON.stringify);
+                invoke('#interop-task-result-promise', 'AsyncTaskWithResult', JSON.stringify);
+                invoke('#interop-completed-value-task-result-promise', 'CompletedValueTaskWithResult', JSON.stringify);
+                invoke('#interop-value-task-result-promise', 'AsyncValueTaskWithResult', JSON.stringify);
             };
             """);
         await JS.InvokeVoidAsync("__nativeAotStartAsyncCalls", _self);
     }
 
     [JSInvokable]
-    public async Task CompleteTaskAsync()
+    public Task CompletedTask() => Task.CompletedTask;
+
+    [JSInvokable]
+    public async Task AsyncTask()
     {
         await Task.Yield();
         _taskManaged = "callback-completed";
@@ -96,25 +107,36 @@
     }
 
     [JSInvokable]
-    public async ValueTask CompleteValueTaskAsync()
+    public ValueTask CompletedValueTask() => ValueTask.CompletedTask;
+
+    [JSInvokable]
+    public async ValueTask AsyncValueTask()
     {
         await Task.Yield();
     }
 
     [JSInvokable]
-    public async Task<string> CompleteTaskWithResultAsync()
+    public Task<AsyncInteropResult> CompletedTaskWithResult()
+        => Task.FromResult(new AsyncInteropResult("completed-task", 42));
+
+    [JSInvokable]
+    public async Task<AsyncInteropResult> AsyncTaskWithResult()
     {
         await Task.Yield();
 
-        return "task-result";
+        return new AsyncInteropResult("async-task", 42);
     }
 
     [JSInvokable]
-    public async ValueTask<string> CompleteValueTaskWithResultAsync()
+    public ValueTask<AsyncInteropResult> CompletedValueTaskWithResult()
+        => ValueTask.FromResult(new AsyncInteropResult("completed-value-task", 42));
+
+    [JSInvokable]
+    public async ValueTask<AsyncInteropResult> AsyncValueTaskWithResult()
     {
         await Task.Yield();
 
-        return "value-task-result";
+        return new AsyncInteropResult("async-value-task", 42);
     }
 
     private void HandleSplit(SplitEventArgs args)

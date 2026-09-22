@@ -111,10 +111,18 @@ public partial class NativeAotFeatureTests : BrowserTest
         await _page.Locator("#interop-async-run").ClickAsync();
 
         await Expect(_page.Locator("#interop-task-managed")).ToHaveTextAsync("callback-completed");
+        await Expect(_page.Locator("#interop-completed-task-promise")).ToHaveTextAsync("completed");
         await Expect(_page.Locator("#interop-task-promise")).ToHaveTextAsync("completed");
+        await Expect(_page.Locator("#interop-completed-value-task-promise")).ToHaveTextAsync("completed");
         await Expect(_page.Locator("#interop-value-task-promise")).ToHaveTextAsync("completed");
-        await Expect(_page.Locator("#interop-task-result-promise")).ToHaveTextAsync("task-result");
-        await Expect(_page.Locator("#interop-value-task-result-promise")).ToHaveTextAsync("value-task-result");
+        await Expect(_page.Locator("#interop-completed-task-result-promise"))
+            .ToHaveTextAsync("""{"source":"completed-task","value":42}""");
+        await Expect(_page.Locator("#interop-task-result-promise"))
+            .ToHaveTextAsync("""{"source":"async-task","value":42}""");
+        await Expect(_page.Locator("#interop-completed-value-task-result-promise"))
+            .ToHaveTextAsync("""{"source":"completed-value-task","value":42}""");
+        await Expect(_page.Locator("#interop-value-task-result-promise"))
+            .ToHaveTextAsync("""{"source":"async-value-task","value":42}""");
         await AssertHealthyAsync();
     }
 
