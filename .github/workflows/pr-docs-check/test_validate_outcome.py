@@ -64,6 +64,36 @@ class ValidateOutcomeTests(unittest.TestCase):
         with self.assertRaisesRegex(OutcomeValidationError, "at least 60"):
             validate_preflight(payload, 42, {"found": False, "blocked": False})
 
+    def test_preflight_accepts_created_draft(self):
+        payload = self._payload(
+            "drafted",
+            "created",
+            {"type": "create_pull_request", "branch": "docs/aspnetcore-pr-42"},
+            confidence=75,
+        )
+
+        validate_preflight(payload, 42, {"found": False, "blocked": False})
+
+    def test_preflight_accepts_updated_draft(self):
+        payload = self._payload(
+            "drafted",
+            "updated",
+            {"type": "push_to_pull_request_branch", "pull_request_number": 9},
+            {"type": "update_pull_request", "pull_request_number": 9},
+            existing_docs_pr_number=9,
+            confidence=75,
+        )
+
+        validate_preflight(
+            payload,
+            42,
+            {
+                "found": True,
+                "blocked": False,
+                "selected": {"number": 9},
+            },
+        )
+
     def test_preflight_rejects_update_targeting_another_pull_request(self):
         for mismatched_type in ("push_to_pull_request_branch", "update_pull_request"):
             with self.subTest(mismatched_type=mismatched_type):
