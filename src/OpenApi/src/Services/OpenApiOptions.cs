@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Specifies how schemas are generated for an OpenAPI document.
 /// </summary>
+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public enum OpenApiSchemaGenerationMode
 {
     /// <summary>

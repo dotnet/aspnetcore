@@ -11,6 +11,7 @@ internal static class OpenApiConstants
     internal const string DescriptionId = "x-aspnetcore-id";
     internal const string SchemaId = "x-schema-id";
     internal const string SchemaIsUnion = "x-schema-is-union";
+    internal const string SchemaIsInferredPolymorphism = "x-schema-is-inferred-polymorphism";
     internal const string RefDefaultAnnotation = "x-ref-default";
     internal const string RefDescriptionAnnotation = "x-ref-description";
     internal const string RefExampleAnnotation = "x-ref-example";

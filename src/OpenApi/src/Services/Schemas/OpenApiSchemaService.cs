@@ -418,7 +418,10 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.OneOf is { Count: > 0 })
         {
-            var branchPrefix = schema.Discriminator is null ? null : schemaId;
+            var branchPrefix = schema.Metadata?.TryGetValue(OpenApiConstants.SchemaIsInferredPolymorphism, out var isInferredPolymorphism) == true &&
+                isInferredPolymorphism is true
+                    ? schemaId
+                    : null;
             for (var i = 0; i < schema.OneOf.Count; i++)
             {
                 schema.OneOf[i] = ResolveReferenceForSchema(document, schema.OneOf[i], rootSchemaId, branchPrefix);
@@ -559,13 +562,14 @@ internal sealed class OpenApiSchemaService(
         };
         if (alternativeSchemas is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
         {
-            if (alternativeSchemas.Count < alternativeDecision.Branches.Count)
+            if (inferredMode && alternativeSchemas.Count < alternativeDecision.Branches.Count)
             {
                 throw new InvalidOperationException(
                     $"The inferred alternative branches for '{jsonTypeInfo.Type}' do not match the generated schema.");
             }
 
-            for (var i = 0; i < alternativeDecision.Branches.Count; i++)
+            var branchCount = Math.Min(alternativeSchemas.Count, alternativeDecision.Branches.Count);
+            for (var i = 0; i < branchCount; i++)
             {
                 var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(alternativeDecision.Branches[i].Identity.Type);
                 await InnerApplySchemaTransformersAsync(alternativeSchemas[i], inferredSchema, derivedJsonTypeInfo, null, context, transformer, cancellationToken);

@@ -539,6 +539,7 @@ internal static class JsonNodeSchemaExtensions
         schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
         schemaObject[OpenApiSchemaKeywords.DiscriminatorKeyword] = discriminatorPropertyName;
         schemaObject[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+        schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
     }
 
     /// <summary>

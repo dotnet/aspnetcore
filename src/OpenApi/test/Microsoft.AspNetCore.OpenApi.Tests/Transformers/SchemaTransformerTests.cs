@@ -520,6 +520,36 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformer_LegacyModeToleratesFewerPolymorphicBranches()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/shape", (Shape shape) => { });
+
+        var transformedTypes = new List<Type>();
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Shape))
+            {
+                schema.AnyOf.RemoveAt(schema.AnyOf.Count - 1);
+            }
+            if (context.JsonTypeInfo.Type == typeof(Shape) ||
+                context.JsonTypeInfo.Type == typeof(Triangle) ||
+                context.JsonTypeInfo.Type == typeof(Square))
+            {
+                transformedTypes.Add(context.JsonTypeInfo.Type);
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal([typeof(Shape), typeof(Triangle)], transformedTypes);
+            Assert.Single(document.Paths["/shape"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema.AnyOf);
+        });
+    }
+
+    [Fact]
     public async Task SchemaTransformer_InferredModeTraversesOneOfBranchesInOrder()
     {
         var builder = CreateBuilder();
@@ -557,6 +587,46 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
                 schema.OneOf,
                 branch => Assert.Equal("ShapeTriangle", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id),
                 branch => Assert.Equal("ShapeSquare", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_LegacyAuthoredOneOfWithDiscriminatorDoesNotPrefixBranchReference()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/todo", (Todo todo) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo) && context.JsonPropertyInfo is null)
+            {
+                schema.OneOf =
+                [
+                    new OpenApiSchema
+                    {
+                        Type = JsonSchemaType.Object,
+                        Metadata = new Dictionary<string, object>
+                        {
+                            [Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId] = "AuthoredBranch",
+                        },
+                    },
+                ];
+                schema.Discriminator = new OpenApiDiscriminator
+                {
+                    PropertyName = "kind",
+                };
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var schema = document.Paths["/todo"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+            var branch = Assert.Single(schema.OneOf);
+            Assert.Equal("AuthoredBranch", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id);
+            Assert.Contains("AuthoredBranch", document.Components.Schemas.Keys);
+            Assert.DoesNotContain("TodoAuthoredBranch", document.Components.Schemas.Keys);
         });
     }
 
