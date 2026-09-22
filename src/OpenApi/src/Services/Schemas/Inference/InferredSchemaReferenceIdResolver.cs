@@ -16,15 +16,28 @@ internal sealed class InferredSchemaReferenceIdResolver
     private readonly IReadOnlyDictionary<Type, string?> _referenceIds;
     private readonly IReadOnlyDictionary<(Type BaseType, Type BranchType), string> _polymorphicReferenceIds;
     private readonly Func<JsonTypeInfo, string?> _createSchemaReferenceId;
+    private readonly bool _usesDefaultSchemaReferenceId;
+    private readonly object _unplannedReferenceIdLock = new();
+    private readonly Dictionary<Type, string?> _unplannedReferenceIds = [];
+    private readonly Dictionary<object, string> _aliasReferenceIds;
+    private readonly Dictionary<string, object> _occupiedReferenceIds;
 
     private InferredSchemaReferenceIdResolver(
         IReadOnlyDictionary<Type, string?> referenceIds,
         IReadOnlyDictionary<(Type BaseType, Type BranchType), string> polymorphicReferenceIds,
-        Func<JsonTypeInfo, string?> createSchemaReferenceId)
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        bool usesDefaultSchemaReferenceId)
     {
         _referenceIds = referenceIds;
         _polymorphicReferenceIds = polymorphicReferenceIds;
         _createSchemaReferenceId = createSchemaReferenceId;
+        _usesDefaultSchemaReferenceId = usesDefaultSchemaReferenceId;
+        _aliasReferenceIds = referenceIds
+            .Where(entry => entry.Value is not null)
+            .GroupBy(entry => GetAliasIdentity(entry.Key))
+            .ToDictionary(group => group.Key, group => group.First().Value!);
+        _occupiedReferenceIds = _aliasReferenceIds
+            .ToDictionary(entry => entry.Value, entry => entry.Key, StringComparer.Ordinal);
     }
 
     public static InferredSchemaReferenceIdResolver Create(
@@ -64,7 +77,8 @@ internal sealed class InferredSchemaReferenceIdResolver
                 new ReadOnlyDictionary<Type, string?>(referenceIds),
                 new ReadOnlyDictionary<(Type BaseType, Type BranchType), string>(
                     ResolvePolymorphicReferenceIds(polymorphicBranches, referenceIds, usesDefaultSchemaReferenceId)),
-                createSchemaReferenceId);
+                createSchemaReferenceId,
+                usesDefaultSchemaReferenceId);
         }
 
         var resolvedIds = ResolveDefaultReferenceIds(entries);
@@ -72,7 +86,8 @@ internal sealed class InferredSchemaReferenceIdResolver
             new ReadOnlyDictionary<Type, string?>(resolvedIds),
             new ReadOnlyDictionary<(Type BaseType, Type BranchType), string>(
                 ResolvePolymorphicReferenceIds(polymorphicBranches, resolvedIds, usesDefaultSchemaReferenceId)),
-            createSchemaReferenceId);
+            createSchemaReferenceId,
+            usesDefaultSchemaReferenceId);
     }
 
     public string? GetReferenceId(JsonTypeInfo typeInfo)
@@ -83,9 +98,43 @@ internal sealed class InferredSchemaReferenceIdResolver
             return referenceId;
         }
 
-        var candidate = _createSchemaReferenceId(typeInfo);
-        ValidateReferenceId(type, candidate);
-        return candidate;
+        lock (_unplannedReferenceIdLock)
+        {
+            if (_unplannedReferenceIds.TryGetValue(type, out referenceId))
+            {
+                return referenceId;
+            }
+
+            var aliasIdentity = GetAliasIdentity(type);
+            if (_aliasReferenceIds.TryGetValue(aliasIdentity, out referenceId))
+            {
+                _unplannedReferenceIds[type] = referenceId;
+                return referenceId;
+            }
+
+            var candidate = _createSchemaReferenceId(typeInfo);
+            ValidateReferenceId(type, candidate);
+            if (candidate is null)
+            {
+                _unplannedReferenceIds[type] = null;
+                return null;
+            }
+
+            referenceId = _usesDefaultSchemaReferenceId
+                ? $"{candidate}-{GetStableHash(type)}"
+                : candidate;
+            if (_occupiedReferenceIds.TryGetValue(referenceId, out var existingAliasIdentity) &&
+                !Equals(existingAliasIdentity, aliasIdentity))
+            {
+                throw new InvalidOperationException(
+                    $"The OpenAPI schema reference ID '{referenceId}' is used by distinct serializer contract types.");
+            }
+
+            _unplannedReferenceIds[type] = referenceId;
+            _aliasReferenceIds[aliasIdentity] = referenceId;
+            _occupiedReferenceIds[referenceId] = aliasIdentity;
+            return referenceId;
+        }
     }
 
     public string? GetPolymorphicReferenceId(Type baseType, Type branchType)

@@ -62,7 +62,9 @@ The inferred mode also resolves component names from the complete set of seriali
 used by the document before schemas are emitted. A default name that is unique is unchanged. Name
 collisions are resolved deterministically by adding declaring-type or namespace segments, with a
 stable canonical fallback, so endpoint registration order does not affect component keys or
-references. JSON Patch document variants retain their intentional shared component.
+references. Types first requested by a transformer after endpoint discovery use the stable
+canonical fallback immediately, so their names do not depend on transformer execution order.
+JSON Patch document variants retain their intentional shared component.
 
 Custom `CreateSchemaReferenceId` values are authoritative in inferred mode. A `null` value still
 inlines the schema. Empty or invalid values, or the same non-null value returned for distinct

@@ -334,6 +334,40 @@ public partial class OpenApiSchemaServiceTests
                 Assert.IsType<OpenApiSchemaReference>(document.Components.Schemas["TransformerContainer"].Properties["value"]).Reference.Id);
         });
     }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_TransformerRequestedTypesUseStableFallbackIds()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", (InferredNaming.First.Duplicate value) => value);
+        var options = CreateInferredOptions();
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            operation.Responses["400"] = new OpenApiResponse
+            {
+                Description = "Second duplicate",
+                Content = new Dictionary<string, IOpenApiMediaType>
+                {
+                    ["application/json"] = new OpenApiMediaType
+                    {
+                        Schema = await context.GetOrCreateSchemaAsync(
+                            typeof(InferredNaming.Second.Duplicate),
+                            cancellationToken: cancellationToken),
+                    },
+                },
+            };
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Contains("Duplicate", document.Components.Schemas.Keys);
+            var responseSchema = Assert.IsType<OpenApiSchema>(
+                document.Paths["/"].Operations[HttpMethod.Post].Responses["400"].Content["application/json"].Schema);
+            var referenceId = Assert.IsType<string>(
+                responseSchema.Metadata[Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId]);
+            Assert.StartsWith("Duplicate-", referenceId, StringComparison.Ordinal);
+        });
+    }
 }
 
 #nullable enable
