@@ -24,7 +24,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
 {
     private const int MaxPlaintextRecord = 16 * 1024;
-    private const int MaxCipherRecord = MaxPlaintextRecord + 512;
+
+    // The largest record that can legally arrive on the wire, which is what the input
+    // linearization below has to be able to hold. TLS 1.3 caps TLSCiphertext at 2^14 + 256, but
+    // TLS 1.2 allows 2^14 + 2048, plus the 5-byte record header. Sizing this to the TLS 1.3
+    // figure would silently truncate a legal TLS 1.2 record: the session would keep asking for
+    // more data, the caller would keep handing it the same truncated prefix, and the connection
+    // would stall until a timeout. Both values land in the same ArrayPool bucket, so the extra
+    // headroom is free.
+    private const int MaxCipherRecord = MaxPlaintextRecord + 2048 + 5;
 
     // Asking the transport for a full record forces the Pipe to allocate 32 KB segments per
     // connection. Ask for a normal segment instead and let DestinationTooSmall drain the rest.
