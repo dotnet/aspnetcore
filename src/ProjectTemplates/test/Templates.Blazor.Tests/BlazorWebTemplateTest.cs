@@ -452,7 +452,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             {
                 protocol = "ctap2",
                 transport = "internal",
-                hasResidentKey = false,
+                hasResidentKey = true,
                 hasUserVerification = true,
                 isUserVerified = true,
                 automaticPresenceSimulation = true,
@@ -503,7 +503,10 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await page.FillAsync("[name=\"Input.Password\"]", password);
         await page.ClickAsync("text=Confirm password");
         await page.WaitForSelectorAsync("text=Add a new passkey");
-        Assert.Equal(200, await GetPasskeyCreationOptionsStatusAsync(page));
+        var creationOptions = await GetPasskeyCreationOptionsAsync(page);
+        var authenticatorSelection = creationOptions.GetProperty("authenticatorSelection");
+        Assert.Equal("required", authenticatorSelection.GetProperty("residentKey").GetString());
+        Assert.True(authenticatorSelection.GetProperty("requireResidentKey").GetBoolean());
 
         await page.ClickAsync("text=Add a new passkey");
         await page.WaitForSelectorAsync("text=Enter a name for your passkey");
@@ -585,6 +588,20 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 return (await fetch('/Account/Manage/PasskeyCreationOptions', {
                     method: 'POST',
                 })).status;
+            }
+            """);
+
+    private static Task<JsonElement> GetPasskeyCreationOptionsAsync(IPage page)
+        => page.EvaluateAsync<JsonElement>(
+            """
+            async () => {
+                const response = await fetch('/Account/Manage/PasskeyCreationOptions', {
+                    method: 'POST',
+                });
+                if (!response.ok) {
+                    throw new Error(`Passkey creation options failed: ${response.status}`);
+                }
+                return await response.json();
             }
             """);
 

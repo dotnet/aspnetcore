@@ -3829,7 +3829,6 @@
       "Template": "blazorwasm-servicedefaults",
       "Arguments": "new blazorwasm-servicedefaults",
       "Files": [
-        "BackgroundExportHandler.cs",
         "Extensions.cs",
         "wwwroot/{ProjectName}.lib.module.js"
       ]

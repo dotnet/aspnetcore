@@ -73,6 +73,7 @@ public class Program
             .AddSignInManager()
             .AddDefaultTokenProviders();
 
+        builder.Services.Configure<IdentityPasskeyOptions>(options => options.ResidentKeyRequirement = "required");
         builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
         #endif
