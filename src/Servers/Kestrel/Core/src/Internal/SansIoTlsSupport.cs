@@ -17,19 +17,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 /// capability probe and a list of platforms the layer has actually been tested on. The probe
 /// alone is not enough: it succeeds on macOS today, where neither this layer nor the runtime
 /// implementation has had meaningful coverage.</description></item>
-/// <item><description><see cref="IsEnabled"/> - is it turned on? Opt-in, because a sans-IO
-/// connection has no <see cref="SslStream"/> to expose, so
-/// <c>ISslStreamFeature</c> and <c>Features.Get&lt;SslStream&gt;()</c> cannot be satisfied.
-/// That is observable to applications, so it must not change by default.</description></item>
+/// <item><description><see cref="IsEnabled"/> - should it be used? On a validated platform
+/// this replaces <see cref="SslStream"/> outright; <see cref="DisableSwitch"/> exists only as
+/// a kill switch. Note that a sans-IO connection has no <see cref="SslStream"/> to expose, so
+/// <c>ISslStreamFeature</c> and <c>Features.Get&lt;SslStream&gt;()</c> cannot be satisfied on
+/// those platforms.</description></item>
 /// </list>
 /// </summary>
 internal static class SansIoTlsSupport
 {
     /// <summary>
-    /// Opt-in switch. Off by default; see the remarks on <see cref="SansIoTlsSupport"/> for why
-    /// this cannot simply be enabled everywhere it is supported.
+    /// Kill switch, for falling back to <see cref="SslStream"/> without a redeploy.
     /// </summary>
-    internal const string EnableSwitch = "Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls";
+    internal const string DisableSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableSansIoTls";
 
     private static readonly bool _isSupported = IsValidatedPlatform() && ProbeSupport();
 
@@ -40,10 +40,10 @@ internal static class SansIoTlsSupport
     public static bool IsSupported => _isSupported;
 
     /// <summary>
-    /// Whether the sans-IO TLS layer should be used. Requires both platform support and opt-in.
+    /// Whether the sans-IO TLS layer should be used for new connections.
     /// </summary>
     public static bool IsEnabled =>
-        _isSupported && AppContext.TryGetSwitch(EnableSwitch, out var enabled) && enabled;
+        _isSupported && !(AppContext.TryGetSwitch(DisableSwitch, out var disabled) && disabled);
 
     /// <summary>
     /// Platforms this layer has been tested on, in Kestrel and in the runtime.
