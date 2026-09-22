@@ -85,14 +85,24 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
         var buffer = ReadOnlySequence<byte>.Empty;
         var holdsResult = false;
 
+        // A recorded validation verdict is not reported by the call that records it. Rejecting a
+        // peer certificate makes the *next* session operation throw AuthenticationException, so
+        // after running validation the handshake must be driven at least once more even if the
+        // session already considers the handshake complete. Without this a rejected client
+        // certificate looks like a successful handshake here: the connection would be reported
+        // as established, tagged with a negotiated protocol, and handed to the application, and
+        // the rejection would only surface later as a read failure.
+        var mustSurfaceValidationResult = false;
+
         try
         {
-            while (!_session.IsHandshakeComplete)
+            while (!_session.IsHandshakeComplete || mustSurfaceValidationResult)
             {
                 var source = holdsResult ? GetContiguous(buffer) : default;
                 var destination = _transport.Output.GetSpan(OutputSpanHint);
 
                 var status = _session.Handshake(source, destination, out var consumed, out var written);
+                mustSurfaceValidationResult = false;
                 _transport.Output.Advance(written);
 
                 if (holdsResult && consumed > 0)
@@ -131,6 +141,8 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                         {
                             _session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
                         }
+
+                        mustSurfaceValidationResult = true;
                         continue;
 
                     case TlsOperationStatus.NeedMoreData:
