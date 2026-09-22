@@ -24,6 +24,13 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- The sans-IO TLS primitives are experimental; the prototype adapter kept here for
+         A/B comparison uses them directly. -->
+    <NoWarn>$(NoWarn);SYSLIB5007</NoWarn>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="testCert.pfx" CopyToOutputDirectory="PreserveNewest" />
     <Reference Include="Microsoft.Extensions.Logging" />
