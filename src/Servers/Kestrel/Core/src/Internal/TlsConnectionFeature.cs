@@ -225,6 +225,11 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
             if (_tlsPipe is not null)
             {
                 await _tlsPipe.RequestClientCertificateAsync(cancellationToken: cancellationToken);
+
+                // The session-backed feature serves ClientCertificate from a field captured after
+                // the handshake, so it has to be refreshed once the peer has sent one. The
+                // SslStream path re-reads RemoteCertificate instead.
+                _clientCert = _session!.GetRemoteCertificate();
             }
             else
             {

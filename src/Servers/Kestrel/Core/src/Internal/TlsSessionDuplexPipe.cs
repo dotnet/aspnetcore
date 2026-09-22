@@ -193,106 +193,119 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                 "Cannot request a client certificate while application data is buffered; drain the request body first.");
         }
 
-        var scratch = ArrayPool<byte>.Shared.Rent(MaxPlaintextRecord);
+        // Stage the CertificateRequest (TLS 1.3) or renegotiation (TLS 1.2) and send it, then
+        // drive the second handshake to completion exactly like the initial one - that is the
+        // documented contract for this operation, and it is Handshake, not RequestClientCertificate,
+        // that re-surfaces NeedsCertificateValidation and finally reports Complete.
+        var requestStatus = _session.RequestClientCertificate(
+            _transport.Output.GetSpan(MaxCipherRecord),
+            out var requestWritten);
+
+        _transport.Output.Advance(requestWritten);
+
+        var staged = requestWritten > 0;
+        staged |= DrainPendingOutput();
+
+        if (staged)
+        {
+            await _transport.Output.FlushAsync(cancellationToken);
+        }
+
+        if (requestStatus == TlsOperationStatus.Closed)
+        {
+            throw new IOException("Peer closed the connection when a client certificate was requested.");
+        }
+
+        var scratch = ArrayPool<byte>.Shared.Rent(MaxCipherRecord);
 
         try
         {
-            while (true)
+            var result = default(ReadResult);
+            var buffer = ReadOnlySequence<byte>.Empty;
+            var holdsResult = false;
+
+            try
             {
-                var destination = _transport.Output.GetSpan(MaxCipherRecord);
-                var status = _session.RequestClientCertificate(destination, out var written);
-                _transport.Output.Advance(written);
-
-                var produced = written > 0;
-                produced |= DrainPendingOutput();
-
-                if (produced)
+                while (true)
                 {
-                    await _transport.Output.FlushAsync(cancellationToken);
+                    var source = holdsResult ? GetContiguous(buffer) : default;
+                    var destination = _transport.Output.GetSpan(OutputSpanHint);
+
+                    var status = _session.Handshake(source, destination, out var consumed, out var written);
+                    _transport.Output.Advance(written);
+
+                    if (holdsResult && consumed > 0)
+                    {
+                        buffer = buffer.Slice(consumed);
+                    }
+
+                    var produced = written > 0;
+                    produced |= DrainPendingOutput();
+
+                    if (produced)
+                    {
+                        await _transport.Output.FlushAsync(cancellationToken);
+                    }
+
+                    switch (status)
+                    {
+                        case TlsOperationStatus.Complete:
+                            return;
+
+                        case TlsOperationStatus.DestinationTooSmall:
+                            continue;
+
+                        case TlsOperationStatus.NeedsCertificateValidation:
+                            if (onCertificateValidation is not null)
+                            {
+                                onCertificateValidation(_session);
+                            }
+                            else
+                            {
+                                _session.AcceptWithDefaultValidation();
+                            }
+
+                            continue;
+
+                        case TlsOperationStatus.NeedMoreData:
+                            if (holdsResult)
+                            {
+                                _transport.Input.AdvanceTo(buffer.Start, result.Buffer.End);
+                                holdsResult = false;
+                            }
+
+                            result = await _transport.Input.ReadAsync(cancellationToken);
+                            buffer = result.Buffer;
+                            holdsResult = true;
+
+                            if (buffer.IsEmpty && result.IsCompleted)
+                            {
+                                throw new IOException("Transport closed during client certificate negotiation.");
+                            }
+
+                            continue;
+
+                        case TlsOperationStatus.Closed:
+                            throw new IOException("Peer closed the connection during client certificate negotiation.");
+
+                        default:
+                            throw new InvalidOperationException($"Unexpected status {status} during client certificate negotiation.");
+                    }
                 }
-
-                switch (status)
+            }
+            finally
+            {
+                if (holdsResult)
                 {
-                    case TlsOperationStatus.Complete:
-                        return;
-
-                    case TlsOperationStatus.DestinationTooSmall:
-                        continue;
-
-                    case TlsOperationStatus.NeedsCertificateValidation:
-                        if (onCertificateValidation is not null)
-                        {
-                            onCertificateValidation(_session);
-                        }
-                        else
-                        {
-                            _session.AcceptWithDefaultValidation();
-                        }
-
-                        continue;
-
-                    case TlsOperationStatus.NeedMoreData:
-                        await FeedCiphertextAsync(scratch, cancellationToken);
-                        continue;
-
-                    case TlsOperationStatus.Closed:
-                        throw new IOException("Peer closed the connection during client certificate negotiation.");
-
-                    default:
-                        throw new InvalidOperationException($"Unexpected status {status} requesting a client certificate.");
+                    // examined == consumed so any application bytes that arrived alongside the
+                    // final flight are served immediately by the next read.
+                    _transport.Input.AdvanceTo(buffer.Start, buffer.Start);
                 }
             }
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(scratch);
-        }
-    }
-
-    /// <summary>
-    /// Reads one batch of ciphertext from the transport and hands it to the session. Any
-    /// plaintext it yields is application data arriving mid-negotiation, which cannot be
-    /// buffered here without reordering it ahead of what the reader already holds.
-    /// </summary>
-    private async ValueTask FeedCiphertextAsync(byte[] scratch, CancellationToken cancellationToken)
-    {
-        var result = await _transport.Input.ReadAsync(cancellationToken);
-        var buffer = result.Buffer;
-
-        if (buffer.IsEmpty && result.IsCompleted)
-        {
-            _transport.Input.AdvanceTo(buffer.Start, buffer.End);
-            throw new IOException("Transport closed during client certificate negotiation.");
-        }
-
-        try
-        {
-            while (!buffer.IsEmpty)
-            {
-                var source = GetContiguous(buffer);
-                var status = _session.Read(source, scratch, out var consumed, out var producedBytes);
-                buffer = buffer.Slice(consumed);
-
-                if (producedBytes > 0)
-                {
-                    throw new InvalidOperationException(
-                        "Received application data during client certificate negotiation.");
-                }
-
-                if (status == TlsOperationStatus.Closed)
-                {
-                    throw new IOException("Peer closed the connection during client certificate negotiation.");
-                }
-
-                if (consumed == 0)
-                {
-                    break;
-                }
-            }
-        }
-        finally
-        {
-            _transport.Input.AdvanceTo(buffer.Start, result.Buffer.End);
         }
     }
 
