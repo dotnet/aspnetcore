@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <TestConsoleAppSourceFiles Include="TaskInterop.cs"
+                   DisabledProperties="IlcTreatWarningsAsErrors;ILLinkTreatWarningsAsErrors" />
+  </ItemGroup>
+</Project>

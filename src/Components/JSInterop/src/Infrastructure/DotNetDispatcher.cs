@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
@@ -126,7 +127,7 @@ public static class DotNetDispatcher
             && syncResultType.GetGenericTypeDefinition() == typeof(ValueTask<>))
         {
             // It's a ValueTask<T>. We'll coerce it to a Task so that we can attach a continuation.
-            var innerTask = GetTaskByType(syncResultType.GenericTypeArguments[0], syncResult);
+            var innerTask = GetTaskByType(syncResultType, syncResult);
 
             innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
@@ -368,10 +369,20 @@ public static class DotNetDispatcher
         "ReflectionAnalysis",
         "IL2060:MakeGenericMethod",
         Justification = "https://github.com/mono/linker/issues/1727")]
+    [DynamicDependency(nameof(ValueTask<object>.AsTask), typeof(ValueTask<>))]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "ValueTask<T>.AsTask is preserved by DynamicDependency.")]
     private static Task GetTaskByType(Type type, object obj)
     {
-        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (Type t, MethodInfo taskConverterMethodInfo) =>
-            taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>(), _taskConverterMethodInfo);
+        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (valueTaskType, taskConverterMethodInfo) =>
+        {
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return taskConverterMethodInfo.MakeGenericMethod(valueTaskType.GenericTypeArguments[0]).CreateDelegate<Func<object, Task>>();
+            }
+
+            var asTaskMethod = valueTaskType.GetMethod(nameof(ValueTask<object>.AsTask))!;
+            return result => (Task)asTaskMethod.Invoke(result, null)!;
+        }, _taskConverterMethodInfo);
 
         return converterDelegate.Invoke(obj);
     }

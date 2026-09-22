@@ -709,6 +709,30 @@ public class DotNetDispatcherTest
             Assert.True(jsRuntime.LastCompletionResult.Success);
         }
 
+    [Theory]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningNonGenericTask), "null")]
+    [InlineData(nameof(SomePublicType.InvokableMethodReturningCompletedTask), "null")]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskNonGeneric), "null")]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningIncompleteValueTask), "null")]
+    [InlineData(nameof(SomePublicType.InvokableMethodReturningTaskOfInt), "42")]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningTaskOfInt), "42")]
+    [InlineData(nameof(SomePublicType.InvokableMethodReturningValueTaskOfInt), "42")]
+    [InlineData(nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskOfInt), "42")]
+    public async Task CanInvokeAsyncMethodReturningTask(string methodIdentifier, string expectedJson)
+    {
+        var jsRuntime = new TestJSRuntime();
+        using var targetReference = DotNetObjectReference.Create(new SomePublicType());
+        jsRuntime.Invoke<object>("unimportant", targetReference);
+
+        var resultTask = jsRuntime.NextInvocationTask;
+        DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, methodIdentifier, 1, "123"), "[]");
+        await resultTask.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.Equal("123", jsRuntime.LastCompletionCallId);
+        Assert.True(jsRuntime.LastCompletionResult.Success);
+        Assert.Equal(expectedJson, jsRuntime.LastCompletionResult.ResultJson);
+    }
+
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
     {
@@ -999,6 +1023,41 @@ public class DotNetDispatcherTest
                     IntVal = dtoByRef.IntVal * 2,
                 })
             });
+        }
+
+        [JSInvokable]
+        public async Task InvokableAsyncMethodReturningNonGenericTask()
+        {
+            await Task.Yield();
+        }
+
+        [JSInvokable]
+        public Task InvokableMethodReturningCompletedTask() => Task.CompletedTask;
+
+        [JSInvokable]
+        public async ValueTask InvokableAsyncMethodReturningIncompleteValueTask()
+        {
+            await Task.Yield();
+        }
+
+        [JSInvokable]
+        public Task<int> InvokableMethodReturningTaskOfInt() => Task.FromResult(42);
+
+        [JSInvokable]
+        public async Task<int> InvokableAsyncMethodReturningTaskOfInt()
+        {
+            await Task.Yield();
+            return 42;
+        }
+
+        [JSInvokable]
+        public ValueTask<int> InvokableMethodReturningValueTaskOfInt() => ValueTask.FromResult(42);
+
+        [JSInvokable]
+        public async ValueTask<int> InvokableAsyncMethodReturningValueTaskOfInt()
+        {
+            await Task.Yield();
+            return 42;
         }
 
         [JSInvokable]

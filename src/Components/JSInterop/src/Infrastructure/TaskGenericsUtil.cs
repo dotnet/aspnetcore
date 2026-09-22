@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -23,20 +26,28 @@ internal static class TaskGenericsUtil
     public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
         => CreateResultSetter(taskCompletionSource).ResultType;
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Task<T>.Result is preserved by DynamicDependency.")]
     public static object? GetTaskResult(Task task)
     {
         var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskInstanceType =>
         {
-            var resultType = GetTaskResultType(taskInstanceType);
-            return resultType == null
-                ? new VoidTaskResultGetter()
-                : (ITaskResultGetter)Activator.CreateInstance(
-                    typeof(TaskResultGetter<>).MakeGenericType(resultType))!;
+            var taskType = GetTaskType(taskInstanceType);
+            var resultType = taskType.IsGenericType ? taskType.GetGenericArguments()[0] : null;
+            if (resultType is null ||
+                (resultType.FullName == "System.Threading.Tasks.VoidTaskResult" && resultType.Assembly == typeof(Task).Assembly))
+            {
+                return new VoidTaskResultGetter();
+            }
+
+            return RuntimeFeature.IsDynamicCodeSupported
+                ? (ITaskResultGetter)Activator.CreateInstance(typeof(TaskResultGetter<>).MakeGenericType(resultType))!
+                : new ReflectionTaskResultGetter(taskType.GetProperty(nameof(Task<object>.Result))!);
         });
         return getter.GetResult(task);
     }
 
-    private static Type? GetTaskResultType(Type taskType)
+    private static Type GetTaskType(Type taskType)
     {
         // It might be something derived from Task or Task<T>, so we have to scan
         // up the inheritance hierarchy to find the Task or Task<T>
@@ -47,9 +58,7 @@ internal static class TaskGenericsUtil
                 ?? throw new ArgumentException($"The type '{taskType.FullName}' is not inherited from '{typeof(Task).FullName}'.");
         }
 
-        return taskType.IsGenericType
-            ? taskType.GetGenericArguments()[0]
-            : null;
+        return taskType;
     }
 
     interface ITcsResultSetter
@@ -67,6 +76,11 @@ internal static class TaskGenericsUtil
     private sealed class TaskResultGetter<T> : ITaskResultGetter
     {
         public object? GetResult(Task task) => ((Task<T>)task).Result!;
+    }
+
+    private sealed class ReflectionTaskResultGetter(PropertyInfo resultProperty) : ITaskResultGetter
+    {
+        public object? GetResult(Task task) => resultProperty.GetValue(task);
     }
 
     private sealed class VoidTaskResultGetter : ITaskResultGetter
