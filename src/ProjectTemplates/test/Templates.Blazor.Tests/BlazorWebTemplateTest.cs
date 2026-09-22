@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Playwright;
@@ -19,11 +20,15 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66403")]
-    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None")
+    [InlineData(BrowserKind.Chromium, "Server", "None", true)]
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool allInteractive = false)
     {
+        string[] args = allInteractive
+            ? ["-int", interactivityOption, "-au", authOption, ArgConstants.GlobalInteractivity]
+            : ["-int", interactivityOption, "-au", authOption];
+
         var project = await CreateBuildPublishAsync(
-            args: ["-int", interactivityOption, "-au", authOption],
+            args: args,
             getTargetProject: GetTargetProject);
 
         // There won't be a counter page when the 'None' interactivity option is used
@@ -56,6 +61,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
@@ -63,6 +69,357 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var authenticationFeatures = AuthenticationFeatures.RegisterAndLogIn | AuthenticationFeatures.Passkeys;
 
         await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium, "Success", "Success")]
+    [InlineData(BrowserKind.Chromium, "Failure", "Success")]
+    [InlineData(BrowserKind.Chromium, "SavedThenFailure", "Success")]
+    [InlineData(BrowserKind.Chromium, "Failure", "Rejected")]
+    [InlineData(BrowserKind.Chromium, "Failure", "Pending")]
+    [InlineData(BrowserKind.Chromium, "Failure", "Unsupported")]
+    [InlineData(BrowserKind.Chromium, "DatabaseFailure", "Success")]
+    [InlineData(BrowserKind.Chromium, "LookupFailure", "Success")]
+    public async Task BlazorWebTemplate_ConditionalPasskeyRegistration(
+        BrowserKind browserKind, string persistenceOutcome, string signalOutcome)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"], onlyCreate: true);
+        AddPasskeyUpgradeTestEndpoints(project);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        await browser.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+        {
+            ["X-Passkey-Test-Outcome"] = persistenceOutcome,
+        });
+        var page = await browser.NewPageAsync();
+        await using var cdpSession = await browser.NewCDPSessionAsync(page);
+        await cdpSession.SendAsync("WebAuthn.enable");
+        var authenticator = await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
+        {
+            ["options"] = new
+            {
+                protocol = "ctap2",
+                transport = "internal",
+                hasResidentKey = true,
+                hasUserVerification = true,
+                isUserVerified = true,
+                automaticPresenceSimulation = true,
+            }
+        });
+        Assert.True(authenticator.HasValue);
+        var authenticatorId = authenticator.Value.GetProperty("authenticatorId").GetString();
+        Assert.NotNull(authenticatorId);
+        await cdpSession.SendAsync("WebAuthn.setResponseOverrideBits", new Dictionary<string, object>
+        {
+            ["authenticatorId"] = authenticatorId,
+            ["isBadUP"] = true,
+            ["isBadUV"] = true,
+        });
+
+        await page.AddInitScriptAsync($$"""
+            PublicKeyCredential.isConditionalMediationAvailable = async () => false;
+            PublicKeyCredential.getClientCapabilities = async () => ({ conditionalCreate: true });
+
+            const originalCreate = navigator.credentials.create.bind(navigator.credentials);
+            navigator.credentials.create = async options => {
+                const calls = Number(sessionStorage.getItem('upgrade-create-calls') ?? 0) + 1;
+                sessionStorage.setItem('upgrade-create-calls', calls);
+                if (options.mediation !== 'conditional') {
+                    throw new Error('Expected conditional passkey creation.');
+                }
+
+                // The virtual authenticator cannot satisfy password-manager eligibility for conditional creation.
+                const credential = await originalCreate({ ...options, mediation: 'optional' });
+                sessionStorage.setItem('upgrade-credential', JSON.stringify({
+                    userId: new TextDecoder().decode(options.publicKey.user.id),
+                    userName: options.publicKey.user.name,
+                    credentialId: credential.id,
+                    flags: new Uint8Array(credential.response.getAuthenticatorData())[32],
+                }));
+                return credential;
+            };
+
+            PublicKeyCredential.signalUnknownCredential = '{{signalOutcome}}' === 'Unsupported'
+                ? undefined
+                : options => {
+                    const signals = JSON.parse(sessionStorage.getItem('upgrade-signals') ?? '[]');
+                    signals.push(options);
+                    sessionStorage.setItem('upgrade-signals', JSON.stringify(signals));
+                    if ('{{signalOutcome}}' === 'Rejected') {
+                        return Promise.reject(new Error('Simulated signal rejection.'));
+                    }
+                    if ('{{signalOutcome}}' === 'Pending') {
+                        return new Promise(() => {});
+                    }
+                    return Promise.resolve();
+                };
+            """);
+
+        var listeningUri = aspNetProcess.ListeningUri.AbsoluteUri;
+        await page.GotoAsync($"{listeningUri}Account/Register", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = "[PLACEHOLDER]-1a";
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            SubmitFormAsync(page, "register", new Dictionary<string, string>
+            {
+                ["Input.Email"] = userName,
+                ["Input.Password"] = password,
+                ["Input.ConfirmPassword"] = password,
+            }));
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            page.ClickAsync("text=Click here to confirm your account"));
+
+        var returnUrl = new Uri(new Uri(page.Url), "/auth?from=conditional-passkey&value=one%20two").AbsoluteUri;
+        await page.GotoAsync(returnUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.FillAsync("[name=\"Input.Email\"]", userName);
+        await page.FillAsync("[name=\"Input.Password\"]", password);
+
+        var upgradeRequests = new List<IRequest>();
+        page.Request += (_, request) =>
+        {
+            if (request.Method == "POST" && new Uri(request.Url).AbsolutePath == "/Account/PasskeyUpgrade")
+            {
+                upgradeRequests.Add(request);
+            }
+        };
+        var upgradeResponseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST" && new Uri(response.Url).AbsolutePath == "/Account/PasskeyUpgrade");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Log in", Exact = true }).ClickAsync();
+        var upgradeResponse = await upgradeResponseTask;
+        await page.WaitForURLAsync(returnUrl, new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 15000 });
+        await page.WaitForSelectorAsync("text=You are authenticated");
+        Assert.Equal(returnUrl, page.Url);
+
+        var credential = await page.EvaluateAsync<JsonElement>("JSON.parse(sessionStorage.getItem('upgrade-credential'))");
+        var account = await page.EvaluateAsync<JsonElement>("""
+            async () => {
+                const response = await fetch('/test/passkeys');
+                if (!response.ok) {
+                    throw new Error(`Passkey inspection failed: ${response.status}`);
+                }
+                return await response.json();
+            }
+            """);
+        var state = account.GetProperty("state");
+        Assert.Equal(1, await page.EvaluateAsync<int>("Number(sessionStorage.getItem('upgrade-create-calls'))"));
+        Assert.Equal(userName, account.GetProperty("email").GetString());
+        Assert.Equal(userName, credential.GetProperty("userName").GetString());
+        Assert.Equal(account.GetProperty("id").GetString(), credential.GetProperty("userId").GetString());
+        Assert.Equal(account.GetProperty("id").GetString(), state.GetProperty("userId").GetString());
+        Assert.Equal(credential.GetProperty("credentialId").GetString(), state.GetProperty("credentialId").GetString());
+        Assert.Equal(0x40, credential.GetProperty("flags").GetInt32());
+        Assert.False(state.GetProperty("isUserVerified").GetBoolean());
+        Assert.Equal(1, state.GetProperty("saveAttempts").GetInt32());
+        Assert.Equal(persistenceOutcome, state.GetProperty("outcome").GetString());
+
+        var shouldPersist = persistenceOutcome is "Success" or "SavedThenFailure";
+        Assert.Equal(shouldPersist, state.GetProperty("saved").GetBoolean());
+        var passkeys = account.GetProperty("passkeys").EnumerateArray().ToArray();
+        if (shouldPersist)
+        {
+            var passkey = Assert.Single(passkeys);
+            Assert.Equal(credential.GetProperty("credentialId").GetString(), passkey.GetProperty("credentialId").GetString());
+            Assert.False(passkey.GetProperty("isUserVerified").GetBoolean());
+        }
+        else
+        {
+            Assert.Empty(passkeys);
+        }
+
+        var shouldSignal = persistenceOutcome is "Failure" or "DatabaseFailure";
+        var signals = await page.EvaluateAsync<JsonElement>("JSON.parse(sessionStorage.getItem('upgrade-signals') ?? '[]')");
+        if (shouldSignal && signalOutcome is not "Unsupported")
+        {
+            var signal = Assert.Single(signals.EnumerateArray());
+            Assert.Equal(new Uri(listeningUri).Host, signal.GetProperty("rpId").GetString());
+            Assert.Equal(credential.GetProperty("credentialId").GetString(), signal.GetProperty("credentialId").GetString());
+        }
+        else
+        {
+            Assert.Empty(signals.EnumerateArray());
+        }
+
+        Assert.Equal(shouldSignal ? 2 : 1, upgradeRequests.Count);
+        Assert.Contains("_handler=passkey-upgrade", upgradeRequests[0].PostData);
+        var registrationHeaders = await upgradeRequests[0].AllHeadersAsync();
+        Assert.Contains("Identity.TwoFactorUserId=", registrationHeaders["cookie"]);
+        Assert.Contains("Input.CredentialJson=", upgradeRequests[0].PostData);
+        if (shouldSignal)
+        {
+            Assert.Equal(200, upgradeResponse.Status);
+            var redisplayedPage = await upgradeResponse.TextAsync();
+            Assert.Contains("unknown-credential-signal-options=", redisplayedPage);
+            Assert.DoesNotContain("creation-options=", redisplayedPage);
+            Assert.Contains("_handler=passkey-upgrade", upgradeRequests[1].PostData);
+            var continuationHeaders = await upgradeRequests[1].AllHeadersAsync();
+            Assert.DoesNotContain("Identity.TwoFactorUserId=", continuationHeaders["cookie"]);
+            Assert.DoesNotContain("Input.CredentialJson=", upgradeRequests[1].PostData);
+            Assert.DoesNotContain("Input.Error=", upgradeRequests[1].PostData);
+        }
+        if (persistenceOutcome is "LookupFailure")
+        {
+            Assert.True(state.GetProperty("lookupFailed").GetBoolean());
+        }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_PasskeyUpgradeRejectsRegistrationForDifferentAccount(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"], onlyCreate: true);
+        AddPasskeyUpgradeTestEndpoints(project);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        await browser.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+        {
+            ["X-Passkey-Test-Outcome"] = "Success",
+        });
+        var page = await browser.NewPageAsync();
+        await using var cdpSession = await browser.NewCDPSessionAsync(page);
+        await cdpSession.SendAsync("WebAuthn.enable");
+        await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
+        {
+            ["options"] = new
+            {
+                protocol = "ctap2",
+                transport = "internal",
+                hasResidentKey = true,
+                hasUserVerification = true,
+                isUserVerified = true,
+                automaticPresenceSimulation = true,
+            }
+        });
+        await page.AddInitScriptAsync("""
+            PublicKeyCredential.isConditionalMediationAvailable = () => Promise.resolve(false);
+            PublicKeyCredential.getClientCapabilities = async () => ({ conditionalCreate: false });
+            PublicKeyCredential.signalUnknownCredential = () => Promise.resolve();
+            """);
+
+        var listeningUri = aspNetProcess.ListeningUri.AbsoluteUri;
+        await page.GotoAsync($"{listeningUri}Account/Register", new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = "[PLACEHOLDER]-1a";
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            SubmitFormAsync(page, "register", new Dictionary<string, string>
+            {
+                ["Input.Email"] = userName,
+                ["Input.Password"] = password,
+                ["Input.ConfirmPassword"] = password,
+            }));
+        await Task.WhenAll(
+            page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+            page.ClickAsync("text=Click here to confirm your account"));
+
+        await page.GotoAsync($"{listeningUri}Account/Login", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Task.WhenAll(
+            page.WaitForSelectorAsync("h1 >> text=Hello, world!"),
+            SubmitFormAsync(page, "login", new Dictionary<string, string>
+            {
+                ["Input.Email"] = userName,
+                ["Input.Password"] = password,
+            }));
+
+        await page.GotoAsync($"{listeningUri}Account/Register", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.FillAsync("[name=\"Input.Email\"]", $"{Guid.NewGuid()}@example.com");
+        await page.EvaluateAsync("""
+            () => {
+                const passkeySubmit = document.querySelector('passkey-submit[operation="Register"]');
+                if (!passkeySubmit?.attrs) {
+                    throw new Error('The registration passkey submit element was not initialized.');
+                }
+
+                const form = passkeySubmit.closest('form');
+                const handler = form?.querySelector('input[name="_handler"]');
+                if (!form || !handler) {
+                    throw new Error('The registration form was not found.');
+                }
+
+                passkeySubmit.attrs.name = 'Input';
+                form.action = '/Account/PasskeyUpgrade';
+                handler.value = 'passkey-upgrade';
+
+                const originalCreate = navigator.credentials.create.bind(navigator.credentials);
+                navigator.credentials.create = async options => {
+                    sessionStorage.setItem(
+                        'mismatched-registration-user-id',
+                        new TextDecoder().decode(options.publicKey.user.id));
+                    return await originalCreate(options);
+                };
+            }
+            """);
+
+        await Task.WhenAll(
+            page.WaitForSelectorAsync("h1 >> text=Hello, world!"),
+            page.ClickAsync("text=Sign up with a passkey"));
+
+        var account = await page.EvaluateAsync<JsonElement>("""
+            async () => {
+                const response = await fetch('/test/passkeys');
+                if (!response.ok) {
+                    throw new Error(`Passkey inspection failed: ${response.status}`);
+                }
+                return await response.json();
+            }
+            """);
+        var registrationUserId = await page.EvaluateAsync<string>(
+            "() => sessionStorage.getItem('mismatched-registration-user-id')");
+        Assert.NotEqual(account.GetProperty("id").GetString(), registrationUserId);
+        Assert.Equal(0, account.GetProperty("state").GetProperty("saveAttempts").GetInt32());
+        Assert.Empty(account.GetProperty("passkeys").EnumerateArray());
+    }
+
+    private static void AddPasskeyUpgradeTestEndpoints(Project project)
+    {
+        var testAsset = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "TestAssets", "PasskeyUpgradeTest.cs"));
+        File.WriteAllText(
+            Path.Combine(project.TemplateOutputDir, "PasskeyUpgradeTest.cs"),
+            testAsset.Replace("TestApp", project.ProjectName, StringComparison.Ordinal));
+
+        var programPath = Path.Combine(project.TemplateOutputDir, "Program.cs");
+        var program = File.ReadAllText(programPath);
+        const string buildMarker = "var app = builder.Build();";
+        const string runMarker = "app.Run();";
+        Assert.Contains(buildMarker, program);
+        Assert.Contains(runMarker, program);
+        program = program.Replace(
+            buildMarker,
+            $"{project.ProjectName}.PasskeyUpgradeTest.AddServices(builder.Services);{Environment.NewLine}{Environment.NewLine}{buildMarker}",
+            StringComparison.Ordinal);
+        program = program.Replace(
+            runMarker,
+            $"{project.ProjectName}.PasskeyUpgradeTest.MapEndpoints(app);{Environment.NewLine}{Environment.NewLine}{runMarker}",
+            StringComparison.Ordinal);
+        File.WriteAllText(programPath, program);
     }
 
     [Theory]
@@ -260,6 +617,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanRequireConfirmedEmail(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(

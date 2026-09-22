@@ -16,9 +16,10 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
-    private readonly bool _hasAnyCascadingParameterSubscriptions;
+    private bool _hasAnyCascadingParameterSubscriptions;
     private IReadOnlyList<CascadingParameterState> _cascadingParameters;
     private bool _hasCascadingParameters;
+    private bool _hasCompletedInitialParameterSupply;
     private bool _hasSingleDeliveryCascadingParameters;
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
@@ -172,6 +173,11 @@ public class ComponentState : IAsyncDisposable
         // If we bypass this, the component won't receive the cascading parameters nor
         // will it update its snapshot of direct parameters.
 
+        if (_renderer.IsRenderingOnMetadataUpdate)
+        {
+            RefreshCascadingParameters();
+        }
+
         if (_hasAnyCascadingParameterSubscriptions)
         {
             // We may need to replay these direct parameters later (in NotifyCascadingValueChanged),
@@ -194,7 +200,28 @@ public class ComponentState : IAsyncDisposable
             }
         }
 
+        _hasCompletedInitialParameterSupply = true;
         SupplyCombinedParameters(parameters);
+    }
+
+    private void RefreshCascadingParameters()
+    {
+        // A metadata update can change both the cascading parameter set and the supplier selected
+        // for each parameter, so retained component state must rebuild its subscriptions.
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
+
+        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
+        _hasCascadingParameters = _cascadingParameters.Count != 0;
+
+        if (_hasCompletedInitialParameterSupply && _hasSingleDeliveryCascadingParameters)
+        {
+            StopSupplyingSingleDeliveryCascadingParameters();
+        }
+
+        _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions(CascadingParameterSubscriptionMode.MetadataRefresh);
     }
 
     private void StopSupplyingSingleDeliveryCascadingParameters()
@@ -269,7 +296,8 @@ public class ComponentState : IAsyncDisposable
         _renderer.AddToPendingTasksWithErrorHandling(setParametersAsyncTask, owningComponentState: this);
     }
 
-    private bool AddCascadingParameterSubscriptions()
+    private bool AddCascadingParameterSubscriptions(
+        CascadingParameterSubscriptionMode mode = CascadingParameterSubscriptionMode.Initial)
     {
         var hasSubscription = false;
         var numCascadingParameters = _cascadingParameters!.Count;
@@ -279,7 +307,7 @@ public class ComponentState : IAsyncDisposable
             var valueSupplier = _cascadingParameters[i].ValueSupplier;
             if (!valueSupplier.IsFixed)
             {
-                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo);
+                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo, mode);
                 hasSubscription = true;
             }
         }

@@ -90,11 +90,6 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
             var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute, useStringLocalizer)
                 ?? string.Empty;
 
-            if (TryWriteBuiltInRule(writer, attribute, errorMessage))
-            {
-                continue;
-            }
-
             if (attribute is IClientValidationRuleProvider ruleProvider)
             {
                 foreach (var customRule in ruleProvider.GetClientValidationRules())
@@ -109,14 +104,18 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
                     }
                     writer.EndRule();
                 }
+
+                continue;
             }
+
+            TryWriteBuiltInRule(writer, attribute, errorMessage);
         }
 
         writer.EndField();
     }
 
     // Writes the rule for each built-in ValidationAttribute directly to JSON and returns true, or
-    // returns false when the attribute is not a built-in (custom adapters handle those elsewhere).
+    // returns false when the attribute is not a built-in and contributes no rule.
     private static bool TryWriteBuiltInRule(ClientValidationDataWriter writer, ValidationAttribute validationAttribute, string errorMessage)
     {
         switch (validationAttribute)
