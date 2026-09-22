@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
@@ -2223,7 +2224,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+        VerifyInitialPosition(anchorMode, container, js, "QuickGrid");
+        if (anchorMode == "2")
+        {
+            ScrollToTopAndWaitForRender(container, js);
+        }
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -2339,7 +2344,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+        VerifyInitialPosition("2", container, js, "QuickGrid");
+        ScrollToTopAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -2807,7 +2813,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        AssertScrollTop(js, container, st => st < 50, "QuickGrid should start near the top");
+        VerifyInitialPosition(anchorMode, container, js, "QuickGrid");
+        if (anchorMode == "2")
+        {
+            ScrollToTopAndWaitForRender(container, js);
+        }
 
         container.SendKeys(Keys.End);
 
@@ -3151,6 +3161,43 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
+    private void VerifyInitialPosition(
+        string anchorMode,
+        IWebElement container,
+        IJavaScriptExecutor js,
+        string listDescription)
+    {
+        if (anchorMode == "2")
+        {
+            AssertAtBottom(js, container, $"{listDescription} should initially start at the bottom in End mode");
+        }
+        else
+        {
+            AssertScrollTop(js, container, st => st < 2, $"{listDescription} should initially start at the top");
+        }
+    }
+
+    private void AssertAtBottom(IJavaScriptExecutor js, IWebElement container, string expectation)
+    {
+        long st = 0, sh = 0, ch = 0;
+        try
+        {
+            Browser.True(() =>
+            {
+                st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+                sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+                ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+                return sh - st - ch < 2;
+            }, TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"Scroll assertion failed: expected {expectation}, " +
+                $"but scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, maxScrollTop={sh - ch}", ex);
+        }
+    }
+
     // Repeatedly issues `scroll` until the resulting scrollTop satisfies `condition`.
     // Used for test setup where the browser may silently clamp scrollTop (e.g. before
     // Virtualize has sized the spacer to make the target reachable). Do NOT use this
@@ -3206,6 +3253,29 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             ", container);
             return found is bool b && b;
         }, TimeSpan.FromSeconds(5), "Visible items should be rendered after scrolling to bottom");
+    }
+
+    private void ScrollToTopAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
+    {
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 0),
+            st => st < 2, "scrollTop < 2 after ScrollContainer(0)");
+
+        Browser.True(() =>
+        {
+            ScrollContainer(js, container, 0);
+            var itemZeroIsVisible = js.ExecuteScript(@"
+                var c = arguments[0];
+                var item = c.querySelector('.item[data-index=""0""]');
+                if (!item || c.scrollTop >= 2) return false;
+                var cr = c.getBoundingClientRect();
+                var ir = item.getBoundingClientRect();
+                return ir.bottom > cr.top + 1 && ir.top < cr.bottom - 1;
+            ", container);
+            return itemZeroIsVisible is bool visible && visible;
+        }, TimeSpan.FromSeconds(10), "Item 0 should be visible after scrolling to the top");
+
+        WaitForRenderToSettle(container, js);
+        AssertScrollTop(js, container, st => st < 2, "list should remain at the top after rendering settles");
     }
 
     private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
@@ -3336,8 +3406,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void ScrollNearTopAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
     {
-        ScrollUntil(js, container, () => ScrollContainer(js, container, 200),
-            st => st >= 150, "scrollTop >= 150 after ScrollContainer(200)");
+        ScrollToTopAndWaitForRender(container, js);
+        ScrollContainer(js, container, 200);
+        AssertScrollTop(js, container, st => st >= 150, "scrollTop >= 150 after ScrollContainer(200)");
         Browser.True(() =>
         {
             var items = container.FindElements(By.CssSelector(".item[data-index]"));
@@ -3424,7 +3495,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        AssertScrollTop(js, container, st => st < 2, "list should start at the top");
+        VerifyInitialPosition(anchorMode, container, js, "list");
+        if (anchorMode == "2")
+        {
+            ScrollToTopAndWaitForRender(container, js);
+        }
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -3517,7 +3592,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        AssertScrollTop(js, container, st => st < 50, "list should start near the top");
+        VerifyInitialPosition(anchorMode, container, js, "list");
+        if (anchorMode == "2")
+        {
+            ScrollToTopAndWaitForRender(container, js);
+        }
 
         // End key should always work regardless of anchor mode.
         container.SendKeys(Keys.End);
@@ -3966,7 +4045,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+        VerifyInitialPosition("2", container, js, "list");
+        ScrollToTopAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -4360,7 +4440,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+        VerifyInitialPosition("2", container, js, "list");
+        ScrollToTopAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -5458,6 +5539,85 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void SetManualInitialIndex(int index) => SetNumberInputAndWaitForBind("manual-initial-index", index);
 
+    [Fact]
+    public void AnchorMode_End_InitialItemsProviderLoad_PinsToBottom()
+    {
+        var emulateServerLatency = _serverFixture.ExecutionMode == ExecutionMode.Server;
+        var chromeDriver = (ChromeDriver)Browser;
+        if (emulateServerLatency)
+        {
+            SetNetworkConditions(chromeDriver, latency: 400, throughput: 50_000);
+            Navigate(ServerPathBase);
+        }
+
+        try
+        {
+            Browser.MountTestComponent<VirtualizationAnchorMode>();
+            var container = Browser.Exists(By.Id("scroll-container"));
+            var js = (IJavaScriptExecutor)Browser;
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+
+            Browser.Exists(By.Id("unload-list")).Click();
+            Browser.Exists(By.Id("list-not-loaded"));
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
+            new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
+            Browser.Equal("2", () => Browser.Exists(By.Id("current-mode")).Text);
+            Browser.Exists(By.Id("toggle-provider-gate")).Click();
+            Browser.Contains("Provider gate: On", () => Browser.Exists(By.Id("status")).Text);
+
+            Browser.Exists(By.Id("reload-with-initial-index")).Click();
+            Browser.True(() => GetProviderCallIndex(js) == 1);
+            Browser.Contains("p1-enter", () => GetProviderEvents(js));
+
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            Browser.Contains("p1-return", () => GetProviderEvents(js));
+            Browser.True(() => GetMaximumScrollTop(js, container) > 0);
+
+            Browser.True(
+                () => IsScrolledToBottom(js, container),
+                TimeSpan.FromSeconds(10),
+                $"Expected the initial provider result to pin to the bottom, but scrollTop was " +
+                $"{GetScrollTop(js, container)} of {GetMaximumScrollTop(js, container)}.");
+
+            Browser.True(() => GetProviderCallIndex(js) == 2);
+            Browser.Exists(By.Id("release-provider-gate")).Click();
+            Browser.Contains("p2-return", () => GetProviderEvents(js));
+            Browser.True(
+                () => GetBottomRenderedIndex(js) == 999 && IsScrolledToBottom(js, container),
+                TimeSpan.FromSeconds(10),
+                $"Expected item 999 at the pinned tail, but the bottom rendered item was " +
+                $"{GetBottomRenderedIndex(js)} and scrollTop was {GetScrollTop(js, container)}.");
+        }
+        finally
+        {
+            if (emulateServerLatency)
+            {
+                SetNetworkConditions(chromeDriver, latency: 0, throughput: -1);
+                chromeDriver.ExecuteCdpCommand("Network.disable", new Dictionary<string, object>());
+            }
+        }
+    }
+
+    private static void SetNetworkConditions(ChromeDriver chromeDriver, int latency, int throughput)
+    {
+        chromeDriver.ExecuteCdpCommand("Network.enable", new Dictionary<string, object>());
+        chromeDriver.ExecuteCdpCommand("Network.emulateNetworkConditions", new Dictionary<string, object>
+        {
+            ["offline"] = false,
+            ["latency"] = latency,
+            ["downloadThroughput"] = throughput,
+            ["uploadThroughput"] = throughput,
+        });
+    }
+
+    private bool IsScrolledToBottom(IJavaScriptExecutor js, IWebElement container)
+        => Math.Abs(GetScrollTop(js, container) - GetMaximumScrollTop(js, container)) < 2;
+
+    private static long GetMaximumScrollTop(IJavaScriptExecutor js, IWebElement container)
+        => Convert.ToInt64(js.ExecuteScript(
+            "return arguments[0].scrollHeight - arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
+
     // Types into <input type=number @bind=...> and polls the sibling {id}-bound span until the bound model commits (needed on Server where @bind round-trips over SignalR).
     private void SetNumberInputAndWaitForBind(string elementId, int value)
     {
@@ -5831,12 +5991,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         container.SendKeys(Keys.End);
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0);
+        WaitForRenderToSettle(container, js);
 
         SetScrollTargetIndex(targetIndex);
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus($"Completed: {targetIndex}");
 
-        Browser.True(() => GetTopRenderedIndex(js) == targetIndex);
+        Browser.True(() => GetTopRenderedIndex(js) == targetIndex,
+            $"Top rendered item should be {targetIndex} but was {GetTopRenderedIndex(js)} " +
+            $"(index delta: {GetTopRenderedIndex(js) - targetIndex}), scrollTop={GetScrollTop(js, container)}.");
     }
 
     [Theory]
