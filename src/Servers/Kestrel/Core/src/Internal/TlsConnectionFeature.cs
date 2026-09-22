@@ -21,6 +21,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream? _sslStream;
     private readonly TlsBufferSession? _session;
+    private readonly TlsSessionDuplexPipe? _tlsPipe;
     private readonly ConnectionContext _context;
     private readonly ILogger<HttpsConnectionMiddleware> _logger;
     private bool _snapshotted;
@@ -57,12 +58,13 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     /// cached fields rather than a stream that does not exist. Call
     /// <see cref="CaptureFromSession"/> once the handshake succeeds.
     /// </summary>
-    internal TlsConnectionFeature(TlsBufferSession session, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
+    internal TlsConnectionFeature(TlsSessionDuplexPipe tlsPipe, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
     {
-        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(tlsPipe);
         ArgumentNullException.ThrowIfNull(context);
 
-        _session = session;
+        _tlsPipe = tlsPipe;
+        _session = tlsPipe.Session;
         _context = context;
         _logger = logger;
         _snapshotted = true;
@@ -192,6 +194,11 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int KeyExchangeStrength => _snapshotted ? _keyExchangeStrength : _sslStream!.KeyExchangeStrength;
 
+    private SslApplicationProtocol NegotiatedApplicationProtocolValue
+        => _session is not null
+            ? _session.NegotiatedApplicationProtocol
+            : _sslStream!.NegotiatedApplicationProtocol;
+
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
         // Only try once per connection
@@ -202,11 +209,8 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
         if (ClientCertificate != null
             || !AllowDelayedClientCertificateNegotation
-            // Not implemented for the sans-IO path yet: TlsBufferSession.RequestClientCertificate
-            // exists, but re-driving the handshake through the duplex pipe does not.
-            || _session is not null
             // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
-            || _sslStream!.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            || NegotiatedApplicationProtocolValue == SslApplicationProtocol.Http2)
         {
             return _clientCertTask = Task.FromResult(ClientCertificate);
         }
@@ -218,9 +222,16 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     {
         try
         {
+            if (_tlsPipe is not null)
+            {
+                await _tlsPipe.RequestClientCertificateAsync(cancellationToken: cancellationToken);
+            }
+            else
+            {
 #pragma warning disable CA1416 // Validate platform compatibility
-            await _sslStream!.NegotiateClientCertificateAsync(cancellationToken);
+                await _sslStream!.NegotiateClientCertificateAsync(cancellationToken);
 #pragma warning restore CA1416 // Validate platform compatibility
+            }
         }
         catch (PlatformNotSupportedException)
         {

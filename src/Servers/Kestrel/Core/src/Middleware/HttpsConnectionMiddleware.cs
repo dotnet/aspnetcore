@@ -369,7 +369,9 @@ internal sealed class HttpsConnectionMiddleware
 
         var tlsPipe = new TlsSessionDuplexPipe(context.Transport);
 
-        var feature = new Core.Internal.TlsConnectionFeature(tlsPipe.Session, context, _logger);
+        var feature = new Core.Internal.TlsConnectionFeature(tlsPipe, context, _logger);
+        feature.AllowDelayedClientCertificateNegotation =
+            _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
         context.Features.Set<ITlsConnectionFeature>(feature);
         context.Features.Set<ITlsHandshakeFeature>(feature);
         context.Features.Set<ITlsApplicationProtocolFeature>(feature);

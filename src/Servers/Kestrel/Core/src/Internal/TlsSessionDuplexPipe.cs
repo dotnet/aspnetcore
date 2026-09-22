@@ -55,6 +55,9 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
 
     public PipeReader Input => _input;
 
+    /// <summary>Whether the reader is currently holding decrypted application data.</summary>
+    internal bool HasBufferedPlaintext => _input.HasBufferedPlaintext;
+
     public PipeWriter Output => _output;
 
     public TlsBufferSession Session => _session;
@@ -164,6 +167,132 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                 // handshake flight are served immediately by the first read.
                 _transport.Input.AdvanceTo(buffer.Start, buffer.Start);
             }
+        }
+    }
+
+    /// <summary>
+    /// Drives post-handshake client authentication (TLS 1.3) or renegotiation (TLS 1.2), the
+    /// sans-IO equivalent of <c>SslStream.NegotiateClientCertificateAsync</c>.
+    ///
+    /// <para>The session produces a request to send, then needs the peer's reply fed back in, so
+    /// this loops: ask the session for output, write and flush it, and when it reports
+    /// <see cref="TlsOperationStatus.NeedMoreData"/> read the next ciphertext and hand it over.
+    /// That mirrors how the socket-bound overload drives the same operation internally.</para>
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when application data is buffered or arrives mid-exchange. Renegotiation cannot be
+    /// interleaved with application data, which is the same restriction SslStream imposes.
+    /// </exception>
+    public async Task RequestClientCertificateAsync(
+        Action<TlsSession>? onCertificateValidation = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (_input.HasBufferedPlaintext)
+        {
+            throw new InvalidOperationException(
+                "Cannot request a client certificate while application data is buffered; drain the request body first.");
+        }
+
+        var scratch = ArrayPool<byte>.Shared.Rent(MaxPlaintextRecord);
+
+        try
+        {
+            while (true)
+            {
+                var destination = _transport.Output.GetSpan(MaxCipherRecord);
+                var status = _session.RequestClientCertificate(destination, out var written);
+                _transport.Output.Advance(written);
+
+                var produced = written > 0;
+                produced |= DrainPendingOutput();
+
+                if (produced)
+                {
+                    await _transport.Output.FlushAsync(cancellationToken);
+                }
+
+                switch (status)
+                {
+                    case TlsOperationStatus.Complete:
+                        return;
+
+                    case TlsOperationStatus.DestinationTooSmall:
+                        continue;
+
+                    case TlsOperationStatus.NeedsCertificateValidation:
+                        if (onCertificateValidation is not null)
+                        {
+                            onCertificateValidation(_session);
+                        }
+                        else
+                        {
+                            _session.AcceptWithDefaultValidation();
+                        }
+
+                        continue;
+
+                    case TlsOperationStatus.NeedMoreData:
+                        await FeedCiphertextAsync(scratch, cancellationToken);
+                        continue;
+
+                    case TlsOperationStatus.Closed:
+                        throw new IOException("Peer closed the connection during client certificate negotiation.");
+
+                    default:
+                        throw new InvalidOperationException($"Unexpected status {status} requesting a client certificate.");
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(scratch);
+        }
+    }
+
+    /// <summary>
+    /// Reads one batch of ciphertext from the transport and hands it to the session. Any
+    /// plaintext it yields is application data arriving mid-negotiation, which cannot be
+    /// buffered here without reordering it ahead of what the reader already holds.
+    /// </summary>
+    private async ValueTask FeedCiphertextAsync(byte[] scratch, CancellationToken cancellationToken)
+    {
+        var result = await _transport.Input.ReadAsync(cancellationToken);
+        var buffer = result.Buffer;
+
+        if (buffer.IsEmpty && result.IsCompleted)
+        {
+            _transport.Input.AdvanceTo(buffer.Start, buffer.End);
+            throw new IOException("Transport closed during client certificate negotiation.");
+        }
+
+        try
+        {
+            while (!buffer.IsEmpty)
+            {
+                var source = GetContiguous(buffer);
+                var status = _session.Read(source, scratch, out var consumed, out var producedBytes);
+                buffer = buffer.Slice(consumed);
+
+                if (producedBytes > 0)
+                {
+                    throw new InvalidOperationException(
+                        "Received application data during client certificate negotiation.");
+                }
+
+                if (status == TlsOperationStatus.Closed)
+                {
+                    throw new IOException("Peer closed the connection during client certificate negotiation.");
+                }
+
+                if (consumed == 0)
+                {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            _transport.Input.AdvanceTo(buffer.Start, result.Buffer.End);
         }
     }
 
@@ -323,6 +452,8 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
         private int _end;
         private bool _completed;
         private bool _canceled;
+
+        internal bool HasBufferedPlaintext => _end > _start;
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
