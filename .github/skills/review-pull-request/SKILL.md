@@ -94,6 +94,7 @@ Record actual loading/provenance; do not invent a revision or require a matching
 The PR and review criteria are independent inputs. Use the root and `LOCAL_SHA` frozen in Step 1.
 Read routed guides and delegated policies with
 `git -C <root> show <LOCAL_SHA>:<repository-relative-path>`; never re-resolve local `HEAD`.
+When already in the frozen root, use the equivalent `git show <LOCAL_SHA>:<repository-relative-path>`.
 Guidance changes must be committed, but need not be pushed. Ignore uncommitted edits; do not
 require a clean tree or a particular branch, fetch, check out, or match the installed skill's bytes.
 Use this same local commit throughout the review, including worker rereads. Never substitute
