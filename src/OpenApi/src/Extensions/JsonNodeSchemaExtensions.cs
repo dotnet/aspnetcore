@@ -752,6 +752,66 @@ internal static class JsonNodeSchemaExtensions
         }
     }
 
+    internal static void ApplyObjectContractDecision(
+        this JsonNode schema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<Type, JsonNode> createSchema)
+    {
+        var decision = compositionDecision.ObjectContract;
+        if (decision.Kind is InferredObjectContractKind.NotObject or InferredObjectContractKind.Closed)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(
+                $"The inferred object contract for '{compositionDecision.Identity.Type}' does not match the exported schema.");
+        }
+
+        if (decision.Kind == InferredObjectContractKind.DisallowUnmappedMembers)
+        {
+            if (schemaObject.TryGetPropertyValue(
+                    OpenApiSchemaKeywords.AdditionalPropertiesKeyword,
+                    out var additionalProperties) &&
+                additionalProperties?.GetValueKind() != JsonValueKind.False)
+            {
+                throw new InvalidOperationException(
+                    $"The exported schema for '{compositionDecision.Identity.Type}' conflicts with its unmapped-member contract.");
+            }
+
+            schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false;
+            return;
+        }
+
+        if (decision.Kind != InferredObjectContractKind.ExtensionData ||
+            decision.ExtensionDataProperty is not { } extensionDataProperty ||
+            decision.AdditionalPropertiesType is not { } additionalPropertiesType)
+        {
+            throw new InvalidOperationException(
+                $"The inferred extension-data contract for '{compositionDecision.Identity.Type}' is incomplete.");
+        }
+
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties &&
+            properties.ContainsKey(extensionDataProperty.Identity.JsonName))
+        {
+            throw new InvalidOperationException(
+                $"The exported schema for '{compositionDecision.Identity.Type}' exposes extension data as a named property.");
+        }
+
+        if (schemaObject.TryGetPropertyValue(
+                OpenApiSchemaKeywords.AdditionalPropertiesKeyword,
+                out var exportedAdditionalProperties) &&
+            exportedAdditionalProperties?.GetValueKind() is not JsonValueKind.True)
+        {
+            throw new InvalidOperationException(
+                $"The exported schema for '{compositionDecision.Identity.Type}' contains unexpected additional-properties constraints.");
+        }
+
+        schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] =
+            createSchema(additionalPropertiesType.Identity.Type);
+    }
+
     /// <summary>
     /// Set the x-schema-id property on the schema to the identifier associated with the type.
     /// </summary>

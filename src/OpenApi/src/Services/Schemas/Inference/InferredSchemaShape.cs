@@ -96,6 +96,9 @@ internal sealed class InferredSchemaShape
 
     public IReadOnlyList<InferredSchemaProperty> Properties { get; }
 
+    public InferredSchemaProperty? ExtensionDataProperty
+        => Properties.FirstOrDefault(property => property.IsExtensionData);
+
     public IReadOnlyList<InferredSchemaDerivedType> DerivedTypes { get; }
 
     public IReadOnlyList<InferredSchemaTypeUse> UnionCases { get; }

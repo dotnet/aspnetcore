@@ -68,126 +68,138 @@ internal sealed class OpenApiSchemaService(
     private JsonSchemaExporterOptions CreateConfiguration(
         Func<JsonTypeInfo, string?> createSchemaReferenceId,
         bool useInferredComposition,
-        Func<Type, Type, string?>? getPolymorphicReferenceId = null) => new()
+        Func<Type, Type, string?>? getPolymorphicReferenceId = null)
     {
-        TreatNullObliviousAsNonNullable = true,
-        TransformSchemaNode = (context, schema) =>
+        JsonSchemaExporterOptions configuration = null!;
+        configuration = new()
         {
-            var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
-            // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
-            // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
-                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
-                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
+            TreatNullObliviousAsNonNullable = true,
+            TransformSchemaNode = (context, schema) =>
             {
-                schema = new JsonObject
+                var type = context.TypeInfo.Type;
+                // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+                // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
+                // that appear as properties within complex types.
+                if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                    || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                    || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
                 {
-                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                    [OpenApiConstants.SchemaId] = "IFormFile"
-                };
-            }
-            else if (type == typeof(IFormFileCollection))
-            {
-                schema = new JsonObject
-                {
-                    [OpenApiSchemaKeywords.TypeKeyword] = "array",
-                    [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                    schema = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
                         [OpenApiSchemaKeywords.FormatKeyword] = "binary",
                         [OpenApiConstants.SchemaId] = "IFormFile"
-                    }
-                };
-            }
-            else if (type.IsJsonPatchDocument())
-            {
-                schema = CreateSchemaForJsonPatch();
-            }
-            // STJ uses `true` in place of an empty object to represent a schema that matches
-            // anything (like the `object` type) or types with user-defined converters. We override
-            // this default behavior here to match the format expected in OpenAPI v3.
-            if (schema.GetValueKind() == JsonValueKind.True)
-            {
-                schema = new JsonObject();
-            }
-            schema.ApplyPrimitiveFormats(context);
-            schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
-            if (useInferredComposition)
-            {
-                var inferredSchema = GetInferredSchema(type);
-                var compositionDecision = inferredSchema.CompositionDecisions[type];
-                if (context.BaseTypeInfo is null)
+                    };
+                }
+                else if (type == typeof(IFormFileCollection))
                 {
-                    schema.ApplyCompositionDecision(
+                    schema = new JsonObject
+                    {
+                        [OpenApiSchemaKeywords.TypeKeyword] = "array",
+                        [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                        {
+                            [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                            [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                            [OpenApiConstants.SchemaId] = "IFormFile"
+                        }
+                    };
+                }
+                else if (type.IsJsonPatchDocument())
+                {
+                    schema = CreateSchemaForJsonPatch();
+                }
+                // STJ uses `true` in place of an empty object to represent a schema that matches
+                // anything (like the `object` type) or types with user-defined converters. We override
+                // this default behavior here to match the format expected in OpenAPI v3.
+                if (schema.GetValueKind() == JsonValueKind.True)
+                {
+                    schema = new JsonObject();
+                }
+                schema.ApplyPrimitiveFormats(context);
+                schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
+                if (useInferredComposition)
+                {
+                    var inferredSchema = GetInferredSchema(type);
+                    var compositionDecision = inferredSchema.CompositionDecisions[type];
+                    if (context.BaseTypeInfo is null)
+                    {
+                        schema.ApplyCompositionDecision(
+                            compositionDecision,
+                            getPolymorphicReferenceId ?? throw new InvalidOperationException(
+                                "The inferred schema reference ID resolver is unavailable."));
+                    }
+                    else
+                    {
+                        schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+                    }
+                    schema.ApplyInheritanceCompositionDecision(inferredSchema, compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
+                    schema.ApplyObjectContractDecision(
                         compositionDecision,
-                        getPolymorphicReferenceId ?? throw new InvalidOperationException(
-                            "The inferred schema reference ID resolver is unavailable."));
+                        additionalPropertiesType => JsonSchemaExporter.GetJsonSchemaAsNode(
+                            _jsonSerializerOptions,
+                            additionalPropertiesType,
+                            configuration));
                 }
                 else
                 {
                     schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
                 }
-                schema.ApplyInheritanceCompositionDecision(inferredSchema, compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
-            }
-            else
-            {
-                schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
-            }
-            if (context.PropertyInfo is { } jsonPropertyInfo)
-            {
-                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
-            }
-            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
-            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
-            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
-            {
-                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
-            }
-            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
-            {
-                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
-            }
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
-            {
-                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
-                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
+                if (context.PropertyInfo is { } jsonPropertyInfo)
                 {
-                    schema.ApplyValidationAttributes(validationAttributes);
+                    schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
                 }
-                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+                var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
+                if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
                 {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
                 }
-                var isInlinedSchema = !schema.WillBeComponentized();
-                if (isInlinedSchema)
+                if (typeAttributes.OfType<ObsoleteAttribute>().Any())
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
-                    {
-                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
-                    }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
-                    {
-                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
-                    }
+                    schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
                 }
-                else
+                if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                    if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
                     {
-                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                        schema.ApplyValidationAttributes(validationAttributes);
                     }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
                     {
-                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                        schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                    }
+                    var isInlinedSchema = !schema.WillBeComponentized();
+                    if (isInlinedSchema)
+                    {
+                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                        {
+                            schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                        }
+                        if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                        {
+                            schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                        }
+                    }
+                    else
+                    {
+                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                        {
+                            schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                        }
+                        if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                        {
+                            schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                        }
                     }
                 }
+                schema.PruneNullTypeForComponentizedTypes();
+                return schema;
             }
-            schema.PruneNullTypeForComponentizedTypes();
-            return schema;
-        }
-    };
+        };
+
+        return configuration;
+    }
 
     private static JsonObject CreateSchemaForJsonPatch()
     {
@@ -645,6 +657,24 @@ internal sealed class OpenApiSchemaService(
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+        else if (inferredMode &&
+            schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } &&
+            inferredSchema[jsonTypeInfo.Type].ExtensionDataProperty is { } extensionDataProperty &&
+            inferredSchema[jsonTypeInfo.Type].AdditionalPropertiesType is { } additionalPropertiesType)
+        {
+            var extensionDataJsonPropertyInfo = jsonTypeInfo.Properties.First(
+                property => property.IsExtensionData &&
+                    StringComparer.Ordinal.Equals(property.Name, extensionDataProperty.Identity.JsonName));
+            var additionalPropertiesTypeInfo = _jsonSerializerOptions.GetTypeInfo(additionalPropertiesType.Identity.Type);
+            await InnerApplySchemaTransformersAsync(
+                schema.AdditionalProperties,
+                inferredSchema,
+                additionalPropertiesTypeInfo,
+                extensionDataJsonPropertyInfo,
+                context,
+                transformer,
+                cancellationToken);
         }
     }
 

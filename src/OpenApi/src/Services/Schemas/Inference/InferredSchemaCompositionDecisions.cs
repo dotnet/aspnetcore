@@ -53,10 +53,24 @@ internal sealed record InferredAlternativeCompositionDecision(
     string? DiscriminatorPropertyName,
     IReadOnlyList<InferredAlternativeBranch> Branches);
 
+internal enum InferredObjectContractKind
+{
+    NotObject,
+    Closed,
+    DisallowUnmappedMembers,
+    ExtensionData,
+}
+
+internal sealed record InferredObjectContractDecision(
+    InferredObjectContractKind Kind,
+    InferredSchemaProperty? ExtensionDataProperty,
+    InferredSchemaTypeUse? AdditionalPropertiesType);
+
 internal sealed record InferredSchemaCompositionDecision(
     InferredSchemaTypeIdentity Identity,
     InferredInheritanceCompositionDecision Inheritance,
-    InferredAlternativeCompositionDecision Alternatives);
+    InferredAlternativeCompositionDecision Alternatives,
+    InferredObjectContractDecision ObjectContract);
 
 internal sealed class InferredSchemaCompositionDecisions
 {
@@ -84,7 +98,8 @@ internal static class InferredSchemaCompositionDecisionBuilder
             decisions.Add(new(
                 shape.Identity,
                 DecideInheritance(document, shape),
-                DecideAlternatives(shape)));
+                DecideAlternatives(shape),
+                DecideObjectContract(shape)));
         }
 
         return new(new ReadOnlyCollection<InferredSchemaCompositionDecision>(decisions));
@@ -241,5 +256,37 @@ internal static class InferredSchemaCompositionDecisionBuilder
                 reason,
                 discriminatorPropertyName,
                 Array.AsReadOnly(branches));
+    }
+
+    private static InferredObjectContractDecision DecideObjectContract(InferredSchemaShape shape)
+    {
+        if (shape.Kind != InferredSchemaShapeKind.Object)
+        {
+            return new(InferredObjectContractKind.NotObject, null, null);
+        }
+
+        if (shape.ExtensionDataProperty is { } extensionDataProperty)
+        {
+            if (shape.DisallowsUnmappedMembers)
+            {
+                throw new InvalidOperationException(
+                    $"The serializer contract for '{shape.Identity.Type}' both disallows unmapped members and declares extension data.");
+            }
+
+            if (shape.AdditionalPropertiesType is not { } additionalPropertiesType)
+            {
+                throw new InvalidOperationException(
+                    $"The extension-data value contract for '{shape.Identity.Type}' is unavailable.");
+            }
+
+            return new(
+                InferredObjectContractKind.ExtensionData,
+                extensionDataProperty,
+                additionalPropertiesType);
+        }
+
+        return shape.DisallowsUnmappedMembers
+            ? new(InferredObjectContractKind.DisallowUnmappedMembers, null, null)
+            : new(InferredObjectContractKind.Closed, null, null);
     }
 }

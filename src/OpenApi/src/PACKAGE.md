@@ -54,6 +54,22 @@ losslessly into a reusable base component and local derived properties. Contract
 converters, property collisions or hiding, extension data, additional-properties constraints,
 incompatible base properties, or polymorphic bases remain flattened.
 
+Mixed object contracts with System.Text.Json extension data retain their named properties and
+required entries while using the extension-data value contract for `additionalProperties`.
+`Dictionary<string, JsonElement>`, `Dictionary<string, object>`, and their supported
+`IDictionary<string, ...>` forms produce an unconstrained fallback schema, matching the values
+accepted by System.Text.Json. Pure dictionaries keep their dictionary-only schema, and contracts
+that disallow unmapped members emit `additionalProperties: false`. Open object contracts remain
+ineligible for inferred `allOf` decomposition.
+
+Only extension-data forms accepted by System.Text.Json are inferred. In particular, arbitrary
+strongly typed dictionary values are not treated as extension data, and invalid forms fail through
+the serializer's normal contract validation. `JsonObject` extension data is not inferred because
+System.Text.Json metadata does not expose a reliable fallback value contract for that form. Schema
+transformers visit the root, named properties in serializer order, then the extension-data fallback
+with its `JsonPropertyInfo`; they do not receive a duplicate callback for the extension-data
+dictionary property.
+
 Schema transformers continue to run once for the composed derived schema and once for each
 serialized property, in serializer order. The synthetic base and local `allOf` branches do not
 introduce additional transformer callbacks.

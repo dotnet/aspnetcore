@@ -102,7 +102,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 [
                     new(new(typeof(DuplicateEmitterOne)), "same"),
                     new(new(typeof(DuplicateEmitterTwo)), "same"),
-                ]));
+                ]),
+            new(InferredObjectContractKind.NotObject, null, null));
 
         schema.ApplyCompositionDecision(decision, static (_, branchType) => branchType.Name);
 
@@ -411,7 +412,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         var decision = new InferredSchemaCompositionDecision(
             new(typeof(EmitterDerived)),
             new(false, new(typeof(EmitterBase)), (InferredInheritanceReason)reasonValue),
-            inferredSchema.CompositionDecisions[typeof(EmitterDerived)].Alternatives);
+            inferredSchema.CompositionDecisions[typeof(EmitterDerived)].Alternatives,
+            inferredSchema.CompositionDecisions[typeof(EmitterDerived)].ObjectContract);
 
         schema.ApplyInheritanceCompositionDecision(
             inferredSchema,
