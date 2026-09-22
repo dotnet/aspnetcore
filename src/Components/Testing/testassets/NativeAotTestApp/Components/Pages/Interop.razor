@@ -8,12 +8,15 @@
 
 <div id="interop-target" @ref="_target" @onsplitprobe="HandleSplit">Interop target</div>
 <button id="interop-run" @onclick="RunAsync">Run interop</button>
+<button id="interop-task-run" @onclick="RunTaskAsync">Run Task interop</button>
 
 <p id="interop-poco">@_poco</p>
 <p id="interop-dotnet">@_dotNet</p>
 <p id="interop-element">@_element</p>
 <p id="interop-wire">@_wire</p>
 <p id="interop-event">@_customEvent</p>
+<p id="interop-task-managed">@_taskManaged</p>
+<p id="interop-task-promise">not-started</p>
 
 @code {
     private DotNetObjectReference<Interop>? _self;
@@ -23,6 +26,7 @@
     private string _element = "";
     private string _wire = "";
     private string _customEvent = "";
+    private string _taskManaged = "not-started";
 
     private async Task RunAsync()
     {
@@ -56,6 +60,30 @@
 
     [JSInvokable]
     public string EchoFromJs(string value) => $"echo:{value}";
+
+    private async Task RunTaskAsync()
+    {
+        _self ??= DotNetObjectReference.Create(this);
+
+        await JS.InvokeVoidAsync("eval", """
+            window.__nativeAotStartTask = r => {
+                const status = document.querySelector('#interop-task-promise');
+                status.textContent = 'pending';
+                r.invokeMethodAsync('CompleteFromJsAsync').then(
+                    () => status.textContent = 'completed',
+                    () => status.textContent = 'failed');
+            };
+            """);
+        await JS.InvokeVoidAsync("__nativeAotStartTask", _self);
+    }
+
+    [JSInvokable]
+    public async Task CompleteFromJsAsync()
+    {
+        await Task.Yield();
+        _taskManaged = "callback-completed";
+        await InvokeAsync(StateHasChanged);
+    }
 
     private void HandleSplit(SplitEventArgs args)
     {

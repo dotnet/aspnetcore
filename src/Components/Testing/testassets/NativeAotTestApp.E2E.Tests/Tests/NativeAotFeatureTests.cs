@@ -104,6 +104,18 @@ public partial class NativeAotFeatureTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task JsInterop_NonGenericTaskPromiseResolves()
+    {
+        await GotoInteractiveAsync("/interop", "#interop-task-run");
+
+        await _page.Locator("#interop-task-run").ClickAsync();
+
+        await Expect(_page.Locator("#interop-task-managed")).ToHaveTextAsync("callback-completed");
+        await Expect(_page.Locator("#interop-task-promise")).ToHaveTextAsync("completed");
+        await AssertHealthyAsync();
+    }
+
+    [TestMethod]
     public async Task ProtectedStorage_RestoresAcrossReload()
     {
         await GotoInteractiveAsync("/storage", "#storage-save");
