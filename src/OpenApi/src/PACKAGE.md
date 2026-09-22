@@ -63,8 +63,13 @@ used by the document before schemas are emitted. A default name that is unique i
 collisions are resolved deterministically by adding declaring-type or namespace segments, with a
 stable canonical fallback, so endpoint registration order does not affect component keys or
 references. Types first requested by a transformer after endpoint discovery use the stable
-canonical fallback immediately, so their names do not depend on transformer execution order.
+canonical fallback immediately for their complete inferred graph, so their regular and
+polymorphic component names do not depend on transformer execution order.
 JSON Patch document variants retain their intentional shared component.
+
+Canonical fallback hashes include the full assembly identity. Types loaded into separate assembly
+load contexts with the same assembly-qualified identity remain indistinguishable for naming
+purposes; if they would occupy the same component ID, document generation fails explicitly.
 
 Custom `CreateSchemaReferenceId` values are authoritative in inferred mode. A `null` value still
 inlines the schema. Empty or invalid values, or the same non-null value returned for distinct

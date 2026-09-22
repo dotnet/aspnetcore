@@ -368,6 +368,141 @@ public partial class OpenApiSchemaServiceTests
             Assert.StartsWith("Duplicate-", referenceId, StringComparison.Ordinal);
         });
     }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_TransformerRequestedPolymorphicGraphUsesStableReferences()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/", () => { });
+        var options = CreateInferredOptions();
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            operation.Responses["200"] = CreateResponse(
+                await GetResolvedTransformerSchemaAsync(
+                    context,
+                    typeof(InferredNaming.PolymorphicBase),
+                    cancellationToken));
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var rootReference = Assert.IsType<OpenApiSchemaReference>(
+                document.Paths["/"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema);
+            var root = document.Components.Schemas[rootReference.Reference.Id];
+            Assert.Equal(2, root.OneOf.Count);
+            Assert.All(root.OneOf, branch =>
+                Assert.Contains(Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id, document.Components.Schemas.Keys));
+            Assert.Equal(
+                root.OneOf.Select(branch => Assert.IsType<OpenApiSchemaReference>(branch).Reference.ReferenceV3),
+                root.Discriminator.Mapping.Select(mapping => mapping.Value.Reference.ReferenceV3));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_TransformerRequestedInheritanceGraphUsesStableBaseReference()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/", () => { });
+        var options = CreateInferredOptions();
+        options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+        {
+            operation.Responses["200"] = CreateResponse(
+                await GetResolvedTransformerSchemaAsync(
+                    context,
+                    typeof(InferredNaming.Inheritance.Derived),
+                    cancellationToken));
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var derivedReference = Assert.IsType<OpenApiSchemaReference>(
+                document.Paths["/"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema);
+            var derived = document.Components.Schemas[derivedReference.Reference.Id];
+            var baseReference = Assert.IsType<OpenApiSchemaReference>(derived.AllOf[0]);
+            Assert.Contains(baseReference.Reference.Id, document.Components.Schemas.Keys);
+            Assert.StartsWith("Base-", baseReference.Reference.Id, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_LateCustomIdCollisionWithContextualPolymorphicIdThrows()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", (InferredNaming.PolymorphicBase value) => value);
+        var options = CreateInferredOptions();
+        options.CreateSchemaReferenceId = typeInfo => typeInfo.Type switch
+        {
+            var type when type == typeof(InferredNaming.First.Derived) => "FirstDerived",
+            var type when type == typeof(InferredNaming.Second.Derived) => "SecondDerived",
+            var type when type == typeof(InferredNaming.Other.Base) => "PolymorphicBaseFirstDerived",
+            _ => OpenApiOptions.CreateDefaultSchemaReferenceId(typeInfo),
+        };
+        options.AddOperationTransformer(async (_, context, cancellationToken) =>
+        {
+            await context.GetOrCreateSchemaAsync(
+                typeof(InferredNaming.Other.Base),
+                cancellationToken: cancellationToken);
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => VerifyOpenApiDocument(builder, options, _ => { }));
+
+        Assert.Contains("PolymorphicBaseFirstDerived", exception.Message);
+        Assert.Contains("distinct serializer contract identities", exception.Message);
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_TransformerRequestedGraphsAreOrderIndependent()
+    {
+        var first = await CreateDocument(reverse: false);
+        var second = await CreateDocument(reverse: true);
+
+        var firstSchemas = JsonNode.Parse(await first.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1))?["components"]?["schemas"];
+        var secondSchemas = JsonNode.Parse(await second.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1))?["components"]?["schemas"];
+        Assert.True(JsonNode.DeepEquals(firstSchemas, secondSchemas));
+
+        static async Task<OpenApiDocument> CreateDocument(bool reverse)
+        {
+            var builder = CreateBuilder();
+            builder.MapGet("/", () => { });
+            var options = CreateInferredOptions();
+            options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+            {
+                var types = reverse
+                    ? new[] { typeof(InferredNaming.Inheritance.Derived), typeof(InferredNaming.PolymorphicBase) }
+                    : new[] { typeof(InferredNaming.PolymorphicBase), typeof(InferredNaming.Inheritance.Derived) };
+                foreach (var type in types)
+                {
+                    var statusCode = type == typeof(InferredNaming.PolymorphicBase) ? "200" : "201";
+                    operation.Responses[statusCode] = CreateResponse(
+                        await GetResolvedTransformerSchemaAsync(context, type, cancellationToken));
+                }
+            });
+
+            return await VerifyOpenApiDocument(builder, options, _ => { });
+        }
+    }
+
+    private static OpenApiResponse CreateResponse(IOpenApiSchema schema)
+        => new()
+        {
+            Description = "Response",
+            Content = new Dictionary<string, IOpenApiMediaType>
+            {
+                ["application/json"] = new OpenApiMediaType { Schema = schema },
+            },
+        };
+
+    private static async Task<IOpenApiSchema> GetResolvedTransformerSchemaAsync(
+        OpenApiOperationTransformerContext context,
+        Type type,
+        CancellationToken cancellationToken)
+    {
+        var schema = await context.GetOrCreateSchemaAsync(type, cancellationToken: cancellationToken);
+        var schemaId = Assert.IsType<string>(
+            schema.Metadata[Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId]);
+        return OpenApiSchemaService.ResolveReferenceForSchema(context.Document, schema, schemaId);
+    }
 }
 
 #nullable enable
