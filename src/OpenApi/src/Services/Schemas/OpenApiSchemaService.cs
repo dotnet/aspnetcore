@@ -138,7 +138,23 @@ internal sealed class OpenApiSchemaService(
                 {
                     schema = new JsonObject();
                 }
-                schema.ApplyPrimitiveFormats(context);
+                if (useInferredComposition)
+                {
+                    var scalarFact = InferredScalarContractFactBuilder.Build(
+                        context.TypeInfo,
+                        context.PropertyInfo?.CustomConverter,
+                        context.PropertyInfo?.AttributeProvider?.IsDefined(
+                            typeof(System.Text.Json.Serialization.JsonConverterAttribute),
+                            inherit: false)
+                            is true);
+                    schema.ApplyInferredScalarDecision(
+                        InferredScalarSchemaDecisionBuilder.Build(scalarFact),
+                        openApiVersion);
+                }
+                else
+                {
+                    schema.ApplyPrimitiveFormats(context);
+                }
                 schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
                 if (useInferredComposition)
                 {

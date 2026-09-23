@@ -24,32 +24,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly Dictionary<Type, string> _simpleTypeToFormat = new()
-    {
-        [typeof(byte)] = "uint8",
-        // Note: byte format is deprecated per https://spec.openapis.org/registry/format/
-        // We should follow the >= 3.1 approach stated in https://spec.openapis.org/oas/v3.2.0.html#migrating-binary-descriptions-from-oas-3-0
-        // In addition, we should ensure that Microsoft.OpenApi will be able to serialize the >= 3.1 representation correctly when
-        // it's asked to serialize as < 3.1 document.
-        [typeof(byte[])] = "byte",
-        [typeof(int)] = "int32",
-        [typeof(uint)] = "uint32",
-        [typeof(long)] = "int64",
-        [typeof(ulong)] = "uint64",
-        [typeof(short)] = "int16",
-        [typeof(ushort)] = "uint16",
-        [typeof(float)] = "float",
-        [typeof(double)] = "double",
-        [typeof(decimal)] = "double",
-        [typeof(DateTime)] = "date-time",
-        [typeof(DateTimeOffset)] = "date-time",
-        [typeof(Guid)] = "uuid",
-        [typeof(char)] = "char",
-        [typeof(Uri)] = "uri",
-        [typeof(TimeOnly)] = "time",
-        [typeof(DateOnly)] = "date",
-    };
-
     /// <summary>
     /// Maps the given validation attributes to the target schema.
     /// </summary>
@@ -206,11 +180,50 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
     internal static void ApplyPrimitiveFormats(this JsonNode schema, JsonSchemaExporterContext context)
     {
-        var type = context.TypeInfo.Type;
-        var underlyingType = Nullable.GetUnderlyingType(type);
-        if (_simpleTypeToFormat.TryGetValue(underlyingType ?? type, out var format))
+        if (schema is JsonObject objectSchema)
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.ContentEncodingKeyword);
+        }
+
+        if (InferredScalarSchemaDecisionBuilder.GetLegacyFormat(context.TypeInfo.Type) is { } format)
         {
             schema[OpenApiSchemaKeywords.FormatKeyword] = format;
+        }
+    }
+
+    internal static void ApplyInferredScalarDecision(
+        this JsonNode schema,
+        InferredScalarSchemaDecision decision,
+        OpenApiSpecVersion openApiVersion)
+    {
+        if (schema is not JsonObject objectSchema)
+        {
+            return;
+        }
+
+        if (decision.Format is not null)
+        {
+            objectSchema[OpenApiSchemaKeywords.FormatKeyword] = decision.Format;
+        }
+
+        if (decision.NumericBounds is { } numericBounds)
+        {
+            objectSchema[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(numericBounds.Minimum);
+            objectSchema[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(numericBounds.Maximum);
+        }
+
+        if (decision.ContentEncoding is not null)
+        {
+            if (openApiVersion == OpenApiSpecVersion.OpenApi3_0)
+            {
+                objectSchema.Remove(OpenApiSchemaKeywords.ContentEncodingKeyword);
+                objectSchema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
+            }
+            else
+            {
+                objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+                objectSchema[OpenApiSchemaKeywords.ContentEncodingKeyword] = decision.ContentEncoding;
+            }
         }
     }
 

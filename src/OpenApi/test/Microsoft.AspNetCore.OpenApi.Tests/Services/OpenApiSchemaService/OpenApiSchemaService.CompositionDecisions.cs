@@ -124,6 +124,11 @@ public partial class OpenApiSchemaServiceTests
             hasCustomConverter: false,
             numberHandling: JsonNumberHandling.Strict,
             finiteDomain: null,
+            scalarContract: new(
+                typeof(UnavailableBaseDerived),
+                InferredScalarContractProvenance.Unknown,
+                InferredScalarContractKind.Other,
+                NumericBounds: null),
             disallowsUnmappedMembers: false,
             discriminatorPropertyName: null,
             baseType: new(typeof(UnavailableBase)),

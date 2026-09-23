@@ -271,10 +271,54 @@ public partial class OpenApiSchemaServiceTests
             var generatedTypeInfo = generated.GetTypeInfo(type);
 
             Assert.Equal(reflectionTypeInfo.Kind, generatedTypeInfo.Kind);
+            Assert.Equal(
+                InferredScalarContractFactBuilder.Build(reflectionTypeInfo),
+                InferredScalarContractFactBuilder.Build(generatedTypeInfo));
             Assert.True(JsonNode.DeepEquals(
                 JsonSchemaExporter.GetJsonSchemaAsNode(reflectionTypeInfo),
                 JsonSchemaExporter.GetJsonSchemaAsNode(generatedTypeInfo)));
         }
+    }
+
+    [Theory]
+    [InlineData(typeof(sbyte), "-128", "127")]
+    [InlineData(typeof(byte), "0", "255")]
+    [InlineData(typeof(short), "-32768", "32767")]
+    [InlineData(typeof(ushort), "0", "65535")]
+    [InlineData(typeof(int), "-2147483648", "2147483647")]
+    [InlineData(typeof(uint), "0", "4294967295")]
+    [InlineData(typeof(long), "-9223372036854775808", "9223372036854775807")]
+    [InlineData(typeof(ulong), "0", "18446744073709551615")]
+    [InlineData(typeof(Int128), "-170141183460469231731687303715884105728", "170141183460469231731687303715884105727")]
+    [InlineData(typeof(UInt128), "0", "340282366920938463463374607431768211455")]
+    public void InferredScalarDecision_UsesExactBuiltInIntegralBounds(
+        Type type,
+        string expectedMinimum,
+        string expectedMaximum)
+    {
+        var options = CreateScalarSerializerOptions(JsonNumberHandling.AllowReadingFromString);
+        var fact = InferredScalarContractFactBuilder.Build(options.GetTypeInfo(type));
+        var decision = InferredScalarSchemaDecisionBuilder.Build(fact);
+
+        Assert.Equal(InferredScalarContractProvenance.SystemTextJsonBuiltIn, fact.Provenance);
+        Assert.Equal(InferredScalarContractKind.Integral, fact.Kind);
+        Assert.Equal(expectedMinimum, decision.NumericBounds?.Minimum);
+        Assert.Equal(expectedMaximum, decision.NumericBounds?.Maximum);
+    }
+
+    [Theory]
+    [InlineData(typeof(byte[]))]
+    [InlineData(typeof(Memory<byte>))]
+    [InlineData(typeof(ReadOnlyMemory<byte>))]
+    public void InferredScalarDecision_UsesBuiltInBase64Provenance(Type type)
+    {
+        var options = CreateScalarSerializerOptions(JsonNumberHandling.Strict);
+        var fact = InferredScalarContractFactBuilder.Build(options.GetTypeInfo(type));
+        var decision = InferredScalarSchemaDecisionBuilder.Build(fact);
+
+        Assert.Equal(InferredScalarContractProvenance.SystemTextJsonBuiltIn, fact.Provenance);
+        Assert.Equal(InferredScalarContractKind.Base64String, fact.Kind);
+        Assert.Equal("base64", decision.ContentEncoding);
     }
 
     [Fact]
@@ -284,11 +328,18 @@ public partial class OpenApiSchemaServiceTests
         options.Converters.Add(new EpochDateTimeConverter());
         var typeInfo = options.GetTypeInfo(typeof(DateTime));
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(typeInfo);
+        var fact = InferredScalarContractFactBuilder.Build(typeInfo);
+        var decision = InferredScalarSchemaDecisionBuilder.Build(fact);
 
         Assert.IsType<EpochDateTimeConverter>(typeInfo.Converter);
         Assert.Equal(JsonTypeInfoKind.None, typeInfo.Kind);
         Assert.Equal(JsonValueKind.True, schema.GetValueKind());
         Assert.Equal("0", JsonSerializer.Serialize(DateTime.UnixEpoch, options));
+        Assert.Equal(InferredScalarContractProvenance.Unknown, fact.Provenance);
+        Assert.Equal(InferredScalarContractKind.Other, fact.Kind);
+        Assert.Null(decision.Format);
+        Assert.Null(decision.NumericBounds);
+        Assert.Null(decision.ContentEncoding);
     }
 
     [Theory]
@@ -333,9 +384,26 @@ public partial class OpenApiSchemaServiceTests
             Assert.Equal(1, character.MaxLength);
 
             Assert.Equal(JsonSchemaType.Object, ResolveSchema(document, properties["rune"]).Type);
-            AssertScalar(properties["bytes"], JsonSchemaType.String | JsonSchemaType.Null, "byte");
-            AssertScalar(ResolveSchema(document, properties["memory"]), JsonSchemaType.String);
-            AssertScalar(ResolveSchema(document, properties["readOnlyMemory"]), JsonSchemaType.String);
+            var bytes = Assert.IsType<OpenApiSchema>(properties["bytes"]);
+            var memory = Assert.IsType<OpenApiSchema>(ResolveSchema(document, properties["memory"]));
+            var readOnlyMemory = Assert.IsType<OpenApiSchema>(ResolveSchema(document, properties["readOnlyMemory"]));
+            if (mode == OpenApiSchemaGenerationMode.Inferred)
+            {
+                var expectedFormat = version == OpenApiSpecVersion.OpenApi3_0 ? "byte" : null;
+                var expectedContentEncoding = version == OpenApiSpecVersion.OpenApi3_0 ? null : "base64";
+                AssertScalar(bytes, JsonSchemaType.String | JsonSchemaType.Null, expectedFormat);
+                Assert.Equal(expectedContentEncoding, bytes.ContentEncoding);
+                AssertScalar(memory, JsonSchemaType.String, expectedFormat);
+                Assert.Equal(expectedContentEncoding, memory.ContentEncoding);
+                AssertScalar(readOnlyMemory, JsonSchemaType.String, expectedFormat);
+                Assert.Equal(expectedContentEncoding, readOnlyMemory.ContentEncoding);
+            }
+            else
+            {
+                AssertScalar(bytes, JsonSchemaType.String | JsonSchemaType.Null, "byte");
+                AssertScalar(memory, JsonSchemaType.String);
+                AssertScalar(readOnlyMemory, JsonSchemaType.String);
+            }
             Assert.Equal(JsonSchemaType.Object, ResolveSchema(document, properties["bigInteger"]).Type);
             AssertUnconstrained(properties["nativeInt"]);
             AssertUnconstrained(properties["nativeUInt"]);
@@ -343,15 +411,41 @@ public partial class OpenApiSchemaServiceTests
             foreach (var (name, expectedFormat) in NumericOpenApiFormats)
             {
                 var schema = Assert.IsType<OpenApiSchema>(properties[name]);
-                Assert.Equal(expectedFormat, schema.Format);
-                Assert.Null(schema.Minimum);
-                Assert.Null(schema.Maximum);
+                Assert.Equal(
+                    mode == OpenApiSchemaGenerationMode.Inferred && name == "decimal" ? null : expectedFormat,
+                    schema.Format);
+                if (mode == OpenApiSchemaGenerationMode.Inferred &&
+                    NumericOpenApiBounds.TryGetValue(name, out var expectedBounds))
+                {
+                    Assert.Equal(expectedBounds.Minimum, schema.Minimum);
+                    Assert.Equal(expectedBounds.Maximum, schema.Maximum);
+                }
+                else
+                {
+                    Assert.Null(schema.Minimum);
+                    Assert.Null(schema.Maximum);
+                }
                 Assert.Null(schema.MultipleOf);
             }
 
             var custom = Assert.IsType<OpenApiSchema>(properties["customDateTime"]);
             Assert.Null(custom.Type);
-            Assert.Equal("date-time", custom.Format);
+            Assert.Equal(
+                mode == OpenApiSchemaGenerationMode.Legacy ? "date-time" : null,
+                custom.Format);
+            var customInt32 = Assert.IsType<OpenApiSchema>(properties["customInt32"]);
+            Assert.Null(customInt32.Type);
+            Assert.Equal(
+                mode == OpenApiSchemaGenerationMode.Legacy ? "int32" : null,
+                customInt32.Format);
+            Assert.Null(customInt32.Minimum);
+            Assert.Null(customInt32.Maximum);
+            var customBytes = Assert.IsType<OpenApiSchema>(properties["customBytes"]);
+            Assert.Null(customBytes.Type);
+            Assert.Equal(
+                mode == OpenApiSchemaGenerationMode.Legacy ? "byte" : null,
+                customBytes.Format);
+            Assert.Null(customBytes.ContentEncoding);
         });
 
         var json = JsonNode.Parse(await document.SerializeAsJsonAsync(version))!;
@@ -360,17 +454,187 @@ public partial class OpenApiSchemaServiceTests
             ? $"{nameof(ScalarContractContainer)}.Input"
             : nameof(ScalarContractContainer);
         var serializedProperties = schemas[containerName]!["properties"]!.AsObject();
-        Assert.Equal("byte", serializedProperties["bytes"]!["format"]!.GetValue<string>());
-        Assert.Null(serializedProperties["bytes"]!["contentEncoding"]);
-        Assert.Null(schemas["MemoryOfbyte"]!["contentEncoding"]);
-        Assert.Null(schemas["ReadOnlyMemoryOfbyte"]!["contentEncoding"]);
+        foreach (var (name, expectedBounds) in NumericOpenApiBounds)
+        {
+            if (mode == OpenApiSchemaGenerationMode.Inferred)
+            {
+                Assert.Equal(expectedBounds.Minimum, serializedProperties[name]!["minimum"]!.ToJsonString());
+                Assert.Equal(expectedBounds.Maximum, serializedProperties[name]!["maximum"]!.ToJsonString());
+            }
+            else
+            {
+                Assert.Null(serializedProperties[name]!["minimum"]);
+                Assert.Null(serializedProperties[name]!["maximum"]);
+            }
+        }
+        if (mode == OpenApiSchemaGenerationMode.Inferred && version != OpenApiSpecVersion.OpenApi3_0)
+        {
+            Assert.Null(serializedProperties["bytes"]!["format"]);
+            Assert.Equal("base64", serializedProperties["bytes"]!["contentEncoding"]!.GetValue<string>());
+            Assert.Equal("base64", schemas["MemoryOfbyte"]!["contentEncoding"]!.GetValue<string>());
+            Assert.Equal("base64", schemas["ReadOnlyMemoryOfbyte"]!["contentEncoding"]!.GetValue<string>());
+        }
+        else
+        {
+            Assert.Equal("byte", serializedProperties["bytes"]!["format"]!.GetValue<string>());
+            Assert.Null(serializedProperties["bytes"]!["contentEncoding"]);
+            if (mode == OpenApiSchemaGenerationMode.Inferred)
+            {
+                Assert.Equal("byte", schemas["MemoryOfbyte"]!["format"]!.GetValue<string>());
+                Assert.Equal("byte", schemas["ReadOnlyMemoryOfbyte"]!["format"]!.GetValue<string>());
+            }
+            else
+            {
+                Assert.Null(schemas["MemoryOfbyte"]!["format"]);
+                Assert.Null(schemas["ReadOnlyMemoryOfbyte"]!["format"]);
+            }
+            Assert.Null(schemas["MemoryOfbyte"]!["contentEncoding"]);
+            Assert.Null(schemas["ReadOnlyMemoryOfbyte"]!["contentEncoding"]);
+        }
         Assert.Equal("object", ResolveSerializedSchema(json, serializedProperties["ipAddress"]!)["type"]!.GetValue<string>());
         Assert.Equal("object", ResolveSerializedSchema(json, serializedProperties["ipEndPoint"]!)["type"]!.GetValue<string>());
         Assert.Empty(serializedProperties["nativeInt"]!.AsObject());
         Assert.Empty(serializedProperties["nativeUInt"]!.AsObject());
-        Assert.Equal("date-time", serializedProperties["customDateTime"]!["format"]!.GetValue<string>());
+        Assert.Equal(
+            mode == OpenApiSchemaGenerationMode.Legacy ? "date-time" : null,
+            serializedProperties["customDateTime"]!["format"]?.GetValue<string>());
         Assert.Null(serializedProperties["customDateTime"]!["type"]);
+        Assert.Null(serializedProperties["customInt32"]!["minimum"]);
+        Assert.Null(serializedProperties["customInt32"]!["maximum"]);
+        Assert.Equal(
+            mode == OpenApiSchemaGenerationMode.Legacy ? "int32" : null,
+            serializedProperties["customInt32"]!["format"]?.GetValue<string>());
+        Assert.Equal(
+            mode == OpenApiSchemaGenerationMode.Legacy ? "byte" : null,
+            serializedProperties["customBytes"]!["format"]?.GetValue<string>());
+        Assert.Null(serializedProperties["customBytes"]!["contentEncoding"]);
         Assert.DoesNotContain("x-jsonSchema-", json.ToJsonString());
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task OpenApiScalarContracts_NumberStringsRetainNumericBranchBounds(
+        OpenApiSpecVersion version)
+    {
+        var builder = CreateBuilder(numberHandling: JsonNumberHandling.AllowReadingFromString);
+        builder.MapPost("/", (NumericStringContract value) => { });
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            OpenApiVersion = version,
+        };
+
+        var document = await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var schema = document.Components!.Schemas![nameof(NumericStringContract)];
+            var value = Assert.IsType<OpenApiSchema>(schema.Properties!["value"]);
+            Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.String, value.Type);
+            Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), value.Minimum);
+            Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), value.Maximum);
+            Assert.Equal(IntegerPattern, value.Pattern);
+        });
+
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(version))!;
+        var valueSchema = json["components"]!["schemas"]![nameof(NumericStringContract)]!["properties"]!["value"]!;
+        Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), valueSchema["minimum"]!.ToJsonString());
+        Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), valueSchema["maximum"]!.ToJsonString());
+        Assert.Equal(IntegerPattern, valueSchema["pattern"]!.GetValue<string>());
+        if (version == OpenApiSpecVersion.OpenApi3_0)
+        {
+            Assert.Contains(
+                valueSchema["anyOf"]!.AsArray(),
+                branch => branch!["type"]!.GetValue<string>() == "string");
+        }
+        else
+        {
+            Assert.Equal(
+                ["integer", "string"],
+                valueSchema["type"]!.AsArray().Select(type => type!.GetValue<string>()).Order(StringComparer.Ordinal));
+        }
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task OpenApiScalarContracts_NamedFloatingAlternativesRemainUnbounded(
+        OpenApiSpecVersion version)
+    {
+        var builder = CreateBuilder(numberHandling: JsonNumberHandling.AllowNamedFloatingPointLiterals);
+        builder.MapPost("/", (NamedFloatingContract value) => { });
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            OpenApiVersion = version,
+        };
+
+        var document = await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var value = Assert.IsType<OpenApiSchema>(
+                document.Components!.Schemas![nameof(NamedFloatingContract)].Properties!["value"]);
+            Assert.Null(value.Minimum);
+            Assert.Null(value.Maximum);
+            Assert.Collection(
+                value.AnyOf!,
+                number => Assert.Equal(JsonSchemaType.Number, number.Type),
+                named => Assert.Equal(
+                    ["NaN", "Infinity", "-Infinity"],
+                    named.Enum!.Select(item => item!.GetValue<string>())));
+        });
+
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(version))!;
+        var valueSchema = json["components"]!["schemas"]![nameof(NamedFloatingContract)]!["properties"]!["value"]!;
+        Assert.Null(valueSchema["minimum"]);
+        Assert.Null(valueSchema["maximum"]);
+        Assert.Equal(
+            ["NaN", "Infinity", "-Infinity"],
+            valueSchema["anyOf"]![1]!["enum"]!.AsArray().Select(item => item!.GetValue<string>()));
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task OpenApiScalarContracts_TransformersObserveVersionedDecisions(OpenApiSpecVersion version)
+    {
+        OpenApiSchema? integerSchema = null;
+        OpenApiSchema? bytesSchema = null;
+        var builder = CreateBuilder();
+        builder.MapPost("/", (ScalarContractContainer value) => { });
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            OpenApiVersion = version,
+        };
+        options.AddSchemaTransformer((schema, context, _) =>
+        {
+            if (context.JsonPropertyInfo?.Name == "int32")
+            {
+                integerSchema = schema;
+            }
+            else if (context.JsonPropertyInfo?.Name == "bytes")
+            {
+                bytesSchema = schema;
+            }
+
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, _ => { });
+
+        Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), integerSchema!.Minimum);
+        Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), integerSchema.Maximum);
+        if (version == OpenApiSpecVersion.OpenApi3_0)
+        {
+            Assert.Equal("byte", bytesSchema!.Format);
+            Assert.Null(bytesSchema.ContentEncoding);
+        }
+        else
+        {
+            Assert.Null(bytesSchema!.Format);
+            Assert.Equal("base64", bytesSchema.ContentEncoding);
+        }
     }
 
     [Theory]
@@ -419,7 +683,10 @@ public partial class OpenApiSchemaServiceTests
                 });
 
             var formSchema = operation.RequestBody!.Content!["application/x-www-form-urlencoded"]!.Schema!;
-            AssertScalar(formSchema.Properties!["formValue"], JsonSchemaType.Number, "double");
+            AssertScalar(
+                formSchema.Properties!["formValue"],
+                JsonSchemaType.Number,
+                mode == OpenApiSchemaGenerationMode.Legacy ? "double" : null);
         });
     }
 
@@ -497,6 +764,7 @@ public partial class OpenApiSchemaServiceTests
         KeyValuePair.Create<string, string?>("int16", "int16"),
         KeyValuePair.Create<string, string?>("uInt16", "uint16"),
         KeyValuePair.Create<string, string?>("int32", "int32"),
+        KeyValuePair.Create<string, string?>("nullableInt32", "int32"),
         KeyValuePair.Create<string, string?>("uInt32", "uint32"),
         KeyValuePair.Create<string, string?>("int64", "int64"),
         KeyValuePair.Create<string, string?>("uInt64", "uint64"),
@@ -507,6 +775,22 @@ public partial class OpenApiSchemaServiceTests
         KeyValuePair.Create<string, string?>("double", "double"),
         KeyValuePair.Create<string, string?>("decimal", "double"),
     ];
+
+    private static readonly IReadOnlyDictionary<string, (string Minimum, string Maximum)> NumericOpenApiBounds =
+        new Dictionary<string, (string Minimum, string Maximum)>
+        {
+            ["signedByte"] = ("-128", "127"),
+            ["unsignedByte"] = ("0", "255"),
+            ["int16"] = ("-32768", "32767"),
+            ["uInt16"] = ("0", "65535"),
+            ["int32"] = ("-2147483648", "2147483647"),
+            ["nullableInt32"] = ("-2147483648", "2147483647"),
+            ["uInt32"] = ("0", "4294967295"),
+            ["int64"] = ("-9223372036854775808", "9223372036854775807"),
+            ["uInt64"] = ("0", "18446744073709551615"),
+            ["int128"] = ("-170141183460469231731687303715884105728", "170141183460469231731687303715884105727"),
+            ["uInt128"] = ("0", "340282366920938463463374607431768211455"),
+        };
 
     private static JsonSerializerOptions CreateScalarSerializerOptions(JsonNumberHandling numberHandling)
         => new(JsonSerializerDefaults.Web)
@@ -605,6 +889,34 @@ public partial class OpenApiSchemaServiceTests
             => writer.WriteNumberValue((long)(value - DateTime.UnixEpoch).TotalSeconds);
     }
 
+    private sealed class StringInt32Converter : JsonConverter<int>
+    {
+        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => int.Parse(reader.GetString()!, CultureInfo.InvariantCulture);
+
+        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+            => writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private sealed class ArrayByteConverter : JsonConverter<byte[]>
+    {
+        public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => JsonSerializer.Deserialize<int[]>(ref reader, options)!.Select(value => checked((byte)value)).ToArray();
+
+        public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+            => JsonSerializer.Serialize(writer, value.Select(item => (int)item).ToArray(), options);
+    }
+
+    private sealed class NumericStringContract
+    {
+        public int Value { get; set; }
+    }
+
+    private sealed class NamedFloatingContract
+    {
+        public double Value { get; set; }
+    }
+
     private sealed class ScalarContractContainer
     {
         public DateTime DateTime { get; set; }
@@ -630,6 +942,7 @@ public partial class OpenApiSchemaServiceTests
         public short Int16 { get; set; }
         public ushort UInt16 { get; set; }
         public int Int32 { get; set; }
+        public int? NullableInt32 { get; set; }
         public uint UInt32 { get; set; }
         public long Int64 { get; set; }
         public ulong UInt64 { get; set; }
@@ -642,6 +955,12 @@ public partial class OpenApiSchemaServiceTests
 
         [JsonConverter(typeof(EpochDateTimeConverter))]
         public DateTime CustomDateTime { get; set; }
+
+        [JsonConverter(typeof(StringInt32Converter))]
+        public int CustomInt32 { get; set; }
+
+        [JsonConverter(typeof(ArrayByteConverter))]
+        public byte[] CustomBytes { get; set; } = [];
     }
 
     [JsonSourceGenerationOptions(

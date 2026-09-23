@@ -177,8 +177,16 @@ internal sealed partial class OpenApiJsonSchema
     private static int GetInt32(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
         => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<int>)context.GetTypeInfo(typeof(int))!);
 
-    private static decimal GetDecimal(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
-        => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<decimal>)context.GetTypeInfo(typeof(decimal))!);
+    private static string GetNumericLiteral(ref Utf8JsonReader reader)
+    {
+        if (reader.TryGetDecimal(out var value))
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        using var document = JsonDocument.ParseValue(ref reader);
+        return document.RootElement.GetRawText();
+    }
 
     /// <summary>
     /// Read a property node from the given JSON reader instance.
@@ -260,6 +268,10 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Format = reader.GetString();
                 break;
+            case OpenApiSchemaKeywords.ContentEncodingKeyword:
+                reader.Read();
+                schema.ContentEncoding = reader.GetString();
+                break;
             case OpenApiSchemaKeywords.RequiredKeyword:
                 reader.Read();
                 schema.Required = ReadList<string>(ref reader, context)?.ToHashSet();
@@ -286,23 +298,19 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.MinimumKeyword:
                 reader.Read();
-                var minimum = GetDecimal(ref reader, context);
-                schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
+                schema.Minimum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.ExclusiveMinimum:
                 reader.Read();
-                var exclusiveMinimum = GetDecimal(ref reader, context);
-                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
+                schema.ExclusiveMinimum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
-                var maximum = GetDecimal(ref reader, context);
-                schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                schema.Maximum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.ExclusiveMaximum:
                 reader.Read();
-                var exclusiveMaximum = GetDecimal(ref reader, context);
-                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
+                schema.ExclusiveMaximum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();

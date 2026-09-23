@@ -63,6 +63,7 @@ internal sealed class InferredSchemaShape
         bool hasCustomConverter,
         JsonNumberHandling numberHandling,
         InferredJsonFiniteDomainFact? finiteDomain,
+        InferredScalarContractFact scalarContract,
         bool disallowsUnmappedMembers,
         string? discriminatorPropertyName,
         InferredSchemaTypeIdentity? baseType,
@@ -80,6 +81,7 @@ internal sealed class InferredSchemaShape
         HasCustomConverter = hasCustomConverter;
         NumberHandling = numberHandling;
         FiniteDomain = finiteDomain;
+        ScalarContract = scalarContract;
         DisallowsUnmappedMembers = disallowsUnmappedMembers;
         DiscriminatorPropertyName = discriminatorPropertyName;
         BaseType = baseType;
@@ -105,6 +107,8 @@ internal sealed class InferredSchemaShape
     public JsonNumberHandling NumberHandling { get; }
 
     public InferredJsonFiniteDomainFact? FiniteDomain { get; }
+
+    public InferredScalarContractFact ScalarContract { get; }
 
     public bool DisallowsUnmappedMembers { get; }
 
@@ -199,6 +203,7 @@ internal static class InferredSchemaShapeBuilder
                 hasCustomConverter,
                 typeInfo.NumberHandling ?? serializerOptions.NumberHandling,
                 InferredJsonFiniteDomainBuilder.Build(typeInfo, hasCustomConverter),
+                InferredScalarContractFactBuilder.Build(typeInfo),
                 typeInfo.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow,
                 typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,
