@@ -201,10 +201,10 @@ If invocation is unavailable or fails, record `BLOCKED` and the actual loading l
 `noop`, and stop. Reading a file is not a substitute for successful native invocation.
 
 The installed skill is the authoritative analysis contract. Follow all of its steps, including
-its exact structured result, without creating a second routing table or parallel methodology.
+its concise output format, without creating a second routing table or parallel methodology.
 This wrapper only identifies the hosted target and constrains the final safe-output adapter.
 
-## Produce the skill's structured analysis
+## Produce the skill's source review
 
 Verify the GitHub head equals the trusted frozen SHA before analysis. Freeze the PR head, current
 base-ref head and repository/ref, authoritative complete changed-file list and merge-base diff,
@@ -228,7 +228,7 @@ and frozen PR evidence, with the skill's delegated-worker restrictions.
 
 Wait for and retrieve every worker result. Compare expected, launched, returned, retried, and
 fallback rows by unique task name, not just aggregate counts. Follow the skill's one-retry and
-fallback rules exactly; do not redo successful topics. Report `subagent-per-topic` only with
+fallback rules exactly; do not redo successful topics. Record `subagent-per-topic` only with
 usable independent results for every required row, otherwise the actual `degraded-panel` or
 `single-orchestrator` path. If limits prevent complete accounting, report incomplete coverage;
 do not silently drop topics to fit the budget.
@@ -248,16 +248,17 @@ network or credentials. Never approve, request changes, dismiss/resolve reviews,
 issues, labels, PR fields, or reactions. Only the final safe-output adapter below may publish
 review comments; never use a direct GitHub mutation API.
 
-First finish and retain the skill's exact structured local result. Safe-output tools belong only
+First finish the skill's analysis and retain its internal evidence. Safe-output tools belong only
 to this orchestrator's final adapter; workers must never call them.
 
 ## Adapt only a complete, validated result to review safe outputs
 
-Publication is conservative: `BLOCKED`, `NO_FINDINGS`, missing or invalid evidence, incomplete
+Publication is conservative: a blocked review, no findings, missing or invalid evidence, incomplete
 manifest accounting, budget exhaustion, or a moved/unreadable live head means `noop` and no
 review outputs. A complete degraded analysis may be retained locally, but this hosted adapter
-also requires `subagent-per-topic` before emitting review outputs. Disclose the actual reason
-and retain the structured result; never turn a no-op into a claim that the PR is correct.
+also requires a usable independent result for every topic (`subagent-per-topic`) before emitting
+review outputs; coordinator fallback does not count. Disclose the actual reason concisely;
+never turn a no-op into a claim that the PR is correct.
 
 Before calling any review output, validate the entire selected finding set: at most five,
 ordered by severity then confidence, each already surviving the skill's gates. Each path must
@@ -274,8 +275,8 @@ For a valid nonempty finding set, emit one `create_pull_request_review_comment` 
 (maximum five), then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
 trusted configuration to that SHA; never override their target or commit. The final review
-summarizes the validated findings, full topic/manifest accounting, immutable provenance,
-test boundary, uncovered areas and limitations, and identifies the proof as source-only.
+summarizes the validated findings and only material limitations or test concerns in the skill's
+concise format, and identifies the proof as source-only.
 Never submit `APPROVE` or `REQUEST_CHANGES`.
 
 Review outputs publish advisory comments directly to the triggering pull request.
