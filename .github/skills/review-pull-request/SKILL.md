@@ -90,7 +90,10 @@ caller may instead use a manually supplied methodology, but must report that dis
 exact skill source and revision when available. Never claim native invocation merely because a file
 was read or a methodology was described.
 
-Read every routed guide and directly delegated policy from the current checkout by default; a caller-supplied `repo@sha` overrides this and is read through the existing GitHub tools.
+Read every routed guide and directly delegated policy from the current checkout by default,
+resolving routing-table paths such as `docs/CrossCuttingGuidance.md` from the repository root, not
+the skill directory; a caller-supplied `repo@sha` overrides the source and is read through the
+existing GitHub tools with the same repository-root path interpretation.
 
 Discover every `###` topic under `## Topics`; guides are required review input, not optional
 evidence. Record skill loading and actual skill, guide, and policy provenance in worker briefs and

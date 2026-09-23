@@ -213,7 +213,8 @@ the diff's immutable old side from the current base-ref head. If any necessary i
 unavailable or incomplete, preserve the limitation and do not fabricate a complete review.
 
 Use `${{ github.repository }}@${{ needs.freeze_pr_head.outputs.workflow_sha }}` for the skill's caller-supplied guide and policy
-source, read through the existing GitHub tools.
+source, read through the existing GitHub tools with routing-table paths resolved from that
+repository's root, not the skill directory.
 
 Construct the complete topic manifest from every routed guide as the skill requires. Dispatch
 one fresh general-purpose `task` worker per manifest row, using the caller-selected
