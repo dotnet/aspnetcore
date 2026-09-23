@@ -141,6 +141,9 @@ internal sealed class JsonArrayTupleContract
 
     public IReadOnlyList<Type> ElementTypes { get; }
 
+    public static JsonArrayTupleContract Create(Type tupleType, IReadOnlyList<Type> elementTypes)
+        => new(tupleType, elementTypes);
+
     public static bool TryCreate(Type type, [NotNullWhen(true)] out JsonArrayTupleContract? contract)
     {
         var elementTypes = new List<Type>();

@@ -145,6 +145,33 @@ inlines the schema. Empty or invalid values, or the same non-null value returned
 non-aliased serializer contract types, cause document generation to fail rather than silently
 selecting or overwriting a component.
 
+Applications that know their tuple contracts at compile time can register reflection-free closed
+converters that are safe for trimming and NativeAOT:
+
+```csharp
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        JsonArrayTupleConverters.CreateValueTuple<int, string>());
+});
+```
+
+Register each closed `Tuple` or `ValueTuple` contract that the application uses. Contracts with
+more than seven elements use the CLR `Rest` encoding and compose another closed converter:
+
+```csharp
+var rest = JsonArrayTupleConverters.CreateValueTuple<DateTime, decimal>();
+options.SerializerOptions.Converters.Add(
+    JsonArrayTupleConverters.CreateValueTuple<int, int, int, int, int, int, int, ValueTuple<DateTime, decimal>>(rest));
+```
+
+The closed converters use configured `JsonTypeInfo` metadata for every element and require no
+runtime reflection or dynamic code. They produce the same positional runtime JSON and OpenAPI
+schemas as `JsonArrayTupleConverter`: exact ordered `prefixItems` schemas for OpenAPI 3.1 and 3.2,
+and the exact-arity, unconstrained-element approximation for OpenAPI 3.0. The
+`JsonArrayTupleConverter` convenience factory remains available for applications that can use
+dynamic code, but it is unsupported in trimming-sensitive or NativeAOT applications.
+
 For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 
 ## Build-time Document Generation

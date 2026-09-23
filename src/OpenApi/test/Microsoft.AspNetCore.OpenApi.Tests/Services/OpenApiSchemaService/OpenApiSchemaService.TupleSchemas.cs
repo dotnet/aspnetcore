@@ -74,6 +74,109 @@ public partial class OpenApiSchemaServiceTests
     }
 
     [Fact]
+    public void JsonArrayTupleConverters_RoundTripClosedContractsWithoutDynamicCode()
+    {
+        var options = CreateClosedTupleSerializerOptions();
+        var valueTuple = (1, "two");
+        var referenceTuple = Tuple.Create(1, "two");
+        var longReferenceTuple = new Tuple<int, int, int, int, int, int, int, Tuple<int, int>>(
+            1, 2, 3, 4, 5, 6, 7, Tuple.Create(8, 9));
+        var longTuple = (1, 2, 3, 4, 5, 6, 7, 8, 9);
+        var nestedTuple = (1, ("two", true));
+
+        Assert.Equal("[]", JsonSerializer.Serialize(default(ValueTuple), options));
+        Assert.Equal(default, JsonSerializer.Deserialize<ValueTuple>("[]", options));
+        Assert.Equal("[1,\"two\"]", JsonSerializer.Serialize(valueTuple, options));
+        Assert.Equal(valueTuple, JsonSerializer.Deserialize<(int, string)>("[1,\"two\"]", options));
+        Assert.Equal("[1,\"two\"]", JsonSerializer.Serialize(referenceTuple, options));
+        Assert.Equal(referenceTuple, JsonSerializer.Deserialize<Tuple<int, string>>("[1,\"two\"]", options));
+        Assert.Equal("[1,2,3,4,5,6,7,8,9]", JsonSerializer.Serialize(longReferenceTuple, options));
+        Assert.Equal(
+            longReferenceTuple,
+            JsonSerializer.Deserialize<Tuple<int, int, int, int, int, int, int, Tuple<int, int>>>("[1,2,3,4,5,6,7,8,9]", options));
+        Assert.Equal("[1,2,3,4,5,6,7,8,9]", JsonSerializer.Serialize(longTuple, options));
+        Assert.Equal(longTuple, JsonSerializer.Deserialize<(int, int, int, int, int, int, int, int, int)>("[1,2,3,4,5,6,7,8,9]", options));
+        Assert.Equal("[1,[\"two\",true]]", JsonSerializer.Serialize(nestedTuple, options));
+        Assert.Equal(nestedTuple, JsonSerializer.Deserialize<(int, (string, bool))>("[1,[\"two\",true]]", options));
+        Assert.Equal("null", JsonSerializer.Serialize<Tuple<int, string>?>(null, options));
+        Assert.Null(JsonSerializer.Deserialize<Tuple<int, string>?>("null", options));
+    }
+
+    [Fact]
+    public void JsonArrayTupleConverters_AreSafeForConcurrentReuse()
+    {
+        var options = CreateClosedTupleSerializerOptions();
+        Assert.Equal("[1,\"two\"]", JsonSerializer.Serialize((1, "two"), options));
+
+        Parallel.For(
+            0,
+            100,
+            _ =>
+            {
+                Assert.Equal("[1,\"two\"]", JsonSerializer.Serialize((1, "two"), options));
+                Assert.Equal((1, "two"), JsonSerializer.Deserialize<(int, string)>("[1,\"two\"]", options));
+            });
+    }
+
+    [Fact]
+    public void JsonArrayTupleConverters_PreserveSourceGeneratedMetadataAndElementConverters()
+    {
+        var options = new JsonSerializerOptions(TupleJsonSerializerContext.Default.Options);
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+        options.Converters.Insert(0, new UpperCaseStringConverter());
+
+        Assert.Equal("[1,\"TWO\"]", JsonSerializer.Serialize((1, "two"), options));
+        Assert.Equal((1, "TWO"), JsonSerializer.Deserialize<(int, string)>("[1,\"two\"]", options));
+    }
+
+    [Fact]
+    public void JsonArrayTupleConverters_RejectInvalidRestConvertersAndMalformedArity()
+    {
+        var exception = Assert.Throws<ArgumentException>(
+            () => JsonArrayTupleConverters.CreateValueTuple<int, int, int, int, int, int, int, ValueTuple<int>>(
+                new InvalidRestConverter()));
+        Assert.Equal("restConverter", exception.ParamName);
+
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<(int, string)>("[1]", options));
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<(int, string)>("[1,\"two\",true]", options));
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task JsonArrayTupleConverters_ReuseTupleInferenceAndSchemaBehavior(OpenApiSpecVersion version)
+    {
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => (1, "two"));
+
+        var document = await VerifyOpenApiDocument(
+            builder,
+            new OpenApiOptions { OpenApiVersion = version },
+            _ => { });
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(version))!;
+        var component = Assert.Single(json["components"]!["schemas"]!.AsObject()).Value!;
+
+        Assert.Equal("array", component["type"]!.GetValue<string>());
+        Assert.Equal(2, component["minItems"]!.GetValue<int>());
+        Assert.Equal(2, component["maxItems"]!.GetValue<int>());
+        if (version == OpenApiSpecVersion.OpenApi3_0)
+        {
+            Assert.Empty(component["items"]!.AsObject());
+            Assert.Null(component["prefixItems"]);
+        }
+        else
+        {
+            Assert.False(component["items"]!.GetValue<bool>());
+            Assert.Equal(["integer", "string"], component["prefixItems"]!.AsArray().Select(item => item!["type"]!.GetValue<string>()));
+        }
+    }
+
+    [Fact]
     public async Task JsonArrayTupleConverter_AbsentRetainsDefaultRuntimeAndSchemaBehavior()
     {
         Assert.Equal("{}", JsonSerializer.Serialize((1, "two")));
@@ -291,6 +394,26 @@ public partial class OpenApiSchemaServiceTests
         return options;
     }
 
+    private static JsonSerializerOptions CreateClosedTupleSerializerOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple());
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+        options.Converters.Add(JsonArrayTupleConverters.CreateTuple<int, string>());
+        options.Converters.Add(JsonArrayTupleConverters.CreateTuple<int, int>());
+        options.Converters.Add(JsonArrayTupleConverters.CreateTuple<int, int, int, int, int, int, int, Tuple<int, int>>(
+            JsonArrayTupleConverters.CreateTuple<int, int>()));
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, int>());
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, int, int, int, int, int, int, ValueTuple<int, int>>(
+            JsonArrayTupleConverters.CreateValueTuple<int, int>()));
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<string, bool>());
+        options.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, ValueTuple<string, bool>>());
+        return options;
+    }
+
     private sealed class UpperCaseStringConverter : JsonConverter<string>
     {
         public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -298,6 +421,15 @@ public partial class OpenApiSchemaServiceTests
 
         public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
             => writer.WriteStringValue(value.ToUpperInvariant());
+    }
+
+    private sealed class InvalidRestConverter : JsonConverter<ValueTuple<int>>
+    {
+        public override ValueTuple<int> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => new(reader.GetInt32());
+
+        public override void Write(Utf8JsonWriter writer, ValueTuple<int> value, JsonSerializerOptions options)
+            => writer.WriteNumberValue(value.Item1);
     }
 
     private sealed class TupleElement
@@ -311,6 +443,9 @@ public partial class OpenApiSchemaServiceTests
 
         public Tuple<int, string>? Optional { get; set; }
     }
+
+    [JsonSerializable(typeof((int, string)))]
+    private sealed partial class TupleJsonSerializerContext : JsonSerializerContext;
 }
 
 #pragma warning restore ASP0040

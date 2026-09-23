@@ -5,9 +5,27 @@ Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.JsonArrayTupleConverter() -> void
 override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CanConvert(System.Type! typeToConvert) -> bool
 override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Inferred = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Legacy = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(System.Text.Json.Serialization.JsonConverter<TRest>! restConverter) -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6, T7, TRest>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6, T7>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6, T7>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple() -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(System.Text.Json.Serialization.JsonConverter<TRest>! restConverter) -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6, T7>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5, T6, T7)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5, T6)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1>() -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple<T1>>!
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
