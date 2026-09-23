@@ -106,6 +106,24 @@ internal sealed class InferredSchemaReferenceIdResolverSet
 
         if (!usesDefaultSchemaReferenceId)
         {
+            var purposeAmbiguousContracts = plannedContracts
+                .Where(contract =>
+                    aliasesNeedingPurposeQualification.Contains(GetAliasIdentity(contract.Type)) &&
+                    candidates[contract.Type] is not null)
+                .Select(contract => contract.Type)
+                .Distinct()
+                .OrderBy(type => type.ToString(), StringComparer.Ordinal)
+                .ToArray();
+            if (purposeAmbiguousContracts.Length > 0)
+            {
+                var contracts = purposeAmbiguousContracts
+                    .Select(type => $"'{candidates[type]}' for '{type}'");
+                throw new InvalidOperationException(
+                    "The custom OpenAPI schema reference IDs cannot represent directionally different serializer contracts: " +
+                    string.Join(", ", contracts) +
+                    ". CreateSchemaReferenceId cannot distinguish the schema purpose.");
+            }
+
             var collisions = plannedContracts
                 .Select(contract => (
                     contract.Type,
@@ -154,7 +172,8 @@ internal sealed class InferredSchemaReferenceIdResolverSet
             var candidate = candidates.TryGetValue(type, out var plannedCandidate)
                 ? plannedCandidate
                 : createSchemaReferenceId(serializerOptions.GetTypeInfo(type));
-            return candidate is not null &&
+            return usesDefaultSchemaReferenceId &&
+                candidate is not null &&
                 aliasesNeedingPurposeQualification.Contains(GetAliasIdentity(type))
                     ? $"{candidate}.{purpose}"
                     : candidate;

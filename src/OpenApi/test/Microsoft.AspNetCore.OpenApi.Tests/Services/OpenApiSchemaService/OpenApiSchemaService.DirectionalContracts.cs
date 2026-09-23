@@ -273,6 +273,72 @@ public partial class OpenApiSchemaServiceTests
         Assert.Contains("distinct serializer contract identities", exception.Message);
     }
 
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_RejectsCustomIdForDivergentDirectionalContract()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", (DirectionalModel model) => model);
+        var options = CreateInferredOptions();
+        options.CreateSchemaReferenceId = typeInfo =>
+            typeInfo.Type == typeof(DirectionalModel)
+                ? "DirectionalContract"
+                : OpenApiOptions.CreateDefaultSchemaReferenceId(typeInfo);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => VerifyOpenApiDocument(builder, options, _ => { }));
+
+        Assert.Contains("'DirectionalContract'", exception.Message);
+        Assert.Contains(typeof(DirectionalModel).ToString(), exception.Message);
+        Assert.Contains("cannot distinguish the schema purpose", exception.Message);
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_SharesUnchangedCustomIdForIdenticalDirectionalContract()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", (IdenticalDirectionalModel model) => model);
+        var options = CreateInferredOptions();
+        options.CreateSchemaReferenceId = typeInfo =>
+            typeInfo.Type == typeof(IdenticalDirectionalModel)
+                ? "AuthoritativeContract"
+                : OpenApiOptions.CreateDefaultSchemaReferenceId(typeInfo);
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
+            var inputReference = Assert.IsType<OpenApiSchemaReference>(
+                operation.RequestBody.Content["application/json"].Schema);
+            var outputReference = Assert.IsType<OpenApiSchemaReference>(
+                operation.Responses["200"].Content["application/json"].Schema);
+
+            Assert.Equal("AuthoritativeContract", inputReference.Reference.Id);
+            Assert.Equal(inputReference.Reference.Id, outputReference.Reference.Id);
+            Assert.Single(document.Components.Schemas);
+            Assert.Contains("AuthoritativeContract", document.Components.Schemas.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaGenerationMode_Inferred_RejectsParentCustomIdForTransitiveDirectionalDifference()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", (DirectionalParent model) => model);
+        var options = CreateInferredOptions();
+        options.CreateSchemaReferenceId = typeInfo => typeInfo.Type switch
+        {
+            var type when type == typeof(DirectionalParent) => "ParentContract",
+            var type when type == typeof(DirectionalChild) => "ChildContract",
+            _ => OpenApiOptions.CreateDefaultSchemaReferenceId(typeInfo),
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => VerifyOpenApiDocument(builder, options, _ => { }));
+
+        Assert.Contains("'ParentContract'", exception.Message);
+        Assert.Contains(typeof(DirectionalParent).ToString(), exception.Message);
+        Assert.Contains("cannot distinguish the schema purpose", exception.Message);
+    }
+
 #nullable enable
 
     private sealed class DirectionalModel
@@ -320,6 +386,28 @@ public partial class OpenApiSchemaServiceTests
         public DirectionalNode? Next { get; set; }
 
         public string OutputOnly { get; } = string.Empty;
+    }
+
+    private sealed class IdenticalDirectionalModel
+    {
+        public string? Value { get; set; }
+    }
+
+    private sealed class DirectionalParent
+    {
+        public DirectionalChild? Child { get; set; }
+    }
+
+    private sealed class DirectionalChild
+    {
+        private string? _inputOnly;
+
+        public string OutputOnly { get; } = string.Empty;
+
+        public string? InputOnly
+        {
+            set => _inputOnly = value;
+        }
     }
 
     private sealed class PopulationContract
