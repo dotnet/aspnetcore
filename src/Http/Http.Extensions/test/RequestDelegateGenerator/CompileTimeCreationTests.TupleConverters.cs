@@ -103,6 +103,45 @@ app.MapGet("/", () => (1, 2, 3, 4, 5, 6, 7, 8, 9));
     }
 
     [Fact]
+    public async Task GeneratesConvertersForNestedTupleElementsInsideRest()
+    {
+        var generated = await GenerateWithOpenApiAsync("""
+app.MapGet("/value", () => (1, 2, 3, 4, 5, 6, 7, ("eight", true), 9));
+app.MapGet("/reference", () => new Tuple<int, int, int, int, int, int, int, Tuple<Tuple<string, bool>, int>>(
+    1, 2, 3, 4, 5, 6, 7, new Tuple<Tuple<string, bool>, int>(new Tuple<string, bool>("eight", true), 9)));
+""");
+
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateValueTuple<string, bool>()"));
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateTuple<string, bool>()"));
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateValueTuple<(string, bool), int>()"));
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateTuple<global::System.Tuple<string, bool>, int>()"));
+    }
+
+    [Fact]
+    public async Task GeneratesConvertersForDtoTuplePropertiesInsideRest()
+    {
+        var project = CreateProject(includeOpenApi: true);
+        project = project.AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""
+app.MapGet("/", () => (1, 2, 3, 4, 5, 6, 7, new TailDto(), 9));
+"""), Encoding.UTF8)).Project;
+        project = project.AddDocument(
+            "TailDto.cs",
+            SourceText.From("""
+public sealed class TailDto
+{
+    public (short, decimal) Value { get; set; }
+}
+""", Encoding.UTF8)).Project;
+
+        var generated = await GenerateAsync(project);
+
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateValueTuple<short, decimal>()"));
+        Assert.Equal(1, CountOccurrences(generated, "JsonArrayTupleConverters.CreateValueTuple<global::TailDto, int>()"));
+    }
+
+    [Fact]
     public async Task OmitsTupleRegistrationWithoutOpenApiReference()
     {
         var generated = await GenerateAsync(CreateProject().AddDocument(

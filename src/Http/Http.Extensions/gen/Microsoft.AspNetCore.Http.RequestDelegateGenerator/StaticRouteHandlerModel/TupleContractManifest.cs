@@ -82,11 +82,7 @@ internal sealed class TupleContractManifest
         if (TryCreateTupleFactory(namedType, out var factory))
         {
             _factories[factory] = factory;
-            var elementCount = namedType.TypeArguments.Length == 8 ? 7 : namedType.TypeArguments.Length;
-            for (var i = 0; i < elementCount; i++)
-            {
-                Visit(namedType.TypeArguments[i]);
-            }
+            VisitTupleElementTypes(namedType);
             return;
         }
 
@@ -116,6 +112,26 @@ internal sealed class TupleContractManifest
             }
 
             Visit(property.Type);
+        }
+    }
+
+    private void VisitTupleElementTypes(INamedTypeSymbol tupleType)
+    {
+        if (tupleType is { IsTupleType: true, TupleUnderlyingType: { } underlyingType })
+        {
+            tupleType = underlyingType;
+        }
+
+        var typeArguments = tupleType.TypeArguments;
+        var directElementCount = typeArguments.Length == 8 ? 7 : typeArguments.Length;
+        for (var i = 0; i < directElementCount; i++)
+        {
+            Visit(typeArguments[i]);
+        }
+
+        if (typeArguments.Length == 8 && typeArguments[7] is INamedTypeSymbol restType)
+        {
+            VisitTupleElementTypes(restType);
         }
     }
 
