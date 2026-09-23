@@ -4,14 +4,20 @@
 import { HubConnection } from '@microsoft/signalr';
 import { getNextChunk } from '../../StreamingInterop';
 
+const enum RemoteJSDataStreamResult {
+  StreamDisposed,
+  ChunkAccepted,
+  ChunkRejectedDueToBackpressure,
+}
+
 export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | Blob, streamId: number, chunkSize: number, onComplete?: () => void): void {
   // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
   // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
   // because nobody's reading the pipe)
   setTimeout(async () => {
-    const maxMillisecondsBetweenAcks = 500;
-    let numChunksUntilNextAck = 5;
-    let lastAckTime = new Date().valueOf();
+    const initialBackoffMilliseconds = 100;
+    const maxBackoffMilliseconds = 1000;
+    let backoffMilliseconds = initialBackoffMilliseconds;
     try {
       const byteLength = data instanceof Blob ? data.size : data.byteLength;
       let position = 0;
@@ -21,36 +27,31 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         const nextChunkSize = Math.min(chunkSize, byteLength - position);
         const nextChunkData = await getNextChunk(data, position, nextChunkSize);
 
-        numChunksUntilNextAck--;
-        if (numChunksUntilNextAck > 1) {
-          // Most of the time just send and buffer within the network layer
-          await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
-        } else {
-          // But regularly, wait for an ACK, so other events can be interleaved
-          // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
-          // faster than the .NET side can receive them. It means that if there are other user interactions
-          // while the transfer is in progress, they would get inserted in the middle, so it would be
-          // possible to navigate away or cancel without first waiting for all the remaining chunks.
-          const streamIsAlive = await connection.invoke<boolean>('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
+        const result = await connection.invoke<RemoteJSDataStreamResult>('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
+        if (result === RemoteJSDataStreamResult.StreamDisposed) {
+          break;
+        }
 
-          // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
-          if (!streamIsAlive) {
-            break;
-          }
+        if (result === RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure) {
+          await new Promise(resolve => setTimeout(resolve, backoffMilliseconds));
+          backoffMilliseconds = Math.min(maxBackoffMilliseconds, backoffMilliseconds * 2);
+          continue;
+        }
 
-          // Estimate the number of chunks we should send before the next ack to achieve the desired
-          // interactivity rate.
-          const timeNow = new Date().valueOf();
-          const msSinceAck = timeNow - lastAckTime;
-          lastAckTime = timeNow;
-          numChunksUntilNextAck = Math.max(1, Math.round(maxMillisecondsBetweenAcks / Math.max(1, msSinceAck)));
+        if (result !== RemoteJSDataStreamResult.ChunkAccepted) {
+          throw new Error(`Invalid stream response: ${result}`);
         }
 
         position += nextChunkSize;
         chunkId++;
+        backoffMilliseconds = initialBackoffMilliseconds;
       }
     } catch (error) {
-      await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
+      try {
+        await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
+      } catch {
+        // The connection may have closed while the stream operation was in progress.
+      }
     } finally {
       onComplete?.();
     }

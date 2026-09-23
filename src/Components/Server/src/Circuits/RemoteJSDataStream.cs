@@ -6,6 +6,13 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+internal enum RemoteJSDataStreamResult
+{
+    StreamDisposed,
+    ChunkAccepted,
+    ChunkRejectedDueToBackpressure,
+}
+
 internal sealed class RemoteJSDataStream : Stream
 {
     private readonly RemoteJSRuntime _runtime;
@@ -19,15 +26,16 @@ internal sealed class RemoteJSDataStream : Stream
     private long _bytesRead;
     private long _expectedChunkId;
     private DateTimeOffset _lastDataReceivedTime;
+    private Task<FlushResult>? _pendingFlushTask;
     private bool _disposed;
 
-    public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
+    public static async Task<RemoteJSDataStreamResult> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
     {
         if (!runtime.RemoteJSDataStreamInstances.TryGetValue(streamId, out var instance))
         {
             // There is no data stream with the given identifier. It may have already been disposed.
             // We notify JS that the stream has been cancelled/disposed.
-            return false;
+            return RemoteJSDataStreamResult.StreamDisposed;
         }
 
         return await instance.ReceiveData(chunkId, chunk, error);
@@ -85,10 +93,23 @@ internal sealed class RemoteJSDataStream : Stream
     /// </summary>
     public PipeReader PipeReader { get; }
 
-    private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
+    private async Task<RemoteJSDataStreamResult> ReceiveData(long chunkId, byte[] chunk, string error)
     {
         try
         {
+            if (_pendingFlushTask is not null)
+            {
+                if (!_pendingFlushTask.IsCompleted)
+                {
+                    _lastDataReceivedTime = DateTimeOffset.UtcNow;
+                    _ = ThrowOnTimeout();
+                    return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
+                }
+
+                await _pendingFlushTask;
+                _pendingFlushTask = null;
+            }
+
             if (!string.IsNullOrEmpty(error))
             {
                 throw new InvalidOperationException($"An error occurred while reading the remote stream: {error}");
@@ -122,14 +143,31 @@ internal sealed class RemoteJSDataStream : Stream
             _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
-            await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
+            chunk.CopyTo(_pipe.Writer.GetMemory(chunk.Length));
+            _pipe.Writer.Advance(chunk.Length);
+            var flushTask = _pipe.Writer.FlushAsync(_streamCancellationToken);
+            if (flushTask.IsCompletedSuccessfully)
+            {
+                flushTask.GetAwaiter().GetResult();
+            }
+            else
+            {
+                _pendingFlushTask = flushTask.AsTask();
+            }
 
             if (_bytesRead == _totalLength)
             {
-                await CompletePipeAndDisposeStream();
+                if (_pendingFlushTask is null)
+                {
+                    await CompletePipeAndDisposeStream();
+                }
+                else
+                {
+                    _ = CompletePipeAfterFlushAsync(_pendingFlushTask);
+                }
             }
 
-            return true;
+            return RemoteJSDataStreamResult.ChunkAccepted;
         }
         catch (Exception e)
         {
@@ -142,8 +180,24 @@ internal sealed class RemoteJSDataStream : Stream
                 throw;
             }
 
-            return false;
+            return RemoteJSDataStreamResult.StreamDisposed;
         }
+    }
+
+    private async Task CompletePipeAfterFlushAsync(Task<FlushResult> pendingFlushTask)
+    {
+        Exception? exception = null;
+
+        try
+        {
+            await pendingFlushTask;
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        await CompletePipeAndDisposeStream(exception);
     }
 
     public override bool CanRead => true;
