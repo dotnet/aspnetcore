@@ -762,6 +762,48 @@ public class PasskeyHandlerAttestationTest
     }
 
     [Fact]
+    public async Task Fails_WhenAttestationObjectContainsDuplicateAuthDataKey()
+    {
+        var test = new AttestationTest();
+        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, useNonPreferredKeyEncoding: false));
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The attestation object had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Fails_WhenAttestationObjectContainsSemanticallyDuplicateAuthDataKey()
+    {
+        var verificationCalled = false;
+        var test = new AttestationTest();
+        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, useNonPreferredKeyEncoding: true));
+        test.PasskeyOptions.VerifyAttestationStatement = context =>
+        {
+            verificationCalled = true;
+            return ValueTask.FromResult(true);
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The attestation object contained a duplicate key", result.Failure.Message);
+        Assert.False(verificationCalled);
+    }
+
+    [Fact]
+    public async Task Succeeds_WhenAttestationObjectUsesNonPreferredKeyEncoding()
+    {
+        var test = new AttestationTest();
+        test.AttestationObject.Transform(UseNonPreferredAuthDataKeyEncoding);
+
+        var result = await test.RunAsync();
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
     public async Task Fails_WhenAttestationObjectFmtIsMissing()
     {
         var test = new AttestationTest();
@@ -1087,6 +1129,46 @@ public class PasskeyHandlerAttestationTest
     {
         var rawValue = Base64Url.DecodeFromChars(base64UrlValue);
         return Convert.ToBase64String(rawValue) + "==";
+    }
+
+    private static ReadOnlyMemory<byte> PrependEmptyAuthData(
+        ReadOnlyMemory<byte> attestationObject,
+        bool useNonPreferredKeyEncoding)
+    {
+        ReadOnlySpan<byte> preferredKeyEncoding = [0x68, .. "authData"u8];
+        ReadOnlySpan<byte> nonPreferredKeyEncoding = [0x78, 0x08, .. "authData"u8];
+        var keyEncoding = useNonPreferredKeyEncoding ? nonPreferredKeyEncoding : preferredKeyEncoding;
+
+        if (attestationObject.Span[0] != 0xA3)
+        {
+            throw new InvalidOperationException("Expected an attestation object containing a three-entry CBOR map.");
+        }
+
+        var result = new byte[attestationObject.Length + keyEncoding.Length + 1];
+        result[0] = 0xA4;
+        keyEncoding.CopyTo(result.AsSpan(1));
+        result[1 + keyEncoding.Length] = 0x40;
+        attestationObject.Span[1..].CopyTo(result.AsSpan(2 + keyEncoding.Length));
+        return result;
+    }
+
+    private static ReadOnlyMemory<byte> UseNonPreferredAuthDataKeyEncoding(ReadOnlyMemory<byte> attestationObject)
+    {
+        ReadOnlySpan<byte> preferredKeyEncoding = [0x68, .. "authData"u8];
+        ReadOnlySpan<byte> nonPreferredKeyEncoding = [0x78, 0x08, .. "authData"u8];
+        var keyOffset = attestationObject.Span.IndexOf(preferredKeyEncoding);
+
+        if (keyOffset < 0)
+        {
+            throw new InvalidOperationException("Expected an attestation object containing an 'authData' key.");
+        }
+
+        var result = new byte[attestationObject.Length + 1];
+        attestationObject.Span[..keyOffset].CopyTo(result);
+        nonPreferredKeyEncoding.CopyTo(result.AsSpan(keyOffset));
+        attestationObject.Span[(keyOffset + preferredKeyEncoding.Length)..]
+            .CopyTo(result.AsSpan(keyOffset + nonPreferredKeyEncoding.Length));
+        return result;
     }
 
     private sealed class AttestationTest : PasskeyScenarioTest<PasskeyAttestationResult>
