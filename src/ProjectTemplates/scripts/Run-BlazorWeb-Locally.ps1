@@ -78,6 +78,10 @@
         $templateArguments += "--use-program-main"
     }
 
+    if ($Args) {
+        $templateArguments += $Args
+    }
+
     Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
 
     Test-Template `
@@ -86,4 +90,5 @@
         -MainProjectRelativePath $mainProjectRelativePath `
         -TargetFramework $Framework `
         -Configuration $Configuration `
+        -NoRestore:$NoRestore `
         -Verbose:$VerbosePreference;

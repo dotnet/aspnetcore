@@ -1,9 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
 @using System.Web
 @inject NavigationManager NavigationManager
+<p id="non-js-root-parameter">@NonJSRootParameter</p>
 
 <p id="session-storage-marker"></p>
-<p id="non-js-root-parameter">@NonJSRootParameter</p>
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -138,6 +138,7 @@
         <option value="BasicTestApp.VirtualizationMaxItemCount_AppContext">Virtualization MaxItemCount (via AppContext)</option>
         <option value="BasicTestApp.VirtualizationTable">Virtualization HTML table</option>
         <option value="BasicTestApp.VirtualizationVariableHeightTable">Virtualization variable height table</option>
+        <option value="BasicTestApp.VirtualizationTableScrollWithAppend">Virtualization table scroll with append</option>
         <option value="BasicTestApp.VirtualizationLargeOverscan">Virtualization large overscan</option>
         <option value="BasicTestApp.VirtualizationVariableHeight">Virtualization variable height</option>
         <option value="BasicTestApp.VirtualizationVariableHeightAsync">Virtualization variable height async</option>

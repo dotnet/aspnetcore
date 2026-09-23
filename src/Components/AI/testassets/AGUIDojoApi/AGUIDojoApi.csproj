@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- This test asset intentionally references a project whose name matches a shared-framework package. -->
+    <NoWarn>$(NoWarn);NU1511</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The API speaks AG-UI directly: AGUI.Abstractions carries the protocol types and
+         AGUI.Formatting writes the Server-Sent Events stream. -->
+    <Reference Include="AGUI.Abstractions" />
+    <Reference Include="AGUI.Formatting" />
+    <Reference Include="AGUI.Server" />
+    <Reference Include="Microsoft.Extensions.AI" />
+    <Reference Include="Microsoft.Extensions.AI.OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+  </ItemGroup>
+
+</Project>

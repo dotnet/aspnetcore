@@ -30,3 +30,11 @@ The table below outlines the different docs in this folder and what they are hel
 | [Adding new Projects to the Repo](AddingNewProjects.md) | Outlines the process of adding new projects (i.e. `.csproj` files) to the repo | Anyone who finds themselves trying to add a new project and including it in the build.  |
 | [Using WebTransport in Kestrel](WebTransport.md) | Outlines how to setup Kestrel to use WebTransport | Anyone looking to support WebTransport |
 | [Benchmarking](Benchmarks.md) | Instructions on how to benchmark PRs and local changes | .NET team |
+
+Related contributor guidance
+----------------------------
+
+The following shared guidance is available for contributors working in the corresponding source areas:
+
+- [Blazor and Components guidance](BlazorComponentsGuidance.md) for `src/Components/**` and `src/JSInterop/**`
+- [Cross-cutting guidance](CrossCuttingGuidance.md) for ordinary `src/**` work
