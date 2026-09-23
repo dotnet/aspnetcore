@@ -131,7 +131,8 @@ public partial class OpenApiSchemaServiceTests
             additionalPropertiesType: null,
             properties: Array.Empty<InferredSchemaProperty>(),
             derivedTypes: Array.Empty<InferredSchemaDerivedType>(),
-            unionCases: Array.Empty<InferredSchemaTypeUse>());
+            unionCases: Array.Empty<InferredSchemaTypeUse>(),
+            tupleElements: Array.Empty<InferredSchemaTypeUse>());
         var document = new InferredSchemaDocument(
             new(new(typeof(UnavailableBaseDerived)), AllowsNull: false),
             [derivedShape]);

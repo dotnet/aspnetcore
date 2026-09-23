@@ -525,6 +525,8 @@ internal static class InferredSchemaCompositionDecisionBuilder
                     Exact(InferredJsonValueDomain.Object, InferredJsonDomainReason.SerializerObject),
                 InferredSchemaShapeKind.Collection =>
                     Exact(InferredJsonValueDomain.Array, InferredJsonDomainReason.SerializerArray),
+                InferredSchemaShapeKind.Tuple =>
+                    Exact(InferredJsonValueDomain.Array, InferredJsonDomainReason.SerializerArray),
                 InferredSchemaShapeKind.Union => ClassifyUnion(shape),
                 _ => Unknown(InferredJsonDomainReason.UnsupportedScalar),
             };

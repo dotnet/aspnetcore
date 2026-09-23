@@ -6,6 +6,7 @@ internal class OpenApiSchemaKeywords
     public const string TypeKeyword = "type";
     public const string FormatKeyword = "format";
     public const string ItemsKeyword = "items";
+    public const string PrefixItemsKeyword = "prefixItems";
     public const string PropertiesKeyword = "properties";
     public const string AdditionalPropertiesKeyword = "additionalProperties";
     public const string RequiredKeyword = "required";

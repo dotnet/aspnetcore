@@ -230,8 +230,27 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.ItemsKeyword:
                 reader.Read();
-                var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
-                schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                if (reader.TokenType is JsonTokenType.True or JsonTokenType.False)
+                {
+                    schema.UnrecognizedKeywords ??= new Dictionary<string, JsonNode>();
+                    schema.UnrecognizedKeywords[OpenApiSchemaKeywords.ItemsKeyword] = reader.GetBoolean();
+                }
+                else
+                {
+                    var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
+                    schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                }
+                break;
+            case OpenApiSchemaKeywords.PrefixItemsKeyword:
+                reader.Read();
+                var prefixItems = ReadList<OpenApiJsonSchema>(ref reader, context)?
+                    .Select(item => (IOpenApiSchema)item!.Schema)
+                    .ToArray();
+                if (prefixItems is not null)
+                {
+                    schema.Metadata ??= new Dictionary<string, object>();
+                    schema.Metadata[OpenApiConstants.SchemaTuplePrefixItems] = prefixItems;
+                }
                 break;
             case OpenApiSchemaKeywords.DescriptionKeyword:
                 reader.Read();

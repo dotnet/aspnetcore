@@ -17,6 +17,7 @@ internal enum InferredSchemaShapeKind
     Collection,
     Dictionary,
     Union,
+    Tuple,
 }
 
 internal readonly record struct InferredSchemaTypeIdentity(Type Type)
@@ -60,7 +61,8 @@ internal sealed class InferredSchemaShape
         InferredSchemaTypeUse? additionalPropertiesType,
         IReadOnlyList<InferredSchemaProperty> properties,
         IReadOnlyList<InferredSchemaDerivedType> derivedTypes,
-        IReadOnlyList<InferredSchemaTypeUse> unionCases)
+        IReadOnlyList<InferredSchemaTypeUse> unionCases,
+        IReadOnlyList<InferredSchemaTypeUse> tupleElements)
     {
         Identity = identity;
         Kind = kind;
@@ -76,6 +78,7 @@ internal sealed class InferredSchemaShape
         Properties = properties;
         DerivedTypes = derivedTypes;
         UnionCases = unionCases;
+        TupleElements = tupleElements;
         _propertiesByJsonName = new ReadOnlyDictionary<string, InferredSchemaProperty>(
             properties.ToDictionary(property => property.Identity.JsonName, StringComparer.Ordinal));
     }
@@ -110,6 +113,8 @@ internal sealed class InferredSchemaShape
     public IReadOnlyList<InferredSchemaDerivedType> DerivedTypes { get; }
 
     public IReadOnlyList<InferredSchemaTypeUse> UnionCases { get; }
+
+    public IReadOnlyList<InferredSchemaTypeUse> TupleElements { get; }
 
     public InferredSchemaProperty GetProperty(string jsonName) => _propertiesByJsonName[jsonName];
 }
@@ -161,6 +166,7 @@ internal static class InferredSchemaShapeBuilder
             var properties = CreateProperties(typeInfo);
             var derivedTypes = CreateDerivedTypes(typeInfo);
             var unionCases = CreateUnionCases(typeInfo);
+            var tupleElements = CreateTupleElements(typeInfo);
             InferredSchemaTypeUse? elementType = typeInfo.ElementType is { } element ? CreateTypeUse(element) : null;
             var additionalPropertiesType = typeInfo.Kind == JsonTypeInfoKind.Dictionary
                 ? elementType
@@ -183,7 +189,8 @@ internal static class InferredSchemaShapeBuilder
                 additionalPropertiesType,
                 properties,
                 derivedTypes,
-                unionCases));
+                unionCases,
+                tupleElements));
 
             AddType(baseType?.Type);
             AddType(elementType?.Identity.Type);
@@ -199,6 +206,10 @@ internal static class InferredSchemaShapeBuilder
             foreach (var unionCase in unionCases)
             {
                 AddType(unionCase.Identity.Type);
+            }
+            foreach (var tupleElement in tupleElements)
+            {
+                AddType(tupleElement.Identity.Type);
             }
         }
 
@@ -280,8 +291,22 @@ internal static class InferredSchemaShapeBuilder
         return Array.AsReadOnly(unionCases);
     }
 
+    private static IReadOnlyList<InferredSchemaTypeUse> CreateTupleElements(JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Converter is not IJsonArrayTupleConverter tupleConverter)
+        {
+            return Array.Empty<InferredSchemaTypeUse>();
+        }
+
+        return Array.AsReadOnly(
+            tupleConverter.Contract.ElementTypes
+                .Select(CreateTypeUse)
+                .ToArray());
+    }
+
     private static InferredSchemaShapeKind GetShapeKind(JsonTypeInfo typeInfo) => typeInfo.Kind switch
     {
+        _ when typeInfo.Converter is IJsonArrayTupleConverter => InferredSchemaShapeKind.Tuple,
         JsonTypeInfoKind.Object => InferredSchemaShapeKind.Object,
         JsonTypeInfoKind.Enumerable => InferredSchemaShapeKind.Collection,
         JsonTypeInfoKind.Dictionary => InferredSchemaShapeKind.Dictionary,

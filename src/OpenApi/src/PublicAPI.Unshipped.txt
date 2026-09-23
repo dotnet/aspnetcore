@@ -1,6 +1,10 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.JsonArrayTupleConverter() -> void
+override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CanConvert(System.Type! typeToConvert) -> bool
+override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode

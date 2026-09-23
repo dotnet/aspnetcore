@@ -36,6 +36,26 @@ app.MapOpenApi();
 app.Run();
 ```
 
+To serialize `Tuple` and `ValueTuple` values as positional JSON arrays and emit matching schemas,
+register the experimental tuple converter with the HTTP JSON options consumed by OpenAPI:
+
+```C#
+#pragma warning disable ASP0040
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonArrayTupleConverter());
+});
+#pragma warning restore ASP0040
+```
+
+Registration changes the runtime JSON contract, so matching tuple schemas are emitted in both
+legacy and inferred schema-generation modes. OpenAPI 3.1 and 3.2 documents use ordered
+`prefixItems`, exact `minItems` and `maxItems`, and `items: false`. OpenAPI 3.0 cannot represent
+positional element schemas: it emits a conforming broad approximation with exact arity and a
+single unconstrained `items` schema. The converter dynamically constructs closed converters and
+is unsupported in NativeAOT and trimming-sensitive applications until generated closed converters
+are available.
+
 To opt in to inferred serializer-contract semantics for schema composition, configure the experimental schema generation mode:
 
 ```C#

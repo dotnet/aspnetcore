@@ -36,6 +36,7 @@ internal sealed class OpenApiSchemaService(
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
     private readonly ConcurrentDictionary<Type, InferredSchemaDocument> _inferredSchemaCache = new();
     private readonly ConditionalWeakTable<OpenApiDocument, InferredSchemaReferenceIdResolver> _inferredReferenceIdResolvers = new();
+    private readonly AsyncLocal<HashSet<Type>?> _tupleSchemaExpansion = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -107,6 +108,32 @@ internal sealed class OpenApiSchemaService(
                 else if (type.IsJsonPatchDocument())
                 {
                     schema = CreateSchemaForJsonPatch();
+                }
+                else if (context.TypeInfo.Converter is IJsonArrayTupleConverter tupleConverter)
+                {
+                    var expandedTupleTypes = _tupleSchemaExpansion.Value ??= [];
+                    if (!expandedTupleTypes.Add(type))
+                    {
+                        schema = new JsonObject();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            schema = CreateJsonArrayTupleSchema(
+                                tupleConverter.Contract,
+                                configuration,
+                                optionsMonitor.Get(documentName).OpenApiVersion);
+                        }
+                        finally
+                        {
+                            expandedTupleTypes.Remove(type);
+                            if (expandedTupleTypes.Count == 0)
+                            {
+                                _tupleSchemaExpansion.Value = null;
+                            }
+                        }
+                    }
                 }
                 // STJ uses `true` in place of an empty object to represent a schema that matches
                 // anything (like the `object` type) or types with user-defined converters. We override
@@ -199,6 +226,37 @@ internal sealed class OpenApiSchemaService(
         };
 
         return configuration;
+    }
+
+    private JsonNode CreateJsonArrayTupleSchema(
+        JsonArrayTupleContract contract,
+        JsonSchemaExporterOptions configuration,
+        OpenApiSpecVersion openApiVersion)
+    {
+        var schema = new JsonObject
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "array",
+            [OpenApiSchemaKeywords.MinItemsKeyword] = contract.ElementTypes.Count,
+            [OpenApiSchemaKeywords.MaxItemsKeyword] = contract.ElementTypes.Count,
+        };
+
+        if (openApiVersion == OpenApiSpecVersion.OpenApi3_0)
+        {
+            schema[OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject();
+        }
+        else
+        {
+            schema[OpenApiSchemaKeywords.PrefixItemsKeyword] = new JsonArray(
+                contract.ElementTypes
+                    .Select(elementType => JsonSchemaExporter.GetJsonSchemaAsNode(
+                        _jsonSerializerOptions,
+                        elementType,
+                        configuration))
+                    .ToArray());
+            schema[OpenApiSchemaKeywords.ItemsKeyword] = false;
+        }
+
+        return schema;
     }
 
     private static JsonObject CreateSchemaForJsonPatch()
@@ -487,6 +545,17 @@ internal sealed class OpenApiSchemaService(
             schema.Items = ResolveReferenceForSchema(document, schema.Items, rootSchemaId);
         }
 
+        if (schema.Metadata?.TryGetValue(OpenApiConstants.SchemaTuplePrefixItems, out var prefixItemsValue) == true &&
+            prefixItemsValue is IOpenApiSchema[] prefixItems)
+        {
+            for (var i = 0; i < prefixItems.Length; i++)
+            {
+                prefixItems[i] = ResolveReferenceForSchema(document, prefixItems[i], rootSchemaId);
+            }
+
+            SynchronizeTuplePrefixItems(schema, prefixItems);
+        }
+
         if (schema.Not is not null)
         {
             schema.Not = ResolveReferenceForSchema(document, schema.Not, rootSchemaId);
@@ -498,6 +567,21 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
+    }
+
+    private static void SynchronizeTuplePrefixItems(OpenApiSchema schema, IReadOnlyList<IOpenApiSchema> prefixItems)
+    {
+        var rawPrefixItems = new JsonArray();
+        foreach (var prefixItem in prefixItems)
+        {
+            using var textWriter = new StringWriter(CultureInfo.InvariantCulture);
+            var openApiWriter = new OpenApiJsonWriter(textWriter);
+            prefixItem.SerializeAsV31(openApiWriter);
+            rawPrefixItems.Add(JsonNode.Parse(textWriter.ToString()));
+        }
+
+        schema.UnrecognizedKeywords ??= new Dictionary<string, JsonNode>();
+        schema.UnrecognizedKeywords[OpenApiSchemaKeywords.PrefixItemsKeyword] = rawPrefixItems;
     }
 
     private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
@@ -634,6 +718,25 @@ internal sealed class OpenApiSchemaService(
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.Items, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+
+        if (jsonTypeInfo.Converter is IJsonArrayTupleConverter tupleConverter &&
+            schema.Metadata?.TryGetValue(OpenApiConstants.SchemaTuplePrefixItems, out var prefixItemsValue) == true &&
+            prefixItemsValue is IOpenApiSchema[] prefixItems)
+        {
+            if (prefixItems.Length != tupleConverter.Contract.ElementTypes.Count)
+            {
+                throw new InvalidOperationException(
+                    $"The positional tuple elements for '{jsonTypeInfo.Type}' do not match the generated schema.");
+            }
+
+            for (var i = 0; i < prefixItems.Length; i++)
+            {
+                var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(tupleConverter.Contract.ElementTypes[i]);
+                await InnerApplySchemaTransformersAsync(prefixItems[i], inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
+            }
+
+            SynchronizeTuplePrefixItems(schema, prefixItems);
         }
 
         var isInferredInheritance = inferredMode &&
