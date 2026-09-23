@@ -42,7 +42,10 @@
     "minimist": ">=1.2.6"
   },
   "overrides": {
-    "fast-uri": "3.1.2",
-    "serialize-javascript": "7.0.3"
+    "baseline-browser-mapping": "2.11.24",
+    "electron-to-chromium": "1.5.430",
+    "fast-uri": "3.1.8",
+    "node-releases": "2.0.55",
+    "serialize-javascript": "7.1.1"
   }
 }
