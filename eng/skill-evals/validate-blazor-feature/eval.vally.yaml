@@ -10,8 +10,8 @@ defaults:
 
 scoring:
   weights:
-    output-matches: 0.3
-    prompt: 0.7
+    output-matches: 0.2
+    prompt: 0.8
   threshold: 0.6
 
 stimuli:
@@ -105,3 +105,202 @@ stimuli:
       - "Says to add/verify the @rendermode (per page, or on Routes/HeadOutlet for a global app)"
       - "Considers that a WebAssembly/Auto component must be in the .Client project, otherwise it won't be interactive"
       - "Suggests confirming the framework JS (blazor.web.js) is built and served and checking the browser console, rather than only guessing"
+
+  - name: choose-selenium-for-real-browser-geometry
+    prompt: |
+      I am fixing a Components regression where a virtualized list sometimes jumps after a resize. The
+      production path combines real scroll geometry with ResizeObserver and IntersectionObserver callbacks.
+      I plan to add a Selenium scenario for the visible jump. Can I also keep a fast supplemental test in an
+      existing .test.ts file by defining scrollHeight/clientHeight with Object.defineProperty, stubbing both
+      observers, and invoking their callbacks directly? What should the production change include, and what
+      boundary decision should I record before handing the fix off?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(selenium|E2E)'
+      - type: prompt
+    rubric:
+      - "Selects permanent C# Selenium coverage under src/Components/test/E2ETest because the production behavior is owned by real browser geometry, scrolling, and observers"
+      - "Rejects the synthetic TypeScript/Jest test as production regression proof, including as primary or supplemental coverage; merely mentioning Jest to reject it is correct, but permitting it anywhere in the production change fails this rubric"
+      - "Records all five boundary fields with substantive case-specific values rather than placeholders: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
+      - "Explains that mocked geometry and directly invoked observer callbacks can pass without proving that the browser producer reaches the shipped state"
+      - "Requires strict Selenium red/green with the same assertion, a nearest-opposite control, and, when meaningful, an adjacent control driven by the same production producer"
+
+  - name: reject-fast-jest-only-observer-proof
+    prompt: |
+      Please keep this fix small and fast: add only a Jest test for a ResizeObserver-driven component bug.
+      The test can mock ResizeObserver and getBoundingClientRect, and CI should not pay for Selenium. I need
+      the production PR ready today. What test plan should I use?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(selenium|E2E)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(block|blocked|not.*Jest|Jest.*not|only regression proof)'
+      - type: prompt
+    rubric:
+      - "Fails closed despite the request for speed and requires a permanent C# Selenium scenario for the browser-owned ResizeObserver behavior"
+      - "States that the fix remains blocked while mocked Jest coverage is its only regression proof"
+      - "Does not compromise by proposing the Jest test as primary, supplemental, faster, or more precise production coverage; merely mentioning Jest to reject it is correct"
+      - "Allows mocked observer or geometry work only as a temporary diagnostic outside the production change and removes it after Selenium supersedes it"
+      - "Requires the identical Selenium assertion to fail without the fix and pass with it, with a nearest-opposite control and, when meaningful, an adjacent control driven by the same production producer"
+
+  - name: allow-pure-typescript-helper-test
+    prompt: |
+      I extracted a TypeScript helper that parses a comma-separated component option string into a plain
+      object. It accepts only a string, returns only strings and booleans, reads no globals, and does not
+      touch the DOM, navigation, events, layout, observers, or JS interop. A bug is entirely in its escaping
+      rules. Should the permanent regression test use Selenium or a focused TypeScript unit test?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(TypeScript|unit test|pure helper)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(plain input|plain output|browser-independent|no.*fidelity|lower boundary)'
+      - type: prompt
+    rubric:
+      - "Permits focused TypeScript unit coverage because both the helper's preconditions and observable are browser-independent plain inputs and outputs"
+      - "Explains that Selenium adds no fidelity for a parsing and escaping defect wholly owned by the pure helper"
+      - "Keeps the exception narrow and would disqualify it if the test mocked browser observers, layout APIs, geometry, navigation, events, or browser-dependent interop"
+      - "Does not require Selenium or block the fix on E2E merely because the helper is written in TypeScript or used by Components"
+      - "Still records a coherent five-field boundary decision with substantive case-specific values, the pure helper as owner, and the focused unit suite as the selected surface"
+
+  - name: keep-dom-sync-at-faithful-lower-boundary
+    prompt: |
+      A regression in synchronizeDomContentCore reuses the wrong keyed node and changes sibling order while
+      recursively synchronizing source and destination fragments. The production function operates only on
+      ordinary DOM Node operations. The smallest faithful reproduction creates ordinary nodes with
+      document.createElement and innerHTML, then asserts object identity and
+      sibling order without mocking geometry, layout, observers, events, timers, navigation, focus, or
+      production callbacks. Which permanent regression surface should own this case, and what boundary
+      decision supports that choice?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(Jest|jsdom|TypeScript|\.test\.ts)'
+      - type: prompt
+    rubric:
+      - "Selects the existing Jest/jsdom TypeScript unit-test surface, such as DomSync.test.ts or an adjacent test, rather than Selenium"
+      - "Explains that ordinary jsdom nodes are the faithful production-shaped inputs for this deterministic Node-interface algorithm, not mocked browser producers"
+      - "Treats object identity and sibling order as the final observable and explains why browser E2E would add no fidelity for it"
+      - "Does not require or block on Selenium merely because the helper participates in rendering"
+      - "Records all five boundary fields with substantive case-specific values rather than placeholders: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
+
+  - name: keep-endpoint-persistence-at-managed-boundary
+    prompt: |
+      During EndpointHtmlRenderer prerender persistence, two RegisterOnPersisting callbacks both call
+      PersistentComponentState.PersistAsJson with the same key. The second call throws ArgumentException;
+      ComponentStatePersistenceManager catches and logs the callback failure, aborts persistence, and clears
+      the pending state instead of writing it to the store. There is no DOM, JavaScript, navigation, timing,
+      or browser dependency. Which permanent regression surface should own this case, and why?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(managed|C#|unit test|integration test)'
+      - type: prompt
+    rubric:
+      - "Selects a managed unit or integration test under src/Components/test rather than browser E2E"
+      - "Identifies the EndpointHtmlRenderer and ComponentStatePersistenceManager prerender-persistence path as the behavior owner and production producer"
+      - "Uses the logged callback failure, aborted store write, and cleared pending state as the final observable rather than claiming the duplicate-key exception escapes EndpointHtmlRenderer"
+      - "Explains that Selenium adds no fidelity because every precondition and observable is fully owned and observable below the browser"
+      - "Records all five boundary fields with substantive case-specific values rather than placeholders: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
+
+  - name: keep-selenium-with-minimal-javascript-step
+    prompt: |
+      I am validating focus and selection restoration after a component rerender. C# Selenium can drive the
+      interaction and assert the user-visible edited value, but WebDriver has no precise API for setting an
+      input's selection range to exact UTF-16 offsets. May I use JavaScript, and if so how should the permanent
+      test be divided?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(IJavaScriptExecutor|setSelectionRange|JavaScript)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(?:(?:C#|Selenium).*(?:final|assert|orchestrat)|(?:final|assert|orchestrat).*(?:C#|Selenium))'
+      - type: prompt
+    rubric:
+      - "Keeps the permanent scenario in C# Selenium rather than moving it to a JavaScript or TypeScript unit test"
+      - "Names the exact limitation: WebDriver cannot precisely set the input selection range to exact UTF-16 offsets"
+      - "Allows only a minimal existing helper or IJavaScriptExecutor snippet for the setSelectionRange step"
+      - "Keeps navigation, rerender orchestration, and the final user-visible edited-value assertion in C# Selenium"
+      - "Does not move scenario orchestration or the final assertion into JavaScript or TypeScript; any answer granting that permission fails even if some C# Selenium coverage remains"
+
+  - name: deterministic-browser-probe-to-selenium
+    prompt: |
+      A Blazor Virtualize regression leaves a blank gap after a real browser resize. I reproduced it with
+      Playwright against the Components sample and can inspect the gap from JavaScript. Before I write the
+      permanent test, how should I turn this into deterministic evidence and then hand it off? Include what
+      happens to any diagnostic JavaScript afterward.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?is)(Playwright|real browser).*(JavaScript|JS|probe|assert)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(selenium|E2ETest)'
+      - type: prompt
+    rubric:
+      - "Reduces the Playwright reproduction to the smallest temporary JavaScript diagnostic assertion against the real page, not permanent Jest or .test.ts coverage"
+      - "Repeats the unchanged scenario a recorded bounded number of times and calls it deterministic only when every run fails the same assertion for the same reason"
+      - "May suggest 10 runs as a reasonable default confidence sample, but explicitly says the count is not magical and does not prove determinism across environments; wording that the bounded sample proves determinism fails this rubric"
+      - "Hands the same scenario and final assertion to permanent C# Selenium, using observable waits or an explicit gate rather than a fixed sleep"
+      - "Removes the diagnostic JavaScript after Selenium supersedes it and does not check it into the production change"
+
+  - name: investigate-nondeterministic-browser-reproduction
+    prompt: |
+      A focus restoration bug fails in 4 of 10 Playwright attempts, and two failures show different final
+      states. A teammate wants to add the Selenium test immediately with Thread.Sleep(1000) after the rerender
+      so CI is stable. What should I do before choosing the permanent regression test?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(producer|timing|ordering|precondition)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(Browser\.True|Browser\.Equal|WebDriverWait|observable condition|faithful lower boundary|TaskCompletionSource|explicit (?:test )?gate|test-controlled gate)'
+      - type: prompt
+    rubric:
+      - "Does not call the reproduction deterministic because not every run failed the same assertion for the same reason"
+      - "Rejects Thread.Sleep(1000) as a synchronization mechanism and does not paper over the race"
+      - "Investigates the real producer, preconditions, and timing with targeted observations or logging before finalizing permanent coverage"
+      - "Chooses a faithful lower-boundary test only if that boundary owns the final observable; otherwise uses observable browser waits when the final observable is sufficient, or introduces an explicit test-controlled gate only when deterministic managed or intermediate timing must be controlled"
+      - "Does not claim an immediate Selenium conversion is ready until the scenario is controlled and repeatable"
+
+  - name: replace-arbitrary-selenium-sleep
+    prompt: |
+      My Components Selenium regression clicks a button that starts asynchronous managed work, sleeps for two
+      seconds, and then asserts the updated DOM. It passes locally but flakes in CI. What synchronization
+      pattern should replace the sleep, and are all Thread.Sleep calls forbidden?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(Browser\.True|Browser\.Equal|WebDriverWait|observable condition)'
+      - type: prompt
+    rubric:
+      - "Rejects the arbitrary two-second sleep as synchronization for the regression assertion"
+      - "Prefers Browser.True/Browser.Equal or another WebDriverWait-backed observable browser condition"
+      - "Requires an explicit test gate such as TaskCompletionSource and a release action only when deterministic managed or intermediate timing must be controlled; accepts Browser.True/Browser.Equal or another WebDriverWait-backed wait when the final DOM observable is sufficient"
+      - "Does not impose a syntactic ban on every Thread.Sleep; allows bounded polling helpers that repeatedly observe a condition and enforce a timeout"
+
+  - name: split-manager-contract-from-browser-reachability
+    prompt: |
+      AutoPauseManager has a deterministic bug where a visibility callback plus its controlled timer state
+      invokes pause twice. Separately, the user-visible pause UI sometimes fails after a real tab visibility
+      transition and may depend on browser scheduling. Should both regressions move to Selenium, or should the
+      permanent tests be split?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(Jest|jsdom|TypeScript unit)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(selenium|E2ETest)'
+      - type: prompt
+    rubric:
+      - "Keeps the deterministic AutoPauseManager callback and timer-state contract at its existing Jest/jsdom unit boundary when that module contract is the final observable"
+      - "Uses C# Selenium for the user-visible pause behavior whose claim depends on the real visibility producer or browser scheduling"
+      - "Explains that controlled callbacks or fake timers establish manager behavior but do not prove real browser reachability or scheduling"
+      - "Does not force every JavaScript manager contract into Selenium and does not use the manager unit test as proof of the separate user-visible browser scenario"

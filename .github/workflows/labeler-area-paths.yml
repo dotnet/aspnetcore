@@ -55,7 +55,6 @@ jobs:
               "src/HttpClientFactory/": "area-networking",
               // area-blazor
               "src/Components/": "area-blazor",
-              "src/JSInterop/": "area-blazor",
               // area-auth (more specific than area-blazor / area-networking above)
               "src/Components/Authorization/": "area-auth",
               "src/Security/Authentication/": "area-auth",

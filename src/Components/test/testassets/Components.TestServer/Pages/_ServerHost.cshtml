@@ -63,6 +63,7 @@
                     ...args);
         }
 
+        myJsRootComponentInitializers.captureRendererInterop(Blazor);
         Blazor.start({
             configureSignalR: builder => {
                 if (query.has('captureAuthenticationRefresh')) {
