@@ -110,6 +110,8 @@ function createEligibility(evidenceText, evidence, overrides = {}) {
         reason: "latest-test-file-change",
         commit: "source-commit",
       },
+      required_ancestor: "b".repeat(40),
+      ancestry_verified_builds: record.builds,
       eligible_failure_builds: record.builds,
       evidence: {
         build: record.evidence_build,
@@ -316,6 +318,37 @@ async function main() {
     assert.deepEqual(createdIssue(output).labels, ["test-failure", "Known Build Error"]);
   }
 
+  {
+    const evidence = createEvidence();
+    evidence.builds["103"] = {
+      def: 83,
+      startedUtc: "2026-08-18T10:00:00Z",
+      finishedUtc: "2026-08-18T10:10:00Z",
+      sourceVersion: "ghi",
+      pr: null,
+    };
+    evidence.source_c = [{
+      workitem: "Sample.Tests",
+      build: 103,
+      job: "helix-job",
+      fail_block_count: 1,
+      fail_blocks: `${testName} [FAIL]\nCrash details.`,
+    }];
+    const output = await run(createItem(), {
+      evidence,
+      enableKbe: true,
+      eligibilityRecord: {
+        raw_failure_builds: [101, 102, 103],
+        ancestry_verified_builds: [101, 102, 103],
+        eligible_failure_builds: [101, 102, 103],
+      },
+    });
+    assert.deepEqual(
+      createdIssue(output).labels,
+      ["test-failure", "Known Build Error"],
+    );
+  }
+
   for (const runnerTemp of [undefined, ""]) {
     const output = await run(createItem(), { runnerTemp, enableKbe: true });
     const scenario = `RUNNER_TEMP is ${runnerTemp === undefined ? "missing" : "empty"}`;
@@ -417,6 +450,16 @@ async function main() {
       status: "eligible",
       latest_quarantine_transition: "ambiguous",
       reasons: ["ambiguous-quarantine-history"],
+    },
+    {
+      status: "eligible",
+      required_ancestor: "",
+      reasons: ["missing-required-ancestor"],
+    },
+    {
+      status: "eligible",
+      ancestry_verified_builds: [101],
+      reasons: ["unverified-eligible-build"],
     },
   ]) {
     const output = await run(createItem(), { enableKbe: true, eligibilityRecord });

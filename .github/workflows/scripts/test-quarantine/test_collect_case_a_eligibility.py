@@ -166,7 +166,13 @@ def source_b_evidence(builds=(101, 102), test_name=TEST_NAME):
     return data
 
 
-def collect(root, data, pr_files_provider=lambda _: set(), module=None):
+def collect(
+    root,
+    data,
+    pr_files_provider=lambda _: set(),
+    commit_contains_provider=lambda _ancestor, _descendant: True,
+    module=None,
+):
     module = module or MODULE
     serialized = json.dumps(data, separators=(",", ":")).encode()
     return module.collect(
@@ -178,6 +184,7 @@ def collect(root, data, pr_files_provider=lambda _: set(), module=None):
         "refs/heads/main",
         subprocess.check_output(["git", "-C", root, "rev-parse", "HEAD"], text=True).strip(),
         pr_files_provider=pr_files_provider,
+        commit_contains_provider=commit_contains_provider,
     )
 
 
@@ -191,10 +198,17 @@ def collect_result(
     *,
     test_name=TEST_NAME,
     pr_files_provider=lambda _: set(),
+    commit_contains_provider=lambda _ancestor, _descendant: True,
     module=None,
 ):
     return record(
-        collect(root, data, pr_files_provider=pr_files_provider, module=module),
+        collect(
+            root,
+            data,
+            pr_files_provider=pr_files_provider,
+            commit_contains_provider=commit_contains_provider,
+            module=module,
+        ),
         test_name,
     )
 
@@ -212,6 +226,891 @@ def assert_already_quarantined(result):
     assert result["status"] == "ineligible", result
     assert result["originating_case"] == "already-quarantined", result
     assert result["current_quarantine_state"] == "quarantined", result
+
+
+def test_build_source_ancestry():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        ancestor = run_output(root, "git", "rev-parse", "HEAD")
+        (project / "Other.cs").write_text(
+            "namespace Microsoft.AspNetCore.Tests;\npublic class Other {}\n",
+            encoding="utf-8",
+        )
+        commit(root, "Add unrelated source", "2026-08-02T00:00:00Z")
+        descendant = run_output(root, "git", "rev-parse", "HEAD")
+
+        assert MODULE.commit_contains(
+            root,
+            "dotnet/aspnetcore",
+            ancestor,
+            descendant,
+            "",
+        )
+        assert not MODULE.commit_contains(
+            root,
+            "dotnet/aspnetcore",
+            descendant,
+            ancestor,
+            "",
+        )
+
+        file_path.write_text(
+            source(QUARANTINE_ATTRIBUTE),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test", "2026-08-03T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-04T00:00:00Z")
+        unquarantine_commit = run_output(root, "git", "rev-parse", "HEAD")
+        file_path.write_text(
+            source() + "\n// Fix the test after unquarantining it.\n",
+            encoding="utf-8",
+        )
+        commit(root, "Fix test after unquarantine", "2026-08-10T00:00:00Z")
+        fix_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        ancestry_calls = []
+        stale = collect_result(
+            root,
+            source_b_evidence(builds=(101,)),
+            commit_contains_provider=lambda cutoff, source_version: (
+                ancestry_calls.append((cutoff, source_version))
+                or cutoff == unquarantine_commit
+            ),
+        )
+        assert stale["originating_case"] == "case-b", stale
+        assert stale["case_b_eligible"] is False, stale
+        assert stale["eligible_failure_builds"] == [], stale
+        assert stale["required_ancestor"] == fix_commit, stale
+        assert ancestry_calls == [(fix_commit, "101")], ancestry_calls
+        assert {
+            item["reason"] for item in stale["excluded_builds"]
+        } == {"source-version-before-cutoff"}, stale
+
+        current = collect_result(
+            root,
+            source_b_evidence(builds=(101,)),
+            commit_contains_provider=lambda _cutoff, _source: True,
+        )
+        assert current["originating_case"] == "case-b", current
+        assert current["case_b_eligible"] is True, current
+        assert current["eligible_failure_builds"] == [101], current
+        assert current["ancestry_verified_builds"] == [101], current
+
+        unavailable = collect_result(
+            root,
+            source_b_evidence(builds=(101,)),
+            commit_contains_provider=lambda _cutoff, _source: (_ for _ in ()).throw(
+                ValueError("missing commit"),
+            ),
+        )
+        assert unavailable["case_b_eligible"] is False, unavailable
+        assert {
+            item["reason"] for item in unavailable["excluded_builds"]
+        } == {"source-version-ancestry-unavailable"}, unavailable
+
+        missing_version = source_b_evidence(builds=(101,))
+        missing_version["builds"]["101"]["sourceVersion"] = None
+        missing = collect_result(root, missing_version)
+        assert missing["case_b_eligible"] is False, missing
+        assert {
+            item["reason"] for item in missing["excluded_builds"]
+        } == {"missing-source-version"}, missing
+
+        source_c = source_b_evidence(builds=(101,))
+        source_c["source_a"] = {}
+        source_c["source_b"] = {}
+        source_c["source_c"] = [{
+            "build": 101,
+            "workitem": "Sample.Tests.WorkItemExecution",
+            "fail_block_count": 1,
+            "fail_blocks": f"{TEST_NAME} [FAIL]\nFailure details",
+        }]
+        source_c_result = collect_result(root, source_c)
+        assert source_c_result["originating_case"] == "case-b", source_c_result
+        assert source_c_result["case_b_eligible"] is True, source_c_result
+        assert source_c_result["eligible_failure_builds"] == [101], source_c_result
+        changed_source_c_result = collect_result(
+            root,
+            source_c,
+            pr_files_provider=lambda _: {TEST_PATH},
+        )
+        assert changed_source_c_result["case_b_eligible"] is False, (
+            changed_source_c_result
+        )
+        assert changed_source_c_result["excluded_builds"][-1] == {
+            "build": 101,
+            "reason": "source-b-pr-changed-test-file",
+        }, changed_source_c_result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, _ = initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        case_a = evidence()
+        case_a_result = collect_result(
+            root,
+            case_a,
+            commit_contains_provider=lambda _cutoff, source_version: (
+                source_version == "102"
+            ),
+        )
+        assert case_a_result["originating_case"] == "case-a", case_a_result
+        assert case_a_result["status"] == "ineligible", case_a_result
+        assert case_a_result["eligible_failure_builds"] == [102], case_a_result
+        assert "fewer-than-two-post-cutoff-failures" in case_a_result["reasons"]
+
+        source_c_case_a = source_b_evidence()
+        source_c_case_a["source_a"] = {}
+        source_c_case_a["source_b"] = {}
+        source_c_case_a["source_c"] = [
+            {
+                "build": build,
+                "workitem": "Sample.Tests.WorkItemExecution",
+                "fail_block_count": 1,
+                "fail_blocks": f"{TEST_NAME} [FAIL]\nFailure details",
+            }
+            for build in (101, 102)
+        ]
+        source_c_case_a_result = collect_result(root, source_c_case_a)
+        assert source_c_case_a_result["originating_case"] == "case-a", (
+            source_c_case_a_result
+        )
+        assert source_c_case_a_result["status"] == "eligible", (
+            source_c_case_a_result
+        )
+        assert source_c_case_a_result["evidence"] is None, source_c_case_a_result
+        assert "eligible-evidence-identity-unavailable" in (
+            source_c_case_a_result["reasons"]
+        )
+
+
+def test_history_cutoff_uses_first_parent_order():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-03T00:00:00Z")
+        unquarantine_commit = run_output(root, "git", "rev-parse", "HEAD")
+        file_path.write_text(
+            source().replace(
+                "    public void ReturnsExpectedResponse()\n    {\n    }",
+                "    public void ReturnsExpectedResponse()\n"
+                "    {\n"
+                "        // Later source edit\n"
+                "    }",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Edit test after unquarantine", "2026-08-02T00:00:00Z")
+        source_edit_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        item = evidence()
+        item["builds"]["101"]["sourceVersion"] = unquarantine_commit
+        item["builds"]["102"]["sourceVersion"] = source_edit_commit
+        result = collect_result(
+            root,
+            item,
+            commit_contains_provider=lambda ancestor, descendant: (
+                MODULE.commit_contains(
+                    root,
+                    "dotnet/aspnetcore",
+                    ancestor,
+                    descendant,
+                    "",
+                )
+            ),
+        )
+
+        assert result["required_ancestor"] == source_edit_commit, result
+        assert result["eligible_failure_builds"] == [102], result
+        assert result["excluded_builds"] == [{
+            "build": 101,
+            "reason": "source-version-before-cutoff",
+        }], result
+
+
+def test_requarantine_history():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-02T00:00:00Z")
+
+        first = MODULE.collect_requarantine_history(root, "HEAD")
+        assert first["targets"] == [{
+            "scope": "method",
+            "path": TEST_PATH,
+            "type": "Microsoft.AspNetCore.Tests.SampleTests",
+            "method": "ReturnsExpectedResponse",
+            "issue": 1,
+            "status": "first-quarantine",
+        }], first
+
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-03T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Re-quarantine test", "2026-08-04T00:00:00Z")
+
+        requarantined = MODULE.collect_requarantine_history(root, "HEAD")
+        assert requarantined["targets"][0]["status"] == "re-quarantined", (
+            requarantined
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-07-31T00:00:00Z")
+        file_path.write_text(
+            source(
+                '[QuarantinedTest('
+                '"https://github.com/dotnet/aspnetcore/issues/#aw_sample")]'
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine with temporary issue", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Resolve quarantine issue", "2026-08-02T00:00:00Z")
+
+        resolved = MODULE.collect_requarantine_history(root, "HEAD")
+        assert resolved["targets"][0]["status"] == "first-quarantine", resolved
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Add class and assembly quarantines", "2026-08-01T00:00:00Z")
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert {
+            (target["scope"], target["issue"], target["status"])
+            for target in targets
+        } == {
+            ("type", 1, "first-quarantine"),
+            ("assembly", 2, "first-quarantine"),
+        }, targets
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add partial test type", "2026-07-31T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]
+public partial class SampleTests
+{
+    public void ReturnsExpectedResponse()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        partial_path = project / "SampleTests.Partial.cs"
+        partial_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public partial class SampleTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine partial type", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            file_path.read_text(encoding="utf-8").replace(
+                QUARANTINE_ATTRIBUTE + "\n",
+                "",
+            ),
+            encoding="utf-8",
+        )
+        partial_path.write_text(
+            partial_path.read_text(encoding="utf-8").replace(
+                "public partial class",
+                f"{QUARANTINE_ATTRIBUTE}\npublic partial class",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Move quarantine across partial type", "2026-08-02T00:00:00Z")
+
+        moved = MODULE.collect_requarantine_history(root, "HEAD")
+        assert moved["targets"][0]["status"] == "first-quarantine", moved
+
+        partial_path.write_text(
+            partial_path.read_text(encoding="utf-8").replace(
+                QUARANTINE_ATTRIBUTE + "\n",
+                "",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine partial type", "2026-08-03T00:00:00Z")
+        partial_path.write_text(
+            partial_path.read_text(encoding="utf-8").replace(
+                "public partial class",
+                f"{QUARANTINE_ATTRIBUTE}\npublic partial class",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Re-quarantine partial type", "2026-08-04T00:00:00Z")
+
+        requarantined_type = MODULE.collect_requarantine_history(root, "HEAD")
+        assert requarantined_type["targets"][0]["status"] == "re-quarantined", (
+            requarantined_type
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, _ = initialize_repository(root)
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly", "2026-08-01T00:00:00Z")
+        assembly_info.write_text("", encoding="utf-8")
+        commit(root, "Unquarantine assembly", "2026-08-02T00:00:00Z")
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Re-quarantine assembly", "2026-08-03T00:00:00Z")
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Update assembly issue", "2026-08-04T00:00:00Z")
+
+        requarantined_assembly = MODULE.collect_requarantine_history(
+            root,
+            "HEAD",
+        )
+        assert requarantined_assembly["targets"][0]["issue"] == 2, (
+            requarantined_assembly
+        )
+        assert (
+            requarantined_assembly["targets"][0]["status"]
+            == "re-quarantined"
+        ), requarantined_assembly
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        moved_path = project / "SampleTests.Moved.cs"
+        moved_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public partial class SampleTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine method", "2026-08-02T00:00:00Z")
+        file_path.unlink()
+        moved_path.write_text(
+            source(QUARANTINE_ATTRIBUTE).replace(
+                "public class SampleTests",
+                "public partial class SampleTests",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Move and re-quarantine method", "2026-08-03T00:00:00Z")
+
+        moved_method = MODULE.collect_requarantine_history(root, "HEAD")
+        assert moved_method["targets"][0]["path"].endswith(
+            "SampleTests.Moved.cs"
+        ), moved_method
+        assert moved_method["targets"][0]["status"] == "re-quarantined", (
+            moved_method
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine before project move", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine before project move", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Re-quarantine before project move", "2026-08-03T00:00:00Z")
+        run(root, "git", "mv", "src/Sample.Tests", "src/Renamed.Tests")
+        commit(root, "Move test project", "2026-08-04T00:00:00Z")
+
+        moved_project = MODULE.collect_requarantine_history(root, "HEAD")
+        assert moved_project["targets"][0]["status"] == "ambiguous", moved_project
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine before project move", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine before project move", "2026-08-02T00:00:00Z")
+        run(root, "git", "mv", "src/Sample.Tests", "src/Renamed.Tests")
+        commit(root, "Move unquarantined test project", "2026-08-03T00:00:00Z")
+
+        moved_case_b = collect_result(root, evidence())
+        assert moved_case_b["status"] == "unproven", moved_case_b
+        assert moved_case_b["originating_case"] == "unknown", moved_case_b
+        assert moved_case_b["reasons"] == ["project-history-incomplete"], (
+            moved_case_b
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        destination = root / "src" / "Destination.Tests"
+        destination.mkdir()
+        (destination / "Destination.Tests.csproj").write_text(
+            "<Project />\n",
+            encoding="utf-8",
+        )
+        commit(root, "Add destination project", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine in source project", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine in source project", "2026-08-03T00:00:00Z")
+        moved_path = destination / file_path.name
+        run(root, "git", "mv", file_path, moved_path)
+        moved_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(
+            root,
+            "Move across projects and re-quarantine",
+            "2026-08-04T00:00:00Z",
+        )
+
+        cross_project = MODULE.collect_requarantine_history(root, "HEAD")
+        assert cross_project["targets"][0]["status"] == "ambiguous", cross_project
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        commit(root, "Quarantine type", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine type", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Re-quarantine method", "2026-08-03T00:00:00Z")
+
+        type_to_method = MODULE.collect_requarantine_history(root, "HEAD")
+        assert type_to_method["targets"][0]["status"] == "re-quarantined", (
+            type_to_method
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly", "2026-08-01T00:00:00Z")
+        assembly_info.write_text("", encoding="utf-8")
+        commit(root, "Unquarantine assembly", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Re-quarantine method", "2026-08-03T00:00:00Z")
+
+        assembly_to_method = MODULE.collect_requarantine_history(root, "HEAD")
+        assert assembly_to_method["targets"][0]["status"] == "re-quarantined", (
+            assembly_to_method
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+}
+""",
+            encoding="utf-8",
+        )
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly before test exists", "2026-08-01T00:00:00Z")
+        assembly_info.write_text("", encoding="utf-8")
+        commit(root, "Unquarantine assembly", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Add test after assembly unquarantine", "2026-08-03T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine new method", "2026-08-04T00:00:00Z")
+
+        later_method = MODULE.collect_requarantine_history(root, "HEAD")
+        assert later_method["targets"][0]["status"] == "first-quarantine", (
+            later_method
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine method", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            source(QUARANTINE_ATTRIBUTE).replace(
+                "SampleTests",
+                "RenamedTests",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Rename type and re-quarantine", "2026-08-03T00:00:00Z")
+
+        renamed_type = MODULE.collect_requarantine_history(root, "HEAD")
+        assert renamed_type["targets"][0]["status"] == "ambiguous", renamed_type
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine method", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            source(QUARANTINE_ATTRIBUTE).replace(
+                "ReturnsExpectedResponse",
+                "ReturnsExpectedResponseV2",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Rename method and re-quarantine", "2026-08-03T00:00:00Z")
+
+        renamed_method = MODULE.collect_requarantine_history(root, "HEAD")
+        assert renamed_method["targets"][0]["status"] == "ambiguous", (
+            renamed_method
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            source().replace("SampleTests", "RenamedTests"),
+            encoding="utf-8",
+        )
+        commit(root, "Rename unquarantined type", "2026-08-03T00:00:00Z")
+
+        renamed_name = (
+            "Microsoft.AspNetCore.Tests."
+            "RenamedTests.ReturnsExpectedResponse"
+        )
+        renamed_evidence = evidence()
+        renamed_evidence["source_a"][renamed_name] = (
+            renamed_evidence["source_a"].pop(TEST_NAME)
+        )
+        renamed_result = collect_result(
+            root,
+            renamed_evidence,
+            test_name=renamed_name,
+        )
+        assert renamed_result["status"] == "unproven", renamed_result
+        assert renamed_result["originating_case"] == "unknown", renamed_result
+        assert renamed_result["reasons"] == [
+            "target-identity-rename-ambiguous"
+        ], renamed_result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            source().replace(
+                "Microsoft.AspNetCore.Tests",
+                "Microsoft.AspNetCore.RenamedTests",
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Rename test namespace", "2026-08-03T00:00:00Z")
+
+        renamed_name = (
+            "Microsoft.AspNetCore.RenamedTests."
+            "SampleTests.ReturnsExpectedResponse"
+        )
+        renamed_evidence = evidence()
+        renamed_evidence["source_a"][renamed_name] = (
+            renamed_evidence["source_a"].pop(TEST_NAME)
+        )
+        renamed_result = collect_result(
+            root,
+            renamed_evidence,
+            test_name=renamed_name,
+        )
+        assert renamed_result["status"] == "unproven", renamed_result
+        assert renamed_result["originating_case"] == "unknown", renamed_result
+        assert renamed_result["reasons"] == [
+            "target-identity-rename-ambiguous"
+        ], renamed_result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+
+        def multi_namespace_source(namespace, attribute=""):
+            return f"""namespace Stable
+{{
+    public class Other
+    {{
+    }}
+}}
+
+namespace {namespace}
+{{
+    public class SampleTests
+    {{
+        {attribute}
+        public void ReturnsExpectedResponse()
+        {{
+        }}
+    }}
+}}
+"""
+
+        file_path.write_text(
+            multi_namespace_source("Microsoft.AspNetCore.Tests"),
+            encoding="utf-8",
+        )
+        commit(root, "Add multi-namespace test", "2026-07-31T00:00:00Z")
+        file_path.write_text(
+            multi_namespace_source(
+                "Microsoft.AspNetCore.Tests",
+                QUARANTINE_ATTRIBUTE,
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            multi_namespace_source("Microsoft.AspNetCore.Tests"),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine test", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            multi_namespace_source("Microsoft.AspNetCore.RenamedTests"),
+            encoding="utf-8",
+        )
+        commit(root, "Rename second namespace", "2026-08-03T00:00:00Z")
+
+        renamed_name = (
+            "Microsoft.AspNetCore.RenamedTests."
+            "SampleTests.ReturnsExpectedResponse"
+        )
+        renamed_evidence = evidence()
+        renamed_evidence["source_a"][renamed_name] = (
+            renamed_evidence["source_a"].pop(TEST_NAME)
+        )
+        renamed_result = collect_result(
+            root,
+            renamed_evidence,
+            test_name=renamed_name,
+        )
+        assert renamed_result["status"] == "unproven", renamed_result
+        assert renamed_result["reasons"] == [
+            "target-identity-rename-ambiguous"
+        ], renamed_result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+
+        def nested_namespace_source(inner_namespace, attribute=""):
+            return f"""namespace Outer
+{{
+    namespace {inner_namespace}
+    {{
+        public class SampleTests
+        {{
+            {attribute}
+            public void ReturnsExpectedResponse()
+            {{
+            }}
+        }}
+    }}
+}}
+"""
+
+        file_path.write_text(
+            nested_namespace_source("Old"),
+            encoding="utf-8",
+        )
+        commit(root, "Add nested namespace test", "2026-07-31T00:00:00Z")
+        file_path.write_text(
+            nested_namespace_source("Old", QUARANTINE_ATTRIBUTE),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            nested_namespace_source("Old"),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine test", "2026-08-02T00:00:00Z")
+        file_path.write_text(
+            nested_namespace_source("New"),
+            encoding="utf-8",
+        )
+        commit(root, "Rename nested namespace", "2026-08-03T00:00:00Z")
+
+        renamed_name = "Outer.New.SampleTests.ReturnsExpectedResponse"
+        renamed_evidence = evidence()
+        renamed_evidence["source_a"][renamed_name] = (
+            renamed_evidence["source_a"].pop(TEST_NAME)
+        )
+        renamed_result = collect_result(
+            root,
+            renamed_evidence,
+            test_name=renamed_name,
+        )
+        assert renamed_result["status"] == "unproven", renamed_result
+        assert renamed_result["reasons"] == [
+            "target-identity-rename-ambiguous"
+        ], renamed_result
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+
+        def moved_type_source(target_namespace, attribute=""):
+            def target_body(namespace):
+                if namespace != target_namespace:
+                    return ""
+                return f"""
+    public class SampleTests
+    {{
+        {attribute}
+        public void ReturnsExpectedResponse()
+        {{
+        }}
+    }}
+"""
+
+            return f"""namespace Old
+{{{target_body("Old")}
+}}
+
+namespace New
+{{{target_body("New")}
+}}
+"""
+
+        file_path.write_text(moved_type_source("Old"), encoding="utf-8")
+        commit(root, "Add test in old namespace", "2026-07-31T00:00:00Z")
+        file_path.write_text(
+            moved_type_source("Old", QUARANTINE_ATTRIBUTE),
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine test", "2026-08-01T00:00:00Z")
+        file_path.write_text(moved_type_source("Old"), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-02T00:00:00Z")
+        file_path.write_text(moved_type_source("New"), encoding="utf-8")
+        commit(root, "Move type between namespaces", "2026-08-03T00:00:00Z")
+
+        moved_name = "New.SampleTests.ReturnsExpectedResponse"
+        moved_evidence = evidence()
+        moved_evidence["source_a"][moved_name] = (
+            moved_evidence["source_a"].pop(TEST_NAME)
+        )
+        moved_result = collect_result(
+            root,
+            moved_evidence,
+            test_name=moved_name,
+        )
+        assert moved_result["status"] == "unproven", moved_result
+        assert moved_result["reasons"] == [
+            "target-identity-rename-ambiguous"
+        ], moved_result
+
+
+def test_exact_target_transition_in_shared_hunk():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]
+    public void Alpha()
+    {
+    }
+
+    public void Beta()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine Alpha", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            """namespace Microsoft.AspNetCore.Tests;
+
+public class SampleTests
+{
+    public void Alpha()
+    {
+    }
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/2")]
+    public void Beta()
+    {
+    }
+}
+""",
+            encoding="utf-8",
+        )
+        commit(root, "Move quarantine to Beta", "2026-08-02T00:00:00Z")
+
+        alpha = MODULE.quarantine_transitions(
+            root,
+            str(file_path.relative_to(root)),
+            "Alpha",
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "HEAD",
+        )
+        beta = MODULE.quarantine_transitions(
+            root,
+            str(file_path.relative_to(root)),
+            "Beta",
+            "Microsoft.AspNetCore.Tests.SampleTests",
+            "HEAD",
+        )
+        assert [event["status"] for event in alpha] == ["removed", "added"], alpha
+        assert [event["status"] for event in beta] == ["added"], beta
 
 
 class FakeResponse(io.BytesIO):
@@ -279,9 +1178,88 @@ def test_github_pr_files():
     failing_urlopen.assert_called_once()
 
 
+def test_github_commit_contains():
+    try:
+        MODULE.github_commit_contains("dotnet/aspnetcore", "a", "b", "")
+    except ValueError as error:
+        assert str(error) == "A GitHub token is required to compare build commits"
+    else:
+        raise AssertionError("github_commit_contains must reject a missing token")
+
+    for status, expected in [
+        ("ahead", True),
+        ("identical", True),
+        ("behind", False),
+        ("diverged", False),
+    ]:
+        with mock.patch.object(
+            MODULE.urllib.request,
+            "urlopen",
+            return_value=FakeResponse({"status": status}),
+        ):
+            assert MODULE.github_commit_contains(
+                "dotnet/aspnetcore",
+                "ancestor",
+                "descendant",
+                "token-123",
+            ) is expected
+
+    not_found = MODULE.urllib.error.HTTPError(
+        "https://api.github.com/compare",
+        404,
+        "Not Found",
+        {},
+        io.BytesIO(),
+    )
+    with mock.patch.object(
+        MODULE.urllib.request,
+        "urlopen",
+        side_effect=not_found,
+    ):
+        try:
+            MODULE.github_commit_contains(
+                "dotnet/aspnetcore",
+                "ancestor",
+                "descendant",
+                "token-123",
+            )
+        except ValueError as error:
+            assert "could not compare ancestor to descendant" in str(error)
+        else:
+            raise AssertionError("404 comparisons must be unavailable")
+
+    transient = MODULE.urllib.error.HTTPError(
+        "https://api.github.com/compare",
+        500,
+        "Server Error",
+        {},
+        io.BytesIO(),
+    )
+    with (
+        mock.patch.object(
+            MODULE.urllib.request,
+            "urlopen",
+            side_effect=[transient, FakeResponse({"status": "ahead"})],
+        ) as urlopen_mock,
+        mock.patch.object(MODULE.time, "sleep") as sleep_mock,
+    ):
+        assert MODULE.github_commit_contains(
+            "dotnet/aspnetcore",
+            "ancestor",
+            "descendant",
+            "token-123",
+        )
+    assert urlopen_mock.call_count == 2
+    sleep_mock.assert_called_once_with(2)
+
+
 def test_workflow_runner_temp():
     workflow = (SCRIPT.parents[2] / "test-quarantine.md").read_text(encoding="utf-8")
-    for step_name in ["Aggregate Part 1 failures", "Collect deterministic Case A eligibility"]:
+    for step_name in [
+        "Aggregate Part 1 failures",
+        "Collect deterministic current quarantine history",
+        "Collect deterministic quarantine eligibility",
+    ]:
         step = workflow.split(f"    - name: {step_name}\n", 1)[1].split("\n    - name:", 1)[0]
         script = textwrap.dedent(step.split("      run: |\n", 1)[1])
         # Stop at the first Python invocation so the preflight cannot collect live evidence.
@@ -516,6 +1494,7 @@ def test_assembly_quarantine_history():
         renamed_path = project / "RenamedSampleTests.cs"
         run(root, "git", "mv", file_path, renamed_path)
         commit(root, "Rename test file", "2026-08-04T00:00:00Z")
+        rename_commit = run_output(root, "git", "rev-parse", "HEAD")
 
         result = record(collect(root, evidence()))
         assert result["status"] == "ineligible", result
@@ -524,7 +1503,9 @@ def test_assembly_quarantine_history():
             "src/Sample.Tests/RenamedSampleTests.cs"
         )
         assert result["latest_quarantine_transition"] == "removed"
-        assert result["cutoff"]["commit"] == removal_commit
+        assert result["cutoff"]["commit"] == rename_commit
+        assert result["cutoff"]["reason"] == "latest-test-file-change", result
+        assert removal_commit != rename_commit
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -588,6 +1569,7 @@ public class DerivedTests : IntermediateTests
             encoding="utf-8",
         )
         commit(root, "Add intermediate test runner", "2026-08-04T00:00:00Z")
+        runner_commit = run_output(root, "git", "rev-parse", "HEAD")
 
         test_name = (
             "Microsoft.AspNetCore.Server.Tests."
@@ -601,7 +1583,8 @@ public class DerivedTests : IntermediateTests
         assert result["status"] == "ineligible", result
         assert result["originating_case"] == "case-b"
         assert result["latest_quarantine_transition"] == "removed"
-        assert result["cutoff"]["commit"] == removal_commit
+        assert result["cutoff"]["commit"] == runner_commit
+        assert removal_commit != runner_commit
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -620,8 +1603,8 @@ public class DerivedTests : IntermediateTests
 
         result = record(collect(root, evidence()))
         assert result["status"] == "unproven", result
-        assert result["latest_quarantine_transition"] == "ambiguous"
-        assert "quarantine-history-ambiguous" in result["reasons"]
+        assert result["latest_quarantine_transition"] == "unknown"
+        assert result["reasons"] == ["project-history-incomplete"]
 
 
 def test_partial_sibling_type_quarantine_is_already_quarantined(module=None):
@@ -1433,12 +2416,16 @@ def test_runner_switches_to_mid_after_base_unquarantine_stays_case_b(module=None
             encoding="utf-8",
         )
         commit(root, "Introduce Mid and retarget Runner", "2026-08-03T00:00:00Z")
+        retarget_commit = run_output(root, "git", "rev-parse", "HEAD")
 
         result = runner_result(root, module=module)
         assert result["source_resolution"]["status"] == "exact", result
         assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
         assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.Method.cs", result
-        assert_case_b(result, removal_commit)
+        assert result["originating_case"] == "case-b", result
+        assert result["cutoff"]["commit"] == retarget_commit, result
+        assert result["cutoff"]["reason"] == "latest-test-file-change", result
+        assert removal_commit != retarget_commit
 
 
 def test_historical_mid_unquarantine_stays_case_b_after_runner_switches_directly_to_base(module=None):
@@ -1462,12 +2449,16 @@ def test_historical_mid_unquarantine_stays_case_b_after_runner_switches_directly
         )
         mid_path.unlink()
         commit(root, "Runner now inherits Base directly", "2026-08-03T00:00:00Z")
+        switch_commit = run_output(root, "git", "rev-parse", "HEAD")
 
         result = runner_result(root, module=module)
         assert result["source_resolution"]["status"] == "exact", result
         assert result["source_resolution"]["declaring_type"] == "Sample.Base", result
         assert result["source_resolution"]["path"] == "src/Sample.Tests/Base.cs", result
-        assert_case_b(result, removal_commit)
+        assert result["originating_case"] == "case-b", result
+        assert result["cutoff"]["commit"] == switch_commit, result
+        assert result["cutoff"]["reason"] == "latest-test-file-change", result
+        assert removal_commit != switch_commit
 
 
 def test_mid_unquarantine_before_runner_adopts_mid_stays_case_a(module=None):
@@ -1715,6 +2706,11 @@ def run_output(root, *args):
 
 
 def main():
+    test_build_source_ancestry()
+    test_history_cutoff_uses_first_parent_order()
+    test_requarantine_history()
+    test_exact_target_transition_in_shared_hunk()
+    test_github_commit_contains()
     test_workflow_runner_temp()
     test_github_pr_files()
 

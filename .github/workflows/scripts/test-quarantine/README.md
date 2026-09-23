@@ -20,8 +20,11 @@ issue. These correspond to Case A and Case B in
    `test-quarantine-case-a-eligibility.json`. Each test receipt records exact
    source resolution, method/class/assembly quarantine state, quarantine
    history category, regression status, raw/excluded/post-cutoff build sets,
-   the conservative freshness cutoff, exact evidence identity, and the
-   `origin/main` history commit used for the decision. Assembly history is
+   the conservative freshness cutoff, build-source ancestry against the
+   history cutoff commit, exact evidence identity, and the `origin/main`
+   history commit used for the decision. The receipt also identifies Case B
+   tests with at least one post-cutoff failure whose source snapshot contains
+   the unquarantine commit. Assembly history is
    reconstructed across the resolved test project, including deleted
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
@@ -38,14 +41,22 @@ issue. These correspond to Case A and Case B in
    method freshness cutoff and Source B pull-request file checks, which still
    key off the resolved declaring method and inherited runner files rather than
    every partial sibling declaration.
-3. The pre-activation job uploads both files as the one-day
+3. `collect_requarantine_history.py` enumerates every current method-, type-,
+   and assembly-level quarantine target from trusted source. It classifies the
+   exact first-parent history from project-wide commit/parent source snapshots
+   as `first-quarantine`, `re-quarantined`, or `ambiguous`; method and partial
+   type moves between files preserve their logical history, and issue-URL-only
+   replacements are not remove/add transitions. Automated unquarantine requires an exact
+   `first-quarantine` match and fails closed otherwise.
+4. The pre-activation job uploads all three files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
-4. The agent may choose a new-quarantine candidate only from the deterministic
-   eligible-test list injected into its prompt.
-5. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
+5. The agent may choose a new-quarantine or re-quarantine candidate only from
+   the corresponding deterministic eligible-test list injected into its
+   prompt.
+6. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
    repository, ref, commit, minimum new-quarantine predicates, exact test,
    matcher, and build/run/result identity.
-6. The handler creates or reuses the quarantine issue and returns the
+7. The handler creates or reuses the quarantine issue and returns the
    temporary-ID mapping used by `add_comment` and `create_pull_request`. Reuse
    is resolved by paginating `GET /repos/{owner}/{repo}/issues` with
    `state=open`, `labels=test-failure`, and `per_page=100`, then comparing
@@ -93,6 +104,9 @@ into a KBE.
 
 - One exact fully qualified test per new-quarantine issue and PR.
 - The agent cannot author or override new-quarantine eligibility facts.
+- A post-cutoff failure is rejected when its source commit does not contain
+  the history-derived cutoff commit, including stale PR merge snapshots that
+  started after an unquarantine landed.
 - At least two distinct post-cutoff failures, exact current quarantine state,
   regression exclusion, and the new-quarantine category are enforced before
   KBE rendering.
