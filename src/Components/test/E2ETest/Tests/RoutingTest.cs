@@ -1158,6 +1158,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66041")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         InitializeBrowser(BrowserFixture.NavigationPromptContext);
