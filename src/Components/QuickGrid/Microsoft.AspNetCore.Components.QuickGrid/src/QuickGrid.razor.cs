@@ -115,8 +115,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     /// <summary>
     /// Gets or sets a comparer used during virtualization to detect whether items were prepended or appended
-    /// between data loads. The comparer determines whether the first loaded item changed between loads, which
-    /// indicates items were inserted above the current viewport, so the grid can keep the viewport anchored.
+    /// between data loads. When provider windows overlap, the comparer determines whether a previously rendered
+    /// item changed at the same global index, which indicates items were inserted above the current viewport,
+    /// so the grid can keep the viewport anchored.
     ///
     /// Provide a comparer that compares items by a stable unique identifier (for example, a primary key).
     /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
