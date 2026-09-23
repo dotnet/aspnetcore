@@ -1285,6 +1285,25 @@ public class DefaultApplicationModelProviderTest
     }
 
     [Fact]
+    public void AddReturnTypeMetadata_ExtractsMetadataFromResultsUnionReturnType()
+    {
+        // Arrange
+        var selector = new SelectorModel();
+        var selectors = new List<SelectorModel> { selector };
+        var actionMethod = typeof(TypedResultsReturningActionsController).GetMethod(nameof(TypedResultsReturningActionsController.GetUnion));
+
+        // Act
+        DefaultApplicationModelProvider.AddReturnTypeMetadata(selectors, actionMethod);
+
+        // Assert
+        Assert.NotNull(selector.EndpointMetadata);
+        var responseMetadata = selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().ToArray();
+        Assert.Equal(2, responseMetadata.Length);
+        Assert.Single(responseMetadata, m => m.StatusCode == 200);
+        Assert.Single(responseMetadata, m => m.StatusCode == 401);
+    }
+
+    [Fact]
     public void ControllerDispose_ExplicitlyImplemented_IDisposableMethods_AreTreatedAs_NonActions()
     {
         // Arrange
@@ -1755,7 +1774,11 @@ public class DefaultApplicationModelProviderTest
     private class TypedResultsReturningActionsController : Controller
     {
         [HttpGet]
-        public Http.HttpResults.Ok<Foo> Get() => TypedResults.Ok<Foo>(new Foo { Info = "Hello" });
+        public Http.HttpResults.Ok<Foo> Get() => TypedResults.Ok(new Foo { Info = "Hello" });
+
+        [HttpGet]
+        public Http.HttpResults.Results<Http.HttpResults.Ok<Foo>, Http.HttpResults.UnauthorizedHttpResult, Http.HttpResults.ProblemHttpResult> GetUnion()
+            => TypedResults.Ok(new Foo { Info = "Hello" });
     }
 
     public class Foo {

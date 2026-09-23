@@ -160,7 +160,7 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     [Fact]
     public void StreamingSSR_CookieTempData_DoesNotPersistValuesWrittenAfterFirstFlush()
     {
-        Navigate($"{ServerPathBase}/streaming-session-persistence");
+        Navigate($"{ServerPathBase}/streaming-cookie-tempdata-persistence");
         Browser.Exists(By.Id("streaming-complete"));
 
         Navigate($"{ServerPathBase}/tempdata");

@@ -370,6 +370,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var scope = _serviceScopeFactory.CreateAsyncScope();
         IHubActivator<THub>? hubActivator = null;
         THub? hub = null;
+        long? streamOwner = null;
         try
         {
             hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
@@ -409,7 +410,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 CancellationTokenSource? cts = null;
                 if (descriptor.HasSyntheticArguments)
                 {
-                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, scope, ref arguments, out cts);
+                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, scope, ref arguments, ref streamOwner, out cts);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -424,7 +425,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 if (isStreamResponse)
                 {
                     _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, hubCallerContext,
-                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
+                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor, streamOwner);
                 }
                 else
                 {
@@ -439,7 +440,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         HubCallerContext hubCallerContext,
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
                                                         bool isStreamCall,
-                                                        CancellationTokenSource? cts)
+                                                        CancellationTokenSource? cts,
+                                                        long? streamOwner)
                     {
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
@@ -509,7 +511,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
                             {
-                                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                await CleanupInvocation(connection, hubMethodInvocationMessage, streamOwner, hubActivator, hub, scope);
                             }
                         }
 
@@ -521,7 +523,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts);
+                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts, streamOwner);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -557,21 +559,21 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 {
                     wasSemaphoreReleased = !hubCallerClients.TrySetSemaphoreReleased();
                 }
-                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, hubMethodInvocationMessage, streamOwner, hubActivator, hub, scope);
             }
         }
 
         return !wasSemaphoreReleased;
     }
 
-    private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
+    private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, long? streamOwner, IHubActivator<THub>? hubActivator,
         THub? hub, AsyncServiceScope scope)
     {
-        if (hubMessage.StreamIds != null)
+        if (streamOwner is not null)
         {
-            foreach (var stream in hubMessage.StreamIds)
+            foreach (var streamId in hubMessage.StreamIds!)
             {
-                connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
+                connection.StreamTracker.TryComplete(streamId, streamOwner.Value);
             }
         }
 
@@ -584,7 +586,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     }
 
     private async Task StreamAsync(string invocationId, HubConnectionContext connection, HubCallerContext hubCallerContext, object?[] arguments, AsyncServiceScope scope,
-        IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
+        IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage,
+        HubMethodDescriptor descriptor, long? streamOwner)
     {
         string? error = null;
 
@@ -606,6 +609,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             {
                 Log.InvocationIdInUse(_logger, invocationId);
                 error = $"Invocation ID '{invocationId}' is already in use.";
+                streamCts.Dispose();
                 return;
             }
             ctsRegistered = true;
@@ -671,7 +675,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 Activity.Current = previousActivity;
             }
 
-            await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+            await CleanupInvocation(connection, hubMethodInvocationMessage, streamOwner, hubActivator, hub, scope);
 
             // Only remove/dispose the CTS if we successfully registered it, otherwise we'd evict
             // another invocation's CTS on ID collision.
@@ -758,8 +762,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         object?[] hubMethodArguments,
         Hub hub)
     {
-        // If there are no policies we don't need to run auth
-        if (descriptor.Policies.Count == 0)
+        // If there is no authorization metadata we don't need to run auth
+        if (descriptor.AuthorizationMetadata.Count == 0)
         {
             return TaskCache.True;
         }
@@ -767,22 +771,39 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return IsHubMethodAuthorizedSlow(
             provider,
             hubCallerContext.User ?? new ClaimsPrincipal(),
-            descriptor.Policies,
+            descriptor.AuthorizationMetadata,
             new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
-    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
+    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IReadOnlyList<object> authorizationMetadata, HubInvocationContext resource)
     {
-        var authService = provider.GetRequiredService<IAuthorizationService>();
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);
-        // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
-        Debug.Assert(authorizePolicy != null);
+        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizationMetadata);
+        if (authorizePolicy is null)
+        {
+            // The method had attributes, but none of them contributed authorization metadata 
+            return true;
+        }
 
+        var authService = provider.GetRequiredService<IAuthorizationService>();
         var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
         // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
         return authorizationResult.Succeeded;
+    }
+
+    private static void EnsureNoAuthenticationSchemeSpecified(IReadOnlyList<object> authorizationMetadata)
+    {
+        // It's not meaningful to specify a nonempty scheme, since by the time hub method
+        // authorization runs, the connection already has a specific ClaimsPrincipal (we're stateful).
+        // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
+        for (var i = 0; i < authorizationMetadata.Count; i++)
+        {
+            if (authorizationMetadata[i] is IAuthorizeData entry && !string.IsNullOrEmpty(entry.AuthenticationSchemes))
+            {
+                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for hub methods.");
+            }
+        }
     }
 
     private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamResponse,
@@ -814,7 +835,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     }
 
     private void ReplaceArguments(HubMethodDescriptor descriptor, HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamCall,
-        HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments, out CancellationTokenSource? cts)
+        HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments,
+        ref long? streamOwner, out CancellationTokenSource? cts)
     {
         cts = null;
         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
@@ -822,39 +844,52 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
         var streamPointer = 0;
         var hubInvocationArgumentPointer = 0;
-        for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
+        var argumentsReplaced = false;
+        try
         {
-            // populate the synthetic arguments first
-            if (descriptor.IsServiceArgument(parameterPointer))
+            for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
             {
-                arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
-            }
-            else if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
-            {
-                cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                arguments[parameterPointer] = cts.Token;
-            }
-            else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
-            {
-                Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
-                var itemType = descriptor.StreamingParameters![streamPointer];
-                arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
-                    itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+                // populate the synthetic arguments first
+                if (descriptor.IsServiceArgument(parameterPointer))
+                {
+                    arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
+                }
+                else if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
+                {
+                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                    arguments[parameterPointer] = cts.Token;
+                }
+                else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+                {
+                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
+                    var itemType = descriptor.StreamingParameters![streamPointer];
+                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                        itemType, descriptor.OriginalParameterTypes[parameterPointer], streamOwner ??= connection.StreamTracker.GetNextStreamOwner());
 
-                streamPointer++;
+                    streamPointer++;
+                }
+                else if (hubMethodInvocationMessage.Arguments?.Length > hubInvocationArgumentPointer &&
+                    (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
+                    descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer]?.GetType())))
+                {
+                    // The types match so it isn't a synthetic argument, just copy it into the arguments array
+                    arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
+                    hubInvocationArgumentPointer++;
+                }
+                else
+                {
+                    // This should never happen
+                    Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{descriptor.MethodExecutor.MethodInfo.Name}'.");
+                }
             }
-           else if (hubMethodInvocationMessage.Arguments?.Length > hubInvocationArgumentPointer &&
-                (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
-                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer]?.GetType())))
+
+            argumentsReplaced = true;
+        }
+        finally
+        {
+            if (!argumentsReplaced)
             {
-                // The types match so it isn't a synthetic argument, just copy it into the arguments array
-                arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
-                hubInvocationArgumentPointer++;
-            }
-            else
-            {
-                // This should never happen
-                Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{descriptor.MethodExecutor.MethodInfo.Name}'.");
+                cts?.Dispose();
             }
         }
     }
@@ -893,8 +928,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
-            var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
+            var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true);
+            EnsureNoAuthenticationSchemeSpecified(authorizationMetadata);
+            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata);
             _cachedMethodNames.Add(methodName);
 
             Log.HubMethodBound(_logger, hubName, methodName);

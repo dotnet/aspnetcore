@@ -10,6 +10,7 @@ parameters:
   HelixConfiguration: ''                 # optional -- additional property attached to a job
   HelixPreCommands: ''                   # optional -- commands to run before Helix work item execution
   HelixPostCommands: ''                  # optional -- commands to run after Helix work item execution
+  UseHelixMonitor: false                 # optional -- true will submit Helix jobs configured for the standalone Helix Job Monitor (results are reported/waited on out-of-band; this step will not wait, and WaitForWorkItemCompletion will be overridden)
   WorkItemDirectory: ''                  # optional -- a payload directory to zip up and send to Helix; requires WorkItemCommand; incompatible with XUnitProjects
   WorkItemCommand: ''                    # optional -- a command to execute on the payload; requires WorkItemDirectory; incompatible with XUnitProjects
   WorkItemTimeout: ''                    # optional -- a timeout in TimeSpan.Parse-ready value (e.g. 00:02:00) for the work item command; requires WorkItemDirectory; incompatible with XUnitProjects
@@ -31,7 +32,15 @@ parameters:
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
 steps:
-  - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY/${{ parameters.HelixProjectPath }} /restore /p:TreatWarningsAsErrors=false ${{ parameters.HelixProjectArguments }} /t:Test /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
+  - powershell: >
+      $(Build.SourcesDirectory)\eng\common\msbuild.ps1
+      $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
+      /restore
+      /p:TreatWarningsAsErrors=false
+      /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+      ${{ parameters.HelixProjectArguments }}
+      /t:Test
+      /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
     displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
     env:
       BuildConfig: $(_BuildConfig)
@@ -61,7 +70,15 @@ steps:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
     continueOnError: ${{ parameters.continueOnError }}
-  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/${{ parameters.HelixProjectPath }} /restore /p:TreatWarningsAsErrors=false ${{ parameters.HelixProjectArguments }} /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
+  - script: >
+      $(Build.SourcesDirectory)/eng/common/msbuild.sh
+      $(Build.SourcesDirectory)/${{ parameters.HelixProjectPath }}
+      /restore
+      /p:TreatWarningsAsErrors=false
+      /p:EnableHelixJobMonitor=${{ parameters.UseHelixMonitor }}
+      ${{ parameters.HelixProjectArguments }}
+      /t:Test
+      /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
     displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
     env:
       BuildConfig: $(_BuildConfig)
@@ -91,3 +108,4 @@ steps:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
     continueOnError: ${{ parameters.continueOnError }}
+

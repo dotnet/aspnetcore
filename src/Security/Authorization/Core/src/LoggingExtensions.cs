@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Extensions.Logging;
@@ -16,9 +17,17 @@ internal static partial class LoggingExtensions
 
     public static void UserAuthorizationFailed(this ILogger logger, AuthorizationFailure failure)
     {
-        var reason = failure.FailCalled
-            ? "Fail() was explicitly called."
-            : "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
+        string reason;
+        if (failure.FailCalled)
+        {
+            reason = failure.FailureReasons.Any()
+                ? "Fail() was explicitly called. Authorization failed due to:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailureReasons.Select(reason => reason.Message))
+                : "Fail() was explicitly called.";
+        }
+        else
+        {
+            reason = "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
+        }
 
         UserAuthorizationFailed(logger, reason);
     }

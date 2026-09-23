@@ -128,5 +128,8 @@ public sealed class AuthorizeRouteView : RouteView
 
         protected override IAuthorizeData[]? GetAuthorizeData()
             => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageType);
+
+        internal override object[]? GetAuthorizationMetadata()
+            => AttributeAuthorizeDataCache.GetAuthorizationMetadataForType(RouteData.PageType);
     }
 }

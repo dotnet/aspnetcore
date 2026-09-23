@@ -1,0 +1,47 @@
+.document-editor__input,
+.document-editor__surface {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    color: #111827;
+    font: 0.95rem/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+    min-height: calc(100vh - 190px);
+    padding: 28px;
+    white-space: pre-wrap;
+    width: 100%;
+}
+
+.document-editor__input {
+    resize: vertical;
+}
+
+.document-editor__input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    outline: none;
+}
+
+.document-editor__surface {
+    background: #f9fafb;
+}
+
+.document-editor__diff {
+    font: inherit;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+::deep .document-editor__diff em {
+    background: #dcfce7;
+    border-radius: 3px;
+    color: #166534;
+    font-style: normal;
+    text-decoration: none;
+}
+
+::deep .document-editor__diff s {
+    background: #fee2e2;
+    border-radius: 3px;
+    color: #991b1b;
+}

@@ -218,7 +218,7 @@ public class StringWithQualityHeaderValue
         // If we found a ';' separator, it must be followed by a quality information
         if (!TryReadQuality(input, result, ref current))
         {
-            return 0;
+            return current - startIndex;
         }
 
         parsedValue = result;

@@ -39,12 +39,12 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, bool needsAccurateSignature, [NotNullWhen(true)] out IMethodSymbol? method)
     {
         method = null;
         if (invocation.TryGetRouteHandlerArgument(out var argument))
         {
-            method = ResolveMethodFromOperation(argument, semanticModel);
+            method = ResolveMethodFromOperation(argument, semanticModel, needsAccurateSignature);
             return method is not null;
         }
         return false;
@@ -87,19 +87,35 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
-    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
+    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel, bool needsAccurateSignature) => operation switch
     {
-        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel),
-        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel),
-        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel),
+        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel, needsAccurateSignature),
+        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
+        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel, needsAccurateSignature),
         IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
-            ResolveMethodFromOperation(op, semanticModel),
+            ResolveMethodFromOperation(op, semanticModel, needsAccurateSignature),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
-        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel),
-        _ => null
+        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel, needsAccurateSignature),
+        _ => ResolveMethodFromType(operation.Type, needsAccurateSignature),
     };
+
+    private static IMethodSymbol? ResolveMethodFromType(ITypeSymbol? type, bool needsAccurateSignature)
+    {
+        // When we can only resolve the method from the operation's type (e.g., a handler returned from a method,
+        // or a delegate variable), the DelegateInvokeMethod won't carry accurate parameter names or attributes.
+        // in addition, it might not be castable to `Action` or `Func<T>` (and the generated code attempts to do this cast)
+        // For RDG (needsAccurateSignature=true), we return null so the generator emits UnableToResolveMethod
+        // and falls back to RequestDelegateFactory.
+        // For validation (needsAccurateSignature=false), parameter types are sufficient, so we return the invoke method.
+        if (needsAccurateSignature)
+        {
+            return null;
+        }
+
+        return (type as INamedTypeSymbol)?.DelegateInvokeMethod;
+    }
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {

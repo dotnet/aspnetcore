@@ -116,7 +116,7 @@ public class TemplatePart
     /// </summary>
     public bool IsOptional { get; private set; }
     /// <summary>
-    /// <see langword="true"/> if the route part represents an optional seperator.
+    /// <see langword="true"/> if the route part represents an optional separator.
     /// </summary>
     public bool IsOptionalSeperator { get; set; }
     /// <summary>
@@ -124,7 +124,7 @@ public class TemplatePart
     /// </summary>
     public string? Name { get; private set; }
     /// <summary>
-    /// The textual representation of the route parameter. Can be null. Used to represent route seperators and literal parts.
+    /// The textual representation of the route parameter. Can be null. Used to represent route separators and literal parts.
     /// </summary>
     public string? Text { get; private set; }
     /// <summary>

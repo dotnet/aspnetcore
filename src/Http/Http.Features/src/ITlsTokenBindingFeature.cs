@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Shared;
+
 namespace Microsoft.AspNetCore.Http.Features;
 
 /// <summary>
@@ -12,6 +14,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// client's machine. See <see href="https://datatracker.ietf.org/doc/draft-popov-token-binding/"/>
 /// for more information.
 /// </remarks>
+[Obsolete(Obsoletions.TlsTokenBindingFeatureMessage, DiagnosticId = Obsoletions.TlsTokenBindingFeatureDiagId, UrlFormat = Obsoletions.AspNetCoreDeprecate010Url)]
 public interface ITlsTokenBindingFeature
 {
     /// <summary>

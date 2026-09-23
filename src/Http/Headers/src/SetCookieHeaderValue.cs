@@ -500,7 +500,7 @@ public class SetCookieHeaderValue
         // = (no spaces)
         if (!ReadEqualsSign(input, ref offset))
         {
-            return 0;
+            return offset - startIndex;
         }
 
         // value or "quoted value"
@@ -542,7 +542,7 @@ public class SetCookieHeaderValue
                 {
                     return 0;
                 }
-                // We don't want to include comma, becouse date may contain it (eg. Sun, 06 Nov...)
+                // We don't want to include comma, because date may contain it (eg. Sun, 06 Nov...)
                 var dateString = ReadToSemicolonOrEnd(input, ref offset, includeComma: false);
                 DateTimeOffset expirationDate;
                 if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))

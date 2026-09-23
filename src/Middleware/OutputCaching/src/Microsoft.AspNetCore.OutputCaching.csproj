@@ -13,7 +13,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Microbenchmarks" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

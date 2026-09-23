@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -60,22 +59,29 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // As an optimization, only evaluate the messages enumerable once, and
-        // only produce the enclosing <ul> if there's at least one message,
-        // or client-side validation is enabled.
-        var validationMessages = Model is null ?
-            CurrentEditContext.GetValidationMessages() :
-            CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
-
-        if (CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
-            && serviceObj is IClientValidationService)
+        if (AssignedRenderMode is not null)
         {
-            RenderForClientValidation(builder, validationMessages);
-            return;
+            // Interactive .NET validation
+            RenderInteractiveRenderTree(builder);
         }
+        else
+        {
+            // Client-side JS validation
+            RenderStaticRenderTree(builder);
+        }
+    }
 
+    private IEnumerable<string> GetValidationMessages()
+        => Model is null
+            ? CurrentEditContext.GetValidationMessages()
+            : CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
+
+    private void RenderInteractiveRenderTree(RenderTreeBuilder builder)
+    {
+        // As an optimization, only evaluate the messages enumerable once, and
+        // only produce the enclosing <ul> if there's at least one message.
         var first = true;
-        foreach (var error in validationMessages)
+        foreach (var error in GetValidationMessages())
         {
             if (first)
             {
@@ -99,34 +105,37 @@ public class ValidationSummary : ComponentBase, IDisposable
         }
     }
 
-    /// <summary>
-    /// Renders a validation summary container with data-valmsg-summary="true" for the JS
-    /// validation library. Sets the initial CSS class based on whether server-rendered messages
-    /// exist: validation-summary-errors when non-empty (so CSS that hides validation-summary-valid
-    /// won't suppress initial server errors), validation-summary-valid when empty.
-    /// </summary>
-    private void RenderForClientValidation(RenderTreeBuilder builder, IEnumerable<string> validationMessages)
+    private void RenderStaticRenderTree(RenderTreeBuilder builder)
     {
-        var messages = new List<string>(validationMessages);
+        var messages = new List<string>(GetValidationMessages());
+        var hasErrors = messages.Count > 0;
 
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "data-valmsg-summary", "true");
-        builder.AddAttribute(2, "class", messages.Count > 0 ? "validation-summary-errors" : "validation-summary-valid");
-
-        builder.OpenElement(3, "ul");
-        builder.AddAttribute(4, "class", "validation-errors");
-        builder.AddMultipleAttributes(5, AdditionalAttributes);
+        // The <ul> itself is the carrier the JS client-validation engine locates via
+        // data-valmsg-summary. The state class starts as validation-summary-errors/-valid so
+        // server-rendered errors are styled before the JS engine runs.
+        builder.OpenElement(0, "ul");
+        builder.AddAttribute(1, "class", hasErrors
+            ? "validation-errors validation-summary-errors"
+            : "validation-errors validation-summary-valid");
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttribute(3, "data-valmsg-summary", "true");
+        if (!hasErrors)
+        {
+            // No server-side messages: keep the empty summary out of the layout until the JS engine
+            // populates it.
+            // Use the hidden attribute rather than an inline style="display:none" for CSP compliance.
+            builder.AddAttribute(4, "hidden", true);
+        }
 
         foreach (var error in messages)
         {
-            builder.OpenElement(6, "li");
-            builder.AddAttribute(7, "class", "validation-message");
-            builder.AddContent(8, error);
+            builder.OpenElement(5, "li");
+            builder.AddAttribute(6, "class", "validation-message");
+            builder.AddContent(7, error);
             builder.CloseElement();
         }
 
         builder.CloseElement(); // ul
-        builder.CloseElement(); // div
     }
 
     /// <inheritdoc/>

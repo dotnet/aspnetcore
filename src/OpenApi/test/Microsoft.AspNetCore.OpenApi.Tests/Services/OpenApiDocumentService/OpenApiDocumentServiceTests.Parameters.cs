@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-
+using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
@@ -215,5 +217,362 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             return Task.CompletedTask;
         }
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form", ([FromForm] FormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.4",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the item",
+                        "nullable": true
+                      },
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  "IFormFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormParameter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-param", ([FromForm, Description("The ID")] int id) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-param": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnFromFormComplexParameter()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-complex", ([FromForm, Description("The Complex Object")] FormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-complex": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "description": "The Complex Object",
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "description": "The Complex Object",
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
+                      },
+                      "file": {
+                        "description": "The file to upload",
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  "IFormFile": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    private class FormWithDescription
+    {
+        [Description("The name of the item")]
+        public string Name { get; set; }
+
+        [Description("The file to upload")]
+        public IFormFile File { get; set; }
+    }
+
+#nullable enable
+    private class NullableFormWithDescription
+    {
+        [Description("The name of the item")]
+        public string? Name { get; set; }
+
+        [Description("The file to upload")]
+        public IFormFile? File { get; set; }
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnNullableFromFormProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-nullable", ([FromForm] NullableFormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-nullable": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "IFormFile": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
+                  },
+                  "NullableFormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
+                      },
+                      "file": {
+                        "oneOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "description": "The file to upload",
+                            "$ref": "#/components/schemas/IFormFile"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 }

@@ -44,6 +44,7 @@ let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
   enhancedNavigationStarted: () => void;
+  beforeDomUpdate: (source: Node) => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -309,6 +310,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
+        navigationEnhancementCallbacks.beforeDomUpdate(parsedHtml);
         synchronizeDomContent(document, parsedHtml);
         navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {

@@ -1,0 +1,73 @@
+@using Microsoft.AspNetCore.Components.Forms
+@implements IDisposable
+@inject AsyncValidationGate Gate
+
+@* Shared markup for the DataAnnotations async validation E2E components. The concrete model (passed by
+   a thin wrapper component) determines whether validation runs through the static Validator path or the
+   Microsoft.Extensions.Validation (MEV) path. A custom EditContext is used so the component can subscribe
+   to OnValidationStateChanged and re-render its own faulted-state markup as async validation settles.
+   The validators block on AsyncValidationGate, so the test drives the pending to settled transition by
+   clicking Release rather than relying on timing. *@
+
+<EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <p class="user-name">
+        User name: <InputText @bind-Value="Model.Username" />
+    </p>
+
+    @if (_editContext.IsValidationPending(() => Model.Username))
+    {
+        <span id="field-pending">field-pending</span>
+    }
+
+    @if (_editContext.IsValidationPending())
+    {
+        <span id="form-pending">form-pending</span>
+    }
+
+    @if (_editContext.IsValidationFaulted(() => Model.Username))
+    {
+        <span id="username-faulted">faulted</span>
+    }
+
+    <button type="submit" id="submit">Submit</button>
+    <button type="button" id="release-validation" @onclick="() => Gate.Release()">Release</button>
+
+    <ul class="validation-errors">
+        @foreach (var message in _editContext.GetValidationMessages())
+        {
+            <li class="validation-message">@message</li>
+        }
+    </ul>
+</EditForm>
+
+@if (_lastCallback != null)
+{
+    <span id="last-callback">@_lastCallback</span>
+}
+
+@code {
+    [Parameter] public AsyncRegistrationModelBase Model { get; set; }
+
+    private EditContext _editContext;
+    private string _lastCallback;
+
+    protected override void OnInitialized()
+    {
+        // Start each test mount from a fresh, unsignaled gate.
+        Gate.Reset();
+        _editContext = new EditContext(Model);
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
+
+    private void OnValidationStateChanged(object sender, ValidationStateChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
+
+    private void HandleValidSubmit() => _lastCallback = "OnValidSubmit";
+
+    private void HandleInvalidSubmit() => _lastCallback = "OnInvalidSubmit";
+
+    public void Dispose()
+        => _editContext.OnValidationStateChanged -= OnValidationStateChanged;
+}

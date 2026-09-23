@@ -30,7 +30,8 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         codeWriter.Indent++;
         codeWriter.WriteLine("this IEndpointRouteBuilder endpoints,");
         // MapFallback overloads that only take a delegate do not need a pattern argument
-        if (endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2)
+        var hasPatternParameter = endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2;
+        if (hasPatternParameter)
         {
             codeWriter.WriteLine(@"[StringSyntax(""Route"")] string pattern,");
         }
@@ -100,7 +101,7 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         codeWriter.WriteLine("endpoints,");
         // For `MapFallback` overloads that only take a delegate, provide the assumed default
         // Otherwise, pass the pattern provided from the MapX invocation
-        if (endpoint.HttpMethod != "MapFallback" && endpoint.Operation.Arguments.Length != 2)
+        if (hasPatternParameter)
         {
             codeWriter.WriteLine("pattern,");
         }

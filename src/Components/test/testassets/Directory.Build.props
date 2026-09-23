@@ -6,13 +6,6 @@
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <WasmPreloadAssets>false</WasmPreloadAssets>
-  </PropertyGroup>
-  <PropertyGroup>
-    <BlazorCacheBootResources>false</BlazorCacheBootResources>
-  </PropertyGroup>
-  
   <ItemGroup>
     <!-- Enable RespectRequiredConstructorParametersDefault to test compatibility -->
     <RuntimeHostConfigurationOption Include="System.Text.Json.Serialization.RespectRequiredConstructorParametersDefault" Value="true" />

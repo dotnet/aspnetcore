@@ -819,8 +819,8 @@ public class WebSocketMiddlewareTests : LoggedTest
         },
         o =>
         {
-            o.KeepAliveInterval = TimeSpan.FromMilliseconds(1);
-            o.KeepAliveTimeout = TimeSpan.FromMilliseconds(1);
+            o.KeepAliveInterval = TimeSpan.FromMilliseconds(50);
+            o.KeepAliveTimeout = TimeSpan.FromMilliseconds(50);
         }))
         {
             using (var client = new HttpClient())

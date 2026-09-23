@@ -1,0 +1,50 @@
+{
+  "description": "Reviewed presentation expectations with additive merge discussion coverage. Synthetic cases are not live pull requests. Legacy raw and sanitized selected ReadyToMerge rows now require verification; their entire original inventory is unassessed. Merge budgets reuse the existing discussion candidate limit independently and the caller's ready-to-merge display cap. Original source artifacts and historical hashes below remain unchanged. Expected bodies use LF with no final newline; tests account only for checkout CRLF transport.",
+  "attemptTimestamp": "2026-09-10T20:04:56.0000000Z",
+  "queueSnapshot": "2026-09-03T18:00:00.0000000Z",
+  "normalizer": "gh-aw v0.88.7 actions/setup/js/sanitize_content.cjs",
+  "sanitizerBlob": "871e59cd7d135ffe782b0df5a286b3188d9b9635",
+  "fixtures": {
+    "normal-legacy": {
+      "source": "../normal-legacy.json",
+      "kind": "synthetic legacy contract including malicious display text",
+      "sourceBlob": "b517dd951797c2d8e2192098902c845fdbcb77d0"
+    },
+    "complete-zero": {
+      "source": "../complete-zero.json",
+      "kind": "synthetic complete empty legacy inventory",
+      "sourceBlob": "45ef66afa80f1b4a7fc966368f36adc077b0d98e"
+    },
+    "incomplete-query": {
+      "source": "../incomplete.json",
+      "kind": "synthetic incomplete query through the real sanitizer",
+      "sourceBlob": "f5a18155e619304f7beefbc3ea52c448fa827f60"
+    },
+    "bounded-empty-verification": {
+      "source": "../normal-legacy.json",
+      "kind": "synthetic bounded view through the real sanitizer",
+      "changes": {
+        "items[2].shownInDiscussionVerification": false,
+        "items[2].discussionVerificationRank": null
+      },
+      "verificationNeededCount": 1,
+      "displayedVerificationCount": 0
+    },
+    "published-34643961191": {
+      "source": "published-34643961191.pulse.json",
+      "kind": "bounded already-sanitized canonical input; no raw collection or discussion text",
+      "repository": "PureWeen/aspnetcore",
+      "branch": "agentic-workflows",
+      "commit": "a2599d80d6eb30a54a3b3f1128ea99e71cd3151b",
+      "runId": 34643961191,
+      "runAttempt": 1,
+      "artifact": "pulse-publication-evidence/pulse-input.json",
+      "originalInputSha256": "430fcb3b55133cabe653f62575f1c7f7275bb9c520aa844a31d0ad192e60c91c",
+      "originalInputUtf8Bytes": 7982,
+      "previousBodySha256": "f09557bb77bdd0a920070d08a01f42ee9ebe4d8808685fe2e254daf786403fae",
+      "previousBodyUtf8Bytes": 8542,
+      "previousIssueUpdatedAt": "2026-09-11T20:29:47Z",
+      "displayedCounts": [5, 5, 3, 3]
+    }
+  }
+}

@@ -20,6 +20,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
     private CommandOption _openApiVersion;
     private CommandOption _documentName;
     private CommandOption _fileName;
+    private CommandOption _environment;
 
     public GetDocumentCommand(IConsole console) : base(console)
     {
@@ -34,6 +35,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         _openApiVersion = command.Option("--openapi-version <Version>", Resources.OpenApiVersionDescription);
         _documentName = command.Option("--document-name <Name>", Resources.DocumentNameDescription);
         _fileName = command.Option("--file-name <Name>", Resources.FileNameDescription);
+        _environment = command.Option("--environment <Name>", Resources.EnvironmentDescription);
     }
 
     protected override void Validate()
@@ -144,7 +146,8 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
                 DocumentName = _documentName.Value(),
                 ProjectName = ProjectName.Value(),
                 Reporter = Reporter,
-                FileName = _fileName.Value()
+                FileName = _fileName.Value(),
+                Environment = _environment.Value()
             };
 
             return new GetDocumentCommandWorker(context).Process();

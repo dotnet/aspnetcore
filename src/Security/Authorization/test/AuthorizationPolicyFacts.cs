@@ -173,4 +173,109 @@ public class AuthorizationPolicyFacts
         Assert.Contains(rolesAuthorizationRequirement.AllowedRoles, r => r.Equals("r1"));
         Assert.Contains(rolesAuthorizationRequirement.AllowedRoles, r => r.Equals("r2"));
     }
+
+    [Fact]
+    public async Task CombineAsync_MetadataWithRequirementDataOnly_BuildsPolicyFromRequirements()
+    {
+        var requirement = new TestRequirement();
+        var metadata = new object[]
+        {
+            new RequirementDataAttribute(requirement),
+        };
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, metadata);
+
+        Assert.NotNull(combined);
+        Assert.Same(requirement, Assert.Single(combined.Requirements));
+        Assert.DoesNotContain(combined.Requirements, r => r is DenyAnonymousAuthorizationRequirement);
+    }
+
+    [Fact]
+    public async Task CombineAsync_MetadataWithRequirementDataAndAuthorizeData_CombinesBoth()
+    {
+        var requirement = new TestRequirement();
+        var metadata = new object[]
+        {
+            new AuthorizeAttribute(),
+            new RequirementDataAttribute(requirement),
+        };
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, metadata);
+
+        Assert.NotNull(combined);
+        Assert.Contains(requirement, combined.Requirements);
+        Assert.Contains(combined.Requirements, r => r is DenyAnonymousAuthorizationRequirement);
+    }
+
+    [Fact]
+    public async Task CombineAsync_MetadataWithAttributeImplementingBothInterfaces_CombinesBoth()
+    {
+        var requirement = new TestRequirement();
+        var metadata = new object[]
+        {
+            new AuthorizeAndRequirementDataAttribute(requirement),
+        };
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, metadata);
+
+        Assert.NotNull(combined);
+        Assert.Contains(requirement, combined.Requirements);
+        Assert.Contains(combined.Requirements, r => r is DenyAnonymousAuthorizationRequirement);
+    }
+
+    [Fact]
+    public async Task CombineAsync_MetadataWithPolicyInstance_CombinesPolicy()
+    {
+        var policy = new AuthorizationPolicyBuilder().RequireClaim("claim").Build();
+        var metadata = new object[] { policy };
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, metadata);
+
+        Assert.NotNull(combined);
+        Assert.Single(combined.Requirements.OfType<ClaimsAuthorizationRequirement>());
+        Assert.DoesNotContain(combined.Requirements, r => r is DenyAnonymousAuthorizationRequirement);
+    }
+
+    [Fact]
+    public async Task CombineAsync_MetadataWithoutAuthorizationData_ReturnsNull()
+    {
+        var metadata = new object[] { new object(), "not authorization metadata" };
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        var combined = await AuthorizationPolicy.CombineAsync(provider, metadata);
+
+        Assert.Null(combined);
+    }
+
+    private sealed class TestRequirement : IAuthorizationRequirement
+    {
+    }
+
+    private sealed class RequirementDataAttribute : Attribute, IAuthorizationRequirementData
+    {
+        private readonly IAuthorizationRequirement[] _requirements;
+
+        public RequirementDataAttribute(params IAuthorizationRequirement[] requirements)
+        {
+            _requirements = requirements;
+        }
+
+        public IEnumerable<IAuthorizationRequirement> GetRequirements() => _requirements;
+    }
+
+    private sealed class AuthorizeAndRequirementDataAttribute : AuthorizeAttribute, IAuthorizationRequirementData
+    {
+        private readonly IAuthorizationRequirement[] _requirements;
+
+        public AuthorizeAndRequirementDataAttribute(params IAuthorizationRequirement[] requirements)
+        {
+            _requirements = requirements;
+        }
+
+        public IEnumerable<IAuthorizationRequirement> GetRequirements() => _requirements;
+    }
 }

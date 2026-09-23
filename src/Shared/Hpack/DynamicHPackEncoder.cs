@@ -288,7 +288,7 @@ internal sealed class DynamicHPackEncoder
 }
 
 /// <summary>
-/// Hint for how the header should be encoded as HPack. This value can be overriden.
+/// Hint for how the header should be encoded as HPack. This value can be overridden.
 /// For example, a header that is larger than the dynamic table won't be indexed.
 /// </summary>
 internal enum HeaderEncodingHint

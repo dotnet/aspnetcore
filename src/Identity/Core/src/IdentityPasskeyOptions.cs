@@ -183,4 +183,9 @@ public class IdentityPasskeyOptions
     /// </para>
     /// </remarks>
     public Func<PasskeyAttestationStatementVerificationContext, ValueTask<bool>>? VerifyAttestationStatement { get; set; }
+
+    /// <summary>
+    /// Gets or sets TimeProvider for <see cref="PasskeyHandler{TUser}"/>.
+    /// </summary>
+    internal TimeProvider? TimeProvider { get; set; }
 }

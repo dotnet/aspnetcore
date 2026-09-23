@@ -199,6 +199,61 @@ public class AuthorizeRouteViewTest
     }
 
     [Fact]
+    public void WhenPageHasRequirementData_RequirementFlowsToAuthorizationService()
+    {
+        var routeData = new RouteData(typeof(TestPageWithRequirementData), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+            }));
+
+        var call = Assert.Single(_testAuthorizationService.AuthorizeCalls);
+        Assert.Contains(call.requirements, r => r is TestPageRequirement);
+    }
+
+    [Fact]
+    public void WhenPageHasRequirementData_AndAuthorizationFails_RendersNotAuthorized()
+    {
+        var routeData = new RouteData(typeof(TestPageWithRequirementData), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+            }));
+
+        var batch = _renderer.Batches.Single();
+        var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+        Assert.Collection(layoutDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Layout starts here"),
+            edit => AssertPrependText(batch, edit, "Not authorized"),
+            edit => AssertPrependText(batch, edit, "Layout ends here"));
+    }
+
+    [Fact]
+    public void WhenPageHasOnlyNonAuthorizationAttribute_SkipsAuthorization()
+    {
+        var routeData = new RouteData(typeof(TestPageWithNonAuthorizationAttribute), EmptyParametersDictionary);
+        // NextResult defaults to Failed, so if authorization were incorrectly run the page would be denied.
+
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+            }));
+
+        Assert.Empty(_testAuthorizationService.AuthorizeCalls);
+        var batch = _renderer.Batches.Single();
+        var pageDiff = batch.GetComponentDiffs<TestPageWithNonAuthorizationAttribute>().Single();
+        Assert.Collection(pageDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Page with non-auth attribute"));
+    }
+
+    [Fact]
     public async Task WhenAuthorizing_RendersDefaultAuthorizingContentInsideLayout()
     {
         // Arrange
@@ -385,6 +440,36 @@ public class AuthorizeRouteViewTest
         {
             builder.AddContent(0, $"Hello from the page with message: {Message}");
         }
+    }
+
+    [TestRequirementData]
+    class TestPageWithRequirementData : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Page with requirement data");
+    }
+
+    [NonAuthorization]
+    class TestPageWithNonAuthorizationAttribute : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Page with non-auth attribute");
+    }
+
+    sealed class TestRequirementData : Attribute, IAuthorizationRequirementData
+    {
+        public IEnumerable<IAuthorizationRequirement> GetRequirements()
+        {
+            yield return new TestPageRequirement();
+        }
+    }
+
+    sealed class TestPageRequirement : IAuthorizationRequirement
+    {
+    }
+
+    sealed class NonAuthorization : Attribute
+    {
     }
 
     class TestLayout : LayoutComponentBase

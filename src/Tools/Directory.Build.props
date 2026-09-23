@@ -6,5 +6,6 @@
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
 </Project>
