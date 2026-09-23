@@ -55,8 +55,9 @@ public class Catalog_CacheTagHelperController : Controller
     [HttpGet("/catalog/past-purchases/{id}")]
     public IActionResult PastPurchases(string id, int correlationId)
     {
-        var identity = new ClaimsIdentity();
+        var identity = new ClaimsIdentity("Test");
         identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, id));
+        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id));
 
         HttpContext.User = new ClaimsPrincipal(identity);
         ViewData["CorrelationId"] = correlationId;
