@@ -160,6 +160,23 @@ Schema transformers continue to run once for the composed derived schema and onc
 serialized property, in serializer order. The synthetic base and local `allOf` branches do not
 introduce additional transformer callbacks.
 
+Collection and dictionary schemas follow the effective System.Text.Json serialization contract,
+not the CLR interfaces implemented by a type. Enumerable contracts emit arrays with the item
+schema exposed by `JsonTypeInfo`; dictionary contracts emit objects with the value schema in
+`additionalProperties`. This includes supported immutable, frozen, and read-only contracts.
+Properties added by collection or dictionary subclasses are not serialized and are not included
+in the schema. Custom converters remain unconstrained unless they provide package-recognized
+schema provenance.
+
+The generated schema does not infer `uniqueItems` for set types because System.Text.Json accepts
+duplicate JSON array entries and coalesces them during materialization rather than validating
+uniqueness. It also does not infer `propertyNames` or a finite dictionary-key domain. The public
+System.Text.Json contract metadata does not expose the effective property-name converter, and
+dictionary key policies and custom converters can change the serialized names. These constraints
+are omitted in OpenAPI 3.0, 3.1, and 3.2 rather than emitted as unsupported compatibility
+extensions. Applications with an authoritative key or uniqueness contract can add the applicable
+keywords explicitly in a version-aware schema transformer.
+
 The inferred mode also resolves component names from the complete set of serializer contracts
 used by the document before schemas are emitted. A default name that is unique is unchanged. Name
 collisions are resolved deterministically by adding declaring-type or namespace segments, with a
