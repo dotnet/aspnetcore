@@ -4,6 +4,7 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { showErrorNotification } from '../BootErrors';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -193,7 +194,10 @@ function onDocumentSubmit(event: SubmitEvent) {
       }
     }
 
-    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions).catch(error => {
+      console.error(error);
+      showErrorNotification();
+    });
   }
 }
 
@@ -211,8 +215,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const abortController = new AbortController();
+  currentEnhancedNavigationAbortController = abortController;
+  const abortSignal = abortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -234,6 +239,11 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     if (isGetRequest) {
       retryEnhancedNavAsFullPageLoad(internalDestinationHref);
       return;
+    }
+
+    if (currentEnhancedNavigationAbortController === abortController) {
+      performingEnhancedPageLoad = false;
+      navigationEnhancementCallbacks.enhancedNavigationCompleted();
     }
 
     throw ex;
