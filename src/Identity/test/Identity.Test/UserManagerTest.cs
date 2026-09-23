@@ -869,7 +869,6 @@ public class UserManagerTest
         var user = new PocoUser { UserName = "Foo", SecurityStamp = "initial-security-stamp" };
         var credentialId = (byte[])[1, 2, 3, 4, 5, 6, 7, 8];
         store.Setup(s => s.RemovePasskeyAsync(user, credentialId, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
-        securityStampStore.Setup(s => s.GetSecurityStampAsync(user, CancellationToken.None)).ReturnsAsync(() => user.SecurityStamp).Verifiable();
         securityStampStore.Setup(s => s.SetSecurityStampAsync(user, It.IsAny<string>(), CancellationToken.None))
             .Callback<PocoUser, string, CancellationToken>((_, stamp, _) => user.SecurityStamp = stamp)
             .Returns(Task.CompletedTask)
