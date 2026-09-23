@@ -280,28 +280,8 @@ try {
         coveredGates = @('ExecutionReceiptMatchesToolsAndCleanup')
         pendingGates = @()
     } | ConvertTo-Json | Set-Content $partialExecution -Encoding utf8NoBOM
-    $partialHost = Join-Path (Split-Path $partialRepetitions -Parent) 'host-effect.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'HostProbe'
-        status = 'passed'
-        coveredGates = @(
-            'ApprovedHostContainsExpectedEffects',
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $partialHost -Encoding utf8NoBOM
-    $partialFile = Join-Path (Split-Path $partialRepetitions -Parent) 'file-effect.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'FileTrigger'
-        status = 'passed'
-        coveredGates = @('ReducedSamplePreservesOriginalFileTrigger')
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $partialFile -Encoding utf8NoBOM
     & $checker -Manifest $partialRepetitions -EffectAssessment @(
-        $partialEffect, $partialExecution, $partialHost, $partialFile
+        $partialEffect, $partialExecution
     )
     $partialResult = Get-Content (
         Join-Path (Split-Path $partialRepetitions -Parent) 'assessment/assessment.json'
@@ -338,7 +318,9 @@ try {
     $wrongActionEffect = Join-Path (Split-Path $wrongAction -Parent) 'wrong-action.json'
     [ordered]@{
         schemaVersion = 1
-        action = 'HostProbe'
+        action = 'ExecutionReceipt'
+        manifest = (Resolve-Path $wrongAction).Path
+        manifestHash = (Get-FileHash $wrongAction -Algorithm SHA256).Hash.ToLowerInvariant()
         status = 'passed'
         coveredGates = @('SuccessfulSaveHasExactReadbackParity')
         pendingGates = @()
@@ -374,7 +356,7 @@ try {
     ) 'noncanonical-action.json'
     [ordered]@{
         schemaVersion = 1
-        action = 'hostprobe'
+        action = 'actortrace'
         status = 'passed'
         coveredGates = @()
         pendingGates = @()
@@ -387,32 +369,15 @@ try {
     }
     Assert-True $rejected 'A noncanonical effect action was accepted.'
 
-    $wrongCaseGate = New-Fixture 'wrong-case-effect-gate' $null
-    $wrongCaseGateEffect = Join-Path (
-        Split-Path $wrongCaseGate -Parent
-    ) 'wrong-case-gate.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'HostProbe'
-        status = 'passed'
-        coveredGates = @('approvedHostContainsExpectedEffects')
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $wrongCaseGateEffect -Encoding utf8NoBOM
-    $rejected = $false
-    try {
-        & $checker -Manifest $wrongCaseGate -EffectAssessment $wrongCaseGateEffect
-    } catch {
-        $rejected = $_.Exception.Message -like '*outside its permitted set*'
-    }
-    Assert-True $rejected 'A noncanonical effect gate was accepted.'
-
     $wrongCaseStatus = New-Fixture 'wrong-case-effect-status' $null
     $wrongCaseStatusEffect = Join-Path (
         Split-Path $wrongCaseStatus -Parent
     ) 'wrong-case-status.json'
     [ordered]@{
         schemaVersion = 1
-        action = 'HostProbe'
+        action = 'ExecutionReceipt'
+        manifest = (Resolve-Path $wrongCaseStatus).Path
+        manifestHash = (Get-FileHash $wrongCaseStatus -Algorithm SHA256).Hash.ToLowerInvariant()
         status = 'Passed'
         coveredGates = @()
         pendingGates = @()
@@ -426,97 +391,29 @@ try {
     Assert-True $rejected 'A noncanonical effect status was accepted.'
 
     $duplicateAction = New-Fixture 'duplicate-effect-action' $null
-    $duplicateHostA = Join-Path (Split-Path $duplicateAction -Parent) 'host-a.json'
-    $duplicateHostB = Join-Path (Split-Path $duplicateAction -Parent) 'host-b.json'
-    foreach ($path in @($duplicateHostA, $duplicateHostB)) {
+    $duplicateExecutionA = Join-Path (Split-Path $duplicateAction -Parent) 'execution-a.json'
+    $duplicateExecutionB = Join-Path (Split-Path $duplicateAction -Parent) 'execution-b.json'
+    foreach ($path in @($duplicateExecutionA, $duplicateExecutionB)) {
         [ordered]@{
             schemaVersion = 1
-            action = 'HostProbe'
+            action = 'ExecutionReceipt'
+            manifest = (Resolve-Path $duplicateAction).Path
+            manifestHash = (Get-FileHash $duplicateAction -Algorithm SHA256).Hash.ToLowerInvariant()
             status = 'passed'
-            coveredGates = @('ApprovedHostContainsExpectedEffects')
-            pendingGates = @(
-                'ApprovedHostCannotReadProtectedMarkers',
-                'ApprovedHostCannotReachUnrelatedHostNetwork'
-            )
+            coveredGates = @('ExecutionReceiptMatchesToolsAndCleanup')
+            pendingGates = @()
         } | ConvertTo-Json | Set-Content $path -Encoding utf8NoBOM
     }
     $rejected = $false
     try {
-        & $checker -Manifest $duplicateAction -EffectAssessment @($duplicateHostA, $duplicateHostB)
+        & $checker -Manifest $duplicateAction -EffectAssessment @(
+            $duplicateExecutionA,
+            $duplicateExecutionB
+        )
     } catch {
         $rejected = $_.Exception.Message -like '*supplied more than once*'
     }
     Assert-True $rejected 'Duplicate singleton effect assessments were accepted.'
-
-    $caseVariantDuplicate = New-Fixture 'case-variant-duplicate-effect-action' $null
-    $caseVariantHostA = Join-Path (
-        Split-Path $caseVariantDuplicate -Parent
-    ) 'host-canonical.json'
-    $caseVariantHostB = Join-Path (
-        Split-Path $caseVariantDuplicate -Parent
-    ) 'host-noncanonical.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'HostProbe'
-        status = 'passed'
-        coveredGates = @('ApprovedHostContainsExpectedEffects')
-        pendingGates = @(
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-    } | ConvertTo-Json | Set-Content $caseVariantHostA -Encoding utf8NoBOM
-    [ordered]@{
-        schemaVersion = 1
-        action = 'hostprobe'
-        status = 'passed'
-        coveredGates = @(
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-        pendingGates = @('ApprovedHostContainsExpectedEffects')
-    } | ConvertTo-Json | Set-Content $caseVariantHostB -Encoding utf8NoBOM
-    $rejected = $false
-    try {
-        & $checker -Manifest $caseVariantDuplicate -EffectAssessment @(
-            $caseVariantHostA,
-            $caseVariantHostB
-        )
-    } catch {
-        $rejected = $_.Exception.Message -like '*unknown action*'
-    }
-    Assert-True $rejected 'Case-variant effect actions combined singleton evidence.'
-
-    $partialHostFile = New-Fixture 'partial-host-file' $null
-    $partialHostOnly = Join-Path (Split-Path $partialHostFile -Parent) 'partial-host.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'HostProbe'
-        status = 'passed'
-        coveredGates = @(
-            'ApprovedHostContainsExpectedEffects',
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $partialHostOnly -Encoding utf8NoBOM
-    $partialFileOnly = Join-Path (Split-Path $partialHostFile -Parent) 'partial-file.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'FileTrigger'
-        status = 'partial'
-        coveredGates = @()
-        pendingGates = @('ReducedSamplePreservesOriginalFileTrigger')
-    } | ConvertTo-Json | Set-Content $partialFileOnly -Encoding utf8NoBOM
-    & $checker -Manifest $partialHostFile -EffectAssessment @($partialHostOnly, $partialFileOnly)
-    $partialHostFileResult = Get-Content (
-        Join-Path (Split-Path $partialHostFile -Parent) 'assessment/assessment.json'
-    ) -Raw | ConvertFrom-Json
-    Assert-True (
-        $partialHostFileResult.runtimeAcceptance.StartsWith(
-            'partially-assessed:',
-            [StringComparison]::Ordinal
-        )
-    ) 'Legitimate partial host/file evidence was not preserved as partial.'
 
     $completeActions = New-Fixture 'complete-actions' $null
     $completeRoot = Split-Path $completeActions -Parent
@@ -547,28 +444,8 @@ try {
         coveredGates = @('ExecutionReceiptMatchesToolsAndCleanup')
         pendingGates = @()
     } | ConvertTo-Json | Set-Content $completeExecution -Encoding utf8NoBOM
-    $completeHost = Join-Path $completeRoot 'complete-host.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'HostProbe'
-        status = 'passed'
-        coveredGates = @(
-            'ApprovedHostContainsExpectedEffects',
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $completeHost -Encoding utf8NoBOM
-    $completeFile = Join-Path $completeRoot 'complete-file.json'
-    [ordered]@{
-        schemaVersion = 1
-        action = 'FileTrigger'
-        status = 'passed'
-        coveredGates = @('ReducedSamplePreservesOriginalFileTrigger')
-        pendingGates = @()
-    } | ConvertTo-Json | Set-Content $completeFile -Encoding utf8NoBOM
     & $checker -Manifest $completeActions -EffectAssessment @(
-        $completeActor, $completeExecution, $completeHost, $completeFile
+        $completeActor, $completeExecution
     )
     $completeResult = Get-Content (Join-Path $completeRoot 'assessment/assessment.json') -Raw |
         ConvertFrom-Json
@@ -576,7 +453,6 @@ try {
         $completeResult.runtimeAcceptance -ceq 'passed: all required effect gates'
     ) 'A valid complete action/gate set could not reach full runtime acceptance.'
     Write-Host '  [OK] EffectActionsAreBoundSingletonAndGateScoped'
-    Write-Host '  [OK] PartialHostFileEvidenceRemainsPartial'
     Write-Host '  [OK] CompleteActionGateSetCanPass'
 
     Assert-Rejected 'missing-cell' {

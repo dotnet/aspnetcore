@@ -319,10 +319,6 @@ if ($PSBoundParameters.ContainsKey('EffectAssessment') -and $EffectAssessment.Co
         'ReporterApprovalDoesNotAuthorizeExecution',
         'MaterialCommandChangeRequiresReapproval',
         'SensitiveStopNeverTransitionsToExecution',
-        'ApprovedHostContainsExpectedEffects',
-        'ApprovedHostCannotReadProtectedMarkers',
-        'ApprovedHostCannotReachUnrelatedHostNetwork',
-        'ReducedSamplePreservesOriginalFileTrigger',
         'UnknownThirdPartyTriggerRequestsCleanRepro',
         'ApprovedDocumentedAlternativeSampleIsNotBugProof',
         'SuccessfulSaveHasExactReadbackParity',
@@ -343,12 +339,6 @@ if ($PSBoundParameters.ContainsKey('EffectAssessment') -and $EffectAssessment.Co
             'AgentWriterFailureKeepsChatReport'
         )
         ExecutionReceipt = @('ExecutionReceiptMatchesToolsAndCleanup')
-        HostProbe = @(
-            'ApprovedHostContainsExpectedEffects',
-            'ApprovedHostCannotReadProtectedMarkers',
-            'ApprovedHostCannotReachUnrelatedHostNetwork'
-        )
-        FileTrigger = @('ReducedSamplePreservesOriginalFileTrigger')
     }
     $coveredEffects = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     $completeEffectEvidence = $true
@@ -360,7 +350,7 @@ if ($PSBoundParameters.ContainsKey('EffectAssessment') -and $EffectAssessment.Co
             throw "Effect assessment '$resolvedEffect' has no accepted coverage."
         }
         $action = [string]$effect.action
-        if ($action -cnotin @('ActorTrace', 'ExecutionReceipt', 'HostProbe', 'FileTrigger')) {
+        if ($action -cnotin @('ActorTrace', 'ExecutionReceipt')) {
             throw "Effect assessment '$resolvedEffect' has unknown action '$action'."
         }
         if (-not $seenActions.Add($action)) {

@@ -73,53 +73,67 @@ foreach ($variant in @('baseline', 'skilled')) {
     $resultsByVariant[$variant] = $results
 }
 
-$skilledPlan = $plansByVariant['skilled']
-$stimuliProperty = $skilledPlan.PSObject.Properties['stimuli']
-if (-not $stimuliProperty -or @($stimuliProperty.Value).Count -ne $skilledPlan.plannedStimulusCount) {
-    throw "The 'skilled' plan has invalid planned stimulus coverage."
-}
+$stimuliByVariant = @{}
+foreach ($variant in @('baseline', 'skilled')) {
+    $plan = $plansByVariant[$variant]
+    $stimuliProperty = $plan.PSObject.Properties['stimuli']
+    if (-not $stimuliProperty -or @($stimuliProperty.Value).Count -ne $plan.plannedStimulusCount) {
+        throw "The '$variant' plan has invalid planned stimulus coverage."
+    }
 
-$stimuliByName = [Collections.Generic.Dictionary[string, object]]::new([StringComparer]::Ordinal)
-$trialCounts = [Collections.Generic.Dictionary[string, int]]::new([StringComparer]::Ordinal)
-foreach ($stimulus in $stimuliProperty.Value) {
-    $name = if ($null -ne $stimulus) { $stimulus.PSObject.Properties['name'] }
-    if (-not $name -or $name.Value -isnot [string] -or
-        [string]::IsNullOrWhiteSpace($name.Value) -or $stimuliByName.ContainsKey($name.Value)) {
-        throw "The 'skilled' plan has invalid planned stimulus coverage."
+    $stimuliByName = [Collections.Generic.Dictionary[string, object]]::new(
+        [StringComparer]::Ordinal
+    )
+    $trialCounts = [Collections.Generic.Dictionary[string, int]]::new(
+        [StringComparer]::Ordinal
+    )
+    foreach ($stimulus in $stimuliProperty.Value) {
+        $name = if ($null -ne $stimulus) { $stimulus.PSObject.Properties['name'] }
+        if (-not $name -or $name.Value -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($name.Value) -or
+            $stimuliByName.ContainsKey($name.Value)) {
+            throw "The '$variant' plan has invalid planned stimulus coverage."
+        }
+        if ($variant -ceq 'skilled') {
+            $graders = $stimulus.PSObject.Properties['graders']
+            if (-not $graders -or $null -eq $graders.Value) {
+                throw "The 'skilled' stimulus '$($name.Value)' has invalid planned grader coverage."
+            }
+            foreach ($grader in $graders.Value) {
+                $type = if ($null -ne $grader) { $grader.PSObject.Properties['type'] }
+                if (-not $type -or $type.Value -isnot [string] -or
+                    [string]::IsNullOrWhiteSpace($type.Value)) {
+                    throw "The 'skilled' stimulus '$($name.Value)' has invalid planned grader coverage."
+                }
+            }
+        }
+        $stimuliByName.Add($name.Value, $stimulus)
+        $trialCounts.Add($name.Value, 0)
     }
-    $graders = $stimulus.PSObject.Properties['graders']
-    if (-not $graders -or $null -eq $graders.Value) {
-        throw "The 'skilled' stimulus '$($name.Value)' has invalid planned grader coverage."
+
+    $trialIds = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($result in $resultsByVariant[$variant]) {
+        $name = $result.PSObject.Properties['stimulus']
+        if (-not $name -or $name.Value -isnot [string] -or
+            -not $stimuliByName.ContainsKey($name.Value)) {
+            throw "The '$variant' variant has a missing or unplanned stimulus."
+        }
+        $id = $result.PSObject.Properties['itemId']
+        if (-not $id -or $id.Value -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($id.Value) -or -not $trialIds.Add($id.Value)) {
+            throw "The '$variant' variant has a missing or duplicate trial identity."
+        }
+        $trialCounts[$name.Value]++
     }
-    foreach ($grader in $graders.Value) {
-        $type = if ($null -ne $grader) { $grader.PSObject.Properties['type'] }
-        if (-not $type -or $type.Value -isnot [string] -or [string]::IsNullOrWhiteSpace($type.Value)) {
-            throw "The 'skilled' stimulus '$($name.Value)' has invalid planned grader coverage."
+    foreach ($name in $trialCounts.Keys) {
+        if ($trialCounts[$name] -ne $plan.runs) {
+            throw "The '$variant' stimulus '$name' has invalid trial coverage: expected $($plan.runs), found $($trialCounts[$name])."
         }
     }
-    $stimuliByName.Add($name.Value, $stimulus)
-    $trialCounts.Add($name.Value, 0)
+    $stimuliByVariant[$variant] = $stimuliByName
 }
 
-$trialIds = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-foreach ($result in $resultsByVariant['skilled']) {
-    $name = $result.PSObject.Properties['stimulus']
-    if (-not $name -or $name.Value -isnot [string] -or -not $stimuliByName.ContainsKey($name.Value)) {
-        throw "The 'skilled' variant has a missing or unplanned stimulus."
-    }
-    $id = $result.PSObject.Properties['itemId']
-    if (-not $id -or $id.Value -isnot [string] -or
-        [string]::IsNullOrWhiteSpace($id.Value) -or -not $trialIds.Add($id.Value)) {
-        throw "The 'skilled' variant has a missing or duplicate trial identity."
-    }
-    $trialCounts[$name.Value]++
-}
-foreach ($name in $trialCounts.Keys) {
-    if ($trialCounts[$name] -ne $skilledPlan.runs) {
-        throw "The 'skilled' stimulus '$name' has invalid trial coverage: expected $($skilledPlan.runs), found $($trialCounts[$name])."
-    }
-}
-
+$stimuliByName = $stimuliByVariant['skilled']
 $contractFailures = [Collections.Generic.List[string]]::new()
 foreach ($result in $resultsByVariant['skilled']) {
     $expectedTypes = @($stimuliByName[$result.stimulus].graders | ForEach-Object type)

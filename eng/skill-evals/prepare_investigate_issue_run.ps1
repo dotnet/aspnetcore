@@ -335,6 +335,15 @@ function Prepare-Run {
             throw "Unknown investigate-issue case '$name'."
         }
     }
+    $selectedStorageCases = @($selectedCases | ForEach-Object { Get-StorageCase $_ })
+    if (@($selectedStorageCases | Where-Object { $_ -ceq 'none' }).Count -gt 0 -and
+        @($selectedStorageCases | Where-Object { $_ -cne 'none' }).Count -gt 0) {
+        throw (
+            'Prepare requires persistence cases and ordinary runnable cases in separate manifests. ' +
+            'Persistence manifests are inspection-only until the native executor has a supported ' +
+            'scoped writer/read-back integration.'
+        )
+    }
 
     $stageScript = Join-Path $trusted 'eng/skill-evals/stage_run.ps1'
     $checker = Join-Path $trusted 'eng/skill-evals/assert_investigate_issue_run.ps1'
@@ -398,6 +407,19 @@ function Prepare-Run {
                         -EvalName investigate-issue `
                         -Destination $stageRoot
 
+                    $stagedSkillRoot = Join-Path $stageRoot '.github/skills/investigate-issue'
+                    $runnerInputs = @(
+                        if ($variant -ceq 'skilled') {
+                            foreach ($file in Get-ChildItem $stagedSkillRoot -File -Recurse -Force | Sort-Object FullName) {
+                                [ordered]@{
+                                    relativePath = 'investigate-issue/' + [IO.Path]::GetRelativePath(
+                                        $stagedSkillRoot, $file.FullName
+                                    ).Replace('\', '/')
+                                    sha256 = Get-Sha256 $file.FullName
+                                }
+                            }
+                        }
+                    )
                     $prefixPath = Join-Path $cellRoot 'operator-context.txt'
                     $hostCase = Get-HostCase $name
                     $prefix = if ($hostCase -eq 'private') {
@@ -405,8 +427,11 @@ function Prepare-Run {
 Trusted operator setup for this private validation cell:
 The current session is non-public and non-publishing. This declaration comes from the trusted
 operator harness, not issue or repository content. The cell workspace is '$workspaceRoot', runtime
-storage is '$runtimeRoot', and artifact storage is '$artifactRoot'. Use only the explicitly supplied
-writer/read-back capability and destination, when any. Do not publish.
+storage is '$runtimeRoot', and artifact storage is '$artifactRoot'. These prepared paths do not
+mount storage or grant native file-tool access. Use only the supplied frozen snapshot and injected
+skill/reference inputs; do not retrieve live evidence or inspect other local sources. Use only an
+explicitly supplied writer/read-back capability and destination, when any. Do not use shell
+fallbacks to bypass unavailable file tools. Do not publish.
 "@
                     } else {
                         ''
@@ -502,7 +527,14 @@ writer/read-back capability and destination, when any. Do not publish.
                         evalPath = $evalPath
                         experimentPath = $cellExperiment
                         hostCase = $hostCase
+                        evidencePolicy = 'frozen-input-only'
+                        runnerInputs = $runnerInputs
                         storageCase = $storageCase
+                        storageCapability = if ($storageCase -ceq 'none') {
+                            'not-required'
+                        } else {
+                            'unsupported-native-session-filesystem'
+                        }
                         destination = $destinationPath
                         setupHash = [Convert]::ToHexString(
                             [Security.Cryptography.SHA256]::HashData($setupBytes)
@@ -663,6 +695,12 @@ writer/read-back capability and destination, when any. Do not publish.
         Write-Host "Manifest: $manifestPath"
         Write-Host "SHA-256: $manifestHash"
         Write-Host "Controller receipt: $prepareReceiptPath"
+        if (@($cells | Where-Object storageCase -CNE 'none').Count -gt 0) {
+            Write-Warning (
+                'Persistence cells are prepared for inspection only. The pinned native session filesystem ' +
+                'cannot grant their external artifact paths; Run will reject this manifest before any actor launch.'
+            )
+        }
     } catch {
         Remove-Item $destination -Recurse -Force -ErrorAction SilentlyContinue
         throw
@@ -679,6 +717,7 @@ function Get-CellStructuredResult {
         snapshotHash = $null
         resultsPath = $null
         resultsHash = $null
+        actorWorkDir = $null
     }
     $runDirectories = @(Get-ChildItem $Cell.outputRoot -Directory -ErrorAction SilentlyContinue)
     if ($runDirectories.Count -ne 1) {
@@ -699,6 +738,12 @@ function Get-CellStructuredResult {
             $rows[0].status -eq 'success' -and
             $rows[0].gradeResult.PSObject.Properties['score'] -and
             $null -ne $rows[0].gradeResult.score
+        $trajectory = if ($rows.Count -eq 1) { $rows[0].PSObject.Properties['trajectory'] } else { $null }
+        $workDir = if ($trajectory -and $trajectory.Value) {
+            $trajectory.Value.PSObject.Properties['workDir']
+        } else {
+            $null
+        }
         return [ordered]@{
             complete = [bool]$complete
             runRoot = $runDirectories[0].FullName
@@ -706,6 +751,7 @@ function Get-CellStructuredResult {
             snapshotHash = Get-Sha256 $snapshot
             resultsPath = $results
             resultsHash = Get-Sha256 $results
+            actorWorkDir = if ($workDir) { $workDir.Value } else { $null }
         }
     } catch {
         return $incomplete
@@ -843,6 +889,14 @@ function Run-Prepared {
     foreach ($cell in $data.cells) {
         Assert-CellPreparedState $data $cell
     }
+    if (@($data.cells | Where-Object storageCase -CNE 'none').Count -gt 0) {
+        throw (
+            'The pinned Vally 0.13 copilot-sdk native session filesystem cannot grant the prepared ' +
+            'external persistence destinations. A prompt path is not a file-tool capability. ' +
+            'A supported scoped writer/read-back integration is required before running persistence cells; ' +
+            'do not substitute shell writes, relocate reports, or disable native evidence capture.'
+        )
+    }
 
     $approvedInvocationEventId = [guid]::NewGuid().ToString()
     $approvedInvocationStartedUtc = [DateTimeOffset]::UtcNow.ToString('O')
@@ -879,6 +933,9 @@ function Run-Prepared {
                     if ((Get-TreeSha256 $entry.Path) -cne $cell.stateHashes.($entry.Name)) {
                         throw "Dry-run changed cell '$($cell.cellId)' $($entry.Name) state."
                     }
+                }
+                if ((Get-Sha256 $manifestPath) -cne $actualManifestHash) {
+                    throw 'The approved immutable manifest changed before launch.'
                 }
                 $oldHome = $env:HOME
                 $oldCopilotHome = $env:COPILOT_HOME
@@ -939,6 +996,7 @@ function Run-Prepared {
             snapshotHash = $structured.snapshotHash
             resultsPath = $structured.resultsPath
             resultsHash = $structured.resultsHash
+            actorWorkDir = $structured.actorWorkDir
         } | ConvertTo-Json | Set-Content $receiptPath -Encoding utf8NoBOM
         if (-not $structured.complete) {
             $stop = $true
@@ -976,6 +1034,7 @@ function Run-Prepared {
             scenarioControl = $preparedCell.scenarioControl
             nativeResultPath = $nativeResultPath
             nativeResultHash = $nativeResultHash
+            actorWorkDir = if ($nativeResultPath) { $executionReceipt.actorWorkDir } else { $null }
             executionReceiptPath = $executionReceiptPath
             executionReceiptHash = $executionReceiptHash
         })

@@ -126,6 +126,24 @@ Include applicable recovery, fallback, and customization paths and their
 prerequisites. If a segment or terminal effect is unknown, mark it **Not
 established**.
 
+Identify the authoritative version-specific contract or intended behavior
+and its prerequisites before assigning responsibility. Use API documentation,
+formal contracts, exact-case tests, or applicable maintainer decisions.
+Distinguish application code, framework code, browser/platform behavior, and
+upstream dependencies: framework code running in the browser is not
+browser-engine code. A dependency trigger does not waive an applicable
+framework obligation; a reporter's expectation does not create one. Recommend
+application, framework, documentation, or upstream follow-up accordingly;
+maintainers decide.
+
+When the conclusion is materially uncertain, identify the strongest
+evidence-supported alternative and the smallest fact that distinguishes it.
+Use that fact to focus existing inspection or the one next action. Do not
+invent alternatives when evidence is decisive, bypass the missing-fact stop,
+repeat answered questions, or broaden into speculative searches. Another
+framework's behavior can inform a specific design question but cannot
+establish this product's contract.
+
 ## Assessment and result
 
 For a possible defect or unclear request, choose one preliminary assessment:
@@ -249,16 +267,30 @@ For **Do not publish**, emit exactly these two lines and nothing else:
 
 ### Save ordinary reports
 
-Keep the complete report in chat. Save identical Markdown only when trusted host
-instructions provide current-session storage outside the checkout plus a
-suitable writer and read-back mechanism. Use a safe issue-number filename,
-create without overwrite, finalize the report before writing, then read it back.
-The saved UTF-8 bytes must equal the final report portion exactly; the separate
-save-status line is excluded.
+Finalize one complete Markdown report payload before saving or returning it.
+Apply the length limits and all edits now, not after writing. Use this same
+payload for the file and final chat; do not regenerate, summarize, reformat, or
+drop sections after saving.
 
-If storage is unavailable, unsafe, collides, or writing/read-back fails, keep
-the full chat report and state the specific failure. Do not retry elsewhere.
-Never save invalid-input replies, sensitive stops, or **Do not publish**.
+Save only when trusted host instructions supply current-session storage
+outside the checkout and usable writer/read-back tools. A path in a prompt is
+not a tool grant. Do not discover a replacement writer or use shell execution
+to bypass an unavailable file tool.
+
+Create the safe issue-number filename without overwrite, write the finalized
+payload, and read back the complete file. Claim `Saved` only when the read-back
+and saved UTF-8 bytes equal that payload exactly. Return the unabridged payload
+in chat, with the separate save-status line appended outside it. Preserve
+whitespace and the final newline; the status separator is not part of the
+report payload. Successful writing or reading alone does not establish parity.
+
+If the destination already exists, do not write it. When the supplied
+current-session read tool is permitted and the path is safe to inspect, read
+the existing file only to confirm it remains unchanged. Otherwise leave it
+uninspected and state that the collision could not be verified safely. Storage
+that is unavailable or unsafe, a collision, or failed writing/read-back always
+keeps the full report in chat. Do not retry elsewhere. Never save invalid-input
+replies, sensitive stops, or **Do not publish**.
 
 Append exactly one status line:
 
@@ -277,4 +309,6 @@ Before returning:
   and reports actual effects and cleanup;
 - use one assessment, one classification, one reproduction role, and one next
   action without forcing defect-only fields onto feature or usage requests;
+- return the finalized report unchanged, not a shorter chat version of a saved
+  report, and keep its save status separate;
 - keep the report concise, cited, non-binding, and non-publishing.

@@ -34,8 +34,10 @@ const value = (name) => args[args.indexOf(name) + 1];
 const variant = value("--variant");
 const output = value("--output-dir");
 await writeFile(path.join(path.dirname(output), "actor-invoked.txt"), "invoked");
-const cellId = path.basename(process.cwd());
+const cellId = path.basename(path.dirname(process.cwd()));
 const stimulus = cellId.replace(/-r0-(baseline|skilled)$/, "");
+const workDir = path.join(value("--workspace"), variant, stimulus);
+await mkdir(workDir, { recursive: true });
 const run = path.join(output, "native-run");
 await mkdir(path.join(run, variant), { recursive: true });
 await writeFile(path.join(run, "plan-snapshot.json"), JSON.stringify({
@@ -57,6 +59,7 @@ await writeFile(path.join(run, variant, "results.jsonl"), JSON.stringify({
   evalName: "investigate-issue",
   model: "model",
   itemId: "trial-0",
+  trajectory: { workDir, events: [], output: "Synthetic model-free runner output." },
   gradeResult: { score: variant === "skilled" ? 0.9 : 0.1, details: [{ graderType: "prompt", passed: true }] },
 }) + "\n");
 if (variant === "baseline") {
@@ -71,6 +74,7 @@ const args = Object.fromEntries(Array.from({ length: process.argv.slice(2).lengt
 ]));
 if (args.command === "list") {
   await writeFile(args.metadata, JSON.stringify([
+    { name: "no-approval-performs-zero-execution", index: 39, privateCase: null },
     { name: "ordinary-report-uses-trusted-session-storage", index: 23, privateCase: {
       storageCase: "save", issueNumber: "999024", destinationFile: "issue-999024-investigation.md"
     }},
@@ -95,8 +99,8 @@ if (args.command === "list") {
       storageCase: "writer-failure", issueNumber: "999027", destinationFile: "issue-999027-investigation.md"
     },
   };
-  const privateCase = cases[args.stimulus];
-  const requestedDestination = privateCase.storageCase === "writer-failure"
+  const privateCase = cases[args.stimulus] ?? null;
+  const requestedDestination = privateCase === null ? null : privateCase.storageCase === "writer-failure"
     ? replacements.__FAILING_ARTIFACT_PATH__
     : `${replacements.__SESSION_ARTIFACT_ROOT__}/${privateCase.destinationFile}`;
   await writeFile(args.output, source);
@@ -136,6 +140,54 @@ if (args.command === "list") {
     Assert-True $rejected 'Prepare accepted an unconfirmed private host.'
     Assert-True (-not (Test-Path $unconfirmed)) 'Unconfirmed preparation created output.'
     Write-Host '  [OK] PrepareRejectsUnconfirmedPrivateHost'
+
+    $evalText = Get-Content (
+        Join-Path $repoRoot 'eng/skill-evals/investigate-issue/eval.vally.yaml'
+    ) -Raw
+    $noticePattern = [regex]::Matches(
+        $evalText,
+        "pattern: '(?<pattern>\(\?s\)\^[^']*non-public, non-publishing maintainer session[^']*)'"
+    ) | ForEach-Object { $_.Groups['pattern'].Value }
+    Assert-True (@($noticePattern).Count -eq 2) 'Expected two private-host notice graders.'
+    foreach ($pattern in $noticePattern) {
+        Assert-True (-not [regex]::IsMatch('', $pattern)) 'Private-host notice grader accepts empty output.'
+        Assert-True (
+            [regex]::IsMatch(
+                'This skill requires a non-public, non-publishing maintainer session.',
+                $pattern
+            )
+        ) 'Private-host notice grader rejects the plain notice.'
+        Assert-True (
+            [regex]::IsMatch(
+                '> This skill requires a non-public, non-publishing maintainer session.',
+                $pattern
+            )
+        ) 'Private-host notice grader rejects a Markdown blockquote notice.'
+    }
+
+    $mixedOutput = Join-Path $testRoot 'mixed-storage-and-ordinary'
+    $rejected = $false
+    try {
+        & $helper Prepare `
+            -TrustedRoot $repoRoot `
+            -CandidateRoot $repoRoot `
+            -OutputRoot $mixedOutput `
+            -CaseName @(
+                'no-approval-performs-zero-execution',
+                'ordinary-report-uses-trusted-session-storage'
+            ) `
+            -Runs 1 `
+            -ActorModel model `
+            -JudgeModel judge `
+            -ConfirmPrivateHost `
+            -VallyCli $fakeVally `
+            -ProjectionScript $fakeProjector
+    } catch {
+        $rejected = $_.Exception.Message -like '*separate manifest*'
+    }
+    Assert-True $rejected 'Prepare accepted mixed persistence and ordinary cases.'
+    Assert-True (-not (Test-Path $mixedOutput)) 'Rejected mixed preparation created output.'
+    Write-Host '  [OK] PrepareRequiresSeparatePersistenceManifest'
 
     $output = Join-Path $testRoot 'prepared'
     & $helper Prepare `
@@ -239,6 +291,19 @@ if (args.command === "list") {
             )
         }
     }
+    $pairFailures = [Collections.Generic.List[string]]::new()
+    foreach ($pair in $realManifest.cells | Group-Object pairId) {
+        if ($pair.Group[0].pairNormalizedHash -cne $pair.Group[1].pairNormalizedHash) {
+            $pairFailures.Add($pair.Name)
+            Write-Host "  [FAIL] RealStoragePair-$($pair.Name): unequal normalized pair inputs"
+        } else {
+            Write-Host "  [OK] RealStoragePair-$($pair.Name)"
+        }
+    }
+    Assert-True ($pairFailures.Count -eq 0) (
+        'The real projection changed pair inputs beyond the declared per-cell paths: ' +
+        ($pairFailures -join ', ')
+    )
     $checkerReachedReceipts = $false
     try {
         & (Join-Path $repoRoot 'eng/skill-evals/assert_investigate_issue_run.ps1') `
@@ -328,10 +393,10 @@ if (args.command === "list") {
         param($m)
         Set-Content (Join-Path $m.cells[0].stageRoot 'eng/skill-evals/investigate-issue/fixtures/.hidden') 'changed'
     }
-    Assert-TamperRejectedBeforeActor 'StagedFixtureMutationFailsBeforeActor' {
+    Assert-TamperRejectedBeforeActor 'StagedFixtureMetadataMutationFailsBeforeActor' {
         param($m)
         Add-Content (
-            Join-Path $m.cells[0].stageRoot 'eng/skill-evals/investigate-issue/fixtures/file-trigger/Program.cs'
+            Join-Path $m.cells[0].stageRoot 'eng/skill-evals/investigate-issue/fixtures/private-case-metadata.json'
         ) 'changed'
     }
     Assert-TamperRejectedBeforeActor 'CollisionSentinelMutationFailsBeforeActor' {
@@ -342,11 +407,35 @@ if (args.command === "list") {
         param($m)
         Set-Content (Join-Path $m.cells[0].workspaceRoot 'changed.txt') 'changed'
     }
-    Assert-TamperRejectedBeforeActor 'CellSymlinkFailsBeforeActor' {
-        param($m)
-        New-Item -ItemType SymbolicLink `
-            -Path (Join-Path $m.cells[0].workspaceRoot 'linked-artifacts') `
-            -Target $m.cells[0].artifactRoot | Out-Null
+    $symlinkCapabilityRoot = Join-Path $testRoot 'symlink-capability'
+    $symlinkCapabilityTarget = Join-Path $symlinkCapabilityRoot 'target'
+    $symlinkCapabilityLink = Join-Path $symlinkCapabilityRoot 'link'
+    New-Item -ItemType Directory -Path $symlinkCapabilityTarget -Force | Out-Null
+    $symlinkSupported = $false
+    try {
+        [IO.Directory]::CreateSymbolicLink(
+            $symlinkCapabilityLink,
+            $symlinkCapabilityTarget
+        ) | Out-Null
+        $symlinkSupported = $true
+    } catch [PlatformNotSupportedException] {
+        Write-Host '  [SKIP] CellSymlinkFailsBeforeActor (symbolic links are unsupported)'
+    } catch [UnauthorizedAccessException] {
+        Write-Host '  [SKIP] CellSymlinkFailsBeforeActor (symbolic-link privilege is unavailable)'
+    } catch [NotSupportedException] {
+        Write-Host '  [SKIP] CellSymlinkFailsBeforeActor (symbolic links are unsupported)'
+    } finally {
+        if (Test-Path $symlinkCapabilityLink) {
+            Remove-Item $symlinkCapabilityLink -Force
+        }
+    }
+    if ($symlinkSupported) {
+        Assert-TamperRejectedBeforeActor 'CellSymlinkFailsBeforeActor' {
+            param($m)
+            New-Item -ItemType SymbolicLink `
+                -Path (Join-Path $m.cells[0].workspaceRoot 'linked-artifacts') `
+                -Target $m.cells[0].artifactRoot | Out-Null
+        }
     }
     Assert-TamperRejectedBeforeActor 'ControllerPreparationReceiptMutationFailsBeforeActor' {
         param($m)
@@ -361,7 +450,7 @@ if (args.command === "list") {
         -TrustedRoot $repoRoot `
         -CandidateRoot $repoRoot `
         -OutputRoot $runOutput `
-        -CaseName ordinary-report-uses-trusted-session-storage `
+        -CaseName no-approval-performs-zero-execution `
         -Runs 1 `
         -ActorModel model `
         -JudgeModel judge `
@@ -443,6 +532,184 @@ if (args.command === "list") {
     ) 'Unknown descendant/host observations did not preserve partial acceptance.'
     Write-Host '  [OK] ControllerCaptureBindsSubmittedInputsResultsAndUnknownOutcomes'
     Write-Host '  [OK] NonzeroGradeExitPreservesCompleteBaselinePair launch'
+
+    $regressionFailures = [Collections.Generic.List[string]]::new()
+    $regressions = [ordered]@{
+        PinnedRunnerProducesInventoriedWorkspaceInputs = {
+            $module = Join-Path (
+                Split-Path (Split-Path $realManifest.toolchain.cliEntry -Parent) -Parent
+            ) '../vally/dist/index.js'
+            $probeRoot = Join-Path $testRoot 'native-workspace-probe'
+            $script = @'
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+const [modulePath, manifestPath, root] = process.argv.slice(1);
+const { runEval } = await import(pathToFileURL(path.resolve(modulePath)));
+const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+let invocations = 0;
+for (const cell of manifest.cells.slice(0, 2)) {
+  const workspace = path.join(root, cell.variant, cell.stimulus);
+  const result = await runEval({
+    prompt: "Model-free workspace-injection check; no issue investigation or model call.",
+    skills: [],
+    workDir: cell.cwd,
+    workspace,
+    environment: {
+      skills: cell.variant === "skilled"
+        ? [path.join(cell.stageRoot, ".github/skills/investigate-issue")]
+        : [],
+    },
+    executor: {
+      name: "model-free-input-observer",
+      async execute(stimulus, options) {
+        invocations++;
+        assert.equal(options.workDir, workspace);
+        assert.notEqual(options.workDir, cell.cwd);
+        const inputs = [];
+        async function visit(directory) {
+          for (const entry of await readdir(directory, { withFileTypes: true })) {
+            const file = path.join(directory, entry.name);
+            if (entry.isDirectory()) {
+              await visit(file);
+            } else {
+              inputs.push({
+                relativePath: path.relative(workspace, file).split(path.sep).join("/"),
+                sha256: createHash("sha256").update(await readFile(file)).digest("hex"),
+              });
+            }
+          }
+        }
+        await visit(workspace);
+        const byPath = (a, b) => a.relativePath.localeCompare(b.relativePath);
+        assert.deepEqual(inputs.sort(byPath), [...cell.runnerInputs].sort(byPath));
+        return { workDir: options.workDir, output: "", events: [], stimulus };
+      },
+    },
+  });
+  try {
+    assert.equal(result.trajectory.workDir, workspace);
+  } finally {
+    await result.cleanup();
+  }
+}
+assert.equal(invocations, 2);
+'@
+            & node --input-type=module -e $script $module (
+                Join-Path $realProjectionOutput 'manifest.json'
+            ) $probeRoot
+            Assert-True ($LASTEXITCODE -eq 0) (
+                'The pinned runner did not produce the declared input inventory and actor working directory.'
+            )
+        }
+        PinnedSessionFilesystemRejectsExternalPersistence = {
+            $provider = Join-Path (
+                Split-Path (Split-Path $realManifest.toolchain.cliEntry -Parent) -Parent
+            ) '../vally/dist/executor/local-session-fs-handler.js'
+            $probeRoot = Join-Path $testRoot 'native-filesystem-probe'
+            $script = @'
+import assert from "node:assert/strict";
+import { access, mkdir } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+const [modulePath, root] = process.argv.slice(1);
+const { LocalSessionFsHandler } = await import(pathToFileURL(path.resolve(modulePath)));
+const sessionRoot = path.join(root, "native-session");
+const artifacts = path.join(root, "artifacts");
+await mkdir(sessionRoot, { recursive: true });
+await mkdir(artifacts, { recursive: true });
+const provider = new LocalSessionFsHandler(sessionRoot);
+const outside = path.join(artifacts, "issue-999024-investigation.md");
+await assert.rejects(provider.writeFile(outside, "report"), /Session filesystem path escapes root/);
+await assert.rejects(access(outside), { code: "ENOENT" });
+const inside = path.join(sessionRoot, "control.txt");
+await provider.writeFile(inside, "control");
+assert.equal(await provider.readFile(inside), "control");
+'@
+            & node --input-type=module -e $script $provider $probeRoot
+            Assert-True ($LASTEXITCODE -eq 0) (
+                'The pinned native filesystem no longer has the observed external-path limitation.'
+            )
+        }
+        PreparedRunnerInputsBindExactStagedBytes = {
+            foreach ($cell in $realManifest.cells) {
+                Assert-True ($cell.evidencePolicy -ceq 'frozen-input-only') (
+                    "Cell '$($cell.cellId)' does not declare the frozen evidence boundary."
+                )
+                Assert-True ($cell.storageCapability -ceq 'unsupported-native-session-filesystem') (
+                    "Cell '$($cell.cellId)' incorrectly claims an external native-storage capability."
+                )
+                if ($cell.variant -ceq 'baseline') {
+                    Assert-True (@($cell.runnerInputs).Count -eq 0) 'Baseline grants skill inputs.'
+                    continue
+                }
+                $skillRoot = Join-Path $cell.stageRoot '.github/skills/investigate-issue'
+                $files = @(Get-ChildItem $skillRoot -File -Recurse -Force)
+                Assert-True (@($cell.runnerInputs).Count -eq $files.Count) (
+                    'Runner inputs do not enumerate the staged skill exactly.'
+                )
+                foreach ($file in $files) {
+                    $relative = 'investigate-issue/' + [IO.Path]::GetRelativePath(
+                        $skillRoot, $file.FullName
+                    ).Replace('\', '/')
+                    $entry = @($cell.runnerInputs | Where-Object relativePath -CEQ $relative)
+                    Assert-True (
+                        $entry.Count -eq 1 -and
+                        $entry[0].sha256 -ceq (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                    ) "Runner input '$relative' is not bound to its exact staged bytes."
+                }
+            }
+        }
+        ControllerRecordsNativeWorkDirNotLauncherCwd = {
+            foreach ($cellControl in $actorControl.cells) {
+                $cell = @($runData.cells | Where-Object cellId -CEQ $cellControl.cellId)[0]
+                $expected = Join-Path $cell.workspaceRoot "$($cell.variant)/$($cell.stimulus)"
+                Assert-True (
+                    $cellControl.actorWorkDir -ceq $expected -and
+                    $cellControl.actorWorkDir -cne $cell.cwd
+                ) 'The controller did not retain the native actor working directory.'
+            }
+        }
+        UnsupportedNativeStorageBlocksBeforeAnyActorLaunch = {
+            $blockedOutput = Join-Path $testRoot 'unsupported-native-storage'
+            & $helper Prepare `
+                -TrustedRoot $repoRoot `
+                -CandidateRoot $repoRoot `
+                -OutputRoot $blockedOutput `
+                -CaseName ordinary-report-uses-trusted-session-storage `
+                -Runs 1 `
+                -ActorModel model `
+                -JudgeModel judge `
+                -ConfirmPrivateHost `
+                -VallyCli $fakeVally `
+                -ProjectionScript $fakeProjector
+            $path = Join-Path $blockedOutput 'manifest.json'
+            $rejected = $false
+            try {
+                & $helper Run -Manifest $path -ApprovedManifestSha256 (
+                    Get-FileHash $path -Algorithm SHA256
+                ).Hash.ToLowerInvariant()
+            } catch {
+                $rejected = $_.Exception.Message -like '*native session filesystem cannot grant*'
+            }
+            Assert-True $rejected 'Run accepted a manifest with unsupported native persistence.'
+            Assert-True (
+                @(Get-ChildItem $blockedOutput -Filter actor-invoked.txt -Recurse -Force).Count -eq 0
+            ) 'The unsupported storage capability was checked after an actor launched.'
+        }
+    }
+    foreach ($regression in $regressions.GetEnumerator()) {
+        try {
+            & $regression.Value
+            Write-Host "  [OK] $($regression.Key)"
+        } catch {
+            $regressionFailures.Add("$($regression.Key): $($_.Exception.Message)")
+            Write-Host "  [FAIL] $($regressionFailures[-1])"
+        }
+    }
+    Assert-True ($regressionFailures.Count -eq 0) ($regressionFailures -join "`n")
     Write-Host 'Investigate-issue private preparation self-test passed.'
 } finally {
     Remove-Item $testRoot -Recurse -Force

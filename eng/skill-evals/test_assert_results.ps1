@@ -301,6 +301,26 @@ try {
             name = 'duplicate planned stimulus'
             mutate = { param($f) $f.snapshot.evals[1].stimuli = @($f.snapshot.evals[1].stimuli[0], $f.snapshot.evals[1].stimuli[0]) }
             message = 'planned stimulus coverage'
+        },
+        @{
+            name = 'baseline duplicate stimulus hiding missing coverage with distinct trial IDs'
+            mutate = { param($f) $f.baseline[1].stimulus = 'requires-output' }
+            message = "'baseline' stimulus"
+        },
+        @{
+            name = 'baseline duplicate trial identity'
+            mutate = { param($f) $f.baseline[1].itemId = $f.baseline[0].itemId }
+            message = "'baseline' variant has a missing or duplicate trial identity"
+        },
+        @{
+            name = 'baseline unplanned stimulus'
+            mutate = { param($f) $f.baseline[1].stimulus = 'unknown' }
+            message = "'baseline' variant has a missing or unplanned stimulus"
+        },
+        @{
+            name = 'baseline missing planned stimulus metadata'
+            mutate = { param($f) $f.snapshot.evals[0].Remove('stimuli') }
+            message = "'baseline' plan has invalid planned stimulus coverage"
         }
     )
     foreach ($case in $cases) {
