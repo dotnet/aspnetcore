@@ -101,6 +101,8 @@ internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUs
         }
 
         ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;
+        ViewData["ExternalLogins.HasPassword"] = passwordHash is not null;
+        ViewData["ExternalLogins.IsReauthenticated"] = await ReauthenticationMarker.IsVerifiedAsync(HttpContext, _userManager, user);
         return Page();
     }
 
@@ -126,6 +128,55 @@ internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUs
 
     public override async Task<IActionResult> OnPostLinkLoginAsync(string provider)
     {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+        }
+
+        var form = await Request.ReadFormAsync();
+        if (form["reauthenticate"] == "password")
+        {
+            var password = form["password"].ToString();
+            if (string.IsNullOrEmpty(password) || !await _userManager.CheckPasswordAsync(user, password))
+            {
+                StatusMessage = "Error: Incorrect password.";
+                return RedirectToPage();
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            await ReauthenticationMarker.MarkAsync(HttpContext, _userManager, user);
+            return RedirectToPage();
+        }
+
+        if (form["reauthenticate"] == "external")
+        {
+            var currentLogins = await _userManager.GetLoginsAsync(user);
+            if (!currentLogins.Any(login => string.Equals(login.LoginProvider, provider, StringComparison.Ordinal)))
+            {
+                StatusMessage = "Error: That login is not linked to this account.";
+                return RedirectToPage();
+            }
+
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            var reauthenticationRedirectUrl = Url.Page(
+                "./ExternalLogins",
+                pageHandler: "LinkLoginCallback",
+                values: new { reauthenticate = true });
+            var reauthenticationProperties = _signInManager.ConfigureExternalAuthenticationProperties(
+                provider,
+                reauthenticationRedirectUrl,
+                await _userManager.GetUserIdAsync(user));
+            return new ChallengeResult(provider, reauthenticationProperties);
+        }
+
+        if (!await ReauthenticationMarker.IsVerifiedAsync(HttpContext, _userManager, user))
+        {
+            StatusMessage = "Error: You must confirm your identity before adding an external login.";
+            return RedirectToPage();
+        }
+
         // Clear the existing external cookie to ensure a clean login process
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
@@ -148,6 +199,29 @@ internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUs
         if (info == null)
         {
             throw new InvalidOperationException($"Unexpected error occurred loading external login info.");
+        }
+
+        if (Request.Query["reauthenticate"] == "true")
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            var linkedUser = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            if (linkedUser == null ||
+                !string.Equals(await _userManager.GetUserIdAsync(linkedUser), userId, StringComparison.Ordinal))
+            {
+                StatusMessage = "Error: That login is not linked to this account.";
+                return RedirectToPage();
+            }
+
+            await ReauthenticationMarker.MarkAsync(HttpContext, _userManager, user);
+            return RedirectToPage();
+        }
+
+        if (!await ReauthenticationMarker.IsVerifiedAsync(HttpContext, _userManager, user))
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            StatusMessage = "Error: You must confirm your identity before adding an external login.";
+            return RedirectToPage();
         }
 
         var result = await _userManager.AddLoginAsync(user, info);

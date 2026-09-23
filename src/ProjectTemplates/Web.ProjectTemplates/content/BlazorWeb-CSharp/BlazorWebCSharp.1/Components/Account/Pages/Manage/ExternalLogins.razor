@@ -46,17 +46,25 @@
 {
     <h4>Add another service to log in.</h4>
     <hr />
+    @if (!isReauthenticated)
+    {
+        <ReauthenticationPrompt Purpose="Adding an external login creates a new way to sign in to your account." />
+    }
     <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
-        <div>
-            <p>
-                @foreach (var provider in otherLogins)
-                {
-                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                        @provider.DisplayName
-                    </button>
-                }
-            </p>
-        </div>
+        <AntiforgeryToken />
+        @if (isReauthenticated)
+        {
+            <div>
+                <p>
+                    @foreach (var provider in otherLogins)
+                    {
+                        <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                            @provider.DisplayName
+                        </button>
+                    }
+                </p>
+            </div>
+        }
     </form>
 }
 
@@ -68,6 +76,7 @@
     private IList<UserLoginInfo>? currentLogins;
     private IList<AuthenticationScheme>? otherLogins;
     private bool showRemoveButton;
+    private bool isReauthenticated;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -108,6 +117,7 @@
         }
 
         showRemoveButton = passwordHash is not null || currentLogins.Count > 1;
+        isReauthenticated = await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user);
 
         if (HttpMethods.IsGet(HttpContext.Request.Method) && Action == LinkLoginCallbackAction)
         {
@@ -150,6 +160,14 @@
         if (info is null)
         {
             IdentityStatusMessage = "Error: Could not load external login info.";
+            RedirectManager.RedirectToCurrentPage();
+            return;
+        }
+
+        if (!await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user))
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            IdentityStatusMessage = "Error: You must confirm your identity before adding an external login.";
             RedirectManager.RedirectToCurrentPage();
             return;
         }
