@@ -193,6 +193,56 @@ are omitted in OpenAPI 3.0, 3.1, and 3.2 rather than emitted as unsupported comp
 extensions. Applications with an authoritative key or uniqueness contract can add the applicable
 keywords explicitly in a version-aware schema transformer.
 
+Scalar schemas combine three related but distinct layers:
+
+* The effective System.Text.Json contract determines which JSON values the configured converter
+  reads and writes. Number handling, custom converters, and source-generated metadata are part of
+  this layer.
+* JSON Schema formats describe standardized lexical spaces. A format is not proof of a .NET
+  converter's complete accepted-value domain, and OpenAPI 3.1 and later treat formats as
+  annotations unless validation is explicitly enabled.
+* OpenAPI formats are also widely consumed as client-generation hints. Formats such as `int32`,
+  `int64`, `float`, `double`, and `byte` can select a useful target-language type even when they do
+  not completely describe serializer validation.
+
+The current schema generator preserves its established client hints in both legacy and inferred
+modes. This includes several known differences from the effective runtime contract:
+
+| CLR contract | Current schema | Effective-contract distinction |
+| --- | --- | --- |
+| `DateTime`, `DateTimeOffset` | `string`, `date-time` | System.Text.Json accepts offsetless input, and an unspecified `DateTime` writes without an offset, while RFC 3339 `date-time` requires one. |
+| `TimeOnly` | `string`, `time` | System.Text.Json uses offsetless local times, while RFC 3339 `full-time` includes an offset. |
+| `Uri` | `string`, `uri` | System.Text.Json and minimal API binding accept relative as well as absolute values. |
+| `TimeSpan` | String with a constant-format pattern | The runtime representation is the .NET constant duration syntax, not the ISO duration syntax represented by `duration`. |
+| `decimal` | `number`, `double` | `double` is an established client hint but does not describe decimal precision or range. |
+| `byte[]` | `string`, `byte` | System.Text.Json reports `contentEncoding: base64`; the OpenAPI model currently retains the historical `byte` hint, including in 3.1 and 3.2. |
+| `Memory<byte>`, `ReadOnlyMemory<byte>` | Referenced string schemas | The exporter reports `contentEncoding: base64`, which is not currently retained in the emitted component. |
+| `Rune`, `IPAddress`, `IPEndPoint`, `BigInteger` | Object JSON contracts | These types do not have built-in scalar System.Text.Json converters. Minimal API parameter metadata can independently describe the parsable types as strings. |
+| `nint`, `nuint` | Unconstrained schemas | System.Text.Json marks these runtime JSON contracts unsupported. |
+| A well-known CLR type with a custom converter | The CLR type's historical format can remain | Format assignment currently follows CLR identity after exporter generation and therefore does not prove custom-converter semantics. |
+
+Numeric schemas follow effective `JsonNumberHandling` for their JSON type alternatives and lexical
+patterns. Reading or writing numbers as strings adds a string alternative, and named IEEE
+floating-point literals add `"NaN"`, `"Infinity"`, and `"-Infinity"`. The generator currently does
+not add CLR minimum, maximum, or `multipleOf` constraints. Width formats are emitted for the
+established integral and floating-point cases, while `sbyte`, `Int128`, `UInt128`, and `Half` have
+no width format and `decimal` retains the historical `double` hint.
+
+Non-body parameter binding is a separate contract from JSON serialization. Route, query, header,
+and form values can use invariant `TryParse` or `IParsable` behavior, including types and lexical
+forms that are not represented by the System.Text.Json-derived body schema. Minimal API metadata
+can describe parsable values such as `BigInteger`, `IPAddress`, and `IPEndPoint` as strings, but
+standard formats on date, time, and URI parameters still do not capture every accepted lexical
+form.
+
+Future scalar work is intentionally staged. Compatibility coverage first records the current
+serializer, exporter, emitted-schema, and parameter-binding behavior. Subsequent work can add
+converter-proven scalar and numeric facts, version-appropriate base64 encoding, and a distinct
+binder-aware parameter decision path. Changes that replace established date/time, URI, decimal,
+or binary client hints require an explicit compatibility policy rather than being inferred from a
+CLR type alone. Applications can provide stricter or domain-specific constraints today with a
+version-aware schema transformer.
+
 The inferred mode also resolves component names from the complete set of serializer contracts
 used by the document before schemas are emitted. A default name that is unique is unchanged. Name
 collisions are resolved deterministically by adding declaring-type or namespace segments, with a
