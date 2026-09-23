@@ -33,8 +33,7 @@ concurrency:
 # Initial operational ceilings, not evidence that a panel completed. The skill owns the topic
 # count and its 50-row maximum; budget exhaustion must never silently reduce that manifest.
 timeout-minutes: 90
-max-turns: 200
-max-ai-credits: 1500
+max-ai-credits: -1
 
 user-rate-limit:
   max-runs-per-window: 5
