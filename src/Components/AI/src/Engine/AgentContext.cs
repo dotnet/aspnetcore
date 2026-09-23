@@ -300,7 +300,14 @@ public class AgentContext : IDisposable
             Error = ex;
             Status = ConversationStatus.Error;
             NotifyStatusChanged();
-            _agent.LogProcessingError(ex);
+            try
+            {
+                _agent.LogProcessingError(ex);
+            }
+            catch (Exception)
+            {
+                // A logging provider failure must not change this method's error-state contract.
+            }
             return;
         }
 
