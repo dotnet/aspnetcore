@@ -306,7 +306,8 @@ public class AgentContext : IDisposable
             }
             catch (Exception)
             {
-                // A logging provider failure must not change this method's error-state contract.
+                // A logging provider failure must not fault the operation after the processing
+                // failure has been surfaced through the conversation state.
             }
             return;
         }
