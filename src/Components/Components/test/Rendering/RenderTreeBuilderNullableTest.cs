@@ -58,4 +58,46 @@ public class RenderTreeBuilderNullableTest
             frame => AssertFrame.Attribute(frame, "data-blazor-null-option", "data-blazor-null-option"),
             frame => AssertFrame.Attribute(frame, "value", ""));
     }
+
+    [Fact]
+    public void AddMultipleAttributes_NullOptionValueOverridesEarlierValue_EmitsMarkerAndEmptyValueFrame()
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "option");
+        builder.AddAttribute(1, "value", "earlier-value");
+        builder.AddMultipleAttributes(2, new Dictionary<string, object>
+        {
+            ["value"] = null!,
+        });
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(
+            frames,
+            frame => AssertFrame.Element(frame, "option", 3),
+            frame => AssertFrame.Attribute(frame, "data-blazor-null-option", "data-blazor-null-option"),
+            frame => AssertFrame.Attribute(frame, "value", ""));
+    }
+
+    [Fact]
+    public void AddMultipleAttributes_ValueOverridesEarlierNullOptionValue_RemovesMarker()
+    {
+        var builder = new RenderTreeBuilder();
+        string? nullValue = null;
+
+        builder.OpenElement(0, "option");
+        builder.AddAttribute(1, "value", nullValue);
+        builder.AddMultipleAttributes(2, new Dictionary<string, object>
+        {
+            ["value"] = "actual-value",
+        });
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(
+            frames,
+            frame => AssertFrame.Element(frame, "option", 2),
+            frame => AssertFrame.Attribute(frame, "value", "actual-value"));
+    }
 }

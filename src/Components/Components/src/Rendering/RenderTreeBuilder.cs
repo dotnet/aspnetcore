@@ -240,7 +240,6 @@ public sealed class RenderTreeBuilder : IDisposable
         {
             _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
             _entries.AppendAttribute(sequence, name, string.Empty);
-            TrackAttributeName(name);
         }
         else
         {
@@ -384,7 +383,10 @@ public sealed class RenderTreeBuilder : IDisposable
                     _entries.AppendAttribute(sequence, NullValueOptionMarkerAttributeName, NullValueOptionMarkerAttributeName);
                     _entries.AppendAttribute(sequence, name, string.Empty);
                 }
-                TrackAttributeName(name);
+                else
+                {
+                    TrackAttributeName(name);
+                }
             }
             else if (value is bool boolValue)
             {
@@ -879,9 +881,17 @@ public sealed class RenderTreeBuilder : IDisposable
 
         // Now that we've found the last attribute, we can iterate backwards and process duplicates.
         var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
+        var isOptionElement = first > 0 &&
+            buffer[first - 1].FrameTypeField == RenderTreeFrameType.Element &&
+            string.Equals(buffer[first - 1].ElementNameField, "option", StringComparison.OrdinalIgnoreCase);
         for (var i = last; i >= first; i--)
         {
             ref var frame = ref buffer[i];
+            if (frame.FrameTypeField == RenderTreeFrameType.None)
+            {
+                continue;
+            }
+
             Debug.Assert(frame.FrameTypeField == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameTypeField} at {i}");
 
             if (!seenAttributeNames.TryAdd(frame.AttributeNameField, i))
@@ -899,6 +909,18 @@ public sealed class RenderTreeBuilder : IDisposable
                 {
                     // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
                     // later to wipe it out.
+                    // A null option's marker and empty value are one logical attribute, so discard both together.
+                    if (isOptionElement &&
+                        i > first &&
+                        string.Equals(frame.AttributeNameField, "value", StringComparison.Ordinal) &&
+                        frame.AttributeValueField is string { Length: 0 } &&
+                        buffer[i - 1].FrameTypeField == RenderTreeFrameType.Attribute &&
+                        string.Equals(buffer[i - 1].AttributeNameField, NullValueOptionMarkerAttributeName, StringComparison.Ordinal) &&
+                        buffer[i - 1].SequenceField == frame.SequenceField)
+                    {
+                        buffer[i - 1] = default;
+                    }
+
                     frame = default;
                 }
                 else
