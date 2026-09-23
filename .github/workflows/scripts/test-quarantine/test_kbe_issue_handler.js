@@ -13,6 +13,10 @@ const workflow = fs.readFileSync(
 const frontmatter = workflow.slice(0, workflow.indexOf("\n---\n", 4));
 assert.doesNotMatch(frontmatter, /\n  create-issue:/);
 assert.match(frontmatter, /\n  scripts:\n    create-quarantine-issue:/);
+assert.match(
+  frontmatter,
+  /Reject orphan quarantine issues[\s\S]*create_quarantine_issue[\s\S]*!contains\(needs\.agent\.outputs\.output_types, 'create_pull_request'\)/,
+);
 const match = workflow.match(
   /\/\/ --- BEGIN quarantine-kbe-handler ---([\s\S]*?)\/\/ --- END quarantine-kbe-handler ---/,
 );
@@ -415,8 +419,10 @@ async function main() {
         latest_quarantine_transition: "removed",
       },
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /only valid for Case A/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -475,9 +481,10 @@ async function main() {
       enableKbe: true,
       missingEligibility: true,
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
-    assert.match(createdIssue(output).body, /unable to read deterministic Case A eligibility/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /requires a trusted deterministic test receipt/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -485,9 +492,10 @@ async function main() {
       enableKbe: true,
       eligibilityRoot: { part1_sha256: "tampered" },
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
-    assert.match(createdIssue(output).body, /receipt identity does not match/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /requires a trusted deterministic test receipt/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -828,7 +836,7 @@ async function main() {
   {
     const output = await run(createItem({ test_name: otherTestName }));
     assert.equal(output.result.success, false);
-    assert.match(output.result.error, /absent from deterministic Part 1 evidence/);
+    assert.match(output.result.error, /absent from the deterministic Case A eligibility receipt/);
   }
 
   {
@@ -846,7 +854,25 @@ async function main() {
     const output = await run(createItem({
       matcher_kind: "incomplete",
       matcher: "",
-    }), { evidence });
+    }), {
+      evidence,
+      eligibilityRecord: {
+        status: "ineligible",
+        originating_case: "case-a",
+        source_resolution: {
+          status: "exact",
+          path: "src/Sample.Tests/SampleTests.cs",
+          type: "Microsoft.AspNetCore.Tests.SampleTests",
+          method: "ReturnsExpectedResponse",
+        },
+        current_quarantine_state: "not-quarantined",
+        latest_quarantine_transition: "none",
+        raw_failure_builds: [101],
+        ancestry_verified_builds: [101],
+        eligible_failure_builds: [101],
+        evidence: null,
+      },
+    });
     const issue = createdIssue(output);
     assert.match(issue.body, /Sample\.Tests/);
     assert.doesNotMatch(issue.body, /```json/);
@@ -864,10 +890,28 @@ async function main() {
         fail_blocks: `${testName} [FAIL]\nExpected response body to contain stable-marker-123 but it was empty.`,
       }],
     });
-    const output = await run(createItem(), { evidence });
+    const output = await run(createItem(), {
+      evidence,
+      eligibilityRecord: {
+        status: "ineligible",
+        originating_case: "case-a",
+        source_resolution: {
+          status: "exact",
+          path: "src/Sample.Tests/SampleTests.cs",
+          type: "Microsoft.AspNetCore.Tests.SampleTests",
+          method: "ReturnsExpectedResponse",
+        },
+        current_quarantine_state: "not-quarantined",
+        latest_quarantine_transition: "none",
+        raw_failure_builds: [101],
+        ancestry_verified_builds: [101],
+        eligible_failure_builds: [101],
+        evidence: null,
+      },
+    });
     const issue = createdIssue(output);
     assert.doesNotMatch(issue.body, /```json/);
-    assert.match(issue.body, /absent from the deterministic Case A eligibility receipt/);
+    assert.match(issue.body, /minimum Case A eligibility invariants/);
   }
 
   {

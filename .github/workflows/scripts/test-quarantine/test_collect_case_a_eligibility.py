@@ -216,6 +216,7 @@ def collect_result(
 def assert_case_b(result, removal_commit):
     assert result["status"] == "ineligible", result
     assert result["originating_case"] == "case-b", result
+    assert result["case_b_issue"] == 1, result
     assert result["current_quarantine_state"] == "not-quarantined", result
     assert result["latest_quarantine_transition"] == "removed", result
     assert result["cutoff"]["commit"] == removal_commit, result
@@ -735,6 +736,73 @@ public partial class SampleTests
         assert assembly_to_method["targets"][0]["status"] == "re-quarantined", (
             assembly_to_method
         )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine method", "2026-08-02T00:00:00Z")
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        commit(root, "Re-quarantine type", "2026-08-03T00:00:00Z")
+
+        method_to_type = MODULE.collect_requarantine_history(root, "HEAD")
+        assert method_to_type["targets"][0]["status"] == "re-quarantined", (
+            method_to_type
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine method", "2026-08-02T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Re-quarantine assembly", "2026-08-03T00:00:00Z")
+
+        method_to_assembly = MODULE.collect_requarantine_history(root, "HEAD")
+        assert (
+            method_to_assembly["targets"][0]["status"]
+            == "re-quarantined"
+        ), method_to_assembly
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly", "2026-08-01T00:00:00Z")
+        assembly_info.write_text("", encoding="utf-8")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(
+            root,
+            "Replace assembly quarantine with method quarantine",
+            "2026-08-02T00:00:00Z",
+        )
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Re-quarantine assembly", "2026-08-03T00:00:00Z")
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assembly_target = next(
+            target for target in targets
+            if target["scope"] == "assembly"
+        )
+        assert assembly_target["status"] == "re-quarantined", targets
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)

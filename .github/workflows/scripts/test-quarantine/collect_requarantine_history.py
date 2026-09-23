@@ -25,11 +25,17 @@ def main():
         "--history-ref",
         default="refs/remotes/origin/main",
     )
+    parser.add_argument("--repository", required=True)
+    parser.add_argument("--ref", required=True)
+    parser.add_argument("--commit", required=True)
     args = parser.parse_args()
 
     receipt = MODULE.collect_requarantine_history(
         args.repo_root,
         args.history_ref,
+        args.repository,
+        args.ref,
+        args.commit,
     )
     pathlib.Path(args.output).write_text(
         json.dumps(receipt, separators=(",", ":"), sort_keys=True),

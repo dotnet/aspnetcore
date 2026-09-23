@@ -55,7 +55,9 @@ issue. These correspond to Case A and Case B in
    prompt.
 6. `create_quarantine_issue` verifies the receipt's Part 1 SHA-256,
    repository, ref, commit, minimum new-quarantine predicates, exact test,
-   matcher, and build/run/result identity.
+   matcher, and build/run/result identity. It rejects any test whose trusted
+   receipt is not Case A, so a Case B re-quarantine cannot create a duplicate
+   ordinary issue.
 7. The handler creates or reuses the quarantine issue and returns the
    temporary-ID mapping used by `add_comment` and `create_pull_request`. Reuse
    is resolved by paginating `GET /repos/{owner}/{repo}/issues` with
@@ -63,6 +65,13 @@ issue. These correspond to Case A and Case B in
    titles exactly and discarding pull requests. The strongly consistent list
    endpoint is used instead of the issue search API, whose index is eventually
    consistent and can miss an issue created by a recent run.
+8. Before the built-in `create_pull_request` handler runs,
+   `validate_pull_request_outputs.py` applies each authoritative format-patch
+   to the receipt-bound `origin/main` snapshot and derives its exact quarantine
+   target changes. It rejects unrelated edits, mixed additions/removals,
+   duplicate targets, stale project source, additions that do not match an
+   eligible Case A or Case B receipt, and removals whose exact current history
+   is not `first-quarantine`.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
@@ -86,12 +95,13 @@ new-quarantine eligibility, the matcher and duplicate search validate, and the
 repository variable `TEST_QUARANTINE_ENABLE_KBE` is exactly `true`. The variable
 is intentionally disabled by default until a post-merge canary is explicitly approved.
 
-Missing, contradictory, ineligible, or unproven receipts and incomplete, broad,
-colliding, or unverifiable matchers produce the ordinary quarantine issue
-without a KBE JSON block or KBE label. An individual test found only in
-deterministic Source C crash blocks can also receive an ordinary issue, but
-cannot activate a KBE because it has no collector-authored new-quarantine
-receipt or exact VSTMR test-run/result identity.
+A trusted Case A receipt that is ineligible for KBE activation, or an
+incomplete, broad, colliding, or unverifiable matcher, produces the ordinary
+quarantine issue without a KBE JSON block or KBE label. Missing,
+identity-mismatched, non-Case-A, or absent per-test receipts reject issue
+creation. An individual test found only in deterministic Source C crash blocks
+can receive an ordinary issue when its trusted receipt identifies it as Case A,
+but cannot activate a KBE without exact VSTMR test-run/result identity.
 
 This is intentionally stricter than runtime's current `ci-failure-scan`.
 Runtime is prior art for the Build Insights JSON and automatic-label behavior;
@@ -104,6 +114,10 @@ into a KBE.
 
 - One exact fully qualified test per new-quarantine issue and PR.
 - The agent cannot author or override new-quarantine eligibility facts.
+- Every quarantine or unquarantine PR is mechanically bound to deterministic
+  receipts before the privileged PR handler runs. An unquarantine PR may
+  remove multiple targets only when they share one issue and every target is a
+  verified first quarantine.
 - A post-cutoff failure is rejected when its source commit does not contain
   the history-derived cutoff commit, including stale PR merge snapshots that
   started after an unquarantine landed.
@@ -131,7 +145,7 @@ into a KBE.
 
 ## Validation
 
-The `Quarantine workflow checks` pull-request workflow runs both suites below
+The `Quarantine workflow checks` pull-request workflow runs all suites below
 when the quarantine workflow, matcher instructions, skill, or supporting scripts
 change. It uses a disposable GitHub-hosted runner with read-only permissions,
 does not persist checkout credentials, and has no secrets or artifact handoff
@@ -154,7 +168,13 @@ Run the deterministic collector fixtures:
 python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
 ```
 
-Validate the source with the repository's gh-aw v0.88.2 toolchain:
+Run the pull-request action-boundary fixtures:
+
+```bash
+python3 -B .github/workflows/scripts/test-quarantine/test_validate_pull_request_outputs.py
+```
+
+Validate the source with the repository's gh-aw toolchain:
 
 ```bash
 gh aw compile test-quarantine --no-emit --strict

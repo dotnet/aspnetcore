@@ -38,6 +38,10 @@ ASSEMBLY_QUARANTINE_PATTERN = re.compile(
 QUARANTINE_ISSUE_PATTERN = re.compile(
     r"https://github\.com/dotnet/aspnetcore/issues/(?P<issue>\d+)"
 )
+QUARANTINE_REFERENCE_PATTERN = re.compile(
+    r"https://github\.com/dotnet/aspnetcore/issues/"
+    r"(?P<reference>\d+|#aw_[A-Za-z0-9_]{3,12})"
+)
 METHOD_PATTERN = re.compile(
     r"(?m)^[ \t]*(?:public|internal|protected|private)\s+"
     r"(?:(?:static|virtual|override|sealed|async|new|unsafe|partial|extern)\s+)*"
@@ -271,6 +275,7 @@ def build_source_index(root):
                     "path": relative_path,
                     "project_root": str(project_root),
                     "issue": int(issue.group("issue")) if issue else None,
+                    "quarantine_attribute": line,
                 })
 
         for entry in ranges:
@@ -557,7 +562,7 @@ def historical_assembly_state(root, project_root, commit, state_cache):
     if cache_key in state_cache:
         return state_cache[cache_key]
     if commit is None:
-        return {"status": "exact", "quarantined": False}
+        return {"status": "exact", "quarantined": False, "issue": None}
 
     tree = git_result(
         root,
@@ -593,6 +598,7 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         return {"status": "ambiguous"}
 
     assembly_files = []
+    assembly_issues = set()
     for match in matches.stdout.splitlines():
         relative_path = match.split(":", 1)[-1]
         if not relative_path.endswith(".cs"):
@@ -620,11 +626,23 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         if len(project_directories[associated_directory]) != 1:
             return {"status": "ambiguous"}
         assembly_files.append(relative_path)
+        for source_line in content.stdout.splitlines():
+            if not ASSEMBLY_QUARANTINE_PATTERN.search(
+                sanitize_csharp(source_line)
+            ):
+                continue
+            for issue_match in QUARANTINE_ISSUE_PATTERN.finditer(source_line):
+                assembly_issues.add(int(issue_match.group("issue")))
 
     state = {
         "status": "exact",
         "quarantined": bool(assembly_files),
         "paths": assembly_files,
+        "issue": (
+            next(iter(assembly_issues))
+            if len(assembly_issues) == 1
+            else None
+        ),
     }
     state_cache[cache_key] = state
     return state
@@ -674,6 +692,11 @@ def assembly_quarantine_history(root, project_root, history_ref):
             "commit": sha,
             "parent": parent,
             "utc": timestamp,
+            "issue": (
+                current_state["issue"]
+                if current_state["quarantined"]
+                else parent_state["issue"]
+            ),
             "scope": "assembly",
         })
     return {"status": "exact", "events": events}
@@ -735,8 +758,10 @@ def historical_project_source_index(
     types = set()
     bases = {}
     type_quarantines = set()
+    type_quarantine_issues = {}
     methods = {}
     method_quarantines = set()
+    method_quarantine_issues = {}
     for relative_path in paths:
         if not relative_path.endswith(".cs"):
             continue
@@ -784,10 +809,21 @@ def historical_project_source_index(
             if entry[5]:
                 type_bases.add(normalize_type_name(entry[5]))
             declaration_line = clean.count("\n", 0, entry[4])
-            if has_quarantine_attribute(
-                attribute_block(lines, declaration_line)
-            ):
+            attributes = attribute_block(lines, declaration_line)
+            if has_quarantine_attribute(attributes):
                 type_quarantines.add(type_name)
+                issues = {
+                    int(match.group("issue"))
+                    for match in QUARANTINE_ISSUE_PATTERN.finditer(attributes)
+                }
+                issue = next(iter(issues)) if len(issues) == 1 else None
+                if (
+                    type_name in type_quarantine_issues
+                    and type_quarantine_issues[type_name] != issue
+                ):
+                    type_quarantine_issues[type_name] = None
+                else:
+                    type_quarantine_issues[type_name] = issue
         for match in METHOD_PATTERN.finditer(clean):
             key = (
                 full_type_name(ranges, match.start(), file_namespace),
@@ -795,18 +831,31 @@ def historical_project_source_index(
             )
             methods[key] = methods.get(key, 0) + 1
             declaration_line = clean.count("\n", 0, match.start())
-            if has_quarantine_attribute(
-                attribute_block(lines, declaration_line)
-            ):
+            attributes = attribute_block(lines, declaration_line)
+            if has_quarantine_attribute(attributes):
                 method_quarantines.add(key)
+                issues = {
+                    int(match.group("issue"))
+                    for match in QUARANTINE_ISSUE_PATTERN.finditer(attributes)
+                }
+                issue = next(iter(issues)) if len(issues) == 1 else None
+                if (
+                    key in method_quarantine_issues
+                    and method_quarantine_issues[key] != issue
+                ):
+                    method_quarantine_issues[key] = None
+                else:
+                    method_quarantine_issues[key] = issue
 
     result = {
         "status": "exact",
         "types": types,
         "bases": bases,
         "type_quarantines": type_quarantines,
+        "type_quarantine_issues": type_quarantine_issues,
         "methods": methods,
         "method_quarantines": method_quarantines,
+        "method_quarantine_issues": method_quarantine_issues,
     }
     source_cache[cache_key] = result
     return result
@@ -997,7 +1046,7 @@ def type_quarantine_transition(
             return result
         current_types = current_index["type_quarantines"]
         parent_types = parent_index["type_quarantines"]
-        applicable_statuses = set()
+        applicable_changes = []
         for status, changed_types, applicable_commit in (
             ("added", current_types - parent_types, sha),
             ("removed", parent_types - current_types, parent),
@@ -1013,15 +1062,27 @@ def type_quarantine_transition(
                 content_cache,
             )
             if historical_source["status"] == "ambiguous":
-                applicable_statuses.add("ambiguous")
-            elif (
-                historical_source["status"] == "exact"
-                and changed_types.intersection(historical_source["types"])
-            ):
-                applicable_statuses.add(status)
-        if not applicable_statuses:
+                applicable_changes.append(("ambiguous", None, None))
+            elif historical_source["status"] == "exact":
+                matching_types = changed_types.intersection(
+                    historical_source["types"]
+                )
+                issues = (
+                    current_index["type_quarantine_issues"]
+                    if status == "added"
+                    else parent_index["type_quarantine_issues"]
+                )
+                applicable_changes.extend(
+                    (status, changed_type, issues.get(changed_type))
+                    for changed_type in matching_types
+                )
+        if not applicable_changes:
             continue
-        if len(applicable_statuses) > 1 or "ambiguous" in applicable_statuses:
+        if (
+            len(applicable_changes) != 1
+            or applicable_changes[0][0] == "ambiguous"
+            or applicable_changes[0][2] is None
+        ):
             result = {
                 "status": "ambiguous",
                 "commit": sha,
@@ -1030,10 +1091,12 @@ def type_quarantine_transition(
             cached_history["tests"][test_name] = result
             return result
         result = {
-            "status": next(iter(applicable_statuses)),
+            "status": applicable_changes[0][0],
             "commit": sha,
             "utc": timestamp,
             "scope": "type",
+            "type": applicable_changes[0][1],
+            "issue": applicable_changes[0][2],
         }
         cached_history["tests"][test_name] = result
         return result
@@ -1463,6 +1526,7 @@ def method_quarantine_transitions(
             parent_index = {
                 "status": "exact",
                 "method_quarantines": set(),
+                "method_quarantine_issues": {},
             }
         else:
             parent_index = historical_project_source_index(
@@ -1492,6 +1556,14 @@ def method_quarantine_transitions(
             "status": "added" if current else "removed",
             "commit": sha,
             "utc": timestamp,
+            "scope": "method",
+            "type": type_name,
+            "method": method,
+            "issue": (
+                current_index["method_quarantine_issues"].get(target)
+                if current
+                else parent_index["method_quarantine_issues"].get(target)
+            ),
         })
     cached_history["methods"][target] = events
     return events
@@ -1537,13 +1609,33 @@ def target_quarantine_transitions(
         if source["status"] != "exact" or assembly["status"] != "exact":
             return None
         if scope == "assembly":
-            return assembly["quarantined"]
+            state = {
+                ("type", item)
+                for item in source["type_quarantines"]
+            }
+            state.update(
+                ("method", item[0], item[1])
+                for item in source["method_quarantines"]
+            )
+            if assembly["quarantined"]:
+                state.add(("assembly",))
+            return frozenset(state)
         type_quarantined = type_name in source["type_quarantines"]
         if scope == "type":
-            if type_quarantined:
-                return True
+            method_quarantines = {
+                ("method", item[0], item[1])
+                for item in source["method_quarantines"]
+                if item[0] == type_name
+            }
+            if method_quarantines or type_quarantined:
+                state = set(method_quarantines)
+                if type_quarantined:
+                    state.add(("type", type_name))
+                if assembly["quarantined"]:
+                    state.add(("assembly",))
+                return frozenset(state)
             if not assembly["quarantined"]:
-                return False
+                return frozenset()
             full_source = historical_project_source_index(
                 root,
                 relative_project_root,
@@ -1551,15 +1643,26 @@ def target_quarantine_transitions(
                 source_cache,
                 content_cache,
             )
-            return (
-                None
-                if full_source["status"] != "exact"
-                else type_name in full_source["types"]
-            )
-        if (type_name, method) in source["method_quarantines"]:
-            return True
-        if not type_quarantined and not assembly["quarantined"]:
-            return False
+            if full_source["status"] != "exact":
+                return None
+            if type_name not in full_source["types"]:
+                return frozenset()
+            return frozenset({("assembly",)})
+        method_quarantined = (
+            type_name,
+            method,
+        ) in source["method_quarantines"]
+        if method_quarantined or type_quarantined:
+            state = set()
+            if method_quarantined:
+                state.add(("method", type_name, method))
+            if type_quarantined:
+                state.add(("type", type_name))
+            if assembly["quarantined"]:
+                state.add(("assembly",))
+            return frozenset(state)
+        if not assembly["quarantined"]:
+            return frozenset()
         full_source = historical_project_source_index(
             root,
             relative_project_root,
@@ -1567,11 +1670,11 @@ def target_quarantine_transitions(
             source_cache,
             content_cache,
         )
-        return (
-            None
-            if full_source["status"] != "exact"
-            else (type_name, method) in full_source["methods"]
-        )
+        if full_source["status"] != "exact":
+            return None
+        if (type_name, method) not in full_source["methods"]:
+            return frozenset()
+        return frozenset({("assembly",)})
 
     events = []
     for line in history:
@@ -1620,7 +1723,7 @@ def target_quarantine_transitions(
             )
         current = target_state(current_source, current_assembly, sha)
         previous = (
-            False
+            frozenset()
             if parent is None
             else target_state(parent_source, parent_assembly, parent)
         )
@@ -1642,7 +1745,7 @@ def target_quarantine_transitions(
                 )
             )
         )
-        if current and identity_missing:
+        if current and not previous and identity_missing:
             full_parent_source = (
                 {
                     "status": "exact",
@@ -1670,7 +1773,20 @@ def target_quarantine_transitions(
                 else "ambiguous"
             )
         else:
-            status = "added" if current else "removed"
+            added = current - previous
+            removed = previous - current
+            if added and removed:
+                status = (
+                    "removed"
+                    if scope in ("type", "assembly")
+                    else "modified"
+                )
+            elif added:
+                status = "added"
+            elif removed:
+                status = "removed"
+            else:
+                status = "ambiguous"
         events.append({
             "status": status,
             "commit": sha,
@@ -1772,7 +1888,83 @@ def quarantine_issue(attribute):
     return next(iter(issues)) if len(issues) == 1 else None
 
 
-def collect_requarantine_history(root, history_ref):
+def quarantine_reference(attribute):
+    references = {
+        match.group("reference")
+        for match in QUARANTINE_REFERENCE_PATTERN.finditer(attribute)
+    }
+    return next(iter(references)) if len(references) == 1 else None
+
+
+def current_quarantine_targets(source_index):
+    targets = []
+    seen = set()
+    for declarations in source_index["methods"].values():
+        for declaration in declarations:
+            if not declaration["method_quarantined"]:
+                continue
+            key = (
+                "method",
+                declaration["path"],
+                declaration["type"],
+                declaration["method"],
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            targets.append({
+                "scope": "method",
+                "path": declaration["path"],
+                "project_root": declaration["project_root"],
+                "type": declaration["type"],
+                "method": declaration["method"],
+                "reference": quarantine_reference(
+                    declaration["quarantine_attribute"]
+                ),
+            })
+    for declarations in source_index["types"].values():
+        for declaration in declarations:
+            if not declaration["quarantined"]:
+                continue
+            key = ("type", declaration["path"], declaration["type"], None)
+            if key in seen:
+                continue
+            seen.add(key)
+            targets.append({
+                "scope": "type",
+                "path": declaration["path"],
+                "project_root": declaration["project_root"],
+                "type": declaration["type"],
+                "method": None,
+                "reference": quarantine_reference(
+                    declaration["quarantine_attribute"]
+                ),
+            })
+    for assembly in source_index["assemblies"]:
+        key = ("assembly", assembly["path"], None, None)
+        if key in seen:
+            continue
+        seen.add(key)
+        targets.append({
+            "scope": "assembly",
+            "path": assembly["path"],
+            "project_root": assembly["project_root"],
+            "type": None,
+            "method": None,
+            "reference": quarantine_reference(
+                assembly["quarantine_attribute"]
+            ),
+        })
+    return targets
+
+
+def collect_requarantine_history(
+    root,
+    history_ref,
+    repository=None,
+    ref=None,
+    commit=None,
+):
     root = pathlib.Path(root)
     source_index = build_source_index(root)
     targets = []
@@ -1961,6 +2153,9 @@ def collect_requarantine_history(root, history_ref):
 
     return {
         "schema_version": 1,
+        "repository": repository,
+        "ref": ref,
+        "commit": commit,
         "history_ref": history_ref,
         "history_commit": git(root, "rev-parse", "--verify", history_ref),
         "targets": sorted(
@@ -2311,6 +2506,7 @@ def collect(
             "ancestry_verified_builds": [],
             "eligible_failure_builds": [],
             "case_b_eligible": False,
+            "case_b_issue": None,
             "evidence": None,
             "reasons": reasons,
         }
@@ -2431,6 +2627,11 @@ def collect(
             continue
         case_b = transition["status"] == "removed"
         if case_b:
+            receipt["case_b_issue"] = transition.get("issue")
+            if not isinstance(receipt["case_b_issue"], int):
+                receipt["status"] = "ineligible"
+                reasons.append("original-quarantine-issue-unproven")
+                continue
             transition_cutoff = {
                 "utc": transition["utc"],
                 "reason": "latest-quarantine-transition",

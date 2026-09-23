@@ -1184,7 +1184,10 @@ on:
         python3 .github/workflows/scripts/test-quarantine/collect_requarantine_history.py \
           --output "${RUNNER_TEMP}/test-quarantine-requarantine-history.json" \
           --repo-root "${GITHUB_WORKSPACE}" \
-          --history-ref "refs/remotes/origin/main"
+          --history-ref "refs/remotes/origin/main" \
+          --repository "${GITHUB_REPOSITORY}" \
+          --ref "${GITHUB_REF}" \
+          --commit "${GITHUB_SHA}"
 
         python3 << 'SCRIPT'
         import json
@@ -1346,6 +1349,26 @@ safe-outputs:
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
+    - name: Reject orphan quarantine issues
+      if: >-
+        contains(needs.agent.outputs.output_types, 'create_quarantine_issue')
+        && !contains(needs.agent.outputs.output_types, 'create_pull_request')
+      run: |
+        echo "create_quarantine_issue requires a matching create_pull_request output" >&2
+        exit 1
+    - name: Reject unverified quarantine pull requests
+      if: contains(needs.agent.outputs.output_types, 'create_pull_request')
+      env:
+        GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+      run: >-
+        python3 .github/workflows/scripts/test-quarantine/validate_pull_request_outputs.py
+        --repo-root "${GITHUB_WORKSPACE}"
+        --agent-output "${GH_AW_AGENT_OUTPUT}"
+        --evidence-directory "${RUNNER_TEMP}/test-quarantine-evidence"
+        --transport-directory "/tmp/gh-aw"
+        --repository "${GITHUB_REPOSITORY}"
+        --ref "${GITHUB_REF}"
+        --commit "${GITHUB_SHA}"
   noop:
     report-as-issue: false
   scripts:
@@ -1480,6 +1503,7 @@ safe-outputs:
         const repo = `${context.repo.owner}/${context.repo.repo}`;
         let eligibilityReason = "";
         let eligibilityRecord = null;
+        let eligibilityTrusted = false;
         try {
           const eligibility = JSON.parse(fs.readFileSync(eligibilityPath, "utf8"));
           const part1Hash = crypto.createHash("sha256").update(evidenceBytes).digest("hex");
@@ -1497,10 +1521,20 @@ safe-outputs:
             eligibilityRecord = eligibility.tests?.[testName] ?? null;
             if (!eligibilityRecord) {
               eligibilityReason = "test is absent from the deterministic Case A eligibility receipt";
+            } else {
+              eligibilityTrusted = true;
             }
           }
         } catch (error) {
           eligibilityReason = `unable to read deterministic Case A eligibility: ${error.message}`;
+        }
+        if (!eligibilityTrusted || !eligibilityRecord) {
+          return fail(
+            `create_quarantine_issue requires a trusted deterministic test receipt: ${eligibilityReason}`);
+        }
+        if (eligibilityRecord.originating_case !== "case-a") {
+          return fail(
+            `create_quarantine_issue is only valid for Case A; ${testName} is ${eligibilityRecord.originating_case}`);
         }
 
         const selectedRecords = [sourceA[testName], sourceB[testName]].filter(Boolean);
@@ -1971,16 +2005,17 @@ safe-outputs:
     draft: false
     max: 10
     base-branch: main
+    patch-format: am
     # Exclusive allowlist: a patch touching anything outside this list (eng/**, .azure/**,
     # .github/**, build scripts, etc.) is mechanically refused, regardless of what the
     # agent's diff contains. This is scoped to "any .cs file under src/" rather than a
     # narrower test-only glob because test project directory naming is inconsistent across
     # the repo (test/, Tests/, FunctionalTests/, IntegrationTests/, integrationtests/, etc.)
     # and gh-aw's glob syntax has no case-insensitive/substring matching, so a narrower
-    # pattern risks silently rejecting legitimate quarantine/unquarantine patches. The
-    # agent's instructions restrict it to attribute-only edits, and blocking threat
-    # detection (below) plus mandatory human PR review provide additional layers against
-    # any patch that strays into production code.
+    # pattern risks silently rejecting legitimate quarantine/unquarantine patches. A
+    # repository-owned pre-handler validator applies every authoritative patch to the
+    # deterministic main snapshot and mechanically rejects unrelated edits or receipt
+    # mismatches before this built-in handler can create a pull request.
     allowed-files:
       - "src/**/*.cs"
   add-comment:
@@ -2087,10 +2122,12 @@ ${{ needs.pre_activation.outputs.eligible_test_names }}
 ```
 
 For Case A, choose only from this list. The safe-output handler independently
-reads the collector-authored receipt and will downgrade any missing,
-contradictory, stale, already-quarantined, Case B, regression, or otherwise
-unproven selection to an ordinary `test-failure` issue with no Build Insights
-JSON and no `Known Build Error` label. The agent cannot override those facts.
+reads the collector-authored receipt. A missing, identity-mismatched, absent,
+already-quarantined, Case B, or otherwise non-Case-A receipt is rejected and
+creates no issue. A trusted Case A selection whose deeper KBE predicates are
+contradictory, stale, regression-like, or otherwise unproven is downgraded to
+an ordinary `test-failure` issue with no Build Insights JSON and no
+`Known Build Error` label. The agent cannot override those facts.
 Continue to perform the existing history investigation for diagnosis, but do
 not promote a test absent from this list into Case A.
 
@@ -2440,6 +2477,13 @@ Follow these rules mechanically for each PR:
    - contain **only** the intended `[QuarantinedTest]` addition or removal for this candidate (plus, for a quarantine, the `using Microsoft.AspNetCore.InternalTesting;` line if needed).
    If the diff or `main..HEAD` history shows any unrelated file, any unrelated `[QuarantinedTest]` add/remove, or a revert of an unrelated change, **stop**: return to clean `main` (rule 1) and rebuild this PR's change from scratch. Do not submit a PR whose diff or branch history contains anything beyond this candidate's change.
 
+The safe-output job independently repeats this as an executable gate. It
+applies each authoritative patch to the deterministic `main` snapshot, derives
+the exact quarantine targets before and after, and rejects the entire output
+job if a patch contains unrelated edits, stale project source, an unlisted
+quarantine candidate, a wrong issue reference, or an unquarantine target whose
+exact history is not `first-quarantine`.
+
 ### Step 3.1 — Quarantine and re-quarantine (highest priority)
 
 For each quarantine/re-quarantine candidate, in priority order (Case B re-quarantines first, then Case A new quarantines — follow the matching case for each candidate):
@@ -2470,7 +2514,7 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
 1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute. Also include the **failure frequency** sentence and a link to the **most recent failing build** (`https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`), both computed above — do not omit these even though this is a re-quarantine of an existing issue.
 
 2. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class), using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the exact individual test method, using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID. Do not broaden an individual Case B failure to a class- or assembly-level quarantine.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the existing issue in the PR body with a literal issue reference (e.g., `Associated issue: #66035`).
    - Adds the `re-quarantine` label to the PR. **Only ever apply this label to a PR whose every change is a Case B re-quarantine for this single issue.**
