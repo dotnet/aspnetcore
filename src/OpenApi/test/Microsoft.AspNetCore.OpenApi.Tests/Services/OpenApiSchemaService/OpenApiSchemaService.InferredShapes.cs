@@ -101,8 +101,8 @@ public partial class OpenApiSchemaServiceTests
 
         var extensionDataDocument = BuildShape<ExtensionDataContainer>();
         var container = extensionDataDocument[typeof(ExtensionDataContainer)];
-        Assert.Equal(["additional", "name"], container.Properties.Select(property => property.Identity.JsonName));
-        Assert.True(container.GetProperty("additional").IsExtensionData);
+        Assert.Equal(["name"], container.Properties.Select(property => property.Identity.JsonName));
+        Assert.True(container.ExtensionDataProperty?.IsExtensionData);
         Assert.Equal(typeof(JsonElement), container.AdditionalPropertiesType?.Identity.Type);
     }
 

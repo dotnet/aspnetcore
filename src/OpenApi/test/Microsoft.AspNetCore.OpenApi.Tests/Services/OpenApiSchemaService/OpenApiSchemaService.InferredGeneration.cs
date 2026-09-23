@@ -187,7 +187,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 branch => Assert.Equal("EmployeeManager", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id),
                 branch => Assert.Equal("EmployeeEmployee", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
             var employee = document.Components.Schemas["EmployeeEmployee"];
-            Assert.Equal("Employee", Assert.IsType<OpenApiSchemaReference>(employee.Properties["manager"]).Reference.Id);
+            Assert.Collection(
+                employee.Properties["manager"].OneOf,
+                branch => Assert.Equal(JsonSchemaType.Null, branch.Type),
+                branch => Assert.Equal("Employee", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
         });
     }
 
@@ -384,9 +387,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var derived = document.Components.Schemas[nameof(RecursiveEmitterDerived)];
             Assert.Equal(nameof(EmitterBase), Assert.IsType<OpenApiSchemaReference>(derived.AllOf[0]).Reference.Id);
             var local = Assert.IsType<OpenApiSchema>(derived.AllOf[1]);
-            Assert.Equal(
-                nameof(RecursiveEmitterDerived),
-                Assert.IsType<OpenApiSchemaReference>(local.Properties["next"]).Reference.Id);
+            Assert.Collection(
+                local.Properties["next"].OneOf,
+                branch => Assert.Equal(JsonSchemaType.Null, branch.Type),
+                branch => Assert.Equal(
+                    nameof(RecursiveEmitterDerived),
+                    Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
         });
     }
 

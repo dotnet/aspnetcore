@@ -41,13 +41,13 @@ public partial class OpenApiSchemaServiceTests
             var builder = CreateBuilder();
             if (reverseEndpoints)
             {
-                builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
-                builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
+                builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
+                builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
             }
             else
             {
-                builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
-                builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
+                builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
+                builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
             }
 
             return await VerifyOpenApiDocument(builder, CreateInferredOptions(), _ => { });
@@ -58,8 +58,8 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_ExplicitDefaultReferenceIdUsesProgressiveDisambiguation()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
-        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
+        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
+        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.CreateSchemaReferenceId = OpenApiOptions.CreateDefaultSchemaReferenceId;
 
@@ -94,10 +94,10 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_DisambiguatesNestedAndGenericCollisions()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/outer-a", (InferredNaming.OuterA.Item value) => value);
-        builder.MapPost("/outer-b", (InferredNaming.OuterB.Item value) => value);
-        builder.MapPost("/generic-a", (InferredNaming.Pair<InferredNaming.AAndB, InferredNaming.C> value) => value);
-        builder.MapPost("/generic-b", (InferredNaming.Pair<InferredNaming.A, InferredNaming.BAndC> value) => value);
+        builder.MapPost("/outer-a", (InferredNaming.OuterA.Item value) => { });
+        builder.MapPost("/outer-b", (InferredNaming.OuterB.Item value) => { });
+        builder.MapPost("/generic-a", (InferredNaming.Pair<InferredNaming.AAndB, InferredNaming.C> value) => { });
+        builder.MapPost("/generic-b", (InferredNaming.Pair<InferredNaming.A, InferredNaming.BAndC> value) => { });
 
         await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
         {
@@ -118,10 +118,10 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_DisambiguatedIdsFlowThroughOneOfAndAllOf()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/polymorphic", (InferredNaming.PolymorphicBase value) => value);
-        builder.MapPost("/other-derived", (InferredNaming.Other.Derived value) => value);
-        builder.MapPost("/inherited", (InferredNaming.Inheritance.Derived value) => value);
-        builder.MapPost("/other-base", (InferredNaming.Other.Base value) => value);
+        builder.MapPost("/polymorphic", (InferredNaming.PolymorphicBase value) => { });
+        builder.MapPost("/other-derived", (InferredNaming.Other.Derived value) => { });
+        builder.MapPost("/inherited", (InferredNaming.Inheritance.Derived value) => { });
+        builder.MapPost("/other-base", (InferredNaming.Other.Base value) => { });
 
         await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
         {
@@ -147,8 +147,8 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_DisambiguatesContextualPolymorphicIdsSymmetrically()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/ab", (InferredNaming.AB value) => value);
-        builder.MapPost("/a", (InferredNaming.A value) => value);
+        builder.MapPost("/ab", (InferredNaming.AB value) => { });
+        builder.MapPost("/a", (InferredNaming.A value) => { });
 
         await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
         {
@@ -180,19 +180,19 @@ public partial class OpenApiSchemaServiceTests
             var builder = CreateBuilder();
             if (reverseEndpoints)
             {
-                builder.MapPost("/other-middle", (InferredNaming.Other.Middle value) => value);
-                builder.MapPost("/other-base", (InferredNaming.Other.Base value) => value);
-                builder.MapPost("/base", (InferredNaming.Chain.Base value) => value);
-                builder.MapPost("/middle", (InferredNaming.Chain.Middle value) => value);
-                builder.MapPost("/leaf", (InferredNaming.Chain.Leaf value) => value);
+                builder.MapPost("/other-middle", (InferredNaming.Other.Middle value) => { });
+                builder.MapPost("/other-base", (InferredNaming.Other.Base value) => { });
+                builder.MapPost("/base", (InferredNaming.Chain.Base value) => { });
+                builder.MapPost("/middle", (InferredNaming.Chain.Middle value) => { });
+                builder.MapPost("/leaf", (InferredNaming.Chain.Leaf value) => { });
             }
             else
             {
-                builder.MapPost("/leaf", (InferredNaming.Chain.Leaf value) => value);
-                builder.MapPost("/middle", (InferredNaming.Chain.Middle value) => value);
-                builder.MapPost("/base", (InferredNaming.Chain.Base value) => value);
-                builder.MapPost("/other-base", (InferredNaming.Other.Base value) => value);
-                builder.MapPost("/other-middle", (InferredNaming.Other.Middle value) => value);
+                builder.MapPost("/leaf", (InferredNaming.Chain.Leaf value) => { });
+                builder.MapPost("/middle", (InferredNaming.Chain.Middle value) => { });
+                builder.MapPost("/base", (InferredNaming.Chain.Base value) => { });
+                builder.MapPost("/other-base", (InferredNaming.Other.Base value) => { });
+                builder.MapPost("/other-middle", (InferredNaming.Other.Middle value) => { });
             }
 
             return await VerifyOpenApiDocument(builder, CreateInferredOptions(), _ => { });
@@ -203,8 +203,8 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_CustomReferenceIdCollisionThrows()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
-        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
+        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
+        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.CreateSchemaReferenceId = typeInfo =>
             typeInfo.Type == typeof(InferredNaming.First.Duplicate) ||
@@ -224,8 +224,8 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_CustomUniqueAndNullReferenceIdsAreAuthoritative()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
-        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
+        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
+        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.CreateSchemaReferenceId = typeInfo => typeInfo.Type switch
         {
@@ -251,7 +251,7 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_InvalidCustomReferenceIdThrows(string referenceId)
     {
         var builder = CreateBuilder();
-        builder.MapPost("/", (InferredNaming.First.Duplicate value) => value);
+        builder.MapPost("/", (InferredNaming.First.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.CreateSchemaReferenceId = typeInfo =>
             typeInfo.Type == typeof(InferredNaming.First.Duplicate)
@@ -268,9 +268,9 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_PreservesJsonPatchAliases()
     {
         var builder = CreateBuilder();
-        builder.MapPatch("/untyped", (JsonPatchDocument value) => value);
-        builder.MapPatch("/typed", (JsonPatchDocument<InferredNaming.PatchModel> value) => value);
-        builder.MapPost("/other", (InferredNaming.JsonPatchDocument value) => value);
+        builder.MapPatch("/untyped", (JsonPatchDocument value) => { });
+        builder.MapPatch("/typed", (JsonPatchDocument<InferredNaming.PatchModel> value) => { });
+        builder.MapPost("/other", (InferredNaming.JsonPatchDocument value) => { });
 
         await VerifyOpenApiDocument(builder, CreateInferredOptions(), document =>
         {
@@ -291,8 +291,8 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Legacy_PreservesCollidingComponentBehavior()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => value);
-        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => value);
+        builder.MapPost("/first", (InferredNaming.First.Duplicate value) => { });
+        builder.MapPost("/second", (InferredNaming.Second.Duplicate value) => { });
 
         await VerifyOpenApiDocument(builder, document =>
         {
@@ -310,7 +310,7 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_DoesNotRenameTransformerAuthoredComponents()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/", (InferredNaming.First.Duplicate value) => value);
+        builder.MapPost("/", (InferredNaming.First.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.AddDocumentTransformer((document, _, _) =>
         {
@@ -339,7 +339,7 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_TransformerRequestedTypesUseStableFallbackIds()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/", (InferredNaming.First.Duplicate value) => value);
+        builder.MapPost("/", (InferredNaming.First.Duplicate value) => { });
         var options = CreateInferredOptions();
         options.AddOperationTransformer(async (operation, context, cancellationToken) =>
         {
@@ -428,7 +428,7 @@ public partial class OpenApiSchemaServiceTests
     public async Task SchemaGenerationMode_Inferred_LateCustomIdCollisionWithContextualPolymorphicIdThrows()
     {
         var builder = CreateBuilder();
-        builder.MapPost("/", (InferredNaming.PolymorphicBase value) => value);
+        builder.MapPost("/", (InferredNaming.PolymorphicBase value) => { });
         var options = CreateInferredOptions();
         options.CreateSchemaReferenceId = typeInfo => typeInfo.Type switch
         {

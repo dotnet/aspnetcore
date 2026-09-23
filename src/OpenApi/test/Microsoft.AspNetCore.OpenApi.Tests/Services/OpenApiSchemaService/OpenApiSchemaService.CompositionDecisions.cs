@@ -130,11 +130,13 @@ public partial class OpenApiSchemaServiceTests
             elementType: null,
             additionalPropertiesType: null,
             properties: Array.Empty<InferredSchemaProperty>(),
+            extensionDataProperty: null,
             derivedTypes: Array.Empty<InferredSchemaDerivedType>(),
             unionCases: Array.Empty<InferredSchemaTypeUse>(),
             tupleElements: Array.Empty<InferredSchemaTypeUse>());
         var document = new InferredSchemaDocument(
             new(new(typeof(UnavailableBaseDerived)), AllowsNull: false),
+            InferredSchemaPurpose.Neutral,
             [derivedShape]);
 
         var decision = document.CompositionDecisions[typeof(UnavailableBaseDerived)].Inheritance;

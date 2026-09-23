@@ -102,6 +102,22 @@ builder.Services.AddOpenApi(options =>
 
 This mode emits `oneOf` for System.Text.Json polymorphic contracts only when every configured
 branch has a distinct, explicit discriminator. Other alternatives continue to use `anyOf`.
+It also models serializer direction separately for endpoint inputs and outputs. Request bodies and
+parameters use the effective deserialization contract, including constructor-parameter requiredness
+when `JsonSerializerOptions.RespectRequiredConstructorParameters` is enabled. Responses use the
+effective readable contract and do not treat C# `required`, `[JsonRequired]`, or
+`JsonPropertyInfo.IsRequired` as proof that a property is always emitted. Conditional ignore
+policies therefore keep a readable property described without making it response-required.
+Get-only and set-only members can consequently produce distinct input and output components.
+Nullable uses wrap component references rather than changing the shared component.
+
+When a serializer contract has different effective shapes in the two directions, inferred mode
+assigns deterministic `.Input` and `.Output` component IDs. Types used in only one direction, and
+bidirectional graphs whose effective shapes are identical, retain their existing component names.
+Schema requests made explicitly by transformers remain direction-neutral and do not silently
+inherit the purpose of the endpoint currently being generated. Legacy mode continues to use its
+existing shared, version-neutral schema contract.
+
 It also emits ordered `oneOf` branches for C# unions only when immutable serializer-contract facts
 prove every pair of JSON instance domains disjoint. The proof distinguishes null, boolean, string,
 integer, non-integer number, object, and array domains; unrestricted numbers overlap integers.

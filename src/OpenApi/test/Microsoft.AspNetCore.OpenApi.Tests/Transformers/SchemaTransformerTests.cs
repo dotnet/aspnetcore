@@ -679,6 +679,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             var schema = document.Paths["/shape"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema.Properties["someShape"];
             Assert.Collection(
                 schema.OneOf,
+                branch => Assert.Equal(JsonSchemaType.Null, branch.Type),
+                branch => Assert.Equal(nameof(Shape), Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
+            Assert.Collection(
+                document.Components.Schemas[nameof(Shape)].OneOf,
                 branch => Assert.Equal("ShapeTriangle", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id),
                 branch => Assert.Equal("ShapeSquare", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
         });

@@ -10,6 +10,243 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
+internal sealed class InferredSchemaReferenceIdResolverSet
+{
+    private static readonly object JsonPatchAliasIdentity = new();
+    private readonly IReadOnlyDictionary<InferredSchemaPurpose, InferredSchemaReferenceIdResolver> _resolvers;
+
+    private InferredSchemaReferenceIdResolverSet(
+        IReadOnlyDictionary<InferredSchemaPurpose, InferredSchemaReferenceIdResolver> resolvers)
+    {
+        _resolvers = resolvers;
+    }
+
+    public static InferredSchemaReferenceIdResolverSet Create(
+        IEnumerable<InferredSchemaRoot> roots,
+        JsonSerializerOptions serializerOptions,
+        Func<Type, InferredSchemaPurpose, InferredSchemaDocument> getInferredSchema,
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        bool usesDefaultSchemaReferenceId)
+    {
+        var rootsByPurpose = roots
+            .Distinct()
+            .GroupBy(root => root.Purpose)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(root => root.Type).ToArray());
+        var purposesByAlias = new Dictionary<object, HashSet<InferredSchemaPurpose>>();
+        var shapesByContract = new Dictionary<(Type Type, InferredSchemaPurpose Purpose), InferredSchemaShape>();
+        var plannedContracts = new HashSet<(Type Type, InferredSchemaPurpose Purpose)>();
+        foreach (var (purpose, rootTypes) in rootsByPurpose)
+        {
+            foreach (var rootType in rootTypes)
+            {
+                foreach (var shape in getInferredSchema(rootType, purpose).Shapes)
+                {
+                    plannedContracts.Add((shape.Identity.Type, purpose));
+                    shapesByContract.TryAdd((shape.Identity.Type, purpose), shape);
+                    var alias = GetAliasIdentity(shape.Identity.Type);
+                    if (!purposesByAlias.TryGetValue(alias, out var purposes))
+                    {
+                        purposes = [];
+                        purposesByAlias.Add(alias, purposes);
+                    }
+                    purposes.Add(purpose);
+                }
+            }
+        }
+
+        var candidates = plannedContracts
+            .Select(contract => contract.Type)
+            .Distinct()
+            .ToDictionary(
+                type => type,
+                type => createSchemaReferenceId(serializerOptions.GetTypeInfo(type)));
+        var aliasesNeedingPurposeQualification = purposesByAlias
+            .Where(entry => entry.Value.Count > 1 &&
+                HasDirectionalDifference(entry.Key, entry.Value))
+            .Select(entry => entry.Key)
+            .ToHashSet();
+        var addedQualification = true;
+        while (addedQualification)
+        {
+            addedQualification = false;
+            foreach (var (alias, purposes) in purposesByAlias)
+            {
+                if (purposes.Count < 2 || aliasesNeedingPurposeQualification.Contains(alias))
+                {
+                    continue;
+                }
+
+                if (GetShapes(alias, purposes)
+                    .SelectMany(GetReferencedAliases)
+                    .Any(aliasesNeedingPurposeQualification.Contains))
+                {
+                    aliasesNeedingPurposeQualification.Add(alias);
+                    addedQualification = true;
+                }
+            }
+        }
+
+        if (usesDefaultSchemaReferenceId)
+        {
+            foreach (var collision in plannedContracts
+                .Where(contract => candidates[contract.Type] is not null)
+                .GroupBy(contract => candidates[contract.Type]!, StringComparer.Ordinal)
+                .Where(group =>
+                    group.Select(contract => contract.Purpose).Distinct().Count() > 1 &&
+                    group.Select(contract => GetAliasIdentity(contract.Type)).Distinct().Count() > 1))
+            {
+                foreach (var contract in collision)
+                {
+                    aliasesNeedingPurposeQualification.Add(GetAliasIdentity(contract.Type));
+                }
+            }
+        }
+
+        if (!usesDefaultSchemaReferenceId)
+        {
+            var collisions = plannedContracts
+                .Select(contract => (
+                    contract.Type,
+                    Alias: GetAliasIdentity(contract.Type),
+                    Candidate: GetQualifiedCandidate(contract.Type, contract.Purpose)))
+                .Where(entry => entry.Candidate is not null)
+                .GroupBy(entry => entry.Candidate!, StringComparer.Ordinal)
+                .FirstOrDefault(group => group.Select(entry => entry.Alias).Distinct().Count() > 1);
+            if (collisions is not null)
+            {
+                var conflictingTypes = collisions
+                    .Select(entry => entry.Type)
+                    .Distinct()
+                    .OrderBy(type => type.ToString(), StringComparer.Ordinal)
+                    .Select(type => $"'{type}'");
+                throw new InvalidOperationException(
+                    $"The custom OpenAPI schema reference ID '{collisions.Key}' is used by distinct serializer contract identities: " +
+                    string.Join(", ", conflictingTypes) + ".");
+            }
+        }
+
+        var resolvers = new Dictionary<InferredSchemaPurpose, InferredSchemaReferenceIdResolver>();
+        var endpointRootTypes = rootsByPurpose
+            .Where(entry => entry.Key != InferredSchemaPurpose.Neutral)
+            .SelectMany(entry => entry.Value)
+            .Distinct()
+            .ToArray();
+        foreach (var purpose in Enum.GetValues<InferredSchemaPurpose>())
+        {
+            var rootTypes = rootsByPurpose.GetValueOrDefault(purpose) ??
+                (purpose == InferredSchemaPurpose.Neutral ? endpointRootTypes : []);
+            resolvers.Add(
+                purpose,
+                InferredSchemaReferenceIdResolver.Create(
+                    rootTypes,
+                    serializerOptions,
+                    type => getInferredSchema(type, purpose),
+                    typeInfo => GetQualifiedCandidate(typeInfo.Type, purpose),
+                    usesDefaultSchemaReferenceId));
+        }
+
+        return new(new ReadOnlyDictionary<InferredSchemaPurpose, InferredSchemaReferenceIdResolver>(resolvers));
+
+        string? GetQualifiedCandidate(Type type, InferredSchemaPurpose purpose)
+        {
+            var candidate = candidates.TryGetValue(type, out var plannedCandidate)
+                ? plannedCandidate
+                : createSchemaReferenceId(serializerOptions.GetTypeInfo(type));
+            return candidate is not null &&
+                aliasesNeedingPurposeQualification.Contains(GetAliasIdentity(type))
+                    ? $"{candidate}.{purpose}"
+                    : candidate;
+        }
+
+        bool HasDirectionalDifference(object alias, IEnumerable<InferredSchemaPurpose> purposes)
+        {
+            if (ReferenceEquals(alias, JsonPatchAliasIdentity))
+            {
+                return false;
+            }
+
+            using var enumerator = GetShapes(alias, purposes).GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                return false;
+            }
+
+            var first = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                if (!HaveSameDirectionalContract(first, enumerator.Current))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        IEnumerable<InferredSchemaShape> GetShapes(
+            object alias,
+            IEnumerable<InferredSchemaPurpose> purposes)
+        {
+            foreach (var purpose in purposes)
+            {
+                foreach (var contract in plannedContracts)
+                {
+                    if (contract.Purpose == purpose &&
+                        GetAliasIdentity(contract.Type).Equals(alias) &&
+                        shapesByContract.TryGetValue(contract, out var shape))
+                    {
+                        yield return shape;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public InferredSchemaReferenceIdResolver Get(InferredSchemaPurpose purpose) => _resolvers[purpose];
+
+    private static object GetAliasIdentity(Type type)
+        => type.IsJsonPatchDocument() ? JsonPatchAliasIdentity : type;
+
+    private static bool HaveSameDirectionalContract(InferredSchemaShape left, InferredSchemaShape right)
+        => left.Properties.SequenceEqual(right.Properties) &&
+            left.ExtensionDataProperty == right.ExtensionDataProperty;
+
+    private static IEnumerable<object> GetReferencedAliases(InferredSchemaShape shape)
+    {
+        if (shape.BaseType is { } baseType)
+        {
+            yield return GetAliasIdentity(baseType.Type);
+        }
+        if (shape.ElementType is { } elementType)
+        {
+            yield return GetAliasIdentity(elementType.Identity.Type);
+        }
+        if (shape.AdditionalPropertiesType is { } additionalPropertiesType)
+        {
+            yield return GetAliasIdentity(additionalPropertiesType.Identity.Type);
+        }
+        foreach (var property in shape.Properties)
+        {
+            yield return GetAliasIdentity(property.PropertyType.Identity.Type);
+        }
+        foreach (var derivedType in shape.DerivedTypes)
+        {
+            yield return GetAliasIdentity(derivedType.Identity.Type);
+        }
+        foreach (var unionCase in shape.UnionCases)
+        {
+            yield return GetAliasIdentity(unionCase.Identity.Type);
+        }
+        foreach (var tupleElement in shape.TupleElements)
+        {
+            yield return GetAliasIdentity(tupleElement.Identity.Type);
+        }
+    }
+}
+
 internal sealed class InferredSchemaReferenceIdResolver
 {
     private static readonly object JsonPatchAliasIdentity = new();

@@ -910,13 +910,24 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
+    /// <param name="purpose">The serializer direction represented by the schema.</param>
+    internal static void ApplyNullabilityContextInfo(
+        this JsonNode schema,
+        JsonPropertyInfo propertyInfo,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral)
     {
-        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && purpose switch
+        {
+            InferredSchemaPurpose.Input when propertyInfo.AssociatedParameter is { } parameter => parameter.IsNullable,
+            InferredSchemaPurpose.Input => propertyInfo.IsSetNullable,
+            InferredSchemaPurpose.Output => propertyInfo.IsGetNullable,
+            _ => propertyInfo.IsGetNullable || propertyInfo.IsSetNullable,
+        };
 
         // Work around a System.Text.Json schema export issue where get-only properties can report
         // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602
-        var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
+        var shouldPruneNullFromReadOnlyProperty = purpose == InferredSchemaPurpose.Neutral &&
+            propertyInfo.PropertyType != typeof(object) &&
             propertyInfo.Set is null &&
             !propertyInfo.IsGetNullable &&
             propertyInfo.IsSetNullable;
@@ -924,6 +935,8 @@ internal static class JsonNodeSchemaExtensions
         {
             shouldApplyNullableSchema = false;
         }
+        var shouldPruneNullableSchema = shouldPruneNullFromReadOnlyProperty ||
+            purpose != InferredSchemaPurpose.Neutral && !shouldApplyNullableSchema;
 
         if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes)
         {
@@ -931,7 +944,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
-            else if (shouldPruneNullFromReadOnlyProperty && schemaTypes.HasFlag(JsonSchemaType.Null))
+            else if (shouldPruneNullableSchema && schemaTypes.HasFlag(JsonSchemaType.Null))
             {
                 var nonNullableSchemaTypes = schemaTypes & ~JsonSchemaType.Null;
                 if (nonNullableSchemaTypes != 0)
@@ -943,12 +956,74 @@ internal static class JsonNodeSchemaExtensions
                     schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
                 }
             }
+
         }
 
+        var shouldApplyNullablePropertySchema = purpose == InferredSchemaPurpose.Neutral
+            ? propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema()
+            : shouldApplyNullableSchema;
         if (schema.WillBeComponentized() &&
-            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+            shouldApplyNullablePropertySchema)
         {
             schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    internal static void ApplyDirectionalObjectContract(
+        this JsonNode schema,
+        InferredSchemaShape shape,
+        InferredSchemaPurpose purpose)
+    {
+        if (purpose == InferredSchemaPurpose.Neutral ||
+            schema[OpenApiSchemaKeywords.PropertiesKeyword] is not JsonObject properties)
+        {
+            return;
+        }
+
+        var includedProperties = shape.Properties
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var propertyName in properties.Select(property => property.Key).ToArray())
+        {
+            if (!includedProperties.Contains(propertyName))
+            {
+                properties.Remove(propertyName);
+            }
+        }
+
+        var requiredProperties = shape.Properties
+            .Where(property => property.IsRequired)
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (schema[OpenApiSchemaKeywords.RequiredKeyword] is JsonArray required)
+        {
+            for (var i = required.Count - 1; i >= 0; i--)
+            {
+                var propertyName = required[i]?.GetValue<string>();
+                if (propertyName is not null &&
+                    propertyName != shape.DiscriminatorPropertyName &&
+                    !requiredProperties.Contains(propertyName))
+                {
+                    required.RemoveAt(i);
+                }
+            }
+        }
+
+        if (requiredProperties.Count > 0)
+        {
+            var directionalRequired = schema[OpenApiSchemaKeywords.RequiredKeyword] as JsonArray ?? [];
+            foreach (var propertyName in requiredProperties.Order(StringComparer.Ordinal))
+            {
+                if (!directionalRequired.Any(node => node?.GetValue<string>() == propertyName))
+                {
+                    directionalRequired.Add((JsonNode?)JsonValue.Create(propertyName));
+                }
+            }
+            schema[OpenApiSchemaKeywords.RequiredKeyword] = directionalRequired;
+        }
+        else if (schema[OpenApiSchemaKeywords.RequiredKeyword] is JsonArray { Count: 0 })
+        {
+            schema.AsObject().Remove(OpenApiSchemaKeywords.RequiredKeyword);
         }
     }
 

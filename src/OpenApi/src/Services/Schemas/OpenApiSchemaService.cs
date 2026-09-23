@@ -34,8 +34,8 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
-    private readonly ConcurrentDictionary<Type, InferredSchemaDocument> _inferredSchemaCache = new();
-    private readonly ConditionalWeakTable<OpenApiDocument, InferredSchemaReferenceIdResolver> _inferredReferenceIdResolvers = new();
+    private readonly ConcurrentDictionary<(Type Type, InferredSchemaPurpose Purpose), InferredSchemaDocument> _inferredSchemaCache = new();
+    private readonly ConditionalWeakTable<OpenApiDocument, InferredSchemaReferenceIdResolverSet> _inferredReferenceIdResolvers = new();
     private readonly AsyncLocal<HashSet<Type>?> _tupleSchemaExpansion = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
@@ -64,6 +64,7 @@ internal sealed class OpenApiSchemaService(
         Func<JsonTypeInfo, string?> createSchemaReferenceId,
         bool useInferredComposition,
         OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
         Func<Type, Type, string?>? getPolymorphicReferenceId = null)
     {
         JsonSchemaExporterOptions configuration = null!;
@@ -141,7 +142,9 @@ internal sealed class OpenApiSchemaService(
                 schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
                 if (useInferredComposition)
                 {
-                    var inferredSchema = GetInferredSchema(type);
+                    var inferredSchema = GetInferredSchema(type, purpose);
+                    var inferredShape = inferredSchema[type];
+                    schema.ApplyDirectionalObjectContract(inferredShape, purpose);
                     var compositionDecision = inferredSchema.CompositionDecisions[type];
                     if (context.BaseTypeInfo is null)
                     {
@@ -168,7 +171,7 @@ internal sealed class OpenApiSchemaService(
                 }
                 if (context.PropertyInfo is { } jsonPropertyInfo)
                 {
-                    schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+                    schema.ApplyNullabilityContextInfo(jsonPropertyInfo, useInferredComposition ? purpose : InferredSchemaPurpose.Neutral);
                 }
                 var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
                 var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
@@ -350,10 +353,11 @@ internal sealed class OpenApiSchemaService(
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
         ApiParameterDescription? parameterDescription = null,
         CancellationToken cancellationToken = default)
     {
-        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion);
+        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion, purpose);
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
@@ -363,7 +367,7 @@ internal sealed class OpenApiSchemaService(
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, openApiVersion, parameterDescription, cancellationToken);
+        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, openApiVersion, purpose, parameterDescription, cancellationToken);
         return schema;
     }
 
@@ -373,6 +377,7 @@ internal sealed class OpenApiSchemaService(
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose,
         ApiParameterDescription? parameterDescription = null,
         CancellationToken cancellationToken = default)
     {
@@ -385,7 +390,7 @@ internal sealed class OpenApiSchemaService(
             && IsNonBodyBindingSource(source)
             && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
         {
-            var rawNode = CreateSchema(type, document, openApiVersion);
+            var rawNode = CreateSchema(type, document, openApiVersion, purpose);
             if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
             {
                 var memberNames = Enum.GetNames(enumType);
@@ -400,7 +405,7 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, openApiVersion, parameterDescription, cancellationToken);
+        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, openApiVersion, purpose, parameterDescription, cancellationToken);
 
         if (inlineEnumParam)
         {
@@ -421,7 +426,7 @@ internal sealed class OpenApiSchemaService(
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
         var baseSchemaId = IsInferredMode
-            ? GetInferredReferenceIdResolver(document, type).GetReferenceId(_jsonSerializerOptions.GetTypeInfo(type))
+            ? GetInferredReferenceIdResolver(document, purpose, type).GetReferenceId(_jsonSerializerOptions.GetTypeInfo(type))
             : _schemaIdCache.GetOrAdd(type, t =>
             {
                 var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
@@ -660,6 +665,7 @@ internal sealed class OpenApiSchemaService(
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
         ApiParameterDescription? parameterDescription = null,
         CancellationToken cancellationToken = default)
     {
@@ -667,7 +673,7 @@ internal sealed class OpenApiSchemaService(
         {
             return;
         }
-        var inferredSchema = GetInferredSchema(type);
+        var inferredSchema = GetInferredSchema(type, IsInferredMode ? purpose : InferredSchemaPurpose.Neutral);
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
@@ -828,30 +834,36 @@ internal sealed class OpenApiSchemaService(
         return false;
     }
 
-    internal void InitializeInferredReferenceIds(OpenApiDocument document, IEnumerable<Type> rootTypes)
+    internal void InitializeInferredReferenceIds(OpenApiDocument document, IEnumerable<InferredSchemaRoot> roots)
     {
         if (!IsInferredMode)
         {
             return;
         }
 
-        _inferredReferenceIdResolvers.GetValue(document, _ => CreateInferredReferenceIdResolver(rootTypes));
+        _inferredReferenceIdResolvers.GetValue(document, _ => CreateInferredReferenceIdResolverSet(roots));
     }
 
-    private JsonNode CreateSchema(Type type, OpenApiDocument? document, OpenApiSpecVersion openApiVersion)
+    private JsonNode CreateSchema(
+        Type type,
+        OpenApiDocument? document,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose)
     {
         // We always create a oneOf nullable wrapper ourselves manually.
-        var inferredSchema = GetInferredSchema(type);
+        var effectivePurpose = IsInferredMode ? purpose : InferredSchemaPurpose.Neutral;
+        var inferredSchema = GetInferredSchema(type, effectivePurpose);
         JsonSchemaExporterOptions configuration;
         if (IsInferredMode)
         {
             var referenceIdResolver = document is null
-                ? CreateInferredReferenceIdResolver([type])
-                : GetInferredReferenceIdResolver(document, type);
+                ? CreateInferredReferenceIdResolverSet([new(type, effectivePurpose)]).Get(effectivePurpose)
+                : GetInferredReferenceIdResolver(document, effectivePurpose, type);
             configuration = CreateConfiguration(
                 referenceIdResolver.GetReferenceId,
                 useInferredComposition: true,
                 openApiVersion,
+                effectivePurpose,
                 referenceIdResolver.GetPolymorphicReferenceId);
         }
         else
@@ -861,21 +873,27 @@ internal sealed class OpenApiSchemaService(
                 version => CreateConfiguration(
                     typeInfo => optionsMonitor.Get(documentName).CreateSchemaReferenceId(typeInfo),
                     useInferredComposition: false,
-                    version));
+                    version,
+                    InferredSchemaPurpose.Neutral));
         }
 
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, configuration);
         return ResolveReferences(schema, schema);
     }
 
-    private InferredSchemaReferenceIdResolver GetInferredReferenceIdResolver(OpenApiDocument document, Type fallbackRootType)
-        => _inferredReferenceIdResolvers.GetValue(document, _ => CreateInferredReferenceIdResolver([fallbackRootType]));
+    private InferredSchemaReferenceIdResolver GetInferredReferenceIdResolver(
+        OpenApiDocument document,
+        InferredSchemaPurpose purpose,
+        Type fallbackRootType)
+        => _inferredReferenceIdResolvers
+            .GetValue(document, _ => CreateInferredReferenceIdResolverSet([new(fallbackRootType, purpose)]))
+            .Get(purpose);
 
-    private InferredSchemaReferenceIdResolver CreateInferredReferenceIdResolver(IEnumerable<Type> rootTypes)
+    private InferredSchemaReferenceIdResolverSet CreateInferredReferenceIdResolverSet(IEnumerable<InferredSchemaRoot> roots)
     {
         var options = optionsMonitor.Get(documentName);
-        return InferredSchemaReferenceIdResolver.Create(
-            rootTypes,
+        return InferredSchemaReferenceIdResolverSet.Create(
+            roots,
             _jsonSerializerOptions,
             GetInferredSchema,
             options.CreateSchemaReferenceId,
@@ -892,8 +910,11 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    private InferredSchemaDocument GetInferredSchema(Type type)
-        => _inferredSchemaCache.GetOrAdd(type, static (type, serializerOptions) => InferredSchemaShapeBuilder.Build(serializerOptions, type), _jsonSerializerOptions);
+    private InferredSchemaDocument GetInferredSchema(Type type, InferredSchemaPurpose purpose)
+        => _inferredSchemaCache.GetOrAdd(
+            (type, purpose),
+            static (key, serializerOptions) => InferredSchemaShapeBuilder.Build(serializerOptions, key.Type, key.Purpose),
+            _jsonSerializerOptions);
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {

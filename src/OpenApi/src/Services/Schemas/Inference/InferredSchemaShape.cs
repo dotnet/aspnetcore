@@ -20,6 +20,15 @@ internal enum InferredSchemaShapeKind
     Tuple,
 }
 
+internal enum InferredSchemaPurpose
+{
+    Neutral,
+    Input,
+    Output,
+}
+
+internal readonly record struct InferredSchemaRoot(Type Type, InferredSchemaPurpose Purpose);
+
 internal readonly record struct InferredSchemaTypeIdentity(Type Type)
 {
     public string Name { get; } = Type.FullName ?? Type.Name;
@@ -60,6 +69,7 @@ internal sealed class InferredSchemaShape
         InferredSchemaTypeUse? elementType,
         InferredSchemaTypeUse? additionalPropertiesType,
         IReadOnlyList<InferredSchemaProperty> properties,
+        InferredSchemaProperty? extensionDataProperty,
         IReadOnlyList<InferredSchemaDerivedType> derivedTypes,
         IReadOnlyList<InferredSchemaTypeUse> unionCases,
         IReadOnlyList<InferredSchemaTypeUse> tupleElements)
@@ -76,6 +86,7 @@ internal sealed class InferredSchemaShape
         ElementType = elementType;
         AdditionalPropertiesType = additionalPropertiesType;
         Properties = properties;
+        ExtensionDataProperty = extensionDataProperty;
         DerivedTypes = derivedTypes;
         UnionCases = unionCases;
         TupleElements = tupleElements;
@@ -107,8 +118,7 @@ internal sealed class InferredSchemaShape
 
     public IReadOnlyList<InferredSchemaProperty> Properties { get; }
 
-    public InferredSchemaProperty? ExtensionDataProperty
-        => Properties.FirstOrDefault(property => property.IsExtensionData);
+    public InferredSchemaProperty? ExtensionDataProperty { get; }
 
     public IReadOnlyList<InferredSchemaDerivedType> DerivedTypes { get; }
 
@@ -125,9 +135,11 @@ internal sealed class InferredSchemaDocument
 
     public InferredSchemaDocument(
         InferredSchemaTypeUse root,
+        InferredSchemaPurpose purpose,
         IReadOnlyList<InferredSchemaShape> shapes)
     {
         Root = root;
+        Purpose = purpose;
         Shapes = shapes;
         _shapes = new ReadOnlyDictionary<Type, InferredSchemaShape>(
             shapes.ToDictionary(shape => shape.Identity.Type));
@@ -135,6 +147,8 @@ internal sealed class InferredSchemaDocument
     }
 
     public InferredSchemaTypeUse Root { get; }
+
+    public InferredSchemaPurpose Purpose { get; }
 
     public IReadOnlyList<InferredSchemaShape> Shapes { get; }
 
@@ -150,7 +164,10 @@ internal sealed class InferredSchemaDocument
 
 internal static class InferredSchemaShapeBuilder
 {
-    public static InferredSchemaDocument Build(JsonSerializerOptions serializerOptions, Type rootType)
+    public static InferredSchemaDocument Build(
+        JsonSerializerOptions serializerOptions,
+        Type rootType,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral)
     {
         var root = CreateTypeUse(rootType);
         var pending = new Queue<Type>();
@@ -163,14 +180,14 @@ internal static class InferredSchemaShapeBuilder
             var typeInfo = serializerOptions.GetTypeInfo(type);
             var converterType = typeInfo.Converter.GetType();
             var hasCustomConverter = converterType.Assembly != typeof(JsonSerializerOptions).Assembly;
-            var properties = CreateProperties(typeInfo);
+            var (properties, extensionDataProperty) = CreateProperties(typeInfo, purpose);
             var derivedTypes = CreateDerivedTypes(typeInfo);
             var unionCases = CreateUnionCases(typeInfo);
             var tupleElements = CreateTupleElements(typeInfo);
             InferredSchemaTypeUse? elementType = typeInfo.ElementType is { } element ? CreateTypeUse(element) : null;
             var additionalPropertiesType = typeInfo.Kind == JsonTypeInfoKind.Dictionary
                 ? elementType
-                : GetExtensionDataType(serializerOptions, properties);
+                : GetExtensionDataType(serializerOptions, extensionDataProperty);
             InferredSchemaTypeIdentity? baseType = type.BaseType is { } candidate && candidate != typeof(object) && candidate != typeof(ValueType)
                 ? new InferredSchemaTypeIdentity(candidate)
                 : null;
@@ -188,6 +205,7 @@ internal static class InferredSchemaShapeBuilder
                 elementType,
                 additionalPropertiesType,
                 properties,
+                extensionDataProperty,
                 derivedTypes,
                 unionCases,
                 tupleElements));
@@ -214,7 +232,7 @@ internal static class InferredSchemaShapeBuilder
         }
 
         shapes.Sort(static (left, right) => StringComparer.Ordinal.Compare(left.Identity.Name, right.Identity.Name));
-        return new(root, new ReadOnlyCollection<InferredSchemaShape>(shapes));
+        return new(root, purpose, new ReadOnlyCollection<InferredSchemaShape>(shapes));
 
         void AddType(Type? type)
         {
@@ -225,18 +243,39 @@ internal static class InferredSchemaShapeBuilder
         }
     }
 
-    private static IReadOnlyList<InferredSchemaProperty> CreateProperties(JsonTypeInfo typeInfo)
+    private static (IReadOnlyList<InferredSchemaProperty> Properties, InferredSchemaProperty? ExtensionDataProperty) CreateProperties(
+        JsonTypeInfo typeInfo,
+        InferredSchemaPurpose purpose)
     {
         var properties = new List<InferredSchemaProperty>(typeInfo.Properties.Count);
+        InferredSchemaProperty? extensionDataProperty = null;
         foreach (var property in typeInfo.Properties)
         {
+            if (property is { Get: null, Set: null })
+            {
+                continue;
+            }
+
             var memberName = property.AttributeProvider is MemberInfo memberInfo ? memberInfo.Name : property.Name;
-            properties.Add(new(
+            var inferredProperty = new InferredSchemaProperty(
                 new(new(property.DeclaringType), memberName, property.Name),
                 property.PropertyType,
-                new(new(Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType), property.IsGetNullable || property.IsSetNullable),
-                property.IsRequired,
-                property.IsExtensionData));
+                new(
+                    new(Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType),
+                    AllowsNull(property, purpose)),
+                purpose == InferredSchemaPurpose.Output ? false : property.IsRequired,
+                property.IsExtensionData);
+
+            if (property.IsExtensionData)
+            {
+                extensionDataProperty = inferredProperty;
+                continue;
+            }
+
+            if (IsIncluded(property, purpose))
+            {
+                properties.Add(inferredProperty);
+            }
         }
 
         properties.Sort(static (left, right) =>
@@ -246,7 +285,26 @@ internal static class InferredSchemaShapeBuilder
                 ? result
                 : StringComparer.Ordinal.Compare(left.Identity.MemberName, right.Identity.MemberName);
         });
-        return new ReadOnlyCollection<InferredSchemaProperty>(properties);
+        return (new ReadOnlyCollection<InferredSchemaProperty>(properties), extensionDataProperty);
+
+        static bool IsIncluded(JsonPropertyInfo property, InferredSchemaPurpose purpose)
+            => purpose switch
+            {
+                InferredSchemaPurpose.Input => property.Set is not null ||
+                    property.AssociatedParameter is not null ||
+                    property.ObjectCreationHandling == JsonObjectCreationHandling.Populate,
+                InferredSchemaPurpose.Output => property.Get is not null,
+                _ => property.Get is not null || property.Set is not null,
+            };
+
+        static bool AllowsNull(JsonPropertyInfo property, InferredSchemaPurpose purpose)
+            => purpose switch
+            {
+                InferredSchemaPurpose.Input when property.AssociatedParameter is { } parameter => parameter.IsNullable,
+                InferredSchemaPurpose.Input => property.IsSetNullable,
+                InferredSchemaPurpose.Output => property.IsGetNullable,
+                _ => property.IsGetNullable || property.IsSetNullable,
+            };
     }
 
     private static IReadOnlyList<InferredSchemaDerivedType> CreateDerivedTypes(JsonTypeInfo typeInfo)
@@ -264,9 +322,8 @@ internal static class InferredSchemaShapeBuilder
 
     private static InferredSchemaTypeUse? GetExtensionDataType(
         JsonSerializerOptions serializerOptions,
-        IReadOnlyList<InferredSchemaProperty> properties)
+        InferredSchemaProperty? extensionDataProperty)
     {
-        var extensionDataProperty = properties.FirstOrDefault(property => property.IsExtensionData);
         if (extensionDataProperty is null)
         {
             return null;
