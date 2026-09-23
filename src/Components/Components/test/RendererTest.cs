@@ -1432,6 +1432,43 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task DispatchEventAsync_EventCallbackOfT_WithReceiverAndNullDelegate_DoesNotThrow()
+    {
+        // Arrange
+        // This mimics markup like <div @onclick="@(condition ? handler : null!)"/> where the compiler
+        // produces an EventCallback with a non-null Receiver but a null Delegate. RequiresExplicitReceiver
+        // is true in that case, so RenderTreeBuilder keeps the attribute (unlike default(EventCallback)).
+        // A ComponentsActivitySource is registered because tracing is enabled by default in real apps
+        // (AddRazorComponents calls AddComponentsTracing), and the tracing code path must tolerate a
+        // null Delegate too.
+        var services = new TestServiceProvider();
+        services.AddService(new ComponentsActivitySource());
+        var renderer = new TestRenderer(services);
+        var parentComponent = new OuterEventComponent();
+        parentComponent.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Action<DerivedEventArgs>)null));
+            builder.CloseElement();
+        };
+
+        var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+        await parentComponent.TriggerRenderAsync();
+
+        var eventHandlerId = renderer.Batches[0]
+            .ReferenceFrames
+            .First(frame => frame.AttributeName == "onclick")
+            .AttributeEventHandlerId;
+
+        // Act
+        var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+        await task; // Does not throw
+    }
+
+    [Fact]
     public async Task DispatchEventAsync_Delegate_SynchronousCancellation()
     {
         // Arrange
