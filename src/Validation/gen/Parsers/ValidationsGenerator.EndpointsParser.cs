@@ -8,7 +8,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 

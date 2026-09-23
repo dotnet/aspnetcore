@@ -55,17 +55,6 @@ public class SupplyParameterFromSessionAttributeTest : ServerTestBase<BasicTestA
     }
 
     [Fact]
-    public void SupplyParameterWorksWithComplexTypes()
-    {
-        Navigate($"{ServerPathBase}/supply-parameter-from-session");
-        Browser.Exists(By.Id("input-testclass-email")).SendKeys("email");
-        Browser.Exists(By.Id("input-testclass-age")).SendKeys("30");
-        Browser.Exists(By.Id("set-testclass-object")).Click();
-        Browser.Equal("email", () => Browser.Exists(By.Id("text-testclass-email")).Text);
-        Browser.Equal("30", () => Browser.Exists(By.Id("text-testclass-age")).Text);
-    }
-
-    [Fact]
     public void SupplyParameterPersistThroughNavigationAndBack()
     {
         Navigate($"{ServerPathBase}/supply-parameter-from-session");

@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.Net.Http;
-using AngleSharp.Dom.Html;
+using AngleSharp.Html.Dom;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
 

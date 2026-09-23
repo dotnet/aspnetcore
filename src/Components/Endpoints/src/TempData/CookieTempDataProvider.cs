@@ -19,7 +19,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private readonly IDataProtector _dataProtector;
     private readonly ISpanDataProtector? _spanDataProtector;
-    private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly IStoredDataSerializer _tempDataSerializer;
     private readonly RazorComponentsServiceOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
     private readonly ILogger<CookieTempDataProvider> _logger;
@@ -27,7 +27,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
         IOptions<RazorComponentsServiceOptions> options,
-        ITempDataSerializer tempDataSerializer,
+        IStoredDataSerializer tempDataSerializer,
         ILogger<CookieTempDataProvider> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
@@ -43,19 +43,20 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         ArgumentNullException.ThrowIfNull(context);
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
 
+        if (!context.Request.Cookies.ContainsKey(cookieName))
+        {
+            Log.TempDataCookieNotFound(_logger, cookieName);
+            return ReadOnlyDictionary<string, object?>.Empty;
+        }
+
+        var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
+        if (serializedDataFromCookie is null)
+        {
+            return ReadOnlyDictionary<string, object?>.Empty;
+        }
+
         try
         {
-            if (!context.Request.Cookies.ContainsKey(cookieName))
-            {
-                Log.TempDataCookieNotFound(_logger, cookieName);
-                return ReadOnlyDictionary<string, object?>.Empty;
-            }
-            var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
-            if (serializedDataFromCookie is null)
-            {
-                return ReadOnlyDictionary<string, object?>.Empty;
-            }
-
             byte[]? rentedDecodeBuffer = null;
             var maxDecodedSize = Base64Url.GetMaxDecodedLength(serializedDataFromCookie.Length);
             var decodeBuffer = maxDecodedSize <= 256
@@ -65,6 +66,10 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             try
             {
                 var decodeStatus = Base64Url.DecodeFromChars(serializedDataFromCookie, decodeBuffer, out _, out var bytesWritten);
+                if (decodeStatus != OperationStatus.Done)
+                {
+                    throw new FormatException("The TempData cookie did not contain valid Base64Url-encoded data.");
+                }
                 var protectedBytes = decodeBuffer[..bytesWritten];
                 Dictionary<string, JsonElement>? dataFromCookie;
 
@@ -110,14 +115,6 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        foreach (var kvp in values)
-        {
-            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
-            {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
-            }
-        }
 
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
         var cookieOptions = _options.TempDataCookie.Build(context);

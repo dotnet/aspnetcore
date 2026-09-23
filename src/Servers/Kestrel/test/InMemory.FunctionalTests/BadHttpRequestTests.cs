@@ -100,6 +100,10 @@ public class BadHttpRequestTests : LoggedTest
     [Theory]
     [InlineData("NaN")]
     [InlineData("-1")]
+    [InlineData("+1")]
+    [InlineData("+0")]
+    [InlineData("-0")]
+    [InlineData("")]
     public Task BadRequestIfContentLengthInvalid(string contentLength)
     {
         return TestBadRequest(

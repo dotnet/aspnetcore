@@ -99,7 +99,7 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject();
             }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
-            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
             if (context.PropertyInfo is { } jsonPropertyInfo)
@@ -107,9 +107,14 @@ internal sealed class OpenApiSchemaService(
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
             var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
-            if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
+            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
+            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
+            {
+                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
             }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
@@ -129,12 +134,20 @@ internal sealed class OpenApiSchemaService(
                     {
                         schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
                     }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                    }
                 }
                 else
                 {
                     if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
                     {
                         schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
                     }
                 }
             }
@@ -357,20 +370,24 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
+        ResolveDiscriminatorReferences(document, schema);
+
         if (schema.Properties is not null)
         {
-            foreach (var property in schema.Properties)
+            // Materialize the collection first because IDictionary<TKey, TValue> implementations
+            // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
-                if (property.Value is OpenApiSchema targetSchema &&
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
                     isNullableProperty is true)
                 {
-                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {
-                    schema.Properties[property.Key] = resolvedProperty;
+                    schema.Properties[key] = resolvedProperty;
                 }
             }
         }
@@ -412,6 +429,43 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
+    }
+
+    private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
+    {
+        if (schema.Discriminator is not { } discriminator)
+        {
+            return;
+        }
+
+        if (discriminator.DefaultMapping is { } defaultMapping)
+        {
+            discriminator.DefaultMapping = ResolveSchemaReference(document, defaultMapping);
+        }
+
+        if (discriminator.Mapping is not null)
+        {
+            foreach (var mapping in discriminator.Mapping.ToArray())
+            {
+                discriminator.Mapping[mapping.Key] = ResolveSchemaReference(document, mapping.Value);
+            }
+        }
+    }
+
+    private static OpenApiSchemaReference ResolveSchemaReference(OpenApiDocument document, OpenApiSchemaReference schemaReference)
+    {
+        if (schemaReference.Reference.Id is not { } referenceId)
+        {
+            return schemaReference;
+        }
+
+        const string componentsSchemasReferencePrefix = "#/components/schemas/";
+        if (referenceId.StartsWith(componentsSchemasReferencePrefix, StringComparison.Ordinal))
+        {
+            referenceId = referenceId[componentsSchemasReferencePrefix.Length..];
+        }
+
+        return new OpenApiSchemaReference(referenceId, document);
     }
 
     private static OpenApiSchema UnwrapOpenApiSchema(IOpenApiSchema sourceSchema)
@@ -518,7 +572,10 @@ internal sealed class OpenApiSchemaService(
 
     private JsonNode CreateSchema(Type type)
     {
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, type, _configuration);
+        // We always create a oneOf nullable wrapper ourselves manually.
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
         return ResolveReferences(schema, schema);
     }
 

@@ -291,7 +291,7 @@
             <ComponentRef Id="C_DepProvider_$(ProductNameShort)" />
         </Feature>
 
-        <Component Id="C_DepProvider_$(ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="$(DepProviderGuid)">
+        <Component Id="C_DepProvider_$(ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="*">
             <Provides Key="$(ANCMDepProviderKey)" dep:Check="yes" />
         </Component>
     </Fragment>

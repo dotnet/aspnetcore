@@ -5,7 +5,8 @@
     <StackTraceSupport>false</StackTraceSupport>
     <EventSourceSupport>false</EventSourceSupport>
     <MetricsSupport>false</MetricsSupport>
-    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+    <!-- Symbols are excluded from the SDK layout (not the package) by src/sdk; see DeleteSymbolsFromPublishDir. -->
+    <CopyOutputSymbolsToPublishDirectory>true</CopyOutputSymbolsToPublishDirectory>
     <DebuggerSupport>false</DebuggerSupport>
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <Http3Support>false</Http3Support>

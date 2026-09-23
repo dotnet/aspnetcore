@@ -580,6 +580,61 @@ public class RateLimitingMiddlewareTests
     }
 
     [Fact]
+    public async Task EndpointLimiter_InlinePolicy_DuplicatePartitionKey_NoCollision()
+    {
+        // Two distinct inline policy instances that return the same partition key must not share a
+        // limiter. Before the fix both inline policies used a null partition-key namespace, so whichever
+        // endpoint ran first created the shared limiter and the other silently reused it.
+        var options = CreateOptionsAccessor();
+        var duplicateKey = "myKey";
+        var policy1 = new CountingRateLimiterPolicy(duplicateKey, permitLimit: 1);
+        var policy2 = new CountingRateLimiterPolicy(duplicateKey, permitLimit: 1);
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var endpoint1 = CreateEndpointWithRateLimitPolicy(policy1);
+        var endpoint2 = CreateEndpointWithRateLimitPolicy(policy2);
+
+        // Exhaust policy1's single permit on endpoint1.
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(endpoint1);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        // endpoint2 uses a different policy instance, so it has its own limiter and its own permit.
+        context = new DefaultHttpContext();
+        context.SetEndpoint(endpoint2);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task EndpointLimiter_InlinePolicy_SameInstance_SharesLimiter()
+    {
+        // The same inline policy instance reused across endpoints should keep sharing a single limiter,
+        // so per-instance identity (not per-registration) is used for the partition-key namespace.
+        var options = CreateOptionsAccessor();
+        var policy = new CountingRateLimiterPolicy("myKey", permitLimit: 1);
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var endpoint1 = CreateEndpointWithRateLimitPolicy(policy);
+        var endpoint2 = CreateEndpointWithRateLimitPolicy(policy);
+
+        // First endpoint consumes the single shared permit.
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(endpoint1);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        // Second endpoint shares the same limiter, so no permit remains and it is rejected.
+        context = new DefaultHttpContext();
+        context.SetEndpoint(endpoint2);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task MultipleEndpointPolicies_LastOneWins()
     {
         // Arrange
@@ -654,4 +709,51 @@ public class RateLimitingMiddlewareTests
             new RateLimitingMetrics(new TestMeterFactory()));
 
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
+
+    // An inline policy backed by a stateful limiter that permits a fixed number of acquisitions and then
+    // rejects. Used to observe whether two endpoints share or isolate their limiter buckets.
+    private sealed class CountingRateLimiterPolicy : IRateLimiterPolicy<string>
+    {
+        private readonly string _key;
+        private readonly int _permitLimit;
+
+        public CountingRateLimiterPolicy(string key, int permitLimit)
+        {
+            _key = key;
+            _permitLimit = permitLimit;
+        }
+
+        public Func<OnRejectedContext, CancellationToken, ValueTask> OnRejected => null;
+
+        public RateLimitPartition<string> GetPartition(HttpContext httpContext)
+            => RateLimitPartition.Get(_key, _ => new CountingRateLimiter(_permitLimit));
+    }
+
+    private sealed class CountingRateLimiter : RateLimiter
+    {
+        private int _remaining;
+
+        public CountingRateLimiter(int permitLimit) => _remaining = permitLimit;
+
+        public override TimeSpan? IdleDuration => null;
+
+        public override RateLimiterStatistics GetStatistics() => null;
+
+        protected override RateLimitLease AttemptAcquireCore(int permitCount)
+        {
+            if (_remaining >= permitCount)
+            {
+                _remaining -= permitCount;
+                return new TestRateLimitLease(isAcquired: true, null);
+            }
+
+            return new TestRateLimitLease(isAcquired: false, null);
+        }
+
+        protected override ValueTask<RateLimitLease> AcquireAsyncCore(int permitCount, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return new ValueTask<RateLimitLease>(AttemptAcquireCore(permitCount));
+        }
+    }
 }

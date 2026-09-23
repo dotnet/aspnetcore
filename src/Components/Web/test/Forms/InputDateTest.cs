@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -11,7 +12,7 @@ public class InputDateTest
     private readonly TestRenderer _testRenderer = new TestRenderer();
 
     [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    public async Task ValidationErrorUsesExplicitDisplayName()
     {
         // Arrange
         var model = new TestModel();
@@ -34,6 +35,24 @@ public class InputDateTest
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
         Assert.Contains("The Date property field must be a date.", validationMessages);
+    }
+
+    [Fact]
+    public async Task ValidationErrorUsesDisplayAttributeOnModel()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Contains("The Date from attribute field must be a date.", validationMessages);
     }
 
     [Fact]
@@ -99,6 +118,7 @@ public class InputDateTest
 
     private class TestModel
     {
+        [Display(Name = "Date from attribute")]
         public DateTime DateProperty { get; set; }
     }
 

@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "DojoClient": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AGUI_DOJO_API_URL": "http://localhost:5018"
+      },
+      "applicationUrl": "http://localhost:5019"
+    }
+  }
+}

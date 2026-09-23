@@ -1,0 +1,6 @@
+<Project>
+  <!-- Make the activation switch visible to the source generator when it is enabled. -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="E2ECompileTestHarness" />
+  </ItemGroup>
+</Project>
