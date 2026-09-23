@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -13,6 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.ServerSentEvents;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -43,21 +43,12 @@ internal sealed class OpenApiDocumentService(
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
 
-    /// <summary>
-    /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
-    /// `ApiDescription.ActionDescriptor.Id` of the associated operation. ActionDescriptor IDs
-    /// are unique within the lifetime of an application and serve as helpful associators between
-    /// operations, API descriptions, and their respective transformer contexts.
-    /// </summary>
-    private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+    private readonly ConditionalWeakTable<OpenApiDocument, IReadOnlyDictionary<string, OpenApiOperationTransformerContext>> _operationTransformerContexts = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
     private static readonly IComparer<OpenApiTag> _openApiTagComparer = Comparer<OpenApiTag>.Create(
         static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
 
     private static readonly FrozenSet<string> _disallowedHeaderParameters = new[] { HeaderNames.Accept, HeaderNames.Authorization, HeaderNames.ContentType }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
-
-    internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
-        => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
 
     public Task<OpenApiDocument> GetOpenApiDocumentAsync(IServiceProvider scopedServiceProvider, HttpRequest? httpRequest = null, CancellationToken cancellationToken = default)
         => GetOpenApiDocumentAsync(scopedServiceProvider, httpRequest, _options.OpenApiVersion, cancellationToken);
@@ -88,7 +79,17 @@ internal sealed class OpenApiDocumentService(
             .Where(_options.ShouldInclude)
             .ToArray();
         _componentService.InitializeInferredReferenceIds(document, GetSchemaRootTypes(apiDescriptions));
-        document.Paths = await GetOpenApiPathsAsync(document, apiDescriptions, scopedServiceProvider, operationTransformers, schemaTransformers, openApiVersion, cancellationToken);
+        var operationTransformerContexts = new Dictionary<string, OpenApiOperationTransformerContext>();
+        document.Paths = await GetOpenApiPathsAsync(
+            document,
+            apiDescriptions,
+            scopedServiceProvider,
+            operationTransformers,
+            schemaTransformers,
+            openApiVersion,
+            operationTransformerContexts,
+            cancellationToken);
+        _operationTransformerContexts.Add(document, operationTransformerContexts.ToFrozenDictionary());
         try
         {
             await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
@@ -183,6 +184,7 @@ internal sealed class OpenApiDocumentService(
         Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> callback,
         CancellationToken cancellationToken)
     {
+        _operationTransformerContexts.TryGetValue(document, out var operationTransformerContexts);
         foreach (var pathItem in document.Paths.Values)
         {
             if (pathItem.Operations is null)
@@ -195,7 +197,8 @@ internal sealed class OpenApiDocumentService(
                 if (operation.Metadata is { } annotations &&
                     annotations.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionId) &&
                     descriptionId is string descriptionIdString &&
-                    TryGetCachedOperationTransformerContext(descriptionIdString, out var operationContext))
+                    operationTransformerContexts is not null &&
+                    operationTransformerContexts.TryGetValue(descriptionIdString, out var operationContext))
                 {
                     await callback(operation, operationContext, cancellationToken);
                 }
@@ -269,6 +272,7 @@ internal sealed class OpenApiDocumentService(
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
         OpenApiSpecVersion openApiVersion,
+        Dictionary<string, OpenApiOperationTransformerContext> operationTransformerContexts,
         CancellationToken cancellationToken)
     {
         var descriptionsByPath = apiDescriptions
@@ -277,7 +281,15 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, openApiVersion, cancellationToken);
+            var operations = await GetOperationsAsync(
+                descriptions,
+                document,
+                scopedServiceProvider,
+                operationTransformers,
+                schemaTransformers,
+                openApiVersion,
+                operationTransformerContexts,
+                cancellationToken);
             if (operations.Count > 0)
             {
                 paths.Add(descriptions.Key, new OpenApiPathItem { Operations = operations });
@@ -324,6 +336,7 @@ internal sealed class OpenApiDocumentService(
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
         OpenApiSpecVersion openApiVersion,
+        Dictionary<string, OpenApiOperationTransformerContext> operationTransformerContexts,
         CancellationToken cancellationToken)
     {
         var operations = new Dictionary<HttpMethod, OpenApiOperation>();
@@ -343,7 +356,7 @@ internal sealed class OpenApiDocumentService(
                 SchemaTransformers = schemaTransformers
             };
 
-            _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
+            operationTransformerContexts.Add(description.ActionDescriptor.Id, operationContext);
 
             if (description.GetHttpMethod() is not { } method)
             {

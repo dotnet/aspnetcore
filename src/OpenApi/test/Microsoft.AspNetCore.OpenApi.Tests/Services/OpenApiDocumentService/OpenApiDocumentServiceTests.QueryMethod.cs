@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -103,6 +105,62 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         var operation = document.Paths["/api/custom"].Operations[new HttpMethod("FOO")];
         Assert.Equal("FOO", operation.Description);
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, OpenApiSpecVersion.OpenApi3_2)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, OpenApiSpecVersion.OpenApi3_0)]
+    public async Task ForEachOperationAsync_UsesContextsFromSequentialGeneration(
+        OpenApiSpecVersion firstVersion,
+        OpenApiSpecVersion secondVersion)
+    {
+        var (documentService, firstServices, secondServices) = CreateVersionedDocumentService();
+        using (firstServices)
+        using (secondServices)
+        {
+            await documentService.GetOpenApiDocumentAsync(firstServices, httpRequest: null, firstVersion);
+            await documentService.GetOpenApiDocumentAsync(secondServices, httpRequest: null, secondVersion);
+        }
+    }
+
+    [Fact]
+    public async Task ForEachOperationAsync_UsesContextsFromConcurrentGeneration()
+    {
+        var (documentService, firstServices, secondServices) = CreateVersionedDocumentService();
+        using (firstServices)
+        using (secondServices)
+        {
+            await Task.WhenAll(
+                documentService.GetOpenApiDocumentAsync(firstServices, httpRequest: null, OpenApiSpecVersion.OpenApi3_0),
+                documentService.GetOpenApiDocumentAsync(secondServices, httpRequest: null, OpenApiSpecVersion.OpenApi3_2));
+        }
+    }
+
+    private static (OpenApiDocumentService DocumentService, ServiceProvider FirstServices, ServiceProvider SecondServices) CreateVersionedDocumentService()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/versioned", () => Results.Ok());
+
+        OpenApiDocumentService documentService = null;
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) => Task.CompletedTask);
+        options.AddDocumentTransformer(async (document, context, cancellationToken) =>
+        {
+            await documentService.ForEachOperationAsync(document, (operation, operationContext, _) =>
+            {
+                Assert.Equal(context.OpenApiVersion, operationContext.OpenApiVersion);
+                Assert.Same(document, operationContext.Document);
+                Assert.Same(context.ApplicationServices, operationContext.ApplicationServices);
+                Assert.Same(context.SchemaTransformers, operationContext.SchemaTransformers);
+                return Task.CompletedTask;
+            }, cancellationToken);
+        });
+        documentService = CreateDocumentService(builder, options);
+
+        return (
+            documentService,
+            new ServiceCollection().BuildServiceProvider(),
+            new ServiceCollection().BuildServiceProvider());
     }
 
     #nullable enable
