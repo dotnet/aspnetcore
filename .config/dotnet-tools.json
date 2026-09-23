@@ -9,7 +9,7 @@
       ]
     },
     "dotnet-ef": {
-      "version": "10.0.13",
+      "version": "10.0.14",
       "commands": [
         "dotnet-ef"
       ]
@@ -27,7 +27,7 @@
       ]
     },
     "microsoft.dotnet.helix.jobmonitor": {
-      "version": "10.0.0-beta.26472.101",
+      "version": "10.0.0-beta.26472.120",
       "commands": [
         "dotnet-helix-job-monitor"
       ]
