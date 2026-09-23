@@ -145,8 +145,21 @@ inlines the schema. Empty or invalid values, or the same non-null value returned
 non-aliased serializer contract types, cause document generation to fail rather than silently
 selecting or overwriting a component.
 
-Applications that know their tuple contracts at compile time can register reflection-free closed
-converters that are safe for trimming and NativeAOT:
+When the Request Delegate Generator (RDG) handles a minimal API endpoint, it automatically
+registers reflection-free closed tuple converters before the HTTP JSON serializer options become
+read-only. Automatic discovery covers tuple contracts used directly as JSON request bodies or
+serializable responses, arrays, and public readable properties (including inherited properties)
+on source-declared DTO classes and structs. Registration is deterministic and idempotent, and an
+existing user converter that handles the same tuple contract takes precedence. This behavior does
+not require `AddOpenApi`; when OpenAPI is present, schema inference recognizes the same converter
+provenance and emits the matching tuple schema.
+
+Automatic discovery is intentionally bounded and does not reproduce runtime System.Text.Json
+contract discovery. Dynamic or non-RDG endpoints, metadata-only DTO graphs, fields, arbitrary
+collection or dictionary graphs, open generic contracts, polymorphic contracts, and types or
+properties with custom converters require explicit registration. Applications can use the
+reflection-free closed converters as that fallback and for any tuple contracts known at compile
+time:
 
 ```csharp
 builder.Services.ConfigureHttpJsonOptions(options =>

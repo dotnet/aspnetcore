@@ -15,30 +15,45 @@ builder.Services.AddOpenApi();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-    options.SerializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+    options.SerializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<long, bool>());
 });
 
-var serializerOptions = new JsonSerializerOptions(AppJsonSerializerContext.Default.Options);
-serializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
-var tupleTypeInfo = (JsonTypeInfo<(int, string)>)serializerOptions.GetTypeInfo(typeof((int, string)));
-var tupleJson = JsonSerializer.Serialize((1, "two"), tupleTypeInfo);
-var tuple = JsonSerializer.Deserialize(tupleJson, tupleTypeInfo);
-if (tupleJson != "[1,\"two\"]" || tuple != (1, "two"))
-{
-    return -1;
-}
-
 var app = builder.Build();
-
-app.MapOpenApi();
 
 app.MapGet("/", () => "Hello World!");
 app.MapGet("/{name}", (string name) => $"Hello {name}!");
 app.MapGet("/tuple", () => (1, "two"));
+app.MapGet("/explicit-tuple", () => (3L, true));
+app.MapOpenApi();
+
+var serializerOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>().Value.SerializerOptions;
+var tupleTypeInfo = (JsonTypeInfo<(int, string)>)serializerOptions.GetTypeInfo(typeof((int, string)));
+var tupleJson = JsonSerializer.Serialize((1, "two"), tupleTypeInfo);
+var tuple = JsonSerializer.Deserialize(tupleJson, tupleTypeInfo);
+var explicitTupleTypeInfo = (JsonTypeInfo<(long, bool)>)serializerOptions.GetTypeInfo(typeof((long, bool)));
+var explicitTupleJson = JsonSerializer.Serialize((3L, true), explicitTupleTypeInfo);
+var explicitTuple = JsonSerializer.Deserialize(explicitTupleJson, explicitTupleTypeInfo);
+var explicitTupleConverterCount = 0;
+foreach (var converter in serializerOptions.Converters)
+{
+    if (converter.CanConvert(typeof((long, bool))))
+    {
+        explicitTupleConverterCount++;
+    }
+}
+if (tupleJson != "[1,\"two\"]" ||
+    tuple != (1, "two") ||
+    explicitTupleJson != "[3,true]" ||
+    explicitTuple != (3L, true) ||
+    explicitTupleConverterCount != 1)
+{
+    return -1;
+}
 
 return 100;
 
 [JsonSerializable(typeof((int, string)))]
+[JsonSerializable(typeof((long, bool)))]
 internal sealed partial class AppJsonSerializerContext : JsonSerializerContext;
 
 #pragma warning restore ASP0040

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -181,16 +182,13 @@ public partial class OpenApiSchemaServiceTests
     {
         Assert.Equal("{}", JsonSerializer.Serialize((1, "two")));
 
-        var builder = CreateBuilder();
-        builder.MapGet("/", () => (1, "two"));
-
-        await VerifyOpenApiDocument(builder, document =>
+        var schema = new JsonSerializerOptions
         {
-            var schema = GetResponseSchema(document);
-            Assert.Equal(JsonSchemaType.Object, schema.Type);
-            Assert.Null(schema.MinItems);
-            Assert.Null(schema.UnrecognizedKeywords);
-        });
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        }.GetJsonSchemaAsNode(typeof((int, string)));
+        Assert.Equal("object", schema["type"]!.GetValue<string>());
+        Assert.Null(schema["minItems"]);
+        Assert.Null(schema["prefixItems"]);
     }
 
     [Theory]
