@@ -22,6 +22,15 @@ public sealed class OpenApiDocumentTransformerContext
     public required string DocumentName { get; init; }
 
     /// <summary>
+    /// Gets the OpenAPI specification version targeted by the current document generation.
+    /// </summary>
+    /// <remarks>
+    /// Transformer output can depend on this value. To target a different version, regenerate the
+    /// document instead of serializing the returned document using a different version.
+    /// </remarks>
+    public OpenApiSpecVersion OpenApiVersion { get; init; } = OpenApiSpecVersion.OpenApi3_2;
+
+    /// <summary>
     /// Gets the API description groups for the application.
     /// </summary>
     /// <remarks>
@@ -94,6 +103,7 @@ public sealed class OpenApiDocumentTransformerContext
         return schemaService.GetOrCreateUnresolvedSchemaAsync(
             document: Document,
             type: type,
+            openApiVersion: OpenApiVersion,
             parameterDescription: parameterDescription,
             scopedServiceProvider: ApplicationServices,
             schemaTransformers: SchemaTransformers,

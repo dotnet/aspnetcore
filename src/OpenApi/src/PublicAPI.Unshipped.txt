@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider.GetOpenApiDocumentForVersionAsync(Microsoft.OpenApi.OpenApiSpecVersion openApiVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiDocument!>!
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.JsonArrayTupleConverter() -> void
 override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CanConvert(System.Type! typeToConvert) -> bool
@@ -8,6 +9,12 @@ override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CreateConverter(Sy
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiVersion.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.OpenApiVersion.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Inferred = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Legacy = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode

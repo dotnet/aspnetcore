@@ -311,11 +311,12 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         var nestedTransformerApplied = false;
 
         // Act
-        var options = new OpenApiOptions();
+        var options = new OpenApiOptions { OpenApiVersion = OpenApiSpecVersion.OpenApi3_1 };
 
         // Add a schema transformer that will mark all Product schemas as required
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_1, context.OpenApiVersion);
             if (context.JsonTypeInfo.Type == typeof(Product))
             {
                 schema.Required ??= new HashSet<string>();
@@ -336,6 +337,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         // Add an operation transformer that uses GetOrCreateSchemaAsync
         options.AddOperationTransformer(async (operation, context, cancellationToken) =>
         {
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_1, context.OpenApiVersion);
             // Generate a schema for Product
             var productSchema = await context.GetOrCreateSchemaAsync(typeof(Product), cancellationToken: cancellationToken);
 
@@ -543,4 +545,3 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
 }
-

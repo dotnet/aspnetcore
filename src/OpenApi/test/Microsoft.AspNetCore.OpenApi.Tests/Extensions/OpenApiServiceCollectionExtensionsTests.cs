@@ -296,6 +296,37 @@ public class OpenApiServiceCollectionExtensions
     }
 
     [Fact]
+    public async Task GetOpenApiDocumentAsync_UsesConfiguredVersionAndExplicitMethodUsesRequestedVersion()
+    {
+        var observedVersions = new List<OpenApiSpecVersion>();
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+        var documentName = "v1";
+        services.AddOpenApi(documentName, options =>
+        {
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                observedVersions.Add(context.OpenApiVersion);
+                return Task.CompletedTask;
+            });
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName);
+
+        await documentProvider.GetOpenApiDocumentAsync(default);
+        await documentProvider.GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion.OpenApi3_2, default);
+
+        Assert.Equal([OpenApiSpecVersion.OpenApi3_0, OpenApiSpecVersion.OpenApi3_2], observedVersions);
+    }
+
+    [Fact]
     public async Task GetOpenApiDocumentAsync_HandlesCancellation()
     {
         // Arrange

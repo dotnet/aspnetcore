@@ -59,7 +59,14 @@ internal sealed class OpenApiDocumentService(
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
 
-    public async Task<OpenApiDocument> GetOpenApiDocumentAsync(IServiceProvider scopedServiceProvider, HttpRequest? httpRequest = null, CancellationToken cancellationToken = default)
+    public Task<OpenApiDocument> GetOpenApiDocumentAsync(IServiceProvider scopedServiceProvider, HttpRequest? httpRequest = null, CancellationToken cancellationToken = default)
+        => GetOpenApiDocumentAsync(scopedServiceProvider, httpRequest, _options.OpenApiVersion, cancellationToken);
+
+    public async Task<OpenApiDocument> GetOpenApiDocumentAsync(
+        IServiceProvider scopedServiceProvider,
+        HttpRequest? httpRequest,
+        OpenApiSpecVersion openApiVersion,
+        CancellationToken cancellationToken = default)
     {
         // Schema and operation transformers are scoped per-request and can be
         // pre-allocated to hold the same number of transformers as the associated
@@ -81,10 +88,10 @@ internal sealed class OpenApiDocumentService(
             .Where(_options.ShouldInclude)
             .ToArray();
         _componentService.InitializeInferredReferenceIds(document, GetSchemaRootTypes(apiDescriptions));
-        document.Paths = await GetOpenApiPathsAsync(document, apiDescriptions, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+        document.Paths = await GetOpenApiPathsAsync(document, apiDescriptions, scopedServiceProvider, operationTransformers, schemaTransformers, openApiVersion, cancellationToken);
         try
         {
-            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, cancellationToken);
+            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
         }
 
         finally
@@ -106,11 +113,17 @@ internal sealed class OpenApiDocumentService(
         return document;
     }
 
-    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
+    private async Task ApplyTransformersAsync(
+        OpenApiDocument document,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        CancellationToken cancellationToken)
     {
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
             DocumentName = documentName,
+            OpenApiVersion = openApiVersion,
             ApplicationServices = scopedServiceProvider,
             DescriptionGroups = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items,
             Document = document,
@@ -255,6 +268,7 @@ internal sealed class OpenApiDocumentService(
         IServiceProvider scopedServiceProvider,
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         var descriptionsByPath = apiDescriptions
@@ -263,7 +277,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, openApiVersion, cancellationToken);
             if (operations.Count > 0)
             {
                 paths.Add(descriptions.Key, new OpenApiPathItem { Operations = operations });
@@ -309,18 +323,20 @@ internal sealed class OpenApiDocumentService(
         IServiceProvider scopedServiceProvider,
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         var operations = new Dictionary<HttpMethod, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            var operation = await GetOperationAsync(description, document, scopedServiceProvider, schemaTransformers, cancellationToken);
+            var operation = await GetOperationAsync(description, document, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
             operation.Metadata ??= new Dictionary<string, object>();
             operation.Metadata.Add(OpenApiConstants.DescriptionId, description.ActionDescriptor.Id);
 
             var operationContext = new OpenApiOperationTransformerContext
             {
                 DocumentName = documentName,
+                OpenApiVersion = openApiVersion,
                 Description = description,
                 ApplicationServices = scopedServiceProvider,
                 Document = document,
@@ -361,6 +377,7 @@ internal sealed class OpenApiDocumentService(
         OpenApiDocument document,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         var tags = GetTags(description, document);
@@ -369,9 +386,9 @@ internal sealed class OpenApiDocumentService(
             OperationId = GetOperationId(description),
             Summary = GetSummary(description),
             Description = GetDescription(description),
-            Responses = await GetResponsesAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
-            Parameters = await GetParametersAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
-            RequestBody = await GetRequestBodyAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
+            Responses = await GetResponsesAsync(document, description, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken),
+            Parameters = await GetParametersAsync(document, description, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken),
+            RequestBody = await GetRequestBodyAsync(document, description, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken),
             Tags = tags,
             Deprecated = description.ActionDescriptor.EndpointMetadata.OfType<ObsoleteAttribute>().Any(),
         };
@@ -414,6 +431,7 @@ internal sealed class OpenApiDocumentService(
         ApiDescription description,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         // OpenAPI requires that each operation have a response, usually a successful one.
@@ -423,7 +441,7 @@ internal sealed class OpenApiDocumentService(
         {
             return new OpenApiResponses
             {
-                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, [_defaultApiResponseType], scopedServiceProvider, schemaTransformers, cancellationToken)
+                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, [_defaultApiResponseType], scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken)
             };
         }
 
@@ -440,7 +458,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var group in groupedResponseTypes)
         {
             var statusCode = group.First().StatusCode;
-            responses[group.Key] = await GetResponseAsync(document, description, statusCode, group.ToList(), scopedServiceProvider, schemaTransformers, cancellationToken);
+            responses[group.Key] = await GetResponseAsync(document, description, statusCode, group.ToList(), scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
         }
 
         return responses;
@@ -453,6 +471,7 @@ internal sealed class OpenApiDocumentService(
         IReadOnlyList<ApiResponseType> apiResponseTypes,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         var description = apiResponseTypes.Select(r => r.Description).FirstOrDefault(d => d is not null);
@@ -483,13 +502,13 @@ internal sealed class OpenApiDocumentService(
                 {
                     if (IsServerSentEventsResponse(contentType, responseType, out var eventDataType))
                     {
-                        var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, openApiVersion, null, cancellationToken);
                         schema = CreateServerSentEventsItemSchema(document, dataSchema);
                         useItemSchema = true;
                     }
                     else
                     {
-                        schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, openApiVersion, null, cancellationToken);
                         schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
                             ? schema.CreateOneOfNullableWrapper()
                             : schema;
@@ -612,6 +631,7 @@ internal sealed class OpenApiDocumentService(
         ApiDescription description,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         List<IOpenApiParameter>? parameters = null;
@@ -627,6 +647,7 @@ internal sealed class OpenApiDocumentService(
                 GetTargetType(description, parameter),
                 scopedServiceProvider,
                 schemaTransformers,
+                openApiVersion,
                 parameter,
                 cancellationToken: cancellationToken);
 
@@ -722,12 +743,18 @@ internal sealed class OpenApiDocumentService(
         }
     }
 
-    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(OpenApiDocument document, ApiDescription description, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
+    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(
+        OpenApiDocument document,
+        ApiDescription description,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        CancellationToken cancellationToken)
     {
         // Only one parameter can be bound from the body in each request.
         if (description.TryGetBodyParameter(out var bodyParameter))
         {
-            return await GetJsonRequestBody(document, description.SupportedRequestFormats, bodyParameter, scopedServiceProvider, schemaTransformers, cancellationToken);
+            return await GetJsonRequestBody(document, description.SupportedRequestFormats, bodyParameter, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
         }
         // If there are no body parameters, check for form parameters.
         // Note: Form parameters and body parameters cannot exist simultaneously
@@ -735,7 +762,7 @@ internal sealed class OpenApiDocumentService(
         if (description.TryGetFormParameters(out var formParameters))
         {
             var endpointMetadata = description.ActionDescriptor.EndpointMetadata;
-            return await GetFormRequestBody(document, description.SupportedRequestFormats, formParameters, endpointMetadata, scopedServiceProvider, schemaTransformers, cancellationToken);
+            return await GetFormRequestBody(document, description.SupportedRequestFormats, formParameters, endpointMetadata, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
         }
         return null;
     }
@@ -747,6 +774,7 @@ internal sealed class OpenApiDocumentService(
         IList<object> endpointMetadata,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
@@ -786,7 +814,7 @@ internal sealed class OpenApiDocumentService(
             if (parameter.All(parameter => parameter.ModelMetadata.ContainerType is null))
             {
                 var description = parameter.Single();
-                var parameterSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+                var parameterSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, openApiVersion, description, cancellationToken: cancellationToken);
 
                 if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                 {
@@ -881,7 +909,7 @@ internal sealed class OpenApiDocumentService(
                     var propertySchema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
                     foreach (var description in parameter)
                     {
-                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, openApiVersion, description, cancellationToken: cancellationToken);
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -898,7 +926,7 @@ internal sealed class OpenApiDocumentService(
                 {
                     foreach (var description in parameter)
                     {
-                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, openApiVersion, description, cancellationToken: cancellationToken);
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -931,6 +959,7 @@ internal sealed class OpenApiDocumentService(
         ApiParameterDescription bodyParameter,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
@@ -965,7 +994,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestFormat in supportedRequestFormats)
         {
             var contentType = requestFormat.MediaType;
-            var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken);
+            var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, openApiVersion, bodyParameter, cancellationToken: cancellationToken);
             schema = bodyParameter.ShouldApplyNullableRequestSchema()
                 ? schema.CreateOneOfNullableWrapper()
                 : schema;
@@ -1016,6 +1045,13 @@ internal sealed class OpenApiDocumentService(
     public Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return GetOpenApiDocumentAsync(serviceProvider, httpRequest: null, cancellationToken);
+        return GetOpenApiDocumentForVersionAsync(_options.OpenApiVersion, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<OpenApiDocument> GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion openApiVersion, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return GetOpenApiDocumentAsync(serviceProvider, httpRequest: null, openApiVersion, cancellationToken);
     }
 }

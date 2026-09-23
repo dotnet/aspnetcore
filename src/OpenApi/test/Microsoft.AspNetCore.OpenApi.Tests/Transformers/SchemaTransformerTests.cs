@@ -3,14 +3,106 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
+#pragma warning disable ASP0040
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, OpenApiSchemaGenerationMode.Inferred)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, OpenApiSchemaGenerationMode.Inferred)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, OpenApiSchemaGenerationMode.Inferred)]
+    public async Task SchemaTransformer_CanAuthorVersionSpecificConditionalSchemas(
+        OpenApiSpecVersion openApiVersion,
+        OpenApiSchemaGenerationMode schemaGenerationMode)
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/payment", (ConditionalPayment payment) => payment);
+
+        var visitedProperties = new List<string>();
+        var options = new OpenApiOptions
+        {
+            OpenApiVersion = openApiVersion,
+            SchemaGenerationMode = schemaGenerationMode,
+        };
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            if (context.JsonPropertyInfo is not null)
+            {
+                visitedProperties.Add(context.JsonPropertyInfo.Name);
+            }
+
+            if (context.JsonTypeInfo.Type == typeof(ConditionalPayment) &&
+                context.JsonPropertyInfo is null &&
+                context.OpenApiVersion >= OpenApiSpecVersion.OpenApi3_1)
+            {
+                schema.If = new OpenApiSchema
+                {
+                    Properties = new Dictionary<string, IOpenApiSchema>
+                    {
+                        ["kind"] = new OpenApiSchema { Const = "card" },
+                    },
+                    Required = new HashSet<string> { "kind" },
+                };
+                schema.Then = new OpenApiSchema { Required = new HashSet<string> { "billingAddress" } };
+                schema.Else = new OpenApiSchema { Required = new HashSet<string> { "email" } };
+                schema.DependentRequired = new Dictionary<string, HashSet<string>>
+                {
+                    ["creditCard"] = new HashSet<string> { "billingAddress" },
+                };
+                schema.DependentSchemas = new Dictionary<string, IOpenApiSchema>
+                {
+                    ["country"] = new OpenApiSchema { Required = new HashSet<string> { "postalCode" } },
+                };
+            }
+
+            return Task.CompletedTask;
+        });
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            return Task.CompletedTask;
+        });
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            return Task.CompletedTask;
+        });
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(openApiVersion))!;
+
+        Assert.Equal(["kind", "creditCard", "billingAddress", "email", "country", "postalCode"], visitedProperties.Distinct());
+        if (openApiVersion >= OpenApiSpecVersion.OpenApi3_1)
+        {
+            Assert.Contains("\"if\"", json.ToJsonString());
+            Assert.Contains("\"then\"", json.ToJsonString());
+            Assert.Contains("\"else\"", json.ToJsonString());
+            Assert.Contains("\"dependentRequired\"", json.ToJsonString());
+            Assert.Contains("\"dependentSchemas\"", json.ToJsonString());
+        }
+        else
+        {
+            Assert.DoesNotContain("\"if\"", json.ToJsonString());
+            Assert.DoesNotContain("\"then\"", json.ToJsonString());
+            Assert.DoesNotContain("\"else\"", json.ToJsonString());
+            Assert.DoesNotContain("\"dependentRequired\"", json.ToJsonString());
+            Assert.DoesNotContain("\"dependentSchemas\"", json.ToJsonString());
+            Assert.DoesNotContain("x-jsonSchema", json.ToJsonString());
+        }
+    }
+#pragma warning restore ASP0040
+
     [Fact]
     public async Task SchemaTransformer_CanAccessTypeAndParameterDescriptionForParameter()
     {
@@ -419,6 +511,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
             if (context.JsonTypeInfo.Type == typeof(int))
             {
                 schema.Format = "modified-number-format";
@@ -562,6 +655,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 #pragma warning restore ASP0040
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
             if (context.JsonTypeInfo.Type == typeof(PolymorphicContainer) ||
                 context.JsonTypeInfo.Type == typeof(Shape) ||
                 context.JsonTypeInfo.Type == typeof(Triangle) ||
@@ -1157,6 +1251,16 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     {
         public string Name { get; }
         public Shape SomeShape { get; }
+    }
+
+    private sealed class ConditionalPayment
+    {
+        public string Kind { get; set; }
+        public string CreditCard { get; set; }
+        public string BillingAddress { get; set; }
+        public string Email { get; set; }
+        public string Country { get; set; }
+        public string PostalCode { get; set; }
     }
 
     private class TransformerBase

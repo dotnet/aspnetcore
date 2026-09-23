@@ -58,17 +58,12 @@ internal sealed class OpenApiSchemaService(
         })
     };
 
-    private JsonSchemaExporterOptions? _configuration;
-    private JsonSchemaExporterOptions Configuration
-        => LazyInitializer.EnsureInitialized(
-            ref _configuration,
-            () => CreateConfiguration(
-                typeInfo => optionsMonitor.Get(documentName).CreateSchemaReferenceId(typeInfo),
-                useInferredComposition: false));
+    private readonly ConcurrentDictionary<OpenApiSpecVersion, JsonSchemaExporterOptions> _configurations = new();
 
     private JsonSchemaExporterOptions CreateConfiguration(
         Func<JsonTypeInfo, string?> createSchemaReferenceId,
         bool useInferredComposition,
+        OpenApiSpecVersion openApiVersion,
         Func<Type, Type, string?>? getPolymorphicReferenceId = null)
     {
         JsonSchemaExporterOptions configuration = null!;
@@ -123,7 +118,7 @@ internal sealed class OpenApiSchemaService(
                             schema = CreateJsonArrayTupleSchema(
                                 tupleConverter.Contract,
                                 configuration,
-                                optionsMonitor.Get(documentName).OpenApiVersion);
+                                openApiVersion);
                         }
                         finally
                         {
@@ -349,9 +344,16 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(
+        OpenApiDocument? document,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default)
     {
-        var schemaAsJsonObject = CreateSchema(type, document);
+        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion);
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
@@ -361,11 +363,18 @@ internal sealed class OpenApiSchemaService(
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, openApiVersion, parameterDescription, cancellationToken);
         return schema;
     }
 
-    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(
+        OpenApiDocument document,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default)
     {
         // For non-body enum parameters, check if a naming policy transforms the enum values.
         // If so, skip componentization and return an inline schema with the original C# member
@@ -376,7 +385,7 @@ internal sealed class OpenApiSchemaService(
             && IsNonBodyBindingSource(source)
             && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
         {
-            var rawNode = CreateSchema(type, document);
+            var rawNode = CreateSchema(type, document, openApiVersion);
             if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
             {
                 var memberNames = Enum.GetNames(enumType);
@@ -391,7 +400,7 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, openApiVersion, parameterDescription, cancellationToken);
 
         if (inlineEnumParam)
         {
@@ -644,7 +653,15 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    internal async Task ApplySchemaTransformersAsync(OpenApiDocument? document, IOpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(
+        OpenApiDocument? document,
+        IOpenApiSchema schema,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default)
     {
         if (schemaTransformers.Length == 0)
         {
@@ -655,6 +672,7 @@ internal sealed class OpenApiSchemaService(
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
+            OpenApiVersion = openApiVersion,
             JsonTypeInfo = jsonTypeInfo,
             JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
@@ -820,7 +838,7 @@ internal sealed class OpenApiSchemaService(
         _inferredReferenceIdResolvers.GetValue(document, _ => CreateInferredReferenceIdResolver(rootTypes));
     }
 
-    private JsonNode CreateSchema(Type type, OpenApiDocument? document)
+    private JsonNode CreateSchema(Type type, OpenApiDocument? document, OpenApiSpecVersion openApiVersion)
     {
         // We always create a oneOf nullable wrapper ourselves manually.
         var inferredSchema = GetInferredSchema(type);
@@ -833,11 +851,17 @@ internal sealed class OpenApiSchemaService(
             configuration = CreateConfiguration(
                 referenceIdResolver.GetReferenceId,
                 useInferredComposition: true,
+                openApiVersion,
                 referenceIdResolver.GetPolymorphicReferenceId);
         }
         else
         {
-            configuration = Configuration;
+            configuration = _configurations.GetOrAdd(
+                openApiVersion,
+                version => CreateConfiguration(
+                    typeInfo => optionsMonitor.Get(documentName).CreateSchemaReferenceId(typeInfo),
+                    useInferredComposition: false,
+                    version));
         }
 
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, configuration);

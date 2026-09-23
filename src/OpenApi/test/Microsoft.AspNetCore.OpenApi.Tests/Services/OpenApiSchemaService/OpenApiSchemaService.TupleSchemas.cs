@@ -331,6 +331,7 @@ public partial class OpenApiSchemaServiceTests
         };
         options.AddSchemaTransformer((schema, context, _) =>
         {
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
             if (context.JsonTypeInfo.Type == typeof(int) || context.JsonTypeInfo.Type == typeof(string))
             {
                 visitedTypes.Add(context.JsonTypeInfo.Type);

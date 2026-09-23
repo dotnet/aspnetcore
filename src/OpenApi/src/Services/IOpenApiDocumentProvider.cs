@@ -25,4 +25,21 @@ public interface IOpenApiDocumentProvider
     /// this document will be applied to the document before it is returned.
     /// </remarks>
     Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the OpenAPI document for the specified OpenAPI specification version.
+    /// </summary>
+    /// <param name="openApiVersion">The OpenAPI specification version to target while generating the document.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the OpenAPI document.</returns>
+    /// <remarks>
+    /// Any OpenAPI transformers registered in the <see cref="OpenApiOptions"/> instance associated with
+    /// this document will be applied to the document before it is returned.
+    /// </remarks>
+    /// <remarks>
+    /// Transformers can produce version-specific output based on the specified version. To target a different
+    /// OpenAPI version, generate a new document with this method rather than serializing the returned document
+    /// using a different version.
+    /// </remarks>
+    Task<OpenApiDocument> GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion openApiVersion, CancellationToken cancellationToken = default);
 }

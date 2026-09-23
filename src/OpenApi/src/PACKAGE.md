@@ -36,6 +36,39 @@ app.MapOpenApi();
 app.Run();
 ```
 
+### Version-specific transformers
+
+The configured `OpenApiOptions.OpenApiVersion` is the generation target exposed to document,
+operation, and schema transformers through their context's `OpenApiVersion` property. This allows
+transformers to add JSON Schema keywords such as `if`, `then`, `else`, `dependentRequired`, and
+`dependentSchemas` only when targeting OpenAPI 3.1 or later:
+
+```C#
+builder.Services.AddOpenApi(options =>
+{
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+    options.AddSchemaTransformer((schema, context, cancellationToken) =>
+    {
+        if (context.JsonTypeInfo.Type == typeof(Payment) &&
+            context.OpenApiVersion >= OpenApiSpecVersion.OpenApi3_1)
+        {
+            schema.DependentRequired = new Dictionary<string, HashSet<string>>
+            {
+                ["creditCard"] = ["billingAddress"],
+            };
+        }
+
+        return Task.CompletedTask;
+    });
+});
+```
+
+Use `IOpenApiDocumentProvider.GetOpenApiDocumentForVersionAsync` to generate a document for a
+target other than the configured default. Version-sensitive transformer output is generated for
+that target. Do not serialize the returned model using a different OpenAPI version; regenerate it
+for the desired target instead. OpenAPI 3.0 does not support conditional or dependent JSON Schema
+keywords, so transformers targeting 3.0 should omit them rather than emit compatibility extensions.
+
 To serialize `Tuple` and `ValueTuple` values as positional JSON arrays and emit matching schemas,
 register the experimental tuple converter with the HTTP JSON options consumed by OpenAPI:
 
