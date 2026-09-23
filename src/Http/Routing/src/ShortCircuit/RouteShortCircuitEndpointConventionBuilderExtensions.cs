@@ -18,7 +18,8 @@ public static class RouteShortCircuitEndpointConventionBuilderExtensions
     /// <summary>
     /// Short circuit the endpoint(s).
     /// The execution of the endpoint will happen in UseRouting middleware instead of UseEndpoint.
-    /// This prevents other middleware from running, including authorization middleware and its fallback policy.
+    /// When the routing middleware is added with UseRouting, this prevents middleware registered after it from running,
+    /// including the authorization middleware and its fallback policy.
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>
     /// <param name="statusCode">The status code to set in the response.</param>
