@@ -4,12 +4,37 @@ from pathlib import Path
 
 
 WORKFLOW = Path(__file__).parents[1] / "pr-docs-check.md"
+POOL_TOKEN_EXPRESSION = "${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}"
 
 
 class AuthenticationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    def test_copilot_inference_uses_pat_pool(self):
+        engine = self._section("engine:", "checkout:")
+
+        self.assertIn(
+            "imports:\n"
+            "  - uses: shared/pat_pool.md\n"
+            "    with:\n"
+            "      environment: copilot-pat-pool",
+            self.workflow,
+        )
+        self.assertIn("\nenvironment: copilot-pat-pool\n", self.workflow)
+        self.assertIn(f"COPILOT_GITHUB_TOKEN: {POOL_TOKEN_EXPRESSION}", engine)
+        self.assertNotIn("secrets.COPILOT_GITHUB_TOKEN", engine)
+
+    def test_pat_pool_token_is_inference_only(self):
+        repository_mutations = self.workflow.split("safe-outputs:", 1)[1]
+
+        self.assertEqual(1, self.workflow.count(POOL_TOKEN_EXPRESSION))
+        self.assertNotIn("COPILOT_GITHUB_TOKEN", repository_mutations)
+        self.assertNotIn("COPILOT_PAT_", repository_mutations)
+
+    def test_copilot_requests_write_is_absent(self):
+        self.assertNotIn("copilot-requests: write", self.workflow)
 
     def test_source_access_uses_workflow_token(self):
         tools = self._section("tools:", "network:")
@@ -43,7 +68,10 @@ class AuthenticationTests(unittest.TestCase):
 
         self.assertIn("contents: read", job)
         self.assertIn("issues: write", job)
-        self.assertIn("pull-requests: read", job)
+        self.assertIn("pull-requests: write", job)
+        self.assertNotIn("COPILOT_GITHUB_TOKEN", job)
+        self.assertNotIn("COPILOT_PAT_", job)
+        self.assertIn("github-token: ${{ github.token }}", job)
 
     def _section(self, start, end):
         _, section = self.workflow.split(start, 1)

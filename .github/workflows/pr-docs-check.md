@@ -36,10 +36,24 @@ concurrency:
   cancel-in-progress: false
   job-discriminator: ${{ github.run_id }}
 
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
+
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 checkout:
   - repository: dotnet/AspNetCore.Docs
@@ -60,7 +74,7 @@ tools:
     min-integrity: merged
     allowed-repos:
       - dotnet/aspnetcore
-  bash: [cat, find, git, grep, head, jq, sed]
+  bash: [cat, find, git, grep, head, jq, mkdir, sed]
 
 network:
   allowed:
@@ -160,7 +174,7 @@ safe-outputs:
       permissions:
         contents: read
         issues: write
-        pull-requests: read
+        pull-requests: write
       inputs:
         source_pr_number:
           description: "Analyzed source pull request number."
@@ -698,7 +712,7 @@ Before editing, read:
 
 Also inspect relevant existing content under `aspnetcore/`. If the change is a .NET 11 What's New feature, read `.github/skills/whats-new-include-content-rules/SKILL.md` when that file is available and follow it.
 
-Use the source version, moniker, previous version, migration directory, breaking-change directory, and release-note directory exactly as recorded in `/tmp/gh-aw/pr-docs-check/target-version.json`. This trusted resolver verifies the annually maintained `mainVersion` policy against current upstream `release/*` branches and fails before agent execution when a usable milestone disagrees.
+Use the source version, moniker, previous version, migration directory, breaking-change directory, and release-note directory exactly as recorded in `/tmp/gh-aw/pr-docs-check/target-version.json`. This trusted resolver verifies the annually maintained `mainVersion` policy against current upstream `release/*` branches and fails before agent execution when a usable milestone disagrees. These directory values specify placement only when the corresponding documentation surface is independently required; they do not require creating migration, breaking-change, or release-note content for every qualifying conceptual change.
 
 The docs PR always targets `main`. Version placement is expressed through article monikers, moniker sections, migration directories, breaking-change directories, release-note directories, and versioned sample directories. Do not change an article-wide `monikerRange` merely because a newer feature is added. Wrap new-version material in a scoped moniker block such as:
 
@@ -711,6 +725,10 @@ New-version content.
 ```
 
 When behavior differs between versions, preserve the earlier guidance in its own moniker range and add the new guidance in the resolved version's range.
+
+Release-note content is optional, not a fourth documentation obligation. Add or update it only when the source change and existing documentation conventions independently require What's New or release-note coverage. Do not create a new future-version release-note entry point, directory, or `includes` hierarchy merely because `release_notes_directory` resolves to that path. Update release-note content only when the docs repository already contains the applicable `aspnetcore/release-notes/aspnetcore-<major>.md` entry point and `aspnetcore/release-notes/aspnetcore-<major>/includes/` hierarchy. When that structure is absent, skip the optional release-note surface and complete the independently required conceptual, migration, or breaking-change work.
+
+If a command or tool call is denied by policy, treat that denial as final for the attempted operation. Do not retry the operation through alternate binaries, shell constructions, encoded commands, installers, or indirect equivalents. Use the permitted repository reading and editing tools when they can perform the work. If an operation is required for an independently required documentation surface and cannot be completed with permitted tools, stop and emit `notify_source_pr` with `result: "draft_failed"` and `docs_pr_action: "none"` instead of looping. If the blocked operation serves only an optional surface, skip that surface and continue with the required work.
 
 Make the smallest complete documentation change across every required surface. Modify only files under `aspnetcore/`. Do not change repository instructions, workflows, dependency files, publishing configuration, or other root files.
 
