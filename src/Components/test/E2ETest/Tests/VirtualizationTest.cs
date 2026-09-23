@@ -3422,10 +3422,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
     {
         ScrollUntil(js, container, () => ScrollContainer(js, container, 5000),
-            st => st > 4000, "scrollTop > 4000 after ScrollContainer(5000)");
+            st => st is > 4000 and < 6000, "4000 < scrollTop < 6000 after ScrollContainer(5000)");
         // Wait for Virtualize to render items at the new scroll position.
         Browser.True(() =>
         {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            if (scrollTop is <= 4000 or >= 6000)
+            {
+                ScrollContainer(js, container, 5000);
+                return false;
+            }
+
             var result = js.ExecuteScript(@"
                 var container = arguments[0];
                 var containerRect = container.getBoundingClientRect();
