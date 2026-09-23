@@ -15,9 +15,8 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests (all verbs)
     /// for the specified prefixes.
-    /// The execution of the endpoint will happen in UseRouting middleware.
-    /// When the routing middleware is added with UseRouting, this prevents middleware registered after it from running,
-    /// including the authorization middleware and its fallback policy.
+    /// The execution of the endpoint will happen in UseRouting middleware and prevents other middleware from running,
+    /// including authorization middleware and its fallback policy.
     /// </summary>
     ///<param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
     /// <param name="statusCode">The status code to set in the response.</param>
