@@ -698,7 +698,12 @@ function Get-DiscussionCommentKind {
         return "coordination"
     }
 
-    $normalizedBody = ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
+    $normalizedBody = if ($null -eq $Body) {
+        ""
+    }
+    else {
+        ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
+    }
     if ([string]::IsNullOrWhiteSpace($normalizedBody)) {
         return "unknown"
     }
@@ -726,41 +731,14 @@ function Get-DiscussionCommentKind {
 function Test-IsQualifyingAuthorResponse {
     param([string]$Body)
 
-    $trimmedBody = if ($null -eq $Body) { "" } else { $Body.Trim() }
-    if ([string]::IsNullOrWhiteSpace($trimmedBody)) {
-        return $false
-    }
-
-    if (-not $trimmedBody.Contains("`r") -and
-        -not $trimmedBody.Contains("`n") -and
-        $trimmedBody -match "^(?i:/review|/azp run)$") {
-        return $false
-    }
-
     $normalizedBody = ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
-    if ($normalizedBody -match "\b(no longer reproduce|unable to reproduce|happy to close|may no longer be required|no longer needed|obsolete)\b") {
+    if ([string]::IsNullOrWhiteSpace($normalizedBody)) {
         return $false
     }
 
-    if ($normalizedBody -match "^(?:@\S+\s*)+$" -or
-        $normalizedBody -match "^(?:@\S+\s+)*(?:agree(?:d)?|thanks|thank you|ack|acknowledged|sounds good|got it|okay|ok)\s*[.!]*$") {
-        return $false
-    }
-
-    if ($normalizedBody -match "^(?:i\s+)?(?:have\s+)?rebased(?:\s+(?:on|onto|against)\s+\S+)?[.!]*$" -or
-        $normalizedBody -match "^(?:(?:i|we)\s+(?:have\s+)?)?(?:updated|synced|merged)\s+(?:the\s+)?(?:branch\s+)?(?:from|with|against)\s+(?:(?:the\s+)?latest\s+)?(?:origin/)?(?:main|master)[.!]*$") {
-        return $false
-    }
-
-    if ($normalizedBody.Contains("?") -or
-        $normalizedBody -match "\b(?:hopefully|maybe|probably|i think|i believe)\b|\b(?:appears|seems)\s+to\b|\blooks?\s+like\b" -or
-        $normalizedBody -match "\b(?:i|we)(?:'ll|\s+will)\b|\bwill\s+(?:fix|address|update|resolve|complete|implement|push)\b|\b(?:going|plan|planning|intend|intending)\s+to\b|\bworking\s+on\b|\bin\s+progress\b|\bnot\s+yet\b|\bnext\s+week\b|\blater\b" -or
-        $normalizedBody -match "\b(?:not|never)\s+(?:yet\s+)?(?:fixed|addressed|updated|resolved|done|completed|implemented)\b|\b(?:haven't|have not|didn't|did not|can't|cannot)\b") {
-        return $false
-    }
-
-    return $normalizedBody -match "\b(?:fixed|addressed|updated|resolved|done|completed|implemented)\b" -or
-        $normalizedBody -match "\bpushed\b.{0,80}\b(?:requested|suggested|review|feedback)\b.{0,40}\b(?:changes?|updates?)\b"
+    return $normalizedBody -match "^(?:fixed|addressed|updated|resolved|done|completed|implemented)[.!]*$" -or
+        $normalizedBody -match "^these should be all addressed[.!]*$" -or
+        $normalizedBody -match "^pushed the requested changes[.!]*$"
 }
 
 function Get-DiscussionAssessment {
@@ -2872,7 +2850,7 @@ function Get-DisplayMetadata {
                 }
                 "author-response" = [pscustomobject]@{
                     label = "Author response"
-                    description = "The author replied without an explicit disposition phrase; only a separate conservative completion-claim heuristic can clear earlier top-level feedback."
+                    description = "The author replied without an explicit disposition phrase; only an exact whole-response completion or handoff form can clear earlier top-level feedback."
                 }
                 "disposition" = [pscustomobject]@{
                     label = "Disposition"

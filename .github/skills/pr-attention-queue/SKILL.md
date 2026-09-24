@@ -54,11 +54,12 @@ This is deliberately not an LLM judgment. It only reports transparent evidence:
 - author wording that explicitly raises close/continue disposition;
 - actionable or unknown non-author top-level discussion that still owns the next response,
   categorized by a narrow documented text heuristic. For ordinary review dispatch, only a later
-  substantive author completion claim such as `fixed`, `addressed`, `updated`, `resolved`, `done`,
-  or `pushed the requested changes` returns earlier top-level feedback to reviewer follow-up.
-  Coordination commands, mention-only or acknowledgement-only replies, rebase notices, disposition
-  text, questions, belief/appearance or other hedged claims, branch-maintenance-only notices, and
-  deferral or in-progress language do not clear feedback.
+  whole-response author completion or handoff form returns earlier top-level feedback to reviewer
+  follow-up. The recognized forms are a standalone `fixed`, `addressed`, `updated`, `resolved`,
+  `done`, `completed`, or `implemented`; exact `These should be all addressed`; and exact
+  `Pushed the requested changes`, with optional terminal periods or exclamation marks. Any additional
+  prose, mixed completion and outstanding-work text, quotes, refusals, future work, coordination,
+  acknowledgements, mentions, or branch-maintenance notices remain verification-needed.
   Feedback posted after the latest qualifying completion claim still requires verification;
 - explicit informational non-author comments and coordination-only top-level comments. The initial
   conservative coordination allowlist contains only case-insensitive exact `/review` and `/azp run`
@@ -73,6 +74,8 @@ collected inline-comment evidence cannot be called clear. An author response alo
 later non-author feedback. A bounded query that is incomplete is surfaced for verification rather
 than being treated as clear. Candidates outside the configured assessment limit cannot enter the
 unattended digest and are reported through the queue warning and `discussion-not-assessed`.
+The recognized author response is routing evidence that asks a reviewer to verify the claimed work;
+it is not proof that the feedback was actually fixed. Unsupported wording intentionally fails closed.
 
 Apply the same discussion pass to prospective `ReadyToMerge` candidates, with an **independent**
 `discussionCandidateLimit` budget (default 20) in the existing merge-candidate order. Preserve the

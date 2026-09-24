@@ -277,7 +277,48 @@ Assert-True ($coordinationCases.UnknownCommand.Comments[0].Kind -eq "unknown") "
 Assert-True ($coordinationCases.XmlDoc -ne "coordination") "Slash-prefixed XML documentation must not be coordination."
 Assert-True ($coordinationCases.SourcePath -ne "coordination") "A slash-prefixed source path must not be coordination."
 
+$authorResponseCaseDefinitions = @(
+    [pscustomobject]@{ Name = "completion"; Body = "These should be all addressed."; Clears = $true },
+    [pscustomobject]@{ Name = "fixed"; Body = "Fixed."; Clears = $true },
+    [pscustomobject]@{ Name = "done"; Body = "Done."; Clears = $true },
+    [pscustomobject]@{ Name = "addressed"; Body = "Addressed."; Clears = $true },
+    [pscustomobject]@{ Name = "updated"; Body = "Updated."; Clears = $true },
+    [pscustomobject]@{ Name = "resolved"; Body = "Resolved."; Clears = $true },
+    [pscustomobject]@{ Name = "completed"; Body = "Completed."; Clears = $true },
+    [pscustomobject]@{ Name = "implemented"; Body = "Implemented."; Clears = $true },
+    [pscustomobject]@{ Name = "pushed"; Body = "Pushed the requested changes."; Clears = $true },
+    [pscustomobject]@{ Name = "automation-acknowledgement"; Body = "@dotnet-policy-service agree"; Clears = $false },
+    [pscustomobject]@{ Name = "coordination-command"; Body = "/azp run"; Clears = $false },
+    [pscustomobject]@{ Name = "review-command"; Body = "/review"; Clears = $false },
+    [pscustomobject]@{ Name = "mention-only"; Body = "@javiercn"; Clears = $false },
+    [pscustomobject]@{ Name = "acknowledgement-only"; Body = "Thanks!"; Clears = $false },
+    [pscustomobject]@{ Name = "rebase-only"; Body = "Rebased on main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-only"; Body = "Updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-pronoun"; Body = "I updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-update-latest"; Body = "Updated the branch with the latest main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-bare"; Body = "I updated the branch."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-contraction"; Body = "I've updated the branch from main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-to-main"; Body = "Updated the branch to main."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-ci-suffix"; Body = "I updated the branch from main. CI is green."; Clears = $false },
+    [pscustomobject]@{ Name = "branch-release"; Body = "Updated the branch from release/10.0."; Clears = $false },
+    [pscustomobject]@{ Name = "disposition"; Body = "This is no longer needed."; Clears = $false },
+    [pscustomobject]@{ Name = "hedge-believe"; Body = "I believe this is fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "hedge-appears"; Body = "This appears to be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "separated-negation"; Body = "This does not need to be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "future-deferral"; Body = "I'll fix this next week."; Clears = $false },
+    [pscustomobject]@{ Name = "passive-future"; Body = "This will be fixed."; Clears = $false },
+    [pscustomobject]@{ Name = "in-progress"; Body = "Working on it."; Clears = $false },
+    [pscustomobject]@{ Name = "not-yet"; Body = "Not yet."; Clears = $false },
+    [pscustomobject]@{ Name = "future-update"; Body = "Will update."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-outstanding"; Body = "Fixed. I still need to update the tests."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-future"; Body = "Done, but I will address the tests later."; Clears = $false },
+    [pscustomobject]@{ Name = "mixed-refusal"; Body = "Fixed is not needed here."; Clears = $false },
+    [pscustomobject]@{ Name = "quoted-completion"; Body = "The reviewer said `"fixed`", but I disagree."; Clears = $false }
+)
+
 $authorResponseCases = & (Get-Module PRAttentionQueue) {
+    param($cases)
+
     function Get-TestAuthorResponseAssessment {
         param(
             [AllowNull()][string]$Body,
@@ -327,29 +368,6 @@ $authorResponseCases = & (Get-Module PRAttentionQueue) {
             -ForMerge:$ForMerge
     }
 
-    $cases = @(
-        [pscustomobject]@{ Name = "completion"; Body = "These should be all addressed."; Clears = $true },
-        [pscustomobject]@{ Name = "fixed"; Body = "Fixed."; Clears = $true },
-        [pscustomobject]@{ Name = "done"; Body = "Done."; Clears = $true },
-        [pscustomobject]@{ Name = "pushed"; Body = "Pushed the requested changes."; Clears = $true },
-        [pscustomobject]@{ Name = "automation-acknowledgement"; Body = "@dotnet-policy-service agree"; Clears = $false },
-        [pscustomobject]@{ Name = "coordination-command"; Body = "/azp run"; Clears = $false },
-        [pscustomobject]@{ Name = "review-command"; Body = "/review"; Clears = $false },
-        [pscustomobject]@{ Name = "mention-only"; Body = "@javiercn"; Clears = $false },
-        [pscustomobject]@{ Name = "acknowledgement-only"; Body = "Thanks!"; Clears = $false },
-        [pscustomobject]@{ Name = "rebase-only"; Body = "Rebased on main."; Clears = $false },
-        [pscustomobject]@{ Name = "branch-update-only"; Body = "Updated the branch from main."; Clears = $false },
-        [pscustomobject]@{ Name = "branch-update-pronoun"; Body = "I updated the branch from main."; Clears = $false },
-        [pscustomobject]@{ Name = "branch-update-latest"; Body = "Updated the branch with the latest main."; Clears = $false },
-        [pscustomobject]@{ Name = "disposition"; Body = "This is no longer needed."; Clears = $false },
-        [pscustomobject]@{ Name = "hedge-believe"; Body = "I believe this is fixed."; Clears = $false },
-        [pscustomobject]@{ Name = "hedge-appears"; Body = "This appears to be fixed."; Clears = $false },
-        [pscustomobject]@{ Name = "future-deferral"; Body = "I'll fix this next week."; Clears = $false },
-        [pscustomobject]@{ Name = "in-progress"; Body = "Working on it."; Clears = $false },
-        [pscustomobject]@{ Name = "not-yet"; Body = "Not yet."; Clears = $false },
-        [pscustomobject]@{ Name = "future-update"; Body = "Will update."; Clears = $false }
-    )
-
     [pscustomobject]@{
         Cases = @(
             foreach ($case in $cases) {
@@ -370,7 +388,7 @@ $authorResponseCases = & (Get-Module PRAttentionQueue) {
             Merge = Get-TestAuthorResponseAssessment -Body $null -ForMerge
         }
     }
-}
+} $authorResponseCaseDefinitions
 foreach ($case in $authorResponseCases.Cases) {
     $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
     Assert-True ($case.Ordinary.State -eq $expectedState) "Author response case '$($case.Name)' must produce ordinary discussion state '$expectedState'."
@@ -383,6 +401,54 @@ Assert-True ($authorResponseCases.LaterFeedback.Merge.State -eq "verification-ne
 Assert-True ($authorResponseCases.NoResponse.Ordinary.State -eq "verification-needed") "Earlier feedback without an author response must require verification."
 Assert-True ($authorResponseCases.NoResponse.Ordinary.Signals -contains "non-author-discussion-requires-verification") "No-author-response feedback must retain the verification signal."
 Assert-True ($authorResponseCases.NoResponse.Merge.State -eq "verification-needed") "No-author-response feedback must remain strict for merge assessment."
+
+$authorResponseQueueFixturePaths = [System.Collections.Generic.List[string]]::new()
+$authorResponseTemplate = @(
+    Get-Content -LiteralPath $discussionFixturePath -Raw |
+        ConvertFrom-Json -Depth 100 |
+        Where-Object number -eq 125
+)[0]
+for ($batchStart = 0; $batchStart -lt $authorResponseCaseDefinitions.Count; $batchStart += 5) {
+    $batch = @($authorResponseCaseDefinitions | Select-Object -Skip $batchStart -First 5)
+    $batchFixtures = @(
+        for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+            $case = $batch[$batchIndex]
+            $fixture = $authorResponseTemplate | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+            $number = 1300 + $batchStart + $batchIndex
+            $authorLogin = "author-$number"
+            $fixture.number = $number
+            $fixture.title = "Author response case $($case.Name)"
+            $fixture.url = "https://github.com/dotnet/aspnetcore/pull/$number"
+            $fixture.author.login = $authorLogin
+            $fixture.headRefName = "author-response-$number"
+            $fixture.comments[1].author.login = $authorLogin
+            $fixture.comments[1].bodyText = $case.Body
+            $fixture.discussionComments[1].author.login = $authorLogin
+            $fixture.discussionComments[1].bodyText = $case.Body
+            $fixture
+        }
+    )
+    $batchFixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-author-response-$PID-$batchStart.json"
+    $authorResponseQueueFixturePaths.Add($batchFixturePath)
+    $batchFixtures | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $batchFixturePath
+    $batchJson = & $scriptPath `
+        -InputPath $batchFixturePath `
+        -Now $snapshot `
+        -Label area-discussion `
+        -MaxReviewNow 100 `
+        -MaxReviewNowPerAuthor 100 `
+        -OutputFormat Json
+    $batchResult = $batchJson | ConvertFrom-Json -Depth 100
+    for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+        $case = $batch[$batchIndex]
+        $number = 1300 + $batchStart + $batchIndex
+        $item = $batchResult.items | Where-Object number -eq $number
+        $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+        Assert-True ($item.discussionAssessment.state -eq $expectedState) "Queue case '$($case.Name)' must have discussion state '$expectedState'."
+        Assert-True ([bool]$item.shownInDigest -eq [bool]$case.Clears) "Queue case '$($case.Name)' must have the expected unattended digest routing."
+        Assert-True ([bool]$item.shownInDiscussionVerification -eq (-not [bool]$case.Clears)) "Queue case '$($case.Name)' must have the expected discussion-verification routing."
+    }
+}
 
 $discussionFixture = Get-Content -LiteralPath $discussionFixturePath -Raw | ConvertFrom-Json -Depth 100
 $discussionEvidence = & (Get-Module PRAttentionQueue) {
@@ -878,7 +944,7 @@ Assert-True (($hydratedEvidence.published.signals.kind -contains "review-thread-
     (($hydratedEvidence.published.signals | Where-Object kind -eq "review-thread-reply").evidenceUrl -like "*discussion_r303-reply")) "A submitted COMMENTED review and later participant reply must produce a thread signal after production hydration."
 Assert-True (-not ($hydratedEvidence.pending.signals.kind -contains "review-thread-reply")) "PENDING reviews must not produce a thread signal after production hydration."
 
-foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath)) {
+foreach ($temporaryPath in @($cachePath, $revalidationCachePath, $pollCachePath) + @($authorResponseQueueFixturePaths)) {
     if (Test-Path -LiteralPath $temporaryPath) {
         Remove-Item -Force -LiteralPath $temporaryPath
     }
