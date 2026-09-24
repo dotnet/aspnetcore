@@ -144,6 +144,9 @@
     [Parameter]
     public bool InitiallyLoaded { get; set; }
 
+    [Parameter]
+    public string TestConfiguration { get; set; }
+
     private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
         new Dictionary<string, object>();
 
@@ -161,10 +164,40 @@
     protected override void OnInitialized()
     {
         initialItemIndex = InitialItemIndex;
-        listLoaded = InitiallyLoaded;
+        if (TestConfiguration is null)
+        {
+            listLoaded = InitiallyLoaded;
+        }
+        else
+        {
+            ApplyTestConfiguration(TestConfiguration);
+        }
+
         items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
+    }
+
+    private void ApplyTestConfiguration(string configuration)
+    {
+        if (configuration.Split('|') is not
+            [var anchorModeValue, var variableHeightValue, var itemsProviderValue, var defaultComparerValue, var providerDelayValue]
+            || !int.TryParse(anchorModeValue, out var parsedAnchorMode)
+            || !Enum.IsDefined((VirtualizeAnchorMode)parsedAnchorMode)
+            || !bool.TryParse(variableHeightValue, out var parsedVariableHeight)
+            || !bool.TryParse(itemsProviderValue, out var parsedItemsProvider)
+            || !bool.TryParse(defaultComparerValue, out var parsedDefaultComparer)
+            || !bool.TryParse(providerDelayValue, out var parsedProviderDelay))
+        {
+            throw new InvalidOperationException($"Invalid test configuration '{configuration}'.");
+        }
+
+        anchorMode = (VirtualizeAnchorMode)parsedAnchorMode;
+        useVariableHeight = parsedVariableHeight;
+        useItemsProvider = parsedItemsProvider;
+        omitItemComparer = parsedDefaultComparer;
+        useProviderDelay = parsedProviderDelay;
+        listLoaded = true;
     }
 
     private int GetHeight(int index)

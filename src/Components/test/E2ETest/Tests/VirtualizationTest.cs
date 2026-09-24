@@ -3225,40 +3225,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             throw new ArgumentException($"{nameof(delay)} only applies to the ItemsProvider path; it has no effect when {nameof(useItemsProvider)} is false.", nameof(delay));
         }
 
-        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var configuration = $"{anchorMode}|{variableHeight}|{useItemsProvider}|{useDefaultComparer}|{delay}";
+        Browser.MountTestComponent<VirtualizationAnchorMode>(configuration);
         var container = Browser.Exists(By.Id("scroll-container"));
-        Browser.Exists(By.Id("list-not-loaded"));
-
-        if (useDefaultComparer)
-        {
-            Browser.Exists(By.Id("toggle-comparer")).Click();
-            Browser.Contains("Using default ItemComparer", () => Browser.Exists(By.Id("status")).Text);
-        }
-
-        if (useItemsProvider)
-        {
-            Browser.Exists(By.Id("toggle-provider")).Click();
-            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
-
-            if (delay)
-            {
-                Browser.Exists(By.Id("toggle-delay")).Click();
-                Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
-            }
-        }
-
-        if (variableHeight)
-        {
-            Browser.Exists(By.Id("toggle-height")).Click();
-            Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
-        }
-
-        var select = Browser.Exists(By.Id("anchor-mode-select"));
-        var selectElement = new SelectElement(select);
-        selectElement.SelectByValue(anchorMode);
-
-        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
-        Browser.Exists(By.Id("load-list")).Click();
         Browser.True(() =>
         {
             _ = GetItemPositionInContainer((IJavaScriptExecutor)Browser, container, ".item[data-index]");
@@ -4808,34 +4777,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             throw new ArgumentException($"{nameof(delay)} only applies to the ItemsProvider path; it has no effect when {nameof(useItemsProvider)} is false.", nameof(delay));
         }
 
-        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
+        var configuration = $"{anchorMode}|{variableHeight}|{useItemsProvider}|{delay}";
+        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>(configuration);
         var root = Browser.Exists(By.Id("virtualize-root"));
-        Browser.Exists(By.Id("list-not-loaded"));
-
-        if (useItemsProvider)
-        {
-            Browser.Exists(By.Id("toggle-provider")).Click();
-            Browser.Contains("Switched to ItemsProvider", () => Browser.Exists(By.Id("status")).Text);
-
-            if (delay)
-            {
-                Browser.Exists(By.Id("toggle-delay")).Click();
-                Browser.Contains("Provider delay for Virtualize: 500ms", () => Browser.Exists(By.Id("status")).Text);
-            }
-        }
-
-        if (variableHeight)
-        {
-            Browser.Exists(By.Id("toggle-height")).Click();
-            Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
-        }
-
-        var select = Browser.Exists(By.Id("anchor-mode-select"));
-        var selectElement = new SelectElement(select);
-        selectElement.SelectByValue(anchorMode);
-
-        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
-        Browser.Exists(By.Id("load-list")).Click();
         Browser.True(() =>
         {
             _ = GetItemPositionInViewport((IJavaScriptExecutor)Browser, root, ".item[data-index]");

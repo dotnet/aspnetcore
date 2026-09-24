@@ -84,11 +84,39 @@
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
+    [Parameter]
+    public string TestConfiguration { get; set; }
+
     protected override void OnInitialized()
     {
+        if (TestConfiguration is not null)
+        {
+            ApplyTestConfiguration(TestConfiguration);
+        }
+
         items = Enumerable.Range(0, 500)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
+    }
+
+    private void ApplyTestConfiguration(string configuration)
+    {
+        if (configuration.Split('|') is not
+            [var anchorModeValue, var variableHeightValue, var itemsProviderValue, var providerDelayValue]
+            || !int.TryParse(anchorModeValue, out var parsedAnchorMode)
+            || !Enum.IsDefined((VirtualizeAnchorMode)parsedAnchorMode)
+            || !bool.TryParse(variableHeightValue, out var parsedVariableHeight)
+            || !bool.TryParse(itemsProviderValue, out var parsedItemsProvider)
+            || !bool.TryParse(providerDelayValue, out var parsedProviderDelay))
+        {
+            throw new InvalidOperationException($"Invalid test configuration '{configuration}'.");
+        }
+
+        anchorMode = (VirtualizeAnchorMode)parsedAnchorMode;
+        useVariableHeight = parsedVariableHeight;
+        useItemsProvider = parsedItemsProvider;
+        useProviderDelay = parsedProviderDelay;
+        listLoaded = true;
     }
 
     private int GetHeight(int index)
