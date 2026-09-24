@@ -13,6 +13,10 @@ const workflow = fs.readFileSync(
 const frontmatter = workflow.slice(0, workflow.indexOf("\n---\n", 4));
 assert.doesNotMatch(frontmatter, /\n  create-issue:/);
 assert.match(frontmatter, /\n  scripts:\n    create-quarantine-issue:/);
+assert.match(
+  frontmatter,
+  /Reject orphan quarantine issues[\s\S]*create_quarantine_issue[\s\S]*!contains\(needs\.agent\.outputs\.output_types, 'create_pull_request'\)/,
+);
 const match = workflow.match(
   /\/\/ --- BEGIN quarantine-kbe-handler ---([\s\S]*?)\/\/ --- END quarantine-kbe-handler ---/,
 );
@@ -110,6 +114,8 @@ function createEligibility(evidenceText, evidence, overrides = {}) {
         reason: "latest-test-file-change",
         commit: "source-commit",
       },
+      required_ancestor: "b".repeat(40),
+      ancestry_verified_builds: record.builds,
       eligible_failure_builds: record.builds,
       evidence: {
         build: record.evidence_build,
@@ -316,6 +322,37 @@ async function main() {
     assert.deepEqual(createdIssue(output).labels, ["test-failure", "Known Build Error"]);
   }
 
+  {
+    const evidence = createEvidence();
+    evidence.builds["103"] = {
+      def: 83,
+      startedUtc: "2026-08-18T10:00:00Z",
+      finishedUtc: "2026-08-18T10:10:00Z",
+      sourceVersion: "ghi",
+      pr: null,
+    };
+    evidence.source_c = [{
+      workitem: "Sample.Tests",
+      build: 103,
+      job: "helix-job",
+      fail_block_count: 1,
+      fail_blocks: `${testName} [FAIL]\nCrash details.`,
+    }];
+    const output = await run(createItem(), {
+      evidence,
+      enableKbe: true,
+      eligibilityRecord: {
+        raw_failure_builds: [101, 102, 103],
+        ancestry_verified_builds: [101, 102, 103],
+        eligible_failure_builds: [101, 102, 103],
+      },
+    });
+    assert.deepEqual(
+      createdIssue(output).labels,
+      ["test-failure", "Known Build Error"],
+    );
+  }
+
   for (const runnerTemp of [undefined, ""]) {
     const output = await run(createItem(), { runnerTemp, enableKbe: true });
     const scenario = `RUNNER_TEMP is ${runnerTemp === undefined ? "missing" : "empty"}`;
@@ -382,8 +419,10 @@ async function main() {
         latest_quarantine_transition: "removed",
       },
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /only valid for Case A/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -418,6 +457,16 @@ async function main() {
       latest_quarantine_transition: "ambiguous",
       reasons: ["ambiguous-quarantine-history"],
     },
+    {
+      status: "eligible",
+      required_ancestor: "",
+      reasons: ["missing-required-ancestor"],
+    },
+    {
+      status: "eligible",
+      ancestry_verified_builds: [101],
+      reasons: ["unverified-eligible-build"],
+    },
   ]) {
     const output = await run(createItem(), { enableKbe: true, eligibilityRecord });
     const issue = createdIssue(output);
@@ -432,9 +481,10 @@ async function main() {
       enableKbe: true,
       missingEligibility: true,
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
-    assert.match(createdIssue(output).body, /unable to read deterministic Case A eligibility/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /requires a trusted deterministic test receipt/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -442,9 +492,10 @@ async function main() {
       enableKbe: true,
       eligibilityRoot: { part1_sha256: "tampered" },
     });
-    assert.deepEqual(createdIssue(output).labels, ["test-failure"]);
-    assert.doesNotMatch(createdIssue(output).body, /```json/);
-    assert.match(createdIssue(output).body, /receipt identity does not match/);
+    assert.equal(output.result.success, false);
+    assert.match(output.result.error, /requires a trusted deterministic test receipt/);
+    assert.equal(output.calls.paginate.length, 0);
+    assert.equal(output.calls.create.length, 0);
   }
 
   {
@@ -785,7 +836,7 @@ async function main() {
   {
     const output = await run(createItem({ test_name: otherTestName }));
     assert.equal(output.result.success, false);
-    assert.match(output.result.error, /absent from deterministic Part 1 evidence/);
+    assert.match(output.result.error, /absent from the deterministic Case A eligibility receipt/);
   }
 
   {
@@ -803,7 +854,25 @@ async function main() {
     const output = await run(createItem({
       matcher_kind: "incomplete",
       matcher: "",
-    }), { evidence });
+    }), {
+      evidence,
+      eligibilityRecord: {
+        status: "ineligible",
+        originating_case: "case-a",
+        source_resolution: {
+          status: "exact",
+          path: "src/Sample.Tests/SampleTests.cs",
+          type: "Microsoft.AspNetCore.Tests.SampleTests",
+          method: "ReturnsExpectedResponse",
+        },
+        current_quarantine_state: "not-quarantined",
+        latest_quarantine_transition: "none",
+        raw_failure_builds: [101],
+        ancestry_verified_builds: [101],
+        eligible_failure_builds: [101],
+        evidence: null,
+      },
+    });
     const issue = createdIssue(output);
     assert.match(issue.body, /Sample\.Tests/);
     assert.doesNotMatch(issue.body, /```json/);
@@ -821,10 +890,28 @@ async function main() {
         fail_blocks: `${testName} [FAIL]\nExpected response body to contain stable-marker-123 but it was empty.`,
       }],
     });
-    const output = await run(createItem(), { evidence });
+    const output = await run(createItem(), {
+      evidence,
+      eligibilityRecord: {
+        status: "ineligible",
+        originating_case: "case-a",
+        source_resolution: {
+          status: "exact",
+          path: "src/Sample.Tests/SampleTests.cs",
+          type: "Microsoft.AspNetCore.Tests.SampleTests",
+          method: "ReturnsExpectedResponse",
+        },
+        current_quarantine_state: "not-quarantined",
+        latest_quarantine_transition: "none",
+        raw_failure_builds: [101],
+        ancestry_verified_builds: [101],
+        eligible_failure_builds: [101],
+        evidence: null,
+      },
+    });
     const issue = createdIssue(output);
     assert.doesNotMatch(issue.body, /```json/);
-    assert.match(issue.body, /absent from the deterministic Case A eligibility receipt/);
+    assert.match(issue.body, /minimum Case A eligibility invariants/);
   }
 
   {
