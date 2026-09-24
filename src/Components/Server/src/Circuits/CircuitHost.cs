@@ -865,6 +865,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 var shouldReport = !_circuitErrored;
                 _circuitErrored = true;
                 operationsApplied.TrySetException(ex);
+                // Observe the fault if no subsequent batch awaits this barrier.
                 _ = operationsApplied.Task.Exception;
                 if (shouldReport)
                 {
