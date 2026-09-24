@@ -251,7 +251,7 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         if (!manifest.FactoryExpressions.IsDefaultOrEmpty)
         {
             codeWriter.WriteLine("#pragma warning disable ASP0040");
-            codeWriter.WriteLine("if (!options.Converters.Any(candidate => candidate is global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter))");
+            codeWriter.WriteLine("if (!options.Converters.Any(candidate => candidate.GetType().Assembly == typeof(global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters).Assembly))");
             codeWriter.StartBlock();
             codeWriter.WriteLine("return;");
             codeWriter.EndBlock();

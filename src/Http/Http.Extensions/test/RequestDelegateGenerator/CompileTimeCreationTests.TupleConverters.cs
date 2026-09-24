@@ -28,7 +28,7 @@ app.MapPost("/reference", (Tuple<bool, long> value) => value);
         Assert.Contains(boolLong, generated);
         Assert.Contains(intString, generated);
         Assert.True(generated.IndexOf(boolLong, StringComparison.Ordinal) < generated.IndexOf(intString, StringComparison.Ordinal));
-        Assert.Contains("candidate is global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter", generated);
+        Assert.Contains("candidate.GetType().Assembly == typeof(global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters).Assembly", generated);
         Assert.Contains("!options.Converters.Any(candidate => candidate.CanConvert(typeof(TTuple)))", generated);
         Assert.True(
             generated.IndexOf("RegisterGeneratedTupleConverters(tupleJsonOptions.SerializerOptions);", StringComparison.Ordinal) <
@@ -184,6 +184,23 @@ public sealed class TailDto
             serviceCollection.ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.Converters.Add(new JsonArrayTupleConverter()));
         });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
+        var httpContext = CreateHttpContext(services);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, """[1,"two"]""");
+    }
+
+    [Fact]
+    public async Task GeneratedTupleConverters_UseExplicitClosedConverterOptIn()
+    {
+        var compilation = await GenerateCompilationAsync(CreateProject(includeOpenApi: true).AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""app.MapGet("/", () => (1, "two"));"""), Encoding.UTF8)).Project);
+        using var services = CreateServiceProvider(serviceCollection =>
+            serviceCollection.ConfigureHttpJsonOptions(options =>
+                options.SerializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<long, bool>())));
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
         var httpContext = CreateHttpContext(services);
 
