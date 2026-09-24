@@ -504,10 +504,10 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var linkWithoutReauthentication = await page.EvaluateAsync<JsonElement>(
             """
             async () => {
-                const body = new FormData();
+                const form = document.querySelector('form[action="Account/Manage/LinkExternalLogin"]');
+                const body = new FormData(form);
                 body.set('provider', 'Contoso');
-                body.set('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-                const response = await fetch('/Account/Manage/LinkExternalLogin', {
+                const response = await fetch(form.action, {
                     method: 'POST',
                     body,
                 });

@@ -243,7 +243,7 @@ public class UserStories
         var linkLogin = await manage.ClickLinkLoginAsync();
         linkLogin = await linkLogin.ConfirmPasswordAsync(password);
 
-        return await linkLogin.LinkExternalLoginAsync(loginEmail);
+        return await linkLogin.BeginLinkExternalLoginAsync();
     }
 
     internal static async Task<RemoveExternalLogin> RemoveExternalLoginAsync(ManageExternalLogin manageExternalLogin, string loginEmail)

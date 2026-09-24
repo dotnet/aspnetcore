@@ -231,6 +231,46 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
     }
 
     [Fact]
+    public async Task CanReauthenticateWithLinkedExternalLoginAndRequiresMarkerAtCallback()
+    {
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupTestThirdPartyLogins();
+
+        var server = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
+        var client = server.CreateClient();
+
+        var email = $"{Guid.NewGuid()}@example.com";
+        var password = "[PLACEHOLDER]-1a";
+        var index = await UserStories.RegisterNewUserAsync(client, email, password);
+        var firstLogin = await UserStories.LinkExternalLoginAsync(index, email, password);
+        var linkedLogin = await firstLogin.ManageExternalLoginAsync(email);
+        Assert.NotNull(linkedLogin);
+        var clearInitialMarkerResponse = await client.PostAsync(
+            "/test/clear-identity-ui-reauthentication",
+            content: null);
+        Assert.Equal(HttpStatusCode.OK, clearInitialMarkerResponse.StatusCode);
+
+        var manage = await index.ClickManageLinkWithExternalLoginAsync();
+        var linkLogin = await manage.ClickLinkLoginAsync();
+        linkLogin = await linkLogin.ConfirmExternalLoginAsync("Contoso", email);
+
+        var unlinkedConfirmation = await linkLogin.BeginLinkExternalLoginAsync("Fabrikam");
+        linkLogin = await unlinkedConfirmation.CompleteExternalLoginAsReauthenticationAsync(
+            $"{Guid.NewGuid()}@example.com");
+        Assert.Contains("That login is not linked to this account.", linkLogin.Document.Body.TextContent);
+
+        var secondLogin = await linkLogin.BeginLinkExternalLoginAsync("Fabrikam");
+        var clearResponse = await linkLogin.ClearReauthenticationAsync();
+        Assert.Equal(HttpStatusCode.OK, clearResponse.StatusCode);
+        var callbackDocument = await secondLogin.CompleteExternalLoginAsync($"{Guid.NewGuid()}@example.com");
+
+        Assert.Contains(
+            "You must confirm your identity before adding an external login.",
+            callbackDocument.Body.TextContent);
+    }
+
+    [Fact]
     public async Task CanSeeExternalLoginProviderDisplayName()
     {
         // Arrange

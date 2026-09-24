@@ -201,7 +201,7 @@ internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUs
             throw new InvalidOperationException($"Unexpected error occurred loading external login info.");
         }
 
-        if (Request.Query["reauthenticate"] == "true")
+        if (bool.TryParse(Request.Query["reauthenticate"].ToString(), out var reauthenticate) && reauthenticate)
         {
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 

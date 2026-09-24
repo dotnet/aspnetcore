@@ -79,6 +79,11 @@ public class StartupBase<TUser, TContext>
         {
             endpoints.MapControllers();
             endpoints.MapRazorPages();
+            endpoints.MapPost("/test/clear-identity-ui-reauthentication", context =>
+            {
+                context.Response.Cookies.Delete("Identity.UI.Reauthentication", new CookieOptions { Path = "/" });
+                return Task.CompletedTask;
+            }).RequireAuthorization();
         });
     }
 

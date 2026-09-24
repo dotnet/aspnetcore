@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Identity.UI;
 
 internal static class ReauthenticationMarker
 {
-    private const string CookieName = "Identity.Reauthentication";
+    private const string CookieName = "Identity.UI.Reauthentication";
     private const string ProtectorPurpose = "Microsoft.AspNetCore.Identity.UI.ReauthenticationMarker.v1";
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);
