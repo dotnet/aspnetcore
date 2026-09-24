@@ -1605,37 +1605,55 @@ def target_quarantine_transitions(
     if history is None:
         return [{"status": "ambiguous"}]
 
+    # Proxy scopes preserve cross-scope history before and after this target's
+    # own attribute, but cannot create transitions while it remains present.
     def target_state(source, assembly, commit):
         if source["status"] != "exact" or assembly["status"] != "exact":
             return None
         if scope == "assembly":
-            state = {
+            proxies = {
                 ("type", item)
                 for item in source["type_quarantines"]
             }
-            state.update(
+            proxies.update(
                 ("method", item[0], item[1])
                 for item in source["method_quarantines"]
             )
-            if assembly["quarantined"]:
-                state.add(("assembly",))
-            return frozenset(state)
+            return assembly["quarantined"], frozenset(proxies)
         type_quarantined = type_name in source["type_quarantines"]
         if scope == "type":
-            method_quarantines = {
+            proxies = {
                 ("method", item[0], item[1])
                 for item in source["method_quarantines"]
                 if item[0] == type_name
             }
-            if method_quarantines or type_quarantined:
-                state = set(method_quarantines)
-                if type_quarantined:
-                    state.add(("type", type_name))
+            if proxies or type_quarantined:
                 if assembly["quarantined"]:
-                    state.add(("assembly",))
-                return frozenset(state)
-            if not assembly["quarantined"]:
-                return frozenset()
+                    proxies.add(("assembly",))
+            elif assembly["quarantined"]:
+                full_source = historical_project_source_index(
+                    root,
+                    relative_project_root,
+                    commit,
+                    source_cache,
+                    content_cache,
+                )
+                if full_source["status"] != "exact":
+                    return None
+                if type_name in full_source["types"]:
+                    proxies.add(("assembly",))
+            return type_quarantined, frozenset(proxies)
+        method_quarantined = (
+            type_name,
+            method,
+        ) in source["method_quarantines"]
+        proxies = set()
+        if type_quarantined:
+            proxies.add(("type", type_name))
+        if method_quarantined or type_quarantined:
+            if assembly["quarantined"]:
+                proxies.add(("assembly",))
+        elif assembly["quarantined"]:
             full_source = historical_project_source_index(
                 root,
                 relative_project_root,
@@ -1645,36 +1663,9 @@ def target_quarantine_transitions(
             )
             if full_source["status"] != "exact":
                 return None
-            if type_name not in full_source["types"]:
-                return frozenset()
-            return frozenset({("assembly",)})
-        method_quarantined = (
-            type_name,
-            method,
-        ) in source["method_quarantines"]
-        if method_quarantined or type_quarantined:
-            state = set()
-            if method_quarantined:
-                state.add(("method", type_name, method))
-            if type_quarantined:
-                state.add(("type", type_name))
-            if assembly["quarantined"]:
-                state.add(("assembly",))
-            return frozenset(state)
-        if not assembly["quarantined"]:
-            return frozenset()
-        full_source = historical_project_source_index(
-            root,
-            relative_project_root,
-            commit,
-            source_cache,
-            content_cache,
-        )
-        if full_source["status"] != "exact":
-            return None
-        if (type_name, method) not in full_source["methods"]:
-            return frozenset()
-        return frozenset({("assembly",)})
+            if (type_name, method) in full_source["methods"]:
+                proxies.add(("assembly",))
+        return method_quarantined, frozenset(proxies)
 
     events = []
     for line in history:
@@ -1721,20 +1712,29 @@ def target_quarantine_transitions(
                 parent,
                 assembly_state_cache,
             )
-        current = target_state(current_source, current_assembly, sha)
-        previous = (
-            frozenset()
+        current_state = target_state(current_source, current_assembly, sha)
+        previous_state = (
+            (False, frozenset())
             if parent is None
             else target_state(parent_source, parent_assembly, parent)
         )
-        if current is None or previous is None:
+        if current_state is None or previous_state is None:
             return [{
                 "status": "ambiguous",
                 "commit": sha,
                 "utc": timestamp,
             }]
-        if current == previous:
+        current_own, current_proxies = current_state
+        previous_own, previous_proxies = previous_state
+        if current_own and previous_own:
             continue
+        if (
+            current_own == previous_own
+            and current_proxies == previous_proxies
+        ):
+            continue
+        current_covered = current_own or bool(current_proxies)
+        previous_covered = previous_own or bool(previous_proxies)
         identity_missing = (
             scope != "assembly"
             and (
@@ -1745,7 +1745,7 @@ def target_quarantine_transitions(
                 )
             )
         )
-        if current and not previous and identity_missing:
+        if current_covered and not previous_covered and identity_missing:
             full_parent_source = (
                 {
                     "status": "exact",
@@ -1772,9 +1772,17 @@ def target_quarantine_transitions(
                 )
                 else "ambiguous"
             )
+        elif previous_own and not current_own:
+            status = "removed"
+        elif current_own and not previous_own:
+            status = (
+                "removed"
+                if previous_proxies - current_proxies
+                else "added"
+            )
         else:
-            added = current - previous
-            removed = previous - current
+            added = current_proxies - previous_proxies
+            removed = previous_proxies - current_proxies
             if added and removed:
                 status = (
                     "removed"

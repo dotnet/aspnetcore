@@ -1122,6 +1122,189 @@ namespace New
         ], moved_result
 
 
+def test_assembly_history_ignores_child_removal_after_own_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(
+            root,
+            "Remove redundant method quarantine",
+            "2026-08-03T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assembly_target = next(
+            target for target in targets
+            if target["scope"] == "assembly"
+        )
+        assert assembly_target["status"] == "first-quarantine", targets
+
+
+def test_assembly_history_ignores_child_churn_during_own_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Quarantine assembly", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Add redundant method quarantine", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(
+            root,
+            "Remove redundant method quarantine",
+            "2026-08-03T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "assembly", targets
+        assert targets[0]["status"] == "first-quarantine", targets
+
+
+def test_method_history_ignores_assembly_churn_during_own_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(root, "Add redundant assembly quarantine", "2026-08-02T00:00:00Z")
+        assembly_info.write_text("", encoding="utf-8")
+        commit(
+            root,
+            "Remove redundant assembly quarantine",
+            "2026-08-03T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "method", targets
+        assert targets[0]["status"] == "first-quarantine", targets
+
+
+def test_method_history_ignores_type_churn_during_own_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+                members=method_member(quarantine=QUARANTINE_ATTRIBUTE),
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add redundant type quarantine", "2026-08-02T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(
+            root,
+            "Remove redundant type quarantine",
+            "2026-08-03T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "method", targets
+        assert targets[0]["status"] == "first-quarantine", targets
+
+
+def test_type_history_ignores_method_churn_during_own_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        commit(root, "Quarantine type", "2026-08-01T00:00:00Z")
+        file_path.write_text(
+            class_source(
+                "Microsoft.AspNetCore.Tests",
+                "SampleTests",
+                type_quarantine=QUARANTINE_ATTRIBUTE,
+                members=method_member(quarantine=QUARANTINE_ATTRIBUTE),
+            ),
+            encoding="utf-8",
+        )
+        commit(root, "Add redundant method quarantine", "2026-08-02T00:00:00Z")
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        commit(
+            root,
+            "Remove redundant method quarantine",
+            "2026-08-03T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "type", targets
+        assert targets[0]["status"] == "first-quarantine", targets
+
+
+def test_same_commit_method_to_assembly_replacement_is_not_first_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine method", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        assembly_info = project / "AssemblyInfo.cs"
+        assembly_info.write_text(
+            '[assembly: QuarantinedTest('
+            '"https://github.com/dotnet/aspnetcore/issues/2")]\n',
+            encoding="utf-8",
+        )
+        commit(
+            root,
+            "Replace method quarantine with assembly quarantine",
+            "2026-08-02T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "assembly", targets
+        assert targets[0]["status"] == "ambiguous", targets
+
+
+def test_same_commit_type_to_method_replacement_is_not_first_quarantine():
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, file_path = initialize_repository(root)
+        commit(root, "Add test project", "2026-07-31T00:00:00Z")
+        file_path.write_text(class_quarantined_source(), encoding="utf-8")
+        commit(root, "Quarantine type", "2026-08-01T00:00:00Z")
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(
+            root,
+            "Replace type quarantine with method quarantine",
+            "2026-08-02T00:00:00Z",
+        )
+
+        targets = MODULE.collect_requarantine_history(root, "HEAD")["targets"]
+        assert targets[0]["scope"] == "method", targets
+        assert targets[0]["status"] == "ambiguous", targets
+
+
 def test_exact_target_transition_in_shared_hunk():
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -2777,6 +2960,13 @@ def main():
     test_build_source_ancestry()
     test_history_cutoff_uses_first_parent_order()
     test_requarantine_history()
+    test_assembly_history_ignores_child_removal_after_own_quarantine()
+    test_assembly_history_ignores_child_churn_during_own_quarantine()
+    test_method_history_ignores_assembly_churn_during_own_quarantine()
+    test_method_history_ignores_type_churn_during_own_quarantine()
+    test_type_history_ignores_method_churn_during_own_quarantine()
+    test_same_commit_method_to_assembly_replacement_is_not_first_quarantine()
+    test_same_commit_type_to_method_replacement_is_not_first_quarantine()
     test_exact_target_transition_in_shared_hunk()
     test_github_commit_contains()
     test_workflow_runner_temp()
