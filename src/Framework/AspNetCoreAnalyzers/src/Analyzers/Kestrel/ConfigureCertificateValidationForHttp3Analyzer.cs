@@ -328,7 +328,8 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
     {
         var returnOperation = GetAncestors(sslOptionsCreation).OfType<IReturnOperation>().FirstOrDefault();
         if (returnOperation?.ReturnedValue is null ||
-            GetAncestors(returnOperation).OfType<IAnonymousFunctionOperation>().FirstOrDefault() != callback)
+            GetAncestors(returnOperation).FirstOrDefault(
+                operation => operation is IAnonymousFunctionOperation or ILocalFunctionOperation) != callback)
         {
             return false;
         }

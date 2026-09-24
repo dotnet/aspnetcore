@@ -151,6 +151,22 @@ public class ConfigureCertificateValidationForHttp3AnalyzerTests
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
+    [Fact]
+    public async Task NoDiagnostic_WhenUnsafeCreationIsReturnedFromNestedLocalFunction()
+    {
+        var source = GetSource(
+            "listenOptions.Protocols = HttpProtocols.Http3;",
+            $$"""
+            context =>
+            {
+                SslServerAuthenticationOptions CreateOptions() => {{GetUnsafeOptions(markDiagnostic: false)}};
+                return ValueTask.FromResult(new SslServerAuthenticationOptions());
+            }
+            """);
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
     [Theory]
     [InlineData(
         "listenOptions.Protocols = HttpProtocols.Http3; listenOptions.Protocols = HttpProtocols.Http1AndHttp2;",
