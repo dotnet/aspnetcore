@@ -765,7 +765,7 @@ public class PasskeyHandlerAttestationTest
     public async Task Fails_WhenAttestationObjectContainsDuplicateAuthDataKey()
     {
         var test = new AttestationTest();
-        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, useNonPreferredKeyEncoding: false));
+        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, AuthDataKeyEncoding.Preferred));
 
         var result = await test.RunAsync();
 
@@ -778,7 +778,26 @@ public class PasskeyHandlerAttestationTest
     {
         var verificationCalled = false;
         var test = new AttestationTest();
-        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, useNonPreferredKeyEncoding: true));
+        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, AuthDataKeyEncoding.NonPreferred));
+        test.PasskeyOptions.VerifyAttestationStatement = context =>
+        {
+            verificationCalled = true;
+            return ValueTask.FromResult(true);
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The attestation object contained a duplicate key", result.Failure.Message);
+        Assert.False(verificationCalled);
+    }
+
+    [Fact]
+    public async Task Fails_WhenAttestationObjectContainsChunkedDuplicateAuthDataKey()
+    {
+        var verificationCalled = false;
+        var test = new AttestationTest();
+        test.AttestationObject.Transform(bytes => PrependEmptyAuthData(bytes, AuthDataKeyEncoding.Chunked));
         test.PasskeyOptions.VerifyAttestationStatement = context =>
         {
             verificationCalled = true;
@@ -1133,11 +1152,18 @@ public class PasskeyHandlerAttestationTest
 
     private static ReadOnlyMemory<byte> PrependEmptyAuthData(
         ReadOnlyMemory<byte> attestationObject,
-        bool useNonPreferredKeyEncoding)
+        AuthDataKeyEncoding keyEncodingKind)
     {
         ReadOnlySpan<byte> preferredKeyEncoding = [0x68, .. "authData"u8];
         ReadOnlySpan<byte> nonPreferredKeyEncoding = [0x78, 0x08, .. "authData"u8];
-        var keyEncoding = useNonPreferredKeyEncoding ? nonPreferredKeyEncoding : preferredKeyEncoding;
+        ReadOnlySpan<byte> chunkedKeyEncoding = [0x7F, 0x64, .. "auth"u8, 0x64, .. "Data"u8, 0xFF];
+        var keyEncoding = keyEncodingKind switch
+        {
+            AuthDataKeyEncoding.Preferred => preferredKeyEncoding,
+            AuthDataKeyEncoding.NonPreferred => nonPreferredKeyEncoding,
+            AuthDataKeyEncoding.Chunked => chunkedKeyEncoding,
+            _ => throw new InvalidOperationException($"Unexpected key encoding '{keyEncodingKind}'."),
+        };
 
         if (attestationObject.Span[0] != 0xA3)
         {
@@ -1169,6 +1195,13 @@ public class PasskeyHandlerAttestationTest
         attestationObject.Span[(keyOffset + preferredKeyEncoding.Length)..]
             .CopyTo(result.AsSpan(keyOffset + nonPreferredKeyEncoding.Length));
         return result;
+    }
+
+    private enum AuthDataKeyEncoding
+    {
+        Preferred,
+        NonPreferred,
+        Chunked,
     }
 
     private sealed class AttestationTest : PasskeyScenarioTest<PasskeyAttestationResult>
