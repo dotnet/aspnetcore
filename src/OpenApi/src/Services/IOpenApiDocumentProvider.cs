@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.OpenApi;
 
 /// <summary>
@@ -25,7 +27,14 @@ public interface IOpenApiDocumentProvider
     /// this document will be applied to the document before it is returned.
     /// </remarks>
     Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default);
+}
 
+/// <summary>
+/// Represents an OpenAPI document provider that can target a requested OpenAPI specification version.
+/// </summary>
+[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+public interface IOpenApiVersionedDocumentProvider : IOpenApiDocumentProvider
+{
     /// <summary>
     /// Gets the OpenAPI document for the specified OpenAPI specification version.
     /// </summary>

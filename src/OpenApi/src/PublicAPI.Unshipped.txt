@@ -1,7 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
-Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider.GetOpenApiDocumentForVersionAsync(Microsoft.OpenApi.OpenApiSpecVersion openApiVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiDocument!>!
+Microsoft.AspNetCore.OpenApi.IOpenApiVersionedDocumentProvider
+Microsoft.AspNetCore.OpenApi.IOpenApiVersionedDocumentProvider.GetOpenApiDocumentForVersionAsync(Microsoft.OpenApi.OpenApiSpecVersion openApiVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiDocument!>!
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.JsonArrayTupleConverter() -> void
 override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CanConvert(System.Type! typeToConvert) -> bool

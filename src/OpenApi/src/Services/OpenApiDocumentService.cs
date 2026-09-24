@@ -32,13 +32,15 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
+#pragma warning disable ASP0040 // The framework implements this experimental interface.
 internal sealed class OpenApiDocumentService(
     [ServiceKey] string documentName,
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
     IServiceProvider serviceProvider,
-    IServer? server = null) : IOpenApiDocumentProvider
+    IServer? server = null) : IOpenApiVersionedDocumentProvider
+#pragma warning restore ASP0040
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);

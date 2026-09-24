@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
+#pragma warning disable ASP0040 // Tests exercise experimental OpenAPI APIs.
 public class OpenApiServiceCollectionExtensions
 {
     [Fact]
@@ -24,7 +25,6 @@ public class OpenApiServiceCollectionExtensions
         // Assert
         Assert.IsAssignableFrom<IServiceCollection>(returnedServices);
     }
-
     [Fact]
     public void AddOpenApi_WithDocumentName_RegistersServices()
     {
@@ -236,6 +236,8 @@ public class OpenApiServiceCollectionExtensions
         var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName);
         Assert.NotNull(documentProvider);
         Assert.IsType<OpenApiDocumentService>(documentProvider);
+        var versionedProvider = serviceProvider.GetRequiredKeyedService<IOpenApiVersionedDocumentProvider>(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName);
+        Assert.IsType<OpenApiDocumentService>(versionedProvider);
     }
 
     [Fact]
@@ -319,9 +321,10 @@ public class OpenApiServiceCollectionExtensions
         });
         var serviceProvider = services.BuildServiceProvider();
         var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName);
+        var versionedDocumentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiVersionedDocumentProvider>(documentName);
 
         await documentProvider.GetOpenApiDocumentAsync(default);
-        await documentProvider.GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion.OpenApi3_2, default);
+        await versionedDocumentProvider.GetOpenApiDocumentForVersionAsync(OpenApiSpecVersion.OpenApi3_2, default);
 
         Assert.Equal([OpenApiSpecVersion.OpenApi3_0, OpenApiSpecVersion.OpenApi3_2], observedVersions);
     }
