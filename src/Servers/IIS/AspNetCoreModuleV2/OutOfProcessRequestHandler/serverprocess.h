@@ -25,6 +25,7 @@
 #define ASPNETCORE_APP_TOKEN_ENV_STR                L"ASPNETCORE_TOKEN="
 
 class PROCESS_MANAGER;
+struct ProcessManagerTestAccess;
 
 class SERVER_PROCESS
 {
@@ -153,6 +154,8 @@ public:
         ReadStdErrHandleInternal();
 
 private:
+    friend struct ProcessManagerTestAccess;
+
     VOID
     CleanUp();
 
@@ -322,3 +325,5 @@ struct SERVER_PROCESS_DELETER
         process->DereferenceServerProcess();
     }
 };
+
+using SERVER_PROCESS_PTR = std::unique_ptr<SERVER_PROCESS, SERVER_PROCESS_DELETER>;

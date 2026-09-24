@@ -107,7 +107,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     IHttpConnection            *pClientConnection = nullptr;
     PROTOCOL_CONFIG            *pProtocol = &sm_ProtocolConfig;
     SERVER_PROCESS             *pServerProcessRaw = nullptr;
-    std::unique_ptr<SERVER_PROCESS, SERVER_PROCESS_DELETER> pServerProcess;
+    SERVER_PROCESS_PTR            pServerProcess;
 
     USHORT                      cchHostName = 0;
 

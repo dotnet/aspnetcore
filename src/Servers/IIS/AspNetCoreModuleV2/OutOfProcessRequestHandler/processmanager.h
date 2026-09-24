@@ -5,6 +5,7 @@
 
 #define ONE_MINUTE_IN_MILLISECONDS 60000
 class SERVER_PROCESS;
+struct ProcessManagerTestAccess;
 
 class PROCESS_MANAGER
 {
@@ -123,6 +124,7 @@ public:
     }
 
 private:
+    friend struct ProcessManagerTestAccess;
 
     BOOL 
     RapidFailsPerMinuteExceeded(
