@@ -402,6 +402,116 @@ Assert-True ($authorResponseCases.NoResponse.Ordinary.State -eq "verification-ne
 Assert-True ($authorResponseCases.NoResponse.Ordinary.Signals -contains "non-author-discussion-requires-verification") "No-author-response feedback must retain the verification signal."
 Assert-True ($authorResponseCases.NoResponse.Merge.State -eq "verification-needed") "No-author-response feedback must remain strict for merge assessment."
 
+$authorResponseSequenceDefinitions = @(
+    [pscustomobject]@{
+        Name = "outstanding-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "I still need to update the tests." },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "acknowledgement-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Thanks!" },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "coordination-after-completion"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "/azp run" },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "completion-only"
+        Clears = $true
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "renewed-completion"
+        Clears = $true
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T17:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-02T18:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "I still need to update the tests." }
+        )
+    },
+    [pscustomobject]@{
+        Name = "tied-latest-responses"
+        Clears = $false
+        Responses = @(
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Fixed." },
+            [pscustomobject]@{ CreatedAt = "2026-09-03T16:00:00Z"; Body = "Thanks!" }
+        )
+    }
+)
+
+$authorResponseSequenceCases = & (Get-Module PRAttentionQueue) {
+    param($cases)
+
+    foreach ($case in $cases) {
+        $comments = [System.Collections.Generic.List[object]]::new()
+        $comments.Add([pscustomobject]@{
+            author = [pscustomobject]@{ login = "owner" }
+            authorAssociation = "MEMBER"
+            createdAt = "2026-09-01T18:00:00Z"
+            bodyText = "Please update the tests."
+        })
+        foreach ($response in $case.Responses) {
+            $comments.Add([pscustomobject]@{
+                author = [pscustomobject]@{ login = "author" }
+                authorAssociation = "CONTRIBUTOR"
+                createdAt = $response.CreatedAt
+                bodyText = $response.Body
+            })
+        }
+
+        $pullRequest = [pscustomobject]@{
+            author = [pscustomobject]@{ login = "author" }
+            headRefOid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            latestReviews = @()
+            reviewEvidenceComplete = $true
+            discussionComments = @($comments)
+            discussionCommentsComplete = $true
+            discussionThreads = @()
+            discussionThreadsComplete = $true
+        }
+
+        [pscustomobject]@{
+            Name = $case.Name
+            Clears = $case.Clears
+            Ordinary = Get-DiscussionAssessment `
+                -PullRequest $pullRequest `
+                -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+                -KnownBotPatterns @()
+            Merge = Get-DiscussionAssessment `
+                -PullRequest $pullRequest `
+                -AuthorInfo ([pscustomobject]@{ Login = "author" }) `
+                -KnownBotPatterns @() `
+                -ForMerge
+        }
+    }
+} $authorResponseSequenceDefinitions
+foreach ($case in $authorResponseSequenceCases) {
+    $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+    Assert-True ($case.Ordinary.State -eq $expectedState) "Author response sequence '$($case.Name)' must produce ordinary discussion state '$expectedState'."
+    if ($case.Clears) {
+        Assert-True (-not ($case.Ordinary.Signals -match "^non-author-discussion")) "Author response sequence '$($case.Name)' must clear earlier non-author discussion."
+    }
+    else {
+        Assert-True ($case.Ordinary.Signals -contains "non-author-discussion-requires-verification") "Author response sequence '$($case.Name)' must retain earlier non-author feedback."
+    }
+    Assert-True ($case.Merge.State -eq "verification-needed") "Author response sequence '$($case.Name)' must remain strict for merge assessment."
+    Assert-True ($case.Merge.Signals -contains "non-author-discussion-requires-verification") "Author response sequence '$($case.Name)' must retain earlier feedback for merge assessment."
+}
+
 $authorResponseQueueFixturePaths = [System.Collections.Generic.List[string]]::new()
 $authorResponseTemplate = @(
     Get-Content -LiteralPath $discussionFixturePath -Raw |
@@ -447,6 +557,69 @@ for ($batchStart = 0; $batchStart -lt $authorResponseCaseDefinitions.Count; $bat
         Assert-True ($item.discussionAssessment.state -eq $expectedState) "Queue case '$($case.Name)' must have discussion state '$expectedState'."
         Assert-True ([bool]$item.shownInDigest -eq [bool]$case.Clears) "Queue case '$($case.Name)' must have the expected unattended digest routing."
         Assert-True ([bool]$item.shownInDiscussionVerification -eq (-not [bool]$case.Clears)) "Queue case '$($case.Name)' must have the expected discussion-verification routing."
+    }
+}
+
+for ($batchStart = 0; $batchStart -lt $authorResponseSequenceDefinitions.Count; $batchStart += 5) {
+    $batch = @($authorResponseSequenceDefinitions | Select-Object -Skip $batchStart -First 5)
+    $batchFixtures = @(
+        for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+            $case = $batch[$batchIndex]
+            $fixture = $authorResponseTemplate | ConvertTo-Json -Depth 100 | ConvertFrom-Json -Depth 100
+            $number = 1400 + $batchStart + $batchIndex
+            $authorLogin = "sequence-author-$number"
+            $fixture.number = $number
+            $fixture.title = "Author response sequence $($case.Name)"
+            $fixture.url = "https://github.com/dotnet/aspnetcore/pull/$number"
+            $fixture.author.login = $authorLogin
+            $fixture.headRefName = "author-response-sequence-$number"
+            $fixture.comments = @($fixture.comments[0]) + @(
+                foreach ($response in $case.Responses) {
+                    [pscustomobject]@{
+                        author = [pscustomobject]@{ login = $authorLogin; is_bot = $false }
+                        createdAt = $response.CreatedAt
+                        bodyText = $response.Body
+                    }
+                }
+            )
+            $fixture.discussionComments = @($fixture.discussionComments[0]) + @(
+                foreach ($response in $case.Responses) {
+                    [pscustomobject]@{
+                        author = [pscustomobject]@{ login = $authorLogin }
+                        authorAssociation = "CONTRIBUTOR"
+                        createdAt = $response.CreatedAt
+                        bodyText = $response.Body
+                    }
+                }
+            )
+            $fixture
+        }
+    )
+    $batchFixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "pr-attention-author-response-sequence-$PID-$batchStart.json"
+    $authorResponseQueueFixturePaths.Add($batchFixturePath)
+    $batchFixtures | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $batchFixturePath
+    $batchJson = & $scriptPath `
+        -InputPath $batchFixturePath `
+        -Now $snapshot `
+        -Label area-discussion `
+        -MaxReviewNow 100 `
+        -MaxReviewNowPerAuthor 100 `
+        -OutputFormat Json
+    $batchResult = $batchJson | ConvertFrom-Json -Depth 100
+    for ($batchIndex = 0; $batchIndex -lt $batch.Count; $batchIndex++) {
+        $case = $batch[$batchIndex]
+        $number = 1400 + $batchStart + $batchIndex
+        $item = $batchResult.items | Where-Object number -eq $number
+        $expectedState = if ($case.Clears) { "clear" } else { "verification-needed" }
+        Assert-True ($item.discussionAssessment.state -eq $expectedState) "Queue sequence '$($case.Name)' must have discussion state '$expectedState'."
+        if ($case.Clears) {
+            Assert-True (-not ($item.discussionAssessment.signals -match "^non-author-discussion")) "Queue sequence '$($case.Name)' must clear earlier non-author discussion."
+        }
+        else {
+            Assert-True ($item.discussionAssessment.signals -contains "non-author-discussion-requires-verification") "Queue sequence '$($case.Name)' must retain earlier non-author feedback."
+        }
+        Assert-True ([bool]$item.shownInDigest -eq [bool]$case.Clears) "Queue sequence '$($case.Name)' must have the expected unattended digest routing."
+        Assert-True ([bool]$item.shownInDiscussionVerification -eq (-not [bool]$case.Clears)) "Queue sequence '$($case.Name)' must have the expected discussion-verification routing."
     }
 }
 

@@ -844,15 +844,16 @@ function Get-DiscussionAssessment {
         $null
     }
 
-    $latestQualifyingAuthorResponseAt = @(
+    $latestAuthorResponses = @(
         $comments |
             Where-Object {
-                $_.Actor -eq "author" -and $_.QualifiesAsAuthorResponse
-            } |
-            Select-Object -First 1
+                $_.Actor -eq "author" -and $_.CreatedAt -eq $latestAuthorActivityAt
+            }
     )
-    $latestQualifyingAuthorResponseAt = if ($latestQualifyingAuthorResponseAt.Count -gt 0) {
-        $latestQualifyingAuthorResponseAt[0].CreatedAt
+    $latestQualifyingAuthorResponseAt = if (-not $ForMerge -and
+        $latestAuthorResponses.Count -gt 0 -and
+        @($latestAuthorResponses | Where-Object { -not $_.QualifiesAsAuthorResponse }).Count -eq 0) {
+        $latestAuthorActivityAt
     }
     else {
         $null

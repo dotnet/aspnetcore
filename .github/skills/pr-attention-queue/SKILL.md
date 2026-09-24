@@ -60,7 +60,12 @@ This is deliberately not an LLM judgment. It only reports transparent evidence:
   `Pushed the requested changes`, with optional terminal periods or exclamation marks. Any additional
   prose, mixed completion and outstanding-work text, quotes, refusals, future work, coordination,
   acknowledgements, mentions, or branch-maintenance notices remain verification-needed.
-  Feedback posted after the latest qualifying completion claim still requires verification;
+  The completion or handoff must be the chronologically latest top-level author response. A newer
+  nonqualifying author response invalidates an older qualifying handoff, so even `Thanks!` or
+  `/azp run` after `Fixed.` conservatively returns the earlier feedback to verification. When author
+  responses share the latest timestamp, all of them must qualify because their semantic order is
+  unknown. A newer qualifying response restores the handoff. Feedback posted after the latest
+  qualifying completion claim still requires verification;
 - explicit informational non-author comments and coordination-only top-level comments. The initial
   conservative coordination allowlist contains only case-insensitive exact `/review` and `/azp run`
   commands whose entire trimmed body is one non-empty line. Multiline comments, trailing prose,
