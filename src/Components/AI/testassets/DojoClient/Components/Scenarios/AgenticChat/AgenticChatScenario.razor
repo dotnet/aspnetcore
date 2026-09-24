@@ -16,6 +16,12 @@
         <WelcomeContent>
             <p class="dojo-scenario__welcome">Ask the agent something to start the conversation.</p>
         </WelcomeContent>
+        <MessageListContent>
+            <BlockRenderer TBlock="ChangeBackgroundToolBlock"
+                           Context="block">
+                <ChangeBackgroundCard Block="block" />
+            </BlockRenderer>
+        </MessageListContent>
     </ChatPage>
 </div>
 
@@ -34,22 +40,20 @@
                 Tools =
                 [
                     AIFunctionFactory.Create(
-                        ChangeBackgroundAsync,
+                        ChangeBackground,
                         name: "change_background",
                         description: "Change the chat background using a CSS color or gradient.")
                 ]
             };
+            options.AddGeneratedToolBlocks();
         }, LoggerFactory);
     }
 
-    private async Task<string> ChangeBackgroundAsync(string? background = null, string? color = null)
+    private string ChangeBackground(string? background = null, string? color = null)
     {
         var value = background ?? color ?? string.Empty;
-        await InvokeAsync(() =>
-        {
-            _background = value;
-            StateHasChanged();
-        });
+        _background = value;
+        StateHasChanged();
         return $"Background color successfully changed to {value}.";
     }
 

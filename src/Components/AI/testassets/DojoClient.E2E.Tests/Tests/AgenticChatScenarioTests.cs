@@ -128,7 +128,8 @@ public partial class AgenticChatScenarioTests : BrowserTest
         var scenario = _page.Locator(".agentic-chat");
         await Expect(scenario).ToHaveAttributeAsync("data-background", Background);
         await Expect(scenario).ToHaveAttributeAsync("style", $"background: {Background};");
-        await Expect(_page.Locator(".agentic-chat__action-status")).ToHaveCountAsync(0);
+        await Expect(_page.Locator(".change-background-card"))
+            .ToContainTextAsync($"The background was changed to {Background}");
         await Expect(AssistantMessage)
             .ToContainTextAsync("Background changed to a sunset gradient.");
     }
