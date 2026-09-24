@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -69,6 +70,45 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, false)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, true)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, false)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, true)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, false)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, true)]
+    public async Task SchemaGenerationMode_Inferred_OneOfBranchesRetainExclusiveDiscriminatorConstraints(
+        OpenApiSpecVersion version,
+        bool useSourceGeneratedMetadata)
+    {
+        var services = new ServiceCollection();
+        if (useSourceGeneratedMetadata)
+        {
+            services.ConfigureHttpJsonOptions(options =>
+                options.SerializerOptions.TypeInfoResolverChain.Insert(0, InferredPolymorphismJsonContext.Default));
+        }
+
+        var builder = CreateBuilder(services);
+        builder.MapPost("/api", (Shape shape) => { });
+        var options = CreateInferredOptions();
+        options.OpenApiVersion = version;
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var root = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+        Assert.Collection(
+            root.OneOf,
+            branch => AssertExclusiveBranch(document, branch, "triangle"),
+            branch => AssertExclusiveBranch(document, branch, "square"));
+
+        static void AssertExclusiveBranch(OpenApiDocument document, IOpenApiSchema branch, string discriminator)
+        {
+            var reference = Assert.IsType<OpenApiSchemaReference>(branch);
+            var component = Assert.IsType<OpenApiSchema>(document.Components.Schemas[reference.Reference.Id]);
+            var discriminatorProperty = Assert.IsType<OpenApiSchema>(component.Properties["$type"]);
+            Assert.Equal([discriminator], discriminatorProperty.Enum.Select(value => value.GetValue<string>()));
+        }
+    }
+
     [Fact]
     public async Task SchemaGenerationMode_Inferred_MissingDiscriminatorRemainsAnyOf()
     {
@@ -103,6 +143,35 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 [
                     new(new(typeof(DuplicateEmitterOne)), "same", null),
                     new(new(typeof(DuplicateEmitterTwo)), "same", null),
+                ]),
+            new(InferredObjectContractKind.NotObject, null, null));
+
+        schema.ApplyCompositionDecision(decision, static (_, branchType) => branchType.Name);
+
+        Assert.Same(alternatives, schema[OpenApiSchemaKeywords.AnyOfKeyword]);
+        Assert.Null(schema[OpenApiSchemaKeywords.OneOfKeyword]);
+        Assert.Null(schema[OpenApiSchemaKeywords.DiscriminatorKeyword]);
+    }
+
+    [Fact]
+    public void SchemaGenerationMode_Inferred_UnencodedDiscriminatorConstraintsRemainAnyOf()
+    {
+        var alternatives = new JsonArray(new JsonObject(), new JsonObject());
+        var schema = new JsonObject
+        {
+            [OpenApiSchemaKeywords.AnyOfKeyword] = alternatives,
+        };
+        var decision = new InferredSchemaCompositionDecision(
+            new(typeof(DuplicateEmitterBase)),
+            new(false, null, InferredInheritanceReason.NoBaseType),
+            new(
+                InferredAlternativeSource.Polymorphism,
+                InferredAlternativeCompositionKind.OneOf,
+                InferredAlternativeReason.DistinctExplicitDiscriminators,
+                "kind",
+                [
+                    new(new(typeof(DuplicateEmitterOne)), "one", null),
+                    new(new(typeof(DuplicateEmitterTwo)), "two", null),
                 ]),
             new(InferredObjectContractKind.NotObject, null, null));
 
@@ -503,6 +572,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         public Shape? Shape { get; set; }
     }
+
+    [JsonSerializable(typeof(Shape))]
+    [JsonSerializable(typeof(Triangle))]
+    [JsonSerializable(typeof(Square))]
+    private sealed partial class InferredPolymorphismJsonContext : JsonSerializerContext;
 #nullable disable
 
     private abstract class DuplicateEmitterBase;

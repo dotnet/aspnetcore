@@ -623,6 +623,19 @@ internal static class JsonNodeSchemaExtensions
             throw new InvalidOperationException(Resources.ExportedSchemaContainsExplicitAndInferredOneOf);
         }
 
+        if (decision.Source == InferredAlternativeSource.Polymorphism &&
+            decision.DiscriminatorPropertyName is { } encodedDiscriminatorPropertyName &&
+            decision.Branches.Where((branch, index) =>
+                branch.Discriminator is null ||
+                !HasExclusiveDiscriminatorConstraint(
+                    alternatives[index],
+                    encodedDiscriminatorPropertyName,
+                    branch.Discriminator)).Any())
+        {
+            schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
+            return;
+        }
+
         schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
         schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
 
@@ -664,6 +677,45 @@ internal static class JsonNodeSchemaExtensions
         schemaObject[OpenApiSchemaKeywords.DiscriminatorKeyword] = discriminatorPropertyName;
         schemaObject[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
     }
+
+    private static bool HasExclusiveDiscriminatorConstraint(
+        JsonNode? schema,
+        string discriminatorPropertyName,
+        object discriminator)
+    {
+        if (schema is not JsonObject schemaObject)
+        {
+            return false;
+        }
+
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties &&
+            properties[discriminatorPropertyName] is JsonObject discriminatorSchema &&
+            (discriminatorSchema[OpenApiSchemaKeywords.ConstKeyword] is { } constant &&
+                IsMatchingDiscriminatorValue(constant, discriminator) ||
+             discriminatorSchema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray { Count: 1 } values &&
+                IsMatchingDiscriminatorValue(values[0], discriminator)))
+        {
+            return true;
+        }
+
+        return schemaObject[OpenApiSchemaKeywords.AllOfKeyword] is JsonArray allOf &&
+            allOf.Any(branch => HasExclusiveDiscriminatorConstraint(
+                branch,
+                discriminatorPropertyName,
+                discriminator));
+    }
+
+    private static bool IsMatchingDiscriminatorValue(JsonNode? value, object discriminator)
+        => discriminator switch
+        {
+            string stringDiscriminator =>
+                value?.GetValueKind() == JsonValueKind.String &&
+                value.GetValue<string>() == stringDiscriminator,
+            int integerDiscriminator =>
+                value?.GetValueKind() == JsonValueKind.Number &&
+                value.GetValue<int>() == integerDiscriminator,
+            _ => false,
+        };
 
     internal static void ApplyInheritanceCompositionDecision(
         this JsonNode schema,
@@ -1033,7 +1085,8 @@ internal static class JsonNodeSchemaExtensions
     internal static void ApplyDirectionalObjectContract(
         this JsonNode schema,
         InferredSchemaShape shape,
-        InferredSchemaPurpose purpose)
+        InferredSchemaPurpose purpose,
+        string? inheritedDiscriminatorPropertyName = null)
     {
         if (purpose == InferredSchemaPurpose.Neutral ||
             schema[OpenApiSchemaKeywords.PropertiesKeyword] is not JsonObject properties)
@@ -1044,6 +1097,11 @@ internal static class JsonNodeSchemaExtensions
         var includedProperties = shape.Properties
             .Select(property => property.Identity.JsonName)
             .ToHashSet(StringComparer.Ordinal);
+        var discriminatorPropertyName = inheritedDiscriminatorPropertyName ?? shape.DiscriminatorPropertyName;
+        if (discriminatorPropertyName is not null)
+        {
+            includedProperties.Add(discriminatorPropertyName);
+        }
         foreach (var propertyName in properties.Select(property => property.Key).ToArray())
         {
             if (!includedProperties.Contains(propertyName))
@@ -1062,7 +1120,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 var propertyName = required[i]?.GetValue<string>();
                 if (propertyName is not null &&
-                    propertyName != shape.DiscriminatorPropertyName &&
+                    propertyName != discriminatorPropertyName &&
                     !requiredProperties.Contains(propertyName))
                 {
                     required.RemoveAt(i);

@@ -160,7 +160,10 @@ internal sealed class OpenApiSchemaService(
                 {
                     var inferredSchema = GetInferredSchema(type, purpose);
                     var inferredShape = inferredSchema[type];
-                    schema.ApplyDirectionalObjectContract(inferredShape, purpose);
+                    schema.ApplyDirectionalObjectContract(
+                        inferredShape,
+                        purpose,
+                        context.BaseTypeInfo?.PolymorphismOptions?.TypeDiscriminatorPropertyName);
                     var compositionDecision = inferredSchema.CompositionDecisions[type];
                     if (context.BaseTypeInfo is null)
                     {
