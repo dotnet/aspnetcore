@@ -684,8 +684,19 @@ function Get-HumanReviewRequests {
 function Get-DiscussionCommentKind {
     param(
         [string]$Body,
-        [bool]$IsAuthor
+        [bool]$IsAuthor,
+        [switch]$AllowCoordination
     )
+
+    $trimmedBody = if ($null -eq $Body) { "" } else { $Body.Trim() }
+    if (-not $IsAuthor -and
+        $AllowCoordination -and
+        -not [string]::IsNullOrWhiteSpace($trimmedBody) -and
+        -not $trimmedBody.Contains("`r") -and
+        -not $trimmedBody.Contains("`n") -and
+        $trimmedBody -match "^(?i:/review|/azp run)$") {
+        return "coordination"
+    }
 
     $normalizedBody = ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
     if ([string]::IsNullOrWhiteSpace($normalizedBody)) {
@@ -710,6 +721,46 @@ function Get-DiscussionCommentKind {
     }
 
     return "unknown"
+}
+
+function Test-IsQualifyingAuthorResponse {
+    param([string]$Body)
+
+    $trimmedBody = if ($null -eq $Body) { "" } else { $Body.Trim() }
+    if ([string]::IsNullOrWhiteSpace($trimmedBody)) {
+        return $false
+    }
+
+    if (-not $trimmedBody.Contains("`r") -and
+        -not $trimmedBody.Contains("`n") -and
+        $trimmedBody -match "^(?i:/review|/azp run)$") {
+        return $false
+    }
+
+    $normalizedBody = ($Body -replace "\s+", " ").Trim().ToLowerInvariant()
+    if ($normalizedBody -match "\b(no longer reproduce|unable to reproduce|happy to close|may no longer be required|no longer needed|obsolete)\b") {
+        return $false
+    }
+
+    if ($normalizedBody -match "^(?:@\S+\s*)+$" -or
+        $normalizedBody -match "^(?:@\S+\s+)*(?:agree(?:d)?|thanks|thank you|ack|acknowledged|sounds good|got it|okay|ok)\s*[.!]*$") {
+        return $false
+    }
+
+    if ($normalizedBody -match "^(?:i\s+)?(?:have\s+)?rebased(?:\s+(?:on|onto|against)\s+\S+)?[.!]*$" -or
+        $normalizedBody -match "^(?:updated|synced|merged)\s+(?:the\s+)?(?:branch\s+)?(?:from|with|against)\s+(?:origin/)?(?:main|master)[.!]*$") {
+        return $false
+    }
+
+    if ($normalizedBody.Contains("?") -or
+        $normalizedBody -match "\b(?:hopefully|maybe|probably|i think)\b" -or
+        $normalizedBody -match "\b(?:i|we)(?:'ll|\s+will)\b|\bwill\s+(?:fix|address|update|resolve|complete|implement|push)\b|\b(?:going|plan|planning|intend|intending)\s+to\b|\bworking\s+on\b|\bin\s+progress\b|\bnot\s+yet\b|\bnext\s+week\b|\blater\b" -or
+        $normalizedBody -match "\b(?:not|never)\s+(?:yet\s+)?(?:fixed|addressed|updated|resolved|done|completed|implemented)\b|\b(?:haven't|have not|didn't|did not|can't|cannot)\b") {
+        return $false
+    }
+
+    return $normalizedBody -match "\b(?:fixed|addressed|updated|resolved|done|completed|implemented)\b" -or
+        $normalizedBody -match "\bpushed\b.{0,80}\b(?:requested|suggested|review|feedback)\b.{0,40}\b(?:changes?|updates?)\b"
 }
 
 function Get-DiscussionAssessment {
@@ -792,7 +843,10 @@ function Get-DiscussionAssessment {
                 Actor = $actor
                 Association = $association
                 CreatedAt = [datetime]$createdAtValue
-                Kind = Get-DiscussionCommentKind -Body $body -IsAuthor $isAuthor
+                Kind = Get-DiscussionCommentKind -Body $body -IsAuthor $isAuthor -AllowCoordination
+                QualifiesAsAuthorResponse = -not $ForMerge -and
+                    $isAuthor -and
+                    (Test-IsQualifyingAuthorResponse -Body $body)
                 Excerpt = if ($body.Length -gt 280) { "$($body.Substring(0, 277))..." } else { $body }
             }
         }
@@ -807,6 +861,20 @@ function Get-DiscussionAssessment {
     )
     $latestAuthorActivityAt = if ($latestAuthorActivityAt.Count -gt 0) {
         $latestAuthorActivityAt[0].CreatedAt
+    }
+    else {
+        $null
+    }
+
+    $latestQualifyingAuthorResponseAt = @(
+        $comments |
+            Where-Object {
+                $_.Actor -eq "author" -and $_.QualifiesAsAuthorResponse
+            } |
+            Select-Object -First 1
+    )
+    $latestQualifyingAuthorResponseAt = if ($latestQualifyingAuthorResponseAt.Count -gt 0) {
+        $latestQualifyingAuthorResponseAt[0].CreatedAt
     }
     else {
         $null
@@ -838,7 +906,12 @@ function Get-DiscussionAssessment {
             $signals.Add("author-disposition-mentioned")
         }
         elseif ($comment.Actor -notin @("author", "automation") -and
-            $comment.Kind -ne "informational") {
+            $comment.Kind -notin @("coordination", "informational")) {
+            if (-not $ForMerge -and
+                $latestQualifyingAuthorResponseAt -and
+                $comment.CreatedAt -lt $latestQualifyingAuthorResponseAt) {
+                continue
+            }
             if ($ForMerge) {
                 $reviewerDisposition = @($humanReviews | Where-Object { $_.Login -eq $comment.Author } | Select-Object -First 1)
                 if ($reviewerDisposition.Count -gt 0 -and
@@ -848,7 +921,8 @@ function Get-DiscussionAssessment {
                     continue
                 }
             }
-            if ($latestAuthorActivityAt -and $comment.CreatedAt -gt $latestAuthorActivityAt) {
+            $authorResponseBoundaryAt = if ($ForMerge) { $latestAuthorActivityAt } else { $latestQualifyingAuthorResponseAt }
+            if ($authorResponseBoundaryAt -and $comment.CreatedAt -gt $authorResponseBoundaryAt) {
                 $signals.Add("non-author-discussion-after-author-response")
             }
             else {
@@ -875,7 +949,7 @@ function Get-DiscussionAssessment {
         Complete = $commentsComplete -and $threadsComplete -and
             (-not $ForMerge -or -not $signals.Contains("review-evidence-incomplete"))
         Signals = $uniqueSignals
-        Comments = @($comments | Select-Object -First 10)
+        Comments = @($comments | Select-Object -First 10 -Property Author, Actor, Association, CreatedAt, Kind, Excerpt)
         CommentTotalCount = $commentTotalCount
         CommentEvidenceTruncated = $comments.Count -gt 10 -or -not $commentsComplete
         Threads = [pscustomobject]@{
@@ -2746,7 +2820,7 @@ function Get-DisplayMetadata {
             states = [pscustomobject][ordered]@{
                 "clear" = [pscustomobject]@{
                     label = "Discussion checked"
-                    description = "The bounded recent discussion evidence did not identify a disposition, non-author concern, or unread current inline thread."
+                    description = "The bounded recent discussion evidence did not identify a disposition, non-author feedback still awaiting a qualifying author completion claim, or unread current inline thread."
                 }
                 "verification-needed" = [pscustomobject]@{
                     label = "Verify discussion"
@@ -2784,7 +2858,7 @@ function Get-DisplayMetadata {
                 }
                 "non-author-discussion-after-author-response" = [pscustomobject]@{
                     label = "Later non-author discussion"
-                    description = "A non-author comment after the latest author response needs human interpretation."
+                    description = "A non-author comment after the latest qualifying author completion claim needs human interpretation."
                 }
                 "non-author-discussion-requires-verification" = [pscustomobject]@{
                     label = "Non-author discussion"
@@ -2798,11 +2872,15 @@ function Get-DisplayMetadata {
                 }
                 "author-response" = [pscustomobject]@{
                     label = "Author response"
-                    description = "The author replied after review without an explicit disposition phrase."
+                    description = "The author replied without an explicit disposition phrase; only a separate conservative completion-claim heuristic can clear earlier top-level feedback."
                 }
                 "disposition" = [pscustomobject]@{
                     label = "Disposition"
                     description = "The author explicitly raised whether the pull request should continue or close."
+                }
+                "coordination" = [pscustomobject]@{
+                    label = "Coordination"
+                    description = "The complete single-line comment is an exact allowlisted coordination command: /review or /azp run."
                 }
                 "informational" = [pscustomobject]@{
                     label = "Informational"
@@ -2849,7 +2927,7 @@ function Get-ResponseEvidence {
         $comments |
             Where-Object {
                 $_.Actor -in @("repository-member", "non-author") -and
-                $_.Kind -ne "informational"
+                $_.Kind -in @("actionable", "coordination", "unknown")
             }
     ).Count -gt 0
     $complete = [bool](Get-PropertyValue -Object $DiscussionAssessment -Name "complete" -DefaultValue $false)
