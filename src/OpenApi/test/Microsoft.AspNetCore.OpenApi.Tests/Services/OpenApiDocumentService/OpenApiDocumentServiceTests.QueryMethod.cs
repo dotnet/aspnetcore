@@ -148,7 +148,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             await documentService.ForEachOperationAsync(document, (operation, operationContext, _) =>
             {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
                 Assert.Equal(context.OpenApiVersion, operationContext.OpenApiVersion);
+#pragma warning restore ASP0040
                 Assert.Same(document, operationContext.Document);
                 Assert.Same(context.ApplicationServices, operationContext.ApplicationServices);
                 Assert.Same(context.SchemaTransformers, operationContext.SchemaTransformers);

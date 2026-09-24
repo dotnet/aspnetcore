@@ -96,7 +96,9 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
             OpenApiSpecVersion.OpenApi3_2,
             options => options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
                 observedVersions.Add(context.OpenApiVersion);
+#pragma warning restore ASP0040
                 return Task.CompletedTask;
             }));
         var documentProvider = new OpenApiDocumentProvider(serviceProvider);

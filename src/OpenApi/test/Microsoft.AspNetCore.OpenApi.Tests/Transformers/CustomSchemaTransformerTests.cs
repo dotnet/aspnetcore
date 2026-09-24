@@ -316,7 +316,9 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         // Add a schema transformer that will mark all Product schemas as required
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
             Assert.Equal(OpenApiSpecVersion.OpenApi3_1, context.OpenApiVersion);
+#pragma warning restore ASP0040
             if (context.JsonTypeInfo.Type == typeof(Product))
             {
                 schema.Required ??= new HashSet<string>();
@@ -337,7 +339,9 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         // Add an operation transformer that uses GetOrCreateSchemaAsync
         options.AddOperationTransformer(async (operation, context, cancellationToken) =>
         {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
             Assert.Equal(OpenApiSpecVersion.OpenApi3_1, context.OpenApiVersion);
+#pragma warning restore ASP0040
             // Generate a schema for Product
             var productSchema = await context.GetOrCreateSchemaAsync(typeof(Product), cancellationToken: cancellationToken);
 

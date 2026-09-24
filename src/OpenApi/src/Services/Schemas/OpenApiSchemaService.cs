@@ -786,6 +786,7 @@ internal sealed class OpenApiSchemaService(
         }
         var inferredSchema = GetInferredSchema(type, IsInferredMode ? purpose : InferredSchemaPurpose.Neutral);
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
+#pragma warning disable ASP0040 // The framework populates this experimental property.
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
@@ -797,6 +798,7 @@ internal sealed class OpenApiSchemaService(
             Document = document,
             SchemaTransformers = schemaTransformers
         };
+#pragma warning restore ASP0040
         for (var i = 0; i < schemaTransformers.Length; i++)
         {
             // Reset context object to base state before running each transformer.

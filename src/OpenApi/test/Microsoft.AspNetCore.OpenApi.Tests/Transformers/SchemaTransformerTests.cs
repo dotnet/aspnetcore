@@ -511,7 +511,9 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
             Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
+#pragma warning restore ASP0040
             if (context.JsonTypeInfo.Type == typeof(int))
             {
                 schema.Format = "modified-number-format";
@@ -655,7 +657,9 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 #pragma warning restore ASP0040
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
             Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
+#pragma warning restore ASP0040
             if (context.JsonTypeInfo.Type == typeof(PolymorphicContainer) ||
                 context.JsonTypeInfo.Type == typeof(Shape) ||
                 context.JsonTypeInfo.Type == typeof(Triangle) ||

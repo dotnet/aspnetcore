@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,7 @@ public sealed class OpenApiOperationTransformerContext
     /// Transformer output can depend on this value. To target a different version, regenerate the
     /// document instead of serializing the returned document using a different version.
     /// </remarks>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public OpenApiSpecVersion OpenApiVersion { get; init; } = OpenApiSpecVersion.OpenApi3_2;
 
     /// <summary>
@@ -55,6 +57,7 @@ public sealed class OpenApiOperationTransformerContext
     public Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         var schemaService = ApplicationServices.GetRequiredKeyedService<OpenApiSchemaService>(DocumentName);
+#pragma warning disable ASP0040 // The framework consumes this experimental property.
         return schemaService.GetOrCreateUnresolvedSchemaAsync(
             document: Document,
             type: type,
@@ -63,5 +66,6 @@ public sealed class OpenApiOperationTransformerContext
             scopedServiceProvider: ApplicationServices,
             schemaTransformers: SchemaTransformers,
             cancellationToken: cancellationToken);
+#pragma warning restore ASP0040
     }
 }

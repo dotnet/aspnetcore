@@ -123,6 +123,7 @@ internal sealed class OpenApiDocumentService(
         OpenApiSpecVersion openApiVersion,
         CancellationToken cancellationToken)
     {
+#pragma warning disable ASP0040 // The framework populates this experimental property.
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
             DocumentName = documentName,
@@ -132,6 +133,7 @@ internal sealed class OpenApiDocumentService(
             Document = document,
             SchemaTransformers = schemaTransformers
         };
+#pragma warning restore ASP0040
         // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
         {
@@ -348,6 +350,7 @@ internal sealed class OpenApiDocumentService(
             operation.Metadata ??= new Dictionary<string, object>();
             operation.Metadata.Add(OpenApiConstants.DescriptionId, description.ActionDescriptor.Id);
 
+#pragma warning disable ASP0040 // The framework populates this experimental property.
             var operationContext = new OpenApiOperationTransformerContext
             {
                 DocumentName = documentName,
@@ -357,6 +360,7 @@ internal sealed class OpenApiDocumentService(
                 Document = document,
                 SchemaTransformers = schemaTransformers
             };
+#pragma warning restore ASP0040
 
             operationTransformerContexts.Add(description.ActionDescriptor.Id, operationContext);
 
