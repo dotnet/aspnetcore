@@ -40,7 +40,7 @@ internal readonly record struct InferredJsonLiteral(InferredJsonLiteralKind Kind
             JsonValueKind.True => new(InferredJsonLiteralKind.Boolean, "true"),
             JsonValueKind.Number => new(InferredJsonLiteralKind.Number, CanonicalizeNumber(value.ToJsonString())),
             JsonValueKind.String => new(InferredJsonLiteralKind.String, value.GetValue<string>()),
-            _ => throw new InvalidOperationException($"JSON value '{value}' is not a supported finite-domain literal."),
+            _ => throw new InvalidOperationException(Resources.FormatUnsupportedFiniteDomainLiteral(value)),
         };
     }
 

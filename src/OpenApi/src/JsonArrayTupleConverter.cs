@@ -38,7 +38,7 @@ public sealed class JsonArrayTupleConverter : JsonConverterFactory
     {
         if (!JsonArrayTupleContract.TryCreate(typeToConvert, out var contract))
         {
-            throw new InvalidOperationException($"The type '{typeToConvert}' is not a supported tuple type.");
+            throw new InvalidOperationException(Resources.FormatTypeNotSupportedTupleType(typeToConvert));
         }
 
         return CreateConverterCore(typeToConvert, contract);
@@ -67,7 +67,7 @@ internal sealed class JsonArrayTupleConverter<TTuple>(JsonArrayTupleContract con
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {
-            throw new JsonException($"Expected a JSON array for tuple type '{typeToConvert}'.");
+            throw new JsonException(Resources.FormatExpectedJsonArrayForTupleType(typeToConvert));
         }
 
         var values = new object?[Contract.ElementTypes.Count];
@@ -75,7 +75,7 @@ internal sealed class JsonArrayTupleConverter<TTuple>(JsonArrayTupleContract con
         {
             if (!reader.Read() || reader.TokenType == JsonTokenType.EndArray)
             {
-                throw new JsonException($"The JSON array for tuple type '{typeToConvert}' has fewer than {values.Length} elements.");
+                throw new JsonException(Resources.FormatTupleJsonArrayHasFewerElements(typeToConvert, values.Length));
             }
 
             values[i] = JsonSerializer.Deserialize(ref reader, options.GetTypeInfo(Contract.ElementTypes[i]));
@@ -83,7 +83,7 @@ internal sealed class JsonArrayTupleConverter<TTuple>(JsonArrayTupleContract con
 
         if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
         {
-            throw new JsonException($"The JSON array for tuple type '{typeToConvert}' has more than {values.Length} elements.");
+            throw new JsonException(Resources.FormatTupleJsonArrayHasMoreElements(typeToConvert, values.Length));
         }
 
         return (TTuple)CreateTuple(values);
@@ -93,7 +93,7 @@ internal sealed class JsonArrayTupleConverter<TTuple>(JsonArrayTupleContract con
     {
         if (value is not ITuple tuple || tuple.Length != Contract.ElementTypes.Count)
         {
-            throw new JsonException($"The value for tuple type '{typeof(TTuple)}' does not match its tuple contract.");
+            throw new JsonException(Resources.FormatTupleValueDoesNotMatchContract(typeof(TTuple)));
         }
 
         writer.WriteStartArray();
@@ -164,7 +164,7 @@ internal sealed class JsonArrayTupleContract
         var result = CreateTuple(TupleType, values, ref index);
         if (index != values.Count)
         {
-            throw new JsonException($"The tuple contract for '{TupleType}' did not consume all positional values.");
+            throw new JsonException(Resources.FormatTupleContractDidNotConsumeAllValues(TupleType));
         }
 
         return result;
@@ -226,6 +226,6 @@ internal sealed class JsonArrayTupleContract
         }
 
         return Activator.CreateInstance(tupleType, constructorArguments)
-            ?? throw new JsonException($"Unable to construct tuple type '{tupleType}'.");
+            ?? throw new JsonException(Resources.FormatUnableToConstructTupleType(tupleType));
     }
 }

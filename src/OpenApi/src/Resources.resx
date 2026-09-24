@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="InferredAlternativesRequireObjectSchema" xml:space="preserve">
+    <value>The inferred alternatives for '{0}' require an object schema.</value>
+  </data>
+  <data name="InferredOneOfAlternativesMissing" xml:space="preserve">
+    <value>The inferred oneOf alternatives for '{0}' are missing from the exported schema.</value>
+  </data>
+  <data name="InferredAlternativeBranchesMismatchExportedSchema" xml:space="preserve">
+    <value>The inferred alternative branches for '{0}' do not match the exported schema.</value>
+  </data>
+  <data name="InferredAlternativeBranchNotObjectSchema" xml:space="preserve">
+    <value>The inferred alternative branch for '{0}' is not an object schema.</value>
+  </data>
+  <data name="InferredAlternativeCompositionNotSupported" xml:space="preserve">
+    <value>The inferred alternative composition decision is not supported.</value>
+  </data>
+  <data name="ExportedSchemaContainsExplicitAndInferredOneOf" xml:space="preserve">
+    <value>The exported schema contains both inferred and explicit oneOf alternatives.</value>
+  </data>
+  <data name="InferredUnionOneOfCannotDefineDiscriminator" xml:space="preserve">
+    <value>An inferred union oneOf cannot define a discriminator.</value>
+  </data>
+  <data name="InferredOneOfSourceNotSupported" xml:space="preserve">
+    <value>The inferred oneOf alternative source is not supported.</value>
+  </data>
+  <data name="OneOfAlternativeRequiresExplicitDiscriminator" xml:space="preserve">
+    <value>A oneOf alternative must have an explicit discriminator.</value>
+  </data>
+  <data name="OneOfAlternativeRequiresReferenceId" xml:space="preserve">
+    <value>A schema reference ID is required for the oneOf alternative '{0}'.</value>
+  </data>
+  <data name="InferredInheritanceRequiresObjectSchema" xml:space="preserve">
+    <value>The inferred inheritance for '{0}' requires an object schema.</value>
+  </data>
+  <data name="InferredBaseSchemaUnavailable" xml:space="preserve">
+    <value>The inferred base schema for '{0}' is unavailable.</value>
+  </data>
+  <data name="ExportedSchemaAlreadyContainsAllOf" xml:space="preserve">
+    <value>The exported schema for '{0}' already contains allOf composition.</value>
+  </data>
+  <data name="ExportedSchemaContainsUnsupportedAdditionalProperties" xml:space="preserve">
+    <value>The exported schema for '{0}' contains unsupported additional-properties constraints.</value>
+  </data>
+  <data name="InferredPropertiesMissingFromExportedSchema" xml:space="preserve">
+    <value>The inferred properties for '{0}' are missing from the exported schema.</value>
+  </data>
+  <data name="InferredPropertiesMismatchExportedSchema" xml:space="preserve">
+    <value>The inferred properties for '{0}' do not match the exported schema.</value>
+  </data>
+  <data name="InferredRequiredPropertiesMismatchExportedSchema" xml:space="preserve">
+    <value>The inferred required properties for '{0}' do not match the exported schema.</value>
+  </data>
+  <data name="InheritedBaseTypeRequiresReferenceId" xml:space="preserve">
+    <value>A schema reference ID is required for the inherited base type '{0}'.</value>
+  </data>
+  <data name="InferredObjectContractMismatchExportedSchema" xml:space="preserve">
+    <value>The inferred object contract for '{0}' does not match the exported schema.</value>
+  </data>
+  <data name="ExportedSchemaConflictsWithUnmappedMemberContract" xml:space="preserve">
+    <value>The exported schema for '{0}' conflicts with its unmapped-member contract.</value>
+  </data>
+  <data name="InferredExtensionDataContractIncomplete" xml:space="preserve">
+    <value>The inferred extension-data contract for '{0}' is incomplete.</value>
+  </data>
+  <data name="ExportedSchemaExposesExtensionDataProperty" xml:space="preserve">
+    <value>The exported schema for '{0}' exposes extension data as a named property.</value>
+  </data>
+  <data name="ExportedSchemaContainsUnexpectedAdditionalProperties" xml:space="preserve">
+    <value>The exported schema for '{0}' contains unexpected additional-properties constraints.</value>
+  </data>
+  <data name="TypeNotSupportedTupleType" xml:space="preserve">
+    <value>The type '{0}' is not a supported tuple type.</value>
+  </data>
+  <data name="ExpectedJsonArrayForTupleType" xml:space="preserve">
+    <value>Expected a JSON array for tuple type '{0}'.</value>
+  </data>
+  <data name="TupleJsonArrayHasFewerElements" xml:space="preserve">
+    <value>The JSON array for tuple type '{0}' has fewer than {1} elements.</value>
+  </data>
+  <data name="TupleJsonArrayHasMoreElements" xml:space="preserve">
+    <value>The JSON array for tuple type '{0}' has more than {1} elements.</value>
+  </data>
+  <data name="TupleValueDoesNotMatchContract" xml:space="preserve">
+    <value>The value for tuple type '{0}' does not match its tuple contract.</value>
+  </data>
+  <data name="TupleContractDidNotConsumeAllValues" xml:space="preserve">
+    <value>The tuple contract for '{0}' did not consume all positional values.</value>
+  </data>
+  <data name="UnableToConstructTupleType" xml:space="preserve">
+    <value>Unable to construct tuple type '{0}'.</value>
+  </data>
+  <data name="TupleConverterMustBeCreatedByFactory" xml:space="preserve">
+    <value>The converter for '{0}' must be created by '{1}'.</value>
+  </data>
+  <data name="TupleJsonArrayHasFewerElementsThanContract" xml:space="preserve">
+    <value>The JSON array has fewer elements than the tuple contract.</value>
+  </data>
+  <data name="UnsupportedFiniteDomainLiteral" xml:space="preserve">
+    <value>JSON value '{0}' is not a supported finite-domain literal.</value>
+  </data>
+  <data name="SerializerContractCombinesDisallowedUnmappedMembersAndExtensionData" xml:space="preserve">
+    <value>The serializer contract for '{0}' both disallows unmapped members and declares extension data.</value>
+  </data>
+  <data name="ExtensionDataValueContractUnavailable" xml:space="preserve">
+    <value>The extension-data value contract for '{0}' is unavailable.</value>
+  </data>
+  <data name="CustomReferenceIdsCannotRepresentDirectionalContracts" xml:space="preserve">
+    <value>The custom OpenAPI schema reference IDs cannot represent directionally different serializer contracts: {0}. CreateSchemaReferenceId cannot distinguish the schema purpose.</value>
+  </data>
+  <data name="CustomReferenceIdUsedByDistinctContractIdentities" xml:space="preserve">
+    <value>The custom OpenAPI schema reference ID '{0}' is used by distinct serializer contract identities: {1}.</value>
+  </data>
+  <data name="InferredSchemaGraphIncomplete" xml:space="preserve">
+    <value>The inferred schema graph for '{0}' is incomplete.</value>
+  </data>
+  <data name="ReferenceIdUsedByDistinctContractIdentities" xml:space="preserve">
+    <value>The OpenAPI schema reference ID '{0}' is used by distinct serializer contract identities.</value>
+  </data>
+  <data name="UnableToCreateUniqueReferenceId" xml:space="preserve">
+    <value>Unable to create a unique OpenAPI schema reference ID for '{0}'.</value>
+  </data>
+  <data name="CustomReferenceIdUsedByDistinctContractTypes" xml:space="preserve">
+    <value>The custom OpenAPI schema reference ID '{0}' is used by distinct serializer contract types: {1}.</value>
+  </data>
+  <data name="CustomReferenceIdsProduceDuplicateComponentId" xml:space="preserve">
+    <value>The custom OpenAPI schema reference IDs produce the duplicate component ID '{0}'.</value>
+  </data>
+  <data name="UnableToCreateUniquePolymorphicReferenceId" xml:space="preserve">
+    <value>Unable to create a unique OpenAPI schema reference ID for '{0}' and '{1}'.</value>
+  </data>
+  <data name="InvalidOpenApiSchemaReferenceId" xml:space="preserve">
+    <value>The OpenAPI schema reference ID '{0}' for '{1}' must contain only ASCII letters, digits, '.', '-', or '_'.</value>
+  </data>
+  <data name="InferredSchemaReferenceIdResolverUnavailable" xml:space="preserve">
+    <value>The inferred schema reference ID resolver is unavailable.</value>
+  </data>
+  <data name="InferredAlternativeBranchesMismatchGeneratedSchema" xml:space="preserve">
+    <value>The inferred alternative branches for '{0}' do not match the generated schema.</value>
+  </data>
+  <data name="PositionalTupleElementsMismatchGeneratedSchema" xml:space="preserve">
+    <value>The positional tuple elements for '{0}' do not match the generated schema.</value>
+  </data>
+</root>

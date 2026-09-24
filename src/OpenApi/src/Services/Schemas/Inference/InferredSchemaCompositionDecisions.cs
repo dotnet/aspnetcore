@@ -378,13 +378,12 @@ internal static class InferredSchemaCompositionDecisionBuilder
             if (shape.DisallowsUnmappedMembers)
             {
                 throw new InvalidOperationException(
-                    $"The serializer contract for '{shape.Identity.Type}' both disallows unmapped members and declares extension data.");
+                    Resources.FormatSerializerContractCombinesDisallowedUnmappedMembersAndExtensionData(shape.Identity.Type));
             }
 
             if (shape.AdditionalPropertiesType is not { } additionalPropertiesType)
             {
-                throw new InvalidOperationException(
-                    $"The extension-data value contract for '{shape.Identity.Type}' is unavailable.");
+                throw new InvalidOperationException(Resources.FormatExtensionDataValueContractUnavailable(shape.Identity.Type));
             }
 
             return new(

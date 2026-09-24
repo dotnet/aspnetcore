@@ -167,7 +167,7 @@ internal sealed class OpenApiSchemaService(
                         schema.ApplyCompositionDecision(
                             compositionDecision,
                             getPolymorphicReferenceId ?? throw new InvalidOperationException(
-                                "The inferred schema reference ID resolver is unavailable."));
+                                Resources.InferredSchemaReferenceIdResolverUnavailable));
                     }
                     else
                     {
@@ -768,8 +768,7 @@ internal sealed class OpenApiSchemaService(
         {
             if (inferredMode && alternativeSchemas.Count < alternativeDecision.Branches.Count)
             {
-                throw new InvalidOperationException(
-                    $"The inferred alternative branches for '{jsonTypeInfo.Type}' do not match the generated schema.");
+                throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchesMismatchGeneratedSchema(jsonTypeInfo.Type));
             }
 
             var branchCount = Math.Min(alternativeSchemas.Count, alternativeDecision.Branches.Count);
@@ -793,8 +792,7 @@ internal sealed class OpenApiSchemaService(
         {
             if (prefixItems.Length != tupleConverter.Contract.ElementTypes.Count)
             {
-                throw new InvalidOperationException(
-                    $"The positional tuple elements for '{jsonTypeInfo.Type}' do not match the generated schema.");
+                throw new InvalidOperationException(Resources.FormatPositionalTupleElementsMismatchGeneratedSchema(jsonTypeInfo.Type));
             }
 
             for (var i = 0; i < prefixItems.Length; i++)

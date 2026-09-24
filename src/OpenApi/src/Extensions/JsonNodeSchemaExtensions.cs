@@ -564,8 +564,7 @@ internal static class JsonNodeSchemaExtensions
 
         if (schema is not JsonObject schemaObject)
         {
-            throw new InvalidOperationException(
-                $"The inferred alternatives for '{compositionDecision.Identity.Type}' require an object schema.");
+            throw new InvalidOperationException(Resources.FormatInferredAlternativesRequireObjectSchema(compositionDecision.Identity.Type));
         }
 
         if (!schemaObject.TryGetPropertyValue(OpenApiSchemaKeywords.AnyOfKeyword, out var alternativesNode))
@@ -576,8 +575,7 @@ internal static class JsonNodeSchemaExtensions
                 return;
             }
 
-            throw new InvalidOperationException(
-                $"The inferred oneOf alternatives for '{compositionDecision.Identity.Type}' are missing from the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredOneOfAlternativesMissing(compositionDecision.Identity.Type));
         }
 
         if (alternativesNode is not JsonArray alternatives ||
@@ -588,8 +586,7 @@ internal static class JsonNodeSchemaExtensions
                 return;
             }
 
-            throw new InvalidOperationException(
-                $"The inferred alternative branches for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchesMismatchExportedSchema(compositionDecision.Identity.Type));
         }
 
         if (decision.Source == InferredAlternativeSource.Polymorphism)
@@ -598,8 +595,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 if (alternatives[i] is not JsonObject branchSchema)
                 {
-                    throw new InvalidOperationException(
-                        $"The inferred alternative branch for '{decision.Branches[i].Identity.Type}' is not an object schema.");
+                    throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchNotObjectSchema(decision.Branches[i].Identity.Type));
                 }
 
                 if (getPolymorphicReferenceId(
@@ -619,12 +615,12 @@ internal static class JsonNodeSchemaExtensions
 
         if (decision.Kind != InferredAlternativeCompositionKind.OneOf)
         {
-            throw new InvalidOperationException("The inferred alternative composition decision is not supported.");
+            throw new InvalidOperationException(Resources.InferredAlternativeCompositionNotSupported);
         }
 
         if (schemaObject.ContainsKey(OpenApiSchemaKeywords.OneOfKeyword))
         {
-            throw new InvalidOperationException("The exported schema contains both inferred and explicit oneOf alternatives.");
+            throw new InvalidOperationException(Resources.ExportedSchemaContainsExplicitAndInferredOneOf);
         }
 
         schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
@@ -635,7 +631,7 @@ internal static class JsonNodeSchemaExtensions
             if (decision.DiscriminatorPropertyName is not null ||
                 decision.Branches.Any(branch => branch.Discriminator is not null))
             {
-                throw new InvalidOperationException("An inferred union oneOf cannot define a discriminator.");
+                throw new InvalidOperationException(Resources.InferredUnionOneOfCannotDefineDiscriminator);
             }
 
             schemaObject[OpenApiConstants.SchemaIsInferredUnion] = true;
@@ -645,7 +641,7 @@ internal static class JsonNodeSchemaExtensions
         if (decision.Source != InferredAlternativeSource.Polymorphism ||
             decision.DiscriminatorPropertyName is not { } discriminatorPropertyName)
         {
-            throw new InvalidOperationException("The inferred oneOf alternative source is not supported.");
+            throw new InvalidOperationException(Resources.InferredOneOfSourceNotSupported);
         }
 
         schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
@@ -654,13 +650,12 @@ internal static class JsonNodeSchemaExtensions
         {
             if (branch.Discriminator is null)
             {
-                throw new InvalidOperationException("A oneOf alternative must have an explicit discriminator.");
+                throw new InvalidOperationException(Resources.OneOfAlternativeRequiresExplicitDiscriminator);
             }
 
             if (getPolymorphicReferenceId(compositionDecision.Identity.Type, branch.Identity.Type) is not { } branchReferenceId)
             {
-                throw new InvalidOperationException(
-                    $"A schema reference ID is required for the oneOf alternative '{branch.Identity.Type}'.");
+                throw new InvalidOperationException(Resources.FormatOneOfAlternativeRequiresReferenceId(branch.Identity.Type));
             }
 
             mappings[Convert.ToString(branch.Discriminator, CultureInfo.InvariantCulture)!] = branchReferenceId;
@@ -685,8 +680,7 @@ internal static class JsonNodeSchemaExtensions
 
         if (schema is not JsonObject schemaObject)
         {
-            throw new InvalidOperationException(
-                $"The inferred inheritance for '{compositionDecision.Identity.Type}' requires an object schema.");
+            throw new InvalidOperationException(Resources.FormatInferredInheritanceRequiresObjectSchema(compositionDecision.Identity.Type));
         }
 
         if (schemaObject.ContainsKey(OpenApiSchemaKeywords.RefKeyword))
@@ -697,20 +691,17 @@ internal static class JsonNodeSchemaExtensions
         if (decision.BaseType is not { } baseType ||
             !inferredSchema.TryGetShape(baseType.Type, out var baseShape))
         {
-            throw new InvalidOperationException(
-                $"The inferred base schema for '{compositionDecision.Identity.Type}' is unavailable.");
+            throw new InvalidOperationException(Resources.FormatInferredBaseSchemaUnavailable(compositionDecision.Identity.Type));
         }
 
         if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AllOfKeyword))
         {
-            throw new InvalidOperationException(
-                $"The exported schema for '{compositionDecision.Identity.Type}' already contains allOf composition.");
+            throw new InvalidOperationException(Resources.FormatExportedSchemaAlreadyContainsAllOf(compositionDecision.Identity.Type));
         }
 
         if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AdditionalPropertiesKeyword))
         {
-            throw new InvalidOperationException(
-                $"The exported schema for '{compositionDecision.Identity.Type}' contains unsupported additional-properties constraints.");
+            throw new InvalidOperationException(Resources.FormatExportedSchemaContainsUnsupportedAdditionalProperties(compositionDecision.Identity.Type));
         }
 
         var derivedShape = inferredSchema[compositionDecision.Identity.Type];
@@ -725,8 +716,7 @@ internal static class JsonNodeSchemaExtensions
         }
         else
         {
-            throw new InvalidOperationException(
-                $"The inferred properties for '{compositionDecision.Identity.Type}' are missing from the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredPropertiesMissingFromExportedSchema(compositionDecision.Identity.Type));
         }
 
         var expectedPropertyNames = derivedShape.Properties
@@ -735,15 +725,13 @@ internal static class JsonNodeSchemaExtensions
         if (exportedProperties.Count != expectedPropertyNames.Count ||
             exportedProperties.Any(property => !expectedPropertyNames.Contains(property.Key)))
         {
-            throw new InvalidOperationException(
-                $"The inferred properties for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredPropertiesMismatchExportedSchema(compositionDecision.Identity.Type));
         }
 
         var exportedRequiredNode = schemaObject[OpenApiSchemaKeywords.RequiredKeyword];
         if (exportedRequiredNode is not null && exportedRequiredNode is not JsonArray)
         {
-            throw new InvalidOperationException(
-                $"The inferred required properties for '{compositionDecision.Identity.Type}' do not match the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredRequiredPropertiesMismatchExportedSchema(compositionDecision.Identity.Type));
         }
         var exportedRequired = exportedRequiredNode as JsonArray;
         var exportedType = schemaObject[OpenApiSchemaKeywords.TypeKeyword];
@@ -762,8 +750,7 @@ internal static class JsonNodeSchemaExtensions
             var typeInfo = serializerOptions.GetTypeInfo(shape.Identity.Type);
             if (createSchemaReferenceId(typeInfo) is not { } schemaReferenceId)
             {
-                throw new InvalidOperationException(
-                    $"A schema reference ID is required for the inherited base type '{shape.Identity.Type}'.");
+                throw new InvalidOperationException(Resources.FormatInheritedBaseTypeRequiresReferenceId(shape.Identity.Type));
             }
 
             var componentSchema = new JsonObject
@@ -777,8 +764,7 @@ internal static class JsonNodeSchemaExtensions
                 if (inheritanceDecision.BaseType is not { } inheritedBaseType ||
                     !inferredSchema.TryGetShape(inheritedBaseType.Type, out var inheritedBaseShape))
                 {
-                    throw new InvalidOperationException(
-                        $"The inferred base schema for '{shape.Identity.Type}' is unavailable.");
+                    throw new InvalidOperationException(Resources.FormatInferredBaseSchemaUnavailable(shape.Identity.Type));
                 }
 
                 componentSchema[OpenApiConstants.SchemaInferredAllOf] = new JsonArray(
@@ -827,8 +813,7 @@ internal static class JsonNodeSchemaExtensions
 
             if (properties.Count != includedPropertyNames.Count)
             {
-                throw new InvalidOperationException(
-                    $"The inferred properties for '{shape.Identity.Type}' do not match the exported schema.");
+                throw new InvalidOperationException(Resources.FormatInferredPropertiesMismatchExportedSchema(shape.Identity.Type));
             }
 
             if (properties.Count > 0)
@@ -869,8 +854,7 @@ internal static class JsonNodeSchemaExtensions
 
         if (schema is not JsonObject schemaObject)
         {
-            throw new InvalidOperationException(
-                $"The inferred object contract for '{compositionDecision.Identity.Type}' does not match the exported schema.");
+            throw new InvalidOperationException(Resources.FormatInferredObjectContractMismatchExportedSchema(compositionDecision.Identity.Type));
         }
 
         if (decision.Kind == InferredObjectContractKind.DisallowUnmappedMembers)
@@ -880,8 +864,7 @@ internal static class JsonNodeSchemaExtensions
                     out var additionalProperties) &&
                 additionalProperties?.GetValueKind() != JsonValueKind.False)
             {
-                throw new InvalidOperationException(
-                    $"The exported schema for '{compositionDecision.Identity.Type}' conflicts with its unmapped-member contract.");
+                throw new InvalidOperationException(Resources.FormatExportedSchemaConflictsWithUnmappedMemberContract(compositionDecision.Identity.Type));
             }
 
             schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false;
@@ -892,15 +875,13 @@ internal static class JsonNodeSchemaExtensions
             decision.ExtensionDataProperty is not { } extensionDataProperty ||
             decision.AdditionalPropertiesType is not { } additionalPropertiesType)
         {
-            throw new InvalidOperationException(
-                $"The inferred extension-data contract for '{compositionDecision.Identity.Type}' is incomplete.");
+            throw new InvalidOperationException(Resources.FormatInferredExtensionDataContractIncomplete(compositionDecision.Identity.Type));
         }
 
         if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties &&
             properties.ContainsKey(extensionDataProperty.Identity.JsonName))
         {
-            throw new InvalidOperationException(
-                $"The exported schema for '{compositionDecision.Identity.Type}' exposes extension data as a named property.");
+            throw new InvalidOperationException(Resources.FormatExportedSchemaExposesExtensionDataProperty(compositionDecision.Identity.Type));
         }
 
         if (schemaObject.TryGetPropertyValue(
@@ -908,8 +889,7 @@ internal static class JsonNodeSchemaExtensions
                 out var exportedAdditionalProperties) &&
             exportedAdditionalProperties?.GetValueKind() is not JsonValueKind.True)
         {
-            throw new InvalidOperationException(
-                $"The exported schema for '{compositionDecision.Identity.Type}' contains unexpected additional-properties constraints.");
+            throw new InvalidOperationException(Resources.FormatExportedSchemaContainsUnexpectedAdditionalProperties(compositionDecision.Identity.Type));
         }
 
         schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] =

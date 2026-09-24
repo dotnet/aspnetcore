@@ -119,9 +119,7 @@ internal sealed class InferredSchemaReferenceIdResolverSet
                 var contracts = purposeAmbiguousContracts
                     .Select(type => $"'{candidates[type]}' for '{type}'");
                 throw new InvalidOperationException(
-                    "The custom OpenAPI schema reference IDs cannot represent directionally different serializer contracts: " +
-                    string.Join(", ", contracts) +
-                    ". CreateSchemaReferenceId cannot distinguish the schema purpose.");
+                    Resources.FormatCustomReferenceIdsCannotRepresentDirectionalContracts(string.Join(", ", contracts)));
             }
 
             var collisions = plannedContracts
@@ -139,9 +137,9 @@ internal sealed class InferredSchemaReferenceIdResolverSet
                     .Distinct()
                     .OrderBy(type => type.ToString(), StringComparer.Ordinal)
                     .Select(type => $"'{type}'");
-                throw new InvalidOperationException(
-                    $"The custom OpenAPI schema reference ID '{collisions.Key}' is used by distinct serializer contract identities: " +
-                    string.Join(", ", conflictingTypes) + ".");
+                throw new InvalidOperationException(Resources.FormatCustomReferenceIdUsedByDistinctContractIdentities(
+                    collisions.Key,
+                    string.Join(", ", conflictingTypes)));
             }
         }
 
@@ -500,7 +498,7 @@ internal sealed class InferredSchemaReferenceIdResolver
             return referenceId;
         }
 
-        throw new InvalidOperationException($"The inferred schema graph for '{type}' is incomplete.");
+        throw new InvalidOperationException(Resources.FormatInferredSchemaGraphIncomplete(type));
     }
 
     private static void ReserveReferenceId(
@@ -512,8 +510,7 @@ internal sealed class InferredSchemaReferenceIdResolver
         {
             if (existingOwner != owner)
             {
-                throw new InvalidOperationException(
-                    $"The OpenAPI schema reference ID '{referenceId}' is used by distinct serializer contract identities.");
+                throw new InvalidOperationException(Resources.FormatReferenceIdUsedByDistinctContractIdentities(referenceId));
             }
             return;
         }
@@ -558,8 +555,7 @@ internal sealed class InferredSchemaReferenceIdResolver
                     positions[group.AliasIdentity]++;
                     if (positions[group.AliasIdentity] >= group.Candidates.Count)
                     {
-                        throw new InvalidOperationException(
-                            $"Unable to create a unique OpenAPI schema reference ID for '{group.Entries[0].Type}'.");
+                        throw new InvalidOperationException(Resources.FormatUnableToCreateUniqueReferenceId(group.Entries[0].Type));
                     }
                 }
             }
@@ -626,8 +622,7 @@ internal sealed class InferredSchemaReferenceIdResolver
             .Where(group => group.Select(entry => entry.AliasIdentity).Distinct().Skip(1).Any()))
         {
             var types = string.Join(", ", collision.Select(entry => $"'{entry.Type}'"));
-            throw new InvalidOperationException(
-                $"The custom OpenAPI schema reference ID '{collision.Key}' is used by distinct serializer contract types: {types}.");
+            throw new InvalidOperationException(Resources.FormatCustomReferenceIdUsedByDistinctContractTypes(collision.Key, types));
         }
     }
 
@@ -674,8 +669,7 @@ internal sealed class InferredSchemaReferenceIdResolver
             if (!usesDefaultSchemaReferenceId)
             {
                 var collision = collisions[0];
-                throw new InvalidOperationException(
-                    $"The custom OpenAPI schema reference IDs produce the duplicate component ID '{collision.Key}'.");
+                throw new InvalidOperationException(Resources.FormatCustomReferenceIdsProduceDuplicateComponentId(collision.Key));
             }
 
             foreach (var collision in collisions)
@@ -685,8 +679,9 @@ internal sealed class InferredSchemaReferenceIdResolver
                     positions[entry.Types]++;
                     if (positions[entry.Types] >= entry.Candidates.Count)
                     {
-                        throw new InvalidOperationException(
-                            $"Unable to create a unique OpenAPI schema reference ID for '{entry.Types.BaseType}' and '{entry.Types.BranchType}'.");
+                        throw new InvalidOperationException(Resources.FormatUnableToCreateUniquePolymorphicReferenceId(
+                            entry.Types.BaseType,
+                            entry.Types.BranchType));
                     }
                 }
             }
@@ -706,8 +701,7 @@ internal sealed class InferredSchemaReferenceIdResolver
             !char.IsAsciiLetterOrDigit(character) &&
             character is not '.' and not '-' and not '_'))
         {
-            throw new InvalidOperationException(
-                $"The OpenAPI schema reference ID '{referenceId}' for '{type}' must contain only ASCII letters, digits, '.', '-', or '_'.");
+            throw new InvalidOperationException(Resources.FormatInvalidOpenApiSchemaReferenceId(referenceId, type));
         }
     }
 

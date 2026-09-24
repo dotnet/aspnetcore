@@ -47,6 +47,15 @@ public partial class OpenApiSchemaServiceTests
         [typeof((int, (string, bool))), (1, ("two", true)), "[1,[\"two\",true]]"],
     ];
 
+    [Fact]
+    public void JsonArrayTupleConverter_UnsupportedTypeUsesResourceMessage()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => new JsonArrayTupleConverter().CreateConverter(typeof(string), new()));
+
+        Assert.Equal(Resources.FormatTypeNotSupportedTupleType(typeof(string)), exception.Message);
+    }
+
     [Theory]
     [InlineData("[1]", "fewer than 2")]
     [InlineData("[1,\"two\",true]", "more than 2")]

@@ -384,7 +384,7 @@ public static class JsonArrayTupleConverters
         if (restConverter is not IJsonArrayTupleCodecProvider<TRest> provider)
         {
             throw new ArgumentException(
-                $"The converter for '{typeof(TRest)}' must be created by '{nameof(JsonArrayTupleConverters)}'.",
+                Resources.FormatTupleConverterMustBeCreatedByFactory(typeof(TRest), nameof(JsonArrayTupleConverters)),
                 nameof(restConverter));
         }
 
@@ -407,7 +407,7 @@ public static class JsonArrayTupleConverters
     {
         if (!reader.Read() || reader.TokenType == JsonTokenType.EndArray)
         {
-            throw new JsonException("The JSON array has fewer elements than the tuple contract.");
+            throw new JsonException(Resources.TupleJsonArrayHasFewerElementsThanContract);
         }
 
         return (TElement)JsonSerializer.Deserialize(ref reader, options.GetTypeInfo(typeof(TElement)))!;
@@ -453,13 +453,13 @@ internal sealed class ClosedJsonArrayTupleConverter<TTuple>(
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {
-            throw new JsonException($"Expected a JSON array for tuple type '{typeToConvert}'.");
+            throw new JsonException(Resources.FormatExpectedJsonArrayForTupleType(typeToConvert));
         }
 
         var value = Codec.ReadElements(ref reader, options);
         if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
         {
-            throw new JsonException($"The JSON array for tuple type '{typeToConvert}' has more than {Contract.ElementTypes.Count} elements.");
+            throw new JsonException(Resources.FormatTupleJsonArrayHasMoreElements(typeToConvert, Contract.ElementTypes.Count));
         }
 
         return value;
