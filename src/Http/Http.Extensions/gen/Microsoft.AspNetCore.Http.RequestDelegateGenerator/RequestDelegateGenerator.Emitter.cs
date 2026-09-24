@@ -250,11 +250,15 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
 
         if (!manifest.FactoryExpressions.IsDefaultOrEmpty)
         {
+            codeWriter.WriteLine("#pragma warning disable ASP0040");
+            codeWriter.WriteLine("if (!options.Converters.Any(candidate => candidate is global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return;");
+            codeWriter.EndBlock();
             codeWriter.WriteLine("if (options.IsReadOnly)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("return;");
             codeWriter.EndBlock();
-            codeWriter.WriteLine("#pragma warning disable ASP0040");
             foreach (var factory in manifest.FactoryExpressions)
             {
                 codeWriter.WriteLine($"AddTupleConverterIfMissing(options, {factory});");

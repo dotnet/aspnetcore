@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -24,6 +28,7 @@ app.MapPost("/reference", (Tuple<bool, long> value) => value);
         Assert.Contains(boolLong, generated);
         Assert.Contains(intString, generated);
         Assert.True(generated.IndexOf(boolLong, StringComparison.Ordinal) < generated.IndexOf(intString, StringComparison.Ordinal));
+        Assert.Contains("candidate is global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter", generated);
         Assert.Contains("!options.Converters.Any(candidate => candidate.CanConvert(typeof(TTuple)))", generated);
         Assert.True(
             generated.IndexOf("RegisterGeneratedTupleConverters(tupleJsonOptions.SerializerOptions);", StringComparison.Ordinal) <
@@ -152,6 +157,82 @@ public sealed class TailDto
         Assert.DoesNotContain("JsonArrayTupleConverters.Create", generated);
     }
 
+#pragma warning disable ASP0040 // Tests exercise experimental OpenAPI APIs.
+    [Fact]
+    public async Task GeneratedTupleConverters_RequireExplicitOptIn()
+    {
+        var compilation = await GenerateCompilationAsync(CreateProject(includeOpenApi: true).AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""app.MapGet("/", () => (1, "two"));"""), Encoding.UTF8)).Project);
+        using var services = CreateServiceProvider();
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
+        var httpContext = CreateHttpContext(services);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "{}");
+    }
+
+    [Fact]
+    public async Task GeneratedTupleConverters_UseExplicitFactoryOptIn()
+    {
+        var compilation = await GenerateCompilationAsync(CreateProject(includeOpenApi: true).AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""app.MapGet("/", () => (1, "two"));"""), Encoding.UTF8)).Project);
+        using var services = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(options =>
+                options.SerializerOptions.Converters.Add(new JsonArrayTupleConverter()));
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
+        var httpContext = CreateHttpContext(services);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, """[1,"two"]""");
+    }
+
+    [Fact]
+    public async Task GeneratedTupleConverters_PreserveClosedConverterAndFrozenOptions()
+    {
+        var compilation = await GenerateCompilationAsync(CreateProject(includeOpenApi: true).AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""app.MapGet("/", () => (1, "two"));"""), Encoding.UTF8)).Project);
+        using var services = CreateServiceProvider(serviceCollection =>
+            serviceCollection.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+                options.SerializerOptions.MakeReadOnly();
+            }));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
+        var httpContext = CreateHttpContext(services);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, """[1,"two"]""");
+    }
+
+    [Fact]
+    public async Task GeneratedTupleConverters_PreserveUserConverterPrecedence()
+    {
+        var compilation = await GenerateCompilationAsync(CreateProject(includeOpenApi: true).AddDocument(
+            "TestMapActions.cs",
+            SourceText.From(GetMapActionString("""app.MapGet("/", () => (1, "two"));"""), Encoding.UTF8)).Project);
+        using var services = CreateServiceProvider(serviceCollection =>
+            serviceCollection.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.Converters.Add(new CustomTupleConverter());
+                options.SerializerOptions.Converters.Add(new JsonArrayTupleConverter());
+            }));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: services);
+        var httpContext = CreateHttpContext(services);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "\"custom\"");
+    }
+#pragma warning restore ASP0040
+
     private static async Task<string> GenerateWithOpenApiAsync(string sources)
     {
         var project = CreateProject(includeOpenApi: true);
@@ -163,6 +244,16 @@ public sealed class TailDto
 
     private static async Task<string> GenerateAsync(Project project)
     {
+        var updatedCompilation = await GenerateCompilationAsync(project);
+        var generatedSources = updatedCompilation.SyntaxTrees
+            .Where(tree => tree.FilePath.EndsWith(".g.cs", StringComparison.Ordinal))
+            .OrderBy(tree => tree.FilePath, StringComparer.Ordinal)
+            .Select(tree => tree.GetText().ToString());
+        return string.Join(Environment.NewLine, generatedSources);
+    }
+
+    private static async Task<Compilation> GenerateCompilationAsync(Project project)
+    {
         var compilation = await project.GetCompilationAsync();
         var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
@@ -171,12 +262,7 @@ public sealed class TailDto
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation!, out var updatedCompilation, out _);
 
         Assert.Empty(updatedCompilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity >= DiagnosticSeverity.Warning));
-        var result = Assert.Single(driver.GetRunResult().Results);
-        return string.Join(
-            Environment.NewLine,
-            result.GeneratedSources
-                .OrderBy(source => source.HintName, StringComparer.Ordinal)
-                .Select(source => source.SourceText.ToString()));
+        return updatedCompilation;
     }
 
     private static int CountOccurrences(string value, string substring)
@@ -190,5 +276,14 @@ public sealed class TailDto
         }
 
         return count;
+    }
+
+    private sealed class CustomTupleConverter : JsonConverter<(int, string)>
+    {
+        public override (int, string) Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => throw new NotSupportedException();
+
+        public override void Write(Utf8JsonWriter writer, (int, string) value, JsonSerializerOptions options)
+            => writer.WriteStringValue("custom");
     }
 }
