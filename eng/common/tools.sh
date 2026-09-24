@@ -60,10 +60,13 @@ else
   node_reuse=${node_reuse:-true}
 fi
 
-# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
-# explicitly requested. It's intended to become the default for local builds once it has proven out.
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Enabled by default for local builds and not run on CI.
 msbuild_multi_threaded=$(NormalizeBoolArg "${msbuild_multi_threaded:-}")
-msbuild_multi_threaded=${msbuild_multi_threaded:-false}
+if [[ "$ci" == true ]]; then
+  msbuild_multi_threaded=${msbuild_multi_threaded:-false}
+else
+  msbuild_multi_threaded=${msbuild_multi_threaded:-true}
+fi
 
 # Configures warning treatment in msbuild.
 warn_as_error=$(NormalizeBoolArg "${warn_as_error:-}")

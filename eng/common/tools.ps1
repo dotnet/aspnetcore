@@ -31,9 +31,8 @@
 # Set to true to reuse msbuild nodes. Recommended to not reuse on CI.
 [bool]$nodeReuse = if (Test-Path variable:nodeReuse) { $nodeReuse } else { !$ci }
 
-# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
-# explicitly requested. It's intended to become the default for local builds once it has proven out.
-[bool]$msbuildMultiThreaded = if (Test-Path variable:msbuildMultiThreaded) { $msbuildMultiThreaded } else { $false }
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Enabled by default for local builds and not run on CI.
+[bool]$msbuildMultiThreaded = if (Test-Path variable:msbuildMultiThreaded) { $msbuildMultiThreaded } else { !$ci }
 
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }

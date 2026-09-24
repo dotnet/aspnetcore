@@ -8,7 +8,7 @@ Param(
   [bool] $warnAsError = $true,
   [string] $warnNotAsError = '',
   [bool] $nodeReuse = $true,
-  [bool][Alias('mt')]$msbuildMultiThreaded = $false,
+  [bool][Alias('mt')]$msbuildMultiThreaded = $true,
   [switch] $buildCheck = $false,
   [switch][Alias('r')]$restore,
   [switch] $deployDeps,
@@ -180,6 +180,10 @@ try {
     # Node reuse isn't used on CI unless it was explicitly requested via -nodeReuse.
     if (-not $PSBoundParameters.ContainsKey('nodeReuse')) {
       $nodeReuse = $false
+    }
+    # MSBuild's multi-threaded mode isn't run on CI unless it was explicitly requested via -msbuildMultiThreaded.
+    if (-not $PSBoundParameters.ContainsKey('msbuildMultiThreaded')) {
+      $msbuildMultiThreaded = $false
     }
   }
 
