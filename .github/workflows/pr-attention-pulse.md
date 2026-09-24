@@ -1,4 +1,8 @@
 ---
+features:
+  # Use the legacy inline detector until https://github.com/github/gh-aw/issues/61857 ships in a gh-aw release.
+  gh-aw-detection: false
+
 on:
   schedule: daily
   workflow_dispatch:
@@ -444,6 +448,9 @@ safe-outputs:
     engine:
       id: copilot
       model: gpt-5.6-sol
+      # An explicit inline detector engine does not inherit the main engine's environment.
+      env:
+        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     # The detector receives only sanitized agent output. Removing its credit budget also disables
     # AWF token steering. The tradeoff is that detector inference has no per-run AIC ceiling.
     max-ai-credits: -1
