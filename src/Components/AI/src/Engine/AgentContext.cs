@@ -299,7 +299,6 @@ public class AgentContext : IDisposable
             _agent.RejectPendingPredictiveState();
             Error = ex;
             Status = ConversationStatus.Error;
-            NotifyStatusChanged();
             try
             {
                 _agent.LogProcessingError(ex);
@@ -309,6 +308,7 @@ public class AgentContext : IDisposable
                 // A logging provider failure must not fault the operation after the processing
                 // failure has been surfaced through the conversation state.
             }
+            NotifyStatusChanged();
             return;
         }
 
