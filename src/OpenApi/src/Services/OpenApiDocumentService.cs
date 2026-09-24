@@ -854,7 +854,7 @@ internal sealed class OpenApiDocumentService(
                     InferredSchemaPurpose.Input,
                     description,
                     cancellationToken,
-                    GetTransportBindingFact(endpointMetadata, description));
+                    GetTransportBindingFact(endpointMetadata, description, BindingSource.Form));
 
                 if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                 {
@@ -958,7 +958,7 @@ internal sealed class OpenApiDocumentService(
                             InferredSchemaPurpose.Input,
                             description,
                             cancellationToken,
-                            GetTransportBindingFact(endpointMetadata, description));
+                            GetTransportBindingFact(endpointMetadata, description, BindingSource.Form));
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -984,7 +984,7 @@ internal sealed class OpenApiDocumentService(
                             InferredSchemaPurpose.Input,
                             description,
                             cancellationToken,
-                            GetTransportBindingFact(endpointMetadata, description));
+                            GetTransportBindingFact(endpointMetadata, description, BindingSource.Form));
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -1114,7 +1114,8 @@ internal sealed class OpenApiDocumentService(
 
     private static InferredTransportBindingFact? GetTransportBindingFact(
         IEnumerable<object> endpointMetadata,
-        ApiParameterDescription parameter)
+        ApiParameterDescription parameter,
+        BindingSource? sourceOverride = null)
     {
         if (parameter.Source is not { } source || parameter.Type is not { } type)
         {
@@ -1124,7 +1125,7 @@ internal sealed class OpenApiDocumentService(
         var bindingMetadata = endpointMetadata
             .OfType<IParameterBindingMetadata>()
             .SingleOrDefault(metadata => metadata.Name == parameter.Name);
-        return InferredTransportBindingFactBuilder.Build(type, source, bindingMetadata);
+        return InferredTransportBindingFactBuilder.Build(type, sourceOverride ?? source, bindingMetadata);
     }
 
     /// <inheritdoc />

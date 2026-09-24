@@ -205,6 +205,10 @@ internal static class JsonNodeSchemaExtensions
         {
             objectSchema[OpenApiSchemaKeywords.FormatKeyword] = decision.Format;
         }
+        else
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+        }
 
         if (decision.NumericBounds is { } numericBounds)
         {
@@ -227,6 +231,23 @@ internal static class JsonNodeSchemaExtensions
         }
     }
 
+    internal static void ApplyInferredScalarFormat(this JsonNode schema, string? format)
+    {
+        if (schema is not JsonObject objectSchema)
+        {
+            return;
+        }
+
+        if (format is null)
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+        }
+        else
+        {
+            objectSchema[OpenApiSchemaKeywords.FormatKeyword] = format;
+        }
+    }
+
     internal static void ApplyInferredTransportDecision(
         this JsonNode schema,
         InferredTransportSchemaDecision decision)
@@ -241,21 +262,26 @@ internal static class JsonNodeSchemaExtensions
         {
             case InferredTransportSchemaKind.String:
                 objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                ApplyFormat(objectSchema, decision.Format);
                 break;
             case InferredTransportSchemaKind.Boolean:
                 objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                ApplyFormat(objectSchema, decision.Format);
                 break;
             case InferredTransportSchemaKind.Integer:
                 objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                ApplyFormat(objectSchema, decision.Format);
                 ApplyBounds(objectSchema, decision.NumericBounds);
                 break;
             case InferredTransportSchemaKind.Number:
                 objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                ApplyFormat(objectSchema, decision.Format);
                 break;
             case InferredTransportSchemaKind.Enum:
                 objectSchema[OpenApiSchemaKeywords.AnyOfKeyword] = new JsonArray(
                     new JsonObject { [OpenApiSchemaKeywords.TypeKeyword] = "string" },
                     CreateIntegerSchema(decision.NumericBounds));
+                ApplyFormat(objectSchema, decision.Format);
                 break;
             case InferredTransportSchemaKind.Array:
                 var items = new JsonObject();
@@ -278,6 +304,14 @@ internal static class JsonNodeSchemaExtensions
             {
                 target[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(bounds.Minimum);
                 target[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(bounds.Maximum);
+            }
+        }
+
+        static void ApplyFormat(JsonObject target, string? format)
+        {
+            if (format is not null)
+            {
+                target[OpenApiSchemaKeywords.FormatKeyword] = format;
             }
         }
     }

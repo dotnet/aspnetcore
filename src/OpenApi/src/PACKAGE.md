@@ -205,22 +205,48 @@ Scalar schemas combine three related but distinct layers:
   `int64`, `float`, `double`, and `byte` can select a useful target-language type even when they do
   not completely describe serializer validation.
 
-Legacy mode preserves its established client hints. For JSON bodies, Inferred mode keeps the
-disputed date, time, and URI hints and only adds new scalar constraints when the effective
-System.Text.Json converter proves the contract:
+Legacy mode preserves its established client hints and ignores inferred scalar-format options.
+Inferred mode defaults to `OpenApiScalarFormatPolicy.Conventional`, which emits well-known formats
+that are useful to validators and generated clients even when a runtime converter or binder accepts
+a broader lexical language. `CompatibleOnly` retains only formats compatible with the complete
+package-proven contract, and `None` suppresses optional formats:
 
-| CLR contract | Legacy schema | Inferred schema and effective-contract distinction |
-| --- | --- | --- |
-| `DateTime`, `DateTimeOffset` | `string`, `date-time` | System.Text.Json accepts offsetless input, and an unspecified `DateTime` writes without an offset, while RFC 3339 `date-time` requires one. |
-| `TimeOnly` | `string`, `time` | System.Text.Json uses offsetless local times, while RFC 3339 `full-time` includes an offset. |
-| `Uri` | `string`, `uri` | System.Text.Json and minimal API binding accept relative as well as absolute values. |
-| `TimeSpan` | String with a constant-format pattern | The runtime representation is the .NET constant duration syntax, not the ISO duration syntax represented by `duration`. |
-| `decimal` | `number`, `double` | Inferred mode omits the `double` hint because it does not describe decimal precision or range. |
-| `byte[]` | `string`, `byte` | Inferred mode emits the OpenAPI 3.0 `byte` fallback, and emits `contentEncoding: base64` without `format: byte` in OpenAPI 3.1 and 3.2. |
-| `Memory<byte>`, `ReadOnlyMemory<byte>` | Referenced, unformatted string schemas | Inferred mode uses the same version-aware base64 representation as `byte[]`. |
-| `Rune`, `IPAddress`, `IPEndPoint`, `BigInteger` | Object JSON contracts | These types do not have built-in scalar System.Text.Json converters. Minimal API parameter metadata can independently describe the parsable types as strings. |
-| `nint`, `nuint` | Unconstrained schemas | System.Text.Json marks these runtime JSON contracts unsupported. |
-| A well-known CLR type with a custom converter | The CLR type's historical format can remain | Inferred mode does not add a CLR-derived format, numeric range, or content encoding when converter provenance is unknown. |
+```C#
+#pragma warning disable ASP0040
+builder.Services.AddOpenApi(options =>
+{
+    options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+    options.ScalarFormatPolicy = OpenApiScalarFormatPolicy.CompatibleOnly;
+    options.CreateScalarFormat = context =>
+        context.EffectiveType == typeof(MyIdentifier) ? "my-identifier" : context.DefaultFormat;
+});
+#pragma warning restore ASP0040
+```
+
+`CreateScalarFormat` runs for every inferred scalar context, including custom converters and
+parsers for which the policy has no candidate. Returning `context.DefaultFormat` accepts the
+policy result, returning another string replaces it verbatim, and returning `null` suppresses it.
+The context identifies the declared and effective CLR types, JSON or transport location,
+input/output purpose, target OpenAPI version, and package-recognized converter or parser
+provenance. Scalar formats are finalized before schema transformers run, so transformers retain
+final authority.
+
+| CLR contract | Conventional | CompatibleOnly | None |
+| --- | --- | --- | --- |
+| `Guid` | `uuid` | `uuid` for built-in JSON; none for transport | None |
+| `Uri` | `uri-reference` | None | None |
+| `DateOnly` | `date` | `date` for built-in JSON; none for transport | None |
+| `DateTime`, `DateTimeOffset` | `date-time` | None | None |
+| `TimeOnly` | `time` | None | None |
+| `byte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong` | Width hint | Width hint | None |
+| `float`, `double`, `char` | `float`, `double`, or `char` | None | None |
+| `TimeSpan`, `decimal`, `Half`, `sbyte`, `Int128`, `UInt128`, `nint`, `nuint`, `BigInteger`, `Version`, `Rune`, `IPAddress`, `IPEndPoint` | None | None | None |
+| Custom or opaque converter/parser | None | None | None |
+
+Proven base64 representation is not an optional scalar-format choice. For `byte[]`,
+`Memory<byte>`, and `ReadOnlyMemory<byte>`, Inferred mode always emits the OpenAPI 3.0
+`format: byte` fallback or OpenAPI 3.1/3.2 `contentEncoding: base64`, regardless of policy or
+callback result.
 
 Numeric schemas follow effective `JsonNumberHandling` for their JSON type alternatives and lexical
 patterns. Reading or writing numbers as strings adds a string alternative, and named IEEE
@@ -238,14 +264,14 @@ logical post-binding JSON Schema type. Fixed-width integral binders include thei
 minimum and maximum, while floating-point and decimal binders remain unbounded. Repeated values
 use arrays whose item schema is inferred from the element binder.
 
-Text-parsed framework types such as dates, times, `Guid`, `Uri`, `Version`, `TimeSpan`, `char`,
-`IPAddress`, and `IPEndPoint` use broad string schemas. Their invariant parsers accept values
-outside the standardized lexical spaces represented by familiar OpenAPI formats, so Inferred
-mode does not emit narrowing format hints. Enum binding accepts member names, numeric values, and
-flags combinations; its conservative schema therefore permits both a broad string branch and the
-bounded underlying integral branch. Custom `TryParse` and `IParsable` contracts use broad strings
-because endpoint metadata proves that text parsing occurs but cannot prove the parser's language.
-`BindAsync` does not imply a text contract and remains uninferred.
+Text-parsed framework types use broad string schemas. The conventional policy can annotate those
+schemas with the formats listed above, including `uri-reference` for relative or absolute URI
+values, without changing the represented JSON type. Enum binding accepts member names, numeric
+values, and flags combinations; its conservative schema therefore permits both a broad string
+branch and the bounded underlying integral branch. Custom `TryParse` and `IParsable` contracts use
+broad strings because endpoint metadata proves that text parsing occurs but cannot prove the
+parser's language; they receive no policy candidate, but applications can opt in through
+`CreateScalarFormat`. `BindAsync` does not imply a text contract and remains uninferred.
 
 Transport schemas are kept separate from System.Text.Json body components and are finalized before
 schema transformers run. Form fields use the same transport decisions even though OpenAPI
@@ -253,9 +279,10 @@ represents them as properties of a form request-body object. Nullable and defaul
 parameters express absence through parameter/property requiredness; their schemas do not add a
 JSON `null` value. These rules apply consistently in OpenAPI 3.0, 3.1, and 3.2.
 
-Scalar compatibility coverage records serializer, exporter, emitted-schema, and parameter-binding
-behavior. Inferred mode uses converter-proven body facts, version-appropriate base64 encoding, and
-the separate binder-aware transport decisions described above. Applications can provide stricter
+Scalar compatibility coverage records serializer, exporter, emitted-schema, format-policy, and
+parameter-binding behavior. Inferred mode uses converter-proven body facts, version-appropriate
+base64 encoding, and the separate binder-aware transport decisions described above. Applications
+can select or suppress scalar annotations through the callback and can provide stricter
 domain-specific constraints with a version-aware schema transformer.
 
 The inferred mode also resolves component names from the complete set of serializer contracts

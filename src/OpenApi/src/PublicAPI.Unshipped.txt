@@ -9,6 +9,39 @@ override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CreateConverter(Sy
 Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateScalarFormat.get -> System.Func<Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext!, string?>?
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateScalarFormat.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ScalarFormatPolicy.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ScalarFormatPolicy.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.DefaultFormat.get -> string?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.EffectiveType.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Location.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Provenance.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Purpose.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Type.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Form = 5 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Header = 4 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.JsonBody = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.JsonProperty = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Query = 3 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Route = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.CompatibleOnly = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.Conventional = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.None = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.CustomConverter = 3 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.CustomParser = 4 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.FrameworkBuiltInParser = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.SystemTextJsonBuiltIn = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.Unknown = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Input = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Neutral = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Output = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion

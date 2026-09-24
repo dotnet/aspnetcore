@@ -12,6 +12,7 @@ internal enum InferredScalarContractProvenance
 {
     Unknown,
     SystemTextJsonBuiltIn,
+    CustomConverter,
 }
 
 internal enum InferredScalarContractKind
@@ -58,7 +59,8 @@ internal sealed record InferredScalarContractFact(
     Type Type,
     InferredScalarContractProvenance Provenance,
     InferredScalarContractKind Kind,
-    InferredNumericBoundsFact? NumericBounds);
+    InferredNumericBoundsFact? NumericBounds,
+    bool IsScalar = false);
 
 internal sealed record InferredScalarSchemaDecision(
     string? Format,
@@ -77,16 +79,16 @@ internal static class InferredScalarContractFactBuilder
         var provenance = !hasConverterAttribute &&
             converter.GetType().Assembly == typeof(JsonSerializerOptions).Assembly
             ? InferredScalarContractProvenance.SystemTextJsonBuiltIn
-            : InferredScalarContractProvenance.Unknown;
+            : InferredScalarContractProvenance.CustomConverter;
 
-        if (provenance == InferredScalarContractProvenance.Unknown)
+        if (provenance != InferredScalarContractProvenance.SystemTextJsonBuiltIn)
         {
-            return new(type, provenance, InferredScalarContractKind.Other, NumericBounds: null);
+            return new(type, provenance, InferredScalarContractKind.Other, NumericBounds: null, typeInfo.Kind == JsonTypeInfoKind.None);
         }
 
         if (type == typeof(byte[]) || type == typeof(Memory<byte>) || type == typeof(ReadOnlyMemory<byte>))
         {
-            return new(type, provenance, InferredScalarContractKind.Base64String, NumericBounds: null);
+            return new(type, provenance, InferredScalarContractKind.Base64String, NumericBounds: null, IsScalar: true);
         }
 
         var numericBounds = InferredNumericBoundsFactBuilder.Build(type);
@@ -94,7 +96,8 @@ internal static class InferredScalarContractFactBuilder
             type,
             provenance,
             numericBounds is null ? InferredScalarContractKind.Other : InferredScalarContractKind.Integral,
-            numericBounds);
+            numericBounds,
+            typeInfo.Kind == JsonTypeInfoKind.None);
     }
 }
 
@@ -124,7 +127,7 @@ internal static class InferredScalarSchemaDecisionBuilder
 
     public static InferredScalarSchemaDecision Build(InferredScalarContractFact fact)
     {
-        if (fact.Provenance == InferredScalarContractProvenance.Unknown)
+        if (fact.Provenance != InferredScalarContractProvenance.SystemTextJsonBuiltIn)
         {
             return new(Format: null, NumericBounds: null, ContentEncoding: null);
         }

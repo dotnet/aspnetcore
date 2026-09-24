@@ -63,6 +63,27 @@ public sealed class OpenApiOptions
     public OpenApiSchemaGenerationMode SchemaGenerationMode { get; set; }
 
     /// <summary>
+    /// Gets or sets the policy used to select formats for scalar schemas in
+    /// <see cref="OpenApiSchemaGenerationMode.Inferred"/> mode.
+    /// Defaults to <see cref="OpenApiScalarFormatPolicy.Conventional"/>.
+    /// </summary>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public OpenApiScalarFormatPolicy ScalarFormatPolicy { get; set; } = OpenApiScalarFormatPolicy.Conventional;
+
+    /// <summary>
+    /// Gets or sets a callback that customizes scalar formats in
+    /// <see cref="OpenApiSchemaGenerationMode.Inferred"/> mode.
+    /// </summary>
+    /// <remarks>
+    /// Returning <see cref="OpenApiScalarFormatContext.DefaultFormat"/> accepts the format selected by
+    /// <see cref="ScalarFormatPolicy"/>. Returning another string replaces it, and returning
+    /// <see langword="null"/> suppresses it. Custom format names are emitted without validation.
+    /// Proven base64 content encoding is not controlled by this callback.
+    /// </remarks>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public Func<OpenApiScalarFormatContext, string?>? CreateScalarFormat { get; set; }
+
+    /// <summary>
     /// The name of the OpenAPI document this <see cref="OpenApiOptions"/> instance is associated with.
     /// </summary>
     public string DocumentName { get; internal set; } = OpenApiConstants.DefaultDocumentName;

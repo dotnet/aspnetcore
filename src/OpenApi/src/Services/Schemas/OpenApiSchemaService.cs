@@ -65,7 +65,8 @@ internal sealed class OpenApiSchemaService(
         bool useInferredComposition,
         OpenApiSpecVersion openApiVersion,
         InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
-        Func<Type, Type, string?>? getPolymorphicReferenceId = null)
+        Func<Type, Type, string?>? getPolymorphicReferenceId = null,
+        InferredTransportBindingFact? rootTransportBindingFact = null)
     {
         JsonSchemaExporterOptions configuration = null!;
         configuration = new()
@@ -147,9 +148,52 @@ internal sealed class OpenApiSchemaService(
                             typeof(System.Text.Json.Serialization.JsonConverterAttribute),
                             inherit: false)
                             is true);
+                    var scalarDecision = InferredScalarSchemaDecisionBuilder.Build(scalarFact);
+                    if (rootTransportBindingFact is not null)
+                    {
+                        scalarDecision = scalarDecision with { Format = null };
+                    }
+                    else if (
+                        scalarFact.Kind != InferredScalarContractKind.Base64String &&
+                        scalarFact.IsScalar &&
+                        !(schema[OpenApiSchemaKeywords.TypeKeyword] is JsonValue schemaType &&
+                            schemaType.TryGetValue<string>(out var schemaTypeName) &&
+                            schemaTypeName is "array" or "object"))
+                    {
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                        var options = optionsMonitor.Get(documentName);
+                        scalarDecision = scalarDecision with
+                        {
+                            Format = OpenApiScalarFormatResolver.ResolveJsonFormat(
+                                options,
+                                scalarFact,
+                                context.TypeInfo.Type,
+                                context.PropertyInfo is null
+                                    ? OpenApiScalarFormatLocation.JsonBody
+                                    : OpenApiScalarFormatLocation.JsonProperty,
+                                purpose,
+                                openApiVersion),
+                        };
+#pragma warning restore ASP0040
+                    }
                     schema.ApplyInferredScalarDecision(
-                        InferredScalarSchemaDecisionBuilder.Build(scalarFact),
+                        scalarDecision,
                         openApiVersion);
+                    if (rootTransportBindingFact?.Source == InferredTransportBindingSource.Form &&
+                        context.PropertyInfo is not null)
+                    {
+                        var formFact = InferredTransportBindingFactBuilder.Build(
+                            context.TypeInfo.Type,
+                            BindingSource.Form,
+                            bindingMetadata: null);
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                        var options = optionsMonitor.Get(documentName);
+                        var formDecision = InferredTransportSchemaDecisionBuilder.Build(
+                            formFact,
+                            fact => OpenApiScalarFormatResolver.ResolveTransportFormat(options, fact, openApiVersion));
+#pragma warning restore ASP0040
+                        schema.ApplyInferredTransportDecision(formDecision);
+                    }
                 }
                 else
                 {
@@ -377,15 +421,25 @@ internal sealed class OpenApiSchemaService(
         CancellationToken cancellationToken = default,
         InferredTransportBindingFact? transportBindingFact = null)
     {
-        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion, purpose);
+        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion, purpose, transportBindingFact);
+        InferredTransportSchemaDecision? transportDecision = null;
         if (IsInferredMode && transportBindingFact is not null)
         {
-            schemaAsJsonObject.ApplyInferredTransportDecision(
-                InferredTransportSchemaDecisionBuilder.Build(transportBindingFact));
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            var options = optionsMonitor.Get(documentName);
+            transportDecision = InferredTransportSchemaDecisionBuilder.Build(
+                transportBindingFact,
+                fact => OpenApiScalarFormatResolver.ResolveTransportFormat(options, fact, openApiVersion));
+#pragma warning restore ASP0040
+            schemaAsJsonObject.ApplyInferredTransportDecision(transportDecision);
         }
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
+        }
+        if (transportDecision is not null)
+        {
+            schemaAsJsonObject.ApplyInferredScalarFormat(transportDecision.Format);
         }
         if (IsInferredMode && transportBindingFact is not null)
         {
@@ -420,7 +474,7 @@ internal sealed class OpenApiSchemaService(
             && IsNonBodyBindingSource(source)
             && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
         {
-            var rawNode = CreateSchema(type, document, openApiVersion, purpose);
+            var rawNode = CreateSchema(type, document, openApiVersion, purpose, transportBindingFact);
             if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
             {
                 var memberNames = Enum.GetNames(enumType);
@@ -892,7 +946,8 @@ internal sealed class OpenApiSchemaService(
         Type type,
         OpenApiDocument? document,
         OpenApiSpecVersion openApiVersion,
-        InferredSchemaPurpose purpose)
+        InferredSchemaPurpose purpose,
+        InferredTransportBindingFact? transportBindingFact = null)
     {
         // We always create a oneOf nullable wrapper ourselves manually.
         var effectivePurpose = IsInferredMode ? purpose : InferredSchemaPurpose.Neutral;
@@ -908,7 +963,8 @@ internal sealed class OpenApiSchemaService(
                 useInferredComposition: true,
                 openApiVersion,
                 effectivePurpose,
-                referenceIdResolver.GetPolymorphicReferenceId);
+                referenceIdResolver.GetPolymorphicReferenceId,
+                transportBindingFact);
         }
         else
         {

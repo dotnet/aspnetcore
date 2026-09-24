@@ -35,6 +35,7 @@ internal enum InferredTransportSchemaKind
 }
 
 internal sealed record InferredTransportBindingFact(
+    Type DeclaredType,
     Type Type,
     InferredTransportBindingSource Source,
     InferredTransportBindingProvenance Provenance,
@@ -52,7 +53,8 @@ internal sealed record InferredTransportBindingFact(
 internal sealed record InferredTransportSchemaDecision(
     InferredTransportSchemaKind Kind,
     InferredNumericBoundsFact? NumericBounds,
-    InferredTransportSchemaDecision? Items)
+    InferredTransportSchemaDecision? Items,
+    string? Format)
 {
     public bool IsKnown => Kind != InferredTransportSchemaKind.Unknown;
 }
@@ -75,13 +77,16 @@ internal static class InferredTransportBindingFactBuilder
 
         if (effectiveType.IsArray)
         {
+            var elementType = effectiveType.GetElementType()!;
             var element = BuildScalar(
-                effectiveType.GetElementType()!,
+                elementType,
+                elementType,
                 transportSource,
                 bindingMetadata?.HasTryParse == true);
             var arrayFact = element.Kind == InferredTransportSchemaKind.Unknown
-                ? Unknown(effectiveType, transportSource)
+                ? Unknown(type, effectiveType, transportSource)
                 : new(
+                    type,
                     effectiveType,
                     transportSource,
                     element.Provenance,
@@ -92,6 +97,7 @@ internal static class InferredTransportBindingFactBuilder
         }
 
         return WithParameterFacts(BuildScalar(
+            type,
             effectiveType,
             transportSource,
             bindingMetadata?.HasTryParse == true
@@ -100,6 +106,7 @@ internal static class InferredTransportBindingFactBuilder
     }
 
     private static InferredTransportBindingFact BuildScalar(
+        Type declaredType,
         Type type,
         InferredTransportBindingSource source,
         bool hasTryParse)
@@ -107,6 +114,7 @@ internal static class InferredTransportBindingFactBuilder
         if (type.IsEnum)
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.EnumTryParse,
@@ -118,6 +126,7 @@ internal static class InferredTransportBindingFactBuilder
         if (type == typeof(string) || IsFrameworkStringParser(type))
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.FrameworkBuiltIn,
@@ -129,6 +138,7 @@ internal static class InferredTransportBindingFactBuilder
         if (type == typeof(bool))
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.FrameworkBuiltIn,
@@ -140,6 +150,7 @@ internal static class InferredTransportBindingFactBuilder
         if (IsIntegral(type))
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.FrameworkBuiltIn,
@@ -151,6 +162,7 @@ internal static class InferredTransportBindingFactBuilder
         if (type == typeof(BigInteger))
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.FrameworkBuiltIn,
@@ -162,6 +174,7 @@ internal static class InferredTransportBindingFactBuilder
         if (type == typeof(Half) || type == typeof(float) || type == typeof(double) || type == typeof(decimal))
         {
             return new(
+                declaredType,
                 type,
                 source,
                 InferredTransportBindingProvenance.FrameworkBuiltIn,
@@ -172,10 +185,11 @@ internal static class InferredTransportBindingFactBuilder
 
         if (!hasTryParse)
         {
-            return Unknown(type, source);
+            return Unknown(declaredType, type, source);
         }
 
         return new(
+            declaredType,
             type,
             source,
             InferredTransportBindingProvenance.CustomParser,
@@ -212,8 +226,12 @@ internal static class InferredTransportBindingFactBuilder
             || type == typeof(System.Net.IPAddress)
             || type == typeof(System.Net.IPEndPoint);
 
-    private static InferredTransportBindingFact Unknown(Type type, InferredTransportBindingSource source)
+    private static InferredTransportBindingFact Unknown(
+        Type declaredType,
+        Type type,
+        InferredTransportBindingSource source)
         => new(
+            declaredType,
             type,
             source,
             InferredTransportBindingProvenance.Unknown,
@@ -238,9 +256,14 @@ internal static class InferredTransportBindingFactBuilder
 
 internal static class InferredTransportSchemaDecisionBuilder
 {
-    public static InferredTransportSchemaDecision Build(InferredTransportBindingFact fact)
+    public static InferredTransportSchemaDecision Build(
+        InferredTransportBindingFact fact,
+        Func<InferredTransportBindingFact, string?>? resolveFormat = null)
         => new(
             fact.Kind,
             fact.NumericBounds,
-            fact.Element is null ? null : Build(fact.Element));
+            fact.Element is null ? null : Build(fact.Element, resolveFormat),
+            fact.Kind is InferredTransportSchemaKind.Unknown or InferredTransportSchemaKind.Array
+                ? null
+                : resolveFormat?.Invoke(fact));
 }
