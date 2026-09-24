@@ -642,6 +642,55 @@ try
         Assert-Throws { Invoke-RetrievalFixture $fixture } "Unreadable candidates must not be silently skipped." "cannot establish uniqueness"
     }
 
+    foreach ($unreadablePart in @("archive", "entry"))
+    {
+        foreach ($unreadableFirst in @($false, $true))
+        {
+            Invoke-RetrievalCase "unreadable ZIP $unreadablePart prevents uniqueness (unreadable first: $unreadableFirst)" {
+                $fixture = New-RetrievalFixture
+                $duplicate = Add-RetrievalArtifact $fixture -Id "9002"
+                $zipPath = $fixture.Downloads["repos/dotnet/aspnetcore/actions/artifacts/9002/zip"]
+                if ($unreadablePart -ceq "archive")
+                {
+                    [IO.File]::WriteAllBytes($zipPath, $utf8.GetBytes("not a zip"))
+                }
+                else
+                {
+                    $zipBytes = [IO.File]::ReadAllBytes($zipPath)
+                    Assert-True ($zipBytes[0] -eq 0x50 -and $zipBytes[1] -eq 0x4b -and
+                        $zipBytes[2] -eq 0x03 -and $zipBytes[3] -eq 0x04) "The fixture must start with a local ZIP file header."
+                    # Leave the central directory readable, but prevent opening the first entry.
+                    $zipBytes[0] = 0
+                    [IO.File]::WriteAllBytes($zipPath, $zipBytes)
+                    $archive = [IO.Compression.ZipFile]::OpenRead($zipPath)
+                    try
+                    {
+                        Assert-True ($archive.Entries.Count -eq 2) "The unreadable-entry fixture must still list both files."
+                        Assert-Throws {
+                            $stream = $archive.GetEntry("pulse-input.json").Open()
+                            $stream.Dispose()
+                        } "The fixture must fail when the real ZIP entry is opened."
+                    }
+                    finally
+                    {
+                        $archive.Dispose()
+                    }
+                }
+                $artifacts = if ($unreadableFirst)
+                {
+                    @($duplicate, $fixture.Artifact)
+                }
+                else
+                {
+                    @($fixture.Artifact, $duplicate)
+                }
+                Set-RetrievalPages $fixture @(@{ total_count = 2; artifacts = $artifacts })
+                Assert-True ($fixture.ReadFailures.Count -eq 0) "The transport must return bytes successfully."
+                Assert-Throws { Invoke-RetrievalFixture $fixture } "Unreadable ZIP candidates must prevent uniqueness." "cannot establish uniqueness"
+            }
+        }
+    }
+
     foreach ($field in @("run", "attempt", "repository"))
     {
         Invoke-RetrievalCase "attempt endpoint $field mismatch" {
@@ -713,7 +762,7 @@ try
     Invoke-RetrievalCase "malformed ZIP is explicit" {
         $fixture = New-RetrievalFixture
         [IO.File]::WriteAllBytes($fixture.Downloads["repos/dotnet/aspnetcore/actions/artifacts/9001/zip"], $utf8.GetBytes("not a zip"))
-        Assert-Throws { Invoke-RetrievalFixture $fixture } "Malformed ZIP cannot become empty data." "no exact matching artifact"
+        Assert-Throws { Invoke-RetrievalFixture $fixture } "Malformed ZIP cannot become empty data." "cannot establish uniqueness"
     }
 
     foreach ($mutation in @(

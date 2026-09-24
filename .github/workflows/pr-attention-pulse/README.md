@@ -230,6 +230,7 @@ The exact names and URL are part of the identity, not configurable alternatives.
 6. Require exactly one matching candidate. Reject zero matches and ambiguous
    multiple exact matches. An unreadable candidate or incomplete artifact listing
    prevents establishing uniqueness; report that failure rather than guessing.
+   This includes ZIP or entry-read failures after a successful download.
    Then parse and validate the supported JSON envelope. Keep unavailable/partial
    data states separate from retrieval failures.
 
@@ -390,21 +391,22 @@ function Get-PublishedPulseSnapshot
             $buffer = [IO.MemoryStream]::new($zipBytes, $false)
             $archive = [IO.Compression.ZipArchive]::new($buffer, [IO.Compression.ZipArchiveMode]::Read)
             $files = @{}
-            foreach ($name in @("pulse-input.json", "pulse-body.md"))
+            $entries = @($archive.Entries)
+            if ($entries.Count -ne 2 -or
+                @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-input.json", [StringComparison]::Ordinal) }).Count -ne 1 -or
+                @($entries | Where-Object { [string]::Equals($_.FullName, "pulse-body.md", [StringComparison]::Ordinal) }).Count -ne 1)
             {
-                $entries = @($archive.Entries | Where-Object {
-                    [string]::Equals($_.FullName, $name, [StringComparison]::Ordinal)
-                })
-                if ($archive.Entries.Count -ne 2 -or $entries.Count -ne 1)
-                {
-                    throw "ZIP must contain the two exact expected files, once each."
-                }
-                $stream = $entries[0].Open()
+                $rejections.Add("$($artifact.id): ZIP must contain the two exact expected files, once each.")
+                continue
+            }
+            foreach ($entry in $entries)
+            {
+                $stream = $entry.Open()
                 $content = [IO.MemoryStream]::new()
                 try
                 {
                     $stream.CopyTo($content)
-                    $files[$name] = $content.ToArray()
+                    $files[$entry.FullName] = $content.ToArray()
                 }
                 finally
                 {
@@ -415,7 +417,8 @@ function Get-PublishedPulseSnapshot
             $body = $utf8.GetString($files["pulse-body.md"])
             if (-not [string]::Equals($body, $PublishedBody, [StringComparison]::Ordinal))
             {
-                throw "Published body/identity mismatch."
+                $rejections.Add("$($artifact.id): Published body/identity mismatch.")
+                continue
             }
             $sha256 = [Security.Cryptography.SHA256]::Create()
             try
@@ -428,13 +431,14 @@ function Get-PublishedPulseSnapshot
             }
             if ($hash -cne $identity.Groups["hash"].Value)
             {
-                throw "Exact-byte JSON checksum mismatch."
+                $rejections.Add("$($artifact.id): Exact-byte JSON checksum mismatch.")
+                continue
             }
             $matching.Add($files["pulse-input.json"])
         }
-        catch
+        catch [IO.InvalidDataException], [IO.IOException], [Text.DecoderFallbackException]
         {
-            $rejections.Add("$($artifact.id): $($_.Exception.Message)")
+            throw "Artifact $($artifact.id) ZIP read failed; cannot establish uniqueness: $($_.Exception.Message)"
         }
         finally
         {
