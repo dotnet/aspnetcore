@@ -3259,7 +3259,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
         Browser.Exists(By.Id("load-list")).Click();
-        WaitForRenderToSettle(container, (IJavaScriptExecutor)Browser);
+        Browser.True(() =>
+        {
+            _ = GetItemPositionInContainer((IJavaScriptExecutor)Browser, container, ".item[data-index]");
+            return true;
+        }, TimeSpan.FromSeconds(15), "No rendered item appeared in the viewport");
     }
 
     private static void ScrollContainer(IJavaScriptExecutor js, IWebElement container, int scrollTop)
@@ -4832,7 +4836,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
         Browser.Exists(By.Id("load-list")).Click();
-        WaitForRenderToSettle(root, (IJavaScriptExecutor)Browser, useWindowAsViewport: true);
+        Browser.True(() =>
+        {
+            _ = GetItemPositionInViewport((IJavaScriptExecutor)Browser, root, ".item[data-index]");
+            return true;
+        }, TimeSpan.FromSeconds(15), "No rendered item appeared in the viewport");
     }
 
     private void WindowScrollToBottomAndWait(IJavaScriptExecutor js)
