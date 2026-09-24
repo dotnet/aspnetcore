@@ -1441,9 +1441,26 @@ public class CircuitHostTest
     {
         var handler = new ShortCircuitInboundActivityHandler();
         var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var shortCircuitAcknowledgementStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseShortCircuitAcknowledgement = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var successorAcknowledgementStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var client = new Mock<ISingleClientProxy>();
-        client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns((string _, object[] args, CancellationToken _) =>
+            {
+                if ((long)args[0] == 2)
+                {
+                    shortCircuitAcknowledgementStarted.SetResult();
+                    return releaseShortCircuitAcknowledgement.Task;
+                }
+
+                if ((long)args[0] == 3)
+                {
+                    successorAcknowledgementStarted.SetResult();
+                }
+
+                return Task.CompletedTask;
+            });
         var renderer = GetRemoteRenderer();
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: renderer,
@@ -1452,15 +1469,34 @@ public class CircuitHostTest
 
         var firstUpdate = circuitHost.UpdateRootComponents(new()
         {
+            BatchId = 1,
             Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
         }, null, false, CancellationToken.None);
-        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+        var shortCircuitedUpdate = circuitHost.UpdateRootComponents(new()
         {
+            BatchId = 2,
             Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
         }, null, false, CancellationToken.None);
+        await shortCircuitAcknowledgementStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var successorUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 3,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None);
 
-        await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.Equal([2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id));
+        try
+        {
+            await successorAcknowledgementStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(shortCircuitedUpdate.IsCompleted);
+            Assert.Equal([1, 3], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        }
+        finally
+        {
+            releaseShortCircuitAcknowledgement.SetResult();
+        }
+
+        await Task.WhenAll(shortCircuitedUpdate, successorUpdate).WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [Theory]
@@ -2042,6 +2078,6 @@ public class CircuitHostTest
 
         public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
             Func<CircuitInboundActivityContext, Task> next)
-            => context => Interlocked.Increment(ref _invocations) == 1 ? Task.CompletedTask : next(context);
+            => context => Interlocked.Increment(ref _invocations) == 2 ? Task.CompletedTask : next(context);
     }
 }
