@@ -38,3 +38,6 @@ jobs:
 
       - name: Run quarantine eligibility fixtures
         run: python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
+
+      - name: Run quarantine pull request fixtures
+        run: python3 -B .github/workflows/scripts/test-quarantine/test_validate_pull_request_outputs.py
