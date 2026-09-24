@@ -748,12 +748,12 @@ function Test-IsQualifyingAuthorResponse {
     }
 
     if ($normalizedBody -match "^(?:i\s+)?(?:have\s+)?rebased(?:\s+(?:on|onto|against)\s+\S+)?[.!]*$" -or
-        $normalizedBody -match "^(?:updated|synced|merged)\s+(?:the\s+)?(?:branch\s+)?(?:from|with|against)\s+(?:origin/)?(?:main|master)[.!]*$") {
+        $normalizedBody -match "^(?:(?:i|we)\s+(?:have\s+)?)?(?:updated|synced|merged)\s+(?:the\s+)?(?:branch\s+)?(?:from|with|against)\s+(?:(?:the\s+)?latest\s+)?(?:origin/)?(?:main|master)[.!]*$") {
         return $false
     }
 
     if ($normalizedBody.Contains("?") -or
-        $normalizedBody -match "\b(?:hopefully|maybe|probably|i think)\b" -or
+        $normalizedBody -match "\b(?:hopefully|maybe|probably|i think|i believe)\b|\b(?:appears|seems)\s+to\b|\blooks?\s+like\b" -or
         $normalizedBody -match "\b(?:i|we)(?:'ll|\s+will)\b|\bwill\s+(?:fix|address|update|resolve|complete|implement|push)\b|\b(?:going|plan|planning|intend|intending)\s+to\b|\bworking\s+on\b|\bin\s+progress\b|\bnot\s+yet\b|\bnext\s+week\b|\blater\b" -or
         $normalizedBody -match "\b(?:not|never)\s+(?:yet\s+)?(?:fixed|addressed|updated|resolved|done|completed|implemented)\b|\b(?:haven't|have not|didn't|did not|can't|cannot)\b") {
         return $false

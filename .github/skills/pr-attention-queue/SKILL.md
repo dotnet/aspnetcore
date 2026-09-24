@@ -57,7 +57,8 @@ This is deliberately not an LLM judgment. It only reports transparent evidence:
   substantive author completion claim such as `fixed`, `addressed`, `updated`, `resolved`, `done`,
   or `pushed the requested changes` returns earlier top-level feedback to reviewer follow-up.
   Coordination commands, mention-only or acknowledgement-only replies, rebase notices, disposition
-  text, questions, hedged claims, and deferral or in-progress language do not clear feedback.
+  text, questions, belief/appearance or other hedged claims, branch-maintenance-only notices, and
+  deferral or in-progress language do not clear feedback.
   Feedback posted after the latest qualifying completion claim still requires verification;
 - explicit informational non-author comments and coordination-only top-level comments. The initial
   conservative coordination allowlist contains only case-insensitive exact `/review` and `/azp run`
