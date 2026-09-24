@@ -1,0 +1,84 @@
+Corvus.Json.Cli semantic spot-check transcript
+Package: Corvus.Json.Cli 5.6.1 (third-party review tool; local manifest)
+Dialect wrapper: JSON Schema 2020-12
+The OpenAPI container is parsed separately by Program.cs.
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/animal.schema.json validation/animal-cat-valid.json
+EXPECTED: valid
+RATIONALE: The cat branch satisfies its structural discriminator enum and member assertions.
+RESULT: valid
+OUTPUT:
+  Document is valid
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/animal.schema.json validation/animal-dog-valid.json
+EXPECTED: valid
+RATIONALE: The dog branch satisfies its structural discriminator enum and member assertions.
+RESULT: valid
+OUTPUT:
+  Document is valid
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/animal.schema.json validation/animal-missing-discriminator-invalid.json
+EXPECTED: invalid
+RATIONALE: No oneOf branch accepts an object missing the structurally required discriminator property.
+RESULT: invalid
+OUTPUT:
+  Document is invalid
+  validation/animal-missing-discriminator-invalid.json(1,1): fail The value was expected to match the subschema. (/components/schemas/Animal)
+  validation/animal-missing-discriminator-invalid.json(1,1): fail The instance matched more than one schema. (/components/schemas/Animal/oneOf)
+  validation/animal-missing-discriminator-invalid.json: fail Required property not present 'kind' (/components/schemas/Animal/required)
+  validation/animal-missing-discriminator-invalid.json(1,1): fail The value was expected to match the subschema. ()
+  validation/animal-missing-discriminator-invalid.json(1,1): fail The value did not match all subschema. (/$ref)
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/animal.schema.json validation/animal-unknown-discriminator-invalid.json
+EXPECTED: invalid
+RATIONALE: No oneOf branch accepts an unknown discriminator literal.
+RESULT: invalid
+OUTPUT:
+  Document is invalid
+  validation/animal-unknown-discriminator-invalid.json(1,1): fail The value was expected to match the subschema. (/components/schemas/Animal)
+  validation/animal-unknown-discriminator-invalid.json(1,1): fail The instance matched no schema. (/components/schemas/Animal/oneOf)
+  validation/animal-unknown-discriminator-invalid.json(1,1): fail The value was expected to match the subschema. ()
+  validation/animal-unknown-discriminator-invalid.json(1,1): fail The value did not match all subschema. (/$ref)
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/directional-input.schema.json validation/directional-input-valid.json
+EXPECTED: valid
+RATIONALE: The representative request contains the required input property.
+RESULT: valid
+OUTPUT:
+  Document is valid
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/directional-input.schema.json validation/directional-input-missing-required-invalid.json
+EXPECTED: invalid
+RATIONALE: The representative request omits the structurally required input property.
+RESULT: invalid
+OUTPUT:
+  Document is invalid
+  validation/directional-input-missing-required-invalid.json(1,1): fail The value was expected to match the subschema. (/components/schemas/DirectionalDto.Input)
+  validation/directional-input-missing-required-invalid.json: fail Required property not present 'requiredButOmittable' (/components/schemas/DirectionalDto.Input/required)
+  validation/directional-input-missing-required-invalid.json(1,1): fail The value was expected to match the subschema. ()
+  validation/directional-input-missing-required-invalid.json(1,1): fail The value did not match all subschema. (/$ref)
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/serializer.schema.json validation/serializer-valid.json
+EXPECTED: valid
+RATIONALE: The representative payload exercises quoted-number and extension-data structural branches.
+RESULT: valid
+OUTPUT:
+  Document is valid
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/serializer.schema.json validation/serializer-out-of-range-numeric-invalid.json
+EXPECTED: invalid
+RATIONALE: Numeric sbyte instances are constrained by minimum and maximum.
+RESULT: invalid
+OUTPUT:
+  Document is invalid
+  validation/serializer-out-of-range-numeric-invalid.json(2,12): fail The value was expected to match the subschema. (/components/schemas/SerializerEnvelope/properties/small)
+  validation/serializer-out-of-range-numeric-invalid.json(2,12): fail The value was expected to be less than or equal to '127' (/components/schemas/SerializerEnvelope/properties/small/maximum)
+  validation/serializer-out-of-range-numeric-invalid.json(1,1): fail The value was expected to match the subschema. (/components/schemas/SerializerEnvelope)
+  validation/serializer-out-of-range-numeric-invalid.json(1,1): fail The value was expected to match the subschema. ()
+  validation/serializer-out-of-range-numeric-invalid.json(1,1): fail The value did not match all subschema. (/$ref)
+
+COMMAND: dotnet tool run corvusjson -- validateDocument validation/serializer.schema.json validation/serializer-out-of-range-quoted-known-underconstraint.json
+EXPECTED: valid
+RATIONALE: Known conservative underconstraint: the quoted-number branch models integer lexical shape, not the CLR sbyte range; System.Text.Json rejects this value as recorded by runtime-probe.json.
+RESULT: valid
+OUTPUT:
+  Document is valid

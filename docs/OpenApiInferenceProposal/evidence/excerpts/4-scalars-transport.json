@@ -1,0 +1,950 @@
+{
+  "callback31": {
+    "inputProperties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "guid-custom",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    },
+    "outputProperties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "guid-custom",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    },
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "format": "guid-custom",
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "compatibleOnly31": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "inferred30": {
+    "properties": {
+      "amount": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$"
+      },
+      "data": {
+        "format": "byte",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri-reference",
+        "nullable": true,
+        "type": "string"
+      },
+      "small": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$"
+      }
+    }
+  },
+  "inferred31": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "format": "uri-reference",
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri-reference",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "inferred32": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "format": "uri-reference",
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri-reference",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "legacy31": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/IPAddress"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "format": "double",
+          "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+          "type": [
+            "number",
+            "string"
+          ]
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/BigInteger"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "pattern": "^-?(?:0|[1-9]\\d*)$",
+          "type": [
+            "integer",
+            "string"
+          ]
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/IPEndPoint"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "pattern": "^-?(?:0|[1-9]\\d*)$",
+          "type": [
+            "integer",
+            "string"
+          ]
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "format": "double",
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "format": "byte",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "legacy32": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/IPAddress"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "format": "double",
+          "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+          "type": [
+            "number",
+            "string"
+          ]
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/BigInteger"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "format": "uint64",
+          "pattern": "^-?(?:0|[1-9]\\d*)$",
+          "type": [
+            "integer",
+            "string"
+          ]
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/IPEndPoint"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "pattern": "^-?(?:0|[1-9]\\d*)$",
+          "type": [
+            "integer",
+            "string"
+          ]
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "format": "double",
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "format": "byte",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "none31": {
+    "parameters": {
+      "address": {
+        "in": "query",
+        "name": "address",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "amount": {
+        "in": "header",
+        "name": "amount",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "bigInteger": {
+        "in": "query",
+        "name": "bigInteger",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "count": {
+        "in": "query",
+        "name": "count",
+        "required": true,
+        "schema": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "endpoint": {
+        "in": "query",
+        "name": "endpoint",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "identifier": {
+        "in": "query",
+        "name": "identifier",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "relativeUri": {
+        "in": "query",
+        "name": "relativeUri",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "routeValue": {
+        "in": "path",
+        "name": "routeValue",
+        "required": true,
+        "schema": {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      },
+      "timestamp": {
+        "in": "query",
+        "name": "timestamp",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "properties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "selectedParameters": [
+    "routeValue",
+    "count",
+    "relativeUri",
+    "identifier",
+    "timestamp",
+    "bigInteger",
+    "address",
+    "endpoint",
+    "amount"
+  ],
+  "selectedProperties": [
+    "small",
+    "amount",
+    "data",
+    "identifier",
+    "relativeUri",
+    "name"
+  ]
+}

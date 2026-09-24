@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "OpenApiEvidence | evidence",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/directional": {
+      "post": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "DirectionalContract",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectionalDto.Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectionalDto.Output"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inheritance": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "LosslessInheritance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/polymorphism": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "DiscriminatedPolymorphism",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serializer": {
+      "post": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "EffectiveSerializerContract",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SerializerEnvelope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerializerEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transport/{routeValue}": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "TransportContracts",
+        "parameters": [
+          {
+            "name": "routeValue",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": -2147483648,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer",
+              "format": "uint64"
+            }
+          },
+          {
+            "name": "relativeUri",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri-reference"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "bigInteger",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endpoint",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tuple": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "PositionalTuple",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValueTupleOflongAndboolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Animal": {
+        "required": [
+          "kind"
+        ],
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AnimalCat"
+          },
+          {
+            "$ref": "#/components/schemas/AnimalDog"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "cat": "#/components/schemas/AnimalCat",
+            "dog": "#/components/schemas/AnimalDog"
+          }
+        }
+      },
+      "AnimalCat": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "lives": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AnimalDog": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "good": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Entity"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "DirectionalDto.Input": {
+        "required": [
+          "requiredButOmittable"
+        ],
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "inputOnly": {
+            "type": "string",
+            "nullable": true
+          },
+          "nullableInput": {
+            "type": "string",
+            "nullable": true
+          },
+          "requiredButOmittable": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DirectionalDto.Output": {
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "outputOnly": {
+            "type": "string"
+          },
+          "nullableInput": {
+            "type": "string"
+          },
+          "requiredButOmittable": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Entity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "JsonElement": { },
+      "SerializerEnvelope": {
+        "type": "object",
+        "properties": {
+          "small": {
+            "maximum": 127,
+            "minimum": -128,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "data": {
+            "type": "string",
+            "format": "byte"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relativeUri": {
+            "type": "string",
+            "format": "uri-reference",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/JsonElement"
+        }
+      },
+      "ValueTupleOflongAndboolean": {
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array",
+        "items": { }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiEvidence"
+    }
+  ]
+}

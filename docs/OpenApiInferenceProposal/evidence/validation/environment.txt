@@ -1,0 +1,29 @@
+Evidence execution environment
+
+Repository HEAD: 7e7b647ef269dbdbf118c6052c2657f98b36626e
+Merge base with main: 89ab93803f3fcbb928f8ed1523945f89284f7e79
+Execution OS: Ubuntu 22.04.5 LTS under WSL on a Windows host
+Native Windows/macOS script execution: not run
+PowerShell: 7.6.2
+.NET SDK: 11.0.100-rc.1.26420.103
+ASP.NET Core runtime: 11.0.0-rc.1.26420.103
+Corvus.Json.Cli: 5.6.1, restored as a local third-party tool
+
+Prerequisites:
+- A checkout of the branch at the exact HEAD above.
+- The repository environment activated with source activate.sh.
+- The repository OpenAPI/HTTP dependencies built by the repository build.
+- AspNetCoreRepoRoot set to that checkout.
+- ASP0040 suppressed only in the evidence project because it intentionally
+  exercises experimental APIs.
+- dotnet tool restore run from the evidence directory.
+
+Configured restore sources were the enabled public dnceng feeds from the
+checkout's NuGet.config: dotnet-eng, dotnet-tools, dotnet12,
+dotnet12-transport, dotnet11, dotnet11-transport, dotnet10,
+dotnet10-transport, dotnet9, dotnet9-transport, dotnet8,
+dotnet8-transport, and dotnet-public at
+https://pkgs.dev.azure.com/dnceng/public/_packaging/<feed>/nuget/v3/index.json.
+
+No credentials, usernames, absolute user paths, or temporary artifact-root
+paths are recorded in this file or the Corvus transcript.

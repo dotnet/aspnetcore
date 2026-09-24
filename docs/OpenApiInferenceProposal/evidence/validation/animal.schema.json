@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/components/schemas/Animal",
+  "components": {
+    "schemas": {
+      "Animal": {
+        "required": [
+          "kind"
+        ],
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AnimalCat"
+          },
+          {
+            "$ref": "#/components/schemas/AnimalDog"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "cat": "#/components/schemas/AnimalCat",
+            "dog": "#/components/schemas/AnimalDog"
+          }
+        }
+      },
+      "AnimalCat": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "lives": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AnimalDog": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "good": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Entity"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "DirectionalDto.Input": {
+        "required": [
+          "requiredButOmittable"
+        ],
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "inputOnly": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableInput": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DirectionalDto.Output": {
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "outputOnly": {
+            "type": "string"
+          },
+          "nullableInput": {
+            "type": "string"
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "Entity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "JsonElement": {},
+      "SerializerEnvelope": {
+        "type": "object",
+        "properties": {
+          "small": {
+            "maximum": 127,
+            "minimum": -128,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "data": {
+            "contentEncoding": "base64",
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relativeUri": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uri-reference"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/JsonElement"
+        }
+      },
+      "ValueTupleOflongAndboolean": {
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array",
+        "items": false,
+        "prefixItems": [
+          {
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      }
+    }
+  }
+}

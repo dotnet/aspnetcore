@@ -1,0 +1,139 @@
+{
+  "inferred": {
+    "operation": {
+      "operationId": "DirectionalContract",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DirectionalDto.Input"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectionalDto.Output"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "DirectionalDto.Input": {
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "inputOnly": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableInput": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": "requiredButOmittable",
+        "type": "object"
+      },
+      "DirectionalDto.Output": {
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "nullableInput": {
+            "type": "string"
+          },
+          "outputOnly": {
+            "type": "string"
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "legacy": {
+    "operation": {
+      "operationId": "DirectionalContract",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DirectionalDto"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectionalDto"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "DirectionalDto": {
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "inputOnly": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableInput": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "outputOnly": {
+            "type": "string"
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "required": "requiredButOmittable",
+        "type": "object"
+      }
+    }
+  }
+}
