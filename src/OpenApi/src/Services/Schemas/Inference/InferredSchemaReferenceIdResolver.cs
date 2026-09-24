@@ -26,7 +26,8 @@ internal sealed class InferredSchemaReferenceIdResolverSet
         JsonSerializerOptions serializerOptions,
         Func<Type, InferredSchemaPurpose, InferredSchemaDocument> getInferredSchema,
         Func<JsonTypeInfo, string?> createSchemaReferenceId,
-        bool usesDefaultSchemaReferenceId)
+        bool usesDefaultSchemaReferenceId,
+        bool forcePurposeQualification)
     {
         var rootsByPurpose = roots
             .Distinct()
@@ -64,7 +65,7 @@ internal sealed class InferredSchemaReferenceIdResolverSet
                 type => createSchemaReferenceId(serializerOptions.GetTypeInfo(type)));
         var aliasesNeedingPurposeQualification = purposesByAlias
             .Where(entry => entry.Value.Count > 1 &&
-                HasDirectionalDifference(entry.Key, entry.Value))
+                (forcePurposeQualification || HasDirectionalDifference(entry.Key, entry.Value)))
             .Select(entry => entry.Key)
             .ToHashSet();
         var addedQualification = true;
@@ -104,7 +105,7 @@ internal sealed class InferredSchemaReferenceIdResolverSet
             }
         }
 
-        if (!usesDefaultSchemaReferenceId)
+        if (!usesDefaultSchemaReferenceId && !forcePurposeQualification)
         {
             var purposeAmbiguousContracts = plannedContracts
                 .Where(contract =>
@@ -170,7 +171,7 @@ internal sealed class InferredSchemaReferenceIdResolverSet
             var candidate = candidates.TryGetValue(type, out var plannedCandidate)
                 ? plannedCandidate
                 : createSchemaReferenceId(serializerOptions.GetTypeInfo(type));
-            return usesDefaultSchemaReferenceId &&
+            return (usesDefaultSchemaReferenceId || forcePurposeQualification) &&
                 candidate is not null &&
                 aliasesNeedingPurposeQualification.Contains(GetAliasIdentity(type))
                     ? $"{candidate}.{purpose}"

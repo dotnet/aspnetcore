@@ -919,6 +919,8 @@ public partial class OpenApiSchemaServiceTests
             Assert.Null(schema.Format);
             Assert.Equal("form", schema.Properties!["identifier"].Format);
             Assert.Equal("form", schema.Properties["timestamp"].Format);
+            Assert.Equal(JsonSchemaType.String, schema.Properties["code"].Type);
+            Assert.Equal("form", schema.Properties["code"].Format);
         });
 
         Assert.DoesNotContain(contexts, context =>
@@ -927,6 +929,56 @@ public partial class OpenApiSchemaServiceTests
             context.Type == typeof(Guid) &&
             context.Location == OpenApiScalarFormatLocation.Form &&
             context.Provenance == OpenApiScalarFormatProvenance.FrameworkBuiltInParser);
+        Assert.Contains(contexts, context =>
+            context.Type == typeof(FormCode) &&
+            context.Location == OpenApiScalarFormatLocation.Form &&
+            context.Provenance == OpenApiScalarFormatProvenance.CustomParser &&
+            context.DefaultFormat is null);
+    }
+
+    [Fact]
+    public async Task ComplexFormIParsableProperty_BindsAndEmitsCustomParserStringSchema()
+    {
+        var contexts = new List<OpenApiScalarFormatContext>();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddOpenApi(options =>
+        {
+            options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+            options.CreateScalarFormat = context =>
+            {
+                contexts.Add(context);
+                return context.DefaultFormat;
+            };
+        });
+        await using var app = builder.Build();
+        app.MapPost("/", ([FromForm] ScalarFormContract value) => Results.Text(value.Code.Value))
+            .DisableAntiforgery();
+        app.MapOpenApi();
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        using var response = await client.PostAsync(
+            "/",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                [nameof(ScalarFormContract.Identifier)] = Guid.Empty.ToString(),
+                [nameof(ScalarFormContract.Timestamp)] = "2024-01-02T03:04:05",
+                [nameof(ScalarFormContract.Code)] = "custom-value",
+            }));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("custom-value", await response.Content.ReadAsStringAsync());
+
+        var document = JsonNode.Parse(await client.GetStringAsync("/openapi/v1.json"))!;
+        var content = document["paths"]!["/"]!["post"]!["requestBody"]!["content"]!.AsObject();
+        var formSchema = ResolveSerializedSchema(document, content["application/x-www-form-urlencoded"]!["schema"]!);
+        var codeSchema = ResolveSerializedSchema(document, formSchema["properties"]!["code"]!);
+        Assert.Equal("string", codeSchema["type"]!.GetValue<string>());
+        Assert.Null(codeSchema["format"]);
+        Assert.Contains(contexts, context =>
+            context.Type == typeof(FormCode) &&
+            context.Location == OpenApiScalarFormatLocation.Form &&
+            context.Provenance == OpenApiScalarFormatProvenance.CustomParser);
     }
 
     [Fact]
@@ -943,6 +995,47 @@ public partial class OpenApiSchemaServiceTests
         var exception = await Assert.ThrowsAsync<FormatException>(
             () => VerifyOpenApiDocument(builder, options, _ => { }));
         Assert.Equal("Callback failure.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenApiScalarFormatCallback_PreservesContextAcrossComponentUsesAndEndpointOrder(bool reverseOrder)
+    {
+        var builder = CreateBuilder();
+        if (reverseOrder)
+        {
+            builder.MapPost("/property", (ContextualScalarEnvelope value) => value);
+            builder.MapPost("/root", (ContextualScalar value) => value);
+        }
+        else
+        {
+            builder.MapPost("/root", (ContextualScalar value) => value);
+            builder.MapPost("/property", (ContextualScalarEnvelope value) => value);
+        }
+
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            CreateScalarFormat = context => $"{context.Location}-{context.Purpose}",
+        };
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var root = document.Paths["/root"]!.Operations![HttpMethod.Post]!;
+            Assert.Equal(
+                "JsonBody-Input",
+                root.RequestBody!.Content!["application/json"]!.Schema!.Format);
+            Assert.Equal(
+                "JsonBody-Output",
+                root.Responses!["200"]!.Content!["application/json"]!.Schema!.Format);
+
+            var property = document.Paths["/property"]!.Operations![HttpMethod.Post]!;
+            var input = ResolveSchema(document, property.RequestBody!.Content!["application/json"]!.Schema!);
+            var output = ResolveSchema(document, property.Responses!["200"]!.Content!["application/json"]!.Schema!);
+            Assert.Equal("JsonProperty-Input", input.Properties!["value"].Format);
+            Assert.Equal("JsonProperty-Output", output.Properties!["value"].Format);
+        });
     }
 
     [Theory]
@@ -1308,6 +1401,39 @@ public partial class OpenApiSchemaServiceTests
     {
         public Guid Identifier { get; set; }
         public DateTime Timestamp { get; set; }
+        public FormCode Code { get; set; }
+    }
+
+    private readonly record struct FormCode(string Value) : IParsable<FormCode>
+    {
+        public static FormCode Parse(string value, IFormatProvider? provider)
+            => new(value);
+
+        public static bool TryParse(string? value, IFormatProvider? provider, out FormCode result)
+        {
+            result = new(value ?? string.Empty);
+            return value is not null;
+        }
+    }
+
+    [JsonConverter(typeof(ContextualScalarConverter))]
+    private sealed class ContextualScalar;
+
+    private sealed class ContextualScalarEnvelope
+    {
+        public ContextualScalar Value { get; set; } = new();
+    }
+
+    private sealed class ContextualScalarConverter : JsonConverter<ContextualScalar>
+    {
+        public override ContextualScalar Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            reader.GetString();
+            return new();
+        }
+
+        public override void Write(Utf8JsonWriter writer, ContextualScalar value, JsonSerializerOptions options)
+            => writer.WriteStringValue("value");
     }
 
     private sealed class ScalarContractContainer

@@ -63,7 +63,7 @@ builder.Services.AddOpenApi(options =>
 });
 ```
 
-Use `IOpenApiDocumentProvider.GetOpenApiDocumentForVersionAsync` to generate a document for a
+Use `IOpenApiVersionedDocumentProvider.GetOpenApiDocumentForVersionAsync` to generate a document for a
 target other than the configured default. Version-sensitive transformer output is generated for
 that target. Do not serialize the returned model using a different OpenAPI version; regenerate it
 for the desired target instead. OpenAPI 3.0 does not support conditional or dependent JSON Schema
@@ -86,8 +86,8 @@ legacy and inferred schema-generation modes. OpenAPI 3.1 and 3.2 documents use o
 `prefixItems`, exact `minItems` and `maxItems`, and `items: false`. OpenAPI 3.0 cannot represent
 positional element schemas: it emits a conforming broad approximation with exact arity and a
 single unconstrained `items` schema. The converter dynamically constructs closed converters and
-is unsupported in NativeAOT and trimming-sensitive applications until generated closed converters
-are available.
+is unsupported in NativeAOT and trimming-sensitive applications. Those applications can register
+the reflection-free closed converters described below.
 
 To opt in to inferred serializer-contract semantics for schema composition, configure the experimental schema generation mode:
 
@@ -229,7 +229,9 @@ policy result, returning another string replaces it verbatim, and returning `nul
 The context identifies the declared and effective CLR types, JSON or transport location,
 input/output purpose, target OpenAPI version, and package-recognized converter or parser
 provenance. Scalar formats are finalized before schema transformers run, so transformers retain
-final authority.
+final authority. When the callback is configured, inferred component identities preserve
+input/output context and scalar uses that can vary by JSON body/property location are emitted
+per use. A callback result therefore does not depend on which endpoint is generated first.
 
 | CLR contract | Conventional | CompatibleOnly | None |
 | --- | --- | --- | --- |
@@ -271,7 +273,9 @@ values, and flags combinations; its conservative schema therefore permits both a
 branch and the bounded underlying integral branch. Custom `TryParse` and `IParsable` contracts use
 broad strings because endpoint metadata proves that text parsing occurs but cannot prove the
 parser's language; they receive no policy candidate, but applications can opt in through
-`CreateScalarFormat`. `BindAsync` does not imply a text contract and remains uninferred.
+`CreateScalarFormat`. Nested form properties follow the form mapper's narrower contract: custom
+`IParsable<T>` properties are strings, while a static `TryParse` method alone is not sufficient.
+`BindAsync` does not imply a text contract and remains uninferred.
 
 Transport schemas are kept separate from System.Text.Json body components and are finalized before
 schema transformers run. Form fields use the same transport decisions even though OpenAPI
@@ -303,16 +307,17 @@ inlines the schema. Empty or invalid values, or the same non-null value returned
 non-aliased serializer contract types, cause document generation to fail rather than silently
 selecting or overwriting a component.
 
-When the Request Delegate Generator (RDG) handles a minimal API endpoint, it automatically
-registers reflection-free closed tuple converters before the HTTP JSON serializer options become
-read-only. Automatic discovery covers tuple contracts used directly as JSON request bodies or
-serializable responses, arrays, and public readable properties (including inherited properties)
-on source-declared DTO classes and structs. Registration is deterministic and idempotent, and an
-existing user converter that handles the same tuple contract takes precedence. This behavior does
-not require `AddOpenApi`; when OpenAPI is present, schema inference recognizes the same converter
-provenance and emits the matching tuple schema.
+When the Request Delegate Generator (RDG) handles a minimal API endpoint and the application has
+explicitly registered `JsonArrayTupleConverter`, RDG replaces dynamically discovered tuple
+contracts with reflection-free closed converters before the HTTP JSON serializer options become
+read-only. Discovery covers tuple contracts used directly as JSON request bodies or serializable
+responses, arrays, and public readable properties (including inherited properties) on
+source-declared DTO classes and structs. Registration is deterministic and idempotent, and an
+existing user converter that handles the same tuple contract takes precedence. Referencing the
+OpenAPI package, calling `AddOpenApi`, selecting Legacy or Inferred mode, or enabling RDG alone
+does not change runtime tuple serialization.
 
-Automatic discovery is intentionally bounded and does not reproduce runtime System.Text.Json
+Opted-in discovery is intentionally bounded and does not reproduce runtime System.Text.Json
 contract discovery. Dynamic or non-RDG endpoints, metadata-only DTO graphs, fields, arbitrary
 collection or dictionary graphs, open generic contracts, polymorphic contracts, and types or
 properties with custom converters require explicit registration. Applications can use the

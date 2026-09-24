@@ -139,6 +139,7 @@ internal sealed class OpenApiSchemaService(
                 {
                     schema = new JsonObject();
                 }
+                var isScalarContract = false;
                 if (useInferredComposition)
                 {
                     var scalarFact = InferredScalarContractFactBuilder.Build(
@@ -148,6 +149,7 @@ internal sealed class OpenApiSchemaService(
                             typeof(System.Text.Json.Serialization.JsonConverterAttribute),
                             inherit: false)
                             is true);
+                    isScalarContract = scalarFact.IsScalar;
                     var scalarDecision = InferredScalarSchemaDecisionBuilder.Build(scalarFact);
                     if (rootTransportBindingFact is not null)
                     {
@@ -200,6 +202,15 @@ internal sealed class OpenApiSchemaService(
                     schema.ApplyPrimitiveFormats(context);
                 }
                 schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                if (useInferredComposition &&
+                    optionsMonitor.Get(documentName).CreateScalarFormat is not null &&
+                    isScalarContract &&
+                    schema is JsonObject scalarSchema)
+                {
+                    scalarSchema.Remove(OpenApiConstants.SchemaId);
+                }
+#pragma warning restore ASP0040
                 if (useInferredComposition)
                 {
                     var inferredSchema = GetInferredSchema(type, purpose);
@@ -997,7 +1008,10 @@ internal sealed class OpenApiSchemaService(
             _jsonSerializerOptions,
             GetInferredSchema,
             options.CreateSchemaReferenceId,
-            options.UsesDefaultSchemaReferenceId);
+            options.UsesDefaultSchemaReferenceId,
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            options.CreateScalarFormat is not null);
+#pragma warning restore ASP0040
     }
 
     private bool IsInferredMode

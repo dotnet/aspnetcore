@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -102,6 +103,7 @@ internal static class InferredTransportBindingFactBuilder
             transportSource,
             bindingMetadata?.HasTryParse == true
                 || effectiveType == typeof(string)
+                || transportSource == InferredTransportBindingSource.Form && ImplementsIParsable(effectiveType)
                 || transportSource != InferredTransportBindingSource.Form), bindingMetadata);
     }
 
@@ -225,6 +227,13 @@ internal static class InferredTransportBindingFactBuilder
             || type == typeof(System.Text.Rune)
             || type == typeof(System.Net.IPAddress)
             || type == typeof(System.Net.IPEndPoint);
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Only implemented interface identities are inspected; no interface members are accessed.")]
+    private static bool ImplementsIParsable(Type type)
+        => Array.Exists(type.GetInterfaces(), candidate =>
+            candidate.IsGenericType &&
+            candidate.GetGenericTypeDefinition() == typeof(IParsable<>) &&
+            candidate.GenericTypeArguments[0] == type);
 
     private static InferredTransportBindingFact Unknown(
         Type declaredType,
