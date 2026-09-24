@@ -34,7 +34,7 @@ public class JSComponentInterop
     }
 
     private const int MaxParameters = 100;
-    private readonly HashSet<int> _jsComponentIds = [];
+    private readonly HashSet<int> _jsComponentIds = new();
     private WebRenderer? _renderer;
 
     internal JSComponentConfigurationStore Configuration { get; }

@@ -153,12 +153,6 @@
           ]
         },
         {
-          "condition": "(!(IndividualLocalAuth && UseServer))",
-          "exclude": [
-            "BlazorWebCSharp.1/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
-          ]
-        },
-        {
           "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
           "rename": {
             "BlazorWebCSharp.1/Data/SqlServer/": "BlazorWebCSharp.1/Data/Migrations/"

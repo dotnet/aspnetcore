@@ -21,7 +21,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Features.ExternalAccess" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
@@ -256,6 +256,15 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <!-- Components.AI (Microsoft.Extensions.AI) -->
+    <LatestPackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
+    <!-- Components.AI dojo test assets (AG-UI protocol client and server) -->
+    <LatestPackageReference Include="AGUI.Abstractions" Version="$(AGUIAbstractionsVersion)" />
+    <LatestPackageReference Include="AGUI.Client" Version="$(AGUIClientVersion)" />
+    <LatestPackageReference Include="AGUI.Formatting" Version="$(AGUIFormattingVersion)" />
+    <LatestPackageReference Include="AGUI.Server" Version="$(AGUIServerVersion)" />
     <!-- Components.Gateway OpenTelemetry + resilience dependencies -->
     <LatestPackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <LatestPackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
@@ -301,7 +310,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
-    <LatestPackageReference Update="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore">
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Features.ExternalAccess">
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
     <LatestPackageReference Update="Microsoft.CodeAnalysis.Razor">

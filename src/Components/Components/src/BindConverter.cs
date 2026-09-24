@@ -381,7 +381,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -396,7 +396,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -467,7 +467,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -482,7 +482,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -554,7 +554,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -570,7 +570,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -642,7 +642,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         if (format != null)
@@ -658,7 +658,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return null;
+            return string.Empty;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
