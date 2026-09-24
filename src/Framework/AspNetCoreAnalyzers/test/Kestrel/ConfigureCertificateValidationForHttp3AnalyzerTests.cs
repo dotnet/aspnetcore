@@ -34,10 +34,25 @@ public class ConfigureCertificateValidationForHttp3AnalyzerTests
         await VerifyDiagnosticAsync(source);
     }
 
+    [Fact]
+    public async Task ReportsDiagnostic_InsideListenCallback()
+    {
+        var source = GetSource(
+            "listenOptions.Protocols = HttpProtocols.Http3;",
+            $"context => ValueTask.FromResult({GetUnsafeOptions(markDiagnostic: true)})",
+            configureParameters: "",
+            configurationStart: "Listen(listenOptions => {",
+            configurationEnd: "});");
+
+        await VerifyDiagnosticAsync(source);
+    }
+
     [Theory]
     [InlineData("(_, _, _, _) => true")]
     [InlineData("(_, _, _, _) => { return true; }")]
     [InlineData("(_, _, _, errors) => { if (errors == SslPolicyErrors.None) { return true; } return true; }")]
+    [InlineData("delegate { return true; }")]
+    [InlineData("(_, _, _, _) => { bool Reject() { return false; } return true; }")]
     public async Task ReportsDiagnostic_WhenCallbackVisiblyAlwaysReturnsTrue(string callback)
     {
         var source = GetSource(
@@ -50,6 +65,7 @@ public class ConfigureCertificateValidationForHttp3AnalyzerTests
     [Theory]
     [InlineData("(_, _, _, _) => false")]
     [InlineData("(_, _, _, errors) => errors == SslPolicyErrors.None")]
+    [InlineData("(_, _, _, errors) => { if (errors != SslPolicyErrors.None) { throw new AuthenticationException(); } return true; }")]
     [InlineData("ValidateCertificate")]
     public async Task NoDiagnostic_WhenCallbackMightValidate(string callback)
     {
@@ -207,12 +223,60 @@ public class ConfigureCertificateValidationForHttp3AnalyzerTests
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
+    [Fact]
+    public async Task NoDiagnostic_WhenTrustFactoryIsOpaqueAndNullable()
+    {
+        var source = GetSource(
+            "listenOptions.Protocols = HttpProtocols.Http3;",
+            $"context => ValueTask.FromResult({GetUnsafeOptions(markDiagnostic: false, trustExpression: "GetTrust()")})");
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenUseHttpsMethodIsNotKestrelExtension()
+    {
+        var source = GetSource(
+            "listenOptions.Protocols = HttpProtocols.Http3;",
+            $"context => ValueTask.FromResult({GetUnsafeOptions(markDiagnostic: false)})",
+            useHttpsInvocationStart: "UseHttps(listenOptions, ");
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_WhenHttp3IsConfiguredOnPropertyOfDifferentReceiver()
+    {
+        var source = GetSource(
+            "first.Options.Protocols = HttpProtocols.Http1AndHttp2; second.Options.Protocols = HttpProtocols.Http3;",
+            $"context => ValueTask.FromResult({GetUnsafeOptions(markDiagnostic: false)})",
+            configureParameters: "OptionsHolder first, OptionsHolder second, bool condition",
+            useHttpsInvocationStart: "first.Options.UseHttps(");
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_WhenHttp3IsConfiguredOnSamePropertyReceiver()
+    {
+        var source = GetSource(
+            "first.Options.Protocols = HttpProtocols.Http3;",
+            $"context => ValueTask.FromResult({GetUnsafeOptions(markDiagnostic: true)})",
+            configureParameters: "OptionsHolder first, bool condition",
+            useHttpsInvocationStart: "first.Options.UseHttps(");
+
+        await VerifyDiagnosticAsync(source);
+    }
+
     private static Task VerifyDiagnosticAsync(string source)
         => VerifyCS.VerifyAnalyzerAsync(
             source,
             new DiagnosticResult(DiagnosticDescriptors.ConfigureCertificateValidationForHttp3).WithLocation(0));
 
-    private static string GetUnsafeOptions(bool markDiagnostic, string additionalConfiguration = "")
+    private static string GetUnsafeOptions(
+        bool markDiagnostic,
+        string additionalConfiguration = "",
+        string trustExpression = "SslCertificateTrust.CreateForX509Collection([])")
     {
         var serverCertificateContext = markDiagnostic
             ? "{|#0:ServerCertificateContext|}"
@@ -227,15 +291,22 @@ public class ConfigureCertificateValidationForHttp3AnalyzerTests
                     null!,
                     null,
                     false,
-                    SslCertificateTrust.CreateForX509Collection([])),
+                    {{trustExpression}}),
             }
             """;
     }
 
-    private static string GetSource(string protocolConfiguration, string onConnection)
+    private static string GetSource(
+        string protocolConfiguration,
+        string onConnection,
+        string configureParameters = "ListenOptions listenOptions, ListenOptions otherListenOptions, bool condition",
+        string useHttpsInvocationStart = "listenOptions.UseHttps(",
+        string configurationStart = "",
+        string configurationEnd = "")
         => $$"""
 using System;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -247,21 +318,38 @@ public static class Configuration
     private static X509ChainPolicy customPolicy = new();
     private static X509Certificate2 rootCertificate = null!;
 
+    private sealed class OptionsHolder
+    {
+        public ListenOptions Options { get; } = null!;
+    }
+
     public static void Main()
     {
     }
 
-    public static void Configure(ListenOptions listenOptions, ListenOptions otherListenOptions, bool condition)
+    private static void Configure({{configureParameters}})
     {
+        {{configurationStart}}
         {{protocolConfiguration}}
-        listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+        {{useHttpsInvocationStart}}new TlsHandshakeCallbackOptions
         {
             OnConnection = {{onConnection}},
         });
+        {{configurationEnd}}
+    }
+
+    private static void Listen(Action<ListenOptions> configure)
+    {
+    }
+
+    private static void UseHttps(ListenOptions listenOptions, TlsHandshakeCallbackOptions callbackOptions)
+    {
     }
 
     private static bool ValidateCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors errors)
         => errors == SslPolicyErrors.None;
+
+    private static SslCertificateTrust? GetTrust() => null;
 
     private static X509ChainPolicy CreatePolicy() => new();
 

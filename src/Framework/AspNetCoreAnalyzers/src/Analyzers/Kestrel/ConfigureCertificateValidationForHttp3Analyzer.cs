@@ -29,6 +29,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             var sslCertificateTrust = context.Compilation.GetTypeByMetadataName("System.Net.Security.SslCertificateTrust");
             var tlsHandshakeCallbackOptions = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions");
             var listenOptions = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions");
+            var listenOptionsHttpsExtensions = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions");
             var httpProtocols = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols");
             var x509ChainPolicy = context.Compilation.GetTypeByMetadataName("System.Security.Cryptography.X509Certificates.X509ChainPolicy");
             var x509ChainTrustMode = context.Compilation.GetTypeByMetadataName("System.Security.Cryptography.X509Certificates.X509ChainTrustMode");
@@ -38,6 +39,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                 sslCertificateTrust is null ||
                 tlsHandshakeCallbackOptions is null ||
                 listenOptions is null ||
+                listenOptionsHttpsExtensions is null ||
                 httpProtocols is null ||
                 x509ChainPolicy is null ||
                 x509ChainTrustMode is null)
@@ -45,9 +47,15 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                 return;
             }
 
+            var useHttpsWithCallbackOptions = listenOptionsHttpsExtensions.GetMembers("UseHttps")
+                .OfType<IMethodSymbol>()
+                .SingleOrDefault(method =>
+                    method.Parameters.Length is 2 &&
+                    SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, listenOptions) &&
+                    SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, tlsHandshakeCallbackOptions));
             var http3 = httpProtocols.GetMembers("Http3").OfType<IFieldSymbol>().SingleOrDefault()?.ConstantValue;
             var customRootTrust = x509ChainTrustMode.GetMembers("CustomRootTrust").OfType<IFieldSymbol>().SingleOrDefault()?.ConstantValue;
-            if (http3 is null || customRootTrust is null)
+            if (useHttpsWithCallbackOptions is null || http3 is null || customRootTrust is null)
             {
                 return;
             }
@@ -60,6 +68,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                     sslCertificateTrust,
                     tlsHandshakeCallbackOptions,
                     listenOptions,
+                    useHttpsWithCallbackOptions,
                     x509ChainPolicy,
                     Convert.ToInt64(http3, CultureInfo.InvariantCulture),
                     Convert.ToInt64(customRootTrust, CultureInfo.InvariantCulture)),
@@ -74,6 +83,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         INamedTypeSymbol sslCertificateTrust,
         INamedTypeSymbol tlsHandshakeCallbackOptions,
         INamedTypeSymbol listenOptions,
+        IMethodSymbol useHttpsWithCallbackOptions,
         INamedTypeSymbol x509ChainPolicy,
         long http3,
         long customRootTrust)
@@ -117,7 +127,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         if (!clientCertificateRequired ||
             hasEffectiveValidation ||
             serverCertificateContextAssignment is null ||
-            !TryGetKestrelUseHttpsInvocation(objectCreation, tlsHandshakeCallbackOptions, out var useHttpsInvocation) ||
+            !TryGetKestrelUseHttpsInvocation(objectCreation, tlsHandshakeCallbackOptions, useHttpsWithCallbackOptions, out var useHttpsInvocation) ||
             !IsHttp3EnabledInContainingScope(useHttpsInvocation, listenOptions, http3))
         {
             return;
@@ -136,31 +146,49 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             return false;
         }
 
-        var callback = value.DescendantsAndSelf().OfType<IAnonymousFunctionOperation>().FirstOrDefault();
+        var callback = value switch
+        {
+            IAnonymousFunctionOperation anonymousFunction => anonymousFunction,
+            IDelegateCreationOperation { Target: IAnonymousFunctionOperation anonymousFunction } => anonymousFunction,
+            _ => null,
+        };
         if (callback is null)
         {
             // Method groups, delegate references, and other opaque values might perform validation.
             return true;
         }
 
-        if (callback.Syntax is not LambdaExpressionSyntax lambda)
-        {
-            return true;
-        }
-
         // Only a visibly unconditional accept-all callback is ineffective. Any other callback
         // shape remains outside this diagnostic rather than being audited for correctness.
-        if (lambda.Body is LiteralExpressionSyntax { Token.Value: true })
+        if (callback.Syntax is LambdaExpressionSyntax
+            {
+                Body: LiteralExpressionSyntax { Token.Value: true }
+            })
         {
             return false;
         }
 
-        if (lambda.Body is not BlockSyntax block)
+        var block = callback.Syntax switch
+        {
+            LambdaExpressionSyntax { Body: BlockSyntax lambdaBlock } => lambdaBlock,
+            AnonymousMethodExpressionSyntax { Block: var anonymousMethodBlock } => anonymousMethodBlock,
+            _ => null,
+        };
+        if (block is null)
         {
             return true;
         }
 
-        var returns = block.DescendantNodes(node => node is not AnonymousFunctionExpressionSyntax)
+        static bool DescendIntoCallbackNode(SyntaxNode node)
+            => node is not AnonymousFunctionExpressionSyntax and not LocalFunctionStatementSyntax;
+
+        if (block.DescendantNodes(DescendIntoCallbackNode)
+            .Any(node => node is ThrowStatementSyntax or ThrowExpressionSyntax))
+        {
+            return true;
+        }
+
+        var returns = block.DescendantNodes(DescendIntoCallbackNode)
             .OfType<ReturnStatementSyntax>()
             .ToArray();
 
@@ -249,12 +277,13 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
 
         return trustArgument is not null &&
             UnwrapConversion(trustArgument.Value) is IInvocationOperation trustCreation &&
-            SymbolEqualityComparer.Default.Equals(trustCreation.Type, sslCertificateTrust);
+            SymbolEqualityComparer.Default.Equals(trustCreation.TargetMethod.ContainingType, sslCertificateTrust);
     }
 
     private static bool TryGetKestrelUseHttpsInvocation(
         IObjectCreationOperation sslOptionsCreation,
         INamedTypeSymbol tlsHandshakeCallbackOptions,
+        IMethodSymbol useHttpsWithCallbackOptions,
         out IInvocationOperation useHttpsInvocation)
     {
         useHttpsInvocation = null!;
@@ -282,10 +311,9 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             ? null
             : GetAncestors(callbackOptionsCreation).OfType<IInvocationOperation>().FirstOrDefault();
 
+        var targetMethod = invocation?.TargetMethod.ReducedFrom ?? invocation?.TargetMethod;
         if (invocation is null ||
-            invocation.TargetMethod.Name != "UseHttps" ||
-            !invocation.Arguments.Any(argument =>
-                SymbolEqualityComparer.Default.Equals(argument.Parameter?.Type, tlsHandshakeCallbackOptions)))
+            !SymbolEqualityComparer.Default.Equals(targetMethod?.OriginalDefinition, useHttpsWithCallbackOptions))
         {
             return false;
         }
@@ -376,8 +404,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
         var receiver = useHttpsInvocation.Instance ??
             useHttpsInvocation.Arguments.FirstOrDefault(argument =>
                 SymbolEqualityComparer.Default.Equals(argument.Parameter?.Type, listenOptions))?.Value;
-        var receiverSymbol = GetReferencedSymbol(receiver);
-        if (receiverSymbol is null)
+        if (receiver is null)
         {
             return false;
         }
@@ -397,7 +424,7 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
                     Instance: var instance
                 } propertyReference ||
                 !SymbolEqualityComparer.Default.Equals(propertyReference.Property.ContainingType, listenOptions) ||
-                !SymbolEqualityComparer.Default.Equals(GetReferencedSymbol(instance), receiverSymbol))
+                !AreSameReceiver(instance, receiver))
             {
                 continue;
             }
@@ -417,15 +444,35 @@ public sealed class ConfigureCertificateValidationForHttp3Analyzer : DiagnosticA
             (Convert.ToInt64(value, CultureInfo.InvariantCulture) & http3) != 0;
     }
 
-    private static ISymbol? GetReferencedSymbol(IOperation? operation)
-        => operation is null ? null : UnwrapConversion(operation) switch
+    private static bool AreSameReceiver(IOperation? left, IOperation? right)
+    {
+        if (left is null || right is null)
         {
-            ILocalReferenceOperation local => local.Local,
-            IParameterReferenceOperation parameter => parameter.Parameter,
-            IFieldReferenceOperation field => field.Field,
-            IPropertyReferenceOperation property => property.Property,
-            _ => null,
+            return left is null && right is null;
+        }
+
+        left = UnwrapConversion(left);
+        right = UnwrapConversion(right);
+
+        return (left, right) switch
+        {
+            (ILocalReferenceOperation leftLocal, ILocalReferenceOperation rightLocal) =>
+                SymbolEqualityComparer.Default.Equals(leftLocal.Local, rightLocal.Local),
+            (IParameterReferenceOperation leftParameter, IParameterReferenceOperation rightParameter) =>
+                SymbolEqualityComparer.Default.Equals(leftParameter.Parameter, rightParameter.Parameter),
+            (IFieldReferenceOperation leftField, IFieldReferenceOperation rightField) =>
+                SymbolEqualityComparer.Default.Equals(leftField.Field, rightField.Field) &&
+                AreSameReceiver(leftField.Instance, rightField.Instance),
+            (IPropertyReferenceOperation leftProperty, IPropertyReferenceOperation rightProperty) =>
+                leftProperty.Arguments.Length is 0 &&
+                rightProperty.Arguments.Length is 0 &&
+                SymbolEqualityComparer.Default.Equals(leftProperty.Property, rightProperty.Property) &&
+                AreSameReceiver(leftProperty.Instance, rightProperty.Instance),
+            (IInstanceReferenceOperation leftInstance, IInstanceReferenceOperation rightInstance) =>
+                leftInstance.ReferenceKind == rightInstance.ReferenceKind,
+            _ => false,
         };
+    }
 
     private static bool IsNull(IOperation operation)
         => UnwrapConversion(operation).ConstantValue is { HasValue: true, Value: null };
