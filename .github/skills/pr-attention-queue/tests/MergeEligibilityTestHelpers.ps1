@@ -13,6 +13,8 @@ function Invoke-MergeFixtureQueue {
     return & $module {
         param($fixtures, $format, $scope, $maximum, $excludedAuthors)
         $requests = [Collections.Generic.List[string]]::new()
+        $detailNumbers = [Collections.Generic.List[int]]::new()
+        $retryNumbers = [Collections.Generic.List[int]]::new()
         $discussionNumbers = [Collections.Generic.List[int]]::new()
         function Invoke-GhJson {
             param([string[]]$Arguments)
@@ -63,14 +65,29 @@ function Invoke-MergeFixtureQueue {
                     if ($fixture.missingDiscussion) { $detail = @{} }
                     if ($fixture.missingCommentNodes) { $detail.comments.Remove("nodes") }
                 }
+                elseif ($query -notmatch 'reviews\(last: 50\)') {
+                    $retryNumbers.Add($number)
+                    if ($fixture.failRetry) { throw "Fixture mergeability transport failure for #$number." }
+                    $selection = [regex]::Match($query, "pr$number`: pullRequest\(number: $number\) \{ ([^{}]+) \}")
+                    if (-not $selection.Success) { throw "Unexpected mergeability selection: $query" }
+                    $detail = $null
+                    if ($null -ne $fixture.retryResponse) {
+                        $detail = @{}
+                        foreach ($field in $selection.Groups[1].Value.Trim() -split '\s+') {
+                            $property = $fixture.retryResponse.PSObject.Properties[$field]
+                            if ($null -ne $property) { $detail[$field] = $property.Value }
+                        }
+                    }
+                }
                 else {
+                    $detailNumbers.Add($number)
                     $reviews = @($fixture.reviews | ConvertTo-Json -Depth 20 | ConvertFrom-Json -Depth 20)
                     if ($query -notmatch 'reviews\(last: 50\)[\s\S]*?bodyText') {
                         foreach ($review in $reviews) { $review.PSObject.Properties.Remove("bodyText") }
                     }
                     $detail = @{
                         number = $number
-                        mergeable = "MERGEABLE"
+                        mergeable = if ($fixture.PSObject.Properties["mergeable"]) { $fixture.mergeable } else { "MERGEABLE" }
                         mergeStateStatus = if ($fixture.mergeStateStatus) { $fixture.mergeStateStatus } else { "CLEAN" }
                         reviewDecision = if ($fixture.reviewDecision) { $fixture.reviewDecision } else { "APPROVED" }
                         reviews = @{
@@ -106,6 +123,8 @@ function Invoke-MergeFixtureQueue {
         [pscustomobject]@{
             output = $output
             requests = @($requests)
+            detailNumbers = @($detailNumbers)
+            retryNumbers = @($retryNumbers)
             discussionNumbers = @($discussionNumbers)
         }
     } $PullRequests $OutputFormat $Scope $Maximum $ExcludedAuthors

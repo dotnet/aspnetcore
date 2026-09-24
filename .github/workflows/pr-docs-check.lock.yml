@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"74ff70831f9f365672213296802750f87e48c43ed49eead47dca84aeb73e864a","body_hash":"56c95486d298ce3ac2ff75bedc8ba4aa01046f9912b4f60bd803927e071a3e91","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["ASPNETCORE_DOCS_BOT_CLIENT_ID","ASPNETCORE_DOCS_BOT_PRIVATE_KEY","COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/create-github-app-token","sha":"bcd2ba49218906704ab6c1aa796996da409d3eb1","version":"v3.2.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"5e508589e03a7757a7e05b26e834292f5445bfb6","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch","update_pull_request"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"55d121ddd974f8baf5afeae504d3d296dbacb714457aa023ea755154a1773b22","body_hash":"ce61b66ae4665b78cb0eaf2fa83ec53865072949913589e1cd53884fd88e1935","compiler_version":"v0.88.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.80"}}
+# gh-aw-manifest: {"version":1,"secrets":["ASPNETCORE_DOCS_BOT_CLIENT_ID","ASPNETCORE_DOCS_BOT_PRIVATE_KEY","COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_DEFAULT_OTLP_HEADERS","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/create-github-app-token","sha":"bcd2ba49218906704ab6c1aa796996da409d3eb1","version":"v3.2.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"5e508589e03a7757a7e05b26e834292f5445bfb6","version":"v0.88.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14","digest":"sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.14@sha256:f7df036c86575527b61f3f7df91c4412349a12b2a74988d929eafa2999230c98"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14","digest":"sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.14@sha256:6f95e2234dd9bd6333a8ff28ccea7ecf0204acd4a09108723844dbd2bf6268c5"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14","digest":"sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.14@sha256:3a379c5e96e29499c815e9dd2a71334d01c326a9b73991c76544fda9cae35c34"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14","digest":"sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.14@sha256:2ce8df3abf3e9b76e9c0cf5863da41f1ab3f89b20ad14b988806ab89e7bf2cd5"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.18","digest":"sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.18@sha256:85b940556a8faa4e1fdbef124bfd75f2c4ebd855a10b88a1c3b6f3e97f6f1a53"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"},{"image":"ghcr.io/github/github-mcp-server:v1.11.0","digest":"sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699","pinned_image":"ghcr.io/github/github-mcp-server:v1.11.0@sha256:fbec75de11c255213fa08d80fb166abe73d851fff631c51c0079872967720699"}],"mcp_servers":[{"name":"safeoutputs","tools":["create_pull_request","missing_data","missing_tool","noop","notify_source_pr","push_to_pull_request_branch","update_pull_request"]}]}
 # This file was automatically generated by gh-aw (v0.88.7). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -25,10 +25,23 @@
 #
 # Runs only when manually dispatched to analyze an ASP.NET Core pull request from the user's perspective, classify conceptual, migration, and breaking-change documentation needs, and either open a fork-backed draft documentation pull request in dotnet/AspNetCore.Docs or record why no documentation was created. Documentation branches are pushed to dotnet/AspNetCore.Docs.Automation. Every conclusive run comments on the source pull request, and a drafted docs pull request notifies the source pull request author.
 #
+# Resolved workflow manifest:
+#   Imports:
+#     - shared/pat_pool.md
+#
 # Secrets used:
 #   - ASPNETCORE_DOCS_BOT_CLIENT_ID
 #   - ASPNETCORE_DOCS_BOT_PRIVATE_KEY
-#   - COPILOT_GITHUB_TOKEN
+#   - COPILOT_PAT_0
+#   - COPILOT_PAT_1
+#   - COPILOT_PAT_2
+#   - COPILOT_PAT_3
+#   - COPILOT_PAT_4
+#   - COPILOT_PAT_5
+#   - COPILOT_PAT_6
+#   - COPILOT_PAT_7
+#   - COPILOT_PAT_8
+#   - COPILOT_PAT_9
 #   - GH_AW_CI_TRIGGER_TOKEN
 #   - GH_AW_DEFAULT_OTLP_HEADERS
 #   - GH_AW_GITHUB_MCP_SERVER_TOKEN
@@ -99,7 +112,9 @@ env:
 
 jobs:
   activation:
-    needs: pre_activation
+    needs:
+      - pat_pool
+      - pre_activation
     if: needs.pre_activation.outputs.activated == 'true'
     runs-on: ubuntu-slim
     permissions:
@@ -119,7 +134,6 @@ jobs:
       lockdown_check_failed: ${{ steps.generate_aw_info.outputs.lockdown_check_failed == 'true' }}
       model: ${{ steps.generate_aw_info.outputs.model }}
       oauth_token_check_failed: ${{ steps.check-oauth-tokens.outputs.oauth_token_check_failed == 'true' }}
-      secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
       setup-span-id: ${{ steps.setup.outputs.span-id }}
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
@@ -219,16 +233,11 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require(path.join(actionsDir, 'check_daily_aic_workflow_guardrail.cjs'));
             await main();
-      - name: Validate COPILOT_GITHUB_TOKEN secret
-        id: validate-secret
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/validate_multi_secret.sh" COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
-        env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Check for OAuth tokens
         id: check-oauth-tokens
         run: bash "${RUNNER_TEMP}/gh-aw/actions/check_oauth_tokens.sh"
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
           GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
           GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
       - name: Checkout .github and .agents folders
@@ -338,6 +347,7 @@ jobs:
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SOURCE_REPOSITORY: ${{ inputs.source_repository }}
           GH_AW_MCP_CLI_SERVERS_LIST: '- `safeoutputs` — run `safeoutputs --help` to see available tools'
+          GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: ${{ needs.pat_pool.outputs.pat_number }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
           script: |
@@ -363,6 +373,7 @@ jobs:
                 GH_AW_INPUTS_PR_NUMBER: process.env.GH_AW_INPUTS_PR_NUMBER,
                 GH_AW_INPUTS_SOURCE_REPOSITORY: process.env.GH_AW_INPUTS_SOURCE_REPOSITORY,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
+                GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER: process.env.GH_AW_NEEDS_PAT_POOL_OUTPUTS_PAT_NUMBER,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
@@ -400,9 +411,12 @@ jobs:
           retention-days: 1
 
   agent:
-    needs: activation
+    needs:
+      - activation
+      - pat_pool
     if: needs.activation.outputs.daily_ai_credits_exceeded != 'true'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
       copilot-requests: none
@@ -561,20 +575,6 @@ jobs:
           GH_AW_COMPILED_VERSION: v0.88.7
       - name: Install AWF binary
         run: bash "${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh" v0.28.14 --rootless
-      - name: Generate GitHub App token
-        id: github-mcp-app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
-          owner: dotnet
-          repositories: |-
-            aspnetcore
-            AspNetCore.Docs
-          github-api-url: ${{ github.api_url }}
-          permission-contents: read
-          permission-issues: read
-          permission-pull-requests: read
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
@@ -626,16 +626,16 @@ jobs:
           owner: dotnet
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
           repositories: |
-            aspnetcore
             AspNetCore.Docs
             AspNetCore.Docs.Automation
       - env:
           DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
-          GH_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
+          DOCS_GITHUB_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
           SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
         name: Resolve source version and existing docs draft
-        run: "set -euo pipefail\ntrap 'rm -rf -- _workflow-source' EXIT\n\ncase \"${SOURCE_REPOSITORY}\" in\n  dotnet/aspnetcore) ;;\n  *)\n    echo \"ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}\" >&2\n    exit 1\n    ;;\nesac\nif ! [[ \"${SOURCE_PR_NUMBER}\" =~ ^[1-9][0-9]*$ ]]; then\n  echo \"ERROR: SOURCE_PR_NUMBER must be a positive integer.\" >&2\n  exit 1\nfi\n\nCONTEXT_DIR=/tmp/gh-aw/pr-docs-check\nmkdir -p \"${CONTEXT_DIR}\"\ngh api \"/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}\" \\\n  > \"${CONTEXT_DIR}/source-pr.json\"\ngh api --method GET --paginate --slurp \"/repos/dotnet/aspnetcore/branches?per_page=100\" \\\n  | jq '[.[][] | .name]' \\\n  > \"${CONTEXT_DIR}/source-branches.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/resolve_target_version.py \\\n  --policy _workflow-source/.github/workflows/pr-docs-check/version-policy.json \\\n  --pull-request \"${CONTEXT_DIR}/source-pr.json\" \\\n  --release-branches \"${CONTEXT_DIR}/source-branches.json\" \\\n  --output \"${CONTEXT_DIR}/target-version.json\"\n\ngh api --method GET --paginate --slurp \\\n  \"/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100\" \\\n  | jq '[.[][]]' \\\n  > \"${CONTEXT_DIR}/open-docs-pulls.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \\\n  --pull-requests \"${CONTEXT_DIR}/open-docs-pulls.json\" \\\n  --source-repository \"${SOURCE_REPOSITORY}\" \\\n  --source-pr-number \"${SOURCE_PR_NUMBER}\" \\\n  --target-repository dotnet/AspNetCore.Docs \\\n  --head-repository dotnet/AspNetCore.Docs.Automation \\\n  --allowed-author \"${DOCS_BOT_APP_SLUG}[bot]\" \\\n  --output \"${CONTEXT_DIR}/existing-draft.json\"\n\nif [ \"$(jq -r '.found' \"${CONTEXT_DIR}/existing-draft.json\")\" = \"true\" ]; then\n  HEAD_REF=\"$(jq -r '.selected.head_ref' \"${CONTEXT_DIR}/existing-draft.json\")\"\n  git \\\n    -c credential.helper= \\\n    -c \"credential.helper=!gh auth git-credential\" \\\n    fetch --no-tags \\\n    \"https://github.com/dotnet/AspNetCore.Docs.Automation.git\" \\\n    \"+refs/heads/${HEAD_REF}:refs/remotes/automation/${HEAD_REF}\"\n  git checkout -B \"${HEAD_REF}\" \"refs/remotes/automation/${HEAD_REF}\"\nfi\n"
+        run: "set -euo pipefail\ntrap 'rm -rf -- _workflow-source' EXIT\n\ncase \"${SOURCE_REPOSITORY}\" in\n  dotnet/aspnetcore) ;;\n  *)\n    echo \"ERROR: Unexpected source repository: ${SOURCE_REPOSITORY}\" >&2\n    exit 1\n    ;;\nesac\nif ! [[ \"${SOURCE_PR_NUMBER}\" =~ ^[1-9][0-9]*$ ]]; then\n  echo \"ERROR: SOURCE_PR_NUMBER must be a positive integer.\" >&2\n  exit 1\nfi\n\nCONTEXT_DIR=/tmp/gh-aw/pr-docs-check\nmkdir -p \"${CONTEXT_DIR}\"\ngh api \"/repos/${SOURCE_REPOSITORY}/pulls/${SOURCE_PR_NUMBER}\" \\\n  > \"${CONTEXT_DIR}/source-pr.json\"\ngh api --method GET --paginate --slurp \"/repos/dotnet/aspnetcore/branches?per_page=100\" \\\n  | jq '[.[][] | .name]' \\\n  > \"${CONTEXT_DIR}/source-branches.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/resolve_target_version.py \\\n  --policy _workflow-source/.github/workflows/pr-docs-check/version-policy.json \\\n  --pull-request \"${CONTEXT_DIR}/source-pr.json\" \\\n  --release-branches \"${CONTEXT_DIR}/source-branches.json\" \\\n  --output \"${CONTEXT_DIR}/target-version.json\"\n\nGH_TOKEN=\"${DOCS_GITHUB_TOKEN}\" gh api --method GET --paginate --slurp \\\n  \"/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100\" \\\n  | jq '[.[][]]' \\\n  > \"${CONTEXT_DIR}/open-docs-pulls.json\"\npython3 _workflow-source/.github/workflows/pr-docs-check/find_existing_draft.py \\\n  --pull-requests \"${CONTEXT_DIR}/open-docs-pulls.json\" \\\n  --source-repository \"${SOURCE_REPOSITORY}\" \\\n  --source-pr-number \"${SOURCE_PR_NUMBER}\" \\\n  --target-repository dotnet/AspNetCore.Docs \\\n  --head-repository dotnet/AspNetCore.Docs.Automation \\\n  --allowed-author \"${DOCS_BOT_APP_SLUG}[bot]\" \\\n  --output \"${CONTEXT_DIR}/existing-draft.json\"\n\nif [ \"$(jq -r '.found' \"${CONTEXT_DIR}/existing-draft.json\")\" = \"true\" ]; then\n  HEAD_REF=\"$(jq -r '.selected.head_ref' \"${CONTEXT_DIR}/existing-draft.json\")\"\n  GH_TOKEN=\"${DOCS_GITHUB_TOKEN}\" git \\\n    -c credential.helper= \\\n    -c \"credential.helper=!gh auth git-credential\" \\\n    fetch --no-tags \\\n    \"https://github.com/dotnet/AspNetCore.Docs.Automation.git\" \\\n    \"+refs/heads/${HEAD_REF}:refs/remotes/automation/${HEAD_REF}\"\n  git checkout -B \"${HEAD_REF}\" \"refs/remotes/automation/${HEAD_REF}\"\nfi\n"
       - name: Preserve trusted draft context
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1098,7 +1098,7 @@ jobs:
         run: bash "${RUNNER_TEMP}/gh-aw/actions/audit_pre_agent_workspace.sh"
       - name: Start CLI Proxy
         env:
-          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
           GH_HOST: ${{ env.GH_HOST }}
@@ -1134,6 +1134,7 @@ jobs:
         # --allow-tool shell(head)
         # --allow-tool shell(jq)
         # --allow-tool shell(ls)
+        # --allow-tool shell(mkdir)
         # --allow-tool shell(printf)
         # --allow-tool shell(pwd)
         # --allow-tool shell(safeoutputs:*)
@@ -1198,12 +1199,12 @@ jobs:
           GH_AW_AWF_ATTEMPT_LOG_NAME=copilot \
           bash "${RUNNER_TEMP}/gh-aw/actions/run_awf_with_startup_retries.sh" -- \
             awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" ${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"} ${GH_AW_DOCKER_HOST:+--docker-host "$GH_AW_DOCKER_HOST"} --env-all --exclude-env ACTIONS_ID_TOKEN_REQUEST_TOKEN --exclude-env ACTIONS_ID_TOKEN_REQUEST_URL --exclude-env COPILOT_GITHUB_TOKEN --exclude-env GH_TOKEN --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_AGENT_ID --mount /tmp/gh-aw:/tmp/gh-aw:rw --log-level info --skip-pull --difc-proxy-host awmg-cli-proxy:18443 --difc-proxy-ca-cert /tmp/gh-aw/difc-proxy-tls/ca.crt \
-            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; GH_AW_TOOL_BINS="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')"; GH_AW_TOOL_BINS="${GH_AW_TOOL_BINS%:}"; export PATH="$PATH${GH_AW_TOOL_BINS:+:}$GH_AW_TOOL_BINS"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(find)'\'' --allow-tool '\''shell(gh:*)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(printf)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt'
+            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; GH_AW_TOOL_BINS="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')"; GH_AW_TOOL_BINS="${GH_AW_TOOL_BINS%:}"; export PATH="$PATH${GH_AW_TOOL_BINS:+:}$GH_AW_TOOL_BINS"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(find)'\'' --allow-tool '\''shell(gh:*)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(mkdir)'\'' --allow-tool '\''shell(printf)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt'
         env:
           AWF_REFLECT_ENABLED: 1
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
           COPILOT_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'auto' }}
           GH_AW_LLM_PROVIDER: github
           GH_AW_MAX_AI_CREDITS: ${{ vars.GH_AW_DEFAULT_MAX_AI_CREDITS || '1000' }}
@@ -1218,7 +1219,7 @@ jobs:
           GITHUB_AW: true
           GITHUB_COPILOT_INTEGRATION_ID: agentic-workflows
           GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ steps.github-mcp-app-token.outputs.token }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
@@ -1280,10 +1281,19 @@ jobs:
             const { main } = require(path.join(actionsDir, 'redact_secrets.cjs'));
             await main();
         env:
-          GH_AW_SECRET_NAMES: 'ASPNETCORE_DOCS_BOT_CLIENT_ID,ASPNETCORE_DOCS_BOT_PRIVATE_KEY,COPILOT_GITHUB_TOKEN,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
+          GH_AW_SECRET_NAMES: 'ASPNETCORE_DOCS_BOT_CLIENT_ID,ASPNETCORE_DOCS_BOT_PRIVATE_KEY,COPILOT_PAT_0,COPILOT_PAT_1,COPILOT_PAT_2,COPILOT_PAT_3,COPILOT_PAT_4,COPILOT_PAT_5,COPILOT_PAT_6,COPILOT_PAT_7,COPILOT_PAT_8,COPILOT_PAT_9,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
           SECRET_ASPNETCORE_DOCS_BOT_CLIENT_ID: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           SECRET_ASPNETCORE_DOCS_BOT_PRIVATE_KEY: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
-          SECRET_COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          SECRET_COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          SECRET_COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          SECRET_COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          SECRET_COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          SECRET_COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          SECRET_COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          SECRET_COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          SECRET_COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          SECRET_COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          SECRET_COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
           SECRET_GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
           SECRET_GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
           SECRET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1434,12 +1444,14 @@ jobs:
       - agent
       - detection
       - notify_source_pr
+      - pat_pool
       - safe_outputs
     if: >
       always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true' ||
       needs.activation.outputs.oauth_token_check_failed == 'true' || needs.activation.outputs.stale_lock_file_failed == 'true' ||
-      needs.activation.outputs.secret_verification_result == 'failed' || needs.activation.outputs.daily_ai_credits_exceeded == 'true')
+      needs.activation.outputs.daily_ai_credits_exceeded == 'true')
     runs-on: ubuntu-slim
+    environment: copilot-pat-pool
     permissions:
       actions: read
       contents: write
@@ -1671,8 +1683,6 @@ jobs:
           GH_AW_WORKFLOW_ID: "pr-docs-check"
           GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS: "0"
           GH_AW_ENGINE_ID: "copilot"
-          GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
-          GH_AW_ENGINE_SECRET_FAILURE_MESSAGE: "**Alternative**: If your organization has a Copilot subscription, you can avoid the need for a personal access token by adding a top-level `permissions` block to your workflow file. This enables Copilot inference through the org using the built-in GitHub Actions token.\n\n```yaml\npermissions:\n  copilot-requests: write\n```\n\nSee: https://github.github.com/gh-aw/reference/engines/#github-copilot-default"
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens || '' }}
           GH_AW_AI_CREDITS_RATE_LIMIT_ERROR: ${{ needs.agent.outputs.ai_credits_rate_limit_error || 'false' }}
@@ -1738,8 +1748,10 @@ jobs:
     needs:
       - activation
       - agent
+      - pat_pool
     if: always() && needs.agent.result != 'skipped'
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
     timeout-minutes: 10
@@ -1872,7 +1884,7 @@ jobs:
           AWF_REFLECT_ENABLED: 1
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
           COPILOT_MODEL: detection
           GH_AW_HARNESS_MAX_RETRIES: 0
           GH_AW_LLM_PROVIDER: github
@@ -2004,8 +2016,11 @@ jobs:
       - safe_outputs
     if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'notify_source_pr')
     runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       contents: read
+      issues: write
+      pull-requests: write
     steps:
       - name: Download agent output artifact
         continue-on-error: true
@@ -2039,9 +2054,7 @@ jobs:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           owner: dotnet
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
-          repositories: |
-            aspnetcore
-            AspNetCore.Docs
+          repositories: AspNetCore.Docs
       - name: Read resulting docs pull request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -2100,7 +2113,8 @@ jobs:
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
           SAFE_OUTPUTS_ITEMS_FAILED: ${{ needs.safe_outputs.outputs.process_safe_outputs_items_failed }}
           SAFE_OUTPUTS_RESULT: ${{ needs.safe_outputs.result }}
-      - name: Publish trusted documentation outcome
+      - name: Publish trusted source outcome
+        id: source-outcome
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
@@ -2108,12 +2122,11 @@ jobs:
           EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
         with:
-          github-token: ${{ steps.docs-bot-token.outputs.token }}
+          github-token: ${{ github.token }}
           script: |
             const fs = require('fs');
 
             const marker = '<!-- aspnetcore-pr-docs-check -->';
-            const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
             const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
             const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
 
@@ -2151,6 +2164,7 @@ jobs:
 
             const author = sourcePr.data.user;
             const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
+            core.setOutput('source-author', sourceAuthor);
             const surfaces = (outcome.surfaces || []).map(surface =>
               `* **${surface.name}:** ${surface.required ? 'Required' : 'Not required'} — ${surface.reason}`);
 
@@ -2220,6 +2234,26 @@ jobs:
               issue_number: expectedPrNumber,
               body: sourceComment,
             });
+      - name: Notify source author on docs pull request
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
+          EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+          GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
+          SOURCE_AUTHOR: ${{ steps.source-outcome.outputs.source-author }}
+        with:
+          github-token: ${{ steps.docs-bot-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+
+            const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
+            const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
+            const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
+            const sourceAuthor = process.env.SOURCE_AUTHOR;
+            const outcome = JSON.parse(fs.readFileSync(process.env.CANONICAL_OUTCOME_PATH, 'utf8'));
+            const renderKind = String(outcome.render_kind || 'invalid');
+            const docsPrNumber = Number(outcome.docs_pr_number);
 
             if (renderKind !== 'drafted' || !sourceAuthor || !Number.isInteger(docsPrNumber) || docsPrNumber <= 0) {
               return;
@@ -2254,8 +2288,84 @@ jobs:
               });
             }
 
+  pat_pool:
+    needs: pre_activation
+    runs-on: ubuntu-slim
+    environment: copilot-pat-pool
+    outputs:
+      pat_number: ${{ steps.select-pat-number.outputs.copilot_pat_number }}
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Select Copilot token from pool
+        id: select-pat-number
+        run: |
+          # Collect pool entries with non-empty secrets from COPILOT_PAT_0..COPILOT_PAT_9.
+          PAT_NUMBERS=()
+          POOL_INDICATORS=(➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖)
+
+          for i in $(seq 0 9); do
+            var="COPILOT_PAT_${i}"
+            val="${!var}"
+            if [ -n "$val" ]; then
+              PAT_NUMBERS+=(${i})
+              POOL_INDICATORS[${i}]="🟪"
+            fi
+          done
+
+          # If none of the entries in the pool have values, emit a warning
+          # and do not set an output value. The consumer can fall back to
+          # using COPILOT_GITHUB_TOKEN.
+          if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
+            warning_message="::warning::None of the PAT pool entries had values "
+            warning_message+="(checked COPILOT_PAT_0 through COPILOT_PAT_9)"
+            echo "$warning_message"
+            exit 0
+          fi
+
+          # Select a random index using the seed if specified
+          if [ -n "$RANDOM_SEED" ]; then
+            RANDOM=$RANDOM_SEED
+          fi
+
+          PAT_INDEX=$(( RANDOM % ${#PAT_NUMBERS[@]} ))
+          PAT_NUMBER="${PAT_NUMBERS[$PAT_INDEX]}"
+          POOL_INDICATORS[${PAT_NUMBER}]="✅"
+
+          echo "Pool size: ${#PAT_NUMBERS[@]}"
+          echo "Selected PAT number ${PAT_NUMBER} (index: ${PAT_INDEX})"
+
+          # Emit a markdown table of the pool entries to the step summary
+          echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
+          (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+
+          # Set the PAT number as the output
+          echo "copilot_pat_number=${PAT_NUMBER}" >> "$GITHUB_OUTPUT"
+        env:
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          RANDOM_SEED: ${{ github.aw.import-inputs.random_seed   }}
+        shell: bash
+
   pre_activation:
     runs-on: ubuntu-slim
+    environment: copilot-pat-pool
     env:
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
     outputs:
@@ -2299,6 +2409,7 @@ jobs:
       - detection
     if: (!cancelled()) && needs.agent.result != 'skipped' && needs.detection.result == 'success'
     runs-on: ubuntu-slim
+    environment: copilot-pat-pool
     permissions:
       contents: write
       issues: write

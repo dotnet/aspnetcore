@@ -36,10 +36,24 @@ concurrency:
   cancel-in-progress: false
   job-discriminator: ${{ github.run_id }}
 
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
+
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 checkout:
   - repository: dotnet/AspNetCore.Docs
@@ -56,15 +70,11 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos, issues, pull_requests]
-    github-app:
-      client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
-      private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
-      owner: dotnet
-      repositories: ["aspnetcore", "AspNetCore.Docs"]
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     min-integrity: merged
     allowed-repos:
       - dotnet/aspnetcore
-  bash: [cat, find, git, grep, head, jq, sed]
+  bash: [cat, find, git, grep, head, jq, mkdir, sed]
 
 network:
   allowed:
@@ -163,6 +173,8 @@ safe-outputs:
       needs: [safe_outputs]
       permissions:
         contents: read
+        issues: write
+        pull-requests: write
       inputs:
         source_pr_number:
           description: "Analyzed source pull request number."
@@ -232,9 +244,7 @@ safe-outputs:
             client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
             private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
             owner: dotnet
-            repositories: |
-              aspnetcore
-              AspNetCore.Docs
+            repositories: AspNetCore.Docs
         - name: Read resulting docs pull request
           uses: actions/github-script@v9.0.0
           env:
@@ -302,19 +312,19 @@ safe-outputs:
             --safe-outputs-items-failed "${SAFE_OUTPUTS_ITEMS_FAILED}"
             --expected-existing-draft "${RUNNER_TEMP}/pr-docs-check-context/existing-draft.json"
             --output "${RUNNER_TEMP}/pr-docs-check-outcome.json"
-        - name: Publish trusted documentation outcome
+        - name: Publish trusted source outcome
+          id: source-outcome
           uses: actions/github-script@v9.0.0
           env:
             EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
             EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
             CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
           with:
-            github-token: ${{ steps.docs-bot-token.outputs.token }}
+            github-token: ${{ github.token }}
             script: |
               const fs = require('fs');
 
               const marker = '<!-- aspnetcore-pr-docs-check -->';
-              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
               const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
               const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
 
@@ -352,6 +362,7 @@ safe-outputs:
 
               const author = sourcePr.data.user;
               const sourceAuthor = author?.type === 'Bot' ? '' : (author?.login || '');
+              core.setOutput('source-author', sourceAuthor);
               const surfaces = (outcome.surfaces || []).map(surface =>
                 `* **${surface.name}:** ${surface.required ? 'Required' : 'Not required'} — ${surface.reason}`);
 
@@ -421,6 +432,25 @@ safe-outputs:
                 issue_number: expectedPrNumber,
                 body: sourceComment,
               });
+        - name: Notify source author on docs pull request
+          uses: actions/github-script@v9.0.0
+          env:
+            EXPECTED_SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
+            EXPECTED_SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+            CANONICAL_OUTCOME_PATH: ${{ runner.temp }}/pr-docs-check-outcome.json
+            SOURCE_AUTHOR: ${{ steps.source-outcome.outputs.source-author }}
+          with:
+            github-token: ${{ steps.docs-bot-token.outputs.token }}
+            script: |
+              const fs = require('fs');
+
+              const docsAuthorMarker = '<!-- aspnetcore-pr-docs-check-author -->';
+              const expectedRepository = process.env.EXPECTED_SOURCE_REPOSITORY;
+              const expectedPrNumber = Number.parseInt(process.env.EXPECTED_SOURCE_PR_NUMBER, 10);
+              const sourceAuthor = process.env.SOURCE_AUTHOR;
+              const outcome = JSON.parse(fs.readFileSync(process.env.CANONICAL_OUTCOME_PATH, 'utf8'));
+              const renderKind = String(outcome.render_kind || 'invalid');
+              const docsPrNumber = Number(outcome.docs_pr_number);
 
               if (renderKind !== 'drafted' || !sourceAuthor || !Number.isInteger(docsPrNumber) || docsPrNumber <= 0) {
                 return;
@@ -471,12 +501,12 @@ pre-agent-steps:
       private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
       owner: dotnet
       repositories: |
-        aspnetcore
         AspNetCore.Docs
         AspNetCore.Docs.Automation
   - name: Resolve source version and existing docs draft
     env:
-      GH_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
+      GH_TOKEN: ${{ github.token }}
+      DOCS_GITHUB_TOKEN: ${{ steps.docs-bot-token.outputs.token }}
       DOCS_BOT_APP_SLUG: ${{ steps.docs-bot-token.outputs.app-slug }}
       SOURCE_REPOSITORY: ${{ github.event.inputs.source_repository }}
       SOURCE_PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -509,7 +539,7 @@ pre-agent-steps:
         --release-branches "${CONTEXT_DIR}/source-branches.json" \
         --output "${CONTEXT_DIR}/target-version.json"
 
-      gh api --method GET --paginate --slurp \
+      GH_TOKEN="${DOCS_GITHUB_TOKEN}" gh api --method GET --paginate --slurp \
         "/repos/dotnet/AspNetCore.Docs/pulls?state=open&base=main&per_page=100" \
         | jq '[.[][]]' \
         > "${CONTEXT_DIR}/open-docs-pulls.json"
@@ -524,7 +554,7 @@ pre-agent-steps:
 
       if [ "$(jq -r '.found' "${CONTEXT_DIR}/existing-draft.json")" = "true" ]; then
         HEAD_REF="$(jq -r '.selected.head_ref' "${CONTEXT_DIR}/existing-draft.json")"
-        git \
+        GH_TOKEN="${DOCS_GITHUB_TOKEN}" git \
           -c credential.helper= \
           -c "credential.helper=!gh auth git-credential" \
           fetch --no-tags \
@@ -682,7 +712,7 @@ Before editing, read:
 
 Also inspect relevant existing content under `aspnetcore/`. If the change is a .NET 11 What's New feature, read `.github/skills/whats-new-include-content-rules/SKILL.md` when that file is available and follow it.
 
-Use the source version, moniker, previous version, migration directory, breaking-change directory, and release-note directory exactly as recorded in `/tmp/gh-aw/pr-docs-check/target-version.json`. This trusted resolver verifies the annually maintained `mainVersion` policy against current upstream `release/*` branches and fails before agent execution when a usable milestone disagrees.
+Use the source version, moniker, previous version, migration directory, breaking-change directory, and release-note directory exactly as recorded in `/tmp/gh-aw/pr-docs-check/target-version.json`. This trusted resolver verifies the annually maintained `mainVersion` policy against current upstream `release/*` branches and fails before agent execution when a usable milestone disagrees. These directory values specify placement only when the corresponding documentation surface is independently required; they do not require creating migration, breaking-change, or release-note content for every qualifying conceptual change.
 
 The docs PR always targets `main`. Version placement is expressed through article monikers, moniker sections, migration directories, breaking-change directories, release-note directories, and versioned sample directories. Do not change an article-wide `monikerRange` merely because a newer feature is added. Wrap new-version material in a scoped moniker block such as:
 
@@ -695,6 +725,10 @@ New-version content.
 ```
 
 When behavior differs between versions, preserve the earlier guidance in its own moniker range and add the new guidance in the resolved version's range.
+
+Release-note content is optional, not a fourth documentation obligation. Add or update it only when the source change and existing documentation conventions independently require What's New or release-note coverage. Do not create a new future-version release-note entry point, directory, or `includes` hierarchy merely because `release_notes_directory` resolves to that path. Update release-note content only when the docs repository already contains the applicable `aspnetcore/release-notes/aspnetcore-<major>.md` entry point and `aspnetcore/release-notes/aspnetcore-<major>/includes/` hierarchy. When that structure is absent, skip the optional release-note surface and complete the independently required conceptual, migration, or breaking-change work.
+
+If a command or tool call is denied by policy, treat that denial as final for the attempted operation. Do not retry the operation through alternate binaries, shell constructions, encoded commands, installers, or indirect equivalents. Use the permitted repository reading and editing tools when they can perform the work. If an operation is required for an independently required documentation surface and cannot be completed with permitted tools, stop and emit `notify_source_pr` with `result: "draft_failed"` and `docs_pr_action: "none"` instead of looping. If the blocked operation serves only an optional surface, skip that surface and continue with the required work.
 
 Make the smallest complete documentation change across every required surface. Modify only files under `aspnetcore/`. Do not change repository instructions, workflows, dependency files, publishing configuration, or other root files.
 
