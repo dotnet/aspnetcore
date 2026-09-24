@@ -1502,20 +1502,28 @@ public class CircuitHostTest
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateRootComponents_ReleasesSuccessorAfterHandlerFailure(bool failDuringInboundActivity)
+    public async Task UpdateRootComponents_DoesNotApplySuccessorAfterHandlerFailure(bool failDuringInboundActivity)
     {
         var handler = new FailingCircuitHandler(failDuringInboundActivity);
         var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var releaseErrorNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var client = new Mock<ISingleClientProxy>();
         client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        client.Setup(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(releaseErrorNotification.Task);
         var renderer = GetRemoteRenderer();
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: renderer,
             serviceScope: services.CreateAsyncScope(),
             clientProxy: new CircuitClientProxy(client.Object, "connection"));
         var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
-        circuitHost.UnhandledException += (_, e) => unhandledException.TrySetResult((Exception)e.ExceptionObject);
+        var reportedExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, e) =>
+        {
+            reportedExceptions.Add((Exception)e.ExceptionObject);
+            unhandledException.TrySetResult((Exception)e.ExceptionObject);
+        };
 
         var firstUpdate = circuitHost.UpdateRootComponents(new()
         {
@@ -1539,16 +1547,80 @@ public class CircuitHostTest
             handler.Fail();
         }
         var exception = await unhandledException.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(firstUpdate.IsCompleted);
+        }
+        finally
+        {
+            releaseErrorNotification.SetResult();
+        }
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
 
         var handlerException = failDuringInboundActivity
             ? exception
             : Assert.Single(Assert.IsType<AggregateException>(exception).InnerExceptions);
         Assert.Equal(FailingCircuitHandler.ExceptionMessage, handlerException.Message);
-        Assert.Equal([2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id));
+        Assert.Single(reportedExceptions);
+        Assert.Empty(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
         client.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
         client.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents",
-            It.Is<object[]>(args => (long)args[0] == 2), It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotApplyNewBatchAfterPostNextHandlerFailure()
+    {
+        var handler = new FailingPostNextCircuitHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, e) => unhandledException.TrySetResult((Exception)e.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        }
+        finally
+        {
+            handler.Fail();
+        }
+
+        var exception = await unhandledException.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(FailingPostNextCircuitHandler.ExceptionMessage, exception.Message);
+
+        await circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 3,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        client.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        client.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents",
+            It.Is<object[]>(args => (long)args[0] == 3), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -2047,6 +2119,31 @@ public class CircuitHostTest
         }
 
         public Task WaitForFailureAsync() => _entered.Task;
+        public void Fail() => _fail.SetResult();
+    }
+
+    private sealed class FailingPostNextCircuitHandler : CircuitHandler
+    {
+        public const string ExceptionMessage = "Post-next handler failure.";
+
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _fail = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _invocations;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => async context =>
+            {
+                await next(context);
+                if (Interlocked.Increment(ref _invocations) == 1)
+                {
+                    _entered.SetResult();
+                    await _fail.Task;
+                    throw new InvalidOperationException(ExceptionMessage);
+                }
+            };
+
+        public Task WaitForEntryAsync() => _entered.Task;
         public void Fail() => _fail.SetResult();
     }
 

@@ -34,6 +34,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
+    private bool _circuitErrored;
     private Task _previousRootComponentOperations = Task.CompletedTask;
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
@@ -781,9 +782,14 @@ internal partial class CircuitHost : IAsyncDisposable
             var batchId = operationBatch.BatchId;
             var postRemovalTask = Task.CompletedTask;
             TaskCompletionSource? taskCompletionSource = null;
+            Exception? failure = null;
             try
             {
                 await previousOperations;
+                if (_circuitErrored)
+                {
+                    throw new InvalidOperationException("Root component updates cannot continue after a circuit error.");
+                }
 
                 if (Descriptors.Count > 0)
                 {
@@ -855,15 +861,29 @@ internal partial class CircuitHost : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                operationsApplied.TrySetResult();
-                // Report errors asynchronously. UpdateRootComponents is designed not to throw.
-                Log.UpdateRootComponentsFailed(_logger, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                failure = ex;
+                var shouldReport = !_circuitErrored;
+                _circuitErrored = true;
+                operationsApplied.TrySetException(ex);
+                _ = operationsApplied.Task.Exception;
+                if (shouldReport)
+                {
+                    // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+                    Log.UpdateRootComponentsFailed(_logger, ex);
+                    UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                    await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                }
             }
             finally
             {
-                operationsApplied.TrySetResult();
+                if (failure is not null)
+                {
+                    operationsApplied.TrySetException(failure);
+                }
+                else
+                {
+                    operationsApplied.TrySetResult();
+                }
                 if (shouldClearStore)
                 {
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component
