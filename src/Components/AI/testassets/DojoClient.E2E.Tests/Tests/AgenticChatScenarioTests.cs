@@ -127,8 +127,8 @@ public partial class AgenticChatScenarioTests : BrowserTest
 
         var scenario = _page.Locator(".agentic-chat");
         await Expect(scenario).ToHaveAttributeAsync("data-background", Background);
-        await Expect(_page.Locator(".agentic-chat__action-status"))
-            .ToContainTextAsync("Background updated");
+        await Expect(scenario).ToHaveAttributeAsync("style", $"background: {Background};");
+        await Expect(_page.Locator(".agentic-chat__action-status")).ToHaveCountAsync(0);
         await Expect(AssistantMessage)
             .ToContainTextAsync("Background changed to a sunset gradient.");
     }
@@ -148,8 +148,12 @@ public partial class AgenticChatScenarioTests : BrowserTest
 
         await Expect(_page.Locator(".agentic-chat"))
             .ToHaveAttributeAsync("data-background", Background);
+        await Expect(_page.Locator(".agentic-chat"))
+            .ToHaveAttributeAsync("style", $"background: {Background};");
         Assert.IsNull(await secondPage.Locator(".agentic-chat")
             .GetAttributeAsync("data-background"));
+        Assert.IsNull(await secondPage.Locator(".agentic-chat")
+            .GetAttributeAsync("style"));
     }
 
     private ILocator UserMessage => _page.Locator(".sc-ai-message--user .sc-ai-message__content");

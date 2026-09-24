@@ -16,13 +16,6 @@
         <WelcomeContent>
             <p class="dojo-scenario__welcome">Ask the agent something to start the conversation.</p>
         </WelcomeContent>
-        <MessageListContent>
-            <BlockRenderer TBlock="UIActionBlock"
-                           Context="action"
-                           When="@(action => action.ToolName == "change_background")">
-                <AutoInvokeAction Block="action" />
-            </BlockRenderer>
-        </MessageListContent>
     </ChatPage>
 </div>
 
@@ -36,18 +29,28 @@
         // message crosses the real AG-UI HTTP + SSE boundary.
         _agent = new UIAgent(ChatClient, options =>
         {
-            options.RegisterUIAction(AIFunctionFactory.Create(
-                ChangeBackground,
-                name: "change_background",
-                description: "Change the chat background using a CSS color or gradient."));
+            options.ChatOptions = new ChatOptions
+            {
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        ChangeBackgroundAsync,
+                        name: "change_background",
+                        description: "Change the chat background using a CSS color or gradient.")
+                ]
+            };
         }, LoggerFactory);
     }
 
-    private async Task<string> ChangeBackground(string background)
+    private async Task<string> ChangeBackgroundAsync(string? background = null, string? color = null)
     {
-        _background = background;
-        await InvokeAsync(StateHasChanged);
-        return "Background changed successfully.";
+        var value = background ?? color ?? string.Empty;
+        await InvokeAsync(() =>
+        {
+            _background = value;
+            StateHasChanged();
+        });
+        return $"Background color successfully changed to {value}.";
     }
 
     private string? BackgroundStyle =>
