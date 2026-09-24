@@ -679,7 +679,8 @@ internal sealed class OpenApiDocumentService(
                 openApiVersion,
                 InferredSchemaPurpose.Input,
                 parameter,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                transportBindingFact: GetTransportBindingFact(description, parameter));
 
             if (parameter.ShouldApplyNullableArrayElementSchema())
             {
@@ -852,7 +853,8 @@ internal sealed class OpenApiDocumentService(
                     openApiVersion,
                     InferredSchemaPurpose.Input,
                     description,
-                    cancellationToken);
+                    cancellationToken,
+                    GetTransportBindingFact(endpointMetadata, description));
 
                 if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                 {
@@ -955,7 +957,8 @@ internal sealed class OpenApiDocumentService(
                             openApiVersion,
                             InferredSchemaPurpose.Input,
                             description,
-                            cancellationToken);
+                            cancellationToken,
+                            GetTransportBindingFact(endpointMetadata, description));
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -980,7 +983,8 @@ internal sealed class OpenApiDocumentService(
                             openApiVersion,
                             InferredSchemaPurpose.Input,
                             description,
-                            cancellationToken);
+                            cancellationToken,
+                            GetTransportBindingFact(endpointMetadata, description));
 
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
@@ -1101,6 +1105,26 @@ internal sealed class OpenApiDocumentService(
             : parameter.Type;
         targetType ??= typeof(string);
         return targetType;
+    }
+
+    private static InferredTransportBindingFact? GetTransportBindingFact(
+        ApiDescription description,
+        ApiParameterDescription parameter)
+        => GetTransportBindingFact(description.ActionDescriptor.EndpointMetadata, parameter);
+
+    private static InferredTransportBindingFact? GetTransportBindingFact(
+        IEnumerable<object> endpointMetadata,
+        ApiParameterDescription parameter)
+    {
+        if (parameter.Source is not { } source || parameter.Type is not { } type)
+        {
+            return null;
+        }
+
+        var bindingMetadata = endpointMetadata
+            .OfType<IParameterBindingMetadata>()
+            .SingleOrDefault(metadata => metadata.Name == parameter.Name);
+        return InferredTransportBindingFactBuilder.Build(type, source, bindingMetadata);
     }
 
     /// <inheritdoc />

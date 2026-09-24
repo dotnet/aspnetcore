@@ -669,17 +669,26 @@ public partial class OpenApiSchemaServiceTests
                 parameter =>
                 {
                     Assert.Equal(ParameterLocation.Path, parameter.In);
-                    AssertScalar(parameter.Schema!, JsonSchemaType.String, "date-time");
+                    AssertScalar(
+                        parameter.Schema!,
+                        JsonSchemaType.String,
+                        mode == OpenApiSchemaGenerationMode.Legacy ? "date-time" : null);
                 },
                 parameter =>
                 {
                     Assert.Equal(ParameterLocation.Query, parameter.In);
-                    AssertScalar(parameter.Schema!, JsonSchemaType.String, "time");
+                    AssertScalar(
+                        parameter.Schema!,
+                        JsonSchemaType.String,
+                        mode == OpenApiSchemaGenerationMode.Legacy ? "time" : null);
                 },
                 parameter =>
                 {
                     Assert.Equal(ParameterLocation.Header, parameter.In);
-                    AssertScalar(parameter.Schema!, JsonSchemaType.String, "uri");
+                    AssertScalar(
+                        parameter.Schema!,
+                        JsonSchemaType.String,
+                        mode == OpenApiSchemaGenerationMode.Legacy ? "uri" : null);
                 });
 
             var formSchema = operation.RequestBody!.Content!["application/x-www-form-urlencoded"]!.Schema!;
@@ -690,12 +699,134 @@ public partial class OpenApiSchemaServiceTests
         });
     }
 
-    [Fact]
-    public async Task ParameterBinding_AcceptsValuesBroaderThanGeneratedScalarSchemas()
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task InferredTransportSchemasUseLogicalBinderContracts(OpenApiSpecVersion version)
+    {
+        var builder = CreateBuilder();
+        builder.MapPost(
+            "/{routeValue}",
+            (int routeValue,
+                [FromQuery] ulong queryValue,
+                [FromQuery] int[] repeated,
+                [FromHeader] decimal headerValue,
+                [FromQuery] Priority enumValue,
+                [FromQuery] Student customValue,
+                [FromForm] DateOnly formValue) => { });
+        builder.MapGet("/enum-default", (Priority value = Priority.HighPriority) => { });
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            OpenApiVersion = version,
+        };
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/{routeValue}"]!.Operations![HttpMethod.Post]!;
+            var parameters = operation.Parameters!.ToDictionary(parameter => parameter.Name!, StringComparer.Ordinal);
+
+            var routeSchema = Assert.IsType<OpenApiSchema>(parameters["routeValue"].Schema);
+            AssertScalar(routeSchema, JsonSchemaType.Integer, null);
+            Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), routeSchema.Minimum);
+            Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), routeSchema.Maximum);
+
+            var querySchema = Assert.IsType<OpenApiSchema>(parameters["queryValue"].Schema);
+            AssertScalar(querySchema, JsonSchemaType.Integer, null);
+            Assert.Equal("0", querySchema.Minimum);
+            Assert.Equal(ulong.MaxValue.ToString(CultureInfo.InvariantCulture), querySchema.Maximum);
+
+            var repeatedSchema = Assert.IsType<OpenApiSchema>(parameters["repeated"].Schema);
+            Assert.Equal(JsonSchemaType.Array, repeatedSchema.Type);
+            var itemSchema = Assert.IsType<OpenApiSchema>(repeatedSchema.Items);
+            AssertScalar(itemSchema, JsonSchemaType.Integer, null);
+            Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), itemSchema.Minimum);
+            Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), itemSchema.Maximum);
+
+            var headerSchema = Assert.IsType<OpenApiSchema>(parameters["headerValue"].Schema);
+            AssertScalar(headerSchema, JsonSchemaType.Number, null);
+            Assert.Null(headerSchema.Minimum);
+            Assert.Null(headerSchema.Maximum);
+
+            var enumSchema = Assert.IsType<OpenApiSchema>(parameters["enumValue"].Schema);
+            Assert.Collection(
+                enumSchema.AnyOf!,
+                alternative => AssertScalar(alternative, JsonSchemaType.String, null),
+                alternative =>
+                {
+                    AssertScalar(alternative, JsonSchemaType.Integer, null);
+                    Assert.NotNull(alternative.Minimum);
+                    Assert.NotNull(alternative.Maximum);
+                });
+            Assert.Null(enumSchema.Enum);
+
+            AssertScalar(parameters["customValue"].Schema!, JsonSchemaType.String, null);
+
+            var formSchema = operation.RequestBody!.Content!["application/x-www-form-urlencoded"]!.Schema!;
+            AssertScalar(formSchema.Properties!["formValue"], JsonSchemaType.String, null);
+
+            var enumDefault = Assert.Single(
+                document.Paths["/enum-default"]!.Operations![HttpMethod.Get]!.Parameters!);
+            Assert.Equal("HighPriority", enumDefault.Schema!.Default!.GetValue<string>());
+        });
+    }
+
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task InferredTransportSchemasPreserveAbsenceAndRunBeforeTransformers(OpenApiSpecVersion version)
+    {
+        OpenApiSchema? transformedSchema = null;
+        var builder = CreateBuilder();
+        builder.MapGet("/", ([FromQuery] int? value = 42) => { });
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            OpenApiVersion = version,
+        };
+        options.AddSchemaTransformer((schema, context, _) =>
+        {
+            if (context.ParameterDescription?.Name == "value")
+            {
+                transformedSchema = schema;
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var parameter = Assert.Single(document.Paths["/"]!.Operations![HttpMethod.Get]!.Parameters!);
+            Assert.False(parameter.Required);
+            AssertScalar(parameter.Schema!, JsonSchemaType.Integer, null);
+            Assert.Equal(42, parameter.Schema!.Default!.GetValue<int>());
+            Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), parameter.Schema.Minimum);
+            Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), parameter.Schema.Maximum);
+        });
+
+        Assert.NotNull(transformedSchema);
+        AssertScalar(transformedSchema, JsonSchemaType.Integer, null);
+        Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), transformedSchema.Minimum);
+        Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), transformedSchema.Maximum);
+    }
+
+    [Theory]
+    [InlineData(OpenApiSchemaGenerationMode.Legacy, OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSchemaGenerationMode.Legacy, OpenApiSpecVersion.OpenApi3_2)]
+    [InlineData(OpenApiSchemaGenerationMode.Inferred, OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSchemaGenerationMode.Inferred, OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSchemaGenerationMode.Inferred, OpenApiSpecVersion.OpenApi3_2)]
+    public async Task ParameterBinding_AcceptsValuesBroaderThanGeneratedScalarSchemas(
+        OpenApiSchemaGenerationMode mode,
+        OpenApiSpecVersion version)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApi();
+        builder.Services.AddOpenApi(options =>
+        {
+            options.SchemaGenerationMode = mode;
+            options.OpenApiVersion = version;
+        });
         await using var app = builder.Build();
 
         app.MapGet(
@@ -728,19 +859,29 @@ public partial class OpenApiSchemaServiceTests
 
         var openApi = JsonNode.Parse(await client.GetStringAsync("/openapi/v1.json"))!;
         var parameters = openApi["paths"]!["/bind/{dateTime}"]!["get"]!["parameters"]!.AsArray();
-        AssertParameterSchema(parameters, "dateTime", "string", "date-time");
-        AssertParameterSchema(parameters, "offset", "string", "date-time");
-        AssertParameterSchema(parameters, "time", "string", "time");
-        AssertParameterSchema(parameters, "uri", "string", "uri");
-        AssertParameterSchema(parameters, "integer", "string", null);
+        var legacy = mode == OpenApiSchemaGenerationMode.Legacy;
+        AssertParameterSchema(parameters, "dateTime", "string", legacy ? "date-time" : null);
+        AssertParameterSchema(parameters, "offset", "string", legacy ? "date-time" : null);
+        AssertParameterSchema(parameters, "time", "string", legacy ? "time" : null);
+        AssertParameterSchema(parameters, "uri", "string", legacy ? "uri" : null);
+        AssertParameterSchema(parameters, "integer", legacy ? "string" : "integer", null);
         AssertParameterSchema(parameters, "address", "string", null);
         AssertParameterSchema(parameters, "endPoint", "string", null);
         var amountSchema = GetParameterSchema(parameters, "amount");
-        Assert.Equal(
-            ["number", "string"],
-            amountSchema["type"]!.AsArray().Select(type => type!.GetValue<string>()).Order(StringComparer.Ordinal));
-        Assert.Equal("double", amountSchema["format"]!.GetValue<string>());
-        Assert.Equal(DecimalPattern, amountSchema["pattern"]!.GetValue<string>());
+        if (legacy)
+        {
+            Assert.Equal(
+                ["number", "string"],
+                amountSchema["type"]!.AsArray().Select(type => type!.GetValue<string>()).Order(StringComparer.Ordinal));
+            Assert.Equal("double", amountSchema["format"]!.GetValue<string>());
+            Assert.Equal(DecimalPattern, amountSchema["pattern"]!.GetValue<string>());
+        }
+        else
+        {
+            Assert.Equal("number", amountSchema["type"]!.GetValue<string>());
+            Assert.Null(amountSchema["format"]);
+            Assert.Null(amountSchema["pattern"]);
+        }
         Assert.Null(amountSchema["minimum"]);
         Assert.Null(amountSchema["maximum"]);
     }

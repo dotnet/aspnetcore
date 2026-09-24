@@ -23,6 +23,37 @@ internal enum InferredScalarContractKind
 
 internal sealed record InferredNumericBoundsFact(string Minimum, string Maximum);
 
+internal static class InferredNumericBoundsFactBuilder
+{
+    public static InferredNumericBoundsFact? Build(Type type, bool includeNativeIntegers = false)
+    {
+        return type switch
+        {
+            _ when type == typeof(sbyte) => Create(sbyte.MinValue, sbyte.MaxValue),
+            _ when type == typeof(byte) => Create(byte.MinValue, byte.MaxValue),
+            _ when type == typeof(short) => Create(short.MinValue, short.MaxValue),
+            _ when type == typeof(ushort) => Create(ushort.MinValue, ushort.MaxValue),
+            _ when type == typeof(int) => Create(int.MinValue, int.MaxValue),
+            _ when type == typeof(uint) => Create(uint.MinValue, uint.MaxValue),
+            _ when type == typeof(long) => Create(long.MinValue, long.MaxValue),
+            _ when type == typeof(ulong) => Create(ulong.MinValue, ulong.MaxValue),
+            _ when type == typeof(Int128) => Create(Int128.MinValue, Int128.MaxValue),
+            _ when type == typeof(UInt128) => Create(UInt128.MinValue, UInt128.MaxValue),
+            _ when includeNativeIntegers && type == typeof(nint) && IntPtr.Size == sizeof(long) => Create(long.MinValue, long.MaxValue),
+            _ when includeNativeIntegers && type == typeof(nint) => Create(int.MinValue, int.MaxValue),
+            _ when includeNativeIntegers && type == typeof(nuint) && UIntPtr.Size == sizeof(ulong) => Create(ulong.MinValue, ulong.MaxValue),
+            _ when includeNativeIntegers && type == typeof(nuint) => Create(uint.MinValue, uint.MaxValue),
+            _ => null,
+        };
+
+        static InferredNumericBoundsFact Create<T>(T minimum, T maximum)
+            where T : IFormattable
+            => new(
+                minimum.ToString(format: null, CultureInfo.InvariantCulture),
+                maximum.ToString(format: null, CultureInfo.InvariantCulture));
+    }
+}
+
 internal sealed record InferredScalarContractFact(
     Type Type,
     InferredScalarContractProvenance Provenance,
@@ -58,36 +89,12 @@ internal static class InferredScalarContractFactBuilder
             return new(type, provenance, InferredScalarContractKind.Base64String, NumericBounds: null);
         }
 
-        var numericBounds = GetNumericBounds(type);
+        var numericBounds = InferredNumericBoundsFactBuilder.Build(type);
         return new(
             type,
             provenance,
             numericBounds is null ? InferredScalarContractKind.Other : InferredScalarContractKind.Integral,
             numericBounds);
-    }
-
-    private static InferredNumericBoundsFact? GetNumericBounds(Type type)
-    {
-        return type switch
-        {
-            _ when type == typeof(sbyte) => Create(sbyte.MinValue, sbyte.MaxValue),
-            _ when type == typeof(byte) => Create(byte.MinValue, byte.MaxValue),
-            _ when type == typeof(short) => Create(short.MinValue, short.MaxValue),
-            _ when type == typeof(ushort) => Create(ushort.MinValue, ushort.MaxValue),
-            _ when type == typeof(int) => Create(int.MinValue, int.MaxValue),
-            _ when type == typeof(uint) => Create(uint.MinValue, uint.MaxValue),
-            _ when type == typeof(long) => Create(long.MinValue, long.MaxValue),
-            _ when type == typeof(ulong) => Create(ulong.MinValue, ulong.MaxValue),
-            _ when type == typeof(Int128) => Create(Int128.MinValue, Int128.MaxValue),
-            _ when type == typeof(UInt128) => Create(UInt128.MinValue, UInt128.MaxValue),
-            _ => null,
-        };
-
-        static InferredNumericBoundsFact Create<T>(T minimum, T maximum)
-            where T : IFormattable
-            => new(
-                minimum.ToString(format: null, CultureInfo.InvariantCulture),
-                maximum.ToString(format: null, CultureInfo.InvariantCulture));
     }
 }
 

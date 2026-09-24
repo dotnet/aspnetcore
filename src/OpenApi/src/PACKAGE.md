@@ -205,9 +205,9 @@ Scalar schemas combine three related but distinct layers:
   `int64`, `float`, `double`, and `byte` can select a useful target-language type even when they do
   not completely describe serializer validation.
 
-Legacy mode preserves its established client hints. Inferred mode keeps the disputed date, time,
-and URI hints but only adds new scalar constraints when the effective System.Text.Json converter
-proves the contract:
+Legacy mode preserves its established client hints. For JSON bodies, Inferred mode keeps the
+disputed date, time, and URI hints and only adds new scalar constraints when the effective
+System.Text.Json converter proves the contract:
 
 | CLR contract | Legacy schema | Inferred schema and effective-contract distinction |
 | --- | --- | --- |
@@ -231,19 +231,32 @@ quoted-number alternatives remain valid. Floating-point and decimal schemas rema
 `multipleOf` is not inferred. Width formats remain client hints for the established integral and
 floating-point cases, while `sbyte`, `Int128`, `UInt128`, and `Half` have no width format.
 
-Non-body parameter binding is a separate contract from JSON serialization. Route, query, header,
-and form values can use invariant `TryParse` or `IParsable` behavior, including types and lexical
-forms that are not represented by the System.Text.Json-derived body schema. Minimal API metadata
-can describe parsable values such as `BigInteger`, `IPAddress`, and `IPEndPoint` as strings, but
-standard formats on date, time, and URI parameters still do not capture every accepted lexical
-form.
+Non-body parameter binding is a separate contract from JSON serialization. Inferred mode builds
+immutable transport facts from the effective route, query, header, or form binding metadata and
+then makes transport-specific schema decisions. Package-recognized numeric binders use their
+logical post-binding JSON Schema type. Fixed-width integral binders include their exact CLR
+minimum and maximum, while floating-point and decimal binders remain unbounded. Repeated values
+use arrays whose item schema is inferred from the element binder.
 
-Scalar work is intentionally staged. Compatibility coverage records the serializer, exporter,
-emitted-schema, and parameter-binding behavior. Inferred mode now uses converter-proven scalar and
-numeric facts and version-appropriate base64 encoding. A distinct binder-aware parameter decision
-path remains future work. Changes that replace established date/time or URI client hints require
-an explicit compatibility policy rather than being inferred from a CLR type alone. Applications
-can provide stricter or domain-specific constraints today with a version-aware schema transformer.
+Text-parsed framework types such as dates, times, `Guid`, `Uri`, `Version`, `TimeSpan`, `char`,
+`IPAddress`, and `IPEndPoint` use broad string schemas. Their invariant parsers accept values
+outside the standardized lexical spaces represented by familiar OpenAPI formats, so Inferred
+mode does not emit narrowing format hints. Enum binding accepts member names, numeric values, and
+flags combinations; its conservative schema therefore permits both a broad string branch and the
+bounded underlying integral branch. Custom `TryParse` and `IParsable` contracts use broad strings
+because endpoint metadata proves that text parsing occurs but cannot prove the parser's language.
+`BindAsync` does not imply a text contract and remains uninferred.
+
+Transport schemas are kept separate from System.Text.Json body components and are finalized before
+schema transformers run. Form fields use the same transport decisions even though OpenAPI
+represents them as properties of a form request-body object. Nullable and defaulted transport
+parameters express absence through parameter/property requiredness; their schemas do not add a
+JSON `null` value. These rules apply consistently in OpenAPI 3.0, 3.1, and 3.2.
+
+Scalar compatibility coverage records serializer, exporter, emitted-schema, and parameter-binding
+behavior. Inferred mode uses converter-proven body facts, version-appropriate base64 encoding, and
+the separate binder-aware transport decisions described above. Applications can provide stricter
+domain-specific constraints with a version-aware schema transformer.
 
 The inferred mode also resolves component names from the complete set of serializer contracts
 used by the document before schemas are emitted. A default name that is unique is unchanged. Name

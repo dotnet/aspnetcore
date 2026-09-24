@@ -371,12 +371,22 @@ internal sealed class OpenApiSchemaService(
         OpenApiSpecVersion openApiVersion,
         InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
         ApiParameterDescription? parameterDescription = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        InferredTransportBindingFact? transportBindingFact = null)
     {
         var schemaAsJsonObject = CreateSchema(type, document, openApiVersion, purpose);
+        if (IsInferredMode && transportBindingFact is not null)
+        {
+            schemaAsJsonObject.ApplyInferredTransportDecision(
+                InferredTransportSchemaDecisionBuilder.Build(transportBindingFact));
+        }
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
+        }
+        if (IsInferredMode && transportBindingFact is not null)
+        {
+            schemaAsJsonObject.ApplyInferredTransportDefault(transportBindingFact);
         }
         // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
         // particularly in the case of maxDepth.
@@ -395,7 +405,8 @@ internal sealed class OpenApiSchemaService(
         OpenApiSpecVersion openApiVersion,
         InferredSchemaPurpose purpose,
         ApiParameterDescription? parameterDescription = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        InferredTransportBindingFact? transportBindingFact = null)
     {
         // For non-body enum parameters, check if a naming policy transforms the enum values.
         // If so, skip componentization and return an inline schema with the original C# member
@@ -421,7 +432,23 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, openApiVersion, purpose, parameterDescription, cancellationToken);
+        var schema = await GetOrCreateUnresolvedSchemaAsync(
+            document,
+            type,
+            scopedServiceProvider,
+            schemaTransformers,
+            openApiVersion,
+            purpose,
+            parameterDescription,
+            cancellationToken,
+            transportBindingFact);
+
+        if (IsInferredMode &&
+            transportBindingFact is not null &&
+            InferredTransportSchemaDecisionBuilder.Build(transportBindingFact).IsKnown)
+        {
+            return schema;
+        }
 
         if (inlineEnumParam)
         {

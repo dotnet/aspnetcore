@@ -227,6 +227,61 @@ internal static class JsonNodeSchemaExtensions
         }
     }
 
+    internal static void ApplyInferredTransportDecision(
+        this JsonNode schema,
+        InferredTransportSchemaDecision decision)
+    {
+        if (schema is not JsonObject objectSchema || !decision.IsKnown)
+        {
+            return;
+        }
+
+        objectSchema.Clear();
+        switch (decision.Kind)
+        {
+            case InferredTransportSchemaKind.String:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                break;
+            case InferredTransportSchemaKind.Boolean:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                break;
+            case InferredTransportSchemaKind.Integer:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                ApplyBounds(objectSchema, decision.NumericBounds);
+                break;
+            case InferredTransportSchemaKind.Number:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                break;
+            case InferredTransportSchemaKind.Enum:
+                objectSchema[OpenApiSchemaKeywords.AnyOfKeyword] = new JsonArray(
+                    new JsonObject { [OpenApiSchemaKeywords.TypeKeyword] = "string" },
+                    CreateIntegerSchema(decision.NumericBounds));
+                break;
+            case InferredTransportSchemaKind.Array:
+                var items = new JsonObject();
+                items.ApplyInferredTransportDecision(decision.Items!);
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "array";
+                objectSchema[OpenApiSchemaKeywords.ItemsKeyword] = items;
+                break;
+        }
+
+        static JsonObject CreateIntegerSchema(InferredNumericBoundsFact? bounds)
+        {
+            var integerSchema = new JsonObject { [OpenApiSchemaKeywords.TypeKeyword] = "integer" };
+            ApplyBounds(integerSchema, bounds);
+            return integerSchema;
+        }
+
+        static void ApplyBounds(JsonObject target, InferredNumericBoundsFact? bounds)
+        {
+            if (bounds is not null)
+            {
+                target[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(bounds.Minimum);
+                target[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(bounds.Maximum);
+            }
+        }
+    }
+
     /// <summary>
     /// Applies route constraints to the target schema.
     /// </summary>
@@ -429,6 +484,19 @@ internal static class JsonNodeSchemaExtensions
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
             || bindingSource == BindingSource.FormFile;
+    }
+
+    internal static void ApplyInferredTransportDefault(
+        this JsonNode schema,
+        InferredTransportBindingFact fact)
+    {
+        if (fact.Kind == InferredTransportSchemaKind.Enum &&
+            fact.HasDefaultValue &&
+            fact.DefaultValue is { } defaultValue)
+        {
+            schema[OpenApiSchemaKeywords.DefaultKeyword] =
+                Convert.ToString(defaultValue, CultureInfo.InvariantCulture);
+        }
     }
 
     /// <summary>
