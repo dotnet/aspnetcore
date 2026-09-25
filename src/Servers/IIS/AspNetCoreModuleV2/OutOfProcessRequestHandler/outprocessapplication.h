@@ -25,6 +25,7 @@ public:
     HRESULT
     Initialize();
 
+    // The caller must release the returned reference with DereferenceServerProcess.
     HRESULT
     GetProcess(
         _Out_   SERVER_PROCESS       **ppServerProcess

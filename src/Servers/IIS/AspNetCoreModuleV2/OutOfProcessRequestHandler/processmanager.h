@@ -5,6 +5,7 @@
 
 #define ONE_MINUTE_IN_MILLISECONDS 60000
 class SERVER_PROCESS;
+struct ProcessManagerTestAccess;
 
 class PROCESS_MANAGER
 {
@@ -28,6 +29,7 @@ public:
         }
     }
 
+    // The caller must release the returned reference with DereferenceServerProcess.
     HRESULT 
     GetProcess(
         _In_    REQUESTHANDLER_CONFIG      *pConfig,
@@ -122,6 +124,7 @@ public:
     }
 
 private:
+    friend struct ProcessManagerTestAccess;
 
     BOOL 
     RapidFailsPerMinuteExceeded(

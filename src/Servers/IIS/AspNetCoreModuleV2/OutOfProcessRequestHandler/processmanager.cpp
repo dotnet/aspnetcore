@@ -100,14 +100,13 @@ PROCESS_MANAGER::GetProcess(
         if (m_ppServerProcessList[dwProcessIndex] != nullptr &&
             m_ppServerProcessList[dwProcessIndex]->IsReady())
         {
+            m_ppServerProcessList[dwProcessIndex]->ReferenceServerProcess();
             *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
             return S_OK;
         }
     }
 
     // should make the lock per process so that we can start processes simultaneously ?
-    if (m_ppServerProcessList[dwProcessIndex] == nullptr ||
-        !m_ppServerProcessList[dwProcessIndex]->IsReady())
     {
         auto lock = SRWExclusiveLock(m_srwLock);
 
@@ -124,7 +123,7 @@ PROCESS_MANAGER::GetProcess(
             else
             {
                 // server is already up and ready to serve requests.
-                //m_ppServerProcessList[dwProcessIndex]->ReferenceServerProcess();
+                m_ppServerProcessList[dwProcessIndex]->ReferenceServerProcess();
                 *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
                 return S_OK;
             }
@@ -175,8 +174,9 @@ PROCESS_MANAGER::GetProcess(
         }
 
         m_ppServerProcessList[dwProcessIndex] = pSelectedServerProcess.release();
+        m_ppServerProcessList[dwProcessIndex]->ReferenceServerProcess();
+        *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
     }
-    *ppServerProcess = m_ppServerProcessList[dwProcessIndex];
 
     return S_OK;
 }

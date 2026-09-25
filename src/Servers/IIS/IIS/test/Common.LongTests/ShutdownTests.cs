@@ -401,6 +401,32 @@ public class ShutdownTests : IISFunctionalTestBase
         await AppOfflineAddAndRemovedStress(HostingModel.OutOfProcess);
     }
 
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsRacingOutOfProcessBackendExitRemainStable()
+    {
+        var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
+
+        var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
+        {
+            Assert.True(
+                response.StatusCode is HttpStatusCode.OK or HttpStatusCode.BadGateway or HttpStatusCode.ServiceUnavailable,
+                "Status code was " + response.StatusCode);
+        });
+
+        for (var i = 0; i < 5; i++)
+        {
+            var processId = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
+            await deploymentResult.HttpClient.GetAsync("/Shutdown");
+            await deploymentResult.HttpClient.RetryRequestAsync(
+                "/ProcessId",
+                async response => response.IsSuccessStatusCode && await response.Content.ReadAsStringAsync() != processId);
+        }
+
+        await load;
+        await deploymentResult.AssertStarts();
+    }
+
     private async Task AppOfflineAddAndRemovedStress(HostingModel hostingModel)
     {
         var deploymentResult = await AssertStarts(hostingModel);
