@@ -1,0 +1,23 @@
+@page "/navigation-gate/second"
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveServer
+
+<h1>Second navigation component</h1>
+<span id="navigation-gate-interactive">@_interactive</span>
+<button id="navigation-gate-second-button" @onclick="() => _count++">Second clicks: @_count</button>
+
+@code {
+    private int _count;
+    private bool _interactive;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+}
