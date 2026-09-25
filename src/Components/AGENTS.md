@@ -56,6 +56,10 @@ For browser fixes, require strict red/green evidence: the identical assertion in
 
 In Components Selenium tests, synchronize assertions with observable conditions through existing waits such as `Browser.True` and `Browser.Equal`, which poll with `WebDriverWait`, or with explicit test-controlled gates such as `TaskCompletionSource` when managed timing must be controlled. Do not use an arbitrary `Thread.Sleep` as the synchronization mechanism for the regression assertion. Existing bounded polling helpers may sleep between checks when they repeatedly observe the condition and enforce a timeout.
 
+### Native AOT generic coverage
+
+For Native AOT changes involving reflection or runtime construction or invocation of generic types, implement an AOT-compatible fallback that does not depend on dynamic code or a runtime-created generic instantiation. Exercise that fallback with an application-defined value type so the test requires its own closed generic instantiation; reference-type generic sharing can allow tests that use only types such as `string` or `object` to pass while the value-type case still fails. Register the value type in the test application's source-generated JSON context when it crosses a JSON boundary, and assert the final consumer-visible result.
+
 ### Cross-runtime design checkpoint
 
 Before editing behavior that crosses Components renderers, runtimes, or DI scopes:
@@ -149,7 +153,15 @@ To avoid unnecessary full repository builds, follow this optimized approach:
 After a build fails, identify whether the cause is a source error in the changed project, a missing or stale prerequisite, or unrelated repository infrastructure before changing commands. Use the smallest supported build that still exercises the change. Do not repeatedly retry broad builds with different exclusions unless each retry addresses an identified failure cause, and report any validation boundary that remains untested.
 
 #### 1. Initial Setup - Check for First Build
-Before running any commands, check if a full build has already been completed:
+
+Run from the repository root. If the repository-local SDK is not installed, restore it, then activate it before invoking `dotnet` directly:
+
+```powershell
+if (-not (Test-Path .dotnet\dotnet.exe)) { .\restore.cmd }
+. .\activate.ps1
+```
+
+Then check if a full build has already been completed:
 - Look for `artifacts\agent-sentinel.txt` in the repository root
 - If this file exists, skip to step 2
 - If not present, initialize submodules, run the initial build, and create the sentinel file:
@@ -241,12 +253,13 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 #### Quick Reference
 
-1. **First time only**: `git submodule update --init --recursive` → `.\eng\build.cmd` → create `artifacts\agent-sentinel.txt`
-2. **Check JS assets are fresh**: Verify `src\Components\Web.JS\dist\Debug\_framework\blazor.web.js` is newer than the newest `.ts` source (see step 2 above for the command); run `npm run build` - never `build:production` alone - if `STALE`
-3. **Most C# changes**: `dotnet build --no-restore -v:q -p:UseIisNativeAssets=false`
-4. **Fixing build errors in one project**: `dotnet build <project.csproj> --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false`
-5. **Added/changed dependencies**: Run `.\restore.cmd` first, then use step 3
-6. **Always pass `-p:UseIisNativeAssets=false`** unless you are working on IIS - Components never needs ANCM native assets
+1. **Before invoking `dotnet`**: Install the repository-local SDK with `.\restore.cmd` if it is absent, then activate it with `. .\activate.ps1`
+2. **First build only**: `git submodule update --init --recursive` → `.\eng\build.cmd` → create `artifacts\agent-sentinel.txt`
+3. **Check JS assets are fresh**: Verify `src\Components\Web.JS\dist\Debug\_framework\blazor.web.js` is newer than the newest `.ts` source (see step 2 above for the command); run `npm run build` - never `build:production` alone - if `STALE`
+4. **Most C# changes**: `dotnet build --no-restore -v:q -p:UseIisNativeAssets=false`
+5. **Fixing build errors in one project**: `dotnet build <project.csproj> --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false`
+6. **Added/changed dependencies**: Run `.\restore.cmd` first, then use step 4
+7. **Always pass `-p:UseIisNativeAssets=false`** unless you are working on IIS - Components never needs ANCM native assets
 
 ### E2E Testing Structure
 
@@ -342,6 +355,17 @@ dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests
 `-p:UseIisNativeAssets=false` is required here: the E2E project transitively references IIS projects that otherwise fail because ANCM has not been built. If this build instead fails on MessagePack types, your submodules are not initialized - see step 1 of the Efficient Build Strategy.
 
 For the first E2E run in a fresh worktree, or after relevant build, configuration, or output changes, run the dependency-aware build above. Do not use `--no-dependencies` to prepare E2E tests when referenced test-app outputs may be stale or missing. It may copy existing dependency outputs, but it does not rebuild referenced projects or apps. After the build succeeds, `--no-build` is the supported fast loop for repeated targeted tests while those inputs remain unchanged.
+
+### Running Native AOT E2E Tests
+
+Complete steps 1 and 2 of the Efficient Build Strategy first. `NativeAotTestApp.E2E.Tests` is a Microsoft.Testing.Platform executable, so run only the targeted test through `dotnet run`, not `dotnet test`:
+
+```powershell
+dotnet run --project `
+  src\Components\Testing\testassets\NativeAotTestApp.E2E.Tests\NativeAotTestApp.E2E.Tests.csproj `
+  -p:UseIisNativeAssets=false -- `
+  --filter "FullyQualifiedName~TestName"
+```
 
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
 
