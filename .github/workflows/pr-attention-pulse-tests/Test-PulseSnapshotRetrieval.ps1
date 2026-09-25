@@ -276,7 +276,8 @@ function New-RetrievalBody
         [byte[]]$JsonBytes,
         [string]$RunId = "34643961191",
         [string]$Attempt = "1",
-        [string]$GeneratedAt = "2026-09-23T19:30:00.0000000Z"
+        [string]$GeneratedAt = "2026-09-23T19:30:00.0000000Z",
+        [switch]$Embedded
     )
 
     # These are consumer fixtures, not output from the producer or renderer.
@@ -301,7 +302,7 @@ Captured area B.
 
 Snapshot generated: `{0}`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/{1}/attempts/{2}).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
@@ -311,7 +312,43 @@ JSON SHA-256: `{3}`.
 
 </details>
 '@
-    return ($template.Replace("`r`n", "`n") -f $GeneratedAt, $RunId, $Attempt, (Get-RetrievalHash $JsonBytes)) + "`n"
+    $header = $template.Replace("`r`n", "`n") -f $GeneratedAt, $RunId, $Attempt, (Get-RetrievalHash $JsonBytes)
+    if ($Embedded)
+    {
+        $json = $utf8.GetString($JsonBytes)
+        $longestRun = 0
+        foreach ($match in [regex]::Matches($json, '`+'))
+        {
+            if ($match.Length -gt $longestRun)
+            {
+                $longestRun = $match.Length
+            }
+        }
+        $fence = "``" * [Math]::Max(3, $longestRun + 1)
+        $tail = @(
+            ""
+            "<details>"
+            "<summary>Snapshot JSON (exact sanitized bytes)</summary>"
+            ""
+            "${fence}json"
+            $json
+            $fence
+            ""
+            "</details>"
+        ) -join "`n"
+        return $header + "`n" + $tail + "`n"
+    }
+    $fallbackTail = @'
+
+<details>
+<summary>Snapshot JSON</summary>
+
+The exact JSON does not fit within the issue body size limit for this snapshot and is not embedded here.
+Retrieve the identical bytes from the `pulse-publication-evidence` artifact and verify them against the checksum above.
+
+</details>
+'@
+    return $header + "`n" + ($fallbackTail.Replace("`r`n", "`n")) + "`n"
 }
 
 function Write-RetrievalZip
@@ -400,7 +437,8 @@ function New-RetrievalFixture
         [byte[]]$JsonBytes,
         [string]$PublishedBody,
         [string]$RunId = "34643961191",
-        [string]$RunAttempt = "1"
+        [string]$RunAttempt = "1",
+        [switch]$Embedded
     )
 
     $script:retrievalFixtureCount++
@@ -412,7 +450,7 @@ function New-RetrievalFixture
     }
     if (-not $PSBoundParameters.ContainsKey("PublishedBody"))
     {
-        $PublishedBody = New-RetrievalBody $JsonBytes -RunId $RunId -Attempt $RunAttempt
+        $PublishedBody = New-RetrievalBody $JsonBytes -RunId $RunId -Attempt $RunAttempt -Embedded:$Embedded
     }
     $fixture = [pscustomobject]@{
         Directory = $directory
@@ -810,13 +848,12 @@ try
         }
     }
 
-    foreach ($suffixCase in @("trailing text", "duplicate heading", "uppercase hash", "zero attempt"))
+    foreach ($suffixCase in @("duplicate heading", "uppercase hash", "zero attempt"))
     {
         Invoke-RetrievalCase "published suffix rejects $suffixCase" {
             $fixture = New-RetrievalFixture
             switch ($suffixCase)
             {
-                "trailing text" { $fixture.PublishedBody += "Unexpected suffix`n" }
                 "duplicate heading" { $fixture.PublishedBody = "## Snapshot`n`n" + $fixture.PublishedBody }
                 "uppercase hash"
                 {
@@ -831,6 +868,63 @@ try
             }
             Assert-Throws { Invoke-RetrievalFixture $fixture } "Malformed suffix must fail explicitly." "Invalid published snapshot identity"
         }
+    }
+    Invoke-RetrievalCase "published suffix rejects trailing text after the JSON section" {
+        $fixture = New-RetrievalFixture
+        $fixture.PublishedBody += "Unexpected suffix`n"
+        Assert-Throws { Invoke-RetrievalFixture $fixture } "Trailing text past the JSON section must fail explicitly." "Invalid published snapshot JSON section"
+    }
+
+    Invoke-RetrievalCase "embedded snapshot is verified directly with zero API calls" {
+        $fixture = New-RetrievalFixture -Embedded
+        $actual = Invoke-RetrievalFixture $fixture
+        Assert-RetrievalPreserved $fixture $actual
+        Assert-True ($fixture.Calls.Count -eq 0) "An embedded snapshot must never require an authenticated API call."
+    }
+
+    Invoke-RetrievalCase "embedded snapshot with backticks in the JSON widens the fence and still verifies" {
+        $pulse = New-RetrievalPulse
+        $pulse.areas[0].source | Add-Member -NotePropertyName note -NotePropertyValue 'contains ```` four backticks and ``` three' -Force
+        $jsonBytes = $utf8.GetBytes(($pulse | ConvertTo-Json -Depth 100 -Compress) + "`n")
+        $fixture = New-RetrievalFixture -Pulse $pulse -JsonBytes $jsonBytes -Embedded
+        Assert-True ($fixture.PublishedBody -match '(?<fence>`{5,})json') "The fence must widen beyond the longest backtick run plus one."
+        $actual = Invoke-RetrievalFixture $fixture
+        Assert-RetrievalPreserved $fixture $actual
+        Assert-True ($fixture.Calls.Count -eq 0) "A widened-fence embedded snapshot must still avoid API calls."
+    }
+
+    Invoke-RetrievalCase "embedded snapshot rejects checksum mismatch before any API call" {
+        $fixture = New-RetrievalFixture -Embedded
+        $hash = Get-RetrievalHash $fixture.JsonBytes
+        $tamperedHash = ($hash.Substring(0, 63) + $(if ($hash[63] -ceq '0') { '1' } else { '0' }))
+        $fixture.PublishedBody = $fixture.PublishedBody.Replace("JSON SHA-256: ``$hash``.", "JSON SHA-256: ``$tamperedHash``.")
+        Assert-Throws { Invoke-RetrievalFixture $fixture } "A checksum mismatch on the embedded JSON must be rejected." "Embedded snapshot JSON does not match its published checksum"
+        Assert-True ($fixture.Calls.Count -eq 0) "Checksum verification of embedded JSON must not require any API call."
+    }
+
+    Invoke-RetrievalCase "embedded snapshot rejects tampered JSON bytes inside the fence" {
+        $fixture = New-RetrievalFixture -Embedded
+        $fixture.PublishedBody = $fixture.PublishedBody.Replace('"schemaVersion":"2.0.0"', '"schemaVersion": "2.0.0"')
+        Assert-Throws { Invoke-RetrievalFixture $fixture } "Whitespace-altered embedded JSON must fail the exact-byte checksum." "Embedded snapshot JSON does not match its published checksum"
+    }
+
+    Invoke-RetrievalCase "embedded snapshot rejects a fence that does not close with the same width" {
+        $fixture = New-RetrievalFixture -Embedded
+        Assert-True ($fixture.PublishedBody -cmatch '(?m)^```json\n') "The default fixture must use the minimum three-backtick fence."
+        $threeBackticks = [string]::new([char]0x60, 3)
+        $fourBackticks = [string]::new([char]0x60, 4)
+        $fixture.PublishedBody = $fixture.PublishedBody -replace "(?m)^$threeBackticks\n\n</details>$", "$fourBackticks`n`n</details>"
+        Assert-Throws { Invoke-RetrievalFixture $fixture } "A mismatched closing fence width must not be treated as embedded or fallback." "Invalid published snapshot JSON section"
+    }
+
+    Invoke-RetrievalCase "embedded snapshot rejects content escaping the details section via a bogus closing tag" {
+        $pulse = New-RetrievalPulse
+        $pulse.areas[0].source | Add-Member -NotePropertyName note -NotePropertyValue "</details><script>evil</script>" -Force
+        $jsonBytes = $utf8.GetBytes(($pulse | ConvertTo-Json -Depth 100 -Compress) + "`n")
+        $fixture = New-RetrievalFixture -Pulse $pulse -JsonBytes $jsonBytes -Embedded
+        $actual = Invoke-RetrievalFixture $fixture
+        Assert-RetrievalPreserved $fixture $actual
+        Assert-True ($actual.areas[0].source.note -ceq "</details><script>evil</script>") "Untrusted-looking text inside the JSON must round-trip as data, not break the section out early."
     }
 
     foreach ($whitespace in @("pretty JSON", "trailing newline"))
@@ -1047,11 +1141,20 @@ try
             {
                 Assert-True ($area.source.schemaVersion -ceq "1.0.0") "Each complete area's real source schema must survive retrieval."
             }
-            $expectedCalls = @(
-                "GET repos/$repository/actions/runs/$runId/attempts/$runAttempt"
-                "GET repos/$repository/actions/runs/$runId/artifacts?per_page=100&page=1"
-                "GET repos/$repository/actions/artifacts/9001/zip"
-            )
+            $isEmbedded = $publishedBody.Contains("<summary>Snapshot JSON (exact sanitized bytes)</summary>")
+            $expectedCalls = if ($isEmbedded)
+            {
+                # An embedded snapshot is verified directly against its checksum; no API calls are required.
+                @()
+            }
+            else
+            {
+                @(
+                    "GET repos/$repository/actions/runs/$runId/attempts/$runAttempt"
+                    "GET repos/$repository/actions/runs/$runId/artifacts?per_page=100&page=1"
+                    "GET repos/$repository/actions/artifacts/9001/zip"
+                )
+            }
             Assert-True (($fixture.Calls -join "`n") -ceq ($expectedCalls -join "`n")) "The documented consumer must retrieve only the supplied repository/run/attempt and exact candidate ID."
             Assert-True ([string]$fixture.Artifact.workflow_run.id -ceq $runId -and [string]$fixture.Run.run_attempt -ceq $runAttempt) "The candidate metadata must retain the supplied run tuple."
         }

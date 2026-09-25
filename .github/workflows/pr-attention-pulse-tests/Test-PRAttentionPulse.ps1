@@ -89,12 +89,27 @@ function Get-FixtureSnapshotContext
     }
 }
 
+function Get-FixtureSnapshotJson
+{
+    param([object]$Pulse, [string]$InputPath)
+
+    if ($InputPath)
+    {
+        return [IO.File]::ReadAllText($InputPath)
+    }
+
+    # Match Write-JsonFile's exact text so it agrees with the hash Get-FixtureSnapshotContext computes.
+    $json = $Pulse | ConvertTo-Json -Depth 100
+    return $json.Replace("`r`n", "`n") + "`n"
+}
+
 function Remove-FixtureSnapshotBlock
 {
     param([object]$Pulse, [string]$Body)
 
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
-    $suffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse))
+    $suffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse) `
+        -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -MaxSnapshotLength 65000)
     Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
     Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
 
@@ -807,7 +822,7 @@ function Assert-PresentationTablesAndFields
     Assert-PresentationLayout -Pulse $Pulse -Body $Body
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $before = $Pulse | ConvertTo-Json -Depth 100 -Compress
-    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse)
+    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse -Json (Get-FixtureSnapshotJson -Pulse $Pulse) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse)
     Assert-True ([string]::Equals($before, ($Pulse | ConvertTo-Json -Depth 100 -Compress), [StringComparison]::Ordinal)) "Rendering must not mutate the supplied envelope."
     Assert-True ([string]::Equals($directBody, $Body, [StringComparison]::Ordinal)) "The file entry point and the single production renderer must agree."
     $Pulse = Resolve-PulseMergeArea -Area $Pulse
@@ -1981,7 +1996,7 @@ try
             Assert-True (-not [string]::Equals($tampered, $canonical, [StringComparison]::Ordinal)) "Table tampering must actually change the body."
             Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
             Assert-Throws `
-                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -SnapshotContext (Get-FixtureSnapshotContext -Pulse $normal) -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
+                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -Json (Get-FixtureSnapshotJson -Pulse $normal) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $normal) -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
                 -Message "The direct publication contract must reject $name."
             Assert-Throws `
                 -Action { Invoke-PublicationValidator -Pulse $normal -AgentOutput (New-ValidAgentOutput -Body $tampered) -ExpectedBody $canonical } `

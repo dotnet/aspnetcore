@@ -210,7 +210,7 @@ try
             $hash = (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant()
             Assert-True ((Get-FileHash $publication.InputPath).Hash.ToLowerInvariant() -ceq $hash) "The private upload source must preserve the exact combined bytes."
             Assert-True ([regex]::Matches($body, "(?m)^## Snapshot$").Count -eq 1 -and
-                [regex]::Matches($body, "(?m)^<details>$").Count -eq 3) "Exactly one snapshot must accompany both collapsed areas."
+                [regex]::Matches($body, "(?m)^<details>$").Count -eq 4) "Exactly one snapshot, both collapsed areas, and the collapsed JSON/identity blocks must accompany the body."
             foreach ($text in @(
                 'Snapshot generated: `2026-09-23T19:30:00.0000000Z`.',
                 '[Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1)',
@@ -221,6 +221,10 @@ try
             {
                 Assert-True ($body.Contains($text, [StringComparison]::Ordinal)) "The canonical snapshot lost '$text'."
             }
+            $jsonMatch = [regex]::Match($body, '(?s)<summary>Snapshot JSON \(exact sanitized bytes\)</summary>\n\n(?<fence>`{3,})json\n(?<json>.*?)\n\k<fence>\n\n</details>')
+            Assert-True $jsonMatch.Success "The small combined snapshot must embed the exact JSON in a collapsed section."
+            $rawJson = [IO.File]::ReadAllText($inputPath)
+            Assert-True ($jsonMatch.Groups["json"].Value -ceq $rawJson) "The embedded JSON must be the exact sanitized combined bytes, not a reformatted or truncated copy."
             $expectedStatus = if ($name -like "partial-*") { "partial" } elseif ($name -eq "unavailable") { "unavailable" } else { "complete" }
             Assert-True ($pulse.schemaVersion -ceq "2.0.0" -and $pulse.status -ceq $expectedStatus) "Snapshot identity must not alter the combined data state."
             foreach ($area in $pulse.areas)
@@ -429,6 +433,7 @@ try
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $contextA = Read-PulseSnapshotContext -Path $publicationA.ContextPath
     $pulseA = Get-Content -LiteralPath $publicationA.InputPath -Raw | ConvertFrom-Json -Depth 100
+    $jsonA = [IO.File]::ReadAllText($publicationA.InputPath)
     $bodyMutations = [ordered]@{
         run = { param($body) $body.Replace("34643961191", "34643961192") }
         attempt = { param($body) $body.Replace("/attempts/1", "/attempts/2").Replace('attempt: `1`', 'attempt: `2`') }
@@ -449,7 +454,7 @@ try
             $tampered = & $bodyMutations[$name] $bodyA
             Assert-True ($tampered -cne $bodyA) "The body mutation must exercise its intended field."
             Assert-Throws {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $tampered -ExpectedIssueNumber 69328
             } "Only the one regenerated snapshot may be exempted." "exactly the trusted Pulse snapshot section"
             $publication = Copy-SnapshotPublication $publicationA "body-$name"
@@ -469,7 +474,7 @@ try
         Invoke-SnapshotCase "Restrictions/$($case.Name)" {
             $tampered = $bodyA.Replace("## Snapshot", "$($case.Text)`n`n## Snapshot")
             Assert-Throws {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $tampered) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $tampered -ExpectedIssueNumber 69328
             } "General body restrictions must remain enforced." $case.Error
             $publication = Copy-SnapshotPublication $publicationA "restriction-$($case.Name)"
@@ -505,7 +510,7 @@ try
         Invoke-SnapshotCase "BodyLimit/$length" {
             $body = ("x" * ($length - $bodyA.Length)) + $bodyA
             $action = {
-                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $body) -Pulse $pulseA `
+                Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput $body) -Pulse $pulseA -Json $jsonA `
                     -SnapshotContext $contextA -ExpectedBody $body -ExpectedIssueNumber 69328
             }
             if ($length -eq 65000)
