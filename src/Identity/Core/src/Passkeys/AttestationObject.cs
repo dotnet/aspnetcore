@@ -66,6 +66,7 @@ internal sealed class AttestationObject
         var reader = new CborReader(data);
         _ = reader.ReadStartMap();
 
+        var keys = new HashSet<string>(StringComparer.Ordinal);
         string? format = null;
         ReadOnlyMemory<byte>? attestationStatement = default;
         ReadOnlyMemory<byte>? authenticatorData = default;
@@ -73,6 +74,11 @@ internal sealed class AttestationObject
         while (reader.PeekState() != CborReaderState.EndMap)
         {
             var key = reader.ReadTextString();
+            if (!keys.Add(key))
+            {
+                throw PasskeyException.DuplicateAttestationObjectKey(key);
+            }
+
             switch (key)
             {
                 case "fmt":
