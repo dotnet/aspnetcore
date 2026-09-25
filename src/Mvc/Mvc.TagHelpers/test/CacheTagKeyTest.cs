@@ -30,7 +30,7 @@ public class CacheTagKeyTest
         {
             ViewContext = GetViewContext()
         };
-        var expected = "CacheTagHelper||" + id;
+        var expected = "CacheTagHelper||v1||" + id;
 
         // Act
         var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
@@ -156,7 +156,7 @@ public class CacheTagKeyTest
             ViewContext = GetViewContext(),
             Name = name
         };
-        var expected = "DistributedCacheTagHelper||" + name;
+        var expected = "DistributedCacheTagHelper||v1||" + name;
 
         // Act
         var cacheTagKey = new CacheTagKey(cacheTagHelper);
@@ -179,7 +179,7 @@ public class CacheTagKeyTest
             ViewContext = GetViewContext(),
             VaryBy = varyBy
         };
-        var expected = "CacheTagHelper||testid||VaryBy||" + varyBy;
+        var expected = "CacheTagHelper||v1||testid||VaryBy||" + varyBy;
 
         // Act
         var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
@@ -190,15 +190,15 @@ public class CacheTagKeyTest
     }
 
     [Theory]
-    [InlineData("Cookie0", "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value)")]
+    [InlineData("Cookie0", "CacheTagHelper||v1||testid||VaryByCookie(Cookie0||Cookie0Value)")]
     [InlineData("Cookie0,Cookie1",
-        "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+        "CacheTagHelper||v1||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
     [InlineData("Cookie0, Cookie1",
-        "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+        "CacheTagHelper||v1||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
     [InlineData("   Cookie0,   ,   Cookie1   ",
-        "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+        "CacheTagHelper||v1||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
     [InlineData(",Cookie0,,Cookie1,",
-        "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+        "CacheTagHelper||v1||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
     public void GenerateKey_UsesVaryByCookieName(string varyByCookie, string expected)
     {
         // Arrange
@@ -220,11 +220,11 @@ public class CacheTagKeyTest
     }
 
     [Theory]
-    [InlineData("Accept-Language", "CacheTagHelper||testid||VaryByHeader(Accept-Language||en-us;charset=utf8)")]
+    [InlineData("Accept-Language", "CacheTagHelper||v1||testid||VaryByHeader(Accept-Language||en-us;charset=utf8)")]
     [InlineData("X-CustomHeader,Accept-Encoding, NotAvailable",
-        "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
+        "CacheTagHelper||v1||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
     [InlineData("X-CustomHeader,  , Accept-Encoding, NotAvailable",
-        "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
+        "CacheTagHelper||v1||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
     public void GenerateKey_UsesVaryByHeader(string varyByHeader, string expected)
     {
         // Arrange
@@ -248,11 +248,11 @@ public class CacheTagKeyTest
     }
 
     [Theory]
-    [InlineData("category", "CacheTagHelper||testid||VaryByQuery(category||cats)")]
+    [InlineData("category", "CacheTagHelper||v1||testid||VaryByQuery(category||cats)")]
     [InlineData("Category,SortOrder,SortOption",
-        "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
+        "CacheTagHelper||v1||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
     [InlineData("Category,  SortOrder, SortOption,  ",
-        "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
+        "CacheTagHelper||v1||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
     public void GenerateKey_UsesVaryByQuery(string varyByQuery, string expected)
     {
         // Arrange
@@ -274,11 +274,11 @@ public class CacheTagKeyTest
     }
 
     [Theory]
-    [InlineData("id", "CacheTagHelper||testid||VaryByRoute(id||4)")]
+    [InlineData("id", "CacheTagHelper||v1||testid||VaryByRoute(id||4)")]
     [InlineData("Category,,Id,OptionRouteValue",
-        "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
+        "CacheTagHelper||v1||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
     [InlineData(" Category,  , Id,   OptionRouteValue,   ",
-        "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
+        "CacheTagHelper||v1||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
     public void GenerateKey_UsesVaryByRoute(string varyByRoute, string expected)
     {
         // Arrange
@@ -314,7 +314,7 @@ public class CacheTagKeyTest
         cacheTagHelper.ViewContext.RouteData.Values["id"] = 4;
         cacheTagHelper.ViewContext.RouteData.Values["category"] =
             new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7));
-        var expected = "CacheTagHelper||testid||VaryByRoute(Category||10/31/2018 07:37:38 -07:00)";
+        var expected = "CacheTagHelper||v1||testid||VaryByRoute(Category||10/31/2018 07:37:38 -07:00)";
 
         // Act
         var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
@@ -328,7 +328,7 @@ public class CacheTagKeyTest
     public void GenerateKey_UsesVaryByUser_WhenUserIsNotAuthenticated()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryByUser||";
+        var expected = "CacheTagHelper||v1||testid||VaryByUser||Anonymous";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
@@ -348,14 +348,16 @@ public class CacheTagKeyTest
     public void GenerateKey_UsesVaryByUserAndAuthenticatedUserName()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryByUser||test_name";
+        var expected = "CacheTagHelper||v1||testid||VaryByUser||Identifier||wKNzuxHuw8whTcbXNGFvkB/QW/8LQlUWLEgkQsd03Oc=";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
             ViewContext = GetViewContext(),
             VaryByUser = true
         };
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name") });
+        var identity = new ClaimsIdentity(
+            [new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name")],
+            "Test");
         cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
 
         // Act
@@ -366,12 +368,133 @@ public class CacheTagKeyTest
         Assert.Equal(expected, key);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GenerateKey_VaryByUser_DistinguishesAuthenticatedUsersWithoutNames(bool distributed)
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var firstKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "user-1")], "Test")),
+            tagHelperContext,
+            distributed).GenerateKey();
+        var secondKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "user-2")], "Test")),
+            tagHelperContext,
+            distributed).GenerateKey();
+
+        Assert.NotEqual(firstKey, secondKey);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GenerateKey_VaryByUser_DistinguishesAnonymousFromAuthenticatedWithoutClaims(bool distributed)
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var anonymousKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity()),
+            tagHelperContext,
+            distributed);
+        var authenticatedKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "Test")),
+            tagHelperContext,
+            distributed);
+
+        Assert.NotEqual(anonymousKey, authenticatedKey);
+        Assert.NotEqual(anonymousKey.GenerateKey(), authenticatedKey.GenerateKey());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GenerateKey_VaryByUser_DoesNotCollideWithLegacyUserNames(bool distributed)
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var anonymousKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity()),
+            tagHelperContext,
+            distributed).GenerateKey();
+        var identifiedKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name")],
+                "Test")),
+            tagHelperContext,
+            distributed).GenerateKey();
+        var prefix = distributed ? "DistributedCacheTagHelper" : "CacheTagHelper";
+
+        Assert.NotEqual($"{prefix}||testid||VaryByUser||NoIdentifier", anonymousKey);
+        Assert.NotEqual(
+            $"{prefix}||testid||VaryByUser||Identifier||wKNzuxHuw8whTcbXNGFvkB/QW/8LQlUWLEgkQsd03Oc=",
+            identifiedKey);
+    }
+
+    [Fact]
+    public void GenerateKey_VaryByUser_UsesClaimTypeValueIssuerAndPrecedence()
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var subject = new Claim("sub", "subject", ClaimValueTypes.String, "issuer");
+        var subjectKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([subject], "Test")),
+            tagHelperContext).GenerateKey();
+        var sameSubjectKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([subject], "OtherAuthenticationType")),
+            tagHelperContext).GenerateKey();
+        var differentIssuerKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("sub", "subject", ClaimValueTypes.String, "other-issuer")],
+                "Test")),
+            tagHelperContext).GenerateKey();
+        var precedenceKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "name-id"),
+                subject,
+            ],
+            "Test")),
+            tagHelperContext).GenerateKey();
+
+        Assert.Equal(subjectKey, sameSubjectKey);
+        Assert.NotEqual(subjectKey, differentIssuerKey);
+        Assert.Equal(subjectKey, precedenceKey);
+    }
+
+    [Fact]
+    public void GenerateKey_VaryByUser_FallsBackToAllAuthenticatedClaims()
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var firstKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim("custom", "first")], "Test")),
+            tagHelperContext).GenerateKey();
+        var secondKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim("custom", "second")], "Test")),
+            tagHelperContext).GenerateKey();
+
+        Assert.NotEqual(firstKey, secondKey);
+    }
+
+    [Fact]
+    public void GenerateKey_WithoutVaryByUser_IgnoresUserIdentifier()
+    {
+        var tagHelperContext = GetTagHelperContext();
+        var firstKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", "first")], "Test")),
+            tagHelperContext,
+            varyByUser: false).GenerateKey();
+        var secondKey = CreateCacheTagKey(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", "second")], "Test")),
+            tagHelperContext,
+            varyByUser: false).GenerateKey();
+
+        Assert.Equal(firstKey, secondKey);
+    }
+
     [Fact]
     [ReplaceCulture("fr-FR", "es-ES")]
     public void GenerateKey_UsesCultureAndUICultureName_IfVaryByCulture_IsSet()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryByCulture||fr-FR||es-ES";
+        var expected = "CacheTagHelper||v1||testid||VaryByCulture||fr-FR||es-ES";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
@@ -391,8 +514,8 @@ public class CacheTagKeyTest
     public void GenerateKey_WithMultipleVaryByOptions_CreatesCombinedKey()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryBy||custom-value||" +
-            "VaryByHeader(content-type||text/html)||VaryByUser||someuser";
+        var expected = "CacheTagHelper||v1||testid||VaryBy||custom-value||" +
+            "VaryByHeader(content-type||text/html)||VaryByUser||Identifier||g6GQB/k6nAau9yZ+aDyvA4dEZMh2bWNoHaiB9tLmcfM=";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
@@ -402,7 +525,9 @@ public class CacheTagKeyTest
             VaryBy = "custom-value"
         };
         cacheTagHelper.ViewContext.HttpContext.Request.Headers["Content-Type"] = "text/html";
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "someuser") });
+        var identity = new ClaimsIdentity(
+            [new Claim(ClaimsIdentity.DefaultNameClaimType, "someuser")],
+            "Test");
         cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
 
         // Act
@@ -418,7 +543,7 @@ public class CacheTagKeyTest
     public void GenerateKey_WithVaryByCulture_ComposesWithOtherOptions()
     {
         // Arrange
-        var expected = "CacheTagHelper||testid||VaryBy||custom-value||" +
+        var expected = "CacheTagHelper||v1||testid||VaryBy||custom-value||" +
             "VaryByHeader(content-type||text/html)||VaryByCulture||zh||zh-Hans";
         var tagHelperContext = GetTagHelperContext();
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
@@ -544,6 +669,36 @@ public class CacheTagKeyTest
             Mock.Of<ITempDataDictionary>(),
             TextWriter.Null,
             new HtmlHelperOptions());
+    }
+
+    private static CacheTagKey CreateCacheTagKey(
+        ClaimsPrincipal principal,
+        TagHelperContext context,
+        bool distributed = false,
+        bool varyByUser = true)
+    {
+        var viewContext = GetViewContext();
+        viewContext.HttpContext.User = principal;
+
+        if (distributed)
+        {
+            return new CacheTagKey(new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(),
+                new HtmlTestEncoder())
+            {
+                Name = context.UniqueId,
+                ViewContext = viewContext,
+                VaryByUser = varyByUser,
+            });
+        }
+
+        return new CacheTagKey(new CacheTagHelper(
+            new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()),
+            new HtmlTestEncoder())
+        {
+            ViewContext = viewContext,
+            VaryByUser = varyByUser,
+        }, context);
     }
 
     private static TagHelperContext GetTagHelperContext(string id = "testid")

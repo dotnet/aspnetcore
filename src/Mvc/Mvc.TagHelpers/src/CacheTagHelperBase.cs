@@ -88,8 +88,14 @@ public abstract class CacheTagHelperBase : TagHelper
     public string VaryByCookie { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that determines if the cached result is to be varied by the Identity for the logged in
-    /// <see cref="Http.HttpContext.User"/>.
+    /// Gets or sets a value that determines if the cached result is varied by the authenticated user.
+    /// The first authenticated identity, in principal order, with a nonempty <c>sub</c>,
+    /// <see cref="System.Security.Claims.ClaimTypes.NameIdentifier"/>, or
+    /// <see cref="System.Security.Claims.ClaimTypes.Upn"/> claim identifies the user, with claims checked in that order.
+    /// The ordinal claim type, value, and issuer tuple must be trusted, unique, stable, and consistent across
+    /// requests and application instances. If no recognized claim exists, all claims on authenticated identities
+    /// identify the user. Claims transformations must run before cache key generation, and identity and relevant
+    /// claim ordering must be deterministic. Authenticated users without claims are cached separately from anonymous users.
     /// </summary>
     [HtmlAttributeName(VaryByUserAttributeName)]
     public bool VaryByUser { get; set; }
