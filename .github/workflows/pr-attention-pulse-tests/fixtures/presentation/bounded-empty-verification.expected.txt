@@ -84,12 +84,183 @@ Inspect the discussion before merging; these prospective candidates do not estab
 
 Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
 Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
-Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+Capped report results, not the full queue. Authenticated ZIP artifact retained for seven days as secondary audit evidence.
 
 <details>
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
 JSON SHA-256: `3f383b8a69e30d896be7aceb14048c2dfb5b6ec593f0c4c285628bb6001528a0`.
+
+</details>
+
+<details>
+<summary>Snapshot JSON (exact sanitized bytes)</summary>
+
+```json
+{
+  "schemaVersion": "1.0.0",
+  "scope": "blazor",
+  "status": "complete",
+  "attemptedAt": "2026-09-10T20:04:56Z",
+  "candidateCountsAvailable": true,
+  "source": {
+    "repository": "dotnet/aspnetcore",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-09-10T20:00:00Z",
+    "query": {
+      "openPullRequestCount": 5,
+      "returnedPullRequestCount": 5,
+      "complete": true
+    },
+    "filter": {
+      "name": "blazor",
+      "description": "Blazor and Components pull requests",
+      "coverage": "labels-and-paths",
+      "selection": "(labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**])",
+      "allRepositoryPullRequests": false
+    },
+    "discussion": {
+      "candidateLimit": 20,
+      "assessedCandidateCount": 3,
+      "verificationNeededCount": 1,
+      "unassessedReviewNowCount": 0
+    },
+    "mergeDiscussion": {
+      "candidateLimit": 20,
+      "assessedCandidateCount": 0,
+      "verificationNeededCount": 0,
+      "unassessedCandidateCount": 1,
+      "eligibleCount": 0,
+      "excludedCandidateCount": 0,
+      "verificationLimit": 3
+    },
+    "census": {
+      "openPullRequests": 5,
+      "matched": 5,
+      "labelOnly": 0,
+      "pathOnly": 0,
+      "labelAndPath": 0,
+      "incidentalPathExcluded": 0,
+      "unresolvedMergeable": 0,
+      "byBucket": {
+        "ReviewNow": 3,
+        "NeedsRescue": 1,
+        "ReadyToMerge": 1,
+        "WaitingOnAuthor": 0,
+        "WaitingOnCI": 0,
+        "DesignDecision": 0,
+        "Draft": 0,
+        "Excluded": 0
+      }
+    },
+    "overflow": {
+      "reviewNow": 0,
+      "needsRescue": 0,
+      "readyToMerge": 0
+    },
+    "caps": {
+      "reviewNow": 5,
+      "needsRescue": 3,
+      "readyToMerge": 3,
+      "reviewNowPerAuthor": 2
+    },
+    "warnings": [
+      "Bounded warning with (at)mention, GH number 88, feedface, and (link removed)"
+    ]
+  },
+  "views": {
+    "reviewNow": [
+      {
+        "number": 101,
+        "title": "First review candidate",
+        "author": "first-author",
+        "bucket": "ReviewNow",
+        "rank": 1,
+        "nextActor": "reviewer",
+        "reasonCodes": [
+          "needs-first-review"
+        ],
+        "blockers": [],
+        "ageDays": 4,
+        "idleDays": 1,
+        "scopeMatch": "label-only"
+      },
+      {
+        "number": 102,
+        "title": "Second 'review' (at)candidate / (b)unsafe(/b) number 88 (link removed) (link removed) GH number 77 (reference removed) with controls",
+        "author": "second-author",
+        "bucket": "ReviewNow",
+        "rank": 2,
+        "nextActor": "reviewer (at)unsafe",
+        "reasonCodes": [
+          "author-responded"
+        ],
+        "blockers": [],
+        "ageDays": 10,
+        "idleDays": 2,
+        "scopeMatch": "path-only"
+      }
+    ],
+    "verifyDiscussionBeforeReview": [],
+    "needsRescue": [
+      {
+        "number": 104,
+        "title": "Rescue candidate",
+        "author": "rescue-author",
+        "bucket": "NeedsRescue",
+        "rank": 1,
+        "nextActor": "maintainer/triager",
+        "reasonCodes": [
+          "reviewer-idle-30d",
+          "community-contribution"
+        ],
+        "blockers": [
+          "A blocking label from (link removed) requires an explicit (at)triage decision."
+        ],
+        "ageDays": 60,
+        "idleDays": 40,
+        "scopeMatch": "label-only"
+      }
+    ],
+    "readyToMerge": [],
+    "verifyDiscussionBeforeMerge": [
+      {
+        "number": 105,
+        "title": "Ready candidate",
+        "author": "ready-author",
+        "bucket": "ReadyToMerge",
+        "rank": 1,
+        "nextActor": "maintainer",
+        "reasonCodes": [
+          "approved"
+        ],
+        "blockers": [],
+        "ageDays": 3,
+        "idleDays": 1,
+        "scopeMatch": "path-only",
+        "mergeEligibility": "not-assessed",
+        "discussionAssessment": {
+          "state": "not-assessed",
+          "complete": false,
+          "signals": [
+            "discussion-not-assessed"
+          ],
+          "commentTotalCount": 0,
+          "commentEvidenceTruncated": false,
+          "threads": {
+            "totalCount": 0,
+            "returnedCount": 0,
+            "complete": false,
+            "unresolvedCount": 0,
+            "outdatedUnresolvedCount": 0
+          }
+        }
+      }
+    ]
+  }
+}
+
+```
 
 </details>
