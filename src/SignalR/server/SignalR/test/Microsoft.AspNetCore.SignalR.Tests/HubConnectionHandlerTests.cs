@@ -631,6 +631,88 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task UnknownMessageTypeIsIgnoredWhenBufferIsOverTheMaxMessageSize()
+    {
+        var unknownPayload = Encoding.UTF8.GetBytes("{\"type\":99}\u001e");
+        var payload1 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"one\"]}\u001e");
+        var payload2 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"2\", \"target\": \"Echo\", \"arguments\":[\"two\"]}\u001e");
+
+        var maximumMessageSize = payload2.Length + 10;
+
+        using (StartVerifiableLog())
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                client.Connection.Application.Output.Write(unknownPayload);
+                client.Connection.Application.Output.Write(payload1);
+                client.Connection.Application.Output.Write(payload2);
+                await client.Connection.Application.Output.FlushAsync();
+
+                var completionMessage = await client.ReadAsync().DefaultTimeout() as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("1", completionMessage.InvocationId);
+                Assert.Equal("one", completionMessage.Result);
+
+                completionMessage = await client.ReadAsync().DefaultTimeout() as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("2", completionMessage.InvocationId);
+                Assert.Equal("two", completionMessage.Result);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(32L * 1024)]
+    public async Task UnknownMessageTypeIsIgnoredAndLaterMessagesAreProcessed(long? maximumMessageSize)
+    {
+        var unknownPayload = Encoding.UTF8.GetBytes("{\"type\":99}\u001e");
+        var payload1 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"one\"]}\u001e");
+        var payload2 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"2\", \"target\": \"Echo\", \"arguments\":[\"two\"]}\u001e");
+
+        using (StartVerifiableLog())
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connection.Application.Output.WriteAsync(unknownPayload);
+                await client.Connection.Application.Output.WriteAsync(payload1);
+
+                var completionMessage = await client.ReadAsync().DefaultTimeout() as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("1", completionMessage.InvocationId);
+                Assert.Equal("one", completionMessage.Result);
+
+                client.Connection.Application.Output.Write(unknownPayload);
+                client.Connection.Application.Output.Write(payload2);
+                await client.Connection.Application.Output.FlushAsync();
+
+                completionMessage = await client.ReadAsync().DefaultTimeout() as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("2", completionMessage.InvocationId);
+                Assert.Equal("two", completionMessage.Result);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task HandshakeFailureFromIncompatibleProtocolVersionSendsResponseWithError()
     {
         using (StartVerifiableLog())
@@ -4861,7 +4943,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.True(Assert.IsType<bool>(res.Result));
         }
     }
-    
+
     // Regression test for https://github.com/dotnet/aspnetcore/issues/61491
     [Fact]
     public async Task HubMethodCanInjectServiceWithNullParameter()
