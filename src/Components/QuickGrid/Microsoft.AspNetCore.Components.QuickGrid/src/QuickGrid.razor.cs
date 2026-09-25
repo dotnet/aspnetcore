@@ -456,10 +456,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <param name="column">The column whose options are to be displayed, if any are available.</param>
     public Task ShowColumnOptionsAsync(ColumnBase<TGridItem> column)
     {
-        _displayOptionsForColumn = column;
-        _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
-        StateHasChanged();
-        return Task.CompletedTask;
+        return InvokeAsync(() =>
+        {
+            _displayOptionsForColumn = column;
+            _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
+            StateHasChanged();
+        });
     }
 
     /// <summary>
@@ -467,9 +469,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     public Task HideColumnOptionsAsync()
     {
-        _displayOptionsForColumn = null;
-        StateHasChanged();
-        return Task.CompletedTask;
+        return InvokeAsync(() =>
+        {
+            _displayOptionsForColumn = null;
+            StateHasChanged();
+        });
     }
 
     /// <summary>
@@ -477,10 +481,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// (either <see cref="Items"/> or <see cref="ItemsProvider"/>).
     /// </summary>
     /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public async Task RefreshDataAsync()
+    public Task RefreshDataAsync()
     {
-        await RefreshDataCoreAsync();
-        StateHasChanged();
+        return InvokeAsync(async () =>
+        {
+            await RefreshDataCoreAsync();
+            StateHasChanged();
+        });
     }
 
     /// <summary>
