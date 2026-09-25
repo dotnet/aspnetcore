@@ -122,6 +122,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
+    internal ILogger Logger => _logger;
 
     internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
 
