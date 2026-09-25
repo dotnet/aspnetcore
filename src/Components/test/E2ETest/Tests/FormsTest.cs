@@ -703,6 +703,63 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void SelectWithNullableOption_RoundTripsNullValue_Single()
+    {
+        var appElement = Browser.MountTestComponent<SelectNullableOptionsComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id("select-nullable-single")));
+        var label = appElement.FindElement(By.Id("selected-nullable-single-label"));
+
+        // Initial .NET -> JS: bound property is "sf" so the matching <option> is selected.
+        Browser.Equal("sf", () => select.SelectedOption.GetDomProperty("value"));
+        Browser.Equal("sf", () => label.Text);
+
+        var nullOption = select.Options[0];
+        Browser.Equal("", () => nullOption.GetDomProperty("value"));
+        Browser.Equal("data-blazor-null-option", () => nullOption.GetDomAttribute("data-blazor-null-option"));
+
+        // JS -> .NET: selecting the @null option should set the bound string? to null.
+        select.SelectByIndex(0);
+        Browser.Equal("(null)", () => label.Text);
+
+        // Round-trip: select a real value, then go back to @null to make sure
+        // the marker is re-recognized on every change event, not just the first.
+        select.SelectByValue("la");
+        Browser.Equal("la", () => label.Text);
+        select.SelectByIndex(0);
+        Browser.Equal("(null)", () => label.Text);
+
+        // .NET -> JS: programmatically setting the bound property to null
+        // should re-select the @null option on the next render.
+        appElement.FindElement(By.Id("reset-nullable-single")).Click();
+        Browser.Equal("", () => select.SelectedOption.GetDomProperty("value"));
+        Browser.Equal("data-blazor-null-option", () => select.SelectedOption.GetDomAttribute("data-blazor-null-option"));
+        Browser.Equal("(null)", () => label.Text);
+    }
+
+    [Fact]
+    public void SelectWithoutNullOption_NothingSelected_ChangeEvent_ReportsEmptyString()
+    {
+        var appElement = Browser.MountTestComponent<SelectNullableOptionsComponent>();
+        var label = appElement.FindElement(By.Id("select-no-null-option-label"));
+
+        // Initial state: bound to "B".
+        Browser.Equal("B", () => label.Text);
+
+        // Force the select into selectedIndex === -1 (no option matches) and
+        // dispatch a change event, simulating the case where the bound value
+        // doesn't match any <option> (e.g., set programmatically).
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var s = document.getElementById('select-no-null-option');" +
+            "s.selectedIndex = -1;" +
+            "s.dispatchEvent(new Event('change'));");
+
+        // The bound string? should receive '' (empty string), not null.
+        // The label distinguishes "(empty)" from "(null)" so we can tell
+        // which one the C# side actually received.
+        Browser.Equal("(empty)", () => label.Text);
+    }
+
+    [Fact]
     public void RespectsCustomFieldCssClassProvider()
     {
         var appElement = MountTypicalValidationComponent();
