@@ -132,6 +132,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+        services.AddSingleton<RootComponentNavigationGate>();
+        services.AddSingleton<CircuitHandler>(sp => sp.GetRequiredService<RootComponentNavigationGate>());
 
         services.AddSingleton<AutoPauseTestStreamGate>();
     }
@@ -278,6 +280,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             MapEnhancedNavigationEndpoints(endpoints);
             endpoints.MapAutoPauseTestEndpoints();
+            endpoints.MapRootComponentNavigationGateEndpoints();
         });
     }
 
