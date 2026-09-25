@@ -297,7 +297,7 @@ Invoke-Control "DeterministicClickableReferences" {
     Import-Module -Scope Local -Force $contractPath
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
     $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
-    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
+    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -Json (Get-FixtureSnapshotJson -Pulse $pulse) -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
     $pulse = Resolve-PulseMergeArea -Area $pulse
     $expectedNumbers = @(
         foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))
