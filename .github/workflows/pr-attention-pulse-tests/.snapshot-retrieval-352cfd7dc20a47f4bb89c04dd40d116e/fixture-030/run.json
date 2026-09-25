@@ -1,9 +1,0 @@
-{
-  "id": 34643961191,
-  "run_attempt": 1,
-  "repository": {
-    "full_name": "dotnet/runtime"
-  },
-  "status": "completed",
-  "conclusion": "failure"
-}

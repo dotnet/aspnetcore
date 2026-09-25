@@ -1,9 +1,0 @@
-{
-  "id": 34643961192,
-  "run_attempt": 1,
-  "repository": {
-    "full_name": "dotnet/aspnetcore"
-  },
-  "status": "completed",
-  "conclusion": "failure"
-}
