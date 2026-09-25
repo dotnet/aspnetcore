@@ -333,4 +333,10 @@
   <data name="Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message" xml:space="preserve">
     <value>If the server does not specifically reject IPv6, IPAddress.IPv6Any is preferred over IPAddress.Any usage for safety and performance reasons. See https://aka.ms/aspnetcore-warnings/ASP0028 for more details.</value>
   </data>
+  <data name="Analyzer_ConfigureCertificateValidationForHttp3_Title" xml:space="preserve">
+    <value>Configure client certificate validation for HTTP/3</value>
+  </data>
+  <data name="Analyzer_ConfigureCertificateValidationForHttp3_Message" xml:space="preserve">
+    <value>SslCertificateTrust does not restrict client certificates accepted over HTTP/3. Configure RemoteCertificateValidationCallback or a CertificateChainPolicy that uses CustomRootTrust with a populated CustomTrustStore.</value>
+  </data>
 </root>
