@@ -18,6 +18,7 @@
 * Implementation, pull request readiness, and merge may proceed before the linked issue is `api-approved`. Before the API can be included in an RTM release, verify that the API proposal issue has the `api-approved` label and that the approval covers the final implemented API shape.
 * If the `api-approved` label is missing when preparing an RTM release, explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature.
 * `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval. Any implementation change to the proposed or previously approved API shape must return to API review before the API is included in an RTM release.
+* The public API analyzer fails the build in both directions: adding a public member requires a new `PublicAPI.Unshipped.txt` entry, and removing a member or reducing its accessibility requires deleting its existing baseline entry.
 
 ## Framework assembly boundaries
 
@@ -28,6 +29,7 @@
 
 * Apply code-formatting style defined in `.editorconfig`.
 * Prefer file-scoped namespace declarations and single-line using directives.
+* Code style is enforced during build (`EnforceCodeStyleInBuild` in `eng/targets/CSharp.Common.targets`). Projects with a single `TargetFramework` equal to `$(DefaultNetCoreTargetFramework)` get implicit usings, and an unnecessary using directive (`IDE0005`) fails the build, so do not hand-add `using System;`, `using System.Collections.Generic;`, `using System.Threading.Tasks;` and similar. `System.Linq` (in src projects) and `System.Net.Http` (everywhere) are removed from the implicit set and still need explicit directives; test projects implicitly get `using Xunit;`.
 * Insert a newline before the opening curly brace of any code block (e.g., after `if`, `for`, `while`, `foreach`, `using`, `try`, etc.).
 * Ensure that the final return statement of a method is on its own line.
 * Use pattern matching and switch expressions wherever possible.
@@ -50,14 +52,14 @@
 * Name each test file after its primary test class. For type-focused tests, map `Foo` to `FooTest` or `FooTests`, following nearby convention. Name scenario tests after the behavior exercised, and extend an existing matching test class when one exists.
 * Use public test classes and descriptive PascalCase test methods. Follow the containing project's test framework, method-name style, namespace, fixtures, and parallelization configuration.
 * Keep helpers used by one test class private or nested. Put reused helpers in the project's established `Helpers`, `Infrastructure`, or `TestObjects` structure.
-* We use xUnit SDK v3 for tests.
+* Most test projects use xUnit SDK v3. Some areas use other frameworks, for example the E2E test projects under `src/Components/Testing/testassets` use MSTest on Microsoft.Testing.Platform; do not convert tests between frameworks.
 * Do not emit "Act", "Arrange" or "Assert" comments.
 * Use Moq for mocking in tests.
 * Copy existing style in nearby files for test method names and capitalization.
 
 ## Running tests
 
-* To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`. On Windows, use the matching `build.cmd` (e.g. `.\src\Http\build.cmd -test`); `src/Components/AGENTS.md` has more Windows-specific guidance.
 * Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
 * For a `[Theory]` or other parameterized test, confirm that each row fails for the expected reason without the fix and passes with it; a red test proves only that at least one row failed. `dotnet test --filter` cannot select an individual `InlineData` row by parameter value, so inspect every case in the test output instead of relying on the `Failed!` or `Passed!` summary. A row that passes because its targeted scenario or code path never ran, such as from unmet setup, a missing prerequisite, or conditional execution, does not verify the fix.
 * For behavioral review findings and bug-fix verification, use the smallest faithful test path. Include the component, service, runtime, or browser mechanism that owns or produces each disputed precondition, and observe the claimed material effect at the appropriate boundary, such as UI, protocol, persisted state, resource use, timing or performance, logging, or another contract-relevant behavior. Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
