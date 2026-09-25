@@ -43,6 +43,11 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         codeWriter.WriteLine("Delegate handler)");
         codeWriter.Indent--;
         codeWriter.StartBlock();
+        if (endpoint.SupportsGeneratedTupleConverters)
+        {
+            codeWriter.WriteLine("var tupleJsonOptions = endpoints.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;");
+            codeWriter.WriteLine("RegisterGeneratedTupleConverters(tupleJsonOptions.SerializerOptions);");
+        }
         codeWriter.WriteLine("MetadataPopulator populateMetadata = (methodInfo, options) =>");
         codeWriter.StartBlock();
         codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
@@ -231,12 +236,60 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         return stringWriter.ToString();
     }
 
+    internal static string EmitTupleConverterRegistration(TupleContractManifest manifest)
+    {
+        if (!manifest.IsEnabled)
+        {
+            return string.Empty;
+        }
+
+        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+        using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+        codeWriter.WriteLine("private static void RegisterGeneratedTupleConverters(JsonSerializerOptions options)");
+        codeWriter.StartBlock();
+
+        if (!manifest.FactoryExpressions.IsDefaultOrEmpty)
+        {
+            codeWriter.WriteLine("#pragma warning disable ASP0040");
+            codeWriter.WriteLine("if (!options.Converters.Any(candidate => candidate.GetType().Assembly == typeof(global::Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters).Assembly))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return;");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine("if (options.IsReadOnly)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return;");
+            codeWriter.EndBlock();
+            foreach (var factory in manifest.FactoryExpressions)
+            {
+                codeWriter.WriteLine($"AddTupleConverterIfMissing(options, {factory});");
+            }
+            codeWriter.WriteLine("#pragma warning restore ASP0040");
+        }
+
+        codeWriter.EndBlock();
+
+        if (!manifest.FactoryExpressions.IsDefaultOrEmpty)
+        {
+            codeWriter.WriteLine();
+            codeWriter.WriteLine("private static void AddTupleConverterIfMissing<TTuple>(JsonSerializerOptions options, global::System.Text.Json.Serialization.JsonConverter<TTuple> converter)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (!options.Converters.Any(candidate => candidate.CanConvert(typeof(TTuple))))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("options.Converters.Add(converter);");
+            codeWriter.EndBlock();
+            codeWriter.EndBlock();
+        }
+
+        return stringWriter.ToString();
+    }
+
     internal static void Emit(
         SourceProductionContext context,
         ImmutableArray<string> endpointsCode,
         string helperMethods,
         ImmutableHashSet<string> httpVerbs,
-        string helperTypes)
+        string helperTypes,
+        string tupleConverterRegistration)
     {
         if (endpointsCode.IsDefaultOrEmpty)
         {
@@ -250,7 +303,9 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         }
         var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
             endpoints: stringWriter.ToString(),
-            helperMethods: helperMethods ?? string.Empty,
+            helperMethods: string.IsNullOrEmpty(tupleConverterRegistration)
+                ? helperMethods
+                : $"{tupleConverterRegistration}\n{helperMethods}",
             helperTypes: helperTypes ?? string.Empty,
             verbs: httpVerbs);
 

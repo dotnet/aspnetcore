@@ -131,6 +131,9 @@ public static class OpenApiServiceCollectionExtensions
         services.TryAddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
         services.TryAddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
         services.TryAddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
+#pragma warning disable ASP0040 // The framework registers this experimental interface.
+        services.TryAddKeyedSingleton<IOpenApiVersionedDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
+#pragma warning restore ASP0040
 
         // Required for build-time generation
         services.TryAddSingleton<IDocumentProvider, OpenApiDocumentProvider>();

@@ -3,14 +3,106 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
+#pragma warning disable ASP0040
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0, OpenApiSchemaGenerationMode.Inferred)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1, OpenApiSchemaGenerationMode.Inferred)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, OpenApiSchemaGenerationMode.Legacy)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2, OpenApiSchemaGenerationMode.Inferred)]
+    public async Task SchemaTransformer_CanAuthorVersionSpecificConditionalSchemas(
+        OpenApiSpecVersion openApiVersion,
+        OpenApiSchemaGenerationMode schemaGenerationMode)
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/payment", (ConditionalPayment payment) => payment);
+
+        var visitedProperties = new List<string>();
+        var options = new OpenApiOptions
+        {
+            OpenApiVersion = openApiVersion,
+            SchemaGenerationMode = schemaGenerationMode,
+        };
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            if (context.JsonPropertyInfo is not null)
+            {
+                visitedProperties.Add(context.JsonPropertyInfo.Name);
+            }
+
+            if (context.JsonTypeInfo.Type == typeof(ConditionalPayment) &&
+                context.JsonPropertyInfo is null &&
+                context.OpenApiVersion >= OpenApiSpecVersion.OpenApi3_1)
+            {
+                schema.If = new OpenApiSchema
+                {
+                    Properties = new Dictionary<string, IOpenApiSchema>
+                    {
+                        ["kind"] = new OpenApiSchema { Const = "card" },
+                    },
+                    Required = new HashSet<string> { "kind" },
+                };
+                schema.Then = new OpenApiSchema { Required = new HashSet<string> { "billingAddress" } };
+                schema.Else = new OpenApiSchema { Required = new HashSet<string> { "email" } };
+                schema.DependentRequired = new Dictionary<string, HashSet<string>>
+                {
+                    ["creditCard"] = new HashSet<string> { "billingAddress" },
+                };
+                schema.DependentSchemas = new Dictionary<string, IOpenApiSchema>
+                {
+                    ["country"] = new OpenApiSchema { Required = new HashSet<string> { "postalCode" } },
+                };
+            }
+
+            return Task.CompletedTask;
+        });
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            return Task.CompletedTask;
+        });
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.Equal(openApiVersion, context.OpenApiVersion);
+            return Task.CompletedTask;
+        });
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(openApiVersion))!;
+
+        Assert.Equal(["kind", "creditCard", "billingAddress", "email", "country", "postalCode"], visitedProperties.Distinct());
+        if (openApiVersion >= OpenApiSpecVersion.OpenApi3_1)
+        {
+            Assert.Contains("\"if\"", json.ToJsonString());
+            Assert.Contains("\"then\"", json.ToJsonString());
+            Assert.Contains("\"else\"", json.ToJsonString());
+            Assert.Contains("\"dependentRequired\"", json.ToJsonString());
+            Assert.Contains("\"dependentSchemas\"", json.ToJsonString());
+        }
+        else
+        {
+            Assert.DoesNotContain("\"if\"", json.ToJsonString());
+            Assert.DoesNotContain("\"then\"", json.ToJsonString());
+            Assert.DoesNotContain("\"else\"", json.ToJsonString());
+            Assert.DoesNotContain("\"dependentRequired\"", json.ToJsonString());
+            Assert.DoesNotContain("\"dependentSchemas\"", json.ToJsonString());
+            Assert.DoesNotContain("x-jsonSchema", json.ToJsonString());
+        }
+    }
+#pragma warning restore ASP0040
+
     [Fact]
     public async Task SchemaTransformer_CanAccessTypeAndParameterDescriptionForParameter()
     {
@@ -419,6 +511,9 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
+#pragma warning restore ASP0040
             if (context.JsonTypeInfo.Type == typeof(int))
             {
                 schema.Format = "modified-number-format";
@@ -516,6 +611,200 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             postOperation = path.Operations[HttpMethod.Post];
             requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.Equal("this-is-a-triangle", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_LegacyModeToleratesFewerPolymorphicBranches()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/shape", (Shape shape) => { });
+
+        var transformedTypes = new List<Type>();
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Shape))
+            {
+                schema.AnyOf.RemoveAt(schema.AnyOf.Count - 1);
+            }
+            if (context.JsonTypeInfo.Type == typeof(Shape) ||
+                context.JsonTypeInfo.Type == typeof(Triangle) ||
+                context.JsonTypeInfo.Type == typeof(Square))
+            {
+                transformedTypes.Add(context.JsonTypeInfo.Type);
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal([typeof(Shape), typeof(Triangle)], transformedTypes);
+            Assert.Single(document.Paths["/shape"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema.AnyOf);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_InferredModeTraversesOneOfBranchesInOrder()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/shape", () => new PolymorphicContainer());
+
+        var transformedContexts = new List<(Type Type, string PropertyName)>();
+        var options = new OpenApiOptions();
+#pragma warning disable ASP0040
+        options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+#pragma warning disable ASP0040 // Test exercises the experimental transformer version.
+            Assert.Equal(OpenApiSpecVersion.OpenApi3_2, context.OpenApiVersion);
+#pragma warning restore ASP0040
+            if (context.JsonTypeInfo.Type == typeof(PolymorphicContainer) ||
+                context.JsonTypeInfo.Type == typeof(Shape) ||
+                context.JsonTypeInfo.Type == typeof(Triangle) ||
+                context.JsonTypeInfo.Type == typeof(Square))
+            {
+                transformedContexts.Add((context.JsonTypeInfo.Type, context.JsonPropertyInfo?.Name));
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(
+                [
+                    (typeof(PolymorphicContainer), null),
+                    (typeof(Shape), "someShape"),
+                    (typeof(Triangle), null),
+                    (typeof(Square), null),
+                ],
+                transformedContexts);
+            var schema = document.Paths["/shape"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema.Properties["someShape"];
+            Assert.Collection(
+                schema.OneOf,
+                branch => Assert.Equal(JsonSchemaType.Null, branch.Type),
+                branch => Assert.Equal(nameof(Shape), Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
+            Assert.Collection(
+                document.Components.Schemas[nameof(Shape)].OneOf,
+                branch => Assert.Equal("ShapeTriangle", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id),
+                branch => Assert.Equal("ShapeSquare", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id));
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_InferredInheritancePreservesPropertyContextsAndOrder()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/inheritance", (TransformerDerived value) => { });
+
+        var transformedContexts = new List<(Type Type, string PropertyName)>();
+        var options = new OpenApiOptions();
+#pragma warning disable ASP0040
+        options.SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(TransformerDerived) ||
+                context.JsonPropertyInfo?.DeclaringType == typeof(TransformerDerived) ||
+                context.JsonPropertyInfo?.DeclaringType == typeof(TransformerBase))
+            {
+                transformedContexts.Add((context.JsonTypeInfo.Type, context.JsonPropertyInfo?.Name));
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(
+                [
+                    (typeof(TransformerDerived), null),
+                    (typeof(int), "derivedValue"),
+                    (typeof(string), "baseValue"),
+                ],
+                transformedContexts);
+            Assert.Equal(2, document.Components.Schemas[nameof(TransformerDerived)].AllOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_LegacyAuthoredAllOfRetainsReferenceAndCallbackBehavior()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/todo", (Todo todo) => { });
+
+        var transformedProperties = new List<string>();
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo) && context.JsonPropertyInfo is null)
+            {
+                schema.AllOf =
+                [
+                    new OpenApiSchema
+                    {
+                        Type = JsonSchemaType.Object,
+                        Metadata = new Dictionary<string, object>
+                        {
+                            [Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId] = "AuthoredBase",
+                        },
+                    },
+                ];
+            }
+            else if (context.JsonPropertyInfo is not null)
+            {
+                transformedProperties.Add(context.JsonPropertyInfo.Name);
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var schema = document.Paths["/todo"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+            Assert.Equal("AuthoredBase", Assert.IsType<OpenApiSchemaReference>(Assert.Single(schema.AllOf)).Reference.Id);
+            Assert.Contains("AuthoredBase", document.Components.Schemas.Keys);
+            Assert.DoesNotContain("TodoAuthoredBase", document.Components.Schemas.Keys);
+            Assert.NotEmpty(transformedProperties);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_LegacyAuthoredOneOfWithDiscriminatorDoesNotPrefixBranchReference()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/todo", (Todo todo) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo) && context.JsonPropertyInfo is null)
+            {
+                schema.OneOf =
+                [
+                    new OpenApiSchema
+                    {
+                        Type = JsonSchemaType.Object,
+                        Metadata = new Dictionary<string, object>
+                        {
+                            [Microsoft.AspNetCore.OpenApi.OpenApiConstants.SchemaId] = "AuthoredBranch",
+                        },
+                    },
+                ];
+                schema.Discriminator = new OpenApiDiscriminator
+                {
+                    PropertyName = "kind",
+                };
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var schema = document.Paths["/todo"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+            var branch = Assert.Single(schema.OneOf);
+            Assert.Equal("AuthoredBranch", Assert.IsType<OpenApiSchemaReference>(branch).Reference.Id);
+            Assert.Contains("AuthoredBranch", document.Components.Schemas.Keys);
+            Assert.DoesNotContain("TodoAuthoredBranch", document.Components.Schemas.Keys);
         });
     }
 
@@ -970,6 +1259,26 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     {
         public string Name { get; }
         public Shape SomeShape { get; }
+    }
+
+    private sealed class ConditionalPayment
+    {
+        public string Kind { get; set; }
+        public string CreditCard { get; set; }
+        public string BillingAddress { get; set; }
+        public string Email { get; set; }
+        public string Country { get; set; }
+        public string PostalCode { get; set; }
+    }
+
+    private class TransformerBase
+    {
+        public string BaseValue { get; set; }
+    }
+
+    private sealed class TransformerDerived : TransformerBase
+    {
+        public int DerivedValue { get; set; }
     }
 
     private class ActivatedTransformer : IOpenApiSchemaTransformer

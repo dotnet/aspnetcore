@@ -1,4 +1,148 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidator
+Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidator.ValidateAsync(System.ReadOnlyMemory<byte> utf8Json, Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult>
+Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidatorFactory
+Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidatorFactory.CreateValidator(Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence! evidence) -> Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidator!
+Microsoft.AspNetCore.OpenApi.IOpenApiSchemaEvidenceProvider
+Microsoft.AspNetCore.OpenApi.IOpenApiSchemaEvidenceProvider.GetSchemaEvidence(Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext! context) -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidence?
+Microsoft.AspNetCore.OpenApi.IOpenApiVersionedDocumentProvider
+Microsoft.AspNetCore.OpenApi.IOpenApiVersionedDocumentProvider.GetOpenApiDocumentForVersionAsync(Microsoft.OpenApi.OpenApiSpecVersion openApiVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiDocument!>!
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.JsonArrayTupleConverter() -> void
+override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CanConvert(System.Type! typeToConvert) -> bool
+override Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverter.CreateConverter(System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Text.Json.Serialization.JsonConverter!
+Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaDialect
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaDialect.Draft202012 = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaDialect
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities.FormatAssertions = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities.None = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationContext
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationContext.Evidence.get -> Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence!
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationContext.OpenApiJsonSchemaValidationContext(Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence! evidence, Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose purpose) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationContext.Purpose.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError.InstanceLocation.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError.Keyword.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError.Message.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError.OpenApiJsonSchemaValidationError(string! instanceLocation, string! keyword, string! message) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult.Errors.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError!>?
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult.IsValid.get -> bool
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult.OpenApiJsonSchemaValidationResult(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationError!>! errors) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult.OpenApiJsonSchemaValidationResult() -> void
+static Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult.Valid.get -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationResult
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.SchemaGenerationMode.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddSchemaEvidenceProvider(Microsoft.AspNetCore.OpenApi.IOpenApiSchemaEvidenceProvider! provider) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateScalarFormat.get -> System.Func<Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext!, string?>?
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateScalarFormat.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ScalarFormatPolicy.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ScalarFormatPolicy.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.DefaultFormat.get -> string?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.EffectiveType.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Location.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Provenance.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Purpose.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatContext.Type.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Form = 5 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Header = 4 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.JsonBody = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.JsonProperty = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Query = 3 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation.Route = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatLocation
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.CompatibleOnly = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.Conventional = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy.None = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPolicy
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.CustomConverter = 3 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.CustomParser = 4 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.FrameworkBuiltInParser = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.SystemTextJsonBuiltIn = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance.Unknown = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatProvenance
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Input = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Neutral = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose.Output = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarFormatPurpose
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiVersion.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiVersion.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.OpenApiVersion.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Inferred = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode.Legacy = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaGenerationMode
+Microsoft.AspNetCore.OpenApi.OpenApiPositionalArraySchemaEvidence
+Microsoft.AspNetCore.OpenApi.OpenApiPositionalArraySchemaEvidence.ElementTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.AspNetCore.OpenApi.OpenApiPositionalArraySchemaEvidence.OpenApiPositionalArraySchemaEvidence(System.Collections.Generic.IEnumerable<System.Type!>! elementTypes) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.Format.get -> string?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.Maximum.get -> System.Numerics.BigInteger?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.Minimum.get -> System.Numerics.BigInteger?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.OpenApiScalarSchemaEvidence(Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind valueKind, string? format = null, string? pattern = null, System.Numerics.BigInteger? minimum = null, System.Numerics.BigInteger? maximum = null) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.Pattern.get -> string?
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaEvidence.ValueKind.get -> Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind.Boolean = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind.Integer = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind.Number = 3 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind.String = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiScalarSchemaValueKind
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidence
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext.Converter.get -> System.Text.Json.Serialization.JsonConverter!
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext.EffectiveType.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext.Purpose.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext.Type.get -> System.Type!
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidenceContext.TypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo!
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose.Input = 1 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose.Neutral = 0 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose.Output = 2 -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence.Dialect.get -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaDialect
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence.Identity.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence.Schema.get -> System.Text.Json.JsonElement
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence.ValidationCapabilities.get -> Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.AllowEmptyRequestBody.get -> bool
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.AllowEmptyRequestBody.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.ContentType.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.ContentType.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.MaxPayloadSize.get -> long
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.MaxPayloadSize.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.OpenApiValidatedJsonSchemaOptions() -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.ResponseStatusCode.get -> int?
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions.ResponseStatusCode.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration.Evidence.get -> Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaEvidence!
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration.OpenApiValidatedJsonSchemaRegistration(System.Type! type, Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose purpose, System.ReadOnlyMemory<byte> utf8Schema, Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaDialect dialect, Microsoft.AspNetCore.OpenApi.OpenApiJsonSchemaValidationCapabilities validationCapabilities, Microsoft.AspNetCore.OpenApi.IOpenApiJsonSchemaValidatorFactory! validatorFactory, Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions? options = null) -> void
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration.Options.get -> Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration.Purpose.get -> Microsoft.AspNetCore.OpenApi.OpenApiSchemaEvidencePurpose
+Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration.Type.get -> System.Type!
+Microsoft.AspNetCore.Builder.OpenApiValidatedJsonSchemaEndpointConventionBuilderExtensions
+static Microsoft.AspNetCore.Builder.OpenApiValidatedJsonSchemaEndpointConventionBuilderExtensions.WithValidatedJsonSchema<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.OpenApi.OpenApiValidatedJsonSchemaRegistration! registration) -> TBuilder
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(System.Text.Json.Serialization.JsonConverter<TRest>! restConverter) -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6, T7, TRest>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6, T7>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6, T7>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5, T6>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5, T6>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4, T5>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4, T5>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3, T4>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3, T4>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2, T3>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2, T3>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1, T2>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1, T2>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateTuple<T1>() -> System.Text.Json.Serialization.JsonConverter<System.Tuple<T1>!>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple() -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(System.Text.Json.Serialization.JsonConverter<TRest>! restConverter) -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6, T7>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5, T6, T7)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5, T6>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5, T6)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4, T5>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4, T5)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3, T4>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3, T4)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2, T3>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2, T3)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1, T2>() -> System.Text.Json.Serialization.JsonConverter<(T1, T2)>!
+static Microsoft.AspNetCore.OpenApi.JsonArrayTupleConverters.CreateValueTuple<T1>() -> System.Text.Json.Serialization.JsonConverter<System.ValueTuple<T1>>!
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

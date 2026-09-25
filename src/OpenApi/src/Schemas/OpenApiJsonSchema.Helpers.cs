@@ -177,8 +177,16 @@ internal sealed partial class OpenApiJsonSchema
     private static int GetInt32(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
         => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<int>)context.GetTypeInfo(typeof(int))!);
 
-    private static decimal GetDecimal(ref Utf8JsonReader reader, OpenApiJsonSchemaContext context)
-        => JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<decimal>)context.GetTypeInfo(typeof(decimal))!);
+    private static string GetNumericLiteral(ref Utf8JsonReader reader)
+    {
+        if (reader.TryGetDecimal(out var value))
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        using var document = JsonDocument.ParseValue(ref reader);
+        return document.RootElement.GetRawText();
+    }
 
     /// <summary>
     /// Read a property node from the given JSON reader instance.
@@ -230,8 +238,27 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.ItemsKeyword:
                 reader.Read();
-                var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
-                schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                if (reader.TokenType is JsonTokenType.True or JsonTokenType.False)
+                {
+                    schema.UnrecognizedKeywords ??= new Dictionary<string, JsonNode>();
+                    schema.UnrecognizedKeywords[OpenApiSchemaKeywords.ItemsKeyword] = reader.GetBoolean();
+                }
+                else
+                {
+                    var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
+                    schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                }
+                break;
+            case OpenApiSchemaKeywords.PrefixItemsKeyword:
+                reader.Read();
+                var prefixItems = ReadList<OpenApiJsonSchema>(ref reader, context)?
+                    .Select(item => (IOpenApiSchema)item!.Schema)
+                    .ToArray();
+                if (prefixItems is not null)
+                {
+                    schema.Metadata ??= new Dictionary<string, object>();
+                    schema.Metadata[OpenApiConstants.SchemaPrefixItems] = prefixItems;
+                }
                 break;
             case OpenApiSchemaKeywords.DescriptionKeyword:
                 reader.Read();
@@ -240,6 +267,10 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.FormatKeyword:
                 reader.Read();
                 schema.Format = reader.GetString();
+                break;
+            case OpenApiSchemaKeywords.ContentEncodingKeyword:
+                reader.Read();
+                schema.ContentEncoding = reader.GetString();
                 break;
             case OpenApiSchemaKeywords.RequiredKeyword:
                 reader.Read();
@@ -267,23 +298,19 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.MinimumKeyword:
                 reader.Read();
-                var minimum = GetDecimal(ref reader, context);
-                schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
+                schema.Minimum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.ExclusiveMinimum:
                 reader.Read();
-                var exclusiveMinimum = GetDecimal(ref reader, context);
-                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
+                schema.ExclusiveMinimum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
-                var maximum = GetDecimal(ref reader, context);
-                schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                schema.Maximum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.ExclusiveMaximum:
                 reader.Read();
-                var exclusiveMaximum = GetDecimal(ref reader, context);
-                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
+                schema.ExclusiveMaximum = GetNumericLiteral(ref reader);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
@@ -309,6 +336,11 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
                 schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
+            case OpenApiConstants.SchemaInferredAllOf:
+                reader.Read();
+                var allOfSchemas = ReadList<OpenApiJsonSchema>(ref reader, context);
+                schema.AllOf = allOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.OneOfKeyword:
                 reader.Read();
@@ -354,6 +386,26 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaIsUnion, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredPolymorphism:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredPolymorphism, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredUnion:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredUnion, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredInheritance:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredInheritance, reader.GetBoolean());
+                break;
+            case OpenApiConstants.SchemaIsInferredBasePlaceholder:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsInferredBasePlaceholder, reader.GetBoolean());
                 break;
             case OpenApiConstants.NullableProperty:
                 reader.Read();

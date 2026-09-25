@@ -1,0 +1,498 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "OpenApiEvidence | evidence",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/directional": {
+      "post": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "DirectionalContract",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectionalDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectionalDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inheritance": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "LosslessInheritance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/polymorphism": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "DiscriminatedPolymorphism",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serializer": {
+      "post": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "EffectiveSerializerContract",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SerializerEnvelope"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerializerEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transport/{routeValue}": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "TransportContracts",
+        "parameters": [
+          {
+            "name": "routeValue",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "uint64"
+            }
+          },
+          {
+            "name": "relativeUri",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "bigInteger",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BigInteger"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IPAddress"
+            }
+          },
+          {
+            "name": "endpoint",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IPEndPoint"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tuple": {
+      "get": {
+        "tags": [
+          "OpenApiEvidence"
+        ],
+        "operationId": "PositionalTuple",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValueTupleOflongAndboolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressFamily": {
+        "type": "integer"
+      },
+      "Animal": {
+        "required": [
+          "kind"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AnimalCat"
+          },
+          {
+            "$ref": "#/components/schemas/AnimalDog"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "cat": "#/components/schemas/AnimalCat",
+            "dog": "#/components/schemas/AnimalDog"
+          }
+        }
+      },
+      "AnimalCat": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "lives": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AnimalDog": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "good": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "BigInteger": {
+        "type": "object",
+        "properties": {
+          "isPowerOfTwo": {
+            "type": "boolean"
+          },
+          "isZero": {
+            "type": "boolean"
+          },
+          "isOne": {
+            "type": "boolean"
+          },
+          "isEven": {
+            "type": "boolean"
+          },
+          "sign": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "DirectionalDto": {
+        "required": [
+          "requiredButOmittable"
+        ],
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "string"
+          },
+          "outputOnly": {
+            "type": "string"
+          },
+          "inputOnly": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableInput": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requiredButOmittable": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "IPAddress": {
+        "type": "object",
+        "properties": {
+          "addressFamily": {
+            "$ref": "#/components/schemas/AddressFamily"
+          },
+          "scopeId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "isIPv6Multicast": {
+            "type": "boolean"
+          },
+          "isIPv6LinkLocal": {
+            "type": "boolean"
+          },
+          "isIPv6SiteLocal": {
+            "type": "boolean"
+          },
+          "isIPv6Teredo": {
+            "type": "boolean"
+          },
+          "isIPv6UniqueLocal": {
+            "type": "boolean"
+          },
+          "isIPv4MappedToIPv6": {
+            "type": "boolean"
+          },
+          "address": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64",
+            "deprecated": true
+          }
+        }
+      },
+      "IPEndPoint": {
+        "type": "object",
+        "properties": {
+          "addressFamily": {
+            "$ref": "#/components/schemas/AddressFamily"
+          },
+          "address": {
+            "$ref": "#/components/schemas/IPAddress"
+          },
+          "port": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "SerializerEnvelope": {
+        "type": "object",
+        "properties": {
+          "small": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "data": {
+            "type": "string",
+            "format": "byte"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relativeUri": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uri"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ValueTupleOflongAndboolean": {
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array",
+        "items": false,
+        "prefixItems": [
+          {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiEvidence"
+    }
+  ]
+}

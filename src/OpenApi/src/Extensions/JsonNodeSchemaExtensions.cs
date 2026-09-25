@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -24,32 +26,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly Dictionary<Type, string> _simpleTypeToFormat = new()
-    {
-        [typeof(byte)] = "uint8",
-        // Note: byte format is deprecated per https://spec.openapis.org/registry/format/
-        // We should follow the >= 3.1 approach stated in https://spec.openapis.org/oas/v3.2.0.html#migrating-binary-descriptions-from-oas-3-0
-        // In addition, we should ensure that Microsoft.OpenApi will be able to serialize the >= 3.1 representation correctly when
-        // it's asked to serialize as < 3.1 document.
-        [typeof(byte[])] = "byte",
-        [typeof(int)] = "int32",
-        [typeof(uint)] = "uint32",
-        [typeof(long)] = "int64",
-        [typeof(ulong)] = "uint64",
-        [typeof(short)] = "int16",
-        [typeof(ushort)] = "uint16",
-        [typeof(float)] = "float",
-        [typeof(double)] = "double",
-        [typeof(decimal)] = "double",
-        [typeof(DateTime)] = "date-time",
-        [typeof(DateTimeOffset)] = "date-time",
-        [typeof(Guid)] = "uuid",
-        [typeof(char)] = "char",
-        [typeof(Uri)] = "uri",
-        [typeof(TimeOnly)] = "time",
-        [typeof(DateOnly)] = "date",
-    };
-
     /// <summary>
     /// Maps the given validation attributes to the target schema.
     /// </summary>
@@ -206,11 +182,162 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
     internal static void ApplyPrimitiveFormats(this JsonNode schema, JsonSchemaExporterContext context)
     {
-        var type = context.TypeInfo.Type;
-        var underlyingType = Nullable.GetUnderlyingType(type);
-        if (_simpleTypeToFormat.TryGetValue(underlyingType ?? type, out var format))
+        if (schema is JsonObject objectSchema)
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.ContentEncodingKeyword);
+        }
+
+        if (InferredScalarSchemaDecisionBuilder.GetLegacyFormat(context.TypeInfo.Type) is { } format)
         {
             schema[OpenApiSchemaKeywords.FormatKeyword] = format;
+        }
+    }
+
+    internal static void ApplyInferredScalarDecision(
+        this JsonNode schema,
+        InferredScalarSchemaDecision decision,
+        OpenApiSpecVersion openApiVersion)
+    {
+        if (schema is not JsonObject objectSchema)
+        {
+            return;
+        }
+
+        if (decision.Format is not null)
+        {
+            objectSchema[OpenApiSchemaKeywords.FormatKeyword] = decision.Format;
+        }
+        else
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+        }
+
+        if (decision.NumericBounds is { } numericBounds)
+        {
+            if (numericBounds.Minimum.Length > 0)
+            {
+                objectSchema[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(numericBounds.Minimum);
+            }
+            if (numericBounds.Maximum.Length > 0)
+            {
+                objectSchema[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(numericBounds.Maximum);
+            }
+        }
+
+        if (decision.ValueKind is { } valueKind)
+        {
+            objectSchema[OpenApiSchemaKeywords.TypeKeyword] = valueKind switch
+            {
+                OpenApiScalarSchemaValueKind.Boolean => "boolean",
+                OpenApiScalarSchemaValueKind.String => "string",
+                OpenApiScalarSchemaValueKind.Integer => "integer",
+                OpenApiScalarSchemaValueKind.Number => "number",
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        if (decision.Pattern is not null)
+        {
+            objectSchema[OpenApiSchemaKeywords.PatternKeyword] = decision.Pattern;
+        }
+
+        if (decision.ContentEncoding is not null)
+        {
+            if (openApiVersion == OpenApiSpecVersion.OpenApi3_0)
+            {
+                objectSchema.Remove(OpenApiSchemaKeywords.ContentEncodingKeyword);
+                objectSchema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
+            }
+            else
+            {
+                objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+                objectSchema[OpenApiSchemaKeywords.ContentEncodingKeyword] = decision.ContentEncoding;
+            }
+        }
+    }
+
+    internal static void ApplyInferredScalarFormat(this JsonNode schema, string? format)
+    {
+        if (schema is not JsonObject objectSchema)
+        {
+            return;
+        }
+
+        if (format is null)
+        {
+            objectSchema.Remove(OpenApiSchemaKeywords.FormatKeyword);
+        }
+        else
+        {
+            objectSchema[OpenApiSchemaKeywords.FormatKeyword] = format;
+        }
+    }
+
+    internal static void ApplyInferredTransportDecision(
+        this JsonNode schema,
+        InferredTransportSchemaDecision decision)
+    {
+        if (schema is not JsonObject objectSchema || !decision.IsKnown)
+        {
+            return;
+        }
+
+        objectSchema.Clear();
+        switch (decision.Kind)
+        {
+            case InferredTransportSchemaKind.String:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                ApplyFormat(objectSchema, decision.Format);
+                break;
+            case InferredTransportSchemaKind.Boolean:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                ApplyFormat(objectSchema, decision.Format);
+                break;
+            case InferredTransportSchemaKind.Integer:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                ApplyFormat(objectSchema, decision.Format);
+                ApplyBounds(objectSchema, decision.NumericBounds);
+                break;
+            case InferredTransportSchemaKind.Number:
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                ApplyFormat(objectSchema, decision.Format);
+                break;
+            case InferredTransportSchemaKind.Enum:
+                objectSchema[OpenApiSchemaKeywords.AnyOfKeyword] = new JsonArray(
+                    new JsonObject { [OpenApiSchemaKeywords.TypeKeyword] = "string" },
+                    CreateIntegerSchema(decision.NumericBounds));
+                ApplyFormat(objectSchema, decision.Format);
+                break;
+            case InferredTransportSchemaKind.Array:
+                var items = new JsonObject();
+                items.ApplyInferredTransportDecision(decision.Items!);
+                objectSchema[OpenApiSchemaKeywords.TypeKeyword] = "array";
+                objectSchema[OpenApiSchemaKeywords.ItemsKeyword] = items;
+                break;
+        }
+
+        static JsonObject CreateIntegerSchema(InferredNumericBoundsFact? bounds)
+        {
+            var integerSchema = new JsonObject { [OpenApiSchemaKeywords.TypeKeyword] = "integer" };
+            ApplyBounds(integerSchema, bounds);
+            return integerSchema;
+        }
+
+        static void ApplyBounds(JsonObject target, InferredNumericBoundsFact? bounds)
+        {
+            if (bounds is not null)
+            {
+                target[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(bounds.Minimum);
+                target[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(bounds.Maximum);
+            }
+        }
+
+        static void ApplyFormat(JsonObject target, string? format)
+        {
+            if (format is not null)
+            {
+                target[OpenApiSchemaKeywords.FormatKeyword] = format;
+            }
         }
     }
 
@@ -418,6 +545,19 @@ internal static class JsonNodeSchemaExtensions
             || bindingSource == BindingSource.FormFile;
     }
 
+    internal static void ApplyInferredTransportDefault(
+        this JsonNode schema,
+        InferredTransportBindingFact fact)
+    {
+        if (fact.Kind == InferredTransportSchemaKind.Enum &&
+            fact.HasDefaultValue &&
+            fact.DefaultValue is { } defaultValue)
+        {
+            schema[OpenApiSchemaKeywords.DefaultKeyword] =
+                Convert.ToString(defaultValue, CultureInfo.InvariantCulture);
+        }
+    }
+
     /// <summary>
     /// Applies the polymorphism options defined by System.Text.Json to the target schema following OpenAPI v3's
     /// conventions for the discriminator property.
@@ -462,6 +602,409 @@ internal static class JsonNodeSchemaExtensions
                 schema[OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword] = baseSchemaReferenceId;
             }
         }
+    }
+
+    internal static void ApplyCompositionDecision(
+        this JsonNode schema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<Type, Type, string?> getPolymorphicReferenceId)
+    {
+        var decision = compositionDecision.Alternatives;
+        if (decision.Kind == InferredAlternativeCompositionKind.None)
+        {
+            return;
+        }
+
+        if (decision.Source == InferredAlternativeSource.Union &&
+            decision.Kind == InferredAlternativeCompositionKind.AnyOf)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(Resources.FormatInferredAlternativesRequireObjectSchema(compositionDecision.Identity.Type));
+        }
+
+        if (!schemaObject.TryGetPropertyValue(OpenApiSchemaKeywords.AnyOfKeyword, out var alternativesNode))
+        {
+            if (decision.Kind == InferredAlternativeCompositionKind.AnyOf ||
+                schemaObject.ContainsKey(OpenApiSchemaKeywords.RefKeyword))
+            {
+                return;
+            }
+
+            throw new InvalidOperationException(Resources.FormatInferredOneOfAlternativesMissing(compositionDecision.Identity.Type));
+        }
+
+        if (alternativesNode is not JsonArray alternatives ||
+            alternatives.Count != decision.Branches.Count)
+        {
+            if (decision.Kind == InferredAlternativeCompositionKind.AnyOf)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchesMismatchExportedSchema(compositionDecision.Identity.Type));
+        }
+
+        if (decision.Source == InferredAlternativeSource.Polymorphism)
+        {
+            for (var i = 0; i < decision.Branches.Count; i++)
+            {
+                if (alternatives[i] is not JsonObject branchSchema)
+                {
+                    throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchNotObjectSchema(decision.Branches[i].Identity.Type));
+                }
+
+                if (getPolymorphicReferenceId(
+                    compositionDecision.Identity.Type,
+                    decision.Branches[i].Identity.Type) is { } branchReferenceId)
+                {
+                    branchSchema[OpenApiConstants.SchemaId] = branchReferenceId;
+                }
+            }
+        }
+
+        if (decision.Kind == InferredAlternativeCompositionKind.AnyOf)
+        {
+            schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
+            return;
+        }
+
+        if (decision.Kind != InferredAlternativeCompositionKind.OneOf)
+        {
+            throw new InvalidOperationException(Resources.InferredAlternativeCompositionNotSupported);
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.OneOfKeyword))
+        {
+            throw new InvalidOperationException(Resources.ExportedSchemaContainsExplicitAndInferredOneOf);
+        }
+
+        if (decision.Source == InferredAlternativeSource.Polymorphism &&
+            decision.DiscriminatorPropertyName is { } encodedDiscriminatorPropertyName &&
+            decision.Branches.Where((branch, index) =>
+                branch.Discriminator is null ||
+                !HasExclusiveDiscriminatorConstraint(
+                    alternatives[index],
+                    encodedDiscriminatorPropertyName,
+                    branch.Discriminator)).Any())
+        {
+            schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
+            return;
+        }
+
+        schemaObject.Remove(OpenApiSchemaKeywords.AnyOfKeyword);
+        schemaObject[OpenApiSchemaKeywords.OneOfKeyword] = alternatives;
+
+        if (decision.Source == InferredAlternativeSource.Union)
+        {
+            if (decision.DiscriminatorPropertyName is not null ||
+                decision.Branches.Any(branch => branch.Discriminator is not null))
+            {
+                throw new InvalidOperationException(Resources.InferredUnionOneOfCannotDefineDiscriminator);
+            }
+
+            schemaObject[OpenApiConstants.SchemaIsInferredUnion] = true;
+            return;
+        }
+
+        if (decision.Source != InferredAlternativeSource.Polymorphism ||
+            decision.DiscriminatorPropertyName is not { } discriminatorPropertyName)
+        {
+            throw new InvalidOperationException(Resources.InferredOneOfSourceNotSupported);
+        }
+
+        schemaObject[OpenApiConstants.SchemaIsInferredPolymorphism] = true;
+        var mappings = new JsonObject();
+        foreach (var branch in decision.Branches)
+        {
+            if (branch.Discriminator is null)
+            {
+                throw new InvalidOperationException(Resources.OneOfAlternativeRequiresExplicitDiscriminator);
+            }
+
+            if (getPolymorphicReferenceId(compositionDecision.Identity.Type, branch.Identity.Type) is not { } branchReferenceId)
+            {
+                throw new InvalidOperationException(Resources.FormatOneOfAlternativeRequiresReferenceId(branch.Identity.Type));
+            }
+
+            mappings[Convert.ToString(branch.Discriminator, CultureInfo.InvariantCulture)!] = branchReferenceId;
+        }
+
+        schemaObject[OpenApiSchemaKeywords.DiscriminatorKeyword] = discriminatorPropertyName;
+        schemaObject[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+    }
+
+    private static bool HasExclusiveDiscriminatorConstraint(
+        JsonNode? schema,
+        string discriminatorPropertyName,
+        object discriminator)
+    {
+        if (schema is not JsonObject schemaObject)
+        {
+            return false;
+        }
+
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties &&
+            properties[discriminatorPropertyName] is JsonObject discriminatorSchema &&
+            (discriminatorSchema[OpenApiSchemaKeywords.ConstKeyword] is { } constant &&
+                IsMatchingDiscriminatorValue(constant, discriminator) ||
+             discriminatorSchema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray { Count: 1 } values &&
+                IsMatchingDiscriminatorValue(values[0], discriminator)))
+        {
+            return true;
+        }
+
+        return schemaObject[OpenApiSchemaKeywords.AllOfKeyword] is JsonArray allOf &&
+            allOf.Any(branch => HasExclusiveDiscriminatorConstraint(
+                branch,
+                discriminatorPropertyName,
+                discriminator));
+    }
+
+    private static bool IsMatchingDiscriminatorValue(JsonNode? value, object discriminator)
+        => discriminator switch
+        {
+            string stringDiscriminator =>
+                value?.GetValueKind() == JsonValueKind.String &&
+                value.GetValue<string>() == stringDiscriminator,
+            int integerDiscriminator =>
+                value?.GetValueKind() == JsonValueKind.Number &&
+                value.GetValue<int>() == integerDiscriminator,
+            _ => false,
+        };
+
+    internal static void ApplyInheritanceCompositionDecision(
+        this JsonNode schema,
+        InferredSchemaDocument inferredSchema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        JsonSerializerOptions serializerOptions)
+    {
+        var decision = compositionDecision.Inheritance;
+        if (!decision.IsEligible)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(Resources.FormatInferredInheritanceRequiresObjectSchema(compositionDecision.Identity.Type));
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.RefKeyword))
+        {
+            return;
+        }
+
+        if (decision.BaseType is not { } baseType ||
+            !inferredSchema.TryGetShape(baseType.Type, out var baseShape))
+        {
+            throw new InvalidOperationException(Resources.FormatInferredBaseSchemaUnavailable(compositionDecision.Identity.Type));
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AllOfKeyword))
+        {
+            throw new InvalidOperationException(Resources.FormatExportedSchemaAlreadyContainsAllOf(compositionDecision.Identity.Type));
+        }
+
+        if (schemaObject.ContainsKey(OpenApiSchemaKeywords.AdditionalPropertiesKeyword))
+        {
+            throw new InvalidOperationException(Resources.FormatExportedSchemaContainsUnsupportedAdditionalProperties(compositionDecision.Identity.Type));
+        }
+
+        var derivedShape = inferredSchema[compositionDecision.Identity.Type];
+        JsonObject exportedProperties;
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties)
+        {
+            exportedProperties = properties;
+        }
+        else if (derivedShape.Properties.Count == 0)
+        {
+            exportedProperties = new JsonObject();
+        }
+        else
+        {
+            throw new InvalidOperationException(Resources.FormatInferredPropertiesMissingFromExportedSchema(compositionDecision.Identity.Type));
+        }
+
+        var expectedPropertyNames = derivedShape.Properties
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (exportedProperties.Count != expectedPropertyNames.Count ||
+            exportedProperties.Any(property => !expectedPropertyNames.Contains(property.Key)))
+        {
+            throw new InvalidOperationException(Resources.FormatInferredPropertiesMismatchExportedSchema(compositionDecision.Identity.Type));
+        }
+
+        var exportedRequiredNode = schemaObject[OpenApiSchemaKeywords.RequiredKeyword];
+        if (exportedRequiredNode is not null && exportedRequiredNode is not JsonArray)
+        {
+            throw new InvalidOperationException(Resources.FormatInferredRequiredPropertiesMismatchExportedSchema(compositionDecision.Identity.Type));
+        }
+        var exportedRequired = exportedRequiredNode as JsonArray;
+        var exportedType = schemaObject[OpenApiSchemaKeywords.TypeKeyword];
+        var baseSchema = CreateComponentSchema(baseShape);
+        var localSchema = CreateObjectSchema(
+            derivedShape,
+            property => property.Identity.DeclaringType.Type == derivedShape.Identity.Type);
+
+        schemaObject.Remove(OpenApiSchemaKeywords.PropertiesKeyword);
+        schemaObject.Remove(OpenApiSchemaKeywords.RequiredKeyword);
+        schemaObject[OpenApiConstants.SchemaInferredAllOf] = new JsonArray(baseSchema, localSchema);
+        schemaObject[OpenApiConstants.SchemaIsInferredInheritance] = true;
+
+        JsonObject CreateComponentSchema(InferredSchemaShape shape)
+        {
+            var typeInfo = serializerOptions.GetTypeInfo(shape.Identity.Type);
+            if (createSchemaReferenceId(typeInfo) is not { } schemaReferenceId)
+            {
+                throw new InvalidOperationException(Resources.FormatInheritedBaseTypeRequiresReferenceId(shape.Identity.Type));
+            }
+
+            var componentSchema = new JsonObject
+            {
+                [OpenApiConstants.SchemaId] = schemaReferenceId,
+                [OpenApiConstants.SchemaIsInferredBasePlaceholder] = true,
+            };
+            var inheritanceDecision = inferredSchema.CompositionDecisions[shape.Identity.Type].Inheritance;
+            if (inheritanceDecision.IsEligible)
+            {
+                if (inheritanceDecision.BaseType is not { } inheritedBaseType ||
+                    !inferredSchema.TryGetShape(inheritedBaseType.Type, out var inheritedBaseShape))
+                {
+                    throw new InvalidOperationException(Resources.FormatInferredBaseSchemaUnavailable(shape.Identity.Type));
+                }
+
+                componentSchema[OpenApiConstants.SchemaInferredAllOf] = new JsonArray(
+                    CreateComponentSchema(inheritedBaseShape),
+                    CreateObjectSchema(shape, property => property.Identity.DeclaringType.Type == shape.Identity.Type));
+                componentSchema[OpenApiConstants.SchemaIsInferredInheritance] = true;
+            }
+            else
+            {
+                CopyObjectSchema(
+                    componentSchema,
+                    shape,
+                    _ => true);
+            }
+
+            return componentSchema;
+        }
+
+        JsonObject CreateObjectSchema(
+            InferredSchemaShape shape,
+            Func<InferredSchemaProperty, bool> includeProperty)
+        {
+            var objectSchema = new JsonObject();
+            CopyObjectSchema(objectSchema, shape, includeProperty);
+            return objectSchema;
+        }
+
+        void CopyObjectSchema(
+            JsonObject target,
+            InferredSchemaShape shape,
+            Func<InferredSchemaProperty, bool> includeProperty)
+        {
+            target[OpenApiSchemaKeywords.TypeKeyword] = exportedType?.DeepClone() ?? JsonValue.Create("object");
+            var includedPropertyNames = shape.Properties
+                .Where(includeProperty)
+                .Select(property => property.Identity.JsonName)
+                .ToHashSet(StringComparer.Ordinal);
+            var properties = new JsonObject();
+            foreach (var property in exportedProperties)
+            {
+                if (includedPropertyNames.Contains(property.Key))
+                {
+                    properties[property.Key] = property.Value?.DeepClone();
+                }
+            }
+
+            if (properties.Count != includedPropertyNames.Count)
+            {
+                throw new InvalidOperationException(Resources.FormatInferredPropertiesMismatchExportedSchema(shape.Identity.Type));
+            }
+
+            if (properties.Count > 0)
+            {
+                target[OpenApiSchemaKeywords.PropertiesKeyword] = properties;
+            }
+
+            if (exportedRequired is not null)
+            {
+                var required = new JsonArray();
+                foreach (var requiredProperty in exportedRequired)
+                {
+                    if (requiredProperty?.GetValue<string>() is { } propertyName &&
+                        includedPropertyNames.Contains(propertyName))
+                    {
+                        required.Add(requiredProperty.DeepClone());
+                    }
+                }
+
+                if (required.Count > 0)
+                {
+                    target[OpenApiSchemaKeywords.RequiredKeyword] = required;
+                }
+            }
+        }
+    }
+
+    internal static void ApplyObjectContractDecision(
+        this JsonNode schema,
+        InferredSchemaCompositionDecision compositionDecision,
+        Func<Type, JsonNode> createSchema)
+    {
+        var decision = compositionDecision.ObjectContract;
+        if (decision.Kind is InferredObjectContractKind.NotObject or InferredObjectContractKind.Closed)
+        {
+            return;
+        }
+
+        if (schema is not JsonObject schemaObject)
+        {
+            throw new InvalidOperationException(Resources.FormatInferredObjectContractMismatchExportedSchema(compositionDecision.Identity.Type));
+        }
+
+        if (decision.Kind == InferredObjectContractKind.DisallowUnmappedMembers)
+        {
+            if (schemaObject.TryGetPropertyValue(
+                    OpenApiSchemaKeywords.AdditionalPropertiesKeyword,
+                    out var additionalProperties) &&
+                additionalProperties?.GetValueKind() != JsonValueKind.False)
+            {
+                throw new InvalidOperationException(Resources.FormatExportedSchemaConflictsWithUnmappedMemberContract(compositionDecision.Identity.Type));
+            }
+
+            schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false;
+            return;
+        }
+
+        if (decision.Kind != InferredObjectContractKind.ExtensionData ||
+            decision.ExtensionDataProperty is not { } extensionDataProperty ||
+            decision.AdditionalPropertiesType is not { } additionalPropertiesType)
+        {
+            throw new InvalidOperationException(Resources.FormatInferredExtensionDataContractIncomplete(compositionDecision.Identity.Type));
+        }
+
+        if (schemaObject[OpenApiSchemaKeywords.PropertiesKeyword] is JsonObject properties &&
+            properties.ContainsKey(extensionDataProperty.Identity.JsonName))
+        {
+            throw new InvalidOperationException(Resources.FormatExportedSchemaExposesExtensionDataProperty(compositionDecision.Identity.Type));
+        }
+
+        if (schemaObject.TryGetPropertyValue(
+                OpenApiSchemaKeywords.AdditionalPropertiesKeyword,
+                out var exportedAdditionalProperties) &&
+            exportedAdditionalProperties?.GetValueKind() is not JsonValueKind.True)
+        {
+            throw new InvalidOperationException(Resources.FormatExportedSchemaContainsUnexpectedAdditionalProperties(compositionDecision.Identity.Type));
+        }
+
+        schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] =
+            createSchema(additionalPropertiesType.Identity.Type);
     }
 
     /// <summary>
@@ -539,13 +1082,24 @@ internal static class JsonNodeSchemaExtensions
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
+    /// <param name="purpose">The serializer direction represented by the schema.</param>
+    internal static void ApplyNullabilityContextInfo(
+        this JsonNode schema,
+        JsonPropertyInfo propertyInfo,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral)
     {
-        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && purpose switch
+        {
+            InferredSchemaPurpose.Input when propertyInfo.AssociatedParameter is { } parameter => parameter.IsNullable,
+            InferredSchemaPurpose.Input => propertyInfo.IsSetNullable,
+            InferredSchemaPurpose.Output => propertyInfo.IsGetNullable,
+            _ => propertyInfo.IsGetNullable || propertyInfo.IsSetNullable,
+        };
 
         // Work around a System.Text.Json schema export issue where get-only properties can report
         // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602
-        var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
+        var shouldPruneNullFromReadOnlyProperty = purpose == InferredSchemaPurpose.Neutral &&
+            propertyInfo.PropertyType != typeof(object) &&
             propertyInfo.Set is null &&
             !propertyInfo.IsGetNullable &&
             propertyInfo.IsSetNullable;
@@ -553,6 +1107,8 @@ internal static class JsonNodeSchemaExtensions
         {
             shouldApplyNullableSchema = false;
         }
+        var shouldPruneNullableSchema = shouldPruneNullFromReadOnlyProperty ||
+            purpose != InferredSchemaPurpose.Neutral && !shouldApplyNullableSchema;
 
         if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes)
         {
@@ -560,7 +1116,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
-            else if (shouldPruneNullFromReadOnlyProperty && schemaTypes.HasFlag(JsonSchemaType.Null))
+            else if (shouldPruneNullableSchema && schemaTypes.HasFlag(JsonSchemaType.Null))
             {
                 var nonNullableSchemaTypes = schemaTypes & ~JsonSchemaType.Null;
                 if (nonNullableSchemaTypes != 0)
@@ -572,12 +1128,80 @@ internal static class JsonNodeSchemaExtensions
                     schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
                 }
             }
+
         }
 
+        var shouldApplyNullablePropertySchema = purpose == InferredSchemaPurpose.Neutral
+            ? propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema()
+            : shouldApplyNullableSchema;
         if (schema.WillBeComponentized() &&
-            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+            shouldApplyNullablePropertySchema)
         {
             schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    internal static void ApplyDirectionalObjectContract(
+        this JsonNode schema,
+        InferredSchemaShape shape,
+        InferredSchemaPurpose purpose,
+        string? inheritedDiscriminatorPropertyName = null)
+    {
+        if (purpose == InferredSchemaPurpose.Neutral ||
+            schema[OpenApiSchemaKeywords.PropertiesKeyword] is not JsonObject properties)
+        {
+            return;
+        }
+
+        var includedProperties = shape.Properties
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        var discriminatorPropertyName = inheritedDiscriminatorPropertyName ?? shape.DiscriminatorPropertyName;
+        if (discriminatorPropertyName is not null)
+        {
+            includedProperties.Add(discriminatorPropertyName);
+        }
+        foreach (var propertyName in properties.Select(property => property.Key).ToArray())
+        {
+            if (!includedProperties.Contains(propertyName))
+            {
+                properties.Remove(propertyName);
+            }
+        }
+
+        var requiredProperties = shape.Properties
+            .Where(property => property.IsRequired)
+            .Select(property => property.Identity.JsonName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (schema[OpenApiSchemaKeywords.RequiredKeyword] is JsonArray required)
+        {
+            for (var i = required.Count - 1; i >= 0; i--)
+            {
+                var propertyName = required[i]?.GetValue<string>();
+                if (propertyName is not null &&
+                    propertyName != discriminatorPropertyName &&
+                    !requiredProperties.Contains(propertyName))
+                {
+                    required.RemoveAt(i);
+                }
+            }
+        }
+
+        if (requiredProperties.Count > 0)
+        {
+            var directionalRequired = schema[OpenApiSchemaKeywords.RequiredKeyword] as JsonArray ?? [];
+            foreach (var propertyName in requiredProperties.Order(StringComparer.Ordinal))
+            {
+                if (!directionalRequired.Any(node => node?.GetValue<string>() == propertyName))
+                {
+                    directionalRequired.Add((JsonNode?)JsonValue.Create(propertyName));
+                }
+            }
+            schema[OpenApiSchemaKeywords.RequiredKeyword] = directionalRequired;
+        }
+        else if (schema[OpenApiSchemaKeywords.RequiredKeyword] is JsonArray { Count: 0 })
+        {
+            schema.AsObject().Remove(OpenApiSchemaKeywords.RequiredKeyword);
         }
     }
 

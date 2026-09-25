@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -8,6 +10,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
@@ -33,6 +36,9 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
+    private readonly ConcurrentDictionary<(Type Type, InferredSchemaPurpose Purpose), InferredSchemaDocument> _inferredSchemaCache = new();
+    private readonly ConditionalWeakTable<OpenApiDocument, InferredSchemaReferenceIdResolverSet> _inferredReferenceIdResolvers = new();
+    private readonly AsyncLocal<HashSet<Type>?> _tupleSchemaExpansion = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -54,107 +60,295 @@ internal sealed class OpenApiSchemaService(
         })
     };
 
-    private readonly JsonSchemaExporterOptions _configuration = new()
+    private readonly ConcurrentDictionary<OpenApiSpecVersion, JsonSchemaExporterOptions> _configurations = new();
+
+    private JsonSchemaExporterOptions CreateConfiguration(
+        Func<JsonTypeInfo, string?> createSchemaReferenceId,
+        bool useInferredComposition,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
+        Func<Type, Type, string?>? getPolymorphicReferenceId = null,
+        InferredTransportBindingFact? rootTransportBindingFact = null)
     {
-        TreatNullObliviousAsNonNullable = true,
-        TransformSchemaNode = (context, schema) =>
+        JsonSchemaExporterOptions configuration = null!;
+        configuration = new()
         {
-            var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
-            // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
-            // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
-                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
-                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
+            TreatNullObliviousAsNonNullable = true,
+            TransformSchemaNode = (context, schema) =>
             {
-                schema = new JsonObject
+                var type = context.TypeInfo.Type;
+                var effectiveConverter = context.PropertyInfo?.CustomConverter ?? context.TypeInfo.Converter;
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+                var schemaEvidence = OpenApiSchemaEvidenceResolver.Resolve(
+                    context.TypeInfo,
+                    effectiveConverter,
+                    purpose,
+                    optionsMonitor.Get(documentName).SchemaEvidenceProviders,
+                    context.PropertyInfo?.PropertyType);
+                // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+                // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
+                // that appear as properties within complex types.
+                if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                    || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                    || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
                 {
-                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                    [OpenApiConstants.SchemaId] = "IFormFile"
-                };
-            }
-            else if (type == typeof(IFormFileCollection))
-            {
-                schema = new JsonObject
-                {
-                    [OpenApiSchemaKeywords.TypeKeyword] = "array",
-                    [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                    schema = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
                         [OpenApiSchemaKeywords.FormatKeyword] = "binary",
                         [OpenApiConstants.SchemaId] = "IFormFile"
-                    }
-                };
-            }
-            else if (type.IsJsonPatchDocument())
-            {
-                schema = CreateSchemaForJsonPatch();
-            }
-            // STJ uses `true` in place of an empty object to represent a schema that matches
-            // anything (like the `object` type) or types with user-defined converters. We override
-            // this default behavior here to match the format expected in OpenAPI v3.
-            if (schema.GetValueKind() == JsonValueKind.True)
-            {
-                schema = new JsonObject();
-            }
-            var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
-            schema.ApplyPrimitiveFormats(context);
-            schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
-            schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
-            if (context.PropertyInfo is { } jsonPropertyInfo)
-            {
-                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
-            }
-            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
-            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
-            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
-            {
-                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
-            }
-            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
-            {
-                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
-            }
-            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
-            {
-                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
-                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
-                {
-                    schema.ApplyValidationAttributes(validationAttributes);
+                    };
                 }
-                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                else if (type == typeof(IFormFileCollection))
                 {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                    schema = new JsonObject
+                    {
+                        [OpenApiSchemaKeywords.TypeKeyword] = "array",
+                        [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                        {
+                            [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                            [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                            [OpenApiConstants.SchemaId] = "IFormFile"
+                        }
+                    };
                 }
-                var isInlinedSchema = !schema.WillBeComponentized();
-                if (isInlinedSchema)
+                else if (type.IsJsonPatchDocument())
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    schema = CreateSchemaForJsonPatch();
+                }
+                else if (schemaEvidence is OpenApiPositionalArraySchemaEvidence positionalArray)
+                {
+                    var expandedTupleTypes = _tupleSchemaExpansion.Value ??= [];
+                    if (!expandedTupleTypes.Add(type))
                     {
-                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                        schema = new JsonObject();
                     }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    else
                     {
-                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                        try
+                        {
+                            schema = CreateJsonArrayTupleSchema(
+                                positionalArray,
+                                configuration,
+                                openApiVersion);
+                        }
+                        finally
+                        {
+                            expandedTupleTypes.Remove(type);
+                            if (expandedTupleTypes.Count == 0)
+                            {
+                                _tupleSchemaExpansion.Value = null;
+                            }
+                        }
+                    }
+                }
+                // STJ uses `true` in place of an empty object to represent a schema that matches
+                // anything (like the `object` type) or types with user-defined converters. We override
+                // this default behavior here to match the format expected in OpenAPI v3.
+                if (schema.GetValueKind() == JsonValueKind.True)
+                {
+                    schema = new JsonObject();
+                }
+                var isScalarContract = false;
+                if (useInferredComposition)
+                {
+                    var scalarFact = InferredScalarContractFactBuilder.Build(
+                        context.TypeInfo,
+                        context.PropertyInfo?.CustomConverter,
+                        context.PropertyInfo?.AttributeProvider?.IsDefined(
+                            typeof(System.Text.Json.Serialization.JsonConverterAttribute),
+                            inherit: false)
+                            is true,
+                        schemaEvidence);
+                    isScalarContract = scalarFact.IsScalar;
+                    var scalarDecision = InferredScalarSchemaDecisionBuilder.Build(scalarFact);
+                    if (rootTransportBindingFact is not null)
+                    {
+                        scalarDecision = scalarDecision with { Format = null };
+                    }
+                    else if (
+                        scalarFact.Kind != InferredScalarContractKind.Base64String &&
+                        scalarFact.IsScalar &&
+                        !(schema[OpenApiSchemaKeywords.TypeKeyword] is JsonValue schemaType &&
+                            schemaType.TryGetValue<string>(out var schemaTypeName) &&
+                            schemaTypeName is "array" or "object"))
+                    {
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                        var options = optionsMonitor.Get(documentName);
+                        scalarDecision = scalarDecision with
+                        {
+                            Format = OpenApiScalarFormatResolver.ResolveJsonFormat(
+                                options,
+                                scalarFact,
+                                context.TypeInfo.Type,
+                                context.PropertyInfo is null
+                                    ? OpenApiScalarFormatLocation.JsonBody
+                                    : OpenApiScalarFormatLocation.JsonProperty,
+                                purpose,
+                                openApiVersion),
+                        };
+#pragma warning restore ASP0040
+                    }
+                    schema.ApplyInferredScalarDecision(
+                        scalarDecision,
+                        openApiVersion);
+                    if (rootTransportBindingFact?.Source == InferredTransportBindingSource.Form &&
+                        context.PropertyInfo is not null)
+                    {
+                        var formFact = InferredTransportBindingFactBuilder.Build(
+                            context.TypeInfo.Type,
+                            BindingSource.Form,
+                            bindingMetadata: null);
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                        var options = optionsMonitor.Get(documentName);
+                        var formDecision = InferredTransportSchemaDecisionBuilder.Build(
+                            formFact,
+                            fact => OpenApiScalarFormatResolver.ResolveTransportFormat(options, fact, openApiVersion));
+#pragma warning restore ASP0040
+                        schema.ApplyInferredTransportDecision(formDecision);
                     }
                 }
                 else
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    schema.ApplyPrimitiveFormats(context);
+                }
+                schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+                if (useInferredComposition &&
+                    optionsMonitor.Get(documentName).CreateScalarFormat is not null &&
+                    isScalarContract &&
+                    schema is JsonObject scalarSchema)
+                {
+                    scalarSchema.Remove(OpenApiConstants.SchemaId);
+                }
+                if (schemaEvidence is not null &&
+                    context.PropertyInfo?.CustomConverter is not null &&
+                    schema is JsonObject propertyContractSchema)
+                {
+                    propertyContractSchema.Remove(OpenApiConstants.SchemaId);
+                }
+#pragma warning restore ASP0040
+                if (useInferredComposition)
+                {
+                    var inferredSchema = GetInferredSchema(type, purpose);
+                    var inferredShape = inferredSchema[type];
+                    schema.ApplyDirectionalObjectContract(
+                        inferredShape,
+                        purpose,
+                        context.BaseTypeInfo?.PolymorphismOptions?.TypeDiscriminatorPropertyName);
+                    var compositionDecision = inferredSchema.CompositionDecisions[type];
+                    if (context.BaseTypeInfo is null)
                     {
-                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                        schema.ApplyCompositionDecision(
+                            compositionDecision,
+                            getPolymorphicReferenceId ?? throw new InvalidOperationException(
+                                Resources.InferredSchemaReferenceIdResolverUnavailable));
                     }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    else
                     {
-                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                        schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+                    }
+                    schema.ApplyInheritanceCompositionDecision(inferredSchema, compositionDecision, createSchemaReferenceId, _jsonSerializerOptions);
+                    schema.ApplyObjectContractDecision(
+                        compositionDecision,
+                        additionalPropertiesType => JsonSchemaExporter.GetJsonSchemaAsNode(
+                            _jsonSerializerOptions,
+                            additionalPropertiesType,
+                            configuration));
+                }
+                else
+                {
+                    schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+                }
+                if (context.PropertyInfo is { } jsonPropertyInfo)
+                {
+                    schema.ApplyNullabilityContextInfo(jsonPropertyInfo, useInferredComposition ? purpose : InferredSchemaPurpose.Neutral);
+                }
+                var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+                var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
+                if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+                {
+                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+                }
+                if (typeAttributes.OfType<ObsoleteAttribute>().Any())
+                {
+                    schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                }
+                if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+                {
+                    var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                    if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
+                    {
+                        schema.ApplyValidationAttributes(validationAttributes);
+                    }
+                    if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                    {
+                        schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                    }
+                    var isInlinedSchema = !schema.WillBeComponentized();
+                    if (isInlinedSchema)
+                    {
+                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                        {
+                            schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                        }
+                        if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                        {
+                            schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                        }
+                    }
+                    else
+                    {
+                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                        {
+                            schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                        }
+                        if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                        {
+                            schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
+                        }
                     }
                 }
+                schema.PruneNullTypeForComponentizedTypes();
+                return schema;
             }
-            schema.PruneNullTypeForComponentizedTypes();
-            return schema;
+        };
+
+        return configuration;
+    }
+
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+    private JsonNode CreateJsonArrayTupleSchema(
+        OpenApiPositionalArraySchemaEvidence evidence,
+        JsonSchemaExporterOptions configuration,
+        OpenApiSpecVersion openApiVersion)
+    {
+        var schema = new JsonObject
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "array",
+            [OpenApiSchemaKeywords.MinItemsKeyword] = evidence.ElementTypes.Count,
+            [OpenApiSchemaKeywords.MaxItemsKeyword] = evidence.ElementTypes.Count,
+        };
+
+        if (openApiVersion == OpenApiSpecVersion.OpenApi3_0)
+        {
+            schema[OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject();
         }
-    };
+        else
+        {
+            schema[OpenApiSchemaKeywords.PrefixItemsKeyword] = new JsonArray(
+                evidence.ElementTypes
+                    .Select(elementType => JsonSchemaExporter.GetJsonSchemaAsNode(
+                        _jsonSerializerOptions,
+                        elementType,
+                        configuration))
+                    .ToArray());
+            schema[OpenApiSchemaKeywords.ItemsKeyword] = false;
+        }
+
+        return schema;
+    }
+#pragma warning restore ASP0040
 
     private static JsonObject CreateSchemaForJsonPatch()
     {
@@ -246,23 +440,82 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+#pragma warning disable ASP0040 // The framework implements validated schema evidence.
+    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(
+        OpenApiDocument? document,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default,
+        InferredTransportBindingFact? transportBindingFact = null,
+        OpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
     {
-        var schemaAsJsonObject = CreateSchema(type);
+#pragma warning disable ASP0040 // The framework implements validated schema evidence.
+        if (validatedSchema is not null)
+        {
+            var importedSchema = OpenApiValidatedJsonSchemaImporter.Import(validatedSchema.Evidence, openApiVersion);
+            await ApplyValidatedSchemaTransformersAsync(
+                document ?? throw new InvalidOperationException("Validated schemas require an OpenAPI document."),
+                importedSchema,
+                type,
+                scopedServiceProvider,
+                schemaTransformers,
+                openApiVersion,
+                parameterDescription,
+                cancellationToken);
+            return importedSchema;
+        }
+#pragma warning restore ASP0040
+
+        var schemaAsJsonObject = CreateSchema(type, document, openApiVersion, purpose, transportBindingFact);
+        InferredTransportSchemaDecision? transportDecision = null;
+        if (IsInferredMode && transportBindingFact is not null)
+        {
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            var options = optionsMonitor.Get(documentName);
+            transportDecision = InferredTransportSchemaDecisionBuilder.Build(
+                transportBindingFact,
+                fact => OpenApiScalarFormatResolver.ResolveTransportFormat(options, fact, openApiVersion));
+#pragma warning restore ASP0040
+            schemaAsJsonObject.ApplyInferredTransportDecision(transportDecision);
+        }
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
+        }
+        if (transportDecision is not null)
+        {
+            schemaAsJsonObject.ApplyInferredScalarFormat(transportDecision.Format);
+        }
+        if (IsInferredMode && transportBindingFact is not null)
+        {
+            schemaAsJsonObject.ApplyInferredTransportDefault(transportBindingFact);
         }
         // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
         // particularly in the case of maxDepth.
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
-        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, openApiVersion, purpose, parameterDescription, cancellationToken);
         return schema;
     }
+#pragma warning restore ASP0040
 
-    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+#pragma warning disable ASP0040 // The framework implements validated schema evidence.
+    internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(
+        OpenApiDocument document,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default,
+        InferredTransportBindingFact? transportBindingFact = null,
+        OpenApiValidatedJsonSchemaRegistration? validatedSchema = null)
     {
         // For non-body enum parameters, check if a naming policy transforms the enum values.
         // If so, skip componentization and return an inline schema with the original C# member
@@ -273,7 +526,7 @@ internal sealed class OpenApiSchemaService(
             && IsNonBodyBindingSource(source)
             && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
         {
-            var rawNode = CreateSchema(type);
+            var rawNode = CreateSchema(type, document, openApiVersion, purpose, transportBindingFact);
             if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
             {
                 var memberNames = Enum.GetNames(enumType);
@@ -288,7 +541,25 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        var schema = await GetOrCreateUnresolvedSchemaAsync(
+            document,
+            type,
+            scopedServiceProvider,
+            schemaTransformers,
+            openApiVersion,
+            purpose,
+            parameterDescription,
+            cancellationToken,
+            transportBindingFact,
+            validatedSchema);
+
+        if (IsInferredMode &&
+            transportBindingFact is not null &&
+            InferredTransportSchemaDecisionBuilder.Build(transportBindingFact).IsKnown)
+        {
+            return schema;
+        }
+#pragma warning restore ASP0040
 
         if (inlineEnumParam)
         {
@@ -308,11 +579,13 @@ internal sealed class OpenApiSchemaService(
 
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
-        var baseSchemaId = _schemaIdCache.GetOrAdd(type, t =>
-        {
-            var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
-            return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
-        });
+        var baseSchemaId = IsInferredMode
+            ? GetInferredReferenceIdResolver(document, purpose, type).GetReferenceId(_jsonSerializerOptions.GetTypeInfo(type))
+            : _schemaIdCache.GetOrAdd(type, t =>
+            {
+                var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
+                return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+            });
 
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
@@ -350,8 +623,26 @@ internal sealed class OpenApiSchemaService(
             {
                 if (!document.AddOpenApiSchemaByReference(targetReferenceId, schema, out resultSchemaReference))
                 {
-                    // We already added this schema, so it has already been resolved.
-                    return resultSchemaReference;
+                    var replacedPlaceholder = false;
+                    if (document.Components?.Schemas is { } componentSchemas &&
+                        componentSchemas.TryGetValue(targetReferenceId, out var existingSchema) &&
+                        existingSchema is OpenApiSchema
+                        {
+                            Metadata: not null
+                        } existingOpenApiSchema &&
+                        existingOpenApiSchema.Metadata.TryGetValue(OpenApiConstants.SchemaIsInferredBasePlaceholder, out var isPlaceholder) &&
+                        isPlaceholder is true &&
+                        schema.Metadata?.ContainsKey(OpenApiConstants.SchemaIsInferredBasePlaceholder) != true)
+                    {
+                        componentSchemas[targetReferenceId] = schema;
+                        replacedPlaceholder = true;
+                    }
+
+                    if (!replacedPlaceholder)
+                    {
+                        // We already added this schema, so it has already been resolved.
+                        return resultSchemaReference;
+                    }
                 }
             }
         }
@@ -363,7 +654,11 @@ internal sealed class OpenApiSchemaService(
             // (no `$type` discriminator like polymorphism adds), so they should reuse the
             // standalone component name (e.g. "Kitten") instead of producing a duplicate
             // component (e.g. "UnionPetKitten") with the same content.
-            var branchPrefix = schema.IsUnion() ? null : schemaId;
+            var branchPrefix = schema.IsUnion() ||
+                schema.Metadata?.TryGetValue(OpenApiConstants.SchemaIsInferredPolymorphism, out var isInferredPolymorphism) == true &&
+                isInferredPolymorphism is true
+                    ? null
+                    : schemaId;
             for (var i = 0; i < schema.AnyOf.Count; i++)
             {
                 schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, branchPrefix);
@@ -418,6 +713,17 @@ internal sealed class OpenApiSchemaService(
             schema.Items = ResolveReferenceForSchema(document, schema.Items, rootSchemaId);
         }
 
+        if (schema.Metadata?.TryGetValue(OpenApiConstants.SchemaPrefixItems, out var prefixItemsValue) == true &&
+            prefixItemsValue is IOpenApiSchema[] prefixItems)
+        {
+            for (var i = 0; i < prefixItems.Length; i++)
+            {
+                prefixItems[i] = ResolveReferenceForSchema(document, prefixItems[i], rootSchemaId);
+            }
+
+            SynchronizeTuplePrefixItems(schema, prefixItems);
+        }
+
         if (schema.Not is not null)
         {
             schema.Not = ResolveReferenceForSchema(document, schema.Not, rootSchemaId);
@@ -429,6 +735,21 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
+    }
+
+    private static void SynchronizeTuplePrefixItems(OpenApiSchema schema, IReadOnlyList<IOpenApiSchema> prefixItems)
+    {
+        var rawPrefixItems = new JsonArray();
+        foreach (var prefixItem in prefixItems)
+        {
+            using var textWriter = new StringWriter(CultureInfo.InvariantCulture);
+            var openApiWriter = new OpenApiJsonWriter(textWriter);
+            prefixItem.SerializeAsV31(openApiWriter);
+            rawPrefixItems.Add(JsonNode.Parse(textWriter.ToString()));
+        }
+
+        schema.UnrecognizedKeywords ??= new Dictionary<string, JsonNode>();
+        schema.UnrecognizedKeywords[OpenApiSchemaKeywords.PrefixItemsKeyword] = rawPrefixItems;
     }
 
     private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
@@ -491,16 +812,29 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    internal async Task ApplySchemaTransformersAsync(OpenApiDocument? document, IOpenApiSchema schema, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task ApplySchemaTransformersAsync(
+        OpenApiDocument? document,
+        IOpenApiSchema schema,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
+        ApiParameterDescription? parameterDescription = null,
+        CancellationToken cancellationToken = default)
     {
         if (schemaTransformers.Length == 0)
         {
             return;
         }
+
+        var inferredSchema = GetInferredSchema(type, IsInferredMode ? purpose : InferredSchemaPurpose.Neutral);
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
+#pragma warning disable ASP0040 // The framework populates this experimental property.
         var context = new OpenApiSchemaTransformerContext
         {
             DocumentName = documentName,
+            OpenApiVersion = openApiVersion,
             JsonTypeInfo = jsonTypeInfo,
             JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
@@ -508,15 +842,121 @@ internal sealed class OpenApiSchemaService(
             Document = document,
             SchemaTransformers = schemaTransformers
         };
+#pragma warning restore ASP0040
         for (var i = 0; i < schemaTransformers.Length; i++)
         {
             // Reset context object to base state before running each transformer.
             var transformer = schemaTransformers[i];
-            await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema, inferredSchema, jsonTypeInfo, null, context, transformer, cancellationToken);
+        }
+    }
+
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+    private async Task ApplyValidatedSchemaTransformersAsync(
+        OpenApiDocument document,
+        OpenApiSchema schema,
+        Type type,
+        IServiceProvider scopedServiceProvider,
+        IOpenApiSchemaTransformer[] schemaTransformers,
+        OpenApiSpecVersion openApiVersion,
+        ApiParameterDescription? parameterDescription,
+        CancellationToken cancellationToken)
+    {
+        if (schemaTransformers.Length == 0)
+        {
+            return;
+        }
+
+        var context = new OpenApiSchemaTransformerContext
+        {
+            DocumentName = documentName,
+            OpenApiVersion = openApiVersion,
+            JsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type),
+            JsonPropertyInfo = null,
+            ParameterDescription = parameterDescription,
+            ApplicationServices = scopedServiceProvider,
+            Document = document,
+            SchemaTransformers = schemaTransformers,
+        };
+        foreach (var transformer in schemaTransformers)
+        {
+            await ApplyValidatedSchemaTransformerAsync(schema, context, transformer, cancellationToken);
+        }
+    }
+#pragma warning restore ASP0040
+
+    private static async Task ApplyValidatedSchemaTransformerAsync(
+        IOpenApiSchema inputSchema,
+        OpenApiSchemaTransformerContext context,
+        IOpenApiSchemaTransformer transformer,
+        CancellationToken cancellationToken)
+    {
+        if (inputSchema is not OpenApiSchema schema)
+        {
+            return;
+        }
+
+        await transformer.TransformAsync(schema, context, cancellationToken);
+        foreach (var child in EnumerateValidatedSchemaChildren(schema))
+        {
+            await ApplyValidatedSchemaTransformerAsync(child, context, transformer, cancellationToken);
+        }
+    }
+
+    private static IEnumerable<IOpenApiSchema> EnumerateValidatedSchemaChildren(OpenApiSchema schema)
+    {
+        foreach (var collection in new IEnumerable<IOpenApiSchema>?[]
+        {
+            schema.Definitions?.Values,
+            schema.Properties?.Values,
+            schema.PatternProperties?.Values,
+            schema.DependentSchemas?.Values,
+            schema.AllOf,
+            schema.AnyOf,
+            schema.OneOf,
+        })
+        {
+            if (collection is not null)
+            {
+                foreach (var child in collection)
+                {
+                    yield return child;
+                }
+            }
+        }
+
+        foreach (var child in new[]
+        {
+            schema.Not,
+            schema.Items,
+            schema.Contains,
+            schema.AdditionalProperties,
+            schema.PropertyNames,
+            schema.UnevaluatedPropertiesSchema,
+            schema.ContentSchema,
+            schema.If,
+            schema.Then,
+            schema.Else,
+        })
+        {
+            if (child is not null)
+            {
+                yield return child;
+            }
+        }
+
+        if (schema.Metadata?.TryGetValue(OpenApiConstants.SchemaPrefixItems, out var prefixItemsValue) == true &&
+            prefixItemsValue is IOpenApiSchema[] prefixItems)
+        {
+            foreach (var prefixItem in prefixItems)
+            {
+                yield return prefixItem;
+            }
         }
     }
 
     private async Task InnerApplySchemaTransformersAsync(IOpenApiSchema inputSchema,
+        InferredSchemaDocument inferredSchema,
         JsonTypeInfo jsonTypeInfo,
         JsonPropertyInfo? jsonPropertyInfo,
         OpenApiSchemaTransformerContext context,
@@ -527,20 +967,33 @@ internal sealed class OpenApiSchemaService(
         var schema = UnwrapOpenApiSchema(inputSchema);
         await transformer.TransformAsync(schema, context, cancellationToken);
 
-        // Only apply transformers on polymorphic schemas where we can resolve the derived
-        // types associated with the base type.
-        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        var alternativeDecision = inferredSchema.CompositionDecisions[jsonTypeInfo.Type].Alternatives;
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+        var inferredMode = optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        var alternativeSchemas = alternativeDecision.Kind switch
         {
-            var anyOfIndex = 0;
-            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            InferredAlternativeCompositionKind.OneOf when inferredMode => schema.OneOf,
+            InferredAlternativeCompositionKind.OneOf => schema.AnyOf,
+            InferredAlternativeCompositionKind.AnyOf => schema.AnyOf,
+            _ => null,
+        };
+        var traverseAlternativeBranches = jsonTypeInfo.PolymorphismOptions is not null ||
+            inferredMode &&
+            alternativeDecision.Source == InferredAlternativeSource.Union &&
+            alternativeDecision.Kind == InferredAlternativeCompositionKind.OneOf;
+        if (alternativeSchemas is { Count: > 0 } && traverseAlternativeBranches)
+        {
+            if (inferredMode && alternativeSchemas.Count < alternativeDecision.Branches.Count)
             {
-                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
-                if (schema.AnyOf.Count <= anyOfIndex)
-                {
-                    break;
-                }
-                await InnerApplySchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, null, context, transformer, cancellationToken);
-                anyOfIndex++;
+                throw new InvalidOperationException(Resources.FormatInferredAlternativeBranchesMismatchGeneratedSchema(jsonTypeInfo.Type));
+            }
+
+            var branchCount = Math.Min(alternativeSchemas.Count, alternativeDecision.Branches.Count);
+            for (var i = 0; i < branchCount; i++)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(alternativeDecision.Branches[i].Identity.Type);
+                await InnerApplySchemaTransformersAsync(alternativeSchemas[i], inferredSchema, derivedJsonTypeInfo, null, context, transformer, cancellationToken);
             }
         }
 
@@ -548,16 +1001,51 @@ internal sealed class OpenApiSchemaService(
         if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
-            await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema.Items, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 
-        if (schema.Properties is { Count: > 0 })
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+        var schemaEvidence = OpenApiSchemaEvidenceResolver.Resolve(
+            jsonTypeInfo,
+            jsonPropertyInfo?.CustomConverter ?? jsonTypeInfo.Converter,
+            inferredSchema.Purpose,
+            optionsMonitor.Get(documentName).SchemaEvidenceProviders,
+            jsonPropertyInfo?.PropertyType);
+        if (schemaEvidence is OpenApiPositionalArraySchemaEvidence positionalArray &&
+            schema.Metadata?.TryGetValue(OpenApiConstants.SchemaPrefixItems, out var prefixItemsValue) == true &&
+            prefixItemsValue is IOpenApiSchema[] prefixItems)
+        {
+            if (prefixItems.Length != positionalArray.ElementTypes.Count)
+            {
+                throw new InvalidOperationException(Resources.FormatPositionalTupleElementsMismatchGeneratedSchema(jsonTypeInfo.Type));
+            }
+
+            for (var i = 0; i < prefixItems.Length; i++)
+            {
+                var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(positionalArray.ElementTypes[i]);
+                await InnerApplySchemaTransformersAsync(prefixItems[i], inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
+            }
+
+            SynchronizeTuplePrefixItems(schema, prefixItems);
+        }
+#pragma warning restore ASP0040
+
+        var isInferredInheritance = inferredMode &&
+            schema.Metadata?.TryGetValue(OpenApiConstants.SchemaIsInferredInheritance, out var inferredInheritance) == true &&
+            inferredInheritance is true;
+        if (isInferredInheritance || schema.Properties is { Count: > 0 })
         {
             foreach (var propertyInfo in jsonTypeInfo.Properties)
             {
-                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                IOpenApiSchema? propertySchema;
+                var hasPropertySchema = isInferredInheritance
+                    ? TryGetComposedPropertySchema(schema, propertyInfo.Name, out propertySchema)
+                    : schema.Properties!.TryGetValue(propertyInfo.Name, out propertySchema);
+                if (hasPropertySchema && propertySchema is not null)
                 {
-                    await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
+                    var inferredProperty = inferredSchema[jsonTypeInfo.Type].GetProperty(propertyInfo.Name);
+                    var propertyTypeInfo = _jsonSerializerOptions.GetTypeInfo(inferredProperty.DeclaredPropertyType);
+                    await InnerApplySchemaTransformersAsync(propertySchema, inferredSchema, propertyTypeInfo, propertyInfo, context, transformer, cancellationToken);
                 }
             }
         }
@@ -566,18 +1054,143 @@ internal sealed class OpenApiSchemaService(
             jsonTypeInfo.ElementType is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
-            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
+            await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, inferredSchema, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+        else if (inferredMode &&
+            schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } &&
+            inferredSchema[jsonTypeInfo.Type].ExtensionDataProperty is { } extensionDataProperty &&
+            inferredSchema[jsonTypeInfo.Type].AdditionalPropertiesType is { } additionalPropertiesType)
+        {
+            var extensionDataJsonPropertyInfo = jsonTypeInfo.Properties.First(
+                property => property.IsExtensionData &&
+                    StringComparer.Ordinal.Equals(property.Name, extensionDataProperty.Identity.JsonName));
+            var additionalPropertiesTypeInfo = _jsonSerializerOptions.GetTypeInfo(additionalPropertiesType.Identity.Type);
+            await InnerApplySchemaTransformersAsync(
+                schema.AdditionalProperties,
+                inferredSchema,
+                additionalPropertiesTypeInfo,
+                extensionDataJsonPropertyInfo,
+                context,
+                transformer,
+                cancellationToken);
         }
     }
 
-    private JsonNode CreateSchema(Type type)
+    private static bool TryGetComposedPropertySchema(
+        OpenApiSchema schema,
+        string propertyName,
+        out IOpenApiSchema propertySchema)
+    {
+        if (schema.Properties?.TryGetValue(propertyName, out propertySchema!) == true)
+        {
+            return true;
+        }
+
+        if (schema.AllOf is not null)
+        {
+            foreach (var branch in schema.AllOf)
+            {
+                if (TryGetComposedPropertySchema(UnwrapOpenApiSchema(branch), propertyName, out propertySchema))
+                {
+                    return true;
+                }
+            }
+        }
+
+        propertySchema = null!;
+        return false;
+    }
+
+    internal void InitializeInferredReferenceIds(OpenApiDocument document, IEnumerable<InferredSchemaRoot> roots)
+    {
+        if (!IsInferredMode)
+        {
+            return;
+        }
+
+        _inferredReferenceIdResolvers.GetValue(document, _ => CreateInferredReferenceIdResolverSet(roots));
+    }
+
+    private JsonNode CreateSchema(
+        Type type,
+        OpenApiDocument? document,
+        OpenApiSpecVersion openApiVersion,
+        InferredSchemaPurpose purpose,
+        InferredTransportBindingFact? transportBindingFact = null)
     {
         // We always create a oneOf nullable wrapper ourselves manually.
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
+        var effectivePurpose = IsInferredMode ? purpose : InferredSchemaPurpose.Neutral;
+        var inferredSchema = GetInferredSchema(type, effectivePurpose);
+        JsonSchemaExporterOptions configuration;
+        if (IsInferredMode)
+        {
+            var referenceIdResolver = document is null
+                ? CreateInferredReferenceIdResolverSet([new(type, effectivePurpose)]).Get(effectivePurpose)
+                : GetInferredReferenceIdResolver(document, effectivePurpose, type);
+            configuration = CreateConfiguration(
+                referenceIdResolver.GetReferenceId,
+                useInferredComposition: true,
+                openApiVersion,
+                effectivePurpose,
+                referenceIdResolver.GetPolymorphicReferenceId,
+                transportBindingFact);
+        }
+        else
+        {
+            configuration = _configurations.GetOrAdd(
+                openApiVersion,
+                version => CreateConfiguration(
+                    typeInfo => optionsMonitor.Get(documentName).CreateSchemaReferenceId(typeInfo),
+                    useInferredComposition: false,
+                    version,
+                    InferredSchemaPurpose.Neutral));
+        }
+
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, inferredSchema.Root.Identity.Type, configuration);
         return ResolveReferences(schema, schema);
     }
+
+    private InferredSchemaReferenceIdResolver GetInferredReferenceIdResolver(
+        OpenApiDocument document,
+        InferredSchemaPurpose purpose,
+        Type fallbackRootType)
+        => _inferredReferenceIdResolvers
+            .GetValue(document, _ => CreateInferredReferenceIdResolverSet([new(fallbackRootType, purpose)]))
+            .Get(purpose);
+
+    private InferredSchemaReferenceIdResolverSet CreateInferredReferenceIdResolverSet(IEnumerable<InferredSchemaRoot> roots)
+    {
+        var options = optionsMonitor.Get(documentName);
+        return InferredSchemaReferenceIdResolverSet.Create(
+            roots,
+            _jsonSerializerOptions,
+            GetInferredSchema,
+            options.CreateSchemaReferenceId,
+            options.UsesDefaultSchemaReferenceId,
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            options.CreateScalarFormat is not null);
+#pragma warning restore ASP0040
+    }
+
+    private bool IsInferredMode
+    {
+        get
+        {
+#pragma warning disable ASP0040 // The framework implements this experimental option.
+            return optionsMonitor.Get(documentName).SchemaGenerationMode == OpenApiSchemaGenerationMode.Inferred;
+#pragma warning restore ASP0040
+        }
+    }
+
+    private InferredSchemaDocument GetInferredSchema(Type type, InferredSchemaPurpose purpose)
+        => _inferredSchemaCache.GetOrAdd(
+            (type, purpose),
+            static (key, state) => InferredSchemaShapeBuilder.Build(
+                state.SerializerOptions,
+                key.Type,
+                key.Purpose,
+                state.Options.SchemaEvidenceProviders),
+            (SerializerOptions: _jsonSerializerOptions, Options: optionsMonitor.Get(documentName)));
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {

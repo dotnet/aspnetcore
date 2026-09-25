@@ -1,0 +1,82 @@
+{
+  "inferred": {
+    "operation": {
+      "operationId": "PositionalTuple",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValueTupleOflongAndboolean"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "ValueTupleOflongAndboolean": {
+        "items": false,
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "type": "array"
+      }
+    }
+  },
+  "legacy": {
+    "operation": {
+      "operationId": "PositionalTuple",
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValueTupleOflongAndboolean"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "schemas": {
+      "ValueTupleOflongAndboolean": {
+        "items": false,
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "format": "int64",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "type": "array"
+      }
+    }
+  }
+}

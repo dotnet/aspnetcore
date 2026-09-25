@@ -5,11 +5,14 @@ internal class OpenApiSchemaKeywords
 {
     public const string TypeKeyword = "type";
     public const string FormatKeyword = "format";
+    public const string ContentEncodingKeyword = "contentEncoding";
     public const string ItemsKeyword = "items";
+    public const string PrefixItemsKeyword = "prefixItems";
     public const string PropertiesKeyword = "properties";
     public const string AdditionalPropertiesKeyword = "additionalProperties";
     public const string RequiredKeyword = "required";
     public const string AnyOfKeyword = "anyOf";
+    public const string AllOfKeyword = "allOf";
     public const string OneOfKeyword = "oneOf";
     public const string EnumKeyword = "enum";
     public const string DefaultKeyword = "default";

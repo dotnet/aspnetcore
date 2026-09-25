@@ -1,0 +1,137 @@
+{
+  "inferred": {
+    "operation": {
+      "operationId": "EffectiveSerializerContract",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SerializerEnvelope"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SerializerEnvelope"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "properties": {
+      "amount": {
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "contentEncoding": "base64",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri-reference",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "maximum": 127,
+        "minimum": -128,
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "legacy": {
+    "operation": {
+      "operationId": "EffectiveSerializerContract",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SerializerEnvelope"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SerializerEnvelope"
+              }
+            }
+          },
+          "description": "OK"
+        }
+      },
+      "tags": "OpenApiEvidence"
+    },
+    "properties": {
+      "amount": {
+        "format": "double",
+        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "data": {
+        "format": "byte",
+        "type": "string"
+      },
+      "identifier": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "relativeUri": {
+        "format": "uri",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "small": {
+        "pattern": "^-?(?:0|[1-9]\\d*)$",
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    }
+  },
+  "selectedProperties": [
+    "small",
+    "amount",
+    "data",
+    "identifier",
+    "relativeUri",
+    "name"
+  ]
+}
