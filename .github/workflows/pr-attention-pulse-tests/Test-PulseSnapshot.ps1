@@ -287,6 +287,14 @@ try
             $parsedBefore = $json | ConvertFrom-Json -Depth 100 | ConvertTo-Json -Depth 100 -Compress
             $parsedAfter = Get-Content -LiteralPath $publication.InputPath -Raw | ConvertFrom-Json -Depth 100 | ConvertTo-Json -Depth 100 -Compress
             Assert-True ($parsedBefore -ceq $parsedAfter) "The byte mutation must leave parsed PR data identical."
+            if ($variant -eq "bom")
+            {
+                Invoke-SnapshotValidation $publication $outputA "must not start with a UTF-8 BOM"
+                Assert-Throws {
+                    New-SnapshotPublication -Name "regenerated-$variant" -InputPath $publication.InputPath
+                } "A BOM-prefixed snapshot input must fail closed." "must not start with a UTF-8 BOM"
+                return
+            }
             Invoke-SnapshotValidation $publication $outputA "checksum does not match the exact input file bytes"
             $fresh = New-SnapshotPublication -Name "regenerated-$variant" -InputPath $publication.InputPath
             $freshBody = [IO.File]::ReadAllText($fresh.BodyPath)
@@ -504,6 +512,31 @@ try
         {
             $archive.Dispose()
         }
+    }
+    Invoke-SnapshotCase "SnapshotBlockLimit/exact-fit" {
+        $maxSnapshotLength = 65000
+        $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
+        $json = "x" * ($maxSnapshotLength - $emptyBlock.Length)
+        $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-True ($block.Length -eq $maxSnapshotLength) "Embedded snapshot content exactly at the limit must be retained."
+        Assert-True ($block.Contains("Snapshot JSON (exact sanitized bytes)", [StringComparison]::Ordinal)) "The exact-fit snapshot must use the embedded form."
+    }
+    Invoke-SnapshotCase "SnapshotBlockLimit/one-over-fallback" {
+        $maxSnapshotLength = 65000
+        $emptyBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json "" -MaxSnapshotLength $maxSnapshotLength
+        $json = "x" * ($maxSnapshotLength - $emptyBlock.Length + 1)
+        $block = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-True ($block.Length -le $maxSnapshotLength) "The fallback snapshot block must fit within the configured limit."
+        Assert-True ($block.Contains("is not embedded here.", [StringComparison]::Ordinal)) "Content one character over the limit must use the fallback form."
+        Assert-True (-not $block.Contains($json, [StringComparison]::Ordinal)) "The fallback form must not include oversized JSON."
+    }
+    Invoke-SnapshotCase "SnapshotBlockLimit/fallback-does-not-fit" {
+        $maxSnapshotLength = 65000
+        $json = "x" * $maxSnapshotLength
+        $fallbackBlock = ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength $maxSnapshotLength
+        Assert-Throws {
+            ConvertTo-PulseSnapshotBlock -SnapshotContext $contextA -Json $json -MaxSnapshotLength ($fallbackBlock.Length - 1)
+        } "A fallback block that exceeds the configured limit must fail closed." "identity block alone exceeds"
     }
     foreach ($length in @(65000, 65001))
     {

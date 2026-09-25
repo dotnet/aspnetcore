@@ -73,7 +73,11 @@ function Read-PulseSnapshotInput
     {
         $sha256.Dispose()
     }
-    $json = [Text.UTF8Encoding]::new($false, $true).GetString($bytes).TrimStart([char]0xFEFF)
+    $json = [Text.UTF8Encoding]::new($false, $true).GetString($bytes)
+    if ($json.StartsWith([char]0xFEFF))
+    {
+        throw "The Pulse snapshot input must not start with a UTF-8 BOM."
+    }
 
     return [pscustomobject]@{
         Pulse = $json | ConvertFrom-Json -Depth 100
