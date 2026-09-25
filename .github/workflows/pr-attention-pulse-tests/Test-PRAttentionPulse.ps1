@@ -5,6 +5,13 @@ param([switch]$FunctionsOnly)
 
 $ErrorActionPreference = "Stop"
 $script:DashboardIssueNumber = 69328
+$script:PulseSnapshotFixture = @{
+    Repository = "dotnet/aspnetcore"
+    ServerUrl = "https://github.com"
+    RunId = "34643961191"
+    RunAttempt = "1"
+    GeneratedAt = "2026-09-23T19:30:00.0000000Z"
+}
 
 function Assert-True
 {
@@ -52,7 +59,46 @@ function Write-JsonFile
     )
 
     $json = $Value | ConvertTo-Json -Depth 100
-    [IO.File]::WriteAllText($Path, $json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+    # Byte-hashed fixture JSON must be identical across hosts.
+    [IO.File]::WriteAllText($Path, $json.Replace("`r`n", "`n") + "`n", [Text.UTF8Encoding]::new($false))
+}
+
+function Get-FixtureSnapshotContext
+{
+    param([object]$Pulse, [string]$InputPath)
+
+    $fixturePath = $InputPath
+    try
+    {
+        if (-not $fixturePath)
+        {
+            $fixturePath = Join-Path ([IO.Path]::GetTempPath()) "pulse-context-$([guid]::NewGuid().ToString('N')).json"
+            Write-JsonFile -Value $Pulse -Path $fixturePath
+        }
+        Import-Module -Scope Local (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
+
+        return New-PulseSnapshotContext @script:PulseSnapshotFixture `
+            -InputSha256 (Get-FileHash -LiteralPath $fixturePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    finally
+    {
+        if (-not $InputPath -and $fixturePath)
+        {
+            Remove-Item -LiteralPath $fixturePath -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Remove-FixtureSnapshotBlock
+{
+    param([object]$Pulse, [string]$Body)
+
+    Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
+    $suffix = "`n`n" + (ConvertTo-PulseSnapshotBlock -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse))
+    Assert-True ($Body.EndsWith($suffix, [StringComparison]::Ordinal)) "The fixture body must end with its exact frozen snapshot."
+    Assert-True ([regex]::Matches($Body, "(?m)^## Snapshot$").Count -eq 1) "Only one snapshot section is permitted."
+
+    return $Body.Substring(0, $Body.Length - $suffix.Length)
 }
 
 function Invoke-Sanitizer
@@ -130,15 +176,16 @@ function Invoke-Renderer
 
     $inputPath = Join-Path $tempRoot "pulse-$([guid]::NewGuid().ToString('N')).json"
     $outputPath = Join-Path $tempRoot "body-$([guid]::NewGuid().ToString('N')).md"
+    $contextPath = "$outputPath.context.json"
     try
     {
         Write-JsonFile -Value $Pulse -Path $inputPath
-        & $rendererPath -InputPath $inputPath -OutputPath $outputPath
+        & $rendererPath -InputPath $inputPath -OutputPath $outputPath -SnapshotContextPath $contextPath @script:PulseSnapshotFixture
         return Get-Content -Raw $outputPath
     }
     finally
     {
-        Remove-Item $inputPath, $outputPath -Force -ErrorAction SilentlyContinue
+        Remove-Item $inputPath, $outputPath, $contextPath -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -154,6 +201,7 @@ function Invoke-PublicationValidator
     $pulsePath = Join-Path $tempRoot "pulse-$([guid]::NewGuid().ToString('N')).json"
     $bodyPath = Join-Path $tempRoot "body-$([guid]::NewGuid().ToString('N')).md"
     $outputPath = Join-Path $tempRoot "agent-$([guid]::NewGuid().ToString('N')).json"
+    $contextPath = "$pulsePath.context.json"
     $safeOutputsPath = Join-Path (Split-Path -Parent $outputPath) "safeoutputs.jsonl"
     try
     {
@@ -163,6 +211,7 @@ function Invoke-PublicationValidator
         }
 
         Write-JsonFile -Value $Pulse -Path $pulsePath
+        Write-JsonFile -Value (Get-FixtureSnapshotContext -InputPath $pulsePath) -Path $contextPath
         [IO.File]::WriteAllText($bodyPath, $ExpectedBody, [Text.UTF8Encoding]::new($false))
         if ($PSBoundParameters.ContainsKey("AgentOutputJson"))
         {
@@ -179,6 +228,11 @@ function Invoke-PublicationValidator
                 -AgentOutputPath $outputPath `
                 -PulseInputPath $pulsePath `
                 -ExpectedBodyPath $bodyPath `
+                -SnapshotContextPath $contextPath `
+                -ExpectedRepository $script:PulseSnapshotFixture.Repository `
+                -ExpectedServerUrl $script:PulseSnapshotFixture.ServerUrl `
+                -ExpectedRunId $script:PulseSnapshotFixture.RunId `
+                -ExpectedRunAttempt $script:PulseSnapshotFixture.RunAttempt `
                 -SanitizerModulePath $collectorSanitizerPath `
                 -ExpectedIssueNumber $script:DashboardIssueNumber 2>&1)
             $validatorExitCode = $LASTEXITCODE
@@ -204,7 +258,7 @@ function Invoke-PublicationValidator
     }
     finally
     {
-        Remove-Item $pulsePath, $bodyPath, $outputPath, $safeOutputsPath -Force -ErrorAction SilentlyContinue
+        Remove-Item $pulsePath, $bodyPath, $outputPath, $safeOutputsPath, $contextPath -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -658,6 +712,7 @@ function Assert-PresentationLayout
 {
     param([object]$Pulse, [string]$Body)
 
+    $Body = Remove-FixtureSnapshotBlock -Pulse $Pulse -Body $Body
     $headings = @([regex]::Matches($Body, "(?m)^#{1,6} .+$") | ForEach-Object Value)
     $expected = @("## Summary counts", "## Review now", "## Verify discussion before review", "## Needs rescue", "## Ready to merge", "## Verify discussion before merge", "## Coverage and data quality")
     Assert-True (($headings -join "`n") -ceq ($expected -join "`n")) "Expected exactly seven ordered H2 sections; actual: $($headings -join ', ')."
@@ -694,6 +749,7 @@ function Assert-CombinedPresentationLayout
 {
     param([Parameter(Mandatory)][object]$Pulse, [Parameter(Mandatory)][string]$Body)
 
+    $Body = Remove-FixtureSnapshotBlock -Pulse $Pulse -Body $Body
     Assert-True ($Pulse.schemaVersion -ceq "2.0.0" -and @($Pulse.areas).Count -eq 2) "The combined presentation requires exactly two ordered areas."
     Assert-True ([regex]::Matches($Body, "(?m)^<details open>$").Count -eq 0) "No area may be expanded by default."
     Assert-True ([regex]::Matches($Body, "(?m)^<details>$").Count -eq 2) "Both areas must be collapsed by default."
@@ -751,7 +807,7 @@ function Assert-PresentationTablesAndFields
     Assert-PresentationLayout -Pulse $Pulse -Body $Body
     Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
     $before = $Pulse | ConvertTo-Json -Depth 100 -Compress
-    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse
+    $directBody = ConvertTo-PRAttentionPulseBody -Pulse $Pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $Pulse)
     Assert-True ([string]::Equals($before, ($Pulse | ConvertTo-Json -Depth 100 -Compress), [StringComparison]::Ordinal)) "Rendering must not mutate the supplied envelope."
     Assert-True ([string]::Equals($directBody, $Body, [StringComparison]::Ordinal)) "The file entry point and the single production renderer must agree."
     $Pulse = Resolve-PulseMergeArea -Area $Pulse
@@ -1004,6 +1060,8 @@ Assert-True ($LASTEXITCODE -eq 0 -and $ghAwVersion.Contains("v0.88.7")) "Focused
 Assert-True ($LASTEXITCODE -eq 0) "The effective generated security and presentation controls must pass."
 & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseMergeRequirements.ps1")
 Assert-True ($LASTEXITCODE -eq 0) "The bounded merge discussion contract and compatibility controls must pass."
+& pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseSnapshot.ps1")
+Assert-True ($LASTEXITCODE -eq 0) "The exact-file snapshot, publication and retrieval controls must pass."
 $collectorJsRoot = Join-Path (Get-GhAwExtensionRoot) "actions/setup/js"
 & node (Join-Path $testRoot "Test-PulseSchedule.cjs") $collectorJsRoot $workflowPath $lockPath
 Assert-True ($LASTEXITCODE -eq 0) "Daily and manual triggers must preserve the pinned activation behavior."
@@ -1302,7 +1360,7 @@ try
     Assert-True ($normalBody.Contains("2026-09-10T20:04:56.0000000Z")) "Rendered timestamps must be deterministic invariant ISO values."
     Assert-True ($normalBody.Contains("Queue census: Review now 3; Needs rescue 1; Ready to merge 1")) "Rendered output must preserve the engine-provided bucket census."
     Assert-True (-not ($normalBody -match "(?<![\w])@[A-Za-z0-9]")) "Rendered output must not mention authors."
-    $normalBodyWithoutAllowedReferences = [regex]::Replace($normalBody, "\[dotnet/aspnetcore#[1-9][0-9]*\]\(https://github\.com/dotnet/aspnetcore/pull/[1-9][0-9]*\)", "")
+    $normalBodyWithoutAllowedReferences = [regex]::Replace((Remove-FixtureSnapshotBlock -Pulse $normal -Body $normalBody), "\[dotnet/aspnetcore#[1-9][0-9]*\]\(https://github\.com/dotnet/aspnetcore/pull/[1-9][0-9]*\)", "")
     Assert-True (-not ($normalBodyWithoutAllowedReferences -match "(?i)\bhttps?://|\]\(")) "Rendered output must contain only deterministic upstream pull request links."
     Assert-True (-not ($normalBodyWithoutAllowedReferences -match "(?<!#)#[0-9]+")) "Rendered output must not contain bare issue references."
 
@@ -1923,7 +1981,7 @@ try
             Assert-True (-not [string]::Equals($tampered, $canonical, [StringComparison]::Ordinal)) "Table tampering must actually change the body."
             Import-Module -Scope Local -Force (Join-Path $supportRoot "PRAttentionPulseContract.psm1")
             Assert-Throws `
-                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
+                -Action { Assert-PRAttentionPulseOutput -AgentOutput (New-ValidAgentOutput -Body $tampered) -Pulse $normal -SnapshotContext (Get-FixtureSnapshotContext -Pulse $normal) -ExpectedBody $tampered -ExpectedIssueNumber $script:DashboardIssueNumber } `
                 -Message "The direct publication contract must reject $name."
             Assert-Throws `
                 -Action { Invoke-PublicationValidator -Pulse $normal -AgentOutput (New-ValidAgentOutput -Body $tampered) -ExpectedBody $canonical } `
