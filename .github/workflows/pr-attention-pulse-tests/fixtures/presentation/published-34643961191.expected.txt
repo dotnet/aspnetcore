@@ -93,3 +93,17 @@ Inspect the discussion before merging; these prospective candidates do not estab
 - Warning: Discussion evidence was assessed for the first 20 Review now candidate(s). 20 lower-ranked candidate(s) cannot enter the unattended digest.
 
 </details>
+
+## Snapshot
+
+Snapshot generated: `2026-09-23T19:30:00.0000000Z`. [Producing workflow run](https://github.com/dotnet/aspnetcore/actions/runs/34643961191/attempts/1).
+Artifact: `pulse-publication-evidence`; files: `pulse-input.json`, `pulse-body.md`.
+Capped report results, not the full queue. Authenticated ZIP artifact; retained for seven days.
+
+<details>
+<summary>Snapshot identity</summary>
+
+Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
+JSON SHA-256: `d69fdb0a40ba4c80a7515044b256fbe9b7fe22bd2fb2890cb4bd8b0f6b4a6f3b`.
+
+</details>
