@@ -18,17 +18,20 @@ internal class ConversationTurnRenderer : IDisposable
         AgentContext agentContext,
         ConversationTurn turn,
         MessageListContext listContext,
-        Action requestRender)
+        Action render,
+        Action<Action> dispatchToRenderer)
     {
         _turn = turn;
         _listContext = listContext;
-        _requestRender = requestRender;
+        _requestRender = () => dispatchToRenderer(render);
 
         _blockAddedSub = agentContext.RegisterOnBlockAdded((t, block) =>
         {
             if (ReferenceEquals(t, _turn))
             {
-                OnBlockAdded(block);
+                // Marshalled as a whole so the container list is only mutated on the dispatcher,
+                // where the render loop reads it.
+                dispatchToRenderer(() => OnBlockAdded(block));
             }
         });
 
