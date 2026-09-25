@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect;
 
@@ -104,21 +105,23 @@ public class OpenIdConnectAuthenticateTests
     // Regression test for https://github.com/dotnet/aspnetcore/issues/53048. An error response
     // (for example prompt=none returning error=login_required) must still delete the nonce and
     // correlation cookies for that flow, otherwise they accumulate on repeated failed sign-ins
-    // until the request headers grow too large.
+    // until the request headers grow too large. The test runs a real challenge and replays its
+    // state and cookies on the callback, so it covers the nonce the handler records at challenge
+    // time as well as the cleanup.
     public async Task ErrorResponseDeletesNonceAndCorrelationCookies()
     {
+        AuthenticationProperties failureProperties = null;
         var settings = new TestSettings(
             opt =>
             {
-                opt.StateDataFormat = new TestStateDataFormatWithNonce();
-                // Identity string protection keeps the nonce cookie name deterministic for the test.
-                opt.StringDataFormat = new TestStringDataFormat();
+                opt.StateDataFormat = new RoundTripStateDataFormat();
                 opt.Authority = TestServerBuilder.DefaultAuthority;
                 opt.ClientId = "Test Id";
                 opt.Events = new OpenIdConnectEvents()
                 {
                     OnRemoteFailure = ctx =>
                     {
+                        failureProperties = ctx.Properties;
                         ctx.HandleResponse();
                         ctx.Response.StatusCode = StatusCodes.Status200OK;
                         return Task.CompletedTask;
@@ -126,21 +129,29 @@ public class OpenIdConnectAuthenticateTests
                 };
             });
 
-        var server = settings.CreateTestServer();
+        // An application item must round-trip untouched next to the nonce the handler stores.
+        var challengeProperties = new AuthenticationProperties();
+        challengeProperties.Items["N"] = "app-value";
+        var server = settings.CreateTestServer(challengeProperties);
 
-        var nonceCookieName = OpenIdConnectDefaults.CookieNoncePrefix + "nonce-value";
+        var challenge = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+        var challengeCookies = SetCookieHeaderValue.ParseList(challenge.SetCookie);
+        var nonceCookie = challengeCookies.Single(cookie => cookie.Name.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
+        var correlationCookie = challengeCookies.Single(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
 
         var transaction = await server.SendAsync(
             "https://example.com/signin-oidc?error=login_required&state=protected_state",
-            $".AspNetCore.Correlation.correlationId=N; {nonceCookieName}=N");
+            $"{nonceCookie.Name}={nonceCookie.Value}; {correlationCookie.Name}={correlationCookie.Value}");
 
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         Assert.Contains(
             transaction.SetCookie,
-            cookie => cookie.StartsWith($"{nonceCookieName}=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
+            cookie => cookie.StartsWith($"{nonceCookie.Name}=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
         Assert.Contains(
             transaction.SetCookie,
-            cookie => cookie.StartsWith(".AspNetCore.Correlation.correlationId=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
+            cookie => cookie.StartsWith($"{correlationCookie.Name}=; expires=Thu, 01 Jan 1970", StringComparison.Ordinal));
+        Assert.NotNull(failureProperties);
+        Assert.Equal("app-value", failureProperties.Items["N"]);
     }
 
     private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>
@@ -175,35 +186,26 @@ public class OpenIdConnectAuthenticateTests
         }
     }
 
-    private class TestStateDataFormatWithNonce : ISecureDataFormat<AuthenticationProperties>
+    // Hands the state produced at challenge time back on the callback, standing in for real
+    // protection so the test sees exactly what the handler stored.
+    private class RoundTripStateDataFormat : ISecureDataFormat<AuthenticationProperties>
     {
-        public string Protect(AuthenticationProperties data) => "protected_state";
+        private Dictionary<string, string> _items;
+
+        public string Protect(AuthenticationProperties data)
+        {
+            _items = new Dictionary<string, string>(data.Items);
+            return "protected_state";
+        }
 
         public string Protect(AuthenticationProperties data, string purpose) => throw new NotImplementedException();
 
         public AuthenticationProperties Unprotect(string protectedText)
         {
             Assert.Equal("protected_state", protectedText);
-            var properties = new AuthenticationProperties(new Dictionary<string, string>()
-                {
-                    { ".xsrf", "correlationId" },
-                    { "N", "nonce-value" },
-                });
-            properties.RedirectUri = "http://testhost/redirect";
-            return properties;
+            return new AuthenticationProperties(new Dictionary<string, string>(_items));
         }
 
         public AuthenticationProperties Unprotect(string protectedText, string purpose) => throw new NotImplementedException();
-    }
-
-    private class TestStringDataFormat : ISecureDataFormat<string>
-    {
-        public string Protect(string data) => data;
-
-        public string Protect(string data, string purpose) => data;
-
-        public string Unprotect(string protectedText) => protectedText;
-
-        public string Unprotect(string protectedText, string purpose) => protectedText;
     }
 }

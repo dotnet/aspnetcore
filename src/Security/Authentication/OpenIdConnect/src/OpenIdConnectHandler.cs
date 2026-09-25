@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOptions>, IAuthenticationSignOutHandler
 {
     private const string NonceProperty = "N";
+    private const string NoncePropertiesKey = "OpenIdConnect.Nonce";
     private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
     private OpenIdConnectConfiguration? _configuration;
@@ -460,7 +461,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             // deleted when the authorization response comes back as an error. Error responses carry
             // no id_token, which is what ReadNonceCookie normally uses to locate the cookie.
             // See https://github.com/dotnet/aspnetcore/issues/53048.
-            properties.Items[NonceProperty] = message.Nonce;
+            properties.Items[NoncePropertiesKey] = message.Nonce;
         }
 
         GenerateCorrelationId(properties);
@@ -743,7 +744,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             // Recover the nonce stored in the protected state during the challenge and drop it from
             // the properties so it never flows into the authentication ticket. It is only needed to
             // clean up the nonce cookie on error responses below, and stays null when absent.
-            properties.Items.Remove(NonceProperty, out var challengeNonce);
+            properties.Items.Remove(NoncePropertiesKey, out var challengeNonce);
 
             // if any of the error fields are set, throw error null
             if (!string.IsNullOrEmpty(authorizationResponse.Error))
