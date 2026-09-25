@@ -48,14 +48,19 @@ function run(command, args, options = {})
     }
 }
 
+export function gitArguments(...args)
+{
+    return ['-c', 'core.longpaths=true', ...args];
+}
+
 function git(directory, ...args)
 {
-    return run('git', ['-C', directory, ...args]);
+    return run('git', gitArguments('-C', directory, ...args));
 }
 
 function objects(directory, ...args)
 {
-    return run('git', ['--git-dir', directory, ...args]);
+    return run('git', gitArguments('--git-dir', directory, ...args));
 }
 
 export function checkPaths(names)
@@ -267,7 +272,7 @@ export async function exportTree(store, commit, destination, selection = () => t
     checkPaths(entries.map(entry => entry.name));
     await fs.mkdir(destination);
     const blobs = entries.filter(entry => entry.type === 'blob');
-    const child = spawn('git', ['--git-dir', store, 'cat-file', '--batch'], { windowsHide: true });
+    const child = spawn('git', gitArguments('--git-dir', store, 'cat-file', '--batch'), { windowsHide: true });
     const completed = once(child, 'close');
     let stderr = '';
     child.stderr.setEncoding('utf8').on('data', chunk => { stderr += chunk; });
@@ -373,7 +378,7 @@ export async function prepare(options, dependencies = {})
     requireValue(!options.guidance || !options.guidanceRoot, 'Select either --guidance or --guidance-root.');
     const host = options.hostname || 'github.com';
     requireValue(/^[a-z0-9.-]+$/i.test(host), 'Invalid GitHub hostname.');
-    run('git', ['--version']);
+    run('git', gitArguments('--version'));
     run('gh', ['--version']);
     const api = dependencies.api || ((endpoint, accept) =>
     {
@@ -502,7 +507,7 @@ export async function prepare(options, dependencies = {})
     }
     await fs.mkdir(output);
     const store = path.join(output, '.objects');
-    run('git', ['init', '--bare', '--quiet', '--object-format=sha1', store]);
+    run('git', gitArguments('init', '--bare', '--quiet', '--object-format=sha1', store));
     objects(store, 'config', 'core.hooksPath', path.join(store, 'disabled-hooks'));
     const fetch = dependencies.fetch || ((repo, commits) =>
         objects(store, '-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
@@ -668,7 +673,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === script)
         const resolved = { ...values, guidanceRoot: values['guidance-root'] };
         if (!resolved.repo)
         {
-            const remote = run('git', ['remote', 'get-url', 'origin'], { cwd: process.cwd() }).toString('utf8').trim();
+            const remote = run('git', gitArguments('remote', 'get-url', 'origin'), { cwd: process.cwd() }).toString('utf8').trim();
             const match = remote.match(/^(?:https:\/\/github\.com\/|git@github\.com:)([a-z0-9_.-]+\/[a-z0-9_.-]+?)(?:\.git)?$/i);
             requireValue(match, 'Ambiguous or unavailable checkout repository; specify --repo OWNER/REPO.');
             resolved.repo = match[1];

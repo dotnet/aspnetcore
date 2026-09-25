@@ -8,12 +8,27 @@ import * as fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { checkPaths, exportTree, guideLinks, prepare, resolvePolicy, validateGuide } from '../scripts/prepare-review.mjs';
+import { checkPaths, exportTree, gitArguments, guideLinks, prepare, resolvePolicy, validateGuide } from '../scripts/prepare-review.mjs';
 
 const identity = {
     GIT_AUTHOR_NAME: 'Preparation test', GIT_AUTHOR_EMAIL: 'preparation@example.invalid',
     GIT_COMMITTER_NAME: 'Preparation test', GIT_COMMITTER_EMAIL: 'preparation@example.invalid',
 };
+
+test('producer git arguments enable Windows long paths before the subcommand', () =>
+{
+    for (const args of [
+        ['--version'],
+        ['-C', 'checkout', 'status'],
+        ['--git-dir', 'store', 'config'],
+        ['--git-dir', 'store', 'cat-file', '--batch'],
+        ['init', '--bare', 'store'],
+        ['remote', 'get-url', 'origin'],
+    ])
+    {
+        assert.deepEqual(gitArguments(...args), ['-c', 'core.longpaths=true', ...args]);
+    }
+});
 
 function git(root, args, input)
 {
