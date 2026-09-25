@@ -12,15 +12,45 @@ The architecture described here includes accepted work through direction-specifi
 
 ## Optional validated-schema tier
 
-An endpoint may opt into a stricter tier that couples an exact, self-contained Draft 2020-12 schema to a compiled validator. Registration is endpoint-scoped and directional. The same SHA-256 identity over the original UTF-8 bytes binds OpenAPI generation and runtime validation; OpenAPI model normalization never changes that authority.
+An endpoint may opt into a stricter tier that couples an exact, self-contained Draft 4, Draft 6, Draft 7, Draft 2019-09, or Draft 2020-12 schema to a compiled validator. Registration is endpoint-scoped and directional. `SchemaIdentity` is the SHA-256 hash of the original UTF-8 bytes. The semantic `Identity` additionally covers the declared dialect, format/vocabulary capabilities, and validator configuration, and binds OpenAPI generation, runtime validation, and validator caches. OpenAPI normalization never changes the original source authority.
+
+Registration requires the dialect's exact stable `$schema` URI (except that Draft 6+ boolean
+schemas have no object in which to declare it), checks source keyword shapes and local references
+under that dialect, and rejects external/unresolved references and custom vocabularies. It then
+normalizes the supported subset into one internal 2020-12-shaped semantic document:
+
+| Source construct | Canonical representation |
+| --- | --- |
+| Draft 4 `id`; later `$id` | `$id` |
+| Draft 4/6/7 `definitions` | `$defs`, including rewritten local pointers |
+| Draft 4 boolean exclusive bounds | numeric `exclusiveMinimum` / `exclusiveMaximum` |
+| Draft 4/6/7/2019-09 tuple `items` plus `additionalItems` | `prefixItems` plus `items` |
+| Draft 4/6/7 `dependencies` | `dependentRequired` and `dependentSchemas` |
+| Draft 4/6/7 `$ref` siblings | ignored as assertions; required identifier/definition containers retained and the reference represented through `allOf` |
+| Draft 2019-09/2020-12 `$ref` siblings | retained as applicable assertions |
+| Draft 6+ boolean schemas | assertion-equivalent boolean schema |
+
+Draft 4 boolean schemas; recursive/dynamic reference keywords; malformed keyword values;
+dialect-mismatched keywords; unsupported custom vocabularies; and external or unresolved
+references fail registration with a tailored error. Recursive/dynamic references are not
+reinterpreted as ordinary references. `format` is never inferred to be an assertion from its text:
+that semantic remains an explicit validator capability.
 
 For Minimal APIs, an endpoint convention wraps RDF/RDG's final request delegate outside argument binding. At endpoint-build time it compiles validators and precomputes immutable directional registrations, validation contexts, content-type/status selectors, limits, and the final delegate. JSON requests are buffered within an explicit limit, validated before System.Text.Json deserialization, then rewound. Invalid input produces a deterministic 400 validation problem. JSON responses are captured through a pooled `IHttpResponseBodyFeature` before any bytes reach the server, selected by actual status and content type, validated, and either copied unchanged or replaced by an empty 500 response. Capturing the body feature covers both `Stream` and `PipeWriter` output and avoids per-request `StreamResponseBodyFeature` allocation. Non-JSON and no-content responses are not validated. Request acceptance remains the intersection of schema validation and normal System.Text.Json binding.
+
+Controller actions use the same endpoint plan rather than MVC-specific validators or global middleware. `ActionEndpointFactory` supplies the complete MVC request delegate and `ControllerActionDescriptor` metadata before `MapControllers()` endpoint conventions run. The action-predicate overload therefore selects and wraps individual actions outside controller invocation: request validation completes before input formatters, model binding, and action filters, while response capture surrounds result filters, output formatter selection, and formatter writes. Selection still uses the actual status code and content type produced by MVC. This preserves action-specific contracts for the same CLR type without placing validator instances in attributes.
 
 After pool/cache warm-up, the successful framework request and response wrappers each measure 0 B/op incremental allocation against the pass-through baseline. This boundary includes endpoint-plan selection, evidence/context/result plumbing, bounded buffering, response interception, and copying. It excludes the server/TestServer, endpoint System.Text.Json binding/serialization, and validator-engine internals. The evidence adapters measure engine costs separately; see `evidence/validated-schema-adapters/allocation-results.md`.
 
 The 3.1/3.2 importer uses OpenAPI.NET's typed schema model. A narrow internal compatibility association supplies typed `prefixItems` children because the current OpenAPI.NET version otherwise writes that keyword under `unrecognizedKeywords`. Schema transformers traverse those children in order. The shim does not introduce a second general JSON Schema AST and can be removed when OpenAPI.NET gains first-class support.
 
-OpenAPI 3.0 cannot preserve Draft 2020-12 local definitions, recursive local references, or conditionals. Recursive/definition-bearing schemas therefore widen deterministically to `{}`. Fixed prefix arrays lower to the existing tuple approximation with length constraints and unconstrained `items`; unsupported assertions are deliberately widened rather than emitted as misleading extensions.
+OpenAPI 3.1 and 3.2 import the canonical semantic document into the typed OpenAPI.NET model.
+OpenAPI 3.0 cannot preserve local definitions, recursive local references, conditionals, or many
+later-dialect assertions. Recursive/definition-bearing schemas therefore widen deterministically
+to `{}`. Fixed prefix arrays lower to the existing tuple approximation with length constraints
+and unconstrained `items`; unsupported assertions are deliberately widened rather than emitted
+as misleading extensions. The OpenAPI 3.0 Schema Object is an extended subset of JSON Schema
+Wright Draft 00. It is only an emission target here and is not labeled or selectable as Draft 4.
 
 ## Design Principles
 

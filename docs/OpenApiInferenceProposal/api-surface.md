@@ -6,19 +6,28 @@ The APIs should not be reviewed as one indivisible block. They fall into five in
 
 ## API review 5: endpoint-enforced validated JSON Schema
 
-This proposal is independent of inferred generation and the evidence-provider seam. It atomically binds exact immutable Draft 2020-12 bytes, a compiled validator, directional endpoint metadata, and bounded request/response enforcement.
+This proposal is independent of inferred generation and the evidence-provider seam. It atomically binds exact immutable Draft 4, Draft 6, Draft 7, Draft 2019-09, or Draft 2020-12 bytes, a compiled validator with explicit dialect capabilities, directional endpoint metadata, and bounded request/response enforcement.
 
 ```diff
  namespace Microsoft.AspNetCore.OpenApi;
 
-+public enum OpenApiJsonSchemaDialect { Draft202012 }
++public enum OpenApiJsonSchemaDialect
++{
++    Draft202012 = 0,
++    Draft4 = 1,
++    Draft6 = 2,
++    Draft7 = 3,
++    Draft201909 = 4,
++}
 +[Flags] public enum OpenApiJsonSchemaValidationCapabilities { None, FormatAssertions }
 +public sealed class OpenApiValidatedJsonSchemaEvidence : OpenApiSchemaEvidence
 +{
 +    public JsonElement Schema { get; }
 +    public OpenApiJsonSchemaDialect Dialect { get; }
 +    public string Identity { get; }
++    public string SchemaIdentity { get; }
 +    public OpenApiJsonSchemaValidationCapabilities ValidationCapabilities { get; }
++    public string ValidatorConfigurationIdentity { get; }
 +}
 +public sealed class OpenApiJsonSchemaValidationContext
 +{
@@ -52,6 +61,8 @@ This proposal is independent of inferred generation and the evidence-provider se
 +}
 +public interface IOpenApiJsonSchemaValidatorFactory
 +{
++    string ConfigurationIdentity { get; }
++    bool SupportsDialect(OpenApiJsonSchemaDialect dialect);
 +    IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence);
 +}
 +public sealed class OpenApiValidatedJsonSchemaOptions
@@ -85,12 +96,22 @@ This proposal is independent of inferred generation and the evidence-provider se
 +        this TBuilder builder,
 +        OpenApiValidatedJsonSchemaRegistration registration)
 +        where TBuilder : IEndpointConventionBuilder;
++    public static TBuilder WithValidatedJsonSchema<TBuilder>(
++        this TBuilder builder,
++        OpenApiValidatedJsonSchemaRegistration registration,
++        Func<ControllerActionDescriptor, bool> actionPredicate)
++        where TBuilder : IEndpointConventionBuilder;
 +}
 ```
 
 Every declaration above carries `Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")`.
 
-The result is a value type so `default`/`Valid` is the allocation-free success representation. Error collections are created only on failure. Endpoint conventions compile validators and precompute directional selectors and validation contexts once while building the endpoint. At runtime, bounded `ArrayPool<byte>` buffers and a pooled `IHttpResponseBodyFeature` capture raw request/response bytes; synchronous successful validation and copying avoid async state-machine, metadata, result, and buffering allocations.
+`SchemaIdentity` hashes exact source bytes. `Identity` additionally covers the declared dialect,
+validation capabilities, and stable validator configuration identity, preventing caches from
+colliding across different semantics. Factories must reject unsupported dialects before
+compilation; no default dialect is inferred.
+
+The result is a value type so `default`/`Valid` is the allocation-free success representation. Error collections are created only on failure. Endpoint conventions compile validators and precompute directional selectors and validation contexts once while building the endpoint. The action-predicate overload evaluates the predicate during controller endpoint construction and attaches the same plan only to selected actions, allowing the same CLR type to use different schemas on different actions. At runtime, bounded `ArrayPool<byte>` buffers and a pooled `IHttpResponseBodyFeature` capture raw request/response bytes; synchronous successful validation and copying avoid metadata, result, and buffering allocations.
 
 ## API review 1: inferred schemas and scalar formats
 

@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Logging;
 
@@ -32,32 +33,69 @@ public static class OpenApiValidatedJsonSchemaEndpointConventionBuilderExtension
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(registration);
 
+        builder.Add(endpointBuilder => AddRegistration(endpointBuilder, registration));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds JSON Schema evidence and runtime enforcement to selected controller actions.
+    /// </summary>
+    /// <param name="builder">The controller endpoint convention builder.</param>
+    /// <param name="registration">The validated JSON Schema registration.</param>
+    /// <param name="actionPredicate">A predicate that selects controller actions.</param>
+    /// <typeparam name="TBuilder">The endpoint convention builder type.</typeparam>
+    /// <returns>The supplied <paramref name="builder"/>.</returns>
+    public static TBuilder WithValidatedJsonSchema<TBuilder>(
+        this TBuilder builder,
+        OpenApiValidatedJsonSchemaRegistration registration,
+        Func<ControllerActionDescriptor, bool> actionPredicate)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(actionPredicate);
+
         builder.Add(endpointBuilder =>
         {
-            OpenApiValidatedJsonSchemaEndpointPlan? plan = null;
             foreach (var metadata in endpointBuilder.Metadata)
             {
-                if (metadata is OpenApiValidatedJsonSchemaEndpointPlan existingPlan)
+                if (metadata is ControllerActionDescriptor action && actionPredicate(action))
                 {
-                    plan = existingPlan;
+                    AddRegistration(endpointBuilder, registration);
                     break;
                 }
             }
-
-            if (plan is null)
-            {
-                var next = endpointBuilder.RequestDelegate ??
-                    throw new InvalidOperationException(Resources.ValidatedJsonSchemaRequestDelegateRequired);
-                plan = new(next);
-                endpointBuilder.Metadata.Add(plan);
-                endpointBuilder.RequestDelegate = plan.ExecuteAsync;
-            }
-
-            plan.Add(registration);
-            endpointBuilder.Metadata.Add(registration);
         });
 
         return builder;
+    }
+
+    private static void AddRegistration(
+        EndpointBuilder endpointBuilder,
+        OpenApiValidatedJsonSchemaRegistration registration)
+    {
+        OpenApiValidatedJsonSchemaEndpointPlan? plan = null;
+        foreach (var metadata in endpointBuilder.Metadata)
+        {
+            if (metadata is OpenApiValidatedJsonSchemaEndpointPlan existingPlan)
+            {
+                plan = existingPlan;
+                break;
+            }
+        }
+
+        if (plan is null)
+        {
+            var next = endpointBuilder.RequestDelegate ??
+                throw new InvalidOperationException(Resources.ValidatedJsonSchemaRequestDelegateRequired);
+            plan = new(next);
+            endpointBuilder.Metadata.Add(plan);
+            endpointBuilder.RequestDelegate = plan.ExecuteAsync;
+        }
+
+        plan.Add(registration);
+        endpointBuilder.Metadata.Add(registration);
     }
 }
 
@@ -734,6 +772,11 @@ internal sealed class OpenApiValidatedJsonSchemaEndpointPlan
             _buffer.AsSpan(_position, count).CopyTo(buffer);
             _position += count;
             return count;
+        }
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(Read(buffer.Span));
         }
         public override long Seek(long offset, SeekOrigin origin)
         {

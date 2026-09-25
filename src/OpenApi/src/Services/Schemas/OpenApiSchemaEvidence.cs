@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Binary;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -245,9 +247,29 @@ public sealed class OpenApiPositionalArraySchemaEvidence : OpenApiSchemaEvidence
 public enum OpenApiJsonSchemaDialect
 {
     /// <summary>
-    /// JSON Schema Draft 2020-12.
+    /// JSON Schema Draft 2020-12 (<c>https://json-schema.org/draft/2020-12/schema</c>).
     /// </summary>
     Draft202012 = 0,
+
+    /// <summary>
+    /// JSON Schema Draft 4 (<c>http://json-schema.org/draft-04/schema#</c>).
+    /// </summary>
+    Draft4 = 1,
+
+    /// <summary>
+    /// JSON Schema Draft 6 (<c>http://json-schema.org/draft-06/schema#</c>).
+    /// </summary>
+    Draft6 = 2,
+
+    /// <summary>
+    /// JSON Schema Draft 7 (<c>http://json-schema.org/draft-07/schema#</c>).
+    /// </summary>
+    Draft7 = 3,
+
+    /// <summary>
+    /// JSON Schema Draft 2019-09 (<c>https://json-schema.org/draft/2019-09/schema</c>).
+    /// </summary>
+    Draft201909 = 4,
 }
 
 /// <summary>
@@ -274,13 +296,14 @@ public enum OpenApiJsonSchemaValidationCapabilities
 [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class OpenApiValidatedJsonSchemaEvidence : OpenApiSchemaEvidence
 {
-    private const string Draft202012Dialect = "https://json-schema.org/draft/2020-12/schema";
     private readonly byte[] _utf8Schema;
+    private readonly byte[] _normalizedUtf8Schema;
 
     internal OpenApiValidatedJsonSchemaEvidence(
         ReadOnlyMemory<byte> utf8Schema,
         OpenApiJsonSchemaDialect dialect,
-        OpenApiJsonSchemaValidationCapabilities validationCapabilities)
+        OpenApiJsonSchemaValidationCapabilities validationCapabilities,
+        string validatorConfigurationIdentity)
     {
         if (utf8Schema.IsEmpty)
         {
@@ -294,18 +317,20 @@ public sealed class OpenApiValidatedJsonSchemaEvidence : OpenApiSchemaEvidence
         {
             throw new ArgumentException(Resources.ValidatedJsonSchemaMustBeSchema, nameof(utf8Schema));
         }
-        if (Schema.ValueKind == JsonValueKind.Object &&
-            (!Schema.TryGetProperty("$schema", out var schemaDialect) ||
-             schemaDialect.ValueKind != JsonValueKind.String ||
-             !string.Equals(schemaDialect.GetString(), Draft202012Dialect, StringComparison.Ordinal)))
-        {
-            throw new ArgumentException(Resources.FormatValidatedJsonSchemaDialectRequired(Draft202012Dialect), nameof(utf8Schema));
-        }
-        ValidateReferences(Schema, Schema);
+        ArgumentException.ThrowIfNullOrWhiteSpace(validatorConfigurationIdentity);
 
         Dialect = dialect;
         ValidationCapabilities = validationCapabilities;
-        Identity = Convert.ToHexStringLower(SHA256.HashData(_utf8Schema));
+        ValidatorConfigurationIdentity = validatorConfigurationIdentity;
+        SchemaIdentity = Convert.ToHexStringLower(SHA256.HashData(_utf8Schema));
+        Identity = ComputeIdentity(
+            _utf8Schema,
+            dialect,
+            validationCapabilities,
+            validatorConfigurationIdentity);
+        _normalizedUtf8Schema = OpenApiValidatedJsonSchemaNormalizer.Normalize(Schema, dialect);
+        using var normalizedDocument = JsonDocument.Parse(_normalizedUtf8Schema);
+        NormalizedSchema = normalizedDocument.RootElement.Clone();
     }
 
     /// <summary>
@@ -319,79 +344,44 @@ public sealed class OpenApiValidatedJsonSchemaEvidence : OpenApiSchemaEvidence
     public OpenApiJsonSchemaDialect Dialect { get; }
 
     /// <summary>
-    /// Gets a deterministic SHA-256 identity of the exact UTF-8 schema supplied to the validator.
+    /// Gets a deterministic SHA-256 identity of the exact schema bytes and their validation semantics.
     /// </summary>
     public string Identity { get; }
+
+    /// <summary>
+    /// Gets the SHA-256 identity of the exact UTF-8 schema supplied to the validator.
+    /// </summary>
+    public string SchemaIdentity { get; }
 
     /// <summary>
     /// Gets optional assertions enforced by the validator.
     /// </summary>
     public OpenApiJsonSchemaValidationCapabilities ValidationCapabilities { get; }
 
+    /// <summary>
+    /// Gets the stable identity of the validator configuration used with this evidence.
+    /// </summary>
+    public string ValidatorConfigurationIdentity { get; }
+
     internal ReadOnlyMemory<byte> Utf8Schema => _utf8Schema;
+    internal ReadOnlyMemory<byte> NormalizedUtf8Schema => _normalizedUtf8Schema;
+    internal JsonElement NormalizedSchema { get; }
 
-    private static void ValidateReferences(JsonElement root, JsonElement element)
+    private static string ComputeIdentity(
+        ReadOnlySpan<byte> utf8Schema,
+        OpenApiJsonSchemaDialect dialect,
+        OpenApiJsonSchemaValidationCapabilities validationCapabilities,
+        string validatorConfigurationIdentity)
     {
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var property in element.EnumerateObject())
-            {
-                if (property.NameEquals("$ref") &&
-                    (property.Value.ValueKind != JsonValueKind.String ||
-                     property.Value.GetString() is not { } reference ||
-                     !TryResolveLocalReference(root, reference)))
-                {
-                    throw new ArgumentException(Resources.FormatValidatedJsonSchemaExternalReferenceNotSupported(
-                        property.Value.ValueKind == JsonValueKind.String ? property.Value.GetString() : string.Empty));
-                }
-                ValidateReferences(root, property.Value);
-            }
-        }
-        else if (element.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var item in element.EnumerateArray())
-            {
-                ValidateReferences(root, item);
-            }
-        }
-    }
-
-    private static bool TryResolveLocalReference(JsonElement root, string reference)
-    {
-        if (reference == "#")
-        {
-            return true;
-        }
-        if (!reference.StartsWith("#/", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var current = root;
-        foreach (var rawSegment in reference.AsSpan(2).ToString().Split('/'))
-        {
-            var segment = Uri.UnescapeDataString(rawSegment)
-                .Replace("~1", "/", StringComparison.Ordinal)
-                .Replace("~0", "~", StringComparison.Ordinal);
-            if (current.ValueKind == JsonValueKind.Object &&
-                current.TryGetProperty(segment, out var property))
-            {
-                current = property;
-            }
-            else if (current.ValueKind == JsonValueKind.Array &&
-                int.TryParse(segment, out var index) &&
-                index >= 0 &&
-                index < current.GetArrayLength())
-            {
-                current = current[index];
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        return true;
+        var configuration = Encoding.UTF8.GetBytes(validatorConfigurationIdentity);
+        Span<byte> semantics = stackalloc byte[8];
+        BinaryPrimitives.WriteInt32LittleEndian(semantics, (int)dialect);
+        BinaryPrimitives.WriteInt32LittleEndian(semantics[4..], (int)validationCapabilities);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(utf8Schema);
+        hash.AppendData(semantics);
+        hash.AppendData(configuration);
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 }
 
@@ -519,6 +509,16 @@ public interface IOpenApiJsonSchemaValidator
 public interface IOpenApiJsonSchemaValidatorFactory
 {
     /// <summary>
+    /// Gets a stable identity for all validator options that affect validation semantics.
+    /// </summary>
+    string ConfigurationIdentity { get; }
+
+    /// <summary>
+    /// Returns whether the factory supports the declared JSON Schema dialect.
+    /// </summary>
+    bool SupportsDialect(OpenApiJsonSchemaDialect dialect);
+
+    /// <summary>
     /// Creates a thread-safe validator that can validate many payloads.
     /// </summary>
     IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence);
@@ -579,9 +579,20 @@ public sealed class OpenApiValidatedJsonSchemaRegistration
             throw new ArgumentException(Resources.ValidatedJsonSchemaPurposeMustBeDirectional, nameof(purpose));
         }
 
+        if (!validatorFactory.SupportsDialect(dialect))
+        {
+            throw new NotSupportedException(Resources.FormatValidatedJsonSchemaValidatorDialectNotSupported(
+                validatorFactory.GetType(),
+                dialect));
+        }
+
         Type = type;
         Purpose = purpose;
-        Evidence = new(utf8Schema, dialect, validationCapabilities);
+        Evidence = new(
+            utf8Schema,
+            dialect,
+            validationCapabilities,
+            validatorFactory.ConfigurationIdentity);
         Options = options ?? new();
         if (Options.MaxPayloadSize <= 0)
         {

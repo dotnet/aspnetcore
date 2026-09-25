@@ -241,6 +241,21 @@
   <data name="ValidatedJsonSchemaDialectRequired" xml:space="preserve">
     <value>The JSON Schema '$schema' value must be '{0}'.</value>
   </data>
+  <data name="ValidatedJsonSchemaValidatorDialectNotSupported" xml:space="preserve">
+    <value>The JSON Schema validator factory '{0}' does not support dialect '{1}'.</value>
+  </data>
+  <data name="ValidatedJsonSchemaKeywordNotSupportedByDialect" xml:space="preserve">
+    <value>The JSON Schema keyword '{0}' is not supported by dialect '{1}'.</value>
+  </data>
+  <data name="ValidatedJsonSchemaKeywordInvalid" xml:space="preserve">
+    <value>The JSON Schema keyword '{0}' has an invalid value for dialect '{1}'.</value>
+  </data>
+  <data name="ValidatedJsonSchemaDynamicReferenceNotSupported" xml:space="preserve">
+    <value>The JSON Schema keyword '{0}' is not supported by validated OpenAPI schema normalization. Use a resolvable local '$ref' instead.</value>
+  </data>
+  <data name="ValidatedJsonSchemaCustomVocabularyNotSupported" xml:space="preserve">
+    <value>The JSON Schema vocabulary '{0}' is not supported by validated OpenAPI schema normalization.</value>
+  </data>
   <data name="ValidatedJsonSchemaContentTypeCannotBeEmpty" xml:space="preserve">
     <value>The validated JSON Schema content type cannot be empty.</value>
   </data>

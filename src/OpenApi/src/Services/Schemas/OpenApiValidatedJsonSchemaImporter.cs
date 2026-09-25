@@ -11,23 +11,21 @@ namespace Microsoft.AspNetCore.OpenApi;
 
 internal static class OpenApiValidatedJsonSchemaImporter
 {
-    private const string Draft202012Dialect = "https://json-schema.org/draft/2020-12/schema";
-
     public static OpenApiSchema Import(
         OpenApiValidatedJsonSchemaEvidence evidence,
         OpenApiSpecVersion openApiVersion)
     {
-        ValidateSelfContainedSchema(evidence);
         if (openApiVersion == OpenApiSpecVersion.OpenApi3_0 &&
-            (evidence.Schema.TryGetProperty("$defs", out _) || ContainsReference(evidence.Schema)))
+            (evidence.NormalizedSchema.TryGetProperty("$defs", out _) ||
+             ContainsReference(evidence.NormalizedSchema)))
         {
             return CreateRoot(evidence.Identity);
         }
 
         var options = new JsonSerializerOptions();
         options.Converters.Add(new OpenApiSchemaJsonConverter(OpenApiSpecVersion.OpenApi3_1));
-        var imported = ParseSchema(evidence.Utf8Schema.Span, options);
-        var result = ProcessSchema(imported, evidence.Schema, options, openApiVersion);
+        var imported = ParseSchema(evidence.NormalizedUtf8Schema.Span, options);
+        var result = ProcessSchema(imported, evidence.NormalizedSchema, options, openApiVersion);
         result.Metadata ??= new Dictionary<string, object>();
         result.Metadata[OpenApiConstants.SchemaValidatedIdentity] = evidence.Identity;
         return result;
@@ -201,55 +199,6 @@ internal static class OpenApiValidatedJsonSchemaImporter
         return ParseSchema(utf8Schema, options);
     }
 
-    private static void ValidateSelfContainedSchema(OpenApiValidatedJsonSchemaEvidence evidence)
-    {
-        if (evidence.Dialect != OpenApiJsonSchemaDialect.Draft202012)
-        {
-            throw new NotSupportedException();
-        }
-
-        if (evidence.Schema.ValueKind == JsonValueKind.Object &&
-            (!evidence.Schema.TryGetProperty("$schema", out var dialect) ||
-             dialect.ValueKind != JsonValueKind.String ||
-             !string.Equals(dialect.GetString(), Draft202012Dialect, StringComparison.Ordinal)))
-        {
-            throw new JsonException(Resources.FormatValidatedJsonSchemaDialectRequired(Draft202012Dialect));
-        }
-
-        ValidateReferences(evidence.Schema, evidence.Schema);
-    }
-
-    private static void ValidateReferences(JsonElement root, JsonElement current)
-    {
-        if (current.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var property in current.EnumerateObject())
-            {
-                if (property.NameEquals("$ref"))
-                {
-                    var reference = property.Value.ValueKind == JsonValueKind.String
-                        ? property.Value.GetString()
-                        : null;
-                    if (reference is null || !TryResolveLocalReference(root, reference))
-                    {
-                        throw new JsonException(Resources.FormatValidatedJsonSchemaExternalReferenceNotSupported(reference ?? string.Empty));
-                    }
-                }
-                else
-                {
-                    ValidateReferences(root, property.Value);
-                }
-            }
-        }
-        else if (current.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var element in current.EnumerateArray())
-            {
-                ValidateReferences(root, element);
-            }
-        }
-    }
-
     private static bool ContainsReference(JsonElement current)
     {
         if (current.ValueKind == JsonValueKind.Object)
@@ -275,37 +224,4 @@ internal static class OpenApiValidatedJsonSchemaImporter
         return false;
     }
 
-    private static bool TryResolveLocalReference(JsonElement root, string reference)
-    {
-        if (reference == "#")
-        {
-            return true;
-        }
-        if (!reference.StartsWith("#/", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var current = root;
-        foreach (var rawSegment in reference.AsSpan(2).ToString().Split('/'))
-        {
-            var segment = Uri.UnescapeDataString(rawSegment).Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
-            if (current.ValueKind == JsonValueKind.Object && current.TryGetProperty(segment, out var property))
-            {
-                current = property;
-            }
-            else if (current.ValueKind == JsonValueKind.Array &&
-                int.TryParse(segment, out var index) &&
-                index >= 0 &&
-                index < current.GetArrayLength())
-            {
-                current = current[index];
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 }

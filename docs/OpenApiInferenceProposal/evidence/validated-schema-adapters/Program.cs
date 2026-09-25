@@ -47,6 +47,61 @@ foreach (var factory in new IOpenApiJsonSchemaValidatorFactory[]
     new JsonSchemaNetValidatorFactory(),
 })
 {
+    foreach (var dialect in Enum.GetValues<OpenApiJsonSchemaDialect>())
+    {
+        var dialectSchema = CreateDialectSchema(dialect);
+        if (!factory.SupportsDialect(dialect))
+        {
+            try
+            {
+                _ = new OpenApiValidatedJsonSchemaRegistration(
+                    typeof(Node),
+                    OpenApiSchemaEvidencePurpose.Input,
+                    dialectSchema,
+                    dialect,
+                    OpenApiJsonSchemaValidationCapabilities.FormatAssertions,
+                    factory);
+                throw new InvalidOperationException(
+                    $"{factory.GetType().Name}: unsupported dialect {dialect} was accepted.");
+            }
+            catch (NotSupportedException)
+            {
+                Console.WriteLine($"{factory.GetType().Name}: {dialect} was explicitly rejected.");
+            }
+
+            continue;
+        }
+
+        foreach (var purpose in new[]
+        {
+            OpenApiSchemaEvidencePurpose.Input,
+            OpenApiSchemaEvidencePurpose.Output,
+        })
+        {
+            var dialectRegistration = new OpenApiValidatedJsonSchemaRegistration(
+                typeof(Node),
+                purpose,
+                dialectSchema,
+                dialect,
+                OpenApiJsonSchemaValidationCapabilities.FormatAssertions,
+                factory);
+            var dialectValidator = factory.CreateValidator(dialectRegistration.Evidence);
+            foreach (var (payload, expected) in corpus)
+            {
+                var result = await dialectValidator.ValidateAsync(
+                    payload,
+                    new(dialectRegistration.Evidence, purpose));
+                if (result.IsValid != expected)
+                {
+                    throw new InvalidOperationException(
+                        $"{factory.GetType().Name}: {dialect} {purpose} expected {expected}.");
+                }
+            }
+        }
+
+        Console.WriteLine($"{factory.GetType().Name}: {dialect} input/output corpus passed.");
+    }
+
     var registration = new OpenApiValidatedJsonSchemaRegistration(
         typeof(Node),
         OpenApiSchemaEvidencePurpose.Input,
@@ -120,6 +175,97 @@ foreach (var factory in new IOpenApiJsonSchemaValidatorFactory[]
 
     await RunMinimalApiEvidenceAsync(factory, schema);
 }
+
+static byte[] CreateDialectSchema(OpenApiJsonSchemaDialect dialect)
+    => Encoding.UTF8.GetBytes(dialect switch
+    {
+        OpenApiJsonSchemaDialect.Draft4 => """
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "definitions": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "integer", "minimum": 1 },
+                    "next": { "$ref": "#/definitions/node" }
+                  },
+                  "required": [ "value" ],
+                  "additionalProperties": false
+                }
+              },
+              "$ref": "#/definitions/node"
+            }
+            """,
+        OpenApiJsonSchemaDialect.Draft6 => """
+            {
+              "$schema": "http://json-schema.org/draft-06/schema#",
+              "definitions": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "integer", "minimum": 1 },
+                    "next": { "$ref": "#/definitions/node" }
+                  },
+                  "required": [ "value" ],
+                  "additionalProperties": false
+                }
+              },
+              "$ref": "#/definitions/node"
+            }
+            """,
+        OpenApiJsonSchemaDialect.Draft7 => """
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "definitions": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "integer", "minimum": 1 },
+                    "next": { "$ref": "#/definitions/node" }
+                  },
+                  "required": [ "value" ],
+                  "additionalProperties": false
+                }
+              },
+              "$ref": "#/definitions/node"
+            }
+            """,
+        OpenApiJsonSchemaDialect.Draft201909 => """
+            {
+              "$schema": "https://json-schema.org/draft/2019-09/schema",
+              "$defs": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "integer", "minimum": 1 },
+                    "next": { "$ref": "#/$defs/node" }
+                  },
+                  "required": [ "value" ],
+                  "additionalProperties": false
+                }
+              },
+              "$ref": "#/$defs/node"
+            }
+            """,
+        OpenApiJsonSchemaDialect.Draft202012 => """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$defs": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "integer", "minimum": 1 },
+                    "next": { "$ref": "#/$defs/node" }
+                  },
+                  "required": [ "value" ],
+                  "additionalProperties": false
+                }
+              },
+              "$ref": "#/$defs/node"
+            }
+            """,
+        _ => throw new ArgumentOutOfRangeException(nameof(dialect)),
+    });
 
 static async Task RunMinimalApiEvidenceAsync(
     IOpenApiJsonSchemaValidatorFactory factory,

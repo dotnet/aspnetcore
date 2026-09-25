@@ -5,6 +5,7 @@
 
 using System.Collections.Concurrent;
 using Corvus.Text.Json;
+using Corvus.Text.Json.RuntimeEvaluator;
 using Corvus.Text.Json.Validator;
 using Microsoft.AspNetCore.OpenApi;
 
@@ -14,6 +15,15 @@ internal sealed class CorvusValidatorFactory : IOpenApiJsonSchemaValidatorFactor
 {
     private readonly ConcurrentDictionary<ValidatorCacheKey, IOpenApiJsonSchemaValidator> _validators = new();
 
+    public string ConfigurationIdentity => "Corvus.Text.Json.Validator/5.6.1;external-resolution=disabled";
+
+    public bool SupportsDialect(OpenApiJsonSchemaDialect dialect)
+        => dialect is OpenApiJsonSchemaDialect.Draft4 or
+            OpenApiJsonSchemaDialect.Draft6 or
+            OpenApiJsonSchemaDialect.Draft7 or
+            OpenApiJsonSchemaDialect.Draft201909 or
+            OpenApiJsonSchemaDialect.Draft202012;
+
     public IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence)
         => _validators.GetOrAdd(
             new(evidence.Identity, evidence.Dialect, evidence.ValidationCapabilities),
@@ -22,6 +32,8 @@ internal sealed class CorvusValidatorFactory : IOpenApiJsonSchemaValidatorFactor
     private static IOpenApiJsonSchemaValidator Compile(OpenApiValidatedJsonSchemaEvidence evidence)
     {
         var options = new JsonSchema.Options(
+            allowFileSystemAndHttpResolution: false,
+            defaultDialect: GetDialect(evidence.Dialect),
             alwaysAssertFormat: evidence.ValidationCapabilities.HasFlag(
                 OpenApiJsonSchemaValidationCapabilities.FormatAssertions));
         return new Validator(JsonSchema.FromText(
@@ -29,6 +41,17 @@ internal sealed class CorvusValidatorFactory : IOpenApiJsonSchemaValidatorFactor
             canonicalUri: $"urn:sha256:{evidence.Identity}",
             options: options));
     }
+
+    private static JsonSchemaDialect GetDialect(OpenApiJsonSchemaDialect dialect)
+        => dialect switch
+        {
+            OpenApiJsonSchemaDialect.Draft4 => JsonSchemaDialect.Draft4,
+            OpenApiJsonSchemaDialect.Draft6 => JsonSchemaDialect.Draft6,
+            OpenApiJsonSchemaDialect.Draft7 => JsonSchemaDialect.Draft7,
+            OpenApiJsonSchemaDialect.Draft201909 => JsonSchemaDialect.Draft201909,
+            OpenApiJsonSchemaDialect.Draft202012 => JsonSchemaDialect.Draft202012,
+            _ => throw new ArgumentOutOfRangeException(nameof(dialect)),
+        };
 
     private readonly record struct ValidatorCacheKey(
         string Identity,

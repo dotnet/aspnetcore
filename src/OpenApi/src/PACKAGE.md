@@ -197,17 +197,26 @@ by this evidence-provider result algebra. Schema transformers remain the place f
 documentation-only or application-specific annotations and retain final authority.
 
 An endpoint can separately opt into an experimental validated-schema tier with
-`WithValidatedJsonSchema`. Registration atomically associates immutable, self-contained Draft
-2020-12 schema bytes, their SHA-256 identity, a compiled application-provided validator, a
+`WithValidatedJsonSchema`. Registration atomically associates immutable, self-contained Draft 4,
+Draft 6, Draft 7, Draft 2019-09, or Draft 2020-12 schema bytes, their declared dialect and
+semantic identity, a compiled application-provided validator, a
 request/output purpose, content-type/status selection, and bounded buffering. A schema is emitted
 as authoritative evidence only while matching runtime enforcement is attached to that endpoint.
-Requests are validated as raw UTF-8 before Minimal API JSON binding; an invalid request produces a
-400 validation problem. JSON responses are buffered and validated before any payload bytes reach
-the client; an invalid response is suppressed and replaced with status 500. The successful
-framework wrapper uses precomputed endpoint plans and pooled buffers and adds no GC allocation
-after warm-up; validator-engine allocations are implementation-specific. OpenAPI 3.1 and 3.2
-preserve supported Draft 2020-12 assertions and recursive local references. OpenAPI 3.0 uses an
-explicit conservative lowering and widens schemas whose semantics cannot be represented safely.
+Requests are validated as raw UTF-8 before Minimal API JSON binding or MVC input formatting and
+model binding; an invalid request produces a 400 validation problem. JSON responses are buffered
+and validated after Minimal API serialization or MVC result filtering and output formatting, but
+before any payload bytes reach the client; an invalid response is suppressed and replaced with
+status 500. Controller registrations can select individual actions with a
+`ControllerActionDescriptor` predicate, so different actions using the same CLR type can enforce
+different schemas. The successful framework wrapper uses precomputed endpoint plans and pooled
+buffers and adds no GC allocation after warm-up; validator-engine allocations are
+implementation-specific. Registration validates source keywords and local references under the
+declared dialect, then normalizes supported constructs into a canonical semantic model for
+OpenAPI emission. Exact source bytes remain the validator authority. OpenAPI 3.1 and 3.2 preserve
+supported assertions and recursive local references. OpenAPI 3.0 uses an explicit conservative
+lowering and widens schemas whose semantics cannot be represented safely. The OpenAPI 3.0 Schema
+Object is an extended subset of JSON Schema Wright Draft 00 and is an emission target, not a
+selectable validation dialect.
 
 The generated schema does not infer `uniqueItems` for set types because System.Text.Json accepts
 duplicate JSON array entries and coalesces them during materialization rather than validating

@@ -14,6 +14,14 @@ internal sealed class JsonSchemaNetValidatorFactory : IOpenApiJsonSchemaValidato
 {
     private readonly ConcurrentDictionary<ValidatorCacheKey, IOpenApiJsonSchemaValidator> _validators = new();
 
+    public string ConfigurationIdentity => "JsonSchema.Net/9.4.0;local-registry-only";
+
+    public bool SupportsDialect(OpenApiJsonSchemaDialect dialect)
+        => dialect is OpenApiJsonSchemaDialect.Draft6 or
+            OpenApiJsonSchemaDialect.Draft7 or
+            OpenApiJsonSchemaDialect.Draft201909 or
+            OpenApiJsonSchemaDialect.Draft202012;
+
     public IOpenApiJsonSchemaValidator CreateValidator(OpenApiValidatedJsonSchemaEvidence evidence)
         => _validators.GetOrAdd(
             new(evidence.Identity, evidence.Dialect, evidence.ValidationCapabilities),
@@ -23,7 +31,7 @@ internal sealed class JsonSchemaNetValidatorFactory : IOpenApiJsonSchemaValidato
     {
         var buildOptions = new BuildOptions
         {
-            Dialect = Dialect.Draft202012,
+            Dialect = GetDialect(evidence.Dialect),
             SchemaRegistry = new SchemaRegistry(),
         };
         var schema = JsonSchema.FromText(evidence.Schema.GetRawText(), buildOptions);
@@ -35,6 +43,17 @@ internal sealed class JsonSchemaNetValidatorFactory : IOpenApiJsonSchemaValidato
         };
         return new Validator(schema, evaluationOptions);
     }
+
+    private static Dialect GetDialect(OpenApiJsonSchemaDialect dialect)
+        => dialect switch
+        {
+            OpenApiJsonSchemaDialect.Draft6 => Dialect.Draft06,
+            OpenApiJsonSchemaDialect.Draft7 => Dialect.Draft07,
+            OpenApiJsonSchemaDialect.Draft201909 => Dialect.Draft201909,
+            OpenApiJsonSchemaDialect.Draft202012 => Dialect.Draft202012,
+            _ => throw new NotSupportedException(
+                $"JsonSchema.Net 9.4.0 does not support JSON Schema dialect '{dialect}'."),
+        };
 
     private readonly record struct ValidatorCacheKey(
         string Identity,
