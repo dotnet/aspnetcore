@@ -36,17 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
-
-        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
-        // switch value once at static initialization and won't see subsequent AppContext changes.
-        // This write at fixture creation is only safe because the E2E suite runs serially
-        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
-        // let servers needing opposite values race on this process-global field and reintroduce #66883.
-        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
-            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
-        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, enableUrlNavigation);
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(enableUrlNavigation);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
