@@ -36,5 +36,5 @@ Related contributor guidance
 
 The following shared guidance is available for contributors working in the corresponding source areas:
 
-- [Blazor and Components guidance](BlazorComponentsGuidance.md) for `src/Components/**` and `src/JSInterop/**`
+- [Blazor and Components guidance](BlazorComponentsGuidance.md) for `src/Components/**`
 - [Cross-cutting guidance](CrossCuttingGuidance.md) for ordinary `src/**` work
