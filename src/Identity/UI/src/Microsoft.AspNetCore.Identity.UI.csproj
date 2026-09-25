@@ -48,6 +48,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <!-- Available in the shared framework; do not add a package dependency. -->
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" PrivateAssets="all" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
