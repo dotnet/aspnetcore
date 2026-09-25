@@ -272,6 +272,79 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
         });
     }
 
+    [Fact]
+    public void WithStaticAssets_WorksWithMapControllerRoute()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        endpointBuilder.MapStaticAssets();
+        var builder = endpointBuilder.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        // Act
+        builder.WithStaticAssets();
+
+        // Assert - Check that conventional route endpoints for HomeController have static assets
+        var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
+        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
+        Assert.NotNull(homeEndpoint);
+
+        var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
+        Assert.NotNull(metadata);
+        var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
+        Assert.Single(list);
+        Assert.Equal("default.css", list[0].Url);
+    }
+
+    [Fact]
+    public void WithStaticAssets_WorksWithMapDefaultControllerRoute()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        endpointBuilder.MapStaticAssets();
+        var builder = endpointBuilder.MapDefaultControllerRoute();
+
+        // Act
+        builder.WithStaticAssets();
+
+        // Assert - Check that conventional route endpoints for HomeController have static assets
+        var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
+        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
+        Assert.NotNull(homeEndpoint);
+
+        var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
+        Assert.NotNull(metadata);
+        var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
+        Assert.Single(list);
+        Assert.Equal("default.css", list[0].Url);
+    }
+
+    [Fact]
+    public void WithStaticAssets_WorksWithMapControllerRoute_NamedManifest()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        endpointBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        var builder = endpointBuilder.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        // Act
+        builder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+
+        // Assert - Check that conventional route endpoints for HomeController have static assets
+        var endpoints = endpointBuilder.DataSources.Skip(1).First().Endpoints;
+        var homeEndpoint = endpoints.FirstOrDefault(e => e.DisplayName?.Contains("HomeController") == true);
+        Assert.NotNull(homeEndpoint);
+
+        var metadata = homeEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
+        Assert.NotNull(metadata);
+        var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(metadata);
+        Assert.Single(list);
+        Assert.Equal("named.css", list[0].Url);
+    }
+
     private class TestEndpointRouteBuilder : IEndpointRouteBuilder
     {
         private readonly ApplicationBuilder _applicationBuilder;
@@ -316,6 +389,7 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
                 feature.Controllers.Clear();
                 feature.Controllers.Add(typeof(TestController).GetTypeInfo());
                 feature.Controllers.Add(typeof(MyApiController).GetTypeInfo());
+                feature.Controllers.Add(typeof(HomeController).GetTypeInfo());
             }
         }
 
@@ -329,6 +403,12 @@ public class ControllerActionEndpointConventionBuilderResourceCollectionExtensio
         private class MyApiController : ControllerBase
         {
             [HttpGet("other")]
+            public void Index() { }
+        }
+
+        // Controller for conventional routing (no attribute routing)
+        private class HomeController : Controller
+        {
             public void Index() { }
         }
 
