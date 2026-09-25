@@ -43,7 +43,7 @@ async function main() {
   await test("ScheduledActivationWiring", () => {
     assert.equal(roles, "admin,maintainer,write");
     assert.match(sourceOn, /^  roles: \[admin, maintainer, write\]\r?$/m);
-    assert.ok(preActivation.includes("uses: github/gh-aw-actions/setup@v0.88.7"));
+    assert.ok(preActivation.includes("uses: github/gh-aw-actions/setup@5e508589e03a7757a7e05b26e834292f5445bfb6 # v0.88.7"));
     assert.ok(preActivation.includes("activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}"));
     assert.ok(lock.includes("if: needs.pre_activation.outputs.activated == 'true'"));
     assert.ok(membershipScript?.includes("require(path.join(actionsDir, 'check_membership.cjs'))"));

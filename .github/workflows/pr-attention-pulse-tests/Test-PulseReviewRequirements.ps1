@@ -1,7 +1,13 @@
 #!/usr/bin/env pwsh
 #Requires -Version 7.0
 
+param(
+    [string]$WorkflowPath = (Join-Path $PSScriptRoot "..\pr-attention-pulse.md"),
+    [string]$LockPath = (Join-Path $PSScriptRoot "..\pr-attention-pulse.lock.yml")
+)
+
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Test-PRAttentionPulse.ps1") -FunctionsOnly
 
 function Assert-True
 {
@@ -35,10 +41,19 @@ function Invoke-Control
     }
 }
 
+function Get-CompiledJob
+{
+    param([string]$Name)
+
+    $match = [regex]::Match($lock, "(?ms)^  $([regex]::Escape($Name)):\r?\n.*?(?=^  [A-Za-z_][A-Za-z0-9_-]*:\r?$|\z)")
+    Assert-True $match.Success "The generated '$Name' job could not be isolated."
+
+    return $match.Value
+}
+
 $testRoot = $PSScriptRoot
 $workflowRoot = Split-Path -Parent $testRoot
-$workflowPath = Join-Path $workflowRoot "pr-attention-pulse.md"
-$lockPath = Join-Path $workflowRoot "pr-attention-pulse.lock.yml"
+$supportRoot = Join-Path $workflowRoot "pr-attention-pulse"
 $combinerPath = Join-Path $workflowRoot "pr-attention-pulse/Combine-PRAttentionPulse.ps1"
 $contractPath = Join-Path $workflowRoot "pr-attention-pulse/PRAttentionPulseContract.psm1"
 $publishedFixturePath = Join-Path $testRoot "fixtures/presentation/published-34643961191.pulse.json"
@@ -51,6 +66,58 @@ Assert-True ($agentStepStart -ge 0 -and $agentStepEnd -gt $agentStepStart) "The 
 $agentStep = $lock.Substring($agentStepStart, $agentStepEnd - $agentStepStart)
 
 $failures = [Collections.Generic.List[string]]::new()
+
+Invoke-Control "DetectorUsesSelectedPatPool" {
+    $agentCredential = [regex]::Matches((Get-CompiledJob "agent"), "(?m)^          COPILOT_GITHUB_TOKEN: (.+)\r?$")
+    $detectorCredential = [regex]::Matches((Get-CompiledJob "detection"), "(?m)^          COPILOT_GITHUB_TOKEN: (.+)\r?$")
+    Assert-True ($agentCredential.Count -eq 1 -and $detectorCredential.Count -eq 1) "Each inference job must bind exactly one provider credential."
+    $selectedPat = $agentCredential[0].Groups[1].Value.Trim()
+    Assert-True ($selectedPat.Contains("needs.pat_pool.outputs.pat_number") -and $selectedPat.Contains("secrets.COPILOT_PAT_")) "The main agent must retain the existing PAT-pool selector."
+    Assert-True ($detectorCredential[0].Groups[1].Value.Trim() -ceq $selectedPat) "The inline detector must use the main agent's selected PAT-pool expression, not the standalone COPILOT_GITHUB_TOKEN secret."
+}
+
+Invoke-Control "DetectorPoolDependencyAndEnvironment" {
+    foreach ($name in @("agent", "detection"))
+    {
+        $job = Get-CompiledJob $name
+        $needs = [regex]::Match($job, "(?m)^    needs:\r?\n(?:      - [^\r\n]+\r?\n)+").Value
+        Assert-True ($needs -match "(?m)^      - pat_pool\r?$") "The '$name' job must depend directly on pat_pool."
+        Assert-True ($job -match "(?m)^    environment: copilot-pat-pool\r?$") "The '$name' job must use the existing PAT-pool environment."
+    }
+}
+
+Invoke-Control "InlineDetectorFailsClosed" {
+    $detector = Get-CompiledJob "detection"
+    Assert-True ($workflow -match "(?m)^  gh-aw-detection: false\r?$") "The inline-detector workaround must remain enabled."
+    Assert-True ($detector.Contains("copilot_harness.cjs") -and $detector.Contains("parse_threat_detection_results.cjs")) "The generated detector must execute and parse inline detection."
+    $continueOnError = [regex]::Matches($detector, '(?m)^          GH_AW_DETECTION_CONTINUE_ON_ERROR: "([^"]+)"\r?$')
+    Assert-True ($continueOnError.Count -eq 2) "Both detection setup and result parsing must declare failure handling."
+    foreach ($match in $continueOnError)
+    {
+        Assert-True ($match.Groups[1].Value -ceq "false") "Detection errors must not be accepted."
+    }
+    Assert-True ((Get-CompiledJob "safe_outputs").Contains("needs.detection.result == 'success'")) "Publication must require successful detection."
+}
+
+Invoke-Control "DetectorModelPolicy" {
+    $detector = Get-CompiledJob "detection"
+    Assert-True ($detector -match "(?m)^          COPILOT_MODEL: gpt-5\.6-sol\r?$") "Inline detection must retain the pinned model."
+    $config = [regex]::Match($detector, "printf '%s\\n' '(?<config>\{.+\})' >")
+    Assert-True $config.Success "The generated inline detector AWF configuration could not be read."
+    $apiProxy = ($config.Groups["config"].Value | ConvertFrom-Json -Depth 50).apiProxy
+    Assert-True (@($apiProxy.allowedModels).Count -eq 1 -and ($apiProxy.allowedModels -join ",") -ceq "gpt-5.6-sol") "The inline detector must enforce the singleton gpt-5.6-sol model policy."
+    foreach ($name in @("enableTokenSteering", "maxAiCredits", "modelFallback"))
+    {
+        Assert-True ($null -eq $apiProxy.PSObject.Properties[$name]) "Inline detection must retain the existing absence of '$name'; steering stays disabled and the singleton policy prevents model fallback."
+    }
+}
+
+Invoke-Control "ProviderCredentialExclusions" {
+    foreach ($name in @("agent", "detection"))
+    {
+        Assert-True ([regex]::Matches((Get-CompiledJob $name), "(?<!\S)--exclude-env COPILOT_GITHUB_TOKEN(?=\s|\\\\)").Count -eq 1) "The '$name' inference command must exclude the provider credential exactly once."
+    }
+}
 
 Invoke-Control "ActivationArtifactBoundary" {
     $activationCleanup = $lock.IndexOf("name: Remove repository data from activation artifact", [StringComparison]::Ordinal)
@@ -115,6 +182,62 @@ Invoke-Control "EffectiveModelVisibleBoundary" {
     }
 }
 
+Invoke-Control "SnapshotTrustedActionsBinding" {
+    $agent = Get-CompiledJob "agent"
+    foreach ($binding in @(
+        @{ Name = "REPOSITORY"; Context = "repository"; Parameter = "Repository" },
+        @{ Name = "SERVER_URL"; Context = "server_url"; Parameter = "ServerUrl" },
+        @{ Name = "RUN_ID"; Context = "run_id"; Parameter = "RunId" },
+        @{ Name = "RUN_ATTEMPT"; Context = "run_attempt"; Parameter = "RunAttempt" }))
+    {
+        $environment = "PULSE_SNAPSHOT_$($binding.Name)"
+        $assignment = $environment + ': ${{ github.' + $binding.Context + ' }}'
+        Assert-True ([regex]::Matches($agent, [regex]::Escape($assignment)).Count -eq 2) "Both preparation and validation must bind '$environment' from trusted Actions context."
+        Assert-True ($agent.Contains("-$($binding.Parameter) `$env:$environment") -and
+            $agent.Contains("-Expected$($binding.Parameter) `$env:$environment")) "The renderer and private validator must both consume '$environment'."
+        Assert-True (-not $agentStep.Contains($environment)) "Snapshot preparation context must not be supplied to inference."
+    }
+    Assert-True ($agent.Contains('-SnapshotContextPath .pr-attention-pulse/pulse-snapshot-context.json') -and
+        $agent.Contains('pr-attention-pulse-validator/pulse-snapshot-context.json')) "Frozen identity must be staged once and then read from the private canonical directory."
+    $renderer = Get-Content -LiteralPath (Join-Path $supportRoot "Render-PRAttentionPulse.ps1") -Raw
+    Assert-True ([regex]::Matches($renderer, '\[datetime\]::UtcNow').Count -eq 1) "Snapshot generation must sample the UTC clock only once."
+    $validator = Get-Content -LiteralPath (Join-Path $supportRoot "Validate-PRAttentionPulseOutput.ps1") -Raw
+    Assert-True (-not $validator.Contains("UtcNow")) "Post-agent validation must reuse the frozen timestamp, not resample the clock."
+    Assert-True ($workflow.Contains("The Snapshot section is supplied by trusted Actions preparation, not by the queue JSON.")) "The model must copy trusted identity instead of inventing it from queue data."
+}
+
+Invoke-Control "SnapshotPrivateContextBoundary" {
+    $protection = [regex]::Match($lock, "(?ms)^      - name: Protect canonical Pulse artifacts\r?\n.*?(?=^      - |\z)").Value
+    $copy = $protection.IndexOf('Copy-Item .pr-attention-pulse/pulse-snapshot-context.json $validatorRoot', [StringComparison]::Ordinal)
+    $remove = $protection.IndexOf('Remove-Item .pr-attention-pulse/pulse-snapshot-context.json -Force', [StringComparison]::Ordinal)
+    Assert-True ($copy -gt $protection.IndexOf('Assert-PrivateValidatorRoot -Path $validatorRoot', [StringComparison]::Ordinal) -and
+        $remove -gt $copy) "The checked private copy must exist before the workspace context is removed."
+    $boundary = [regex]::Match($lock, "(?ms)^      - name: Enforce model-visible Pulse boundary\r?\n.*?(?=^      - |\z)").Value
+    Assert-True ($boundary.Length -gt 0 -and -not $boundary.Contains("pulse-snapshot-context.json")) "The exact three-file model allowlist must not expand."
+    foreach ($file in @("pulse-body.md", "pulse-input.json", "pulse-request.json"))
+    {
+        Assert-True ([regex]::Matches($boundary, [regex]::Escape(".pr-attention-pulse/$file")).Count -eq 2) "The boundary must still list and verify '$file'."
+    }
+    Assert-True ([regex]::Matches($lock, 'Remove-Item \.pr-attention-pulse/pulse-snapshot-context\.json -Force').Count -eq 2) "Both pre-inference staging and final cleanup must remove the workspace context."
+    Assert-True ($lock.Contains('Remove-Item "${{ runner.temp }}/pr-attention-pulse-validator" -Recurse -Force')) "The existing private-directory cleanup must also remove frozen identity."
+}
+
+Invoke-Control "SnapshotNonOverwritingEvidenceAndGates" {
+    $upload = [regex]::Match($lock, "(?ms)^      - name: Upload validated Pulse publication evidence\r?\n.*?(?=^      - |\z)").Value
+    Assert-True ($upload.Contains("uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")) "Evidence must retain the pinned uploader."
+    Assert-True ($upload -match "(?m)^\s+name: pulse-publication-evidence\r?$" -and
+        $upload -match "(?m)^\s+retention-days: 7\r?$" -and
+        $upload -match "(?m)^\s+if-no-files-found: error\r?$") "The artifact name, retention and required-files policy must remain unchanged."
+    Assert-True (-not ($upload -match "(?m)^\s*(?:overwrite|continue-on-error|if):")) "Upload must not overwrite evidence or run/succeed past an earlier failure."
+    Assert-True ([regex]::Matches($upload, 'pr-attention-pulse-validator/pulse-(?:input\.json|body\.md)').Count -eq 2 -and
+        -not $upload.Contains("pulse-snapshot-context.json")) "Only the exact private JSON/body pair may be exported."
+    Assert-True ($lock.IndexOf("name: Validate the sole publication payload", [StringComparison]::Ordinal) -lt
+        $lock.IndexOf("name: Upload validated Pulse publication evidence", [StringComparison]::Ordinal)) "Private validation must precede upload."
+    Assert-True ((Get-CompiledJob "safe_outputs").Contains("needs.agent.result == 'success'") -and
+        (Get-CompiledJob "safe_outputs").Contains("needs.detection.result == 'success'") -and
+        (Get-CompiledJob "detection").Contains("needs.agent.result == 'success'")) "Publication and detection must require agent success, including evidence upload."
+}
+
 Invoke-Control "GitHubCredentialExclusions" {
     foreach ($name in @("GH_TOKEN", "GH_AW_GITHUB_TOKEN", "GITHUB_MCP_SERVER_TOKEN", "GITHUB_TOKEN"))
     {
@@ -174,7 +297,7 @@ Invoke-Control "DeterministicClickableReferences" {
     Import-Module -Scope Local -Force $contractPath
     $pulse = Get-Content -LiteralPath $publishedFixturePath -Raw | ConvertFrom-Json -Depth 100
     $pulse | Add-Member -NotePropertyName scope -NotePropertyValue "repository-wide"
-    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse
+    $body = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext (Get-FixtureSnapshotContext -Pulse $pulse)
     $pulse = Resolve-PulseMergeArea -Area $pulse
     $expectedNumbers = @(
         foreach ($viewName in @("reviewNow", "verifyDiscussionBeforeReview", "needsRescue", "readyToMerge", "verifyDiscussionBeforeMerge"))

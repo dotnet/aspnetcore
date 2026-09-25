@@ -1,4 +1,8 @@
 ---
+features:
+  # Use the legacy inline detector until https://github.com/github/gh-aw/issues/61857 ships in a gh-aw release.
+  gh-aw-detection: false
+
 on:
   schedule: daily
   workflow_dispatch:
@@ -126,6 +130,10 @@ steps:
     shell: pwsh
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PULSE_SNAPSHOT_REPOSITORY: ${{ github.repository }}
+      PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
+      PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
+      PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
     run: |
       $ErrorActionPreference = "Continue"
       $attemptTimestamp = [datetime]::UtcNow.ToString("o")
@@ -195,7 +203,17 @@ steps:
 
       pwsh .github/workflows/pr-attention-pulse/Render-PRAttentionPulse.ps1 `
         -InputPath .pr-attention-pulse/pulse-input.json `
-        -OutputPath .pr-attention-pulse/pulse-body.md
+        -OutputPath .pr-attention-pulse/pulse-body.md `
+        -SnapshotContextPath .pr-attention-pulse/pulse-snapshot-context.json `
+        -Repository $env:PULSE_SNAPSHOT_REPOSITORY `
+        -ServerUrl $env:PULSE_SNAPSHOT_SERVER_URL `
+        -RunId $env:PULSE_SNAPSHOT_RUN_ID `
+        -RunAttempt $env:PULSE_SNAPSHOT_RUN_ATTEMPT
+
+      if ($LASTEXITCODE -ne 0)
+      {
+        throw "The trusted Pulse snapshot and report could not be produced."
+      }
 
   - name: Normalize the trusted Pulse body for ingestion
     uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -268,6 +286,8 @@ steps:
       Copy-Item .github/workflows/pr-attention-pulse/Validate-PRAttentionPulseOutput.ps1 $validatorRoot
       Copy-Item .pr-attention-pulse/pulse-input.json $validatorRoot
       Copy-Item .pr-attention-pulse/pulse-body.md $validatorRoot
+      Copy-Item .pr-attention-pulse/pulse-snapshot-context.json $validatorRoot
+      Remove-Item .pr-attention-pulse/pulse-snapshot-context.json -Force
 
       Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Force |
         Where-Object { -not [string]::Equals($_.Name, ".pr-attention-pulse", [StringComparison]::Ordinal) } |
@@ -334,6 +354,10 @@ post-steps:
       GH_AW_SAFE_OUTPUTS_URLS: allowed-or-code-region
       GH_AW_ALLOWED_GITHUB_REFS: dotnet/aspnetcore
       GH_AW_SANITIZER_MODULE_PATH: ${{ runner.temp }}/gh-aw/actions/sanitize_content.cjs
+      PULSE_SNAPSHOT_REPOSITORY: ${{ github.repository }}
+      PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
+      PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
+      PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
     run: |
       function Get-CanonicalPath
       {
@@ -374,6 +398,11 @@ post-steps:
         -AgentOutputPath /tmp/gh-aw/agent_output.json `
         -PulseInputPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-input.json" `
         -ExpectedBodyPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-body.md" `
+        -SnapshotContextPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-snapshot-context.json" `
+        -ExpectedRepository $env:PULSE_SNAPSHOT_REPOSITORY `
+        -ExpectedServerUrl $env:PULSE_SNAPSHOT_SERVER_URL `
+        -ExpectedRunId $env:PULSE_SNAPSHOT_RUN_ID `
+        -ExpectedRunAttempt $env:PULSE_SNAPSHOT_RUN_ATTEMPT `
         -SanitizerModulePath $env:GH_AW_SANITIZER_MODULE_PATH `
         -ExpectedIssueNumber $dashboardIssueNumber
       if ($LASTEXITCODE -ne 0)
@@ -398,6 +427,7 @@ post-steps:
       Remove-Item .pr-attention-pulse/pulse-input.json -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-body.md -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-request.json -Force -ErrorAction SilentlyContinue
+      Remove-Item .pr-attention-pulse/pulse-snapshot-context.json -Force -ErrorAction SilentlyContinue
       Remove-Item "${{ runner.temp }}/pr-attention-pulse-validator" -Recurse -Force -ErrorAction SilentlyContinue
 
 network:
@@ -444,6 +474,9 @@ safe-outputs:
     engine:
       id: copilot
       model: gpt-5.6-sol
+      # An explicit inline detector engine does not inherit the main engine's environment.
+      env:
+        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     # The detector receives only sanitized agent output. Removing its credit budget also disables
     # AWF token steering. The tradeoff is that detector inference has no per-run AIC ceiling.
     max-ai-credits: -1
@@ -502,6 +535,11 @@ validator rejects any body that differs from the deterministic rendering, includ
 text, optional recent activity, unexpected or altered links, mentions, mislinked references,
 missing or reordered areas or sections, altered counts, an incorrect area scope, or a failure
 reported as a zero-candidate inventory.
+
+The Snapshot section is supplied by trusted Actions preparation, not by the queue JSON.
+Copy its timestamp, producing workflow run-page link, artifact/file names, and collapsed identity
+exactly as rendered. Do not infer or invent snapshot metadata from the JSON or environment.
+The run-page link is not a direct download. The JSON contains capped report results, not the full queue.
 
 Emit exactly one safe-output payload and no other payload:
 
