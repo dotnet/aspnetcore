@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -162,8 +162,8 @@
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>Username '{0}' is invalid, can only contain letters or digits.</value>
-    <comment>User names can only contain letters or digits</comment>
+    <value>Username '{0}' is invalid, can only contain the following characters '{1}'.</value>
+    <comment>User names can only contain characters defined in 'AllowedUsernameCharacters'. By default these are 'a-Z0-9._@+-'</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
     <value>A user with this login already exists.</value>
