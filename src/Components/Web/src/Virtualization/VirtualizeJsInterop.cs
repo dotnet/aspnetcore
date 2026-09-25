@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -65,24 +66,17 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
 
     public ValueTask RestoreAnchorAsync(bool onNextMutation = false)
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference, onNextMutation);
+        return InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference, onNextMutation);
     }
 
-    public async ValueTask<ViewportFillDirection?> AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
+    public ValueTask<ViewportFillDirection?> AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
     {
-        if (_disposed)
-        {
-            return null;
-        }
-
-        try
-        {
-            return await _jsRuntime.InvokeAsync<ViewportFillDirection?>($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
-        }
-        catch (ObjectDisposedException) when (_disposed)
-        {
-            return null;
-        }
+        return InvokeAsync<ViewportFillDirection?>(
+            $"{JsFunctionsPrefix}.alignToItem",
+            disposedResult: null,
+            cancellationToken,
+            _selfReference,
+            localIndex);
     }
 
     public ValueTask BeginProgrammaticScrollAsync()
@@ -90,21 +84,14 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return InvokeVoidAsync($"{JsFunctionsPrefix}.beginProgrammaticScroll", _selfReference);
     }
 
-    public async ValueTask<bool> IsFollowingBottomAsync()
+    public ValueTask<bool> IsFollowingTopAsync()
     {
-        if (_disposed)
-        {
-            return false;
-        }
+        return InvokeAsync($"{JsFunctionsPrefix}.isFollowingTop", disposedResult: false, _selfReference);
+    }
 
-        try
-        {
-            return await _jsRuntime.InvokeAsync<bool>($"{JsFunctionsPrefix}.isFollowingBottom", _selfReference);
-        }
-        catch (ObjectDisposedException) when (_disposed)
-        {
-            return false;
-        }
+    public ValueTask<bool> IsFollowingBottomAsync()
+    {
+        return InvokeAsync($"{JsFunctionsPrefix}.isFollowingBottom", disposedResult: false, _selfReference);
     }
 
     public async ValueTask DisposeAsync()
@@ -146,6 +133,35 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         }
         catch (ObjectDisposedException) when (_disposed)
         {
+        }
+    }
+
+    private ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(
+        string identifier,
+        TValue disposedResult,
+        params object?[]? args)
+    {
+        return InvokeAsync(identifier, disposedResult, CancellationToken.None, args);
+    }
+
+    private async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(
+        string identifier,
+        TValue disposedResult,
+        CancellationToken cancellationToken,
+        params object?[]? args)
+    {
+        if (_disposed)
+        {
+            return disposedResult;
+        }
+
+        try
+        {
+            return await _jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+        }
+        catch (ObjectDisposedException) when (_disposed)
+        {
+            return disposedResult;
         }
     }
 }
