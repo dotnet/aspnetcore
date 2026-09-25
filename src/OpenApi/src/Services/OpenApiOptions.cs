@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -34,6 +36,7 @@ public sealed class OpenApiOptions
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
     internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
+    internal readonly List<IOpenApiSchemaEvidenceProvider> SchemaEvidenceProviders = [];
 
     /// <summary>
     /// A default implementation for creating a schema reference ID for a given <see cref="JsonTypeInfo"/>.
@@ -113,6 +116,27 @@ public sealed class OpenApiOptions
     }
 
     internal bool UsesDefaultSchemaReferenceId { get; private set; } = true;
+
+    /// <summary>
+    /// Registers a provider of authoritative runtime-enforced schema evidence.
+    /// </summary>
+    /// <remarks>
+    /// Providers are evaluated in registration order before inferred schema decisions are made.
+    /// Returning more than one evidence result for the same effective runtime contract is an error.
+    /// Provider exceptions propagate to the caller.
+    /// </remarks>
+    /// <param name="provider">The runtime-enforced schema evidence provider.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+    public OpenApiOptions AddSchemaEvidenceProvider(IOpenApiSchemaEvidenceProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        SchemaEvidenceProviders.Add(provider);
+        return this;
+    }
+#pragma warning restore ASP0040
 
     /// <summary>
     /// Registers a new document transformer on the current <see cref="OpenApiOptions"/> instance.

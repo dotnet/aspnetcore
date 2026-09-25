@@ -10,6 +10,18 @@ The experimental approach therefore treats System.Text.Json as the authority for
 
 The architecture described here includes accepted work through direction-specific input/output generation, converter-proven scalar constraints, and binder-aware non-body parameter schemas.
 
+## Optional validated-schema tier
+
+An endpoint may opt into a stricter tier that couples an exact, self-contained Draft 2020-12 schema to a compiled validator. Registration is endpoint-scoped and directional. The same SHA-256 identity over the original UTF-8 bytes binds OpenAPI generation and runtime validation; OpenAPI model normalization never changes that authority.
+
+For Minimal APIs, an endpoint convention wraps RDF/RDG's final request delegate outside argument binding. At endpoint-build time it compiles validators and precomputes immutable directional registrations, validation contexts, content-type/status selectors, limits, and the final delegate. JSON requests are buffered within an explicit limit, validated before System.Text.Json deserialization, then rewound. Invalid input produces a deterministic 400 validation problem. JSON responses are captured through a pooled `IHttpResponseBodyFeature` before any bytes reach the server, selected by actual status and content type, validated, and either copied unchanged or replaced by an empty 500 response. Capturing the body feature covers both `Stream` and `PipeWriter` output and avoids per-request `StreamResponseBodyFeature` allocation. Non-JSON and no-content responses are not validated. Request acceptance remains the intersection of schema validation and normal System.Text.Json binding.
+
+After pool/cache warm-up, the successful framework request and response wrappers each measure 0 B/op incremental allocation against the pass-through baseline. This boundary includes endpoint-plan selection, evidence/context/result plumbing, bounded buffering, response interception, and copying. It excludes the server/TestServer, endpoint System.Text.Json binding/serialization, and validator-engine internals. The evidence adapters measure engine costs separately; see `evidence/validated-schema-adapters/allocation-results.md`.
+
+The 3.1/3.2 importer uses OpenAPI.NET's typed schema model. A narrow internal compatibility association supplies typed `prefixItems` children because the current OpenAPI.NET version otherwise writes that keyword under `unrecognizedKeywords`. Schema transformers traverse those children in order. The shim does not introduce a second general JSON Schema AST and can be removed when OpenAPI.NET gains first-class support.
+
+OpenAPI 3.0 cannot preserve Draft 2020-12 local definitions, recursive local references, or conditionals. Recursive/definition-bearing schemas therefore widen deterministically to `{}`. Fixed prefix arrays lower to the existing tuple approximation with length constraints and unconstrained `items`; unsupported assertions are deliberately widened rather than emitted as misleading extensions.
+
 ## Design Principles
 
 1. **The effective serializer contract is authoritative.** Use `JsonTypeInfo`, effective converters, and serializer options rather than CLR shape alone.
@@ -424,18 +436,24 @@ Operation and document transformers can request additional schemas. These reques
 
 These schemas use `Neutral` purpose unless a future public API explicitly allows the caller to choose.
 
-### Package-owned converter provenance
+### Runtime-enforced schema evidence providers
 
-A converter can participate in stronger inference when it exposes a recognized internal contract. The tuple converter uses this mechanism to provide:
+Normal inferred generation first discovers facts from the effective System.Text.Json and binding contracts with no additional application authoring. A public `IOpenApiSchemaEvidenceProvider` is a second, optional tier for a runtime mechanism whose enforced representation is otherwise opaque. Providers run before internal typed decisions and emission; they do not mutate an `OpenApiSchema` and do not replace ordinary inference.
+
+A converter or separately registered provider can contribute one of the closed, version-independent evidence kinds: a strict scalar or a fixed positional array. The context supplies the declared/effective CLR type, effective `JsonTypeInfo`, effective converter, and input/output/neutral purpose so a provider can couple evidence to runtime enforcement. Documentation-only declarations still belong in schema transformers.
+
+Providers execute in registration order. The effective converter is evaluated as a provider after registered providers unless the same instance is already registered. Multiple claims for one effective runtime contract fail deterministically; provider exceptions propagate. OpenAPI 3.0/3.1/3.2 adaptation remains emitter policy.
+
+The tuple converter is the proving implementation and supplies:
 
 - flattened ordered element types;
 - exact arity;
 - a proven array domain;
 - runtime/schema parity.
 
-This is intentionally not based on assembly names, converter class-name heuristics, or reflection over generic arguments.
+Schema inference is intentionally not based on assembly names, converter class-name heuristics, or reflection over generic arguments. RDG retains its existing package-origin activation check solely to preserve the separate explicit tuple runtime opt-in before generated closed converters are installed; third-party provider registration does not activate tuple serialization.
 
-The same pattern could support future framework-owned converters, but it should remain narrow: an arbitrary converter is executable behavior, not declarative schema metadata.
+The evidence algebra deliberately does not expose `OpenApiSchema`, `JsonNode`, arbitrary keyword dictionaries, composition, or the internal fact graph. Third-party runtime-enforced schema providers can translate strict scalar or fixed positional-array facts into these narrow evidence kinds. Full object, conditional, composition, and arbitrary schema import remain unsupported and transformer-authored. Arbitrary converter behavior remains unknown.
 
 ### Explicit closed converters
 
@@ -460,19 +478,6 @@ Explicit closed registration remains the fallback for dynamic endpoints, custom 
 ### Custom reference IDs
 
 Applications can continue to provide reference-ID policy. In inferred mode, custom IDs are validated as authoritative identities. Collisions fail explicitly instead of being silently reordered or overwritten.
-
-### Future typed fact providers
-
-A future extension could allow a package-owned provider to contribute immutable facts for an otherwise opaque converter. Such an API should:
-
-- identify the exact effective converter contract;
-- be trim-safe;
-- provide immutable, deterministic facts;
-- describe version-independent JSON semantics;
-- avoid exposing the internal emitter model;
-- fall back to unknown when incomplete.
-
-This is preferable to inferring semantics from CLR generic interfaces or converter implementation details.
 
 ## Cross-Cutting Concerns
 

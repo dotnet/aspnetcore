@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,6 +15,7 @@ internal enum InferredScalarContractProvenance
     Unknown,
     SystemTextJsonBuiltIn,
     CustomConverter,
+    RecognizedProvider,
 }
 
 internal enum InferredScalarContractKind
@@ -60,21 +63,47 @@ internal sealed record InferredScalarContractFact(
     InferredScalarContractProvenance Provenance,
     InferredScalarContractKind Kind,
     InferredNumericBoundsFact? NumericBounds,
-    bool IsScalar = false);
+    bool IsScalar = false,
+    OpenApiScalarSchemaValueKind? ValueKind = null,
+    string? Pattern = null,
+    string? RecognizedFormat = null);
 
 internal sealed record InferredScalarSchemaDecision(
     string? Format,
     InferredNumericBoundsFact? NumericBounds,
-    string? ContentEncoding);
+    string? ContentEncoding,
+    OpenApiScalarSchemaValueKind? ValueKind = null,
+    string? Pattern = null);
 
 internal static class InferredScalarContractFactBuilder
 {
     public static InferredScalarContractFact Build(
         JsonTypeInfo typeInfo,
         JsonConverter? propertyConverter = null,
-        bool hasConverterAttribute = false)
+        bool hasConverterAttribute = false,
+        OpenApiSchemaEvidence? schemaEvidence = null)
     {
         var type = Nullable.GetUnderlyingType(typeInfo.Type) ?? typeInfo.Type;
+        if (schemaEvidence is OpenApiScalarSchemaEvidence scalarEvidence)
+        {
+            var bounds = scalarEvidence.Minimum is not null || scalarEvidence.Maximum is not null
+                ? new InferredNumericBoundsFact(
+                    scalarEvidence.Minimum?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+                    scalarEvidence.Maximum?.ToString(CultureInfo.InvariantCulture) ?? string.Empty)
+                : null;
+            return new(
+                type,
+                InferredScalarContractProvenance.RecognizedProvider,
+                scalarEvidence.ValueKind == OpenApiScalarSchemaValueKind.Integer
+                    ? InferredScalarContractKind.Integral
+                    : InferredScalarContractKind.Other,
+                bounds,
+                IsScalar: true,
+                scalarEvidence.ValueKind,
+                scalarEvidence.Pattern,
+                scalarEvidence.Format);
+        }
+
         var converter = propertyConverter ?? typeInfo.Converter;
         var provenance = !hasConverterAttribute &&
             converter.GetType().Assembly == typeof(JsonSerializerOptions).Assembly
@@ -127,6 +156,16 @@ internal static class InferredScalarSchemaDecisionBuilder
 
     public static InferredScalarSchemaDecision Build(InferredScalarContractFact fact)
     {
+        if (fact.Provenance == InferredScalarContractProvenance.RecognizedProvider)
+        {
+            return new(
+                fact.RecognizedFormat,
+                fact.NumericBounds,
+                ContentEncoding: null,
+                fact.ValueKind,
+                fact.Pattern);
+        }
+
         if (fact.Provenance != InferredScalarContractProvenance.SystemTextJsonBuiltIn)
         {
             return new(Format: null, NumericBounds: null, ContentEncoding: null);

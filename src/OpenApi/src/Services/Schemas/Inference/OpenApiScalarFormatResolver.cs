@@ -16,9 +16,15 @@ internal static class OpenApiScalarFormatResolver
         InferredSchemaPurpose purpose,
         OpenApiSpecVersion openApiVersion)
     {
-        var defaultFormat = fact.Provenance == InferredScalarContractProvenance.SystemTextJsonBuiltIn
-            ? GetPolicyFormat(options.ScalarFormatPolicy, fact.Type, isTransport: false)
-            : null;
+        var defaultFormat = fact.Provenance switch
+        {
+            InferredScalarContractProvenance.SystemTextJsonBuiltIn => GetPolicyFormat(options.ScalarFormatPolicy, fact.Type, isTransport: false),
+            InferredScalarContractProvenance.RecognizedProvider => GetProviderFormat(
+                options.ScalarFormatPolicy,
+                fact.Type,
+                fact.RecognizedFormat),
+            _ => null,
+        };
         var context = new OpenApiScalarFormatContext(
             declaredType,
             fact.Type,
@@ -28,7 +34,7 @@ internal static class OpenApiScalarFormatResolver
             fact.Provenance switch
             {
                 InferredScalarContractProvenance.SystemTextJsonBuiltIn => OpenApiScalarFormatProvenance.SystemTextJsonBuiltIn,
-                InferredScalarContractProvenance.CustomConverter => OpenApiScalarFormatProvenance.CustomConverter,
+                InferredScalarContractProvenance.CustomConverter or InferredScalarContractProvenance.RecognizedProvider => OpenApiScalarFormatProvenance.CustomConverter,
                 _ => OpenApiScalarFormatProvenance.Unknown,
             },
             defaultFormat);
@@ -112,6 +118,18 @@ internal static class OpenApiScalarFormatResolver
             _ => null,
         };
     }
+
+    private static string? GetProviderFormat(
+        OpenApiScalarFormatPolicy policy,
+        Type type,
+        string? format)
+        => policy switch
+        {
+            OpenApiScalarFormatPolicy.None => null,
+            OpenApiScalarFormatPolicy.CompatibleOnly
+                when format != GetPolicyFormat(policy, type, isTransport: false) => null,
+            _ => format,
+        };
 
     private static OpenApiScalarFormatPurpose MapPurpose(InferredSchemaPurpose purpose)
         => purpose switch

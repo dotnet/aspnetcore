@@ -184,6 +184,31 @@ Properties added by collection or dictionary subclasses are not serialized and a
 in the schema. Custom converters remain unconstrained unless they provide package-recognized
 schema provenance.
 
+Inferred mode normally requires no additional schema authoring: it derives facts from the effective
+serializer and binding contracts already used by the application. For strict third-party runtime
+contracts that those metadata cannot prove, `OpenApiOptions.AddSchemaEvidenceProvider` optionally
+registers an experimental `IOpenApiSchemaEvidenceProvider`. Providers can return typed,
+runtime-enforced scalar or fixed positional-array evidence after verifying the effective converter
+and type metadata. Multiple providers claiming the same runtime contract fail instead of using
+registration order as a silent winner, and provider exceptions propagate. Provider formats are
+policy-controlled annotation candidates; enforceable lexical and range semantics use patterns and
+bounds. Full objects, conditionals, composition, and arbitrary schema import remain unsupported
+by this evidence-provider result algebra. Schema transformers remain the place for
+documentation-only or application-specific annotations and retain final authority.
+
+An endpoint can separately opt into an experimental validated-schema tier with
+`WithValidatedJsonSchema`. Registration atomically associates immutable, self-contained Draft
+2020-12 schema bytes, their SHA-256 identity, a compiled application-provided validator, a
+request/output purpose, content-type/status selection, and bounded buffering. A schema is emitted
+as authoritative evidence only while matching runtime enforcement is attached to that endpoint.
+Requests are validated as raw UTF-8 before Minimal API JSON binding; an invalid request produces a
+400 validation problem. JSON responses are buffered and validated before any payload bytes reach
+the client; an invalid response is suppressed and replaced with status 500. The successful
+framework wrapper uses precomputed endpoint plans and pooled buffers and adds no GC allocation
+after warm-up; validator-engine allocations are implementation-specific. OpenAPI 3.1 and 3.2
+preserve supported Draft 2020-12 assertions and recursive local references. OpenAPI 3.0 uses an
+explicit conservative lowering and widens schemas whose semantics cannot be represented safely.
+
 The generated schema does not infer `uniqueItems` for set types because System.Text.Json accepts
 duplicate JSON array entries and coalesces them during materialization rather than validating
 uniqueness. It also does not infer `propertyNames` or a finite dictionary-key domain. The public

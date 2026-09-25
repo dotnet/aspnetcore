@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 [RequiresDynamicCode("Tuple converters are constructed for tuple types discovered at run time.")]
 [RequiresUnreferencedCode("Tuple constructors and members are accessed for tuple types discovered at run time.")]
-public sealed class JsonArrayTupleConverter : JsonConverterFactory
+public sealed class JsonArrayTupleConverter : JsonConverterFactory, IOpenApiSchemaEvidenceProvider
 {
     /// <summary>
     /// Initializes a new instance of <see cref="JsonArrayTupleConverter"/>.
@@ -44,6 +46,9 @@ public sealed class JsonArrayTupleConverter : JsonConverterFactory
         return CreateConverterCore(typeToConvert, contract);
     }
 
+    OpenApiSchemaEvidence? IOpenApiSchemaEvidenceProvider.GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+        => JsonArrayTupleSchemaEvidence.Create(context.EffectiveType);
+
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The public factory and constructor communicate the approved dynamic-code requirement.")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The public factory and constructor communicate the approved trimming requirement.")]
     private static JsonConverter CreateConverterCore(Type typeToConvert, JsonArrayTupleContract contract)
@@ -58,10 +63,26 @@ internal interface IJsonArrayTupleConverter
     JsonArrayTupleContract Contract { get; }
 }
 
+internal static class JsonArrayTupleSchemaEvidence
+{
+    public static OpenApiSchemaEvidence? Create(Type type)
+        => JsonArrayTupleContract.TryCreate(type, out var contract) ? Create(contract) : null;
+
+    public static OpenApiPositionalArraySchemaEvidence Create(JsonArrayTupleContract contract)
+    {
+        return new(contract.ElementTypes);
+    }
+}
+
 internal sealed class JsonArrayTupleConverter<TTuple>(JsonArrayTupleContract contract)
-    : JsonConverter<TTuple>, IJsonArrayTupleConverter
+    : JsonConverter<TTuple>, IJsonArrayTupleConverter, IOpenApiSchemaEvidenceProvider
 {
     public JsonArrayTupleContract Contract { get; } = contract;
+
+    OpenApiSchemaEvidence? IOpenApiSchemaEvidenceProvider.GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+        => context.EffectiveType == typeof(TTuple)
+            ? JsonArrayTupleSchemaEvidence.Create(Contract)
+            : null;
 
     public override TTuple Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

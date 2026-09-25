@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -443,11 +445,16 @@ internal interface IJsonArrayTupleCodecProvider<TTuple>
 internal sealed class ClosedJsonArrayTupleConverter<TTuple>(
     JsonArrayTupleContract contract,
     JsonArrayTupleCodec<TTuple> codec)
-    : JsonConverter<TTuple>, IJsonArrayTupleConverter, IJsonArrayTupleCodecProvider<TTuple>
+    : JsonConverter<TTuple>, IJsonArrayTupleConverter, IJsonArrayTupleCodecProvider<TTuple>, IOpenApiSchemaEvidenceProvider
 {
     public JsonArrayTupleContract Contract { get; } = contract;
 
     public JsonArrayTupleCodec<TTuple> Codec { get; } = codec;
+
+    OpenApiSchemaEvidence? IOpenApiSchemaEvidenceProvider.GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+        => context.EffectiveType == typeof(TTuple)
+            ? JsonArrayTupleSchemaEvidence.Create(Contract)
+            : null;
 
     public override TTuple Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

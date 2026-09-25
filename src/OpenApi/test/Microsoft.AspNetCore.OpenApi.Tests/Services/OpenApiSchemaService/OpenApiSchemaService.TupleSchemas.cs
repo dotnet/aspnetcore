@@ -257,6 +257,46 @@ public partial class OpenApiSchemaServiceTests
     }
 
     [Fact]
+    public void SchemaEvidenceProvider_PreservesTupleShapeAcrossReflectionAndSourceGeneratedMetadata()
+    {
+        var reflectionOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        reflectionOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+        var generatedOptions = new JsonSerializerOptions(TupleJsonSerializerContext.Default.Options);
+        generatedOptions.Converters.Add(JsonArrayTupleConverters.CreateValueTuple<int, string>());
+
+        var reflection = InferredSchemaShapeBuilder.Build(reflectionOptions, typeof((int, string)))[typeof((int, string))];
+        var generated = InferredSchemaShapeBuilder.Build(generatedOptions, typeof((int, string)))[typeof((int, string))];
+
+        Assert.Equal(InferredSchemaShapeKind.Tuple, reflection.Kind);
+        Assert.Equal(reflection.Kind, generated.Kind);
+        Assert.Equal(
+            reflection.TupleElements.Select(element => element.Identity.Type),
+            generated.TupleElements.Select(element => element.Identity.Type));
+    }
+
+    [Fact]
+    public void SchemaEvidenceResults_AreValidatedAndPositionalElementsAreCopied()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new OpenApiScalarSchemaEvidence((OpenApiScalarSchemaValueKind)(-1)));
+        Assert.Throws<ArgumentException>(
+            () => new OpenApiScalarSchemaEvidence(OpenApiScalarSchemaValueKind.Integer, pattern: "pattern"));
+        Assert.Throws<ArgumentException>(
+            () => new OpenApiScalarSchemaEvidence(OpenApiScalarSchemaValueKind.String, minimum: 0));
+        Assert.Throws<ArgumentException>(
+            () => new OpenApiScalarSchemaEvidence(OpenApiScalarSchemaValueKind.Integer, minimum: 2, maximum: 1));
+
+        Type[] elements = [typeof(int), typeof(string)];
+        var evidence = new OpenApiPositionalArraySchemaEvidence(elements);
+        elements[0] = typeof(bool);
+
+        Assert.Equal([typeof(int), typeof(string)], evidence.ElementTypes);
+    }
+
+    [Fact]
     public async Task JsonArrayTupleConverter_PreservesElementReferencesAndNullableValueSchemas()
     {
         var services = new ServiceCollection();
@@ -361,6 +401,177 @@ public partial class OpenApiSchemaServiceTests
         Assert.Equal("String", prefixItems[1]!["description"]!.GetValue<string>());
     }
 
+    [Theory]
+    [InlineData(OpenApiSpecVersion.OpenApi3_0)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_1)]
+    [InlineData(OpenApiSpecVersion.OpenApi3_2)]
+    public async Task SchemaEvidenceProvider_EmitsConverterBackedScalarEvidence(OpenApiSpecVersion version)
+    {
+        var provider = new StrictIdSchemaEvidenceProvider();
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new StrictIdConverter()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            OpenApiVersion = version,
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+        };
+        options.AddSchemaEvidenceProvider(provider);
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var schema = GetResponseSchema(document);
+
+        Assert.Equal(JsonSchemaType.String, schema.Type);
+        Assert.Equal("strict-id", schema.Format);
+        Assert.Equal("^[A-Z]{3}-[0-9]{3}$", schema.Pattern);
+        Assert.Contains(provider.Contexts, context =>
+            context.Type == typeof(StrictId) &&
+            context.EffectiveType == typeof(StrictId) &&
+            context.TypeInfo.Type == typeof(StrictId) &&
+            context.Converter is StrictIdConverter &&
+            context.Purpose == OpenApiSchemaEvidencePurpose.Output);
+    }
+
+    [Theory]
+    [InlineData(OpenApiScalarFormatPolicy.Conventional, "strict-id")]
+    [InlineData(OpenApiScalarFormatPolicy.CompatibleOnly, null)]
+    [InlineData(OpenApiScalarFormatPolicy.None, null)]
+    public async Task SchemaEvidenceProvider_FormatObeysScalarFormatPolicy(
+        OpenApiScalarFormatPolicy policy,
+        string? expectedFormat)
+    {
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new StrictIdConverter()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            ScalarFormatPolicy = policy,
+        };
+        options.AddSchemaEvidenceProvider(new StrictIdSchemaEvidenceProvider());
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var schema = GetResponseSchema(document);
+
+        Assert.Equal(expectedFormat, schema.Format);
+        Assert.Equal("^[A-Z]{3}-[0-9]{3}$", schema.Pattern);
+    }
+
+    [Fact]
+    public async Task SchemaEvidenceProvider_FormatCallbackReceivesPolicyFilteredCandidate()
+    {
+        OpenApiScalarFormatContext? callbackContext = null;
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new StrictIdConverter()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+            ScalarFormatPolicy = OpenApiScalarFormatPolicy.CompatibleOnly,
+            CreateScalarFormat = context =>
+            {
+                if (context.EffectiveType == typeof(StrictId))
+                {
+                    callbackContext = context;
+                    return "application-strict-id";
+                }
+
+                return context.DefaultFormat;
+            },
+        };
+        options.AddSchemaEvidenceProvider(new StrictIdSchemaEvidenceProvider());
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var schema = GetResponseSchema(document);
+
+        Assert.NotNull(callbackContext);
+        Assert.Null(callbackContext.DefaultFormat);
+        Assert.Equal("application-strict-id", schema.Format);
+        Assert.Equal("^[A-Z]{3}-[0-9]{3}$", schema.Pattern);
+    }
+
+    [Fact]
+    public async Task SchemaEvidenceProvider_WithoutEnforcingConverterIsInert()
+    {
+        var provider = new StrictIdSchemaEvidenceProvider();
+        var builder = CreateBuilder();
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+        };
+        options.AddSchemaEvidenceProvider(provider);
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var schema = GetResponseSchema(document);
+
+        Assert.Equal(JsonSchemaType.Object, schema.Type);
+        Assert.Null(schema.Pattern);
+    }
+
+    [Fact]
+    public async Task SchemaEvidenceProviders_RunInRegistrationOrderAndRejectMultipleClaims()
+    {
+        var calls = new List<string>();
+        var services = new ServiceCollection();
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new StrictIdConverter()));
+        var builder = CreateBuilder(services);
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+        };
+        options.AddSchemaEvidenceProvider(new RecordingSchemaEvidenceProvider("first", calls));
+        options.AddSchemaEvidenceProvider(new RecordingSchemaEvidenceProvider("second", calls));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => VerifyOpenApiDocument(builder, options, _ => { }));
+
+        Assert.Equal(["first", "second"], calls.Take(2));
+        Assert.Contains(typeof(RecordingSchemaEvidenceProvider).FullName!, exception.Message);
+    }
+
+    [Fact]
+    public void SchemaEvidenceProvider_SameInstanceIsEvaluatedOnce()
+    {
+        var serializerOptions = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        serializerOptions.Converters.Add(new StrictIdConverter());
+        var typeInfo = serializerOptions.GetTypeInfo(typeof(StrictId));
+        var provider = new StrictIdSchemaEvidenceProvider();
+
+        var evidence = OpenApiSchemaEvidenceResolver.Resolve(
+            typeInfo,
+            typeInfo.Converter,
+            InferredSchemaPurpose.Output,
+            [provider, provider]);
+
+        Assert.IsType<OpenApiScalarSchemaEvidence>(evidence);
+        Assert.Single(provider.Contexts);
+    }
+
+    [Fact]
+    public async Task SchemaEvidenceProviderExceptionsPropagate()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/", () => new StrictId("ABC-123"));
+        var options = new OpenApiOptions
+        {
+            SchemaGenerationMode = OpenApiSchemaGenerationMode.Inferred,
+        };
+        options.AddSchemaEvidenceProvider(new ThrowingSchemaEvidenceProvider());
+
+        var exception = await Assert.ThrowsAsync<SchemaEvidenceProviderException>(
+            () => VerifyOpenApiDocument(builder, options, _ => { }));
+
+        Assert.Equal("Provider failure.", exception.Message);
+    }
+
     private static async Task<OpenApiDocument> CreateTupleDocumentAsync(
         OpenApiSpecVersion version,
         OpenApiSchemaGenerationMode schemaGenerationMode = OpenApiSchemaGenerationMode.Legacy)
@@ -451,6 +662,57 @@ public partial class OpenApiSchemaServiceTests
 
         public Tuple<int, string>? Optional { get; set; }
     }
+
+    private readonly record struct StrictId(string Value);
+
+    private sealed class StrictIdConverter : JsonConverter<StrictId>
+    {
+        public override StrictId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => new(reader.GetString()!);
+
+        public override void Write(Utf8JsonWriter writer, StrictId value, JsonSerializerOptions options)
+            => writer.WriteStringValue(value.Value);
+    }
+
+    private sealed class StrictIdSchemaEvidenceProvider : IOpenApiSchemaEvidenceProvider
+    {
+        public List<OpenApiSchemaEvidenceContext> Contexts { get; } = [];
+
+        public OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+        {
+            Contexts.Add(context);
+            return context.EffectiveType == typeof(StrictId) && context.Converter is StrictIdConverter
+                ? new OpenApiScalarSchemaEvidence(
+                    OpenApiScalarSchemaValueKind.String,
+                    "strict-id",
+                    "^[A-Z]{3}-[0-9]{3}$")
+                : null;
+        }
+    }
+
+    private sealed class RecordingSchemaEvidenceProvider(string name, List<string> calls) : IOpenApiSchemaEvidenceProvider
+    {
+        public OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+        {
+            if (context.EffectiveType != typeof(StrictId))
+            {
+                return null;
+            }
+
+            calls.Add(name);
+            return new OpenApiScalarSchemaEvidence(OpenApiScalarSchemaValueKind.String);
+        }
+    }
+
+    private sealed class ThrowingSchemaEvidenceProvider : IOpenApiSchemaEvidenceProvider
+    {
+        public OpenApiSchemaEvidence? GetSchemaEvidence(OpenApiSchemaEvidenceContext context)
+            => context.EffectiveType == typeof(StrictId)
+                ? throw new SchemaEvidenceProviderException("Provider failure.")
+                : null;
+    }
+
+    private sealed class SchemaEvidenceProviderException(string message) : Exception(message);
 
     [JsonSerializable(typeof((int, string)))]
     private sealed partial class TupleJsonSerializerContext : JsonSerializerContext;

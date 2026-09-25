@@ -199,4 +199,61 @@
   <data name="PositionalTupleElementsMismatchGeneratedSchema" xml:space="preserve">
     <value>The positional tuple elements for '{0}' do not match the generated schema.</value>
   </data>
+  <data name="SchemaEvidencePatternRequiresString" xml:space="preserve">
+    <value>A schema evidence pattern can only be specified for a string value.</value>
+  </data>
+  <data name="SchemaEvidenceBoundsRequireNumber" xml:space="preserve">
+    <value>Schema evidence bounds can only be specified for an integer or number value.</value>
+  </data>
+  <data name="SchemaEvidenceMinimumExceedsMaximum" xml:space="preserve">
+    <value>The schema evidence minimum cannot exceed its maximum.</value>
+  </data>
+  <data name="SchemaEvidenceElementTypesCannotContainNull" xml:space="preserve">
+    <value>Schema evidence element types cannot contain null.</value>
+  </data>
+  <data name="ConflictingSchemaEvidenceProviders" xml:space="preserve">
+    <value>Multiple schema evidence providers recognized the runtime contract for '{0}': {1}.</value>
+  </data>
+  <data name="ValidatedJsonSchemaCannotBeEmpty" xml:space="preserve">
+    <value>Validated JSON Schema evidence cannot be empty.</value>
+  </data>
+  <data name="ValidatedJsonSchemaMustBeSchema" xml:space="preserve">
+    <value>Validated JSON Schema evidence must be a JSON object or boolean schema.</value>
+  </data>
+  <data name="ValidatedJsonSchemaPurposeMustBeDirectional" xml:space="preserve">
+    <value>Validated JSON Schema endpoint enforcement must specify input or output purpose.</value>
+  </data>
+  <data name="ValidatedJsonSchemaPayloadLimitMustBePositive" xml:space="preserve">
+    <value>The validated JSON Schema payload limit must be greater than zero.</value>
+  </data>
+  <data name="ValidatedJsonSchemaRequestDelegateRequired" xml:space="preserve">
+    <value>Validated JSON Schema enforcement requires an endpoint request delegate.</value>
+  </data>
+  <data name="ValidatedJsonSchemaLoggerFactoryRequired" xml:space="preserve">
+    <value>Validated JSON Schema enforcement requires an ILoggerFactory service.</value>
+  </data>
+  <data name="ValidatedJsonSchemaResponseInvalid" xml:space="preserve">
+    <value>The serialized response did not satisfy its validated JSON Schema.</value>
+  </data>
+  <data name="ValidatedJsonSchemaResponseStarted" xml:space="preserve">
+    <value>The response started before validated JSON Schema enforcement completed.</value>
+  </data>
+  <data name="ValidatedJsonSchemaDialectRequired" xml:space="preserve">
+    <value>The JSON Schema '$schema' value must be '{0}'.</value>
+  </data>
+  <data name="ValidatedJsonSchemaContentTypeCannotBeEmpty" xml:space="preserve">
+    <value>The validated JSON Schema content type cannot be empty.</value>
+  </data>
+  <data name="ValidatedJsonSchemaFactoryReturnedNull" xml:space="preserve">
+    <value>The validated JSON Schema validator factory returned null.</value>
+  </data>
+  <data name="ConflictingValidatedJsonSchemaRegistrations" xml:space="preserve">
+    <value>Multiple validated JSON Schema registrations select the same endpoint contract: '{0}'.</value>
+  </data>
+  <data name="ValidatedJsonSchemaExternalReferenceNotSupported" xml:space="preserve">
+    <value>The JSON Schema reference '{0}' is not a resolvable local JSON Pointer.</value>
+  </data>
+  <data name="ValidatedJsonSchemaPayloadTooLarge" xml:space="preserve">
+    <value>The JSON payload exceeded the configured validated schema limit of {0} bytes.</value>
+  </data>
 </root>

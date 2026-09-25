@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -212,8 +214,31 @@ internal static class JsonNodeSchemaExtensions
 
         if (decision.NumericBounds is { } numericBounds)
         {
-            objectSchema[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(numericBounds.Minimum);
-            objectSchema[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(numericBounds.Maximum);
+            if (numericBounds.Minimum.Length > 0)
+            {
+                objectSchema[OpenApiSchemaKeywords.MinimumKeyword] = JsonNode.Parse(numericBounds.Minimum);
+            }
+            if (numericBounds.Maximum.Length > 0)
+            {
+                objectSchema[OpenApiSchemaKeywords.MaximumKeyword] = JsonNode.Parse(numericBounds.Maximum);
+            }
+        }
+
+        if (decision.ValueKind is { } valueKind)
+        {
+            objectSchema[OpenApiSchemaKeywords.TypeKeyword] = valueKind switch
+            {
+                OpenApiScalarSchemaValueKind.Boolean => "boolean",
+                OpenApiScalarSchemaValueKind.String => "string",
+                OpenApiScalarSchemaValueKind.Integer => "integer",
+                OpenApiScalarSchemaValueKind.Number => "number",
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        if (decision.Pattern is not null)
+        {
+            objectSchema[OpenApiSchemaKeywords.PatternKeyword] = decision.Pattern;
         }
 
         if (decision.ContentEncoding is not null)

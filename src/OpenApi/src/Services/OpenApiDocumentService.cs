@@ -543,7 +543,15 @@ internal sealed class OpenApiDocumentService(
                             openApiVersion,
                             InferredSchemaPurpose.Output,
                             null,
-                            cancellationToken);
+                            cancellationToken,
+#pragma warning disable ASP0040 // The framework implements validated schema evidence.
+                            validatedSchema: GetValidatedSchemaRegistration(
+                                apiDescription,
+                                OpenApiSchemaEvidencePurpose.Output,
+                                responseType,
+                                apiResponseType.StatusCode,
+                                contentType));
+#pragma warning restore ASP0040
                         schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
                             ? schema.CreateOneOfNullableWrapper()
                             : schema;
@@ -791,7 +799,7 @@ internal sealed class OpenApiDocumentService(
         // Only one parameter can be bound from the body in each request.
         if (description.TryGetBodyParameter(out var bodyParameter))
         {
-            return await GetJsonRequestBody(document, description.SupportedRequestFormats, bodyParameter, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
+            return await GetJsonRequestBody(document, description, description.SupportedRequestFormats, bodyParameter, scopedServiceProvider, schemaTransformers, openApiVersion, cancellationToken);
         }
         // If there are no body parameters, check for form parameters.
         // Note: Form parameters and body parameters cannot exist simultaneously
@@ -1019,6 +1027,7 @@ internal sealed class OpenApiDocumentService(
 
     private async Task<OpenApiRequestBody> GetJsonRequestBody(
         OpenApiDocument document,
+        ApiDescription description,
         IList<ApiRequestFormat> supportedRequestFormats,
         ApiParameterDescription bodyParameter,
         IServiceProvider scopedServiceProvider,
@@ -1066,7 +1075,15 @@ internal sealed class OpenApiDocumentService(
                 openApiVersion,
                 InferredSchemaPurpose.Input,
                 bodyParameter,
-                cancellationToken);
+                cancellationToken,
+#pragma warning disable ASP0040 // The framework implements validated schema evidence.
+                validatedSchema: GetValidatedSchemaRegistration(
+                    description,
+                    OpenApiSchemaEvidencePurpose.Input,
+                    bodyParameter.Type,
+                    statusCode: null,
+                    contentType));
+#pragma warning restore ASP0040
             schema = bodyParameter.ShouldApplyNullableRequestSchema()
                 ? schema.CreateOneOfNullableWrapper()
                 : schema;
@@ -1075,6 +1092,43 @@ internal sealed class OpenApiDocumentService(
 
         return requestBody;
     }
+
+#pragma warning disable ASP0040 // The framework consumes validated schema endpoint metadata.
+    private static OpenApiValidatedJsonSchemaRegistration? GetValidatedSchemaRegistration(
+        ApiDescription description,
+        OpenApiSchemaEvidencePurpose purpose,
+        Type type,
+        int? statusCode,
+        string contentType)
+    {
+        OpenApiValidatedJsonSchemaRegistration? result = null;
+        foreach (var registration in description.ActionDescriptor.EndpointMetadata
+            .OfType<OpenApiValidatedJsonSchemaRegistration>())
+        {
+            if (registration.Purpose != purpose ||
+                registration.Type != type ||
+                purpose == OpenApiSchemaEvidencePurpose.Output &&
+                    registration.Options.ResponseStatusCode is { } configuredStatus &&
+                    configuredStatus != statusCode ||
+                !ContentTypeMatches(contentType, registration.Options.ContentType))
+            {
+                continue;
+            }
+
+            if (result is not null)
+            {
+                throw new InvalidOperationException(Resources.FormatConflictingValidatedJsonSchemaRegistrations(
+                    $"{purpose}:{statusCode}:{contentType}"));
+            }
+            result = registration;
+        }
+        return result;
+    }
+
+    private static bool ContentTypeMatches(string actual, string configured)
+        => actual.AsSpan().Trim().StartsWith(configured, StringComparison.OrdinalIgnoreCase) &&
+            (actual.Length == configured.Length || actual[configured.Length] == ';');
+#pragma warning restore ASP0040
 
     /// <remarks>
     /// This method is used to determine the target type for a given parameter. The target type

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0040 // The framework implements this experimental contract.
+
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
@@ -171,8 +173,10 @@ internal static class InferredSchemaShapeBuilder
     public static InferredSchemaDocument Build(
         JsonSerializerOptions serializerOptions,
         Type rootType,
-        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral)
+        InferredSchemaPurpose purpose = InferredSchemaPurpose.Neutral,
+        IReadOnlyList<IOpenApiSchemaEvidenceProvider>? schemaEvidenceProviders = null)
     {
+        schemaEvidenceProviders ??= Array.Empty<IOpenApiSchemaEvidenceProvider>();
         var root = CreateTypeUse(rootType);
         var pending = new Queue<Type>();
         var discovered = new HashSet<Type>();
@@ -184,10 +188,15 @@ internal static class InferredSchemaShapeBuilder
             var typeInfo = serializerOptions.GetTypeInfo(type);
             var converterType = typeInfo.Converter.GetType();
             var hasCustomConverter = converterType.Assembly != typeof(JsonSerializerOptions).Assembly;
+            var schemaEvidence = OpenApiSchemaEvidenceResolver.Resolve(
+                typeInfo,
+                typeInfo.Converter,
+                purpose,
+                schemaEvidenceProviders);
             var (properties, extensionDataProperty) = CreateProperties(typeInfo, purpose);
             var derivedTypes = CreateDerivedTypes(typeInfo);
             var unionCases = CreateUnionCases(typeInfo);
-            var tupleElements = CreateTupleElements(typeInfo);
+            var tupleElements = CreateTupleElements(schemaEvidence);
             InferredSchemaTypeUse? elementType = typeInfo.ElementType is { } element ? CreateTypeUse(element) : null;
             var additionalPropertiesType = typeInfo.Kind == JsonTypeInfoKind.Dictionary
                 ? elementType
@@ -198,12 +207,12 @@ internal static class InferredSchemaShapeBuilder
 
             shapes.Add(new(
                 new(type),
-                GetShapeKind(typeInfo),
+                GetShapeKind(typeInfo, schemaEvidence),
                 converterType,
                 hasCustomConverter,
                 typeInfo.NumberHandling ?? serializerOptions.NumberHandling,
                 InferredJsonFiniteDomainBuilder.Build(typeInfo, hasCustomConverter),
-                InferredScalarContractFactBuilder.Build(typeInfo),
+                InferredScalarContractFactBuilder.Build(typeInfo, schemaEvidence: schemaEvidence),
                 typeInfo.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow,
                 typeInfo.PolymorphismOptions?.TypeDiscriminatorPropertyName,
                 baseType,
@@ -353,22 +362,25 @@ internal static class InferredSchemaShapeBuilder
         return Array.AsReadOnly(unionCases);
     }
 
-    private static IReadOnlyList<InferredSchemaTypeUse> CreateTupleElements(JsonTypeInfo typeInfo)
+    private static IReadOnlyList<InferredSchemaTypeUse> CreateTupleElements(OpenApiSchemaEvidence? schemaEvidence)
     {
-        if (typeInfo.Converter is not IJsonArrayTupleConverter tupleConverter)
+        if (schemaEvidence is not OpenApiPositionalArraySchemaEvidence positionalArray)
         {
             return Array.Empty<InferredSchemaTypeUse>();
         }
 
         return Array.AsReadOnly(
-            tupleConverter.Contract.ElementTypes
+            positionalArray.ElementTypes
                 .Select(CreateTypeUse)
                 .ToArray());
     }
 
-    private static InferredSchemaShapeKind GetShapeKind(JsonTypeInfo typeInfo) => typeInfo.Kind switch
+    private static InferredSchemaShapeKind GetShapeKind(
+        JsonTypeInfo typeInfo,
+        OpenApiSchemaEvidence? schemaEvidence) => typeInfo.Kind switch
     {
-        _ when typeInfo.Converter is IJsonArrayTupleConverter => InferredSchemaShapeKind.Tuple,
+        _ when schemaEvidence is OpenApiPositionalArraySchemaEvidence => InferredSchemaShapeKind.Tuple,
+        _ when schemaEvidence is OpenApiScalarSchemaEvidence => InferredSchemaShapeKind.Scalar,
         JsonTypeInfoKind.Object => InferredSchemaShapeKind.Object,
         JsonTypeInfoKind.Enumerable => InferredSchemaShapeKind.Collection,
         JsonTypeInfoKind.Dictionary => InferredSchemaShapeKind.Dictionary,

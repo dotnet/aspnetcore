@@ -10,6 +10,10 @@ Supporting documents:
 
 Add an opt-in, experimental OpenAPI schema-generation mode that derives the strongest stable schema justified by ASP.NET Core's effective System.Text.Json and Minimal API parameter-binding contracts. Keep the existing generation behavior as the default while gathering feedback on proof-based composition, deterministic identities, directional request/response schemas, converter-proven scalar constraints, and binder-aware parameter schemas.
 
+The primary feature requires no new schema annotations, model style, custom converters, or provider registration. It improves documents for the same application code developers write today by interpreting the effective serializer and binding contracts more faithfully. An optional schema-evidence provider tier exists only for third-party runtime mechanisms whose enforced wire contract would otherwise be opaque; it strengthens specific proven facts and is neither the default inference architecture nor a prerequisite for inferred mode.
+
+A further optional validated-schema tier supports applications that already possess a self-contained JSON Schema and a matching validator. It is separately reviewable: endpoint registration couples immutable schema identity, compile-once validation, and bounded request/response enforcement. It does not add third-party dependencies to ASP.NET Core, replace zero-authoring inference, or turn transformers into runtime validators.
+
 ## Motivation and goals
 
 ASP.NET Core's current OpenAPI schema path provides broad type coverage by exporting a System.Text.Json schema and translating it into OpenAPI. That is a useful baseline, but it cannot always represent relationships or distinctions that matter to validators and generated clients:
@@ -42,6 +46,7 @@ This work originally began as a possible Corvus.Json capability that would sit o
 
 - An experimental `Legacy`/`Inferred` schema-generation mode, with Legacy remaining the default.
 - Immutable, cycle-safe facts derived from effective `JsonTypeInfo`, converters, serializer options, endpoint metadata, and recognized framework provenance.
+- An optional public schema-evidence provider seam for strict runtime-enforced scalar and fixed positional-array facts that ordinary metadata cannot prove.
 - Typed decisions for:
   - lossless inheritance composition;
   - `oneOf` versus `anyOf`;

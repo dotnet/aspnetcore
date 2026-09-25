@@ -257,7 +257,7 @@ internal sealed partial class OpenApiJsonSchema
                 if (prefixItems is not null)
                 {
                     schema.Metadata ??= new Dictionary<string, object>();
-                    schema.Metadata[OpenApiConstants.SchemaTuplePrefixItems] = prefixItems;
+                    schema.Metadata[OpenApiConstants.SchemaPrefixItems] = prefixItems;
                 }
                 break;
             case OpenApiSchemaKeywords.DescriptionKeyword:
