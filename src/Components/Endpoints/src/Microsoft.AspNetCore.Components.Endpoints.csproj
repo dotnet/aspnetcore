@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);COMPONENTS;COMPONENTS_ENDPOINTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RendererSynchronizationContext.cs" LinkBase="Rendering" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RendererSynchronizationContextDispatcher.cs" LinkBase="Rendering" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
