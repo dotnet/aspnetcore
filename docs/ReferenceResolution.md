@@ -25,7 +25,7 @@ As a minor point, the current system also makes our project files somewhat less 
 * Otherwise, add the package to [eng/tools/DependabotDiscovery/DependabotDiscovery.csproj](/eng/tools/DependabotDiscovery/DependabotDiscovery.csproj) so Dependabot can find and update it. See the README next to that file for details.
 * Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
-* Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) when adding new projects
+* Follow the project checklist below when adding, moving, or removing projects.
 
 ## Important files
 
@@ -36,13 +36,21 @@ As a minor point, the current system also makes our project files somewhat less 
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
   [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](global.json).
 
-## Example: adding a new project
+## Adding, moving, or removing a project
 
-Steps for adding a new project to this repo.
+Adding, moving, or removing a project changes generated repository metadata and may affect multiple solution filters.
+Complete this checklist for every structural project change:
 
-1. Create the .csproj
-2. Run `eng/scripts/GenerateProjectList.ps1`
-3. Add new project to AspNetCore.sln and any relevant `*.slnf` files
+1. Create, move, or remove the project files.
+2. Update `AspNetCore.slnx` and every `*.slnf` that references the project. A project referenced by a solution
+   filter must also exist in `AspNetCore.slnx`.
+3. Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) and review all generated
+   `eng/*.props` changes, including ordering and grouping changes.
+4. Run project-list generation a second time and confirm that it produces no further changes.
+5. For a move or removal, run `git grep -n -- '<old-project-path>'` and resolve every remaining tracked reference
+   that is not intentionally historical documentation.
+6. Run `eng/scripts/CodeCheck.ps1`. This checks that solution filters reference only projects in
+   `AspNetCore.slnx` and reruns project-list generation to detect stale generated metadata.
 
 ## Example: adding a new dependency
 

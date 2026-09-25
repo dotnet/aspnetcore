@@ -9,6 +9,31 @@ You MUST follow this workflow when investigating or reviewing behavioral issues,
 
 The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
 
+### Structural relocations
+
+A pure source, project, or package relocation with intentionally unchanged runtime behavior does not require a new sample scenario or new E2E coverage. Validate the structure instead:
+
+- Run the existing tests and builds affected by the relocated files.
+- Exercise direct source-consumption paths so a successful package build cannot hide a stale source path.
+- Validate generated project metadata, NuGet and npm package outputs, and every affected area or repository build entry point.
+- Follow the [project relocation checklist](../../docs/ReferenceResolution.md#adding-moving-or-removing-a-project) for added, moved, or removed projects.
+
+If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-to-E2E workflow in this guide.
+
+When moving a JavaScript workspace:
+
+1. Update its path in the root `package.json` and update all workspace-to-workspace references.
+2. Regenerate `package-lock.json`. Review the diff and do not remove unrelated transitive or optional entries merely
+   because a newer local npm version accepts the resulting lockfile.
+3. Update every path-specific input and output for the workspace in `eng/Npm.Workspace.nodeproj`.
+4. Run `npm ci --prefer-online` with the Node/npm toolchain used or supported by
+   [the package-lock validation workflow](../../.github/workflows/validate-npm-package-lock-json.yml), not only a
+   newer npm version installed on the developer machine.
+5. Build the affected workspace through its normal entry point and build each direct source consumer.
+6. For every shipping package produced by the workspace, run `npm pack --dry-run --workspace <workspace-name>` and
+   inspect the included files. Also run the repository `Pack` target for `eng/Npm.Workspace.nodeproj` when the move
+   affects tracked package production.
+
 For behavioral investigations and reviews:
 - Create or identify a scenario at the smallest faithful validation boundary.
 - Before treating a combination of behaviors as a product defect, determine when each feature was introduced and identify any relevant compatibility switches. Use authoritative sources to verify that the configured switch values support the newer feature; compatibility switches preserve older behavior but do not guarantee that newer features work with that behavior. If support is unclear, report the uncertainty and escalate it. Report confirmed unsupported combinations explicitly instead of proposing product changes to make them work.
