@@ -448,20 +448,57 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
     {
         var first = sequence.FirstSpan;
 
-        // A TLS record never exceeds MaxCipherRecord, so a first segment at least that large
-        // already contains a whole record and can be handed to the session with zero copies.
-        if (sequence.IsSingleSegment || first.Length >= MaxCipherRecord)
+        if (sequence.IsSingleSegment)
         {
             return first;
         }
 
-        // Otherwise linearize exactly one record's worth - never the whole backlog.
+        // The session needs a whole record in one contiguous span - handed a partial one it
+        // consumes nothing and asks for more, so it cannot be fed segment by segment. But it
+        // does not need the *whole* backlog contiguous: it takes as many complete records as
+        // the span holds and reports how much it consumed. So whenever the first segment
+        // already contains a complete record, hand it over untouched and skip the copy. With
+        // 4 KB transport segments and typical record sizes that is the common case; testing
+        // first.Length against a full 16 KB record instead would copy almost every time.
+        if (first.Length >= RecordHeaderSize)
+        {
+            var frameLength = RecordHeaderSize + ((first[3] << 8) | first[4]);
+            if (first.Length >= frameLength)
+            {
+                return first;
+            }
+        }
+
+        // Only a record that genuinely straddles a segment boundary needs linearizing, and
+        // only one record's worth of it.
         var slice = sequence.Length > MaxCipherRecord ? sequence.Slice(0, MaxCipherRecord) : sequence;
         var length = (int)slice.Length;
 
         _scratch ??= ArrayPool<byte>.Shared.Rent(MaxCipherRecord);
         slice.CopyTo(_scratch);
         return _scratch.AsSpan(0, length);
+    }
+
+    /// <summary>
+    /// Returns the linearization buffer used by <see cref="GetContiguous"/>.
+    ///
+    /// <para>That buffer exists only to bridge the transport pipe, which hands out a possibly
+    /// multi-segment <see cref="ReadOnlySequence{T}"/>, to the session, which needs a whole
+    /// record in one contiguous span. It holds no TLS state. It is kept between calls so a busy
+    /// connection does not pay a pool round-trip per read, but an idle connection has no reason
+    /// to hold 32 KB of pooled array for the rest of its life - which is exactly what the reader
+    /// and writer buffers already avoid.</para>
+    ///
+    /// <para>Safe at the point it is called: nothing holds a span into it once the reader has no
+    /// buffered plaintext, because it is only live for the duration of a single session call.</para>
+    /// </summary>
+    private void ReleaseScratch()
+    {
+        if (_scratch is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_scratch);
+            _scratch = null;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -487,11 +524,7 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
         _input.ReleaseBuffers();
         _output.ReleaseBuffers();
 
-        if (_scratch is not null)
-        {
-            ArrayPool<byte>.Shared.Return(_scratch);
-            _scratch = null;
-        }
+        ReleaseScratch();
 
         _session.Dispose();
     }
@@ -619,10 +652,11 @@ internal sealed class TlsSessionDuplexPipe : IDuplexPipe, IAsyncDisposable
                 _end = 0;
                 _examined = 0;
 
-                // Nothing buffered: hand the array back rather than holding up to a full
+                // Nothing buffered: hand the arrays back rather than holding up to a full
                 // record for the life of a keep-alive connection. Renting again on the next
                 // read costs a thread-local pool hit.
                 ReleaseBuffers();
+                owner.ReleaseScratch();
             }
             else if (_examined < _start)
             {
