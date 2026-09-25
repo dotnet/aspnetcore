@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Manage your external logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
+    var hasPassword = (bool)(ViewData["ExternalLogins.HasPassword"] ?? false);
+    var isReauthenticated = (bool)(ViewData["ExternalLogins.IsReauthenticated"] ?? false);
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />
@@ -40,14 +42,47 @@
 {
     <h4>Add another service to log in.</h4>
     <hr />
-    <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
-        <div id="socialLoginList">
-            <p>
-                @foreach (var provider in Model.OtherLogins)
-                {
-                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                }
-            </p>
-        </div>
-    </form>
+    @if (!isReauthenticated)
+    {
+        <h5>Confirm it's you</h5>
+        <p class="text-info">Adding an external login creates a new way to sign in to your account.</p>
+        @if (hasPassword)
+        {
+            <form id="confirm-password-form" asp-page-handler="LinkLogin" method="post">
+                <input type="hidden" name="reauthenticate" value="password" />
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" class="form-control" name="password" type="password" autocomplete="current-password" aria-required="true" />
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm password</button>
+            </form>
+        }
+        @if (Model.CurrentLogins?.Count > 0)
+        {
+            <form id="confirm-external-login-form" asp-page-handler="LinkLogin" method="post">
+                <input type="hidden" name="reauthenticate" value="external" />
+                <div class="mt-3">
+                    @foreach (var login in Model.CurrentLogins)
+                    {
+                        <button type="submit" class="btn btn-primary" name="provider" value="@login.LoginProvider" title="Confirm using your @login.ProviderDisplayName account">
+                            Confirm with @login.ProviderDisplayName
+                        </button>
+                    }
+                </div>
+            </form>
+        }
+    }
+    @if (isReauthenticated)
+    {
+        <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
+            <div id="socialLoginList">
+                <p>
+                    @foreach (var provider in Model.OtherLogins)
+                    {
+                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    }
+                </p>
+            </div>
+        </form>
+    }
 }
