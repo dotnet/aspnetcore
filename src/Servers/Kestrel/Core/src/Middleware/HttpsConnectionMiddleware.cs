@@ -364,17 +364,8 @@ internal sealed class HttpsConnectionMiddleware
     /// record layer. The feature is built after the handshake here, because its values are read
     /// from the session rather than from a long-lived stream object.
     /// </summary>
-    private static int _sansIoMarker;
-
     private async Task OnConnectionSansIoAsync(ConnectionContext context)
     {
-        // TEMPORARY verification marker - revert before PR. Proves from the benchmark log
-        // that the sans-IO layer actually served, rather than silently falling back.
-        if (Interlocked.CompareExchange(ref _sansIoMarker, 1, 0) == 0)
-        {
-            Console.WriteLine("[sansio-marker] sans-IO TLS layer is serving connections");
-        }
-
         var metricsTagsFeature = context.Features.Get<IConnectionMetricsTagsFeature>();
         var metricsContext = context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
         var startTimestamp = Stopwatch.GetTimestamp();
