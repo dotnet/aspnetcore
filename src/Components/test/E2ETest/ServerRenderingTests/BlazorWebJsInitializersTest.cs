@@ -32,7 +32,8 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
     {
         if (webassembly)
         {
-            Browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/");
+            Browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/?suppress-autostart");
+            Browser.Exists(By.Id("call-blazor-start"));
             ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
         }
 
