@@ -4,6 +4,7 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { showErrorNotification } from '../BootErrors';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -193,7 +194,10 @@ function onDocumentSubmit(event: SubmitEvent) {
       }
     }
 
-    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions).catch(error => {
+      console.error(error);
+      showErrorNotification();
+    });
   }
 }
 
@@ -211,8 +215,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const abortController = new AbortController();
+  currentEnhancedNavigationAbortController = abortController;
+  const abortSignal = abortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -222,11 +227,32 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       'accept': acceptHeader,
     },
   }, fetchOptions));
+  const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
+  let response: Response;
+  try {
+    response = await responsePromise;
+  } catch (ex) {
+    if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
+      return;
+    }
+
+    if (isGetRequest) {
+      retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+      return;
+    }
+
+    if (currentEnhancedNavigationAbortController === abortController) {
+      performingEnhancedPageLoad = false;
+      navigationEnhancementCallbacks.enhancedNavigationCompleted();
+    }
+
+    throw ex;
+  }
+
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(
-    responsePromise, abortSignal,
+    response, abortSignal,
     (response, initialContent) => {
-      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
@@ -366,12 +392,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   }
 }
 
-async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
-  let response: Response;
-
+async function getResponsePartsWithFraming(response: Response, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
   try {
-    response = await responsePromise;
-
     if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
       onInitialDocument(response, '');
       return;
@@ -467,3 +489,4 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }
+
