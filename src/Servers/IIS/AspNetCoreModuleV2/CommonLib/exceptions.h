@@ -9,6 +9,7 @@
 #include "debugutil.h"
 #include "StringHelpers.h"
 #include "InvalidOperationException.h"
+#include "ConfigurationLoadException.h"
 #include "ntassert.h"
 #include "NonCopyable.h"
 #include "EventTracing.h"
@@ -197,6 +198,11 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
         ReportException(LOCATION_CALL exception);
         return exception.GetResult();
     }
+    catch (const ConfigurationLoadException& exception)
+    {
+        ReportException(LOCATION_CALL exception);
+        return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
+    }
     catch (const InvalidOperationException& exception)
     {
         ReportException(LOCATION_CALL exception);
@@ -223,6 +229,10 @@ __declspec(noinline) inline std::wstring CaughtExceptionToString()
     catch (const InvalidOperationException& exception)
     {
         return exception.as_wstring();
+    }
+    catch (const ConfigurationLoadException& exception)
+    {
+        return exception.get_message();
     }
     catch (const std::system_error& exception)
     {
