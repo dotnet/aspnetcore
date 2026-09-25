@@ -2,6 +2,14 @@
   "description": "Reviewed presentation expectations with additive merge discussion coverage. Synthetic cases are not live pull requests. Legacy raw and sanitized selected ReadyToMerge rows now require verification; their entire original inventory is unassessed. Merge budgets reuse the existing discussion candidate limit independently and the caller's ready-to-merge display cap. Original source artifacts and historical hashes below remain unchanged. Expected bodies use LF with no final newline; tests account only for checkout CRLF transport.",
   "attemptTimestamp": "2026-09-10T20:04:56.0000000Z",
   "queueSnapshot": "2026-09-03T18:00:00.0000000Z",
+  "snapshotFixture": {
+    "repository": "dotnet/aspnetcore",
+    "serverUrl": "https://github.com",
+    "runId": "34643961191",
+    "runAttempt": "1",
+    "generatedAt": "2026-09-23T19:30:00.0000000Z",
+    "description": "Synthetic trusted Actions context, not a new hosted publication. Each appended snapshot hashes the exact UTF-8, no-BOM, LF fixture JSON written by Write-JsonFile, including its final newline. Historical input hashes below still identify the untouched source artifact, not these test serializations."
+  },
   "normalizer": "gh-aw v0.88.7 actions/setup/js/sanitize_content.cjs",
   "sanitizerBlob": "871e59cd7d135ffe782b0df5a286b3188d9b9635",
   "fixtures": {

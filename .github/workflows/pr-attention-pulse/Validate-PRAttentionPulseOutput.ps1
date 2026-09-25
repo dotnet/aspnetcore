@@ -10,6 +10,12 @@ param(
 
     [Parameter(Mandatory)][string]$SanitizerModulePath,
 
+    [string]$SnapshotContextPath,
+    [string]$ExpectedRepository,
+    [string]$ExpectedServerUrl,
+    [string]$ExpectedRunId,
+    [string]$ExpectedRunAttempt,
+
     [Parameter(Mandatory)]
     [ValidateRange(1, [int]::MaxValue)]
     [int]$ExpectedIssueNumber
@@ -23,9 +29,14 @@ try
     Import-Module -Scope Local -Force (Join-Path $PSScriptRoot "PRAttentionPulseContract.psm1")
 
     $agentOutput = Get-Content -LiteralPath $AgentOutputPath -Raw | ConvertFrom-Json -Depth 100
-    $pulse = Get-Content -LiteralPath $PulseInputPath -Raw | ConvertFrom-Json -Depth 100
+    $snapshotInput = Read-PulseSnapshotInput -InputPath $PulseInputPath
+    $snapshot = Read-PulseSnapshotContext -Path $SnapshotContextPath
+    Assert-PulseSnapshotBinding -SnapshotContext $snapshot -InputSha256 $snapshotInput.Sha256 `
+        -ExpectedRepository $ExpectedRepository -ExpectedServerUrl $ExpectedServerUrl `
+        -ExpectedRunId $ExpectedRunId -ExpectedRunAttempt $ExpectedRunAttempt
+    $pulse = $snapshotInput.Pulse
     $expectedBody = Get-Content -LiteralPath $ExpectedBodyPath -Raw
-    $renderedBody = ConvertTo-PRAttentionPulseBody -Pulse $pulse
+    $renderedBody = ConvertTo-PRAttentionPulseBody -Pulse $pulse -SnapshotContext $snapshot
     [IO.File]::WriteAllText($renderedBodyPath, $renderedBody, [Text.UTF8Encoding]::new($false))
 
     $nodeScript = @'
@@ -53,6 +64,7 @@ fs.writeFileSync(process.argv[4], output, "utf8");
     Assert-PRAttentionPulseOutput `
         -AgentOutput $agentOutput `
         -Pulse $pulse `
+        -SnapshotContext $snapshot `
         -ExpectedBody $expectedBody `
         -ExpectedIssueNumber $ExpectedIssueNumber
 }
