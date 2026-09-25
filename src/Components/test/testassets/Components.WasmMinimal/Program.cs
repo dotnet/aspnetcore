@@ -2,12 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
 using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using Components.TestServer.Services;
+using Components.WasmMinimal;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -25,6 +29,15 @@ builder.Services.AddSingleton<InteractiveServerService>();
 builder.Services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
 builder.Services.AddCascadingAuthenticationState();
+
+if (JSImports.GetQueryParam("activity-links-test-id") is { Length: > 0 } activityLinksTestId)
+{
+    var client = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+    builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing
+        .AddSource("Microsoft.AspNetCore.Components")
+        .AddProcessor(new SimpleActivityExportProcessor(
+            new ActivityLinksWebAssemblyExporter(client, activityLinksTestId))));
+}
 
 builder.Services.AddAuthenticationStateDeserialization(options =>
 {
