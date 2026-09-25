@@ -35,8 +35,34 @@
     <ButtonComponent @bind-Count="buttonComponentCount" Text="Unbound Lambda Bind-To-Component" />
 </div>
 
+<div id="null_optional_event_callback">
+    <h3>Null Optional EventCallback</h3>
+    <p id="null_optional_event_callback_render_count">Render Count: @(++nullOptionalEventCallbackRenderCount)</p>
+    <button id="toggle_null_optional_event_callback" @onclick="ToggleNullOptionalEventCallback">
+        Toggle Callback: @nullOptionalEventCallbackEnabled
+    </button>
+    <button id="null_optional_event_callback_button" @onclick="NullOptionalEventCallback">
+        Optional Callback Button
+    </button>
+</div>
+
 @code {
     int renderCount;
 
     int buttonComponentCount  = 1; // Avoid CS0649
+    int nullOptionalEventCallbackRenderCount;
+    bool nullOptionalEventCallbackEnabled;
+
+    EventCallback NullOptionalEventCallback => nullOptionalEventCallbackEnabled
+        ? EventCallback.Factory.Create(this, OnNullOptionalEventCallback)
+        : default;
+
+    void ToggleNullOptionalEventCallback()
+    {
+        nullOptionalEventCallbackEnabled = !nullOptionalEventCallbackEnabled;
+    }
+
+    void OnNullOptionalEventCallback()
+    {
+    }
 }
