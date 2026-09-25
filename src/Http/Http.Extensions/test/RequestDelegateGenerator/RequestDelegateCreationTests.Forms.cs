@@ -1019,6 +1019,70 @@ app.MapPost("/", TestAction);
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody()
+    {
+        var source = """
+app.MapGet("/", (IFormFile? file, HttpContext httpContext) =>
+{
+    httpContext.Items["file"] = file;
+    httpContext.Items["invoked"] = true;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True((bool)httpContext.Items["invoked"]);
+        Assert.Null(httpContext.Items["file"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody()
+    {
+        var source = """app.MapPost("/", (IFormFile file, HttpContext httpContext) => httpContext.Items["invoked"] = true);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["invoked"]);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileCollectionParameterAsEmptyWhenRequestHasNoBody()
+    {
+        var source = """
+app.MapGet("/", (IFormFileCollection? fileCollection, HttpContext httpContext) =>
+{
+    httpContext.Items["fileCollection"] = fileCollection;
+    httpContext.Items["invoked"] = true;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True((bool)httpContext.Items["invoked"]);
+        var fileCollection = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["fileCollection"]);
+        Assert.NotNull(fileCollection);
+        Assert.Empty(fileCollection);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task RequestDelegateValidateGeneratedFormCode()
     {
         var source = """
