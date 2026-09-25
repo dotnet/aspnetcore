@@ -181,6 +181,9 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
 
             // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
+            // By-design: we don't check whether or not the account is locked out. Locking out is a
+            // password bruteforce protection and so is irrelevant to check here.
+            // Refreshing the token doesn't force a sign-in.
             if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
                 timeProvider.GetUtcNow() >= expiresUtc ||
                 await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not TUser user)
