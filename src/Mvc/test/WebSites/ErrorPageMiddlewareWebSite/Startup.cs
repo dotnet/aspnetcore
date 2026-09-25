@@ -10,8 +10,10 @@ public class Startup
     // Set up application services
     public void ConfigureServices(IServiceCollection services)
     {
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         services.AddControllersWithViews()
             .AddRazorRuntimeCompilation();
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     public void Configure(IApplicationBuilder app)

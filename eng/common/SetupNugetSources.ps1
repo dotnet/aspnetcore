@@ -173,7 +173,7 @@ if ($disabledSources -ne $null) {
     Write-Host "Checking for any darc-int disabled package sources in the disabledPackageSources node"
     EnableMaestroInternalPackageSources -DisabledPackageSources $disabledSources -Creds $creds -Credential $feedCredential
 }
-$dotnetVersions = @('5','6','7','8','9','10')
+$dotnetVersions = @('5','6','7','8','9','10','11')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;

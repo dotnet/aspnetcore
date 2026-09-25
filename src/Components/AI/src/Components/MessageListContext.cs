@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.AI;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
@@ -13,6 +14,11 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// </summary>
 public class MessageListContext
 {
+    private static readonly JsonSerializerOptions IndentedJsonOptions = new()
+    {
+        WriteIndented = true,
+    };
+
     private readonly List<BlockRendererRegistration> _registrations = new();
 
     /// <summary>
@@ -59,6 +65,10 @@ public class MessageListContext
                 builder.CloseElement(); // content div
                 builder.CloseElement(); // bubble div
                 builder.CloseElement(); // message div
+            }
+            else if (block is FunctionApprovalBlock approval)
+            {
+                RenderApprovalBlock(builder, approval);
             }
             else if (block is not FunctionInvocationContentBlock)
             {
@@ -374,5 +384,68 @@ public class MessageListContext
         }
 
         return null;
+    }
+
+    private static void RenderApprovalBlock(
+        RenderTreeBuilder builder,
+        FunctionApprovalBlock block)
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "sc-ai-approval");
+
+        builder.OpenElement(2, "div");
+        builder.AddAttribute(3, "class", "sc-ai-approval__header");
+        builder.AddContent(4, "Approval required");
+        builder.CloseElement();
+
+        builder.OpenElement(5, "div");
+        builder.AddAttribute(6, "class", "sc-ai-approval__tool-name");
+        builder.AddContent(7, block.ToolName ?? "Unknown tool");
+        builder.CloseElement();
+
+        if (block.Arguments is { Count: > 0 })
+        {
+            builder.OpenElement(8, "pre");
+            builder.AddAttribute(9, "class", "sc-ai-approval__arguments");
+            builder.AddContent(10, JsonSerializer.Serialize(block.Arguments, IndentedJsonOptions));
+            builder.CloseElement();
+        }
+
+        if (block.Status == ApprovalStatus.Pending)
+        {
+            builder.OpenElement(11, "div");
+            builder.AddAttribute(12, "class", "sc-ai-approval__actions");
+
+            builder.OpenElement(13, "button");
+            builder.AddAttribute(14, "type", "button");
+            builder.AddAttribute(15, "class", "sc-ai-btn sc-ai-btn--primary");
+            builder.AddAttribute(16, "onclick", (Action)block.Approve);
+            builder.AddContent(17, "Approve");
+            builder.CloseElement();
+
+            builder.OpenElement(18, "button");
+            builder.AddAttribute(19, "type", "button");
+            builder.AddAttribute(20, "class", "sc-ai-btn sc-ai-btn--secondary");
+            builder.AddAttribute(21, "onclick", (Action)(() => block.Reject()));
+            builder.AddContent(22, "Reject");
+            builder.CloseElement();
+
+            builder.CloseElement();
+        }
+        else
+        {
+            var approved = block.Status == ApprovalStatus.Approved;
+            builder.OpenElement(23, "div");
+            builder.AddAttribute(
+                24,
+                "class",
+                approved
+                    ? "sc-ai-approval__status sc-ai-approval__status--approved"
+                    : "sc-ai-approval__status sc-ai-approval__status--rejected");
+            builder.AddContent(25, approved ? "Approved" : "Rejected");
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
     }
 }

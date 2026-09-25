@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Components.TestServer.RazorComponents.Pages.Redirections;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -35,17 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
-
-        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
-        // switch value once at static initialization and won't see subsequent AppContext changes.
-        // This write at fixture creation is only safe because the E2E suite runs serially
-        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
-        // let servers needing opposite values race on this process-global field and reintroduce #66883.
-        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
-            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
-        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, enableUrlNavigation);
+        TestFeatureSwitches.SetUrlBasedQuickGridNavigationAndSorting(enableUrlNavigation);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
@@ -53,6 +44,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
+        services.AddSingleton<ExternalNavigationTarget>();
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 
@@ -396,10 +388,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         endpoints.Map("/test-formaction", () => "Formaction url");
 
-        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        static Task PerformRedirection(
+            HttpRequest request,
+            HttpResponse response,
+            ExternalNavigationTarget externalNavigationTarget)
         {
             response.Redirect(request.Query["external"] == "true"
-                ? "https://microsoft.com"
+                ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }
