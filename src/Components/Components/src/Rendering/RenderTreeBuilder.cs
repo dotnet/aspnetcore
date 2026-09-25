@@ -24,6 +24,13 @@ public sealed class RenderTreeBuilder : IDisposable
     // On WebAssembly, bool element attributes must be stored as strings because the JS
     // shared memory render batch reader cannot distinguish boxed bools from strings.
     private static readonly object ElementBoolTrueValue = OperatingSystem.IsBrowser() ? string.Empty : BoxedTrue;
+
+    // HTML enumerated attributes that accept "true"/"false" string values must be rendered
+    // with explicit string values rather than as presence/absence attributes.
+    // If rendered as bare attributes (e.g., <div draggable>), browsers may not honor them correctly.
+    private static readonly HashSet<string> EnumeratedBoolAttributes =
+        new(StringComparer.OrdinalIgnoreCase) { "draggable", "spellcheck", "contenteditable" };
+
     private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
     private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
@@ -183,7 +190,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </para>
     /// <para>
     /// The attribute is associated with the most recently added element. If the value is <c>false</c> and the
-    /// current element is not a component, the frame will be omitted.
+    /// current element is not a component, the frame will be omitted, except for HTML enumerated attributes
+    /// such as <c>draggable</c>, <c>spellcheck</c>, and <c>contenteditable</c>, which render <c>"false"</c>.
     /// </para>
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -195,6 +203,10 @@ public sealed class RenderTreeBuilder : IDisposable
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
+        }
+        else if (IsEnumeratedBoolAttribute(name))
+        {
+            _entries.AppendAttribute(sequence, name, value ? "true" : "false");
         }
         else if (value)
         {
@@ -350,7 +362,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// Appends a frame representing a string-valued attribute.
     /// The attribute is associated with the most recently added element. If the value is <c>null</c>, or
     /// the <see cref="System.Boolean" /> value <c>false</c> and the current element is not a component, the
-    /// frame will be omitted.
+    /// frame will be omitted, except for HTML enumerated attributes such as <c>draggable</c>, <c>spellcheck</c>,
+    /// and <c>contenteditable</c>, which render <c>"false"</c>.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="name">The name of the attribute.</param>
@@ -368,7 +381,11 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else if (value is bool boolValue)
             {
-                if (boolValue)
+                if (IsEnumeratedBoolAttribute(name))
+                {
+                    _entries.AppendAttribute(sequence, name, boolValue ? "true" : "false");
+                }
+                else if (boolValue)
                 {
                     _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
                 }
@@ -913,6 +930,13 @@ public sealed class RenderTreeBuilder : IDisposable
 
         var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
         seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
+    }
+
+    private static bool IsEnumeratedBoolAttribute(string name)
+    {
+        // Enumerated attributes (draggable, spellcheck, contenteditable) are not subject to the
+        // standard HTML boolean attribute rules. They require explicit "true"/"false" string values.
+        return EnumeratedBoolAttributes.Contains(name);
     }
 
     /// <inheritdoc />
