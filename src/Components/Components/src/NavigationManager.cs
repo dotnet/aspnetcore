@@ -253,7 +253,7 @@ public abstract class NavigationManager
     /// falling back on a full page reload if necessary.
     /// </remarks>
     public virtual void Refresh(bool forceReload = false)
-        => NavigateTo(Uri, forceLoad: true, replace: true);
+        => NavigateTo(Uri, forceLoad: forceReload, replace: true);
 
     /// <summary>
     /// Handles setting the NotFound state.
