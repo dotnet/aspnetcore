@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -26,7 +25,7 @@ public class HttpResponseHeadersTests
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-            var connectionContext = Mock.Of<ConnectionContext>();
+            var connectionContext = new TestConnectionContext();
             var metricsContext = TestContextFactory.CreateMetricsContext(connectionContext);
 
             var connectionFeatures = new FeatureCollection();
