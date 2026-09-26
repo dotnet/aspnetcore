@@ -861,6 +861,32 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task RemovePasskeyAsyncUpdatesSecurityStamp()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var securityStampStore = store.As<IUserSecurityStampStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo", SecurityStamp = "initial-security-stamp" };
+        var credentialId = (byte[])[1, 2, 3, 4, 5, 6, 7, 8];
+        store.Setup(s => s.RemovePasskeyAsync(user, credentialId, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
+        securityStampStore.Setup(s => s.GetSecurityStampAsync(user, CancellationToken.None)).ReturnsAsync(() => user.SecurityStamp).Verifiable();
+        securityStampStore.Setup(s => s.SetSecurityStampAsync(user, It.IsAny<string>(), CancellationToken.None))
+            .Callback<PocoUser, string, CancellationToken>((_, stamp, _) => user.SecurityStamp = stamp)
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+        store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.RemovePasskeyAsync(user, credentialId);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        Assert.NotEqual("initial-security-stamp", user.SecurityStamp);
+        store.VerifyAll();
+    }
+
+    [Fact]
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var testMeterFactory = new TestMeterFactory();
