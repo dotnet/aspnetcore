@@ -1213,7 +1213,7 @@ public class UserManagerTest
         }
     }
 
-    [Fact(Skip = "This test fails, NotImplementedException isn't thrown: https://github.com/dotnet/aspnetcore/issues/57361")]
+    [Fact]
     public async Task UserManagerWillUseTokenProviderInstanceOverDefaults()
     {
         var provider = new ATokenProvider();
