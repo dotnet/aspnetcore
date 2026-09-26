@@ -187,6 +187,12 @@ public class BufferedReadStream : Stream
     }
 
     /// <inheritdoc/>
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        _inner.Write(buffer);
+    }
+
+    /// <inheritdoc/>
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
         return _inner.WriteAsync(buffer, cancellationToken);
@@ -203,17 +209,34 @@ public class BufferedReadStream : Stream
     {
         ValidateBufferArguments(buffer, offset, count);
 
-        // Drain buffer
         if (_bufferCount > 0)
         {
-            int toCopy = Math.Min(_bufferCount, count);
-            Buffer.BlockCopy(_buffer, _bufferOffset, buffer, offset, toCopy);
-            _bufferOffset += toCopy;
-            _bufferCount -= toCopy;
-            return toCopy;
+            return DrainBuffer(buffer.AsSpan(offset, count));
         }
 
+        // Forward to the matching inner overload. Going through Read(Span<byte>) would
+        // fall back to Stream's rent-and-copy shim if the inner stream doesn't override it.
         return _inner.Read(buffer, offset, count);
+    }
+
+    /// <inheritdoc/>
+    public override int Read(Span<byte> buffer)
+    {
+        if (_bufferCount > 0)
+        {
+            return DrainBuffer(buffer);
+        }
+
+        return _inner.Read(buffer);
+    }
+
+    private int DrainBuffer(Span<byte> buffer)
+    {
+        var toCopy = Math.Min(_bufferCount, buffer.Length);
+        _buffer.AsSpan(_bufferOffset, toCopy).CopyTo(buffer);
+        _bufferOffset += toCopy;
+        _bufferCount -= toCopy;
+        return toCopy;
     }
 
     /// <inheritdoc/>
