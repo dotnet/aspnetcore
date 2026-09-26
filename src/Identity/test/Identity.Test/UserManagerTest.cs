@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67517")]
 public class UserManagerTest
 {
     [Fact]
