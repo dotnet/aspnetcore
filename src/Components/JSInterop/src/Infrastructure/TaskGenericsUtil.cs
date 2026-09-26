@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -23,6 +26,8 @@ internal static class TaskGenericsUtil
     public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
         => CreateResultSetter(taskCompletionSource).ResultType;
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Task<T>.Result is preserved by DynamicDependency.")]
     public static object? GetTaskResult(Task task)
     {
         var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskInstanceType =>
@@ -30,8 +35,10 @@ internal static class TaskGenericsUtil
             var resultType = GetTaskResultType(taskInstanceType);
             return resultType == null
                 ? new VoidTaskResultGetter()
-                : (ITaskResultGetter)Activator.CreateInstance(
-                    typeof(TaskResultGetter<>).MakeGenericType(resultType))!;
+                : RuntimeFeature.IsDynamicCodeSupported
+                    ? (ITaskResultGetter)Activator.CreateInstance(
+                        typeof(TaskResultGetter<>).MakeGenericType(resultType))!
+                    : new ReflectionTaskResultGetter(taskInstanceType.GetProperty(nameof(Task<object>.Result))!);
         });
         return getter.GetResult(task);
     }
@@ -67,6 +74,11 @@ internal static class TaskGenericsUtil
     private sealed class TaskResultGetter<T> : ITaskResultGetter
     {
         public object? GetResult(Task task) => ((Task<T>)task).Result!;
+    }
+
+    private sealed class ReflectionTaskResultGetter(PropertyInfo resultProperty) : ITaskResultGetter
+    {
+        public object? GetResult(Task task) => resultProperty.GetValue(task);
     }
 
     private sealed class VoidTaskResultGetter : ITaskResultGetter
