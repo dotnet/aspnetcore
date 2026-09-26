@@ -20,7 +20,6 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
-    <Reference Include="Microsoft.Extensions.Http.Resilience" />
   </ItemGroup>
 
   <!-- Copy the JS initializer from the service defaults template at build time (keeps it in sync).
@@ -35,8 +34,6 @@
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWasmServiceDefaults-CSharp\Extensions.cs"
              Link="ServiceDefaults\Extensions.cs" />
-    <Compile Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWasmServiceDefaults-CSharp\BackgroundExportHandler.cs"
-             Link="ServiceDefaults\BackgroundExportHandler.cs" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Components\Gateway\src\build\Microsoft.AspNetCore.Components.Gateway.targets" />

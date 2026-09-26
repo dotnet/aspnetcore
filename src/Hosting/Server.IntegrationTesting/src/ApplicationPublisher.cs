@@ -46,6 +46,16 @@ public class ApplicationPublisher
                 parameters += " -p:UseAppHost=false";
             }
 
+            // Forward build-mode properties from the outer build (via runtimeconfig.json)
+            // so subprocess compilations use the same settings.
+            foreach (var prop in new[] { "DotNetBuildUseMonoRuntime", "ContinuousIntegrationBuild" })
+            {
+                if (AppContext.GetData(prop) is string value && !string.IsNullOrEmpty(value))
+                {
+                    parameters += $" /p:{prop}={value}";
+                }
+            }
+
             parameters += $" {deploymentParameters.AdditionalPublishParameters}";
 
             var startInfo = new ProcessStartInfo

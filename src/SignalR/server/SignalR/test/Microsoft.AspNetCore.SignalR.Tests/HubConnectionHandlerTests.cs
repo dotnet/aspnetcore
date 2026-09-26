@@ -2259,6 +2259,34 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public void HubAuthorizationAllowsNonemptyAuthenticationScheme()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+            Assert.NotNull(serviceProvider.GetService<HubConnectionHandler<HubWithAuthenticationScheme>>());
+        }
+    }
+
+    [Fact]
+    public void HubMethodAuthorizationRejectsNonemptyAuthenticationScheme()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+            var exception = Assert.Throws<NotSupportedException>(
+                () => serviceProvider.GetService<HubConnectionHandler<HubWithMethodAuthenticationScheme>>());
+
+            Assert.Equal(
+                "The authorization data specifies an authentication scheme with value 'test scheme'. " +
+                "Authentication schemes cannot be specified for hub methods.",
+                exception.Message);
+        }
+    }
+
+    [Fact]
     public async Task UnauthorizedConnectionCannotInvokeHubMethodWithRequirementDataAuthorization()
     {
         using (StartVerifiableLog())
