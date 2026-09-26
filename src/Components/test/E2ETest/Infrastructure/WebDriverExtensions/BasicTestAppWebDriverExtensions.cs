@@ -9,7 +9,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest;
 
 internal static class BasicTestAppWebDriverExtensions
 {
-    public static IWebElement MountTestComponent<TComponent>(this IWebDriver browser) where TComponent : IComponent
+    private const string TestConfigurationSeparator = "?test-configuration=";
+
+    public static IWebElement MountTestComponent<TComponent>(this IWebDriver browser, string testConfiguration = null) where TComponent : IComponent
     {
         var componentType = typeof(TComponent);
         var componentTypeName = componentType.Assembly == typeof(BasicTestApp.Program).Assembly ?
@@ -17,7 +19,24 @@ internal static class BasicTestAppWebDriverExtensions
             componentType.AssemblyQualifiedName;
         var testSelector = browser.WaitUntilTestSelectorReady();
         testSelector.SelectByValue("none");
-        testSelector.SelectByValue(componentTypeName);
+
+        if (testConfiguration is not null)
+        {
+            componentTypeName += TestConfigurationSeparator + Uri.EscapeDataString(testConfiguration);
+            ((IJavaScriptExecutor)browser).ExecuteScript(@"
+                var option = document.createElement('option');
+                option.value = arguments[1];
+                arguments[0].appendChild(option);
+                arguments[0].value = arguments[1];
+                arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+                option.remove();
+            ", testSelector.WrappedElement, componentTypeName);
+        }
+        else
+        {
+            testSelector.SelectByValue(componentTypeName);
+        }
+
         return browser.Exists(By.TagName("app"));
     }
 
