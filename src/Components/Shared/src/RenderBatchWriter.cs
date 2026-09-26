@@ -132,13 +132,13 @@ internal sealed class RenderBatchWriter : IDisposable
         _binaryWriter.Write(count);
         for (var i = 0; i < count; i++)
         {
-            Write(array[i]);
+            Write(ref array[i]);
         }
 
         return startPos;
     }
 
-    void Write(in RenderTreeFrame frame)
+    void Write(ref RenderTreeFrame frame)
     {
         // TODO: Change this to write as a short, saving 2 bytes per frame
         _binaryWriter.Write((int)frame.FrameType);
