@@ -449,6 +449,10 @@ public class KestrelServerOptions
     /// </summary>
     /// <param name="config">The configuration section for Kestrel.</param>
     /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+    /// <remarks>
+    /// Non-endpoint options, such as <see cref="Limits"/>, are read from <paramref name="config"/> immediately.
+    /// Any value set on this instance afterwards overwrites the one read from configuration.
+    /// </remarks>
     public KestrelConfigurationLoader Configure(IConfiguration config) => Configure(config, reloadOnChange: false);
 
     /// <summary>
@@ -461,6 +465,11 @@ public class KestrelServerOptions
     /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
     /// </param>
     /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+    /// <remarks>
+    /// Non-endpoint options, such as <see cref="Limits"/>, are read from <paramref name="config"/> immediately and are never
+    /// re-read on reload. Any value set on this instance afterwards overwrites the one read from configuration, so an
+    /// <see cref="IConfigureOptions{TOptions}"/> registered after the one that calls this method has the final say.
+    /// </remarks>
     public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
     {
         if (ApplicationServices is null)
