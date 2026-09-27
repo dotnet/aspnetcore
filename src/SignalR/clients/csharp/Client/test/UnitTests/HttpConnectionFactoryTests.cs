@@ -101,6 +101,7 @@ public class HttpConnectionFactoryTests
                 { $"{nameof(HttpConnectionOptions.ApplicationMaxBufferSize)}", 1L * 1024 * 1024 },
                 { $"{nameof(HttpConnectionOptions.TransportMaxBufferSize)}", 1L * 1024 * 1024 },
                 { $"{nameof(HttpConnectionOptions.UseStatefulReconnect)}", true },
+                { $"{nameof(HttpConnectionOptions.LogMessageContent)}", true },
             };
 
         var options = new HttpConnectionOptions();

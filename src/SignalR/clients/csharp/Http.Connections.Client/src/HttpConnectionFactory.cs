@@ -90,6 +90,7 @@ public class HttpConnectionFactory : IConnectionFactory
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
             TransportMaxBufferSize = options.TransportMaxBufferSize,
             UseStatefulReconnect = options.UseStatefulReconnect,
+            LogMessageContent = options.LogMessageContent,
             WebSocketFactory = options.WebSocketFactory,
         };
 
