@@ -29,6 +29,7 @@ internal sealed class HubMethodDescriptor
     private Func<object, CancellationToken, IAsyncEnumerator<object?>>? _makeCancelableEnumerator;
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
+    private ActivityDisplayName? _activityDisplayName;
 
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
@@ -223,6 +224,23 @@ internal sealed class HubMethodDescriptor
         return _makeCancelableEnumerator.Invoke(stream, cancellationToken);
     }
 
+    public string GetActivityDisplayName(string hubName, string target)
+    {
+        // The built-in protocols resolve targets to the hub method name, but methods are matched case-insensitively so
+        // other protocols can use targets that differ in case. Caching the display name with the last target that was
+        // used keeps the cache bounded to a single entry per method.
+        var cached = _activityDisplayName;
+        if (cached is not null && string.Equals(cached.Target, target, StringComparison.Ordinal))
+        {
+            return cached.DisplayName;
+        }
+
+        var displayName = $"{hubName}/{target}";
+        _activityDisplayName = new ActivityDisplayName(target, displayName);
+
+        return displayName;
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
         Justification = "The adapter methods passed into here (MakeAsyncEnumerator and MakeAsyncEnumeratorFromChannel) don't have trimming annotations.")]
     [RequiresDynamicCode("Calls MakeGenericMethod with types that may be ValueTypes")]
@@ -307,5 +325,11 @@ internal sealed class HubMethodDescriptor
         }
 
         return streamType;
+    }
+
+    private sealed class ActivityDisplayName(string target, string displayName)
+    {
+        public string Target { get; } = target;
+        public string DisplayName { get; } = displayName;
     }
 }
