@@ -44,7 +44,7 @@ internal sealed class AuthorizationMetrics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AuthorizeAttemptCore(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
     {
-        // A collection expression isn't used as it can be ~10x slower on x64 with AVX.See https://github.com/dotnet/runtime/issues/133784.
+        // A collection expression isn't used as it can be ~10x slower on x64 with AVX. See https://github.com/dotnet/runtime/issues/133784.
         var tags = new TagList();
         tags.Add("aspnetcore.user.is_authenticated", user.Identity?.IsAuthenticated == true ? BoxedTrue : BoxedFalse);
 
