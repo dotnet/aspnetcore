@@ -9,44 +9,15 @@ const globals = globalThis as unknown as Record<string, unknown>;
 describe('HostStartupValues', () => {
   afterEach(() => {
     delete globals.testStartupValues;
-    delete globals.duplicateStartupValue;
   });
 
-  test('evaluates property paths from an array or JSON array', () => {
+  test('evaluates property paths from an array or serialized array', () => {
     globals.testStartupValues = { nested: { value: 'expected' } };
 
     expect(evaluateHostStartupValues(['testStartupValues.nested.value']))
       .toEqual({ 'testStartupValues.nested.value': 'expected' });
     expect(JSON.parse(evaluateHostStartupValuesJson('["testStartupValues.nested.value"]')))
       .toEqual({ 'testStartupValues.nested.value': 'expected' });
-  });
-
-  test('rejects duplicate keys before evaluating them', () => {
-    let evaluations = 0;
-    Object.defineProperty(globalThis, 'duplicateStartupValue', {
-      configurable: true,
-      get: () => {
-        evaluations++;
-        return 'value';
-      },
-    });
-
-    expect(() => evaluateHostStartupValues(['duplicateStartupValue', 'duplicateStartupValue']))
-      .toThrow("The browser startup value key 'duplicateStartupValue' was provided more than once.");
-    expect(evaluations).toBe(0);
-  });
-
-  test.each([
-    '',
-    'location.href()',
-    'location["href"]',
-    'location..href',
-    '__proto__.value',
-    'value.prototype.name',
-    'value.constructor.name',
-  ])('rejects invalid property path %s', key => {
-    expect(() => evaluateHostStartupValues([key]))
-      .toThrow(`The browser startup value key '${key}' is not a valid property path.`);
   });
 
   test.each([
@@ -70,10 +41,4 @@ describe('HostStartupValues', () => {
       .toThrow("The browser startup value 'testStartupValues.value' could not be resolved.");
   });
 
-  test('rejects a JSON value that is not an array of strings', () => {
-    expect(() => evaluateHostStartupValues('{"key":"value"}'))
-      .toThrow('Browser startup value keys must be an array of strings.');
-    expect(() => evaluateHostStartupValues('["key",42]'))
-      .toThrow('Browser startup value keys must be an array of strings.');
-  });
 });

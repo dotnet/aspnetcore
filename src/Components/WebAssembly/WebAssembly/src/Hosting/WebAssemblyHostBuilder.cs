@@ -186,8 +186,13 @@ public sealed class WebAssemblyHostBuilder
     }
 
     private string GetNormalizedBaseAddress()
-        => WebAssemblyNavigationManager.NormalizeBaseUriForHostEnvironment(
-            _jsMethods.NavigationManager_GetBaseUri());
+        => NormalizeBaseAddress(_jsMethods.NavigationManager_GetBaseUri());
+
+    internal static string NormalizeBaseAddress(string baseAddress)
+    {
+        var lastSlashIndex = baseAddress.LastIndexOf('/');
+        return lastSlashIndex >= 0 ? baseAddress[..(lastSlashIndex + 1)] : baseAddress;
+    }
 
     private WebAssemblyHostEnvironment InitializeEnvironment(string baseAddress)
     {
@@ -321,73 +326,15 @@ public sealed class WebAssemblyHostBuilder
         // to configure services inside *that scope* inside their startup code, we create *both* the
         // service provider and the scope here.
         var services = _createServiceProvider();
-        AsyncServiceScope? scope = null;
-        CancellationTokenSource? hostCancellationTokenSource = null;
-        try
-        {
-            scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
-            hostCancellationTokenSource = new CancellationTokenSource();
+        var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+        var hostCancellationTokenSource = new CancellationTokenSource();
 
-            return new WebAssemblyHost(
-                this,
-                services,
-                scope.Value,
-                _persistedState,
-                hostCancellationTokenSource);
-        }
-        catch
-        {
-            _ = DisposeFailedBuildAsync(scope, services, hostCancellationTokenSource);
-            throw;
-        }
-    }
-
-    private static async Task DisposeFailedBuildAsync(
-        AsyncServiceScope? scope,
-        IServiceProvider services,
-        CancellationTokenSource? hostCancellationTokenSource)
-    {
-        try
-        {
-            hostCancellationTokenSource?.Cancel();
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            if (scope is not null)
-            {
-                await scope.Value.DisposeAsync();
-            }
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            if (services is IAsyncDisposable asyncDisposableServices)
-            {
-                await asyncDisposableServices.DisposeAsync();
-            }
-            else if (services is IDisposable disposableServices)
-            {
-                disposableServices.Dispose();
-            }
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            hostCancellationTokenSource?.Dispose();
-        }
-        catch
-        {
-        }
+        return new WebAssemblyHost(
+            this,
+            services,
+            scope,
+            _persistedState,
+            hostCancellationTokenSource);
     }
 
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]

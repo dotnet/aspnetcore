@@ -17,7 +17,7 @@ internal sealed class NavigationManagerInitializer : IHostInitializer
 
         var startupValues = services.GetRequiredService<IHostStartupValues>();
         var baseUri = startupValues.GetRequired(NavigationBrowserStartupValueProvider.BaseUriKey);
-        var baseAddress = WebAssemblyNavigationManager.NormalizeBaseUriForHostEnvironment(baseUri);
+        var baseAddress = WebAssemblyHostBuilder.NormalizeBaseAddress(baseUri);
         var hostEnvironment = services.GetRequiredService<IWebAssemblyHostEnvironment>();
         if (!string.Equals(baseAddress, hostEnvironment.BaseAddress, StringComparison.Ordinal))
         {

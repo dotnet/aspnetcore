@@ -156,44 +156,6 @@ public class WebAssemblyHostTest
     }
 
     [Fact]
-    public async Task BuildFailureCancelsInitializationAndDisposesCreatedServicesAsynchronously()
-    {
-        var cleanupFailure = new InvalidOperationException("Cleanup failed.");
-        var scopedDisposable = new AsyncOnlyDisposableService(cleanupFailure);
-        var singletonDisposable = new AsyncOnlyDisposableService();
-        var failure = new InvalidOperationException("Initializer failed.");
-        CancellationToken initializationToken = default;
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
-        builder.Services.AddScoped(_ => scopedDisposable);
-        builder.Services.AddSingleton(_ => singletonDisposable);
-        builder.Services.AddSingleton<IHostInitializer>(
-            new TestHostInitializer(
-                "failure",
-                0,
-                [],
-                exception: failure,
-                servicesCallback: (services, token) =>
-                {
-                    initializationToken = token;
-                    _ = services.GetServices<AsyncOnlyDisposableService>().ToArray();
-                }));
-
-        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
-
-        Assert.Same(failure, exception);
-        Assert.True(initializationToken.IsCancellationRequested);
-
-        await scopedDisposable.DisposeStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-        Assert.False(singletonDisposable.DisposeStarted.Task.IsCompleted);
-        scopedDisposable.ContinueDisposal();
-        await scopedDisposable.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-
-        await singletonDisposable.DisposeStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-        singletonDisposable.ContinueDisposal();
-        await singletonDisposable.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-    }
-
-    [Fact]
     public void BuildRejectsBaseUriThatChangedSinceBuilderCreation()
     {
         var jsMethods = new TestInternalJSImportMethods();
@@ -614,32 +576,6 @@ public class WebAssemblyHostTest
             return exception is not null
                 ? Task.FromException(exception)
                 : asyncCallback?.Invoke(cancellationToken) ?? Task.CompletedTask;
-        }
-    }
-
-    private sealed class AsyncOnlyDisposableService(Exception disposeException = null) : IAsyncDisposable
-    {
-        private readonly TaskCompletionSource _continueDisposal =
-            new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public TaskCompletionSource DisposeStarted { get; } =
-            new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public TaskCompletionSource DisposeCompleted { get; } =
-            new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public void ContinueDisposal() => _continueDisposal.SetResult();
-
-        public async ValueTask DisposeAsync()
-        {
-            DisposeStarted.SetResult();
-            await _continueDisposal.Task;
-            DisposeCompleted.SetResult();
-
-            if (disposeException is not null)
-            {
-                throw disposeException;
-            }
         }
     }
 
