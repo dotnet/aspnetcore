@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
@@ -89,9 +88,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         if (_servicesInitializedTask is not null)
         {
-            Debug.Assert(
-                componentType is null && handler is null && form is null,
-                "The first initialization call owns the endpoint-specific routing and form data.");
+            if (componentType is not null || handler is not null || form is not null)
+            {
+                throw new InvalidOperationException(
+                    "Endpoint-specific component, handler, and form data cannot be supplied after component services have been initialized.");
+            }
+
             return _servicesInitializedTask;
         }
 

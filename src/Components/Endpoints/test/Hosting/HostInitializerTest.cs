@@ -298,6 +298,26 @@ public class HostInitializerTest
     }
 
     [Fact]
+    public async Task EndpointRejectsSpecificDataAfterServicesAreInitialized()
+    {
+        using var provider = CreateServices();
+        using var scope = provider.CreateScope();
+        var context = CreateHttpContext(scope.ServiceProvider);
+        var renderer = scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>();
+
+        await renderer.InitializeStandardComponentServicesAsync(context);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            renderer.InitializeStandardComponentServicesAsync(
+                context,
+                componentType: typeof(HostInitializerTest)));
+
+        Assert.Equal(
+            "Endpoint-specific component, handler, and form data cannot be supplied after component services have been initialized.",
+            exception.Message);
+    }
+
+    [Fact]
     public void RepeatedRegistrationDoesNotDuplicateFrameworkInitializer()
     {
         var services = CreateBaseServices();

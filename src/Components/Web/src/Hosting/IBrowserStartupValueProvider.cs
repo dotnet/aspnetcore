@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Components.Hosting;
 /// Keys are dot-separated JavaScript property paths resolved from <c>globalThis</c>.
 /// Each path must resolve to a string value. Duplicate keys across providers are rejected.
 /// Values are available only in interactive Server and WebAssembly hosts. Static server-side
-/// rendering does not collect browser values.
+/// rendering does not collect browser values. The resolved values are transmitted to the
+/// .NET host without modification.
 /// </remarks>
 public interface IBrowserStartupValueProvider
 {
