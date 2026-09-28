@@ -154,22 +154,37 @@ After a build fails, identify whether the cause is a source error in the changed
 
 #### 1. Initial Setup - Check for First Build
 
-Run from the repository root. If the repository-local SDK is not installed, restore it, then activate it before invoking `dotnet` directly:
+Run from the repository root. If the repository-local SDK is not installed, restore it, then activate it before invoking `dotnet` directly. Linux and macOS use the same shell scripts.
 
+Windows (PowerShell):
 ```powershell
 if (-not (Test-Path .dotnet\dotnet.exe)) { .\restore.cmd }
 . .\activate.ps1
 ```
 
+Linux and macOS (bash or zsh):
+```bash
+if [ ! -x .dotnet/dotnet ]; then ./restore.sh; fi
+source activate.sh
+```
+
 Then check if a full build has already been completed:
-- Look for `artifacts\agent-sentinel.txt` in the repository root
+- Look for `artifacts/agent-sentinel.txt` in the repository root
 - If this file exists, skip to step 2
 - If not present, initialize submodules, run the initial build, and create the sentinel file:
 
-```bash
+Windows (PowerShell):
+```powershell
 git submodule update --init --recursive
 .\eng\build.cmd
 echo "We ran eng\build.cmd successfully" > artifacts\agent-sentinel.txt
+```
+
+Linux and macOS (bash or zsh):
+```bash
+git submodule update --init --recursive
+./eng/build.sh
+echo "We ran eng/build.sh successfully" > artifacts/agent-sentinel.txt
 ```
 
 **Always initialize submodules first in a fresh worktree.** Components code depends transitively on `src\submodules\MessagePack-CSharp`; without it the build fails on unresolved MessagePack types. Worktrees do not inherit the submodules of the checkout they were created from, so do this once per worktree.
@@ -253,8 +268,8 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 #### Quick Reference
 
-1. **Before invoking `dotnet`**: Install the repository-local SDK with `.\restore.cmd` if it is absent, then activate it with `. .\activate.ps1`
-2. **First build only**: `git submodule update --init --recursive` → `.\eng\build.cmd` → create `artifacts\agent-sentinel.txt`
+1. **Before invoking `dotnet`**: Install the repository-local SDK if it is absent (`.\restore.cmd` on Windows, `./restore.sh` on Linux/macOS), then activate it (`. .\activate.ps1` on Windows, `source activate.sh` on Linux/macOS)
+2. **First build only**: `git submodule update --init --recursive` → `.\eng\build.cmd` (Windows) or `./eng/build.sh` (Linux/macOS) → create `artifacts/agent-sentinel.txt`
 3. **Check JS assets are fresh**: Verify `src\Components\Web.JS\dist\Debug\_framework\blazor.web.js` is newer than the newest `.ts` source (see step 2 above for the command); run `npm run build` - never `build:production` alone - if `STALE`
 4. **Most C# changes**: `dotnet build --no-restore -v:q -p:UseIisNativeAssets=false`
 5. **Fixing build errors in one project**: `dotnet build <project.csproj> --no-restore --no-dependencies -v:q -p:UseIisNativeAssets=false`
@@ -360,12 +375,11 @@ For the first E2E run in a fresh worktree, or after relevant build, configuratio
 
 Complete steps 1 and 2 of the Efficient Build Strategy first. `NativeAotTestApp.E2E.Tests` is a Microsoft.Testing.Platform executable, so run only the targeted test through `dotnet run`, not `dotnet test`:
 
-```powershell
-dotnet run --project `
-  src\Components\Testing\testassets\NativeAotTestApp.E2E.Tests\NativeAotTestApp.E2E.Tests.csproj `
-  -p:UseIisNativeAssets=false -- `
-  --filter "FullyQualifiedName~TestName"
+```bash
+dotnet run --project src/Components/Testing/testassets/NativeAotTestApp.E2E.Tests/NativeAotTestApp.E2E.Tests.csproj -p:UseIisNativeAssets=false -- --filter "FullyQualifiedName~TestName"
 ```
+
+This single-line form works in PowerShell, bash, and zsh; `dotnet` accepts `/` path separators on Windows.
 
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
 
