@@ -1173,7 +1173,7 @@ on:
         SCRIPT
 
     - name: Check out trusted source history for quarantine eligibility
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
 
@@ -1287,7 +1287,7 @@ on:
         SCRIPT
 
     - name: Upload deterministic evidence for safe output validation
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.1
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: |
@@ -1345,7 +1345,7 @@ safe-outputs:
   steps:
     - name: Download deterministic quarantine evidence
       continue-on-error: true
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v8.0.1
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
