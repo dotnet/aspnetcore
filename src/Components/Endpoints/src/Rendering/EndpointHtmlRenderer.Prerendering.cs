@@ -111,8 +111,7 @@ internal partial class EndpointHtmlRenderer
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
         // This does not have to be threadsafe since it's not valid to call this simultaneously from multiple threads.
         SetHttpContext(httpContext);
-        _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext);
-        await _servicesInitializedTask;
+        await InitializeStandardComponentServicesAsync(httpContext);
 
         UpdateSaveStateRenderMode(httpContext, prerenderMode);
 

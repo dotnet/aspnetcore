@@ -80,11 +80,22 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    internal async Task InitializeStandardComponentServicesAsync(
+    internal Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
+        => _servicesInitializedTask ??= InitializeStandardComponentServicesCoreAsync(
+            httpContext,
+            componentType,
+            handler,
+            form);
+
+    private async Task InitializeStandardComponentServicesCoreAsync(
+        HttpContext httpContext,
+        [DynamicallyAccessedMembers(Component)] Type? componentType,
+        string? handler,
+        IFormCollection? form)
     {
         httpContext.RequestServices
             .GetRequiredKeyedService<HttpContextHostStartupValues>(HostInitializerKey.Static)

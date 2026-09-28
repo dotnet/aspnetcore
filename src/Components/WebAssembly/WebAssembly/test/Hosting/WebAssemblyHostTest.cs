@@ -340,7 +340,7 @@ public class WebAssemblyHostTest
     }
 
     [Fact]
-    public void BuildFailureDisposesOwnedScopeProviderAndCancellationSource()
+    public async Task BuildFailureDisposesOwnedScopeProviderAndCancellationSource()
     {
         var failure = new InvalidOperationException("Initializer failed.");
         var scopedService = new ScopedAsyncDisposableService();
@@ -369,6 +369,9 @@ public class WebAssemblyHostTest
 
         Assert.Same(failure, exception);
         Assert.True(scopedServiceResolved);
+        Assert.True(initializationToken.IsCancellationRequested);
+        await scopedService.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+        await singletonService.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
         Assert.Equal(1, scopedService.DisposeCount);
         Assert.Equal(1, singletonService.DisposeCount);
         Assert.Throws<ObjectDisposedException>(() => initializationToken.WaitHandle);
@@ -394,15 +397,22 @@ public class WebAssemblyHostTest
                     services.GetRequiredService<SingletonAsyncDisposableService>();
                     throw buildFailure;
                 }));
+        var originalError = Console.Error;
+        using var error = new StringWriter();
+        Console.SetError(error);
 
-        var exception = Assert.Throws<AggregateException>(builder.Build);
+        try
+        {
+            var exception = Assert.Throws<InvalidOperationException>(builder.Build);
 
-        Assert.Equal(
-            "The WebAssembly host build failed and one or more owned resources could not be disposed.",
-            exception.Message.Split(" (")[0]);
-        Assert.Same(buildFailure, exception.InnerExceptions[0]);
-        Assert.Same(cleanupFailure, exception.InnerExceptions[1]);
-        Assert.Equal(1, singletonService.DisposeCount);
+            Assert.Same(buildFailure, exception);
+            Assert.Contains(cleanupFailure.Message, error.ToString());
+            Assert.Equal(1, singletonService.DisposeCount);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
     }
 
     [Fact]
@@ -728,10 +738,14 @@ public class WebAssemblyHostTest
     {
         public int DisposeCount { get; private set; }
 
+        public TaskCompletionSource DisposeCompleted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public async ValueTask DisposeAsync()
         {
             await Task.Yield();
             DisposeCount++;
+            DisposeCompleted.SetResult();
         }
     }
 
@@ -739,10 +753,14 @@ public class WebAssemblyHostTest
     {
         public int DisposeCount { get; private set; }
 
+        public TaskCompletionSource DisposeCompleted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public async ValueTask DisposeAsync()
         {
             await Task.Yield();
             DisposeCount++;
+            DisposeCompleted.SetResult();
         }
     }
 

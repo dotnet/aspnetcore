@@ -291,6 +291,8 @@ public class HostInitializerTest
 
         await scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>()
             .InitializeStandardComponentServicesAsync(context);
+        await scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>()
+            .InitializeStandardComponentServicesAsync(context);
 
         Assert.Equal(["shared", "static"], calls);
     }

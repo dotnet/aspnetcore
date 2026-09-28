@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -339,24 +338,26 @@ public sealed class WebAssemblyHostBuilder
                 _persistedState,
                 hostCancellationTokenSource);
         }
-        catch (Exception exception)
+        catch
         {
-            var cleanupExceptions = DisposeFailedBuildResources(
+            var cleanupTask = DisposeFailedBuildResourcesAsync(
                 scope,
                 services,
                 hostCancellationTokenSource);
-            if (cleanupExceptions is null)
+            if (cleanupTask.IsCompleted)
             {
-                ExceptionDispatchInfo.Capture(exception).Throw();
+                ReportFailedBuildCleanup(cleanupTask);
+            }
+            else
+            {
+                _ = ObserveFailedBuildCleanupAsync(cleanupTask);
             }
 
-            throw new AggregateException(
-                "The WebAssembly host build failed and one or more owned resources could not be disposed.",
-                [exception, .. cleanupExceptions]);
+            throw;
         }
     }
 
-    private static List<Exception>? DisposeFailedBuildResources(
+    private static async Task DisposeFailedBuildResourcesAsync(
         AsyncServiceScope scope,
         IServiceProvider services,
         CancellationTokenSource hostCancellationTokenSource)
@@ -365,7 +366,16 @@ public sealed class WebAssemblyHostBuilder
 
         try
         {
-            scope.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            hostCancellationTokenSource.Cancel();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            await scope.DisposeAsync();
         }
         catch (Exception exception)
         {
@@ -376,7 +386,7 @@ public sealed class WebAssemblyHostBuilder
         {
             if (services is IAsyncDisposable asyncDisposableServices)
             {
-                asyncDisposableServices.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                await asyncDisposableServices.DisposeAsync();
             }
             else if (services is IDisposable disposableServices)
             {
@@ -397,7 +407,36 @@ public sealed class WebAssemblyHostBuilder
             (exceptions ??= []).Add(exception);
         }
 
-        return exceptions;
+        if (exceptions is not null)
+        {
+            throw new AggregateException(
+                "One or more resources could not be disposed after the WebAssembly host build failed.",
+                exceptions);
+        }
+    }
+
+    private static async Task ObserveFailedBuildCleanupAsync(Task cleanupTask)
+    {
+        try
+        {
+            await cleanupTask;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to dispose resources after the WebAssembly host build failed: {exception}");
+        }
+    }
+
+    private static void ReportFailedBuildCleanup(Task cleanupTask)
+    {
+        try
+        {
+            cleanupTask.GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to dispose resources after the WebAssembly host build failed: {exception}");
+        }
     }
 
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
