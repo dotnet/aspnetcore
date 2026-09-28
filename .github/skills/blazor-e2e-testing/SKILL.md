@@ -6,6 +6,6 @@ description: >-
 
 # Run bounded Blazor E2E test groups
 
-For permanent Selenium E2E coverage, follow [Bounded local E2E validation](../../../src/Components/AGENTS.md#bounded-local-e2e-validation). That section is the source of truth for focused method and class runs, logical groups for major changes, execution order, failure handling, and completion criteria.
+For permanent Selenium E2E coverage, follow the `src/Components/AGENTS.md` section "Bounded local E2E validation". That section is the source of truth for focused method and class runs, logical groups for major changes, execution order, failure handling, and completion criteria.
 
-For temporary sample and browser validation before permanent coverage, use the [`validate-blazor-feature`](../validate-blazor-feature/SKILL.md) skill instead.
+For temporary sample and browser validation before permanent coverage, use the `validate-blazor-feature` skill instead.
