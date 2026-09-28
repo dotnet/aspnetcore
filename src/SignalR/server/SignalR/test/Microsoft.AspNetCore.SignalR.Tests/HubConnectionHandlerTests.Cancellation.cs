@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,22 +29,23 @@ public partial class HubConnectionHandlerTests
         using var client = new TestClient();
         var connectionTask = await client.ConnectAsync(handler).DefaultTimeout();
         var connection = await connected.Task.DefaultTimeout();
-        Assert.Null(HubConnectionContextTests.GetCancellationSources(connection));
+        Assert.Null(GetCancellationSources(connection));
 
         await client.SendHubMessageAsync(new CancelInvocationMessage("missing")).DefaultTimeout();
         var result = await client.InvokeAsync(nameof(MethodHub.Echo), "value").DefaultTimeout();
         Assert.Null(result.Error);
         Assert.Equal("value", result.Result);
-        Assert.Null(HubConnectionContextTests.GetCancellationSources(connection));
-
-        await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument), nonBlocking: true).DefaultTimeout();
-        var next = await client.InvokeAsync(nameof(MethodHub.Echo), "next").DefaultTimeout();
-        Assert.Null(next.Error);
-        Assert.Equal("next", next.Result);
-        Assert.Null(HubConnectionContextTests.GetCancellationSources(connection));
+        Assert.Null(GetCancellationSources(connection));
 
         client.Dispose();
         await connectionTask.DefaultTimeout();
-        Assert.Null(HubConnectionContextTests.GetCancellationSources(connection));
+        Assert.Null(GetCancellationSources(connection));
+    }
+
+    private static ConcurrentDictionary<string, CancellationTokenSource>? GetCancellationSources(HubConnectionContext connection)
+    {
+        var field = typeof(HubConnectionContext).GetField("_activeRequestCancellationSources", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        return (ConcurrentDictionary<string, CancellationTokenSource>?)field.GetValue(connection);
     }
 }

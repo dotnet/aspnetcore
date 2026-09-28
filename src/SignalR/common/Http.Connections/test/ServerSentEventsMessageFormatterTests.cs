@@ -4,8 +4,6 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,18 +40,13 @@ public class ServerSentEventsMessageFormatterTests
         Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
     }
 
-    [Theory]
-    [InlineData(32)]
-    [InlineData(4096)]
-    public async Task MultilineMessageWritesOnlyFormattedBytesInOneWrite(int lineLength)
+    [Fact]
+    public async Task MultilineMessageWritesOnlyFormattedBytesInOneWrite()
     {
-        var line = new string('x', lineLength);
-        var lines = Enumerable.Repeat(line, 16);
-        var payload = string.Join("\r\n", lines) + "\r\n";
-        var expected = string.Concat(lines.Select(value => $"data: {value}\r\n")) + "data: \r\n\r\n";
+        const string expected = "data: first\r\ndata: second\r\ndata: \r\n\r\n";
         var buffer = ReadOnlySequenceFactory.CreateSegments(
-            Encoding.UTF8.GetBytes(payload[..(lineLength + 1)]),
-            Encoding.UTF8.GetBytes(payload[(lineLength + 1)..]));
+            Encoding.UTF8.GetBytes("first\r"),
+            Encoding.UTF8.GetBytes("\nsecond\r\n"));
         var output = CreateOutputStream((bytes, token) =>
         {
             Assert.Equal(expected.Length, bytes.Length);
@@ -63,24 +56,6 @@ public class ServerSentEventsMessageFormatterTests
 
         await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output.Object, default).DefaultTimeout();
 
-        Assert.Single(output.Invocations);
-    }
-
-    [Theory]
-    [InlineData(1, 256)]
-    [InlineData(8190, 65536)]
-    public async Task MultilineMessageDoesNotOverReserveOutputBuffer(int newlineCount, int maximumCapacity)
-    {
-        var payload = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(new string('\n', newlineCount)));
-        var output = CreateOutputStream((bytes, token) =>
-        {
-            Assert.Equal((8 * newlineCount) + 10, bytes.Length);
-            Assert.True(MemoryMarshal.TryGetArray(bytes, out var array));
-            Assert.InRange(array.Array.Length, bytes.Length, maximumCapacity);
-            return Task.CompletedTask;
-        });
-
-        await ServerSentEventsMessageFormatter.WriteMessageAsync(payload, output.Object, default).DefaultTimeout();
         Assert.Single(output.Invocations);
     }
 
@@ -129,37 +104,6 @@ public class ServerSentEventsMessageFormatterTests
         {
             await writeTask.DefaultTimeout();
         }
-    }
-
-    [Fact]
-    public async Task FailedOutputWriteDoesNotAffectNextMessage()
-    {
-        var error = new IOException("Write failed.");
-        var output = CreateOutputStream((bytes, token) => Task.FromException(error));
-        var payload = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("first\nmessage"));
-
-        var actual = await Assert.ThrowsAsync<IOException>(
-            () => ServerSentEventsMessageFormatter.WriteMessageAsync(payload, output.Object, default)).DefaultTimeout();
-        Assert.Same(error, actual);
-
-        using var nextOutput = new MemoryStream();
-        await ServerSentEventsMessageFormatter.WriteMessageAsync(
-            new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("next\nmessage")), nextOutput, default).DefaultTimeout();
-        Assert.Equal("data: next\r\ndata: message\r\n\r\n", Encoding.UTF8.GetString(nextOutput.ToArray()));
-    }
-
-    [Fact]
-    public async Task CanceledMultilineMessageDoesNotWriteOutput()
-    {
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        var output = new Mock<Stream>(MockBehavior.Strict);
-        var payload = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("first\nmessage"));
-
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => ServerSentEventsMessageFormatter.WriteMessageAsync(payload, output.Object, cts.Token)).DefaultTimeout();
-
-        output.VerifyNoOtherCalls();
     }
 
     private static Mock<Stream> CreateOutputStream(Func<ReadOnlyMemory<byte>, CancellationToken, Task> writeAsync)

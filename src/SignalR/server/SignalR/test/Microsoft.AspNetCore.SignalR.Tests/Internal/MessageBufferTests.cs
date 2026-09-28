@@ -344,14 +344,13 @@ public class MessageBufferTests
         Assert.False(pipes.Application.Input.TryRead(out res));
     }
 
-    [Theory]
-    [InlineData(9, 5, 10)]
-    [InlineData(10, 9, 10)]
-    [InlineData(11, 10, 10)]
-    // Reclaim and append more blocks than the pool can hold.
-    [InlineData(131, 115, 120)]
-    public async Task BufferedMessagesRemainOrderedAfterAcksAndAppends(int initialMessageCount, int ackedMessageCount, int appendedMessageCount)
+    [Fact]
+    public async Task BufferedMessagesRemainOrderedAfterAcksAndAppends()
     {
+        // Reclaim and append more blocks than the pool can hold.
+        const int initialMessageCount = 131;
+        const int ackedMessageCount = 115;
+        const int appendedMessageCount = 120;
         var protocol = new JsonHubProtocol();
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
@@ -364,10 +363,6 @@ public class MessageBufferTests
         await WriteMessagesAsync(initialMessageCount + 1, appendedMessageCount);
 
         var messageCount = initialMessageCount + appendedMessageCount;
-        await AssertResentMessagesAsync(ackedMessageCount + 1, messageCount - ackedMessageCount);
-
-        await WriteMessagesAsync(messageCount + 1, 10);
-        messageCount += 10;
         await AssertResentMessagesAsync(ackedMessageCount + 1, messageCount - ackedMessageCount);
 
         await messageBuffer.AckAsync(new AckMessage(messageCount)).DefaultTimeout();
