@@ -43,6 +43,7 @@ public class RazorComponentEndpointFactoryTest
         Assert.False(plain.AcceptCorsPreflight);
         Assert.True(cors.AcceptCorsPreflight);
         Assert.NotSame(plain, cors);
+        Assert.NotSame(plain.HttpMethods, cors.HttpMethods);
         Assert.Equal(plain.HttpMethods, cors.HttpMethods);
     }
 
