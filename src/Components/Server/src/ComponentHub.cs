@@ -107,9 +107,8 @@ internal sealed partial class ComponentHub : Hub
         return Task.CompletedTask;
     }
 
-    public string GetStartupValueKeys()
-        => HostStartupValuesJson.SerializeKeys(
-            BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders));
+    public string[] GetStartupValueKeys()
+        => BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders);
 
     public async ValueTask<string> StartCircuit(
         string startupValuesJson,
@@ -127,7 +126,7 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues))
         {
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
@@ -155,8 +154,6 @@ internal sealed partial class ComponentHub : Hub
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                 components,
                 circuitClient,
-                baseUri,
-                uri,
                 startupValues,
                 Context.User,
                 store,
@@ -214,21 +211,17 @@ internal sealed partial class ComponentHub : Hub
 
     private bool TryGetStartupValues(
         string? startupValuesJson,
-        out Dictionary<string, string> startupValues,
-        out string baseUri,
-        out string uri)
+        out Dictionary<string, string> startupValues)
     {
         if (!HostStartupValuesJson.TryDeserialize(startupValuesJson, out startupValues) ||
             !ContainsExactly(
                 startupValues,
                 BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders)) ||
-            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.BaseUriKey, out baseUri) ||
-            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.LocationHrefKey, out uri) ||
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.BaseUriKey, out var baseUri) ||
+            !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.LocationHrefKey, out var uri) ||
             !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
             !Uri.TryCreate(uri, UriKind.Absolute, out _))
         {
-            baseUri = null;
-            uri = null;
             return false;
         }
 
@@ -372,7 +365,7 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (!TryGetStartupValues(startupValuesJson, out var startupValues, out var baseUri, out var uri))
+        if (!TryGetStartupValues(startupValuesJson, out var startupValues))
         {
             // This is an error condition attempting to initialize the circuit in a way that would fail.
             // We can reject this and terminate the connection.
@@ -445,8 +438,6 @@ internal sealed partial class ComponentHub : Hub
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                 [],
                 circuitClient,
-                baseUri,
-                uri,
                 startupValues,
                 Context.User,
                 store: null,

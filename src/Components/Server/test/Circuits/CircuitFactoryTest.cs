@@ -188,8 +188,6 @@ public class CircuitFactoryTest
         => circuitFactory.CreateCircuitHostAsync(
             [],
             new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "connection"),
-            "https://localhost/",
-            "https://localhost/page",
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["document.baseURI"] = "https://localhost/",

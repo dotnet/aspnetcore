@@ -98,22 +98,8 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
-
-        if (!HasHostStartupValuesRegistrationMarker(services))
-        {
-            services.AddSingleton<HostStartupValuesRegistrationMarker>();
-            services.AddScoped<IHostStartupValues>(static services =>
-            {
-                var context = services.GetRequiredService<InteractiveServerContext>();
-                if (context.IsInteractive)
-                {
-                    return services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Server);
-                }
-
-                return services.GetKeyedService<IHostStartupValues>(HostInitializerKey.Static)
-                    ?? services.GetRequiredKeyedService<IHostStartupValues>(HostInitializerKey.Server);
-            });
-        }
+        services.TryAddEnumerable(
+            ServiceDescriptor.Scoped<IHostStartupValues, DefaultHostStartupValues>());
 
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
@@ -163,19 +149,6 @@ public static class ComponentServiceCollectionExtensions
         return builder;
     }
 
-    private static bool HasHostStartupValuesRegistrationMarker(IServiceCollection services)
-    {
-        foreach (var descriptor in services)
-        {
-            if (descriptor.ServiceType == typeof(HostStartupValuesRegistrationMarker))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
     {
         public DefaultServerSideBlazorBuilder(IServiceCollection services)
@@ -184,9 +157,5 @@ public static class ComponentServiceCollectionExtensions
         }
 
         public IServiceCollection Services { get; }
-    }
-
-    private sealed class HostStartupValuesRegistrationMarker
-    {
     }
 }

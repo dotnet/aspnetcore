@@ -44,8 +44,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     public async ValueTask<CircuitHost> CreateCircuitHostAsync(
         IReadOnlyList<ComponentDescriptor> components,
         CircuitClientProxy client,
-        string baseUri,
-        string uri,
         IReadOnlyDictionary<string, string> startupValues,
         ClaimsPrincipal user,
         IPersistentComponentStateStore store,

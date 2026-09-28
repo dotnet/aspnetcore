@@ -136,8 +136,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async getStartupValuesJson(): Promise<string> {
-    const keysJson = await this._connection!.invoke<string>('GetStartupValueKeys');
-    return JSON.stringify(evaluateHostStartupValues(keysJson));
+    const keys = await this._connection!.invoke<string[]>('GetStartupValueKeys');
+    return JSON.stringify(evaluateHostStartupValues(keys));
   }
 
   private async startConnection(): Promise<HubConnection> {

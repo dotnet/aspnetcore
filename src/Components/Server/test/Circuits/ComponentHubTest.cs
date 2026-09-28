@@ -62,7 +62,7 @@ public class ComponentHubTest
         };
         var (_, hub) = InitializeComponentHub(browserStartupValueProviders: providers);
 
-        Assert.Equal("""["first.value","second.value"]""", hub.GetStartupValueKeys());
+        Assert.Equal(["first.value", "second.value"], hub.GetStartupValueKeys());
     }
 
     [Fact]
@@ -486,8 +486,6 @@ public class ComponentHubTest
             .Setup(m => m.CreateCircuitHostAsync(
                 It.IsAny<IReadOnlyList<ComponentDescriptor>>(),
                 It.IsAny<CircuitClientProxy>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
                 It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
@@ -520,8 +518,6 @@ public class ComponentHubTest
             .Setup(m => m.CreateCircuitHostAsync(
                 It.IsAny<IReadOnlyList<ComponentDescriptor>>(),
                 It.IsAny<CircuitClientProxy>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
                 It.IsAny<IReadOnlyDictionary<string, string>>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<IPersistentComponentStateStore>(),
@@ -765,8 +761,6 @@ public class ComponentHubTest
         public ValueTask<CircuitHost> CreateCircuitHostAsync(
             IReadOnlyList<ComponentDescriptor> components,
             CircuitClientProxy client,
-            string baseUri,
-            string uri,
             IReadOnlyDictionary<string, string> startupValues,
             ClaimsPrincipal user,
             IPersistentComponentStateStore store,

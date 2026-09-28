@@ -16,13 +16,6 @@ internal sealed class NavigationManagerInitializer : IHostInitializer
         cancellationToken.ThrowIfCancellationRequested();
 
         var startupValues = services.GetRequiredService<IHostStartupValues>();
-        var httpContextStartupValues =
-            services.GetRequiredKeyedService<HttpContextHostStartupValues>(HostInitializerKey.Static);
-        if (!ReferenceEquals(startupValues, httpContextStartupValues))
-        {
-            return Task.CompletedTask;
-        }
-
         var navigationManager = services.GetRequiredService<NavigationManager>();
         var renderer = services.GetRequiredService<EndpointHtmlRenderer>();
         ((IHostEnvironmentNavigationManager)navigationManager).Initialize(

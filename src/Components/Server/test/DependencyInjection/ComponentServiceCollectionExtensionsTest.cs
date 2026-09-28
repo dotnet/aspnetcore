@@ -146,9 +146,9 @@ public class ComponentServiceCollectionExtensionsTest
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
-        var expectedAssembly = registrations is "Server"
-            ? "Microsoft.AspNetCore.Components.Server"
-            : "Microsoft.AspNetCore.Components.Endpoints";
+        var expectedAssembly = registrations is "Endpoints"
+            ? "Microsoft.AspNetCore.Components.Endpoints"
+            : "Microsoft.AspNetCore.Components.Server";
 
         Assert.Equal(expectedAssembly, startupValues.GetType().Assembly.GetName().Name);
     }
@@ -163,9 +163,13 @@ public class ComponentServiceCollectionExtensionsTest
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         scope.ServiceProvider.GetRequiredService<InteractiveServerContext>().IsInteractive = true;
+        scope.ServiceProvider
+            .GetRequiredKeyedService<InteractiveHostStartupValues>(HostInitializerKey.Server)
+            .Initialize(new Dictionary<string, string> { ["test"] = "value" });
 
         var startupValues = scope.ServiceProvider.GetRequiredService<IHostStartupValues>();
-        Assert.IsType<InteractiveHostStartupValues>(startupValues);
+        Assert.IsType<DefaultHostStartupValues>(startupValues);
+        Assert.Equal("value", startupValues.GetRequired("test"));
     }
 
     [Fact]

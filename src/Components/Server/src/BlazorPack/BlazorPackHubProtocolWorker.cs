@@ -48,6 +48,17 @@ internal sealed class BlazorPackHubProtocolWorker : MessagePackHubProtocolWorker
 
                 return bytes.Value.ToArray();
             }
+            else if (type == typeof(string[]))
+            {
+                var length = reader.ReadArrayHeader();
+                var values = new string[length];
+                for (var i = 0; i < length; i++)
+                {
+                    values[i] = ReadString(ref reader, field);
+                }
+
+                return values;
+            }
             else if (type == typeof(JsonElement))
             {
                 var bytes = reader.ReadBytes();
@@ -102,6 +113,14 @@ internal sealed class BlazorPackHubProtocolWorker : MessagePackHubProtocolWorker
 
             case byte[] byteArray:
                 writer.Write(byteArray);
+                break;
+
+            case string[] stringArray:
+                writer.WriteArrayHeader(stringArray.Length);
+                foreach (var item in stringArray)
+                {
+                    writer.Write(item);
+                }
                 break;
 
             default:

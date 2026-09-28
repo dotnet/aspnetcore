@@ -26,7 +26,7 @@ describe('CircuitManager startup values', () => {
     globals.testCircuitStartup = { value: 'expected' };
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        return '["document.baseURI","location.href","testCircuitStartup.value"]';
+        return ['document.baseURI', 'location.href', 'testCircuitStartup.value'];
       }
 
       return 'circuit-id';
@@ -66,7 +66,7 @@ describe('CircuitManager startup values', () => {
   test('does not fall back after start fails', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        return '[]';
+        return [];
       }
 
       throw new Error('New start failed.');
@@ -83,7 +83,7 @@ describe('CircuitManager startup values', () => {
     globals.testCircuitStartup = { value: 'expected' };
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        return '["testCircuitStartup.value"]';
+        return ['testCircuitStartup.value'];
       }
 
       return method === 'ResumeCircuit' ? 'resumed-circuit-id' : 'circuit-id';
@@ -114,7 +114,7 @@ describe('CircuitManager startup values', () => {
           throw new Error(
             "Failed to invoke 'GetStartupValueKeys' due to an error on the server. HubException: Method does not exist.");
         }
-        return '[]';
+        return [];
       }
 
       return 'circuit-id';
@@ -132,7 +132,7 @@ describe('CircuitManager startup values', () => {
   test('does not fall back when resume fails', async () => {
     const invoke = jest.fn(async (method: string, ..._args: unknown[]) => {
       if (method === 'GetStartupValueKeys') {
-        return '[]';
+        return [];
       }
 
       if (method === 'ResumeCircuit') {
