@@ -102,7 +102,8 @@ public partial class HubConnectionTests
         try
         {
             await connection.StartAsync().DefaultTimeout();
-            await connection.SendAsync("Start").DefaultTimeout();
+            Assert.Equal(HubConnectionState.Connected, connection.State);
+            server.Services.GetRequiredService<TaskCompletionSource>().SetResult();
             var error = await closed.Task.DefaultTimeout();
             Assert.IsType<InvalidDataException>(error);
             Assert.Equal("Error reading JSON.", error.Message);
@@ -117,9 +118,12 @@ public partial class HubConnectionTests
 
     public class MalformedMessageStartup
     {
-        public void ConfigureServices(IServiceCollection services) { }
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddSingleton(new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+        }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, TaskCompletionSource sendMalformedMessage)
         {
             app.UseWebSockets();
             app.Run(async context =>
@@ -130,12 +134,17 @@ public partial class HubConnectionTests
                 var buffer = new byte[1024];
                 await ReceiveMessage(socket, buffer, cancellation.Token);
                 await socket.SendAsync(Encoding.UTF8.GetBytes("{}\u001e"), WebSocketMessageType.Text, true, cancellation.Token);
-                await ReceiveMessage(socket, buffer, cancellation.Token);
+                // StartAsync sends an initial ping. Only the test, after startup completes,
+                // may trigger malformed data; receiving a ping must not trigger it.
+                await sendMalformedMessage.Task.WaitAsync(cancellation.Token);
                 var payload = Encoding.UTF8.GetBytes("{\"type\":1,\"target\":\"Bad\",\"arguments\":[\"MALFORMED_CONTENT_MARKER\"{\u001e");
                 await socket.SendAsync(payload, WebSocketMessageType.Text, true, cancellation.Token);
                 try
                 {
-                    await socket.ReceiveAsync(buffer, cancellation.Token);
+                    while ((await socket.ReceiveAsync(buffer, cancellation.Token)).MessageType != WebSocketMessageType.Close)
+                    {
+                        // Ignore queued pings while the client rejects the malformed data.
+                    }
                 }
                 catch (WebSocketException)
                 {
