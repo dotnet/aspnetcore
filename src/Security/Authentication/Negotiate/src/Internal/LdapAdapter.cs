@@ -64,7 +64,7 @@ internal static partial class LdapAdapter
         }
 
         var distinguishedName = settings.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
-        // Role claims intentionally use only each group's CN; other distinguished-name components aren't preserved.
+        // Role claims intentionally use only each group's CN; other distinguished name (DN) components are not preserved.
         var retrievedClaims = new List<string>();
 
         var filter = $"(&(objectClass=user)(sAMAccountName={EscapeLdapFilterValue(userAccountName)}))"; // This is using ldap search query language, it is looking on the server for someUser

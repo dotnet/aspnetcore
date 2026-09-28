@@ -53,8 +53,8 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     /// <remarks>
     /// LDAP group memberships are represented as role claims using each group's common name (CN) as the role value.
-    /// Organizational-unit and other distinguished-name components aren't preserved. Role-based authorization with
-    /// duplicate group CNs across organizational units isn't supported.
+    /// Organizational unit (OU) and other distinguished name (DN) components are not preserved. Role-based authorization
+    /// with duplicate group CNs across organizational units is not supported.
     /// </remarks>
     public void EnableLdap(string domain)
     {
@@ -70,8 +70,8 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     /// <remarks>
     /// LDAP group memberships are represented as role claims using each group's common name (CN) as the role value.
-    /// Organizational-unit and other distinguished-name components aren't preserved. Role-based authorization with
-    /// duplicate group CNs across organizational units isn't supported.
+    /// Organizational unit (OU) and other distinguished name (DN) components are not preserved. Role-based authorization
+    /// with duplicate group CNs across organizational units is not supported.
     /// </remarks>
     public void EnableLdap(Action<LdapSettings> configureSettings)
     {
