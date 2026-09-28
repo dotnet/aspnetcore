@@ -2,49 +2,43 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Validates the tracing infrastructure.
-[Collection(nameof(E2ECollection))]
-public class TracingTests : BrowserTest
+[UITest]
+public partial class TracingTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
 
-    public TracingTests(ServerFixture<E2ETestAssembly> fixture)
+    protected override async Task InitializeCoreAsync()
     {
-        _fixture = fixture;
+        await base.InitializeCoreAsync();
+        _server = await StartServerAsync<App>(TestRoot.Servers);
     }
 
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
-    }
-
-    [Fact]
+    [TestMethod]
     public async Task HomePage_WithTracing_DisplaysContent()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
+        var context = await NewTracedContextAsync(_server);
 
-        var page = await ctx.NewPageAsync();
+        var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
 
         await Expect(page).ToHaveTitleAsync("Home");
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Counter_WithTracing_IncrementsOnClick()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
-        var page = await ctx.NewPageAsync();
+        var context = await NewTracedContextAsync(_server);
+        var page = await context.NewPageAsync();
 
         await page.GotoAsync($"{_server.TestUrl}/counter");
 
@@ -59,52 +53,75 @@ public class TracingTests : BrowserTest
         await Expect(countLocator).ToHaveTextAsync("Current count: 1");
     }
 
-    [Fact]
-    public async Task TracedContext_ContextProperty_ExposesUnderlyingContext()
+    [TestMethod]
+    public async Task NewTracedContext_ReturnsBrowserContext()
     {
-        await using var traced = await this.NewTracedContextAsync(_server);
-
-        var context = traced.Context;
-        Assert.NotNull(context);
+        var context = await NewTracedContextAsync(_server);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
-    public async Task ManualTracing_TraceAndWithArtifacts_WorkTogether()
+    [TestMethod]
+    public async Task ManualTracing_RegistersContextForArtifacts()
     {
-        var artifactDir = Path.Combine(
-            AppContext.BaseDirectory, "test-artifacts", "manual-tracing-test");
-
         var context = await NewContext(
             new BrowserNewContextOptions()
-                .WithServerRouting(_server)
-                .WithArtifacts(artifactDir));
+                .WithServerRouting(_server));
 
-        await using var tracing = await context.TraceAsync(artifactDir);
+        await TraceAsync(context);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ArtifactDirectory_IsCreated_WhenTracingStarts()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
+        var context = await NewTracedContextAsync(_server);
 
-        var testName = TestContext.Current.Test?.TestDisplayName ?? "unknown";
-        var sanitized = PlaywrightExtensions.SanitizeFileName(testName);
-        var expectedDir = Path.Combine(
-            AppContext.BaseDirectory, "test-artifacts", sanitized);
+        var testName = TestContext.TestName ?? "unknown";
+        var expectedDir = TestArtifactDirectory.GetPath(testName);
 
-        Assert.True(Directory.Exists(expectedDir),
+        Assert.IsTrue(Directory.Exists(expectedDir),
             $"Expected artifact directory to exist at: {expectedDir}");
 
-        var page = await ctx.NewPageAsync();
+        var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
+    }
+
+    [TestMethod]
+    public async Task ServerStartupFailure_CapturesOutputArtifacts()
+    {
+        const string stdoutMarker = "Intentional startup failure stdout";
+        const string stderrMarker = "Intentional startup failure stderr";
+        var artifactRoot = Path.Combine(
+            TestArtifactDirectory.GetPath(TestContext.TestName ?? "unknown"),
+            "server-output");
+        var existingFiles = Directory.Exists(artifactRoot)
+            ? Directory.GetFiles(artifactRoot, "*", SearchOption.AllDirectories).ToHashSet()
+            : [];
+
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => StartServerAsync<App>(
+                TestRoot.Servers,
+                options => options.EnvironmentVariables["E2E_FAIL_ON_STARTUP"] = "1"));
+
+        Assert.Contains("Intentional startup failure", exception.Message);
+
+        var newFiles = Directory.GetFiles(artifactRoot, "*", SearchOption.AllDirectories)
+            .Where(path => !existingFiles.Contains(path))
+            .ToArray();
+        Assert.HasCount(3, newFiles);
+        Assert.IsTrue(newFiles.Any(path => path.EndsWith(".startup.log", StringComparison.Ordinal)));
+        Assert.IsTrue(newFiles.Any(path =>
+            path.EndsWith(".stdout.log", StringComparison.Ordinal) &&
+            File.ReadAllText(path).Contains(stdoutMarker, StringComparison.Ordinal)));
+        Assert.IsTrue(newFiles.Any(path =>
+            path.EndsWith(".stderr.log", StringComparison.Ordinal) &&
+            File.ReadAllText(path).Contains(stderrMarker, StringComparison.Ordinal)));
     }
 }

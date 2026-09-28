@@ -51,7 +51,13 @@
     Inputs="@(JavaFiles);$(BaseIntermediateOutputPath)javafiles.cache"
     Outputs="@(BuildOutputFiles)">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
-    <Exec Command="$(JavaBuildArgs)" />
+    <!--
+      StandardErrorImportance="High" ensures gradle's stderr (where compilation errors and stack traces
+      are written) flows through MSBuild at high importance, so it shows up in the binlog and CI console
+      instead of being dropped or buried at default importance.
+    -->
+    <Exec Command="$(JavaBuildArgs)"
+          StandardErrorImportance="High" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 
@@ -65,7 +71,8 @@
   <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
     <Message Text="> gradlew $(GradleOptions) publishToMavenLocal" Importance="high" />
-    <Exec Command="../gradlew $(GradleOptions) publishToMavenLocal" />
+    <Exec Command="../gradlew $(GradleOptions) publishToMavenLocal"
+          StandardErrorImportance="High" />
     <Message Importance="high" Text="$(PackageId) -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
   </Target>

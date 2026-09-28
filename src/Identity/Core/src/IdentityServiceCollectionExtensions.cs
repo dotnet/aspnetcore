@@ -101,6 +101,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<DataProtectionTokenProviderOptions>, PostConfigureDataProtectionTokenProviderOptions>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<IdentityPasskeyOptions>, PostConfigureIdentityPasskeyOptions>());
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
@@ -184,6 +185,21 @@ public static class IdentityServiceCollectionExtensions
         private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
+    }
+
+    private sealed class PostConfigureIdentityPasskeyOptions : IPostConfigureOptions<IdentityPasskeyOptions>
+    {
+        public PostConfigureIdentityPasskeyOptions(TimeProvider? timeProvider = null)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider? TimeProvider { get; }
+
+        public void PostConfigure(string? name, IdentityPasskeyOptions options)
         {
             options.TimeProvider ??= TimeProvider;
         }

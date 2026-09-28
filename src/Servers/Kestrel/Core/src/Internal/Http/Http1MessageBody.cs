@@ -15,6 +15,8 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 
 internal abstract class Http1MessageBody : MessageBody
 {
+    private static readonly bool ContinueProcessingAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.AllowKeepAliveAfterCLTE", out var value) && value;
+
     protected readonly Http1Connection _context;
     private bool _readerCompleted;
 
@@ -166,17 +168,18 @@ internal abstract class Http1MessageBody : MessageBody
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
             }
 
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
             // A sender MUST NOT send a Content-Length header field in any message
             // that contains a Transfer-Encoding header field.
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
             // If a message is received with both a Transfer-Encoding and a
             // Content-Length header field, the Transfer-Encoding overrides the
-            // Content-Length.  Such a message might indicate an attempt to
-            // perform request smuggling (Section 9.5) or response splitting
-            // (Section 9.4) and ought to be handled as an error.  A sender MUST
-            // remove the received Content-Length field prior to forwarding such
-            // a message downstream.
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
             // We should remove the Content-Length request header in this case, for compatibility
             // reasons, include x-Content-Length so that the original Content-Length is still available.
             if (headers.ContentLength.HasValue)
@@ -186,6 +189,17 @@ internal abstract class Http1MessageBody : MessageBody
                 // if user already passed X-Content-Length, we won't overwrite it
                 _ = headerDictionary.TryAdd("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
                 headers.ContentLength = null;
+
+                if (!ContinueProcessingAfterCLTE)
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                    // A server MAY reject a request that contains both Content-Length
+                    // and Transfer-Encoding or process such a request in accordance
+                    // with the Transfer-Encoding alone. Regardless, the server MUST
+                    // close the connection after responding to such a request to
+                    // avoid the potential attacks.
+                    keepAlive = false;
+                }
             }
 
             // TODO may push more into the wrapper rather than just calling into the message body

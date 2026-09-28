@@ -1,0 +1,78 @@
+@page "/forms/client-validation/basic-validation"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Basic client-side validation</h2>
+
+<style>
+    .invalid { border-color: red; }
+    .valid.modified { border-color: green; }
+    .validation-message { color: red; }
+    .validation-summary-errors { color: red; }
+    .validation-summary-valid { display: none; }
+</style>
+
+<EditForm Model="Form" FormName="basic-validation" method="post">
+    <DataAnnotationsValidator DisableClientValidation="@DisableClientValidation" />
+    <ValidationSummary />
+
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="Form!.Name" />
+        <ValidationMessage For="() => Form!.Name" />
+    </div>
+
+    <div>
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="Form!.Email" />
+        <ValidationMessage For="() => Form!.Email" />
+    </div>
+
+    <div>
+        <label for="password">Password</label>
+        <InputText id="password" type="password" @bind-Value="Form!.Password" />
+        <ValidationMessage For="() => Form!.Password" />
+    </div>
+
+    <div>
+        <label for="confirmpassword">Confirm Password</label>
+        <InputText id="confirmpassword" type="password" @bind-Value="Form!.ConfirmPassword" />
+        <ValidationMessage For="() => Form!.ConfirmPassword" />
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+<div id="event-log"></div>
+
+<script suppress-error="BL9992">
+    document.querySelector('form').addEventListener('validationcomplete', function (e) {
+        document.getElementById('event-log').textContent =
+            'valid:' + e.detail.valid + ';errors:' + e.detail.errors.size;
+    });
+</script>
+
+@code {
+    [SupplyParameterFromForm] private BasicValidationModel? Form { get; set; }
+
+    [SupplyParameterFromQuery(Name = "disable-client-validation")] private bool DisableClientValidation { get; set; }
+
+    protected override void OnInitialized() => Form ??= new BasicValidationModel();
+
+    public class BasicValidationModel
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Email is not valid.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(50, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 50 characters.")]
+        public string? Password { get; set; }
+
+        [Compare(nameof(Password), ErrorMessage = "Passwords must match.")]
+        public string? ConfirmPassword { get; set; }
+    }
+}

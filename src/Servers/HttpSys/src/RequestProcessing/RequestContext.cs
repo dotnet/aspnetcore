@@ -312,6 +312,62 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         throw new HttpSysException((int)statusCode);
     }
 
+    /// <summary>
+    /// Generic synchronous wrapper around <c>HttpQueryRequestProperty</c>.
+    /// Returns true on success, false if <paramref name="output"/> is too small (with the required size in <paramref name="bytesReturned"/>),
+    /// and throws for any other failure.
+    /// </summary>
+    internal unsafe bool TryGetRequestPropertyCore(
+        HTTP_REQUEST_PROPERTY propertyId,
+        ReadOnlySpan<byte> qualifier,
+        Span<byte> output,
+        out int bytesReturned)
+    {
+        bytesReturned = default;
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            throw new InvalidOperationException("Windows HTTP Server API does not support HttpQueryRequestProperty.");
+        }
+
+        uint statusCode;
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturnedPointer = &bytesReturnedValue;
+
+        // `fixed` on an empty span yields a null pointer, which is what HttpQueryRequestProperty
+        // requires for unused qualifier/output parameters.
+        fixed (byte* pQualifier = qualifier)
+        fixed (byte* pOutput = output)
+        {
+            statusCode = HttpApi.HttpGetRequestProperty(
+                requestQueueHandle: Server.RequestQueue.Handle,
+                requestId,
+                propertyId: propertyId,
+                qualifier: pQualifier,
+                qualifierSize: (uint)qualifier.Length,
+                output: pOutput,
+                outputSize: (uint)output.Length,
+                bytesReturned: (IntPtr)bytesReturnedPointer,
+                overlapped: IntPtr.Zero);
+
+            bytesReturned = checked((int)bytesReturnedValue);
+
+            if (statusCode is ErrorCodes.ERROR_SUCCESS)
+            {
+                return true;
+            }
+
+            if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+            {
+                return false;
+            }
+        }
+
+        Log.QueryRequestPropertyError(Logger, requestId, statusCode);
+        throw new HttpSysException((int)statusCode);
+    }
+
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         if (!HttpApi.HttpGetRequestPropertySupported)

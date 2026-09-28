@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Internal;
@@ -39,8 +40,15 @@ public static class ComponentServiceCollectionExtensions
 
         services.AddDataProtection();
 
-        services.TryAddScoped<ProtectedLocalStorage>();
-        services.TryAddScoped<ProtectedSessionStorage>();
+        services.TryAddScoped<ProtectedBrowserStorageJsonSerializerOptions>();
+        services.TryAddScoped(static services => new ProtectedLocalStorage(
+            services.GetRequiredService<IJSRuntime>(),
+            services.GetRequiredService<IDataProtectionProvider>(),
+            services.GetRequiredService<ProtectedBrowserStorageJsonSerializerOptions>().Options));
+        services.TryAddScoped(static services => new ProtectedSessionStorage(
+            services.GetRequiredService<IJSRuntime>(),
+            services.GetRequiredService<IDataProtectionProvider>(),
+            services.GetRequiredService<ProtectedBrowserStorageJsonSerializerOptions>().Options));
 
         // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
         // the global HubOptions before running the configure callback. We want to ensure that happens

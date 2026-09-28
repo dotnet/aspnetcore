@@ -571,7 +571,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             connection1.Abort();
             await manager2.OnDisconnectedAsync(connection1).DefaultTimeout();
 
-            // Server should propogate connection closure so task isn't blocked
+            // Server should propagate connection closure so task isn't blocked
             var ex = await Assert.ThrowsAsync<HubException>(() => invoke1).DefaultTimeout();
             Assert.Equal("Connection disconnected.", ex.Message);
         }

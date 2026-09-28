@@ -301,6 +301,7 @@ internal class LoggedMessage
     internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
     internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
     internal static LoggedMessage ExpirationInfiniteMaxStaleSatisfied => new LoggedMessage(29, LogLevel.Debug);
+    internal static LoggedMessage RequestContainsInvalidCacheSymbols => new LoggedMessage(30, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {

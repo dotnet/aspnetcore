@@ -1,0 +1,122 @@
+{
+  "calls": [
+    {
+      "prompt": "Please write a story about a pirate named Candy Beard.",
+      "messageCount": 2,
+      "toolNames": [
+        "confirm_changes",
+        "write_document_local"
+      ],
+      "state": {
+        "document": "# Harbor Notes\n\nThe crew is preparing for a quiet voyage."
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "pirate-opening",
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star."
+          }
+        },
+        {
+          "name": "pirate-complete",
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home."
+          }
+        },
+        {
+          "name": "pirate-confirmation",
+          "functionCall": {
+            "callId": "predictive-write-1",
+            "name": "write_document_local",
+            "arguments": {
+              "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please write a story about a pirate named Candy Beard.",
+      "messageCount": 6,
+      "toolNames": [
+        "confirm_changes",
+        "write_document_local"
+      ],
+      "state": {
+        "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home."
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-pirate-summary"
+        },
+        {
+          "name": "pirate-summary",
+          "chunks": [
+            "Candy Beard's voyage is ready."
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "Please add a character named Courage.",
+      "messageCount": 8,
+      "toolNames": [
+        "confirm_changes",
+        "write_document_local"
+      ],
+      "state": {
+        "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon."
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "courage-draft",
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon.\n\nCourage joined the crew"
+          }
+        },
+        {
+          "name": "courage-complete",
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon.\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon."
+          }
+        },
+        {
+          "name": "courage-confirmation",
+          "functionCall": {
+            "callId": "predictive-write-2",
+            "name": "write_document_local",
+            "arguments": {
+              "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon.\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please add a character named Courage.",
+      "messageCount": 12,
+      "toolNames": [
+        "confirm_changes",
+        "write_document_local"
+      ],
+      "state": {
+        "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon."
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-courage-summary"
+        },
+        {
+          "name": "courage-summary",
+          "chunks": [
+            "I left the document unchanged."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -70,6 +70,7 @@ public partial class HubConnection : IAsyncDisposable
 
     private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendStreamItems)));
     private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendIAsyncEnumerableStreamItems)));
+    private static readonly TimeSpan _maximumAuthenticationRefreshDelay = TimeSpan.FromMilliseconds(int.MaxValue);
 
     // Persistent across all connections
     private readonly ILoggerFactory _loggerFactory;
@@ -88,6 +89,15 @@ public partial class HubConnection : IAsyncDisposable
     private readonly ReconnectingConnectionState _state;
 
     private bool _disposed;
+
+    // Authentication refresh fields
+    private readonly object _authRefreshTimerLock = new object();
+    private Timer? _authRefreshTimer;
+    private AuthenticationRefreshTimerState? _authRefreshTimerState;
+    private ConnectionState? _authRefreshConnectionState;
+    // The delay the authentication-refresh timer was last armed with. Exposed for tests to assert scheduling.
+    private TimeSpan _lastAuthenticationRefreshDelay;
+    private readonly AuthenticationRefreshOptions _authenticationRefreshOptions;
 
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -159,6 +169,24 @@ public partial class HubConnection : IAsyncDisposable
     /// </code>
     /// </example>
     public event Func<string?, Task>? Reconnected;
+
+    /// <summary>
+    /// Occurs after the <see cref="HubConnection"/> successfully refreshes its authentication, either
+    /// automatically or via an explicit call to <see cref="RefreshAuthenticationAsync"/>.
+    /// </summary>
+    /// <remarks>
+    /// The authentication refresh operation waits for each handler's returned <see cref="Task"/> to complete.
+    /// </remarks>
+    public event Func<AuthenticationRefreshedContext, Task>? AuthenticationRefreshed;
+
+    /// <summary>
+    /// Occurs when an authentication refresh attempt fails, either automatically or via an explicit
+    /// call to <see cref="RefreshAuthenticationAsync"/>.
+    /// </summary>
+    /// <remarks>
+    /// The authentication refresh operation waits for each handler's returned <see cref="Task"/> to complete.
+    /// </remarks>
+    public event Func<AuthenticationRefreshFailedContext, Task>? AuthenticationRefreshFailed;
 
     // internal for testing purposes
     internal TimeSpan TickRate { get; set; } = TimeSpan.FromSeconds(1);
@@ -254,6 +282,8 @@ public partial class HubConnection : IAsyncDisposable
         ServerTimeout = options?.Value.ServerTimeout ?? DefaultServerTimeout;
 
         KeepAliveInterval = options?.Value.KeepAliveInterval ?? DefaultKeepAliveInterval;
+
+        _authenticationRefreshOptions = serviceProvider.GetService<IOptions<AuthenticationRefreshOptions>>()?.Value ?? new AuthenticationRefreshOptions();
     }
 
     /// <summary>
@@ -545,9 +575,262 @@ public partial class HubConnection : IAsyncDisposable
         {
             await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken).ConfigureAwait(false);
         }
+        EnableAuthenticationRefreshTimer(startingConnectionState);
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
+        // Schedule automatic authentication refresh if enabled and the server reported a token lifetime.
+        if (_authenticationRefreshOptions.EnableAutoRefresh)
+        {
+            var authenticationRefreshFeature = connection.Features.Get<IAuthenticationRefreshFeature>();
+            if (authenticationRefreshFeature?.InitialTokenLifetime is { } initialTokenLifetime && initialTokenLifetime > TimeSpan.Zero)
+            {
+                ScheduleAuthenticationRefresh(initialTokenLifetime, startingConnectionState);
+            }
+        }
+
         Log.Started(_logger);
+    }
+
+    /// <summary>
+    /// Sends a POST to the server's /refresh endpoint to refresh the authentication token.
+    /// The server re-authenticates and updates the connection's ClaimsPrincipal.
+    /// Returns the updated token lifetime, or null if not provided.
+    /// </summary>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The new token lifetime from the server, or null.</returns>
+    public async Task<TimeSpan?> RefreshAuthenticationAsync(CancellationToken cancellationToken = default)
+    {
+        CheckDisposed();
+
+        var connectionState = _state.CurrentConnectionStateUnsynchronized;
+        if (connectionState == null)
+        {
+            throw new InvalidOperationException("Cannot refresh authentication when the connection is not active.");
+        }
+
+        return await RefreshAuthenticationAsyncCore(connectionState, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<TimeSpan?> RefreshAuthenticationAsyncCore(ConnectionState connectionState, CancellationToken cancellationToken)
+    {
+        var connection = connectionState.Connection;
+        var authenticationRefreshFeature = connection.Features.Get<IAuthenticationRefreshFeature>();
+        if (authenticationRefreshFeature is null)
+        {
+            throw new InvalidOperationException("Authentication refresh is only supported with HTTP-based connections.");
+        }
+
+        TimeSpan? newTtl;
+        try
+        {
+            newTtl = await authenticationRefreshFeature.RefreshAuthenticationAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            var failedCallbacks = AuthenticationRefreshFailed;
+            if (failedCallbacks is not null)
+            {
+                await InvokeEventHandlersAsync(
+                    failedCallbacks,
+                    new AuthenticationRefreshFailedContext(this, ex),
+                    _logger,
+                    Log.AuthenticationRefreshCallbackFailed).ConfigureAwait(false);
+            }
+            throw;
+        }
+
+        // Reschedule the auto-refresh timer if the server reported a new lifetime.
+        if (_authenticationRefreshOptions.EnableAutoRefresh)
+        {
+            if (newTtl is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
+            {
+                ScheduleAuthenticationRefresh(tokenLifetime, connectionState);
+            }
+        }
+
+        var refreshedCallbacks = AuthenticationRefreshed;
+        if (refreshedCallbacks is not null)
+        {
+            await InvokeEventHandlersAsync(
+                refreshedCallbacks,
+                new AuthenticationRefreshedContext(this, newTtl),
+                _logger,
+                Log.AuthenticationRefreshCallbackFailed).ConfigureAwait(false);
+        }
+
+        return newTtl;
+    }
+
+    private static async Task InvokeEventHandlersAsync<T>(
+        Func<T, Task> handlers,
+        T argument,
+        ILogger logger,
+        Action<ILogger, Exception> logError)
+    {
+        foreach (Func<T, Task> handler in handlers.GetInvocationList())
+        {
+            try
+            {
+                await handler(argument).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logError(logger, ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Schedules an automatic authentication refresh based on the server-provided token lifetime.
+    /// The refresh fires at: now + tokenLifetime - RefreshBeforeExpiration.
+    /// For short-lived tokens (TTL &lt; 2x RefreshBeforeExpiration), refreshes at half the TTL.
+    /// </summary>
+    internal void ScheduleAuthenticationRefresh(TimeSpan tokenLifetime)
+    {
+        if (_state.CurrentConnectionStateUnsynchronized is { } connectionState)
+        {
+            ScheduleAuthenticationRefresh(tokenLifetime, connectionState);
+        }
+    }
+
+    private void ScheduleAuthenticationRefresh(TimeSpan tokenLifetime, ConnectionState connectionState)
+    {
+        var refreshBefore = _authenticationRefreshOptions.RefreshBeforeExpiration;
+        TimeSpan refreshIn;
+
+        var timeUntilRefreshWindow = tokenLifetime - refreshBefore;
+        if (timeUntilRefreshWindow <= refreshBefore)
+        {
+            // Short-lived token: refresh at half the TTL to avoid spamming
+            refreshIn = new TimeSpan(tokenLifetime.Ticks / 2);
+        }
+        else
+        {
+            refreshIn = tokenLifetime - refreshBefore;
+        }
+
+        ScheduleAuthenticationRefreshAt(refreshIn, connectionState);
+    }
+
+    /// <summary>
+    /// Arms the one-shot authentication-refresh timer to fire after <paramref name="refreshIn"/>, replacing any
+    /// existing timer.
+    /// </summary>
+    internal void ScheduleAuthenticationRefreshAt(TimeSpan refreshIn)
+    {
+        if (_state.CurrentConnectionStateUnsynchronized is { } connectionState)
+        {
+            ScheduleAuthenticationRefreshAt(refreshIn, connectionState);
+        }
+    }
+
+    private void ScheduleAuthenticationRefreshAt(TimeSpan refreshIn, ConnectionState connectionState)
+    {
+        if (refreshIn > _maximumAuthenticationRefreshDelay)
+        {
+            refreshIn = _maximumAuthenticationRefreshDelay;
+        }
+
+        Timer? previousTimer;
+        lock (_authRefreshTimerLock)
+        {
+            if (!ReferenceEquals(_authRefreshConnectionState, connectionState))
+            {
+                return;
+            }
+
+            var timerState = new AuthenticationRefreshTimerState(this, connectionState);
+            var timer = new Timer(
+                static state =>
+                {
+                    var timerState = (AuthenticationRefreshTimerState)state!;
+                    _ = timerState.HubConnection.OnAuthenticationRefreshTimerFired(timerState);
+                },
+                timerState,
+                refreshIn,
+                Timeout.InfiniteTimeSpan); // One-shot timer
+
+            previousTimer = _authRefreshTimer;
+            _authRefreshTimer = timer;
+            _authRefreshTimerState = timerState;
+            _lastAuthenticationRefreshDelay = refreshIn;
+        }
+
+        previousTimer?.Dispose();
+    }
+
+    private async Task OnAuthenticationRefreshTimerFired(AuthenticationRefreshTimerState timerState)
+    {
+        if (!TryClaimAuthenticationRefreshTimer(timerState, out var timer))
+        {
+            return;
+        }
+
+        timer.Dispose();
+
+        try
+        {
+            Log.AuthenticationRefreshStarting(_logger);
+            var newTtl = await RefreshAuthenticationAsyncCore(timerState.ConnectionState, cancellationToken: default).ConfigureAwait(false);
+            Log.AuthenticationRefreshCompleted(_logger, newTtl);
+        }
+        catch (Exception ex)
+        {
+            Log.AuthenticationRefreshFailed(_logger, ex);
+        }
+    }
+
+    private bool TryClaimAuthenticationRefreshTimer(AuthenticationRefreshTimerState timerState, [NotNullWhen(true)] out Timer? timer)
+    {
+        lock (_authRefreshTimerLock)
+        {
+            if (!ReferenceEquals(_authRefreshConnectionState, timerState.ConnectionState)
+                || !ReferenceEquals(_authRefreshTimerState, timerState))
+            {
+                timer = null;
+                return false;
+            }
+
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+            _authRefreshTimerState = null;
+            return timer is not null;
+        }
+    }
+
+    private void EnableAuthenticationRefreshTimer(ConnectionState connectionState)
+    {
+        Timer? timer;
+        lock (_authRefreshTimerLock)
+        {
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+            _authRefreshTimerState = null;
+            _authRefreshConnectionState = connectionState;
+        }
+
+        timer?.Dispose();
+    }
+
+    private void DisableAuthenticationRefreshTimer()
+    {
+        Timer? timer;
+        lock (_authRefreshTimerLock)
+        {
+            _authRefreshConnectionState = null;
+            _authRefreshTimerState = null;
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+        }
+
+        timer?.Dispose();
+    }
+
+    private sealed class AuthenticationRefreshTimerState(HubConnection hubConnection, ConnectionState connectionState)
+    {
+        public HubConnection HubConnection { get; } = hubConnection;
+
+        public ConnectionState ConnectionState { get; } = connectionState;
     }
 
     private static ValueTask CloseAsync(ConnectionContext connection)
@@ -560,6 +843,8 @@ public partial class HubConnection : IAsyncDisposable
     // if we're disposing.
     private async Task StopAsyncCore(bool disposing)
     {
+        DisableAuthenticationRefreshTimer();
+
         // StartAsync acquires the connection lock for the duration of the handshake.
         // ReconnectAsync also acquires the connection lock for reconnect attempts and handshakes.
         // Cancel the StopCts without acquiring the lock so we can short-circuit it.
@@ -596,6 +881,7 @@ public partial class HubConnection : IAsyncDisposable
             }
 
             CheckDisposed();
+            DisableAuthenticationRefreshTimer();
             connectionState = _state.CurrentConnectionStateUnsynchronized;
 
             // Set the stopping flag so that any invocations after this get a useful error message instead of
@@ -626,7 +912,7 @@ public partial class HubConnection : IAsyncDisposable
             }
             else
             {
-                // Reset StopCts if there isn't an active connection so that the next StartAsync wont immediately fail due to the token being canceled
+                // Reset StopCts if there isn't an active connection so that the next StartAsync won't immediately fail due to the token being canceled
                 _state.StopCts = new CancellationTokenSource();
             }
 
@@ -700,37 +986,6 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task<ChannelReader<object?>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
     {
-        async Task OnStreamCanceled(InvocationRequest irq)
-        {
-            // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
-            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
-            try
-            {
-                if (_state.CurrentConnectionStateUnsynchronized != null)
-                {
-                    Log.SendingCancellation(_logger, irq.InvocationId);
-
-                    // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
-                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
-                }
-                else
-                {
-                    Log.UnableToSendCancellation(_logger, irq.InvocationId);
-                }
-            }
-            catch
-            {
-                // Connection closed while trying to cancel a stream. This is fine to ignore.
-            }
-            finally
-            {
-                _state.ReleaseConnectionLock();
-            }
-
-            // Cancel the invocation
-            irq.Dispose();
-        }
-
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
@@ -749,12 +1004,17 @@ public partial class HubConnection : IAsyncDisposable
             var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out channel);
             await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
+            var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
+
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state => _ = OnStreamCanceled((InvocationRequest)state!), irq);
+                var registration = cancellationToken.Register(static state =>
+                {
+                    var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
+                    _ = irqLocal.HubConnection.CancelInvocationAsync(irqLocal, tasks);
+                }, (irq, streamTasks));
+                irq.AttachCancelInvocationRegistration(registration);
             }
-
-            LaunchStreams(connectionState, readers, cancellationToken);
         }
         finally
         {
@@ -821,18 +1081,20 @@ public partial class HubConnection : IAsyncDisposable
         return readers;
     }
 
-    private void LaunchStreams(ConnectionState connectionState, Dictionary<string, object>? readers, CancellationToken cancellationToken)
+    private Task[]? LaunchStreams(ConnectionState connectionState, Dictionary<string, object>? readers, CancellationToken cancellationToken)
     {
-        if (readers == null)
+        if (readers is null)
         {
             // if there were no streaming parameters then readers is never initialized
-            return;
+            return null;
         }
 
         _state.AssertInConnectionLock();
         // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
         var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, cancellationToken);
 
+        var streamTasks = new Task[readers.Count];
+        var index = 0;
         foreach (var kvp in readers)
         {
             var reader = kvp.Value;
@@ -842,7 +1104,7 @@ public partial class HubConnection : IAsyncDisposable
             // A single background thread here quickly gets messy.
             if (ReflectionHelper.GetIAsyncEnumerableInterface(reader.GetType()) is { } asyncEnumerableType)
             {
-                InvokeStreamMethod(
+                streamTasks[index++] = InvokeStreamMethod(
                     _sendIAsyncStreamItemsMethod,
                     asyncEnumerableType.GetGenericArguments(),
                     connectionState,
@@ -854,7 +1116,7 @@ public partial class HubConnection : IAsyncDisposable
 
             if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
             {
-                InvokeStreamMethod(
+                streamTasks[index++] = InvokeStreamMethod(
                     _sendStreamItemsMethod,
                     [channelGenericType],
                     connectionState,
@@ -867,27 +1129,26 @@ public partial class HubConnection : IAsyncDisposable
             // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
             throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
+
+        return streamTasks;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
         Justification = "The methods passed into here (SendStreamItems and SendIAsyncEnumerableStreamItems) don't have trimming annotations.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
         Justification = "ValueTypes are handled without using MakeGenericMethod.")]
-    private void InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
+    private Task InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
     {
         Debug.Assert(genericTypes.Length == 1);
 #if NET6_0_OR_GREATER
         if (!RuntimeFeature.IsDynamicCodeSupported && genericTypes[0].IsValueType)
         {
-            _ = ReflectionSendStreamItems(methodInfo, connectionState, streamId, reader, tokenSource);
+            return ReflectionSendStreamItems(methodInfo, connectionState, streamId, reader, tokenSource);
         }
-        else
 #endif
-        {
-            _ = methodInfo
-                .MakeGenericMethod(genericTypes)
-                .Invoke(this, [connectionState, streamId, reader, tokenSource]);
-        }
+        return (Task)methodInfo
+            .MakeGenericMethod(genericTypes)
+            .Invoke(this, [connectionState, streamId, reader, tokenSource])!;
     }
 
 #if NET6_0_OR_GREATER
@@ -1094,7 +1355,17 @@ public partial class HubConnection : IAsyncDisposable
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out invocationTask);
             await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
-            LaunchStreams(connectionState, readers, cancellationToken);
+            var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                var registration = cancellationToken.Register(static state =>
+                {
+                    var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
+                    _ = irqLocal.HubConnection.CancelInvocationAsync(irqLocal, tasks);
+                }, (irq, streamTasks));
+                irq.AttachCancelInvocationRegistration(registration);
+            }
         }
         finally
         {
@@ -1130,6 +1401,43 @@ public partial class HubConnection : IAsyncDisposable
         }
 
         return activity;
+    }
+
+    private async Task CancelInvocationAsync(InvocationRequest irq, Task[]? streamTasks = null)
+    {
+        // Wait for stream completions to be sent before sending CancelInvocationMessage
+        if (streamTasks is not null)
+        {
+            await Task.WhenAll(streamTasks).ConfigureAwait(false);
+        }
+
+        // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
+        try
+        {
+            if (_state.CurrentConnectionStateUnsynchronized != null)
+            {
+                Log.SendingCancellation(_logger, irq.InvocationId);
+
+                // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
+                await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.UnableToSendCancellation(_logger, irq.InvocationId);
+            }
+        }
+        catch
+        {
+            // Connection closed while trying to cancel. This is fine to ignore.
+        }
+        finally
+        {
+            _state.ReleaseConnectionLock();
+        }
+
+        // Cancel the invocation
+        irq.Dispose();
     }
 
     private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)
@@ -1732,6 +2040,8 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task HandleConnectionClose(ConnectionState connectionState)
     {
+        DisableAuthenticationRefreshTimer();
+
         // Clear the connectionState field
         await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try
@@ -1788,15 +2098,8 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                Log.InvokingClosedEventHandler(_logger);
-                await closed.Invoke(closeException).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringClosedEvent(_logger, ex);
-            }
+            Log.InvokingClosedEventHandler(_logger);
+            await InvokeEventHandlersAsync(closed, closeException, _logger, Log.ErrorDuringClosedEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Closed event registered
@@ -1966,14 +2269,7 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                await reconnecting.Invoke(closeException).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringReconnectingEvent(_logger, ex);
-            }
+            await InvokeEventHandlersAsync(reconnecting, closeException, _logger, Log.ErrorDuringReconnectingEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Reconnecting event registered
@@ -1993,14 +2289,7 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                await reconnected.Invoke(ConnectionId).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringReconnectedEvent(_logger, ex);
-            }
+            await InvokeEventHandlersAsync(reconnected, ConnectionId, _logger, Log.ErrorDuringReconnectedEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Reconnected event registered

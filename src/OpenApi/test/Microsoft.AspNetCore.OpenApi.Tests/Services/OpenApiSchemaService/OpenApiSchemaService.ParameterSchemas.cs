@@ -459,10 +459,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(Guid[] id) => { }, JsonSchemaType.String, false],
         [(Guid?[] id) => { }, JsonSchemaType.String, true],
         [(string[] id) => { }, JsonSchemaType.String, false],
-        // Due to runtime restrictions, we can't resolve nullability
-        // info for reference types as element types so this will still
-        // encode as non-nullable.
-        [(string?[] id) => { }, JsonSchemaType.String, false],
+        [(string?[] id) => { }, JsonSchemaType.String, true],
         [(DateTime[] id) => { }, JsonSchemaType.String, false],
         [(DateTime?[] id) => { }, JsonSchemaType.String, true],
         [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],
@@ -570,6 +567,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                            actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
                            actualMemory.Schema.Default.GetValue<int>() == 20;
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersRecordWithValidationOnPrimaryConstructor()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] AsParametersRecordWithValidationAttributeOnPrimaryConstructor model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("Id", parameter.Name);
+            Assert.True(parameter.Required);
         });
     }
 
@@ -1058,6 +1074,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     [Route("/api/{student}")]
     private Student GetStudent(Student student) => student;
+
+    private record AsParametersRecordWithValidationAttributeOnPrimaryConstructor([Required] string Id);
 
     public record Student(string Name)
     {

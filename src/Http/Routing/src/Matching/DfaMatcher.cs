@@ -29,7 +29,7 @@ internal sealed partial class DfaMatcher : Matcher
     }
 
     [SkipLocalsInit]
-    public sealed override Task MatchAsync(HttpContext httpContext)
+    public sealed override unsafe Task MatchAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 

@@ -1,5 +1,20 @@
 // IMPORTANT: This file is read by the merge flow from main branch only. 
 {
     "merge-flow-configurations": {
+        // Automate opening PRs to merge release/11.0 to main
+        "release/11.0":{
+            "MergeToBranch": "main",
+            "ExtraSwitches": "-QuietComments"
+        },
+        // Automate merging aspnetcore release/11.0-rc1 branch into release/11.0
+        "release/11.0-rc1":{
+            "MergeToBranch": "release/11.0",
+            "ExtraSwitches": "-QuietComments"
+        },
+        // Automate merging aspnetcore release/11.0-rc2 branch into release/11.0
+        "release/11.0-rc2":{
+            "MergeToBranch": "release/11.0",
+            "ExtraSwitches": "-QuietComments"
+        }
     }
 }

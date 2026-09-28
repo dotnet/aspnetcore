@@ -110,7 +110,16 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     host.StartsWith(WildcardPrefix) &&
 
                     // Note that we only slice off the `*`. We want to match the leading `.` also.
-                    MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase))
+                    MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
+                    // We don't want to match anything that contains an empty label
+                    // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
+                    // For example:
+                    //   - `*.example.com` should not match `.example.com`
+                    //   - `*.example.com` should not match `.foo.example.com`
+                    //   - `*.example.com` should not match `foo..example.com`
+                    //   - `*.example.com` should not match `foo..bar.example.com`
+                    requestHost[0] != '.' &&
+                    requestHost.IndexOf("..", StringComparison.Ordinal) < 0)
                 {
                     // Matches a suffix wildcard.
                 }
@@ -410,7 +419,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             Port = port;
 
             HasHostWildcard = Host.StartsWith(WildcardPrefix, StringComparison.Ordinal);
-            _wildcardEndsWith = HasHostWildcard ? Host.Substring(1) : null;
+            _wildcardEndsWith = HasHostWildcard ? Host.Substring(WildcardHost.Length) : null;
         }
 
         public bool HasHostWildcard { get; }
@@ -423,7 +432,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public int CompareTo(EdgeKey other)
         {
-            var result = Comparer<string>.Default.Compare(Host, other.Host);
+            var result = string.Compare(Host, other.Host, StringComparison.OrdinalIgnoreCase);
             if (result != 0)
             {
                 return result;
@@ -439,7 +448,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public bool Equals(EdgeKey other)
         {
-            return string.Equals(Host, other.Host, StringComparison.Ordinal) && Port == other.Port;
+            return string.Equals(Host, other.Host, StringComparison.OrdinalIgnoreCase) && Port == other.Port;
         }
 
         public bool MatchHost(string host)
@@ -448,7 +457,16 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             {
                 if (HasHostWildcard)
                 {
-                    return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase);
+                    return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase) &&
+                        // We don't want to match anything that contains an empty label
+                        // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
+                        // For example:
+                        //   - `*.example.com` should not match `.example.com`
+                        //   - `*.example.com` should not match `.foo.example.com`
+                        //   - `*.example.com` should not match `foo..example.com`
+                        //   - `*.example.com` should not match `foo..bar.example.com`
+                        host[0] != '.' &&
+                        !host.Contains("..", StringComparison.Ordinal);
                 }
                 else
                 {
@@ -461,7 +479,11 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         public override int GetHashCode()
         {
-            return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);
+            var hash = new HashCode();
+            hash.Add(Host, StringComparer.OrdinalIgnoreCase);
+            hash.Add(Port);
+
+            return hash.ToHashCode();
         }
 
         public override bool Equals(object? obj)
