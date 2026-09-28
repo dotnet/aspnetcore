@@ -20,7 +20,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
     private static readonly char[] AttributeSeparator = new[] { ',' };
     private static readonly Func<IRequestCookieCollection, string, string> CookieAccessor = (c, key) => c[key];
     private static readonly Func<IHeaderDictionary, string, string> HeaderAccessor = (c, key) => c[key];
-    private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => c[key];
+    private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => JoinQueryValues(c[key]);
     private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) =>
         Convert.ToString(c[key], CultureInfo.InvariantCulture);
 
@@ -288,6 +288,45 @@ public class CacheTagKey : IEquatable<CacheTagKey>
         }
 
         return result;
+    }
+
+    // Joins the values with ',' after escaping '\' and ',' inside each value, so that different
+    // sequences of values (for example ["a", "b"] and ["a,b"]) can't produce the same string.
+    private static string JoinQueryValues(StringValues values)
+    {
+        if (values.Count == 1)
+        {
+            return EscapeQueryValue(values[0]);
+        }
+
+        var builder = new StringBuilder();
+        for (var i = 0; i < values.Count; i++)
+        {
+            if (i > 0)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeQueryValue(values[i]));
+        }
+
+        return builder.ToString();
+    }
+
+    private static string EscapeQueryValue(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        // Common case: nothing to escape, so no allocation and the key is unchanged.
+        if (value.AsSpan().IndexOfAny(',', '\\') < 0)
+        {
+            return value;
+        }
+
+        return value.Replace("\\", "\\\\").Replace(",", "\\,");
     }
 
     private static void AddStringCollection(
