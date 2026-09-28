@@ -85,7 +85,9 @@ public static class ConnectionEndpointRouteBuilderExtensions
     public static ConnectionEndpointRouteBuilder MapConnections(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
     {
         var dispatcher = endpoints.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
-        var connectionEndpoint = new HttpConnectionEndpoint();
+        // This metadata instance identifies one MapConnections invocation. Do not cache or reuse it
+        // globally, because doing so would allow connection tokens to be used across mappings.
+        var connectionEndpointMetadata = new HttpConnectionEndpointMetadata();
 
         var connectionBuilder = new ConnectionBuilder(endpoints.ServiceProvider);
         configure(connectionBuilder);
@@ -137,7 +139,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // Add metadata to all of Endpoints
         compositeConventionBuilder.Add(e =>
         {
-            e.Metadata.Add(connectionEndpoint);
+            e.Metadata.Add(connectionEndpointMetadata);
 
             // Add the authorization data as metadata
             foreach (var data in options.AuthorizationData)

@@ -147,7 +147,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpContext context,
         HttpConnectionDispatcherOptions options,
         ConnectionLogScope logScope,
-        HttpConnectionEndpoint? endpoint)
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         context.Response.ContentType = "application/json";
 
@@ -166,7 +166,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         // Look up the connection by connection token (private, not the public connectionId)
-        if (!_manager.TryGetConnection(connectionToken.ToString(), endpoint, out var connection))
+        if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out var connection))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound, "connection_not_found");
             return;
@@ -282,7 +282,7 @@ internal sealed partial class HttpConnectionDispatcher
         ConnectionDelegate connectionDelegate,
         HttpConnectionDispatcherOptions options,
         ConnectionLogScope logScope,
-        HttpConnectionEndpoint? endpoint)
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         // set a tag to allow Application Performance Management tools to differentiate long running requests for reporting purposes
         context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
@@ -296,7 +296,7 @@ internal sealed partial class HttpConnectionDispatcher
         if (headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
         {
             // Connection must already exist
-            var connection = await GetConnectionAsync(context, endpoint);
+            var connection = await GetConnectionAsync(context, endpointMetadata);
             if (connection == null)
             {
                 // No such connection, GetConnection already set the response status code
@@ -331,7 +331,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (context.WebSockets.IsWebSocketRequest)
             {
                 transport = HttpTransportType.WebSockets;
-                connection = await GetOrCreateConnectionAsync(context, options, endpoint);
+                connection = await GetOrCreateConnectionAsync(context, options, endpointMetadata);
 
                 if (connection is not null)
                 {
@@ -345,7 +345,7 @@ internal sealed partial class HttpConnectionDispatcher
             {
                 AddNoCacheHeaders(context.Response);
                 // Connection must already exist
-                connection = await GetConnectionAsync(context, endpoint);
+                connection = await GetConnectionAsync(context, endpointMetadata);
             }
 
             if (connection == null)
@@ -501,7 +501,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpContext context,
         HttpConnectionDispatcherOptions options,
         ConnectionLogScope logScope,
-        HttpConnectionEndpoint? endpoint)
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         context.Response.ContentType = "application/json";
         string? error = null;
@@ -543,7 +543,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpoint);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -631,12 +631,12 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private static HttpConnectionEndpoint? GetConnectionEndpoint(HttpContext context) =>
-        context.GetEndpoint()?.Metadata.GetMetadata<HttpConnectionEndpoint>();
+    private static HttpConnectionEndpointMetadata? GetConnectionEndpoint(HttpContext context) =>
+        context.GetEndpoint()?.Metadata.GetMetadata<HttpConnectionEndpointMetadata>();
 
-    private async Task ProcessSend(HttpContext context, HttpConnectionEndpoint? endpoint)
+    private async Task ProcessSend(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
-        var connection = await GetConnectionAsync(context, endpoint);
+        var connection = await GetConnectionAsync(context, endpointMetadata);
         if (connection == null)
         {
             // No such connection, GetConnection already set the response status code
@@ -732,9 +732,9 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ProcessDeleteAsync(HttpContext context, HttpConnectionEndpoint? endpoint)
+    private async Task ProcessDeleteAsync(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
-        var connection = await GetConnectionAsync(context, endpoint);
+        var connection = await GetConnectionAsync(context, endpointMetadata);
         if (connection == null)
         {
             // No such connection, GetConnection already set the response status code
@@ -1113,7 +1113,7 @@ internal sealed partial class HttpConnectionDispatcher
         Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
     }
 
-    private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context, HttpConnectionEndpoint? endpoint)
+    private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
         var connectionToken = GetConnectionToken(context);
 
@@ -1127,7 +1127,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
-        if (!_manager.TryGetConnection(connectionToken.ToString(), endpoint, out var connection))
+        if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out var connection))
         {
             // No connection with that ID: Not Found
             context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -1143,7 +1143,7 @@ internal sealed partial class HttpConnectionDispatcher
     private async Task<HttpConnectionContext?> GetOrCreateConnectionAsync(
         HttpContext context,
         HttpConnectionDispatcherOptions options,
-        HttpConnectionEndpoint? endpoint)
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         var connectionToken = GetConnectionToken(context);
         HttpConnectionContext? connection;
@@ -1151,10 +1151,10 @@ internal sealed partial class HttpConnectionDispatcher
         // There's no connection id so this is a brand new connection
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
-            connection = CreateConnection(options, endpoint: endpoint);
+            connection = CreateConnection(options, endpointMetadata: endpointMetadata);
         }
         // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
-        else if (!_manager.TryGetConnection(connectionToken.ToString(), endpoint, out connection))
+        else if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out connection))
         {
             // No connection with that ID: Not Found
             context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -1169,9 +1169,9 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionDispatcherOptions options,
         int clientProtocolVersion = 0,
         bool useStatefulReconnect = false,
-        HttpConnectionEndpoint? endpoint = null)
+        HttpConnectionEndpointMetadata? endpointMetadata = null)
     {
-        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpoint);
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)

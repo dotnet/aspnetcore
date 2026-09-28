@@ -46,14 +46,15 @@ internal sealed partial class HttpConnectionManager
         _ = ExecuteTimerLoop();
     }
 
+    // This overload intentionally skips endpoint validation and is only used by tests.
     internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {
         return _connections.TryGetValue(id, out connection);
     }
 
-    internal bool TryGetConnection(string id, HttpConnectionEndpoint? endpoint, [NotNullWhen(true)] out HttpConnectionContext? connection)
+    internal bool TryGetConnection(string id, HttpConnectionEndpointMetadata? endpointMetadata, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {
-        if (_connections.TryGetValue(id, out connection) && ReferenceEquals(connection.Endpoint, endpoint))
+        if (_connections.TryGetValue(id, out connection) && ReferenceEquals(connection.EndpointMetadata, endpointMetadata))
         {
             return true;
         }
@@ -62,6 +63,7 @@ internal sealed partial class HttpConnectionManager
         return false;
     }
 
+    // This overload intentionally omits endpoint metadata and is only used by tests.
     internal HttpConnectionContext CreateConnection()
     {
         return CreateConnection(new());
@@ -75,7 +77,7 @@ internal sealed partial class HttpConnectionManager
         HttpConnectionDispatcherOptions options,
         int negotiateVersion = 0,
         bool useStatefulReconnect = false,
-        HttpConnectionEndpoint? endpoint = null)
+        HttpConnectionEndpointMetadata? endpointMetadata = null)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -95,7 +97,7 @@ internal sealed partial class HttpConnectionManager
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect)
         {
-            Endpoint = endpoint,
+            EndpointMetadata = endpointMetadata,
         };
 
         _connections.TryAdd(connectionToken, connection);

@@ -3,6 +3,6 @@
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal sealed class HttpConnectionEndpoint
+internal sealed class HttpConnectionEndpointMetadata
 {
 }
