@@ -120,6 +120,85 @@ public class HostInitializerTest
     }
 
     [Fact]
+    public async Task SimultaneousHostInitializationCallersShareOneTaskAndInvocation()
+    {
+        using var startBarrier = new Barrier(3);
+        using var invocationBarrier = new Barrier(2);
+        var invocationCount = 0;
+        var initializer = new TestInitializer(
+            "initializer",
+            0,
+            [],
+            hostCallback: _ =>
+            {
+                Interlocked.Increment(ref invocationCount);
+                invocationBarrier.SignalAndWait(TimeSpan.FromSeconds(1));
+                return Task.CompletedTask;
+            });
+        var invoker = CreateInvoker(initializer);
+
+        var firstCaller = Task.Factory.StartNew(() =>
+        {
+            startBarrier.SignalAndWait();
+            return invoker.InitializeHostAsync();
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        var secondCaller = Task.Factory.StartNew(() =>
+        {
+            startBarrier.SignalAndWait();
+            return invoker.InitializeHostAsync();
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        startBarrier.SignalAndWait();
+
+        var tasks = await Task.WhenAll(firstCaller, secondCaller);
+        await Task.WhenAll(tasks);
+
+        Assert.Same(tasks[0], tasks[1]);
+        Assert.Equal(1, invocationCount);
+    }
+
+    [Fact]
+    public async Task SimultaneousBrowserInitializationCallersShareOneTaskAndInvocation()
+    {
+        using var startBarrier = new Barrier(3);
+        using var invocationBarrier = new Barrier(2);
+        var hostTask = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var browserInvocationCount = 0;
+        var initializer = new TestInitializer(
+            "initializer",
+            0,
+            [],
+            hostCallback: _ => hostTask.Task,
+            browserCallback: _ =>
+            {
+                Interlocked.Increment(ref browserInvocationCount);
+                invocationBarrier.SignalAndWait(TimeSpan.FromSeconds(1));
+                return Task.CompletedTask;
+            });
+        var invoker = CreateInvoker(initializer);
+        var publishedHostTask = invoker.InitializeHostAsync();
+
+        var firstCaller = Task.Factory.StartNew(() =>
+        {
+            startBarrier.SignalAndWait();
+            return invoker.InitializeBrowserAsync();
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        var secondCaller = Task.Factory.StartNew(() =>
+        {
+            startBarrier.SignalAndWait();
+            return invoker.InitializeBrowserAsync();
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        startBarrier.SignalAndWait();
+        hostTask.SetResult();
+
+        var tasks = await Task.WhenAll(firstCaller, secondCaller);
+        await Task.WhenAll(tasks);
+
+        Assert.Same(tasks[0], tasks[1]);
+        Assert.Same(publishedHostTask, invoker.InitializeHostAsync());
+        Assert.Equal(1, browserInvocationCount);
+    }
+
+    [Fact]
     public async Task InvokerCachesFailureAndCancellation()
     {
         var failure = new InvalidOperationException("Initializer failed.");

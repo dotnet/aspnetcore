@@ -98,6 +98,7 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<HostInitializerCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IBrowserStartupValueProvider, NavigationBrowserStartupValueProvider>());
+        services.TryAddSingleton<BrowserStartupValueCollection>();
         services.TryAddEnumerable(
             ServiceDescriptor.Scoped<IHostStartupValues, DefaultHostStartupValues>());
 

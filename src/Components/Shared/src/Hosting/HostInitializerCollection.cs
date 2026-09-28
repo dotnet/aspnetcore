@@ -81,14 +81,25 @@ internal sealed class HostInitializerInvoker(
     ImmutableArray<IHostInitializer> initializers,
     IServiceProvider services)
 {
+    private readonly object _initializationLock = new();
     private Task? _hostInitializationTask;
     private Task? _browserInitializationTask;
 
     public Task InitializeHostAsync(CancellationToken cancellationToken = default)
-        => _hostInitializationTask ??= InitializeHostCoreAsync(cancellationToken);
+    {
+        lock (_initializationLock)
+        {
+            return _hostInitializationTask ??= InitializeHostCoreAsync(cancellationToken);
+        }
+    }
 
     public Task InitializeBrowserAsync(CancellationToken cancellationToken = default)
-        => _browserInitializationTask ??= InitializeBrowserCoreAsync(cancellationToken);
+    {
+        lock (_initializationLock)
+        {
+            return _browserInitializationTask ??= InitializeBrowserCoreAsync(cancellationToken);
+        }
+    }
 
     private async Task InitializeHostCoreAsync(CancellationToken cancellationToken)
     {

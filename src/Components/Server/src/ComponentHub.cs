@@ -47,7 +47,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitRegistry _circuitRegistry;
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
-    private readonly IEnumerable<IBrowserStartupValueProvider> _browserStartupValueProviders;
+    private readonly BrowserStartupValueCollection _browserStartupValues;
     private readonly ILogger _logger;
 
     public ComponentHub(
@@ -58,7 +58,7 @@ internal sealed partial class ComponentHub : Hub
         CircuitRegistry circuitRegistry,
         CircuitPersistenceManager circuitPersistenceProvider,
         ICircuitHandleRegistry circuitHandleRegistry,
-        IEnumerable<IBrowserStartupValueProvider> browserStartupValueProviders,
+        BrowserStartupValueCollection browserStartupValues,
         ILogger<ComponentHub> logger)
     {
         _serverComponentSerializer = serializer;
@@ -68,7 +68,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitRegistry = circuitRegistry;
         _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
-        _browserStartupValueProviders = browserStartupValueProviders;
+        _browserStartupValues = browserStartupValues;
         _logger = logger;
     }
 
@@ -108,7 +108,7 @@ internal sealed partial class ComponentHub : Hub
     }
 
     public string[] GetStartupValueKeys()
-        => BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders);
+        => _browserStartupValues.GetKeys();
 
     public async ValueTask<string> StartCircuit(
         string startupValuesJson,
@@ -144,6 +144,7 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        var circuitRegistered = false;
         try
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -160,17 +161,23 @@ internal sealed partial class ComponentHub : Hub
                 resourceCollection,
                 cancellationToken: Context.ConnectionAborted);
 
-            // Fire-and-forget the initialization process, because we can't block the
-            // SignalR message loop (we'd get a deadlock if any of the initialization
-            // logic relied on receiving a subsequent message from SignalR), and it will
-            // take care of its own errors anyway.
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
-            _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
             // Publish before initialization completes so JS interop responses can flow.
             // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
+            circuitRegistered = true;
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+
+            // Fire-and-forget genuinely asynchronous initialization because blocking the SignalR
+            // message loop would prevent initializer JS callbacks from completing.
+            var initializationTask = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
+            if (initializationTask.IsCompleted && !await initializationTask)
+            {
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                Context.Abort();
+                return null;
+            }
 
             // Returning the secret here so the client can reconnect.
             //
@@ -180,6 +187,11 @@ internal sealed partial class ComponentHub : Hub
         }
         catch (Exception ex)
         {
+            if (circuitRegistered)
+            {
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+            }
+
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
@@ -216,7 +228,7 @@ internal sealed partial class ComponentHub : Hub
         if (!HostStartupValuesJson.TryDeserialize(startupValuesJson, out startupValues) ||
             !ContainsExactly(
                 startupValues,
-                BrowserStartupValueProviderUtilities.GetKeys(_browserStartupValueProviders)) ||
+                _browserStartupValues.Keys) ||
             !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.BaseUriKey, out var baseUri) ||
             !startupValues.TryGetValue(NavigationBrowserStartupValueProvider.LocationHrefKey, out var uri) ||
             !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
@@ -431,6 +443,7 @@ internal sealed partial class ComponentHub : Hub
             RootComponentDescriptors = rootComponentDescriptors
         };
 
+        var circuitRegistered = false;
         try
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -446,18 +459,23 @@ internal sealed partial class ComponentHub : Hub
 
             var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
 
-            // Fire-and-forget the initialization process, because we can't block the
-            // SignalR message loop (we'd get a deadlock if any of the initialization
-            // logic relied on receiving a subsequent message from SignalR), and it will
-            // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
-
             circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
             // Publish before initialization completes so JS interop responses can flow.
             // Root component rendering remains blocked until host initialization finishes.
             _circuitRegistry.Register(circuitHost);
+            circuitRegistered = true;
             _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+
+            // Fire-and-forget genuinely asynchronous initialization because blocking the SignalR
+            // message loop would prevent initializer JS callbacks from completing.
+            var initializationTask = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
+            if (initializationTask.IsCompleted && !await initializationTask)
+            {
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                Context.Abort();
+                return null;
+            }
 
             // Returning the secret here so the client can reconnect.
             //
@@ -468,6 +486,11 @@ internal sealed partial class ComponentHub : Hub
         }
         catch (Exception ex)
         {
+            if (circuitRegistered)
+            {
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+            }
+
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);

@@ -94,6 +94,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     {
         Task taskToAwait;
         CancellationToken hostCancellationToken;
+        CancellationTokenRegistration externalCancellationRegistration;
         Exception? runException = null;
         lock (_lifecycleLock)
         {
@@ -103,22 +104,34 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             }
 
             _disposed = true;
-            _externalCancellationRegistration.Dispose();
+            externalCancellationRegistration = _externalCancellationRegistration;
             _externalCancellationRegistration = default;
             taskToAwait = _runTask ?? _browserInitializationTask;
             hostCancellationToken = _hostCancellationTokenSource.Token;
-            try
-            {
-                _hostCancellationTokenSource.Cancel();
-            }
-            catch (Exception exception)
-            {
-                runException = exception;
-            }
         }
 
         try
         {
+            externalCancellationRegistration.Dispose();
+        }
+        catch (Exception exception)
+        {
+            runException = exception;
+        }
+
+        try
+        {
+            _hostCancellationTokenSource.Cancel();
+        }
+        catch (Exception exception)
+        {
+            runException ??= exception;
+        }
+
+        try
+        {
+            // User initialization and rendering can ignore cancellation. Disposal intentionally
+            // waits for that work instead of tearing down services while user code is still running.
             try
             {
                 await taskToAwait;
@@ -312,11 +325,14 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
         finally
         {
+            CancellationTokenRegistration externalCancellationRegistration;
             lock (_lifecycleLock)
             {
-                _externalCancellationRegistration.Dispose();
+                externalCancellationRegistration = _externalCancellationRegistration;
                 _externalCancellationRegistration = default;
             }
+
+            externalCancellationRegistration.Dispose();
         }
     }
 

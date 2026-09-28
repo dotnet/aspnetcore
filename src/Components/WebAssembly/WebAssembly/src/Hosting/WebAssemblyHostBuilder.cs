@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -329,12 +330,74 @@ public sealed class WebAssemblyHostBuilder
         var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
         var hostCancellationTokenSource = new CancellationTokenSource();
 
-        return new WebAssemblyHost(
-            this,
-            services,
-            scope,
-            _persistedState,
-            hostCancellationTokenSource);
+        try
+        {
+            return new WebAssemblyHost(
+                this,
+                services,
+                scope,
+                _persistedState,
+                hostCancellationTokenSource);
+        }
+        catch (Exception exception)
+        {
+            var cleanupExceptions = DisposeFailedBuildResources(
+                scope,
+                services,
+                hostCancellationTokenSource);
+            if (cleanupExceptions is null)
+            {
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
+            throw new AggregateException(
+                "The WebAssembly host build failed and one or more owned resources could not be disposed.",
+                [exception, .. cleanupExceptions]);
+        }
+    }
+
+    private static List<Exception>? DisposeFailedBuildResources(
+        AsyncServiceScope scope,
+        IServiceProvider services,
+        CancellationTokenSource hostCancellationTokenSource)
+    {
+        List<Exception>? exceptions = null;
+
+        try
+        {
+            scope.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            if (services is IAsyncDisposable asyncDisposableServices)
+            {
+                asyncDisposableServices.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+            else if (services is IDisposable disposableServices)
+            {
+                disposableServices.Dispose();
+            }
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        try
+        {
+            hostCancellationTokenSource.Dispose();
+        }
+        catch (Exception exception)
+        {
+            (exceptions ??= []).Add(exception);
+        }
+
+        return exceptions;
     }
 
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]

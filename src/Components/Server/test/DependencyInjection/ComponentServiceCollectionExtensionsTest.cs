@@ -46,7 +46,7 @@ public class ComponentServiceCollectionExtensionsTest
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         await scope.ServiceProvider.GetRequiredService<HostInitializerCollection>()
-            .GetInitializerInvoker(scope.ServiceProvider)
+            .GetInitializerInvoker(scope.ServiceProvider, HostInitializerKey.Server)
             .InitializeBrowserAsync();
     }
 
@@ -191,6 +191,9 @@ public class ComponentServiceCollectionExtensionsTest
         Assert.Equal(
             ServiceLifetime.Singleton,
             Assert.Single(services.Where(descriptor => descriptor.ServiceType == typeof(HostInitializerCollection))).Lifetime);
+        Assert.Equal(
+            ServiceLifetime.Singleton,
+            Assert.Single(services.Where(descriptor => descriptor.ServiceType == typeof(BrowserStartupValueCollection))).Lifetime);
     }
 
     private sealed class TestHostInitializer : IHostInitializer

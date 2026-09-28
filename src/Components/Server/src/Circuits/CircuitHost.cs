@@ -119,7 +119,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
+    public Task<bool> InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -185,6 +185,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 Log.InitializationSucceeded(_logger);
 
                 _circuitActivitySource.StopCircuitActivity(activityHandle, null);
+                return true;
             }
             catch (Exception ex)
             {
@@ -192,8 +193,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return false;
             }
         }));
     }

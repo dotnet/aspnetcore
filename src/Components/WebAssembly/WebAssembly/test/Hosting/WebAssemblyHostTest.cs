@@ -59,6 +59,8 @@ public class WebAssemblyHostTest
         var calls = new List<string>();
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        var hostedService = new TestHostedService();
+        builder.Services.AddSingleton<IHostedService>(hostedService);
         builder.Services.AddSingleton<IHostInitializer>(
             new TestHostInitializer(
                 "async",
@@ -82,7 +84,7 @@ public class WebAssemblyHostTest
         Assert.False(runTask.IsCompleted);
         Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
         continueInitializer.SetResult();
-        await Task.Yield();
+        await hostedService.Started.Task;
         cancellationTokenSource.Cancel();
         await runTask.TimeoutAfter(TimeSpan.FromSeconds(3));
         Assert.Equal(["async"], calls);
@@ -273,6 +275,134 @@ public class WebAssemblyHostTest
         Assert.False(hostedService.StartCalled);
 
         cancellationTokenSource.Cancel();
+    }
+
+    [Fact]
+    public async Task DisposeDoesNotDeadlockWithExternalCancellationCallback()
+    {
+        CancellationToken hostCancellationToken = default;
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "capture-token",
+                0,
+                [],
+                callback: token => hostCancellationToken = token));
+        var host = builder.Build();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var runTask = host.RunAsyncCore(
+            cancellationTokenSource.Token,
+            new TestSatelliteResourcesLoader());
+        var rendererField = typeof(WebAssemblyHost)
+            .GetField("_renderer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        Assert.True(SpinWait.SpinUntil(
+            () => rendererField.GetValue(host) is not null,
+            TimeSpan.FromSeconds(3)));
+        var lifecycleLock = typeof(WebAssemblyHost)
+            .GetField("_lifecycleLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(host)!;
+        using var callbackEntered = new ManualResetEventSlim();
+        using var releaseCallback = new ManualResetEventSlim();
+        using var registration = hostCancellationToken.Register(() =>
+        {
+            callbackEntered.Set();
+            releaseCallback.Wait();
+            lock (lifecycleLock)
+            {
+            }
+        });
+
+        var cancellationTask = Task.Run(cancellationTokenSource.Cancel);
+        Assert.True(callbackEntered.Wait(TimeSpan.FromSeconds(3)));
+        var disposeTask = Task.Run(async () => await host.DisposeAsync());
+        var registrationField = typeof(WebAssemblyHost)
+            .GetField("_externalCancellationRegistration", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        Assert.True(SpinWait.SpinUntil(
+            () => IsLockHeld(lifecycleLock) ||
+                ((CancellationTokenRegistration)registrationField.GetValue(host)!).Equals(default(CancellationTokenRegistration)),
+            TimeSpan.FromSeconds(3)));
+
+        releaseCallback.Set();
+
+        await Task.WhenAll(cancellationTask, disposeTask, runTask).TimeoutAfter(TimeSpan.FromSeconds(3));
+
+        static bool IsLockHeld(object lifecycleLock)
+        {
+            if (!Monitor.TryEnter(lifecycleLock))
+            {
+                return true;
+            }
+
+            Monitor.Exit(lifecycleLock);
+            return false;
+        }
+    }
+
+    [Fact]
+    public void BuildFailureDisposesOwnedScopeProviderAndCancellationSource()
+    {
+        var failure = new InvalidOperationException("Initializer failed.");
+        var scopedService = new ScopedAsyncDisposableService();
+        var singletonService = new SingletonAsyncDisposableService();
+        var scopedServiceResolved = false;
+        CancellationToken initializationToken = default;
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddScoped<ScopedAsyncDisposableService>(_ => scopedService);
+        builder.Services.AddSingleton<SingletonAsyncDisposableService>(_ => singletonService);
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "failure",
+                0,
+                [],
+                servicesCallback: (services, cancellationToken) =>
+                {
+                    initializationToken = cancellationToken;
+                    scopedServiceResolved = ReferenceEquals(
+                        scopedService,
+                        services.GetRequiredService<ScopedAsyncDisposableService>());
+                    services.GetRequiredService<SingletonAsyncDisposableService>();
+                    throw failure;
+                }));
+
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
+
+        Assert.Same(failure, exception);
+        Assert.True(scopedServiceResolved);
+        Assert.Equal(1, scopedService.DisposeCount);
+        Assert.Equal(1, singletonService.DisposeCount);
+        Assert.Throws<ObjectDisposedException>(() => initializationToken.WaitHandle);
+    }
+
+    [Fact]
+    public void BuildFailurePreservesOriginalExceptionWhenCleanupAlsoFails()
+    {
+        var buildFailure = new InvalidOperationException("Initializer failed.");
+        var cleanupFailure = new InvalidOperationException("Cleanup failed.");
+        var singletonService = new SingletonAsyncDisposableService();
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        builder.Services.AddScoped<ThrowingAsyncDisposableService>(_ => new(cleanupFailure));
+        builder.Services.AddSingleton<SingletonAsyncDisposableService>(_ => singletonService);
+        builder.Services.AddSingleton<IHostInitializer>(
+            new TestHostInitializer(
+                "failure",
+                0,
+                [],
+                servicesCallback: (services, _) =>
+                {
+                    services.GetRequiredService<ThrowingAsyncDisposableService>();
+                    services.GetRequiredService<SingletonAsyncDisposableService>();
+                    throw buildFailure;
+                }));
+
+        var exception = Assert.Throws<AggregateException>(builder.Build);
+
+        Assert.Equal(
+            "The WebAssembly host build failed and one or more owned resources could not be disposed.",
+            exception.Message.Split(" (")[0]);
+        Assert.Same(buildFailure, exception.InnerExceptions[0]);
+        Assert.Same(cleanupFailure, exception.InnerExceptions[1]);
+        Assert.Equal(1, singletonService.DisposeCount);
     }
 
     [Fact]
@@ -511,6 +641,9 @@ public class WebAssemblyHostTest
 
     private class TestHostedService : IHostedService
     {
+        public TaskCompletionSource Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public bool StartCalled { get; private set; }
         public bool StopCalled { get; private set; }
         public CancellationToken StartToken { get; private set; }
@@ -520,6 +653,7 @@ public class WebAssemblyHostTest
         {
             StartCalled = true;
             StartToken = cancellationToken;
+            Started.TrySetResult();
             return Task.CompletedTask;
         }
 
@@ -588,6 +722,33 @@ public class WebAssemblyHostTest
             DisposeCount++;
             return new ValueTask(Task.CompletedTask);
         }
+    }
+
+    private sealed class ScopedAsyncDisposableService : IAsyncDisposable
+    {
+        public int DisposeCount { get; private set; }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Task.Yield();
+            DisposeCount++;
+        }
+    }
+
+    private sealed class SingletonAsyncDisposableService : IAsyncDisposable
+    {
+        public int DisposeCount { get; private set; }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Task.Yield();
+            DisposeCount++;
+        }
+    }
+
+    private sealed class ThrowingAsyncDisposableService(Exception exception) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() => ValueTask.FromException(exception);
     }
 
     private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
