@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -11,6 +12,40 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class RazorComponentEndpointFactoryTest
 {
+    [Fact]
+    public void AddEndpoints_CorsOnOnePage_DoesNotChangeHttpMethodsOnAnotherPage()
+    {
+        var endpoints = new List<Endpoint>();
+        var factory = new RazorComponentEndpointFactory();
+        var configuredRenderModes = new ConfiguredRenderModesMetadata([]);
+
+        factory.AddEndpoints(
+            endpoints,
+            typeof(App),
+            new PageComponentInfo("Plain", typeof(App), "/plain", []),
+            [],
+            [],
+            configuredRenderModes);
+
+        var plain = Assert.IsType<HttpMethodMetadata>(
+            endpoints[0].Metadata.GetMetadata<IHttpMethodMetadata>());
+
+        factory.AddEndpoints(
+            endpoints,
+            typeof(App),
+            new PageComponentInfo("Cors", typeof(App), "/cors", []),
+            [builder => builder.Metadata.Add(new EnableCorsAttribute("p"))],
+            [],
+            configuredRenderModes);
+
+        var cors = Assert.IsType<HttpMethodMetadata>(
+            endpoints[1].Metadata.GetMetadata<IHttpMethodMetadata>());
+        Assert.False(plain.AcceptCorsPreflight);
+        Assert.True(cors.AcceptCorsPreflight);
+        Assert.NotSame(plain, cors);
+        Assert.Equal(plain.HttpMethods, cors.HttpMethods);
+    }
+
     [Fact]
     public void AddEndpoints_CreatesEndpointWithExpectedMetadata()
     {

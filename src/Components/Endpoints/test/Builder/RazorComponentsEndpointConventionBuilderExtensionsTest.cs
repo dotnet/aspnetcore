@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,43 @@ namespace Microsoft.AspNetCore.Builder;
 
 public class RazorComponentsEndpointConventionBuilderExtensionsTest
 {
+    [Fact]
+    public void MapRazorComponents_RequireCors_DoesNotChangeHttpMethodsInOtherApplications()
+    {
+        var firstApplication = new TestEndpointRouteBuilder();
+        CreateRazorComponentsAppBuilder(firstApplication);
+        var first = GetPageHttpMethods(firstApplication);
+
+        var secondApplication = new TestEndpointRouteBuilder();
+        CreateRazorComponentsAppBuilder(secondApplication);
+        var second = GetPageHttpMethods(secondApplication);
+
+        var corsApplication = new TestEndpointRouteBuilder();
+        CreateRazorComponentsAppBuilder(corsApplication).RequireCors("p");
+        var cors = GetPageHttpMethods(corsApplication);
+
+        Assert.False(first.AcceptCorsPreflight);
+        Assert.False(second.AcceptCorsPreflight);
+        Assert.True(cors.AcceptCorsPreflight);
+        Assert.NotSame(first, second);
+        Assert.NotSame(first, cors);
+        Assert.Equal([HttpMethods.Get, HttpMethods.Head, HttpMethods.Post], first.HttpMethods);
+        Assert.Equal(first.HttpMethods, cors.HttpMethods);
+
+        var laterApplication = new TestEndpointRouteBuilder();
+        CreateRazorComponentsAppBuilder(laterApplication);
+        var later = GetPageHttpMethods(laterApplication);
+        Assert.False(later.AcceptCorsPreflight);
+        Assert.NotSame(first, later);
+    }
+
+    private static HttpMethodMetadata GetPageHttpMethods(TestEndpointRouteBuilder builder)
+    {
+        var page = builder.DataSources.Single().Endpoints.First(
+            endpoint => endpoint.Metadata.GetMetadata<ComponentTypeMetadata>() is not null);
+        return Assert.IsType<HttpMethodMetadata>(page.Metadata.GetMetadata<IHttpMethodMetadata>());
+    }
+
     [Fact]
     public void WithStaticAssets_DoesNotAddResourceCollection_ToEndpoints_NoStaticAssetsMapped()
     {
