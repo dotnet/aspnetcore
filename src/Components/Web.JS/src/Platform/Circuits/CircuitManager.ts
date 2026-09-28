@@ -204,6 +204,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
+
     connection.on('JS.RequestPause', async () => {
       try {
         await this.handleServerInitiatedPause();
