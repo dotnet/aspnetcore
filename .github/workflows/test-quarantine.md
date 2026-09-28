@@ -1172,12 +1172,45 @@ on:
                 write_part1_chunks(f, js)
         SCRIPT
 
-    - name: Check out trusted source history for Case A eligibility
+    - name: Check out trusted source history for quarantine eligibility
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
-    - name: Collect deterministic Case A eligibility
+    - name: Collect deterministic current quarantine history
+      id: requarantine_history
+      run: |
+        : "${RUNNER_TEMP:?RUNNER_TEMP must be set}"
+        python3 .github/workflows/scripts/test-quarantine/collect_requarantine_history.py \
+          --output "${RUNNER_TEMP}/test-quarantine-requarantine-history.json" \
+          --repo-root "${GITHUB_WORKSPACE}" \
+          --history-ref "refs/remotes/origin/main" \
+          --repository "${GITHUB_REPOSITORY}" \
+          --ref "${GITHUB_REF}" \
+          --commit "${GITHUB_SHA}"
+
+        python3 << 'SCRIPT'
+        import json
+        import os
+        import pathlib
+
+        receipt = json.loads(pathlib.Path(
+            os.environ["RUNNER_TEMP"],
+            "test-quarantine-requarantine-history.json",
+        ).read_text(encoding="utf-8"))
+        compact = json.dumps(receipt.get("targets", []), separators=(",", ":"))
+        if len(compact.encode("utf-8")) > 120000:
+            raise SystemExit(
+                "FATAL: requarantine_history exceeds the safe job-output limit"
+            )
+        output = os.environ.get("GITHUB_OUTPUT")
+        if not output:
+            raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
+        with open(output, "a", encoding="utf-8") as stream:
+            stream.write(f"requarantine_history={compact}\n")
+        SCRIPT
+
+    - name: Collect deterministic quarantine eligibility
       id: case_a_eligibility
       env:
         CLOSED_QUARANTINE_PRS: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
@@ -1221,18 +1254,36 @@ on:
             os.environ["RUNNER_TEMP"],
             "test-quarantine-case-a-eligibility.json",
         ).read_text(encoding="utf-8"))
-        eligible = sorted(
+        eligible_case_a = sorted(
             name for name, record in receipt.get("tests", {}).items()
-            if record.get("status") == "eligible"
+            if (
+                record.get("status") == "eligible"
+                and record.get("originating_case") == "case-a"
+            )
         )
-        eligible_json = json.dumps(eligible, separators=(",", ":"))
-        if len(eligible_json.encode("utf-8")) > 120000:
+        eligible_case_b = sorted(
+            name for name, record in receipt.get("tests", {}).items()
+            if (
+                record.get("originating_case") == "case-b"
+                and record.get("case_b_eligible") is True
+            )
+        )
+        eligible_case_a_json = json.dumps(eligible_case_a, separators=(",", ":"))
+        eligible_case_b_json = json.dumps(eligible_case_b, separators=(",", ":"))
+        if len(eligible_case_a_json.encode("utf-8")) > 120000:
             raise SystemExit("FATAL: eligible_test_names exceeds the safe job-output limit")
+        if len(eligible_case_b_json.encode("utf-8")) > 120000:
+            raise SystemExit(
+                "FATAL: eligible_case_b_test_names exceeds the safe job-output limit"
+            )
         output = os.environ.get("GITHUB_OUTPUT")
         if not output:
             raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
         with open(output, "a", encoding="utf-8") as stream:
-            stream.write(f"eligible_test_names={eligible_json}\n")
+            stream.write(f"eligible_test_names={eligible_case_a_json}\n")
+            stream.write(
+                f"eligible_case_b_test_names={eligible_case_b_json}\n"
+            )
         SCRIPT
 
     - name: Upload deterministic evidence for safe output validation
@@ -1242,6 +1293,7 @@ on:
         path: |
           ${{ runner.temp }}/test-quarantine-part1.json
           ${{ runner.temp }}/test-quarantine-case-a-eligibility.json
+          ${{ runner.temp }}/test-quarantine-requarantine-history.json
         retention-days: 1
         if-no-files-found: error
 
@@ -1250,9 +1302,11 @@ jobs:
     outputs:
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
       requarantine_issue_numbers: ${{ steps.requarantine_issues.outputs.requarantine_issue_numbers }}
+      requarantine_history: ${{ steps.requarantine_history.outputs.requarantine_history }}
       closed_quarantine_prs: ${{ steps.closed_quarantine_prs.outputs.closed_quarantine_prs }}
       source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
       eligible_test_names: ${{ steps.case_a_eligibility.outputs.eligible_test_names }}
+      eligible_case_b_test_names: ${{ steps.case_a_eligibility.outputs.eligible_case_b_test_names }}
       # part1_data is chunked across fixed outputs to stay under the 131072-byte MAX_ARG_STRLEN
       # per-env-var limit (see write_part1_chunks above); the prompt concatenates them back.
       part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
@@ -1295,6 +1349,26 @@ safe-outputs:
       with:
         name: test-quarantine-evidence-${{ github.run_id }}
         path: ${{ runner.temp }}/test-quarantine-evidence
+    - name: Reject orphan quarantine issues
+      if: >-
+        contains(needs.agent.outputs.output_types, 'create_quarantine_issue')
+        && !contains(needs.agent.outputs.output_types, 'create_pull_request')
+      run: |
+        echo "create_quarantine_issue requires a matching create_pull_request output" >&2
+        exit 1
+    - name: Reject unverified quarantine pull requests
+      if: contains(needs.agent.outputs.output_types, 'create_pull_request')
+      env:
+        GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+      run: >-
+        python3 .github/workflows/scripts/test-quarantine/validate_pull_request_outputs.py
+        --repo-root "${GITHUB_WORKSPACE}"
+        --agent-output "${GH_AW_AGENT_OUTPUT}"
+        --evidence-directory "${RUNNER_TEMP}/test-quarantine-evidence"
+        --transport-directory "/tmp/gh-aw"
+        --repository "${GITHUB_REPOSITORY}"
+        --ref "${GITHUB_REF}"
+        --commit "${GITHUB_SHA}"
   noop:
     report-as-issue: false
   scripts:
@@ -1429,6 +1503,7 @@ safe-outputs:
         const repo = `${context.repo.owner}/${context.repo.repo}`;
         let eligibilityReason = "";
         let eligibilityRecord = null;
+        let eligibilityTrusted = false;
         try {
           const eligibility = JSON.parse(fs.readFileSync(eligibilityPath, "utf8"));
           const part1Hash = crypto.createHash("sha256").update(evidenceBytes).digest("hex");
@@ -1446,35 +1521,50 @@ safe-outputs:
             eligibilityRecord = eligibility.tests?.[testName] ?? null;
             if (!eligibilityRecord) {
               eligibilityReason = "test is absent from the deterministic Case A eligibility receipt";
+            } else {
+              eligibilityTrusted = true;
             }
           }
         } catch (error) {
           eligibilityReason = `unable to read deterministic Case A eligibility: ${error.message}`;
         }
+        if (!eligibilityTrusted || !eligibilityRecord) {
+          return fail(
+            `create_quarantine_issue requires a trusted deterministic test receipt: ${eligibilityReason}`);
+        }
+        if (eligibilityRecord.originating_case !== "case-a") {
+          return fail(
+            `create_quarantine_issue is only valid for Case A; ${testName} is ${eligibilityRecord.originating_case}`);
+        }
 
         const selectedRecords = [sourceA[testName], sourceB[testName]].filter(Boolean);
-        if (selectedRecords.length === 0) {
-          const sourceCMatches = (evidence.source_c ?? []).filter(entry =>
-            String(entry.fail_blocks ?? "").split(/\r?\n/).some(line => {
-              const normalizedLine = line.trimEnd();
-              return normalizedLine.endsWith("[FAIL]") &&
-                normalizedLine.slice(0, -"[FAIL]".length).trim() === testName;
-            }));
-          if (sourceCMatches.length > 0) {
-            const sourceCBuilds = [...new Set(sourceCMatches.map(entry => entry.build))];
-            const newestSourceCBuild = sourceCBuilds
-              .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
-              .filter(build => Number.isFinite(build.started))
-              .sort((left, right) => right.started - left.started)[0];
-            selectedRecords.push({
-              assembly: sourceCMatches[0].workitem || "unknown",
-              builds: sourceCBuilds,
-              evidence_build: newestSourceCBuild?.id,
-              leg: sourceCMatches[0].job || sourceCMatches[0].workitem || "unknown",
-              error: sourceCMatches.map(entry => entry.fail_blocks).join("\n\n"),
-              stack: "",
-            });
-          }
+        const sourceCMatches = (evidence.source_c ?? []).filter(entry =>
+          String(entry.fail_blocks ?? "").split(/\r?\n/).some(line => {
+            const normalizedLine = line.trimEnd();
+            if (!normalizedLine.endsWith("[FAIL]")) {
+              return false;
+            }
+            const failedName = normalizedLine
+              .slice(0, -"[FAIL]".length)
+              .trim()
+              .split("(", 1)[0]
+              .trim();
+            return failedName === testName;
+          }));
+        if (sourceCMatches.length > 0) {
+          const sourceCBuilds = [...new Set(sourceCMatches.map(entry => entry.build))];
+          const newestSourceCBuild = sourceCBuilds
+            .map(id => ({ id, started: Date.parse(builds[String(id)]?.startedUtc ?? "") }))
+            .filter(build => Number.isFinite(build.started))
+            .sort((left, right) => right.started - left.started)[0];
+          selectedRecords.push({
+            assembly: sourceCMatches[0].workitem || "unknown",
+            builds: sourceCBuilds,
+            evidence_build: newestSourceCBuild?.id,
+            leg: sourceCMatches[0].job || sourceCMatches[0].workitem || "unknown",
+            error: sourceCMatches.map(entry => entry.fail_blocks).join("\n\n"),
+            stack: "",
+          });
         }
         if (selectedRecords.length === 0) {
           return fail(`test_name is absent from deterministic Part 1 evidence: ${testName}`);
@@ -1495,6 +1585,12 @@ safe-outputs:
           const eligibleBuilds = eligibilityRecord.eligible_failure_builds;
           const receiptEvidence = eligibilityRecord.evidence ?? {};
           const cutoffUtc = Date.parse(eligibilityRecord.cutoff?.utc ?? "");
+          const requiredAncestor = String(
+            eligibilityRecord.required_ancestor ?? "");
+          const ancestryVerifiedBuilds = Array.isArray(
+            eligibilityRecord.ancestry_verified_builds)
+            ? [...new Set(eligibilityRecord.ancestry_verified_builds.map(String))]
+            : [];
           const uniqueEligibleBuilds = Array.isArray(eligibleBuilds)
             ? [...new Set(eligibleBuilds.map(String))]
             : [];
@@ -1509,6 +1605,9 @@ safe-outputs:
               eligibilityRecord.is_consistent_regression !== false ||
               (sourceA[testName] && sourceA[testName].is_consistent_regression !== false) ||
               uniqueEligibleBuilds.length < 2 ||
+              !/^[0-9a-f]{40}$/.test(requiredAncestor) ||
+              uniqueEligibleBuilds.some(buildId =>
+                !ancestryVerifiedBuilds.includes(buildId)) ||
               !Number.isFinite(cutoffUtc)) {
             eligibilityReason = "deterministic evidence does not prove the minimum Case A eligibility invariants";
           } else if (uniqueEligibleBuilds.some(buildId => {
@@ -1906,16 +2005,17 @@ safe-outputs:
     draft: false
     max: 10
     base-branch: main
+    patch-format: am
     # Exclusive allowlist: a patch touching anything outside this list (eng/**, .azure/**,
     # .github/**, build scripts, etc.) is mechanically refused, regardless of what the
     # agent's diff contains. This is scoped to "any .cs file under src/" rather than a
     # narrower test-only glob because test project directory naming is inconsistent across
     # the repo (test/, Tests/, FunctionalTests/, IntegrationTests/, integrationtests/, etc.)
     # and gh-aw's glob syntax has no case-insensitive/substring matching, so a narrower
-    # pattern risks silently rejecting legitimate quarantine/unquarantine patches. The
-    # agent's instructions restrict it to attribute-only edits, and blocking threat
-    # detection (below) plus mandatory human PR review provide additional layers against
-    # any patch that strays into production code.
+    # pattern risks silently rejecting legitimate quarantine/unquarantine patches. A
+    # repository-owned pre-handler validator applies every authoritative patch to the
+    # deterministic main snapshot and mechanically rejects unrelated edits or receipt
+    # mismatches before this built-in handler can create a pull request.
     allowed-files:
       - "src/**/*.cs"
   add-comment:
@@ -2022,12 +2122,29 @@ ${{ needs.pre_activation.outputs.eligible_test_names }}
 ```
 
 For Case A, choose only from this list. The safe-output handler independently
-reads the collector-authored receipt and will downgrade any missing,
-contradictory, stale, already-quarantined, Case B, regression, or otherwise
-unproven selection to an ordinary `test-failure` issue with no Build Insights
-JSON and no `Known Build Error` label. The agent cannot override those facts.
-Continue to perform the existing history investigation for diagnosis and for
-Case B handling, but do not promote a test absent from this list into Case A.
+reads the collector-authored receipt. A missing, identity-mismatched, absent,
+already-quarantined, Case B, or otherwise non-Case-A receipt is rejected and
+creates no issue. A trusted Case A selection whose deeper KBE predicates are
+contradictory, stale, regression-like, or otherwise unproven is downgraded to
+an ordinary `test-failure` issue with no Build Insights JSON and no
+`Known Build Error` label. The agent cannot override those facts.
+Continue to perform the existing history investigation for diagnosis, but do
+not promote a test absent from this list into Case A.
+
+The deterministic collector also applied the minimum Case B gates, including
+exact per-test quarantine history, the final evidence timestamp cutoff, and
+verification that every retained evidence build's `sourceVersion` contains the
+unquarantine commit. The exact fully qualified tests eligible for Case B are:
+
+```json
+${{ needs.pre_activation.outputs.eligible_case_b_test_names }}
+```
+
+For Case B, choose only from this list. A merged PR build may still be valid
+Source B evidence, but targeting `main` or starting after an unquarantine is
+not sufficient: the build's source snapshot must contain the unquarantine
+commit. Do not re-quarantine a test absent from this list, even if the raw Part
+1 data contains later-starting failures.
 
 **Names ending in `.WorkItemExecution` are work-item (whole-assembly) crashes, not individual tests.** Use `source_c` `fail_blocks` to find the specific `[FAIL]` test inside a crashed work item; an individual test only becomes a quarantine candidate under the rules in Step 1.2.
 
@@ -2049,7 +2166,9 @@ If you later need the per-test `.log` file for a **final** candidate when writin
    Do not treat an unrelated edit elsewhere in the same file as a fix. If no such commit exists, there is no history-derived cutoff.
 2. Use that commit's committer timestamp as the `main` landing time. Because this is a first-parent walk of `refs/remotes/origin/main`, do not use an earlier topic-branch author/committer timestamp.
 3. Combine this history-derived cutoff with any trusted prior-attempt cutoff from the injected closed-PR data, taking the latest applicable timestamp.
-4. Discard every failure whose `builds[<id>].startedUtc` is not strictly after the final cutoff. Recompute the distinct-build incident count after filtering.
+4. Discard every failure whose `builds[<id>].startedUtc` is not strictly after the final cutoff.
+5. For the history-derived cutoff commit, require that it is an ancestor of each retained build's `builds[<id>].sourceVersion`. This is mandatory for both main and Source B evidence. A PR build can start after a fix while still using an older merge snapshot that does not contain the fix; such a build is stale and must be discarded. If ancestry cannot be verified, fail closed and discard the build.
+6. Recompute the distinct-build incident count after filtering.
 
 This cutoff is mandatory even when the test would otherwise look like a new Case A candidate. A fix or unquarantine invalidates all earlier evidence; stale failures must never cause immediate quarantine or re-quarantine.
 
@@ -2070,6 +2189,7 @@ All of the following are true:
 **Classify Case B before Case A.** A test whose latest per-test `[QuarantinedTest]` history change removed the attribute is permanently classified as **previously unquarantined / Case B** until it is quarantined again — *regardless of how long ago the unquarantine happened and regardless of whether any post-unquarantine failures remain after the evidence cutoff*. There is **no time limit**. Such a test must never fall back to Case A and receive a new issue merely because its stale pre-unquarantine failures were discarded. If it lacks the required fresh post-cutoff evidence, it is not a candidate this run.
 
 All of the following are true:
+- The exact fully qualified test appears in the deterministic Case B eligibility list above. This is a hard gate; manual reasoning may exclude a listed candidate because of a later relevant fix or stronger contrary evidence, but it may never add a candidate that the collector omitted.
 - The test was **previously unquarantined**: it currently has **no** `[QuarantinedTest]` attribute, and the most recent commit that changed *this test's* `[QuarantinedTest]` attribute **removed** it (an unquarantine). Detect this **per-test**, not per-file — a single source file usually contains **many** tests, each with an independent quarantine history, so you **must not** key off "the file's newest `[QuarantinedTest]` commit" (that commit may belong to a different test). Inspect the test's own source file across its **full history** — do **not** add a `--since` cutoff (the old 14-day window wrongly excluded tests unquarantined more than two weeks ago). Pass `--follow` so the walk traverses renames/moves of the file (a test whose file was renamed would otherwise lose its earlier quarantine/unquarantine commits):
   ```
   git log refs/remotes/origin/main --first-parent --follow -p -G 'QuarantinedTest' --format="commit %H %ci %s" -- <path/to/TestFile.cs>
@@ -2132,16 +2252,46 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --follow --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if (a) its `[QuarantinedTest]` tracking issue carries the `re-quarantine` label, or (b) there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest` attribute to the same test method, test class, or test assembly. Either condition permanently blocks automated unquarantining. To check this:
+- The test has **never been re-quarantined**. A test is considered re-quarantined if its exact per-test history shows that the current `[QuarantinedTest]` attribute was added after an earlier removal. PR titles and labels are supplementary signals only; a re-quarantine can be bundled into a differently titled PR. Any confirmed re-quarantine permanently blocks automated unquarantining. To check this:
 
-  **Check (a) first — it is deterministic and authoritative.** The pre-activation step injects the numbers of every issue carrying the `re-quarantine` label as a JSON array. Read the candidate's current `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<N>")]` attribute in the source file, extract `<N>`, and if `<N>` appears in this array, the test is permanently re-quarantined — **skip it immediately, do not evaluate pass rates, and do not open an unquarantine PR.** If the list is missing or unparseable, fail closed and do not unquarantine any test.
+  **Check (a) first — deterministic exact-target history is authoritative.**
+  The pre-activation step injects one entry for every current method-, type-,
+  or assembly-level quarantine target:
+  ```json
+  ${{ needs.pre_activation.outputs.requarantine_history }}
+  ```
+  Match the candidate's current attribute to exactly one entry by `scope`,
+  `path`, `type`, `method`, and `issue`. Its `status` must be exactly
+  `first-quarantine`. If the status is `re-quarantined` or `ambiguous`, or the
+  target is missing, duplicated, or mismatched, fail closed and do not
+  unquarantine it. Agent reasoning may disqualify a candidate but may not
+  override any status other than `first-quarantine`.
+
+  **Check (b) — labeled issue numbers as defense in depth.** The pre-activation step injects the numbers of every issue carrying the `re-quarantine` label as a JSON array. Read the candidate's current `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<N>")]` attribute in the source file, extract `<N>`, and if `<N>` appears in this array, the test is permanently re-quarantined — **skip it immediately, do not evaluate pass rates, and do not open an unquarantine PR.** If the list is missing or unparseable, fail closed and do not unquarantine any test.
 
   **Re-quarantine issue numbers (from pre-activation step):**
   ```json
   ${{ needs.pre_activation.outputs.requarantine_issue_numbers }}
   ```
 
-  **Check (b) — merged re-quarantine PR diffs.** The re-quarantine data is injected below from the pre-activation step. Parse the JSON — it contains an array of objects, each with:
+  **Check (c) — optional defense-in-depth source inspection.** The deterministic
+  entry in check (a) reconstructs method, logical type, and assembly state
+  project-wide from commit/parent snapshots, so it remains authoritative when
+  a target moves between files. You may inspect the current file's history:
+  ```
+  git log refs/remotes/origin/main --first-parent --follow -p -G 'QuarantinedTest' --format="commit %H %cI %s" -- <path>
+  ```
+  Walk relevant patches from newest to oldest using the inline historical-path patch. Match changes to the exact method/class/assembly, not merely another attribute in the same file. This file-local inspection can disqualify a candidate, but because `--follow` cannot prove logical history across all file moves, it must never override check (a).
+
+  The newest relevant transition for a currently quarantined test must be an addition. Continue walking older relevant transitions:
+  - If an older relevant transition removed the attribute, the current addition is a **re-quarantine**. Permanently exclude the test from automated unquarantine.
+  - If no older relevant removal exists, this is the test's first quarantine and this check passes.
+  - If target identity, rename history, or a patch is ambiguous, fail closed and do not unquarantine.
+  - A commit that only replaces the attribute's issue URL is not an add/remove transition when the attribute remains present on the same target.
+
+  Do not infer this from the containing PR title. For example, a merged PR titled as an unrelated unquarantine can include a separate commit that re-quarantines this test; the first-parent source history remains authoritative.
+
+  **Check (d) — merged re-quarantine PR diffs as defense in depth.** The re-quarantine data is injected below from the pre-activation step. Parse the JSON — it contains an array of objects, each with:
   - `number`: PR number
   - `title`: PR title
   - `quarantine_entries`: array of `{filename, added_lines, patch_truncated}` — each entry represents a file where `[QuarantinedTest` was added
@@ -2152,14 +2302,14 @@ A test is a candidate for unquarantining if ALL of the following are true:
   - If `patch_truncated` is `true`, the patch was too large for the API to return. **Fail closed**: treat this as matching any test in that file.
   - Otherwise, examine `added_lines` (the actual source lines that were added). Since `[QuarantinedTest]` is an attribute placed above a method or class declaration, the added line alone won't name the target. To identify which method/class it applies to, find the matching `[QuarantinedTest` line in the current source file (by `filename`) and look at the next non-attribute, non-blank line — that will be the method or class declaration (e.g., `public async Task FooTest()` or `public class FooTests`). If the candidate test matches that declaration, it's a match. As an additional signal, if an added `[QuarantinedTest` line references an issue URL whose number is in the re-quarantine issue-number list above, and the candidate's tracking issue is that same number, treat it as a match.
 
-  If either check (a) or check (b) matches the candidate, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+  If any check matches the candidate, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
   **Re-quarantine data (from pre-activation step):**
   ```json
   ${{ needs.pre_activation.outputs.requarantine_data }}
   ```
 
-  **Do NOT use `search_pull_requests` (MCP: github) for this check.** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, which can hide legitimate re-quarantine PRs. The pre-activation step bypasses this filter.
+  **Do NOT use `search_pull_requests` (MCP: github) as a substitute for checks (a) or (c).** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, and PR metadata cannot reliably identify bundled re-quarantines.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing. **This multi-assembly aggregation applies ONLY when the differing parts are assembly/namespace *prefixes* of an otherwise identical `{DeclaringClass}.{Method}` suffix (e.g. all four examples end in `StartupTests.X`).** A fully-qualified name with a *different declaring class* that merely shares the same leaf method name (e.g. `HelloWorldTests.HelloWorld` vs `StartupTests.HelloWorld`) is **not** a variant — it is an unrelated test, and its results must never be used to satisfy this test's pass-rate or run-evidence checks.
 
@@ -2204,7 +2354,7 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
-- **Never unquarantine a test that has ever been re-quarantined.** If a test was previously unquarantined and then re-quarantined (via a PR with "Re-quarantine" in the title or the `re-quarantine` label), it is permanently excluded from automated unquarantining. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
+- **Never unquarantine a test that has ever been re-quarantined.** If the deterministic exact-target first-parent history shows quarantine → unquarantine → quarantine, it is permanently excluded from automated unquarantining. PR titles and the `re-quarantine` label are defense in depth only and are not required for this classification. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
 - **`[QuarantinedTest]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing (see below); the framework resolves it to the numeric URL before the PR is opened, so the final committed code is numeric. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
   - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_quarantine_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_quarantine_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
@@ -2327,6 +2477,13 @@ Follow these rules mechanically for each PR:
    - contain **only** the intended `[QuarantinedTest]` addition or removal for this candidate (plus, for a quarantine, the `using Microsoft.AspNetCore.InternalTesting;` line if needed).
    If the diff or `main..HEAD` history shows any unrelated file, any unrelated `[QuarantinedTest]` add/remove, or a revert of an unrelated change, **stop**: return to clean `main` (rule 1) and rebuild this PR's change from scratch. Do not submit a PR whose diff or branch history contains anything beyond this candidate's change.
 
+The safe-output job independently repeats this as an executable gate. It
+applies each authoritative patch to the deterministic `main` snapshot, derives
+the exact quarantine targets before and after, and rejects the entire output
+job if a patch contains unrelated edits, stale project source, an unlisted
+quarantine candidate, a wrong issue reference, or an unquarantine target whose
+exact history is not `first-quarantine`.
+
 ### Step 3.1 — Quarantine and re-quarantine (highest priority)
 
 For each quarantine/re-quarantine candidate, in priority order (Case B re-quarantines first, then Case A new quarantines — follow the matching case for each candidate):
@@ -2357,7 +2514,7 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
 1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute. Also include the **failure frequency** sentence and a link to the **most recent failing build** (`https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`), both computed above — do not omit these even though this is a re-quarantine of an existing issue.
 
 2. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class), using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the exact individual test method, using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID. Do not broaden an individual Case B failure to a class- or assembly-level quarantine.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the existing issue in the PR body with a literal issue reference (e.g., `Associated issue: #66035`).
    - Adds the `re-quarantine` label to the PR. **Only ever apply this label to a PR whose every change is a Case B re-quarantine for this single issue.**
@@ -2404,7 +2561,14 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
 
 For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
-**Mandatory pre-PR re-quarantine self-check (perform before EVERY unquarantine PR — this is a hard stop).** Immediately before you call `create_pull_request` for an unquarantine, inspect the exact diff you are about to submit. For **every** removed line containing a `QuarantinedTest` attribute that references an issue URL — in **any** form, including method-level `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]`, class-level, and assembly-level `[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]` — extract the numeric issue `N` (the digits after `issues/`) and check it against the injected `requarantine_issue_numbers` array (the same deterministic list used in Step 2.2 check (a)). **If any removed attribute's `N` appears in `requarantine_issue_numbers`, that test is permanently re-quarantined — do NOT create the PR: drop that test from the group and, if no removals remain, abandon the PR entirely.** This is a mechanical, diff-level gate that stands independently of the earlier Step 2.2 check — even if a re-quarantined test slipped through candidate selection, it must be caught here. If the `requarantine_issue_numbers` list is missing or unparseable, **fail closed**: do not open any unquarantine PR this run.
+**Mandatory pre-PR re-quarantine self-check (perform before EVERY unquarantine PR — this is a hard stop).** Immediately before you call `create_pull_request` for an unquarantine, inspect the exact diff you are about to submit. For **every** removed line containing a `QuarantinedTest` attribute that references an issue URL — in **any** form, including method-level `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]`, class-level, and assembly-level `[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/N")]`:
+
+1. Match the exact `scope`, `path`, `type`, `method`, and numeric issue `N` against the injected `requarantine_history`. The single matching entry must have status `first-quarantine`; otherwise drop the removal.
+2. Check `N` against the injected `requarantine_issue_numbers` array. If it appears, drop the removal.
+3. Repeat the exact first-parent history check from Step 2.2 for the method/class/assembly whose attribute is being removed. If the current attribute was added after an earlier removal, drop the removal even when the containing merged PR had no re-quarantine title or label.
+4. Check the injected merged-PR re-quarantine data as defense in depth.
+
+If any check is missing, unparseable, or ambiguous, **fail closed** and drop the removal. If no removals remain, abandon the PR entirely. This diff-level gate stands independently of candidate selection and must catch any re-quarantined test that slipped through earlier analysis.
 
 1. **Create a PR** that removes the `[QuarantinedTest(...)]` attribute(s) from the test method(s) or class. Do NOT remove the `using Microsoft.AspNetCore.InternalTesting;` statement — it may be used by other attributes.
 
