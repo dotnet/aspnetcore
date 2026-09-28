@@ -208,6 +208,7 @@ public abstract class JsonHubProtocolTestsBase
     [InlineData("{\"type\":1,\"target\":\"target\",\"arguments\":[],\"arguments\":[]}", "arguments")]
     [InlineData("{\"type\":6,\"headers\":{},\"headers\":{}}", "headers")]
     [InlineData("{\"type\":8,\"sequenceId\":1,\"sequenceId\":2}", "sequenceId")]
+    [InlineData("{\"type\":8,\"sequenceId\":null,\"sequenceId\":1}", "sequenceId")]
     public void DuplicatePropertiesAreRejected(string input, string propertyName)
     {
         input = Frame(input);
@@ -216,6 +217,18 @@ public abstract class JsonHubProtocolTestsBase
         var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
         var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, binder, out var _));
         Assert.Equal($"Duplicate '{propertyName}' property is not allowed.", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("{\"type\":1,\"target\":\"first\",\"arguments\":[42],\"target\":\"second\"}")]
+    [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"first\",\"arguments\":[42],\"target\":\"second\"}")]
+    public void DuplicateTargetIsRejected(string input)
+    {
+        input = Frame(input);
+
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+        var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, new TargetSpecificBinder(), out var _));
+        Assert.Equal("Duplicate 'target' property is not allowed.", ex.Message);
     }
 
     [Fact]
@@ -528,6 +541,21 @@ public abstract class JsonHubProtocolTestsBase
         output.Write(message, 0, message.Length);
         output.WriteByte(TextMessageFormatter.RecordSeparator);
         return output.ToArray();
+    }
+
+    private sealed class TargetSpecificBinder : IInvocationBinder
+    {
+        public IReadOnlyList<Type> GetParameterTypes(string methodName)
+            => methodName switch
+            {
+                "first" => [typeof(int)],
+                "second" => [typeof(string)],
+                _ => throw new InvalidOperationException($"Unexpected target '{methodName}'."),
+            };
+
+        public Type GetReturnType(string invocationId) => throw new NotImplementedException();
+
+        public Type GetStreamItemType(string streamId) => throw new NotImplementedException();
     }
 
     public class JsonProtocolTestData

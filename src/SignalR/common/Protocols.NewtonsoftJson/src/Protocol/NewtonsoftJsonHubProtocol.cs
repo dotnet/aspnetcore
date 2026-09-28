@@ -142,6 +142,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
             var allowReconnect = false;
             var hasAllowReconnect = false;
             long? sequenceId = null;
+            var hasSequenceId = false;
 
             using (var reader = JsonUtils.CreateJsonTextReader(textReader))
             {
@@ -331,12 +332,9 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     headers = ReadHeaders(reader);
                                     break;
                                 case SequenceIdPropertyName:
-                                    ThrowIfDuplicateProperty(sequenceId is not null, SequenceIdPropertyName);
+                                    ThrowIfDuplicateProperty(hasSequenceId, SequenceIdPropertyName);
+                                    hasSequenceId = true;
                                     sequenceId = JsonUtils.ReadAsInt64(reader, SequenceIdPropertyName);
-                                    if (sequenceId is null)
-                                    {
-                                        throw new InvalidDataException($"Missing required property '{SequenceIdPropertyName}'.");
-                                    }
                                     break;
                                 default:
                                     // Skip read the property name

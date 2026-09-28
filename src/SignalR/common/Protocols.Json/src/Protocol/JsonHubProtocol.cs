@@ -146,6 +146,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             var allowReconnect = false;
             var hasAllowReconnect = false;
             long? sequenceId = null;
+            var hasSequenceId = false;
 
             var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -348,7 +349,8 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(SequenceIdPropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            ThrowIfDuplicateProperty(sequenceId is not null, SequenceIdPropertyName);
+                            ThrowIfDuplicateProperty(hasSequenceId, SequenceIdPropertyName);
+                            hasSequenceId = true;
                             sequenceId = reader.ReadAsInt64(SequenceIdPropertyName);
                         }
                         else
