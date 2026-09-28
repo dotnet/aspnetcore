@@ -358,6 +358,7 @@ post-steps:
       PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
       PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
       PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
+      EXPR_RUNNER_TEMP: ${{ runner.temp }}
     run: |
       function Get-CanonicalPath
       {
@@ -393,12 +394,12 @@ post-steps:
 
       $dashboardIssueNumber = 69328
 
-      Assert-PrivateValidatorRoot -Path "${{ runner.temp }}/pr-attention-pulse-validator"
-      pwsh "${{ runner.temp }}/pr-attention-pulse-validator/Validate-PRAttentionPulseOutput.ps1" `
+      Assert-PrivateValidatorRoot -Path "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator"
+      pwsh "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/Validate-PRAttentionPulseOutput.ps1" `
         -AgentOutputPath /tmp/gh-aw/agent_output.json `
-        -PulseInputPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-input.json" `
-        -ExpectedBodyPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-body.md" `
-        -SnapshotContextPath "${{ runner.temp }}/pr-attention-pulse-validator/pulse-snapshot-context.json" `
+        -PulseInputPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-input.json" `
+        -ExpectedBodyPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-body.md" `
+        -SnapshotContextPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-snapshot-context.json" `
         -ExpectedRepository $env:PULSE_SNAPSHOT_REPOSITORY `
         -ExpectedServerUrl $env:PULSE_SNAPSHOT_SERVER_URL `
         -ExpectedRunId $env:PULSE_SNAPSHOT_RUN_ID `
@@ -423,12 +424,14 @@ post-steps:
   - name: Remove sanitized Pulse data
     if: always()
     shell: pwsh
+    env:
+      EXPR_RUNNER_TEMP: ${{ runner.temp }}
     run: |
       Remove-Item .pr-attention-pulse/pulse-input.json -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-body.md -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-request.json -Force -ErrorAction SilentlyContinue
       Remove-Item .pr-attention-pulse/pulse-snapshot-context.json -Force -ErrorAction SilentlyContinue
-      Remove-Item "${{ runner.temp }}/pr-attention-pulse-validator" -Recurse -Force -ErrorAction SilentlyContinue
+      Remove-Item "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator" -Recurse -Force -ErrorAction SilentlyContinue
 
 network:
   allowed: []
