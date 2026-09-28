@@ -3,10 +3,12 @@
 
 using System.Globalization;
 using System.Net.Security;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -195,6 +197,77 @@ public class SansIoTlsConnectionTests : LoggedTest
 
     [ConditionalFact]
     [SansIoTlsSupported]
+    public async Task ClientCertificateValidationCallbackRunsAndCanAccept()
+    {
+        // The configured ClientCertificateValidation callback must be able to *accept* a
+        // certificate that the default chain build rejects - that is what
+        // AllowAnyClientCertificate() relies on. The reject direction is covered above; this
+        // covers accept, because the two are driven by different branches of the result.
+        var callbackRan = false;
+        SslPolicyErrors observedErrors = SslPolicyErrors.None;
+
+        await using var server = new TestServer(
+            context => WriteBody(context, "hello world"),
+            new TestServiceContext(LoggerFactory),
+            listenOptions => listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                ClientCertificateValidation = (_, _, errors) =>
+                {
+                    callbackRan = true;
+                    observedErrors = errors;
+                    return true;
+                },
+            }));
+
+        using var connection = server.CreateConnection();
+        var stream = OpenSslStream(connection.Stream, _x509Certificate2);
+        await stream.AuthenticateAsClientAsync("localhost").DefaultTimeout();
+        await AssertResponse(stream, "hello world");
+
+        Assert.True(callbackRan, "ClientCertificateValidation must be invoked on the sans-IO path.");
+
+        // The test certificate does not chain to a trusted root, so default validation fails and
+        // the connection only succeeded because the callback overrode it. Without that, this
+        // assertion would pass trivially.
+        Assert.NotEqual(SslPolicyErrors.None, observedErrors);
+    }
+
+    [ConditionalFact]
+    [SansIoTlsSupported]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point is only retrievable on Windows; the SslStream path is skipped here for the same reason.")]
+    public async Task ChannelBindingIsAvailableOnASansIoConnection()
+    {
+        // A session-backed feature is marked snapshotted from construction, which means "serve
+        // the negotiated values from cached fields" rather than "the connection is torn down".
+        // The teardown guard in TryGetChannelBindingBytes must not treat the two as the same,
+        // or the session branch below it is unreachable and bindings silently never work.
+        var gotEndpoint = false;
+        var tokenLength = 0;
+
+        await using var server = new TestServer(
+            context =>
+            {
+                var tls = context.Features.Get<ITlsConnectionFeature>();
+                gotEndpoint = tls.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var token);
+                tokenLength = token.Length;
+                return WriteBody(context, "hello world");
+            },
+            new TestServiceContext(LoggerFactory),
+            listenOptions => listenOptions.UseHttps(_x509Certificate2));
+
+        using var connection = server.CreateConnection();
+        var stream = OpenSslStream(connection.Stream);
+        await stream.AuthenticateAsClientAsync("localhost").DefaultTimeout();
+        await AssertResponse(stream, "hello world");
+
+        Assert.True(gotEndpoint, "Endpoint channel binding must be retrievable on the sans-IO path.");
+        Assert.True(tokenLength > 0, "Channel binding token must not be empty.");
+    }
+
+    [ConditionalFact]
+    [SansIoTlsSupported]
     public async Task PerConnectionOnAuthenticateStaysOnSslStream()
     {
         // OnAuthenticate is documented to run per connection, but this path resolves one
@@ -263,8 +336,9 @@ public class SansIoTlsConnectionTests : LoggedTest
         return context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
     }
 
-    private static SslStream OpenSslStream(Stream rawStream)
-        => new SslStream(rawStream, leaveInnerStreamOpen: false, (_, _, _, _) => true);
+    private static SslStream OpenSslStream(Stream rawStream, X509Certificate2 clientCertificate = null)
+        => new SslStream(rawStream, leaveInnerStreamOpen: false, (_, _, _, _) => true,
+            (_, _, _, _, _) => clientCertificate);
 
     // HTTP/1.0 so the server closes the connection after responding; with keep-alive the
     // reader would block waiting for a request that never comes.
