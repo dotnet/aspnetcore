@@ -36,10 +36,12 @@ internal sealed class MemoryResponseCache : IResponseCache
 
     public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
     {
+        var keyBytes = (long)(key?.Length ?? 0) * sizeof(char);
+
         if (entry is CachedResponse cachedResponse)
         {
             _cache.Set(
-                key,
+                key!,
                 new MemoryCachedResponse
                 {
                     Created = cachedResponse.Created,
@@ -50,18 +52,18 @@ internal sealed class MemoryResponseCache : IResponseCache
                 new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = validFor,
-                    Size = CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse)
+                    Size = checked(CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse) + keyBytes)
                 });
         }
         else
         {
             _cache.Set(
-                key,
+                key!,
                 entry,
                 new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = validFor,
-                    Size = CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules)
+                    Size = checked(CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules) + keyBytes)
                 });
         }
     }
