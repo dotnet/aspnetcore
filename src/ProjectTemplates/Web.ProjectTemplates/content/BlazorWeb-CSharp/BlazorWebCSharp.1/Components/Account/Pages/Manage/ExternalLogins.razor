@@ -117,7 +117,7 @@
         }
 
         showRemoveButton = passwordHash is not null || currentLogins.Count > 1;
-        isReauthenticated = await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user);
+        isReauthenticated = await ReauthenticationMarker.IsVerifiedAsync(HttpContext, UserManager, user);
 
         if (HttpMethods.IsGet(HttpContext.Request.Method) && Action == LinkLoginCallbackAction)
         {
@@ -164,7 +164,7 @@
             return;
         }
 
-        if (!await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user))
+        if (!await ReauthenticationMarker.IsVerifiedAsync(HttpContext, UserManager, user))
         {
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             IdentityStatusMessage = "Error: You must confirm your identity before adding an external login.";

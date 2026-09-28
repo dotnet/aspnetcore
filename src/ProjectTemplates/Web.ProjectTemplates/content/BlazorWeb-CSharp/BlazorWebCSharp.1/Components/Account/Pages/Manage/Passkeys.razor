@@ -109,7 +109,7 @@ else
             return;
         }
         currentPasskeys = await UserManager.GetPasskeysAsync(user);
-        isReauthenticated = await PasskeyReauthentication.IsVerifiedAsync(HttpContext, UserManager, user);
+        isReauthenticated = await ReauthenticationMarker.IsVerifiedAsync(HttpContext, UserManager, user);
     }
 
     // Registering a passkey adds a permanent way to sign in, so it takes a confirmation with a

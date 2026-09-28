@@ -39,6 +39,28 @@ public class ReauthenticationMarkerTests
     }
 
     [Fact]
+    public async Task MarkedUserWithoutSecurityStampSupportIsVerified()
+    {
+        using var services = CreateServices();
+        var user = new IdentityUser { Id = "user" };
+        var userManager = CreateUserManager(supportsSecurityStamp: false);
+        var markContext = CreateContext(services);
+
+        await ReauthenticationMarker.MarkAsync(markContext, userManager.Object, user);
+
+        var cookie = GetMarkerCookie(markContext);
+        var protector = services.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(ProtectorPurpose)
+            .ToTimeLimitedDataProtector();
+        var payload = protector.Unprotect(cookie.Value.Value);
+        var verificationContext = CreateContext(services, cookie.Value);
+
+        Assert.Equal("user:", payload);
+        Assert.True(await ReauthenticationMarker.IsVerifiedAsync(verificationContext, userManager.Object, user));
+        userManager.Verify(manager => manager.GetSecurityStampAsync(It.IsAny<IdentityUser>()), Times.Never);
+    }
+
+    [Fact]
     public async Task TamperedMarkerIsRejected()
     {
         using var services = CreateServices();
@@ -105,7 +127,7 @@ public class ReauthenticationMarkerTests
         return context;
     }
 
-    private static Mock<UserManager<IdentityUser>> CreateUserManager()
+    private static Mock<UserManager<IdentityUser>> CreateUserManager(bool supportsSecurityStamp = true)
     {
         var userStore = new Mock<IUserStore<IdentityUser>>();
         var userManager = new Mock<UserManager<IdentityUser>>(
@@ -122,8 +144,13 @@ public class ReauthenticationMarkerTests
             .Setup(manager => manager.GetUserIdAsync(It.IsAny<IdentityUser>()))
             .ReturnsAsync((IdentityUser user) => user.Id);
         userManager
+            .SetupGet(manager => manager.SupportsUserSecurityStamp)
+            .Returns(supportsSecurityStamp);
+        userManager
             .Setup(manager => manager.GetSecurityStampAsync(It.IsAny<IdentityUser>()))
-            .ReturnsAsync((IdentityUser user) => user.SecurityStamp);
+            .Returns((IdentityUser user) => supportsSecurityStamp
+                ? Task.FromResult(user.SecurityStamp!)
+                : Task.FromException<string>(new NotSupportedException()));
         return userManager;
     }
 

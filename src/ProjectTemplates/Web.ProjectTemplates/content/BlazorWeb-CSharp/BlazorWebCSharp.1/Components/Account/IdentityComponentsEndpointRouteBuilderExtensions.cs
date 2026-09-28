@@ -73,7 +73,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromForm] string returnUrl) =>
         {
-            PasskeyReauthentication.Clear(context);
+            ReauthenticationMarker.Clear(context);
             await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
@@ -157,7 +157,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 return Results.NotFound($"Unable to load user with ID '{userManager.GetUserId(context.User)}'.");
             }
 
-            if (!await PasskeyReauthentication.IsVerifiedAsync(context, userManager, user))
+            if (!await ReauthenticationMarker.IsVerifiedAsync(context, userManager, user))
             {
                 return Results.BadRequest("You must confirm your identity before adding a passkey.");
             }
@@ -247,7 +247,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 return Results.NotFound($"Unable to load user with ID '{signInManager.UserManager.GetUserId(context.User)}'.");
             }
 
-            if (!await PasskeyReauthentication.IsVerifiedAsync(context, signInManager.UserManager, user))
+            if (!await ReauthenticationMarker.IsVerifiedAsync(context, signInManager.UserManager, user))
             {
                 return Results.BadRequest("You must confirm your identity before adding an external login.");
             }

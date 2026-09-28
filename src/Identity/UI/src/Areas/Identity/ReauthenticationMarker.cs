@@ -50,7 +50,14 @@ internal static class ReauthenticationMarker
 
     private static async Task<string> GetExpectedPayloadAsync<TUser>(UserManager<TUser> userManager, TUser user)
         where TUser : class
-        => $"{await userManager.GetUserIdAsync(user)}:{await userManager.GetSecurityStampAsync(user)}";
+    {
+        var userId = await userManager.GetUserIdAsync(user);
+        var securityStamp = userManager.SupportsUserSecurityStamp
+            ? await userManager.GetSecurityStampAsync(user)
+            : null;
+
+        return $"{userId}:{securityStamp}";
+    }
 
     private static ITimeLimitedDataProtector GetProtector(HttpContext context)
         => context.RequestServices

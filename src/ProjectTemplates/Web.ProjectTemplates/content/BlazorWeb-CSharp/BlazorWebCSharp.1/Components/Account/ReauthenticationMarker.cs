@@ -11,10 +11,10 @@ namespace BlazorWebCSharp._1.Components.Account;
 // The marker is a data-protected payload of the user id and the current security stamp, so
 // changing the password or signing out everywhere invalidates any marker already issued. It is
 // valid for five minutes rather than for a single use.
-internal static class PasskeyReauthentication
+internal static class ReauthenticationMarker
 {
     private const string CookieName = "Identity.Reauthentication";
-    private const string ProtectorPurpose = "BlazorWebCSharp._1.Components.Account.PasskeyReauthentication.v1";
+    private const string ProtectorPurpose = "BlazorWebCSharp._1.Components.Account.ReauthenticationMarker.v1";
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);
 

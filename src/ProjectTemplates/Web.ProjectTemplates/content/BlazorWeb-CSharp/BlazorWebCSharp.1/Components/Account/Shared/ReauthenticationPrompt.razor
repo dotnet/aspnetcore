@@ -198,7 +198,7 @@
 
     private async Task MarkReauthenticatedAsync()
     {
-        await PasskeyReauthentication.MarkAsync(HttpContext, UserManager, user!);
+        await ReauthenticationMarker.MarkAsync(HttpContext, UserManager, user!);
         RedirectManager.RedirectToCurrentPage();
     }
 
