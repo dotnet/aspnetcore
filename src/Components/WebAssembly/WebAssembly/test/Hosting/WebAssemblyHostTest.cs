@@ -378,7 +378,7 @@ public class WebAssemblyHostTest
     }
 
     [Fact]
-    public void BuildFailurePreservesOriginalExceptionWhenCleanupAlsoFails()
+    public async Task BuildFailurePreservesOriginalExceptionWhenCleanupAlsoFails()
     {
         var buildFailure = new InvalidOperationException("Initializer failed.");
         var cleanupFailure = new InvalidOperationException("Cleanup failed.");
@@ -406,7 +406,10 @@ public class WebAssemblyHostTest
             var exception = Assert.Throws<InvalidOperationException>(builder.Build);
 
             Assert.Same(buildFailure, exception);
-            Assert.Contains(cleanupFailure.Message, error.ToString());
+            await singletonService.DisposeCompleted.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+            Assert.True(SpinWait.SpinUntil(
+                () => error.ToString().Contains(cleanupFailure.Message, StringComparison.Ordinal),
+                TimeSpan.FromSeconds(3)));
             Assert.Equal(1, singletonService.DisposeCount);
         }
         finally

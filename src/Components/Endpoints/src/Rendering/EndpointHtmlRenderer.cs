@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
@@ -85,11 +86,21 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
-        => _servicesInitializedTask ??= InitializeStandardComponentServicesCoreAsync(
+    {
+        if (_servicesInitializedTask is not null)
+        {
+            Debug.Assert(
+                componentType is null && handler is null && form is null,
+                "The first initialization call owns the endpoint-specific routing and form data.");
+            return _servicesInitializedTask;
+        }
+
+        return _servicesInitializedTask = InitializeStandardComponentServicesCoreAsync(
             httpContext,
             componentType,
             handler,
             form);
+    }
 
     private async Task InitializeStandardComponentServicesCoreAsync(
         HttpContext httpContext,
