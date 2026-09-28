@@ -276,10 +276,19 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
-        // The SslStream may be disposed after Snapshot() runs at connection teardown, so channel
-        // bindings are only retrievable while the connection is live. Callers should read the token
-        // once during request processing.
-        if (_snapshotted || (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique))
+        // Channel bindings come from the live TLS state, so they are only retrievable while the
+        // underlying provider is usable. For the SslStream path that means before Snapshot()
+        // runs at connection teardown. A session-backed feature is snapshotted from
+        // construction - there the flag means "serve the negotiated values from cached fields",
+        // not "the connection is gone" - so it must not gate the session branch below, or that
+        // branch is unreachable and bindings silently never work on this path.
+        if (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique)
+        {
+            channelBindingToken = default;
+            return false;
+        }
+
+        if (_session is null && _snapshotted)
         {
             channelBindingToken = default;
             return false;
