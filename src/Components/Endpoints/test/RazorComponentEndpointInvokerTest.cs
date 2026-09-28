@@ -162,6 +162,29 @@ public class RazorComponentEndpointInvokerTest
         Assert.DoesNotContain("antiforgery token", await ReadBody(context), StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Invoker_PostPreservesErrorBoundaryContent_WhenComponentThrowsBeforeNamedFormRenders()
+    {
+        var services = new ServiceCollection().AddRazorComponents()
+                        .Services.AddAntiforgery()
+                        .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+                        .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
+                        .BuildServiceProvider();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(services, NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = BuildPostContext(services, "_handler=RiskyForm", typeof(NamedFormErrorBoundaryComponent));
+        context.Features.Set<IAntiforgeryValidationFeature>(new ValidAntiforgeryValidationFeature());
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+        Assert.Contains("""<p id="fallback">The error boundary handled the form rendering error.</p>""", await ReadBody(context));
+    }
+
     private static async Task<string> ReadBody(HttpContext context)
     {
         context.Response.Body.Position = 0;
@@ -169,16 +192,20 @@ public class RazorComponentEndpointInvokerTest
         return await reader.ReadToEndAsync();
     }
 
-    private static DefaultHttpContext BuildPostContext(IServiceProvider services, string formBody)
+    private static DefaultHttpContext BuildPostContext(
+        IServiceProvider services,
+        string formBody,
+        Type? rootComponentType = null)
     {
+        rootComponentType ??= typeof(SimpleComponent);
         var context = new DefaultHttpContext();
         context.SetEndpoint(new RouteEndpoint(
             ctx => Task.CompletedTask,
             RoutePatternFactory.Parse("/"),
             0,
             new EndpointMetadataCollection(
-                new ComponentTypeMetadata(typeof(SimpleComponent)),
-                new RootComponentMetadata(typeof(SimpleComponent)),
+                new ComponentTypeMetadata(rootComponentType),
+                new RootComponentMetadata(rootComponentType),
                 new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>())),
             "test"));
         context.Request.Method = "POST";

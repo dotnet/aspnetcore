@@ -64,7 +64,8 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IScrollToLocationHash, UnsupportedScrollToLocationHash>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
+        services.TryAddScoped<PrerenderingErrorBoundaryLogger>();
+        services.TryAddScoped<IErrorBoundaryLogger>(sp => sp.GetRequiredService<PrerenderingErrorBoundaryLogger>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
