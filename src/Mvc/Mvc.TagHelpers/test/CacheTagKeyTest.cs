@@ -586,7 +586,7 @@ public class CacheTagKeyTest
         Assert.Equal(hashCode1, hashCode2);
     }
 
-     private static CacheTagKey CreateCacheTagKeyWithQuery(string varyByQuery, string queryString)
+    private static CacheTagKey CreateCacheTagKeyWithQuery(string varyByQuery, string queryString)
     {
         var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
         {
