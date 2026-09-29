@@ -137,7 +137,8 @@
     <!-- Do not update the Microsoft.AspNetCore.App KnownFrameworkReference item unless requested. -->
     <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
     <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
-      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' ">true</UpdateAspNetCoreKnownFramework>
+      ('$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' OR
+      '$(UseLiveAspNetCoreSharedRuntime)' == 'true') ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
   <ItemGroup>

@@ -118,10 +118,16 @@ public class CircuitHostTest
         var calls = new List<string>();
         var initializerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var continueInitializer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handlerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueHandler = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var handler = new Mock<CircuitHandler>();
         SetupMockInboundActivityHandler(handler);
         handler.Setup(instance => instance.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+            .Returns(async () =>
+            {
+                handlerStarted.TrySetResult();
+                await continueHandler.Task;
+            });
         handler.Setup(instance => instance.OnConnectionUpAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         var services = new ServiceCollection()
@@ -157,11 +163,9 @@ public class CircuitHostTest
 
         var initializeTask = circuitHost.InitializeAsync(null, default, CancellationToken.None);
         var firstUpdateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 1, batchId: 1);
-        var secondUpdateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 2, batchId: 2);
         await Task.Yield();
 
         Assert.False(firstUpdateTask.IsCompleted);
-        Assert.False(secondUpdateTask.IsCompleted);
         Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
         handler.Verify(
             instance => instance.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()),
@@ -169,11 +173,20 @@ public class CircuitHostTest
 
         await initializerStarted.Task;
         Assert.False(firstUpdateTask.IsCompleted);
-        Assert.False(secondUpdateTask.IsCompleted);
         Assert.False(DeferredInitializerRootComponent.Rendered.Task.IsCompleted);
 
         continueInitializer.SetResult();
         await initializeTask;
+        await handlerStarted.Task;
+
+        var secondUpdateTask = AddComponentAsync<DeferredInitializerRootComponent>(circuitHost, 2, batchId: 2);
+        await Task.Yield();
+
+        Assert.False(firstUpdateTask.IsCompleted);
+        Assert.False(secondUpdateTask.IsCompleted);
+        Assert.Empty(completedBatches);
+
+        continueHandler.SetResult();
         await Task.WhenAll(firstUpdateTask, secondUpdateTask);
 
         Assert.Equal(["deferred"], calls);

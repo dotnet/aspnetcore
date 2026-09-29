@@ -19,6 +19,7 @@
   <!-- The dojo apps and the E2E host require ASP.NET Core at runtime. -->
   <PropertyGroup>
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <UseLiveAspNetCoreSharedRuntime>true</UseLiveAspNetCoreSharedRuntime>
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
