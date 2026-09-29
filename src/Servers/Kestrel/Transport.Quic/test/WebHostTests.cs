@@ -40,6 +40,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task UseUrls_HelloWorld_ClientSuccess()
     {
         // Arrange
@@ -97,6 +98,7 @@ public class WebHostTests : LoggedTest
     [MsQuicSupported]
     [InlineData(5002, 5003)]
     [InlineData(5004, 5004)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task Listen_Http3AndSocketsCoexistOnDifferentEndpoints_ClientSuccess(int http3Port, int http1Port)
     {
         // Arrange
@@ -172,6 +174,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
     {
         await ServerRetryHelper.BindPortsWithRetry(async port =>
@@ -210,6 +213,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
     {
         await ServerRetryHelper.BindPortsWithRetry(async port =>
