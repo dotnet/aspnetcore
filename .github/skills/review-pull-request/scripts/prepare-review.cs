@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
@@ -23,12 +22,6 @@ internal static partial class PrepareReviewProgram
     private const int MaximumProcessOutputBytes = 64 * 1024 * 1024;
     private const string LegacyProducerHash = "add2dd1e77ada0e14c7412983683ee88a6f008793f3b0a074f94da84039afda7";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-        WriteIndented = true,
-    };
     private static readonly HashSet<string> ComponentsOnlyPolicies = new(StringComparer.Ordinal)
     {
         "src/Components/AGENTS.md#code-clarity-and-durable-knowledge",
@@ -79,7 +72,7 @@ internal static partial class PrepareReviewProgram
                 ["target"] = result["target"]!.DeepClone(),
                 ["ready"] = true,
             };
-            Console.Out.WriteLine(JsonSerializer.Serialize(response, CompactJsonOptions));
+            Console.Out.WriteLine(SerializeJson(response, indented: false));
             return 0;
         }
         catch (Exception error)
@@ -89,9 +82,8 @@ internal static partial class PrepareReviewProgram
         }
     }
 
-    private static readonly JsonSerializerOptions CompactJsonOptions = new()
+    private static readonly JsonSerializerOptions NodeValueJsonOptions = new()
     {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
     };
 
@@ -1225,10 +1217,182 @@ internal static partial class PrepareReviewProgram
         await WriteAsync(directory, name, SerializeJson(value));
     }
 
-    internal static string SerializeJson(JsonNode value) => JsonSerializer.Serialize(value, JsonOptions) + "\n";
+    internal static string SerializeJson(JsonNode value) => SerializeJson(value, indented: true) + "\n";
 
     private static bool JsonEqual(JsonNode? left, JsonNode? right) =>
-        JsonSerializer.Serialize(left, CompactJsonOptions) == JsonSerializer.Serialize(right, CompactJsonOptions);
+        SerializeJson(left, indented: false) == SerializeJson(right, indented: false);
+
+    private static string SerializeJson(JsonNode? value, bool indented)
+    {
+        var builder = new StringBuilder();
+        WriteJsonNode(builder, value, indented, depth: 0);
+        return builder.ToString();
+    }
+
+    private static void WriteJsonNode(StringBuilder builder, JsonNode? node, bool indented, int depth)
+    {
+        switch (node)
+        {
+            case null:
+                builder.Append("null");
+                return;
+            case JsonObject jsonObject:
+                builder.Append('{');
+                var propertyIndex = 0;
+                foreach (var property in jsonObject)
+                {
+                    if (propertyIndex++ > 0)
+                    {
+                        builder.Append(',');
+                    }
+                    WriteJsonSeparator(builder, indented, depth + 1);
+                    WriteJsonString(builder, property.Key);
+                    builder.Append(indented ? ": " : ":");
+                    WriteJsonNode(builder, property.Value, indented, depth + 1);
+                }
+                if (propertyIndex > 0)
+                {
+                    WriteJsonSeparator(builder, indented, depth);
+                }
+                builder.Append('}');
+                return;
+            case JsonArray jsonArray:
+                builder.Append('[');
+                var itemIndex = 0;
+                foreach (var item in jsonArray)
+                {
+                    if (itemIndex++ > 0)
+                    {
+                        builder.Append(',');
+                    }
+                    WriteJsonSeparator(builder, indented, depth + 1);
+                    WriteJsonNode(builder, item, indented, depth + 1);
+                }
+                if (itemIndex > 0)
+                {
+                    WriteJsonSeparator(builder, indented, depth);
+                }
+                builder.Append(']');
+                return;
+            case JsonValue jsonValue:
+                if (!jsonValue.TryGetValue<JsonElement>(out var element))
+                {
+                    element = JsonSerializer.SerializeToElement(jsonValue, NodeValueJsonOptions);
+                }
+                WriteJsonElement(builder, element, indented, depth);
+                return;
+            default:
+                throw new InvalidOperationException($"Unsupported JSON node type: {node.GetType().FullName}");
+        }
+    }
+
+    private static void WriteJsonElement(StringBuilder builder, JsonElement element, bool indented, int depth)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                builder.Append('{');
+                var propertyIndex = 0;
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (propertyIndex++ > 0)
+                    {
+                        builder.Append(',');
+                    }
+                    WriteJsonSeparator(builder, indented, depth + 1);
+                    WriteJsonString(builder, property.Name);
+                    builder.Append(indented ? ": " : ":");
+                    WriteJsonElement(builder, property.Value, indented, depth + 1);
+                }
+                if (propertyIndex > 0)
+                {
+                    WriteJsonSeparator(builder, indented, depth);
+                }
+                builder.Append('}');
+                break;
+            case JsonValueKind.Array:
+                builder.Append('[');
+                var itemIndex = 0;
+                foreach (var item in element.EnumerateArray())
+                {
+                    if (itemIndex++ > 0)
+                    {
+                        builder.Append(',');
+                    }
+                    WriteJsonSeparator(builder, indented, depth + 1);
+                    WriteJsonElement(builder, item, indented, depth + 1);
+                }
+                if (itemIndex > 0)
+                {
+                    WriteJsonSeparator(builder, indented, depth);
+                }
+                builder.Append(']');
+                break;
+            case JsonValueKind.String:
+                WriteJsonString(builder, element.GetString()!);
+                break;
+            case JsonValueKind.Number:
+                builder.Append(element.GetRawText());
+                break;
+            case JsonValueKind.True:
+                builder.Append("true");
+                break;
+            case JsonValueKind.False:
+                builder.Append("false");
+                break;
+            case JsonValueKind.Null:
+                builder.Append("null");
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported JSON value kind: {element.ValueKind}");
+        }
+    }
+
+    private static void WriteJsonSeparator(StringBuilder builder, bool indented, int depth)
+    {
+        if (!indented)
+        {
+            return;
+        }
+        builder.Append('\n');
+        builder.Append(' ', depth * 2);
+    }
+
+    private static void WriteJsonString(StringBuilder builder, string value)
+    {
+        builder.Append('"');
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            switch (character)
+            {
+                case '"': builder.Append("\\\""); break;
+                case '\\': builder.Append("\\\\"); break;
+                case '\b': builder.Append("\\b"); break;
+                case '\f': builder.Append("\\f"); break;
+                case '\n': builder.Append("\\n"); break;
+                case '\r': builder.Append("\\r"); break;
+                case '\t': builder.Append("\\t"); break;
+                default:
+                    if (character < 0x20 || char.IsSurrogate(character)
+                        && (char.IsLowSurrogate(character) || index + 1 == value.Length || !char.IsLowSurrogate(value[index + 1])))
+                    {
+                        builder.Append("\\u");
+                        builder.Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        builder.Append(character);
+                        if (char.IsHighSurrogate(character))
+                        {
+                            builder.Append(value[++index]);
+                        }
+                    }
+                    break;
+            }
+        }
+        builder.Append('"');
+    }
 
     private static long JsonInteger(JsonNode value)
     {

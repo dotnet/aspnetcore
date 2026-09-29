@@ -268,12 +268,35 @@ public class PrepareReviewTests
     [Fact]
     public void SerializesJavaScriptCompatibleJsonBytes()
     {
-        var value = new JsonObject
-        {
-            ["z"] = "é<>&",
-            ["a"] = 1,
-        };
-        Assert.Equal("{\n  \"z\": \"é<>&\",\n  \"a\": 1\n}\n", PrepareReviewProgram.SerializeJson(value));
+        var value = JsonNode.Parse("""
+            {
+              "nested": {
+                "emoji": "\uD83D\uDFE1 \uD83D\uDCA1 \uD83D\uDD75\uFE0F \uD83E\uDD16",
+                "narrowSpace": "\u202F",
+                "html": "<>&",
+                "array": ["\uD83D\uDFE1", {"value": "\uD83D\uDCA1"}]
+              },
+              "a": 1
+            }
+            """)!;
+        Assert.Equal("🟡 💡 🕵️ 🤖", value["nested"]!["emoji"]!.GetValue<string>());
+        Assert.Equal("""
+            {
+              "nested": {
+                "emoji": "🟡 💡 🕵️ 🤖",
+                "narrowSpace": " ",
+                "html": "<>&",
+                "array": [
+                  "🟡",
+                  {
+                    "value": "💡"
+                  }
+                ]
+              },
+              "a": 1
+            }
+
+            """, PrepareReviewProgram.SerializeJson(value));
     }
 
     [Fact]
