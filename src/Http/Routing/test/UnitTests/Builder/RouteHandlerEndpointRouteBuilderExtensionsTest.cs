@@ -232,6 +232,19 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public void MapGetOnGroup_ThrowsWithImplicitFromBody_IncludesGroupPrefixInRoutePattern()
+    {
+        static void GetTodo(int id, Todo todo) { }
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        var group = builder.MapGroup("/api");
+        _ = group.MapGet("/todos/{id}", GetTodo);
+        var dataSource = Assert.Single(builder.DataSources);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
+        Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+        Assert.Contains("Endpoint: HTTP: GET /api/todos/{id} => GetTodo", ex.Message);
+    }
+
+    [Fact]
     public void MapPost_ThrowsWithMultipleInferredBodies_IncludesEndpointDisplayName()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
