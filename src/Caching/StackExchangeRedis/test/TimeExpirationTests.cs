@@ -254,6 +254,27 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
+    [Fact(Skip = SkipReason)]
+    public void SlidingExpirationNotRenewedWhenDisableSlidingExpirationRefreshIsTrue()
+    {
+        var cache = RedisTestConfig.CreateCacheInstance(GetType().Name, disableSlidingExpirationRefresh: true);
+        var key = GetNameAndReset(cache);
+        var value = new byte[1];
+
+        cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(1)));
+
+        // Access the key several times within the original sliding window. With the flag enabled,
+        // these accesses must not refresh the TTL, so the key should still expire on schedule.
+        for (int i = 0; i < 3; i++)
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(0.25));
+            Assert.Equal(value, cache.Get(key));
+        }
+
+        Thread.Sleep(TimeSpan.FromSeconds(1.5));
+        Assert.Null(cache.Get(key));
+    }
+
     static string GetNameAndReset(IDistributedCache cache, [CallerMemberName] string caller = "")
     {
         cache.Remove(caller);
