@@ -5,266 +5,249 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using TestHelper;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
 public class NavigateToReturnAnalyzerTest : DiagnosticVerifier
 {
+    private const string DiagnosticId = "BL0020";
     private const string DisableThrowNavigationExceptionProperty = "build_property.BlazorDisableThrowNavigationException";
+    private const string DiagnosticMessage = "This project uses exception-driven navigation during prerendering. This behavior is obsolete and differs from interactive rendering, where NavigationManager.NavigateTo returns normally. Set BlazorDisableThrowNavigationException to true and make the intended control flow after navigation explicit.";
 
-    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new NavigateToReturnAnalyzer();
-
-    private static AnalyzerOptions EnabledAnalyzerOptions { get; } = CreateAnalyzerOptions("true");
-
-    private static readonly string NavigationManagerDeclaration = @"
-    namespace Microsoft.AspNetCore.Components
-    {
-        public class NavigationManager
+    private const string BlazorSsrApplication = """
+        namespace Microsoft.AspNetCore.Builder
         {
-            public void NavigateTo(string uri, bool forceLoad = false) { }
-        }
-    }
-";
-
-    [Fact]
-    public void DiagnosticForCodeAfterNavigateTo()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
+            public static class RazorComponentsEndpointRouteBuilderExtensions
             {
-                Navigation.NavigateTo(""/"");
-                System.Console.WriteLine(""this still runs"");
+                public static object MapRazorComponents<TComponent>(this object endpoints) => endpoints;
             }
         }
-    }" + NavigationManagerDeclaration;
 
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions, CreateExpectedDiagnostic(12, 17));
-    }
-
-    [Fact]
-    public void NoDiagnosticWhenReturnFollowsNavigateTo()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
+        namespace TestApplication
         {
-            private NavigationManager Navigation;
+            using Microsoft.AspNetCore.Builder;
 
-            public void Handle()
+            public class App { }
+
+            public static class Program
             {
-                Navigation.NavigateTo(""/"");
-                return;
-            }
-        }
-    }" + NavigationManagerDeclaration;
-
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions);
-    }
-
-    [Fact]
-    public void NoDiagnosticWhenNavigateToIsLastStatement()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
-            {
-                Navigation.NavigateTo(""/"");
-            }
-        }
-    }" + NavigationManagerDeclaration;
-
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions);
-    }
-
-    [Fact]
-    public void NoDiagnosticForUnrelatedNavigateTo()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        class NavigationManager
-        {
-            public void NavigateTo(string uri) { }
-        }
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
-            {
-                Navigation.NavigateTo(""/"");
-                System.Console.WriteLine(""this still runs"");
-            }
-        }
-    }";
-
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions);
-    }
-
-    [Fact]
-    public void DiagnosticForCodeAfterNavigateToInSwitchSection()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle(int value)
-            {
-                switch (value)
+                public static void Configure(object endpoints)
                 {
-                    case 0:
-                        Navigation.NavigateTo(""/"");
-                        System.Console.WriteLine(""this still runs"");
-                        break;
+                    endpoints.MapRazorComponents<App>();
                 }
             }
         }
-    }" + NavigationManagerDeclaration;
+        """;
 
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions, CreateExpectedDiagnostic(15, 25));
+    private const string InteractiveOnlyApplication = """
+        namespace Microsoft.AspNetCore.Components
+        {
+            public class NavigationManager
+            {
+                public void NavigateTo(string uri) { }
+            }
+        }
+
+        namespace TestApplication
+        {
+            using Microsoft.AspNetCore.Components;
+
+            public class Component
+            {
+                private readonly NavigationManager _navigation = new();
+
+                public void Handle()
+                {
+                    _navigation.NavigateTo("/");
+                    System.Console.WriteLine("This is valid in interactive rendering.");
+                }
+            }
+        }
+        """;
+
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new NavigateToReturnAnalyzer();
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    [InlineData("False")]
+    public void ReportsProjectDiagnosticWhenExceptionDrivenNavigationIsEnabled(string propertyValue)
+    {
+        VerifyCSharpDiagnostic(
+            BlazorSsrApplication,
+            CreateAnalyzerOptions(propertyValue),
+            OutputKind.ConsoleApplication,
+            CreateExpectedDiagnostic());
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("True")]
+    public void NoDiagnosticWhenExceptionDrivenNavigationIsDisabled(string propertyValue)
+    {
+        VerifyCSharpDiagnostic(BlazorSsrApplication, CreateAnalyzerOptions(propertyValue), OutputKind.ConsoleApplication);
     }
 
     [Fact]
-    public void OneDiagnosticForMultipleStatementsAfterNavigateTo()
+    public void ReportsOneDiagnosticForMultipleRazorComponentMappings()
     {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
+        const string applicationWithMultipleMappings = """
+            namespace Microsoft.AspNetCore.Builder
             {
-                Navigation.NavigateTo(""/"");
-                System.Console.WriteLine(""first"");
-                System.Console.WriteLine(""second"");
+                public static class RazorComponentsEndpointRouteBuilderExtensions
+                {
+                    public static object MapRazorComponents<TComponent>(this object endpoints) => endpoints;
+                }
             }
-        }
-    }" + NavigationManagerDeclaration;
 
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions, CreateExpectedDiagnostic(12, 17));
-    }
-
-    [Fact]
-    public void DiagnosticWhenCodeBeforeTrailingReturn()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
+            namespace TestApplication
             {
-                Navigation.NavigateTo(""/"");
-                System.Console.WriteLine(""this still runs"");
-                return;
+                using Microsoft.AspNetCore.Builder;
+
+                public class FirstApp { }
+                public class SecondApp { }
+
+                public static class Program
+                {
+                    public static void Configure(object endpoints)
+                    {
+                        endpoints.MapRazorComponents<FirstApp>();
+                        endpoints.MapRazorComponents<SecondApp>();
+                    }
+                }
             }
-        }
-    }" + NavigationManagerDeclaration;
-
-        VerifyCSharpDiagnostic(test, EnabledAnalyzerOptions, CreateExpectedDiagnostic(12, 17));
-    }
-
-    [Fact]
-    public void DiagnosticForNavigateToReceiverExpressions()
-    {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            private NavigationManager GetNavigationManager() => Navigation;
-
-            public void Handle()
-            {
-                GetNavigationManager().NavigateTo(""/first"");
-                System.Console.WriteLine(""first still runs"");
-                this.Navigation.NavigateTo(""/second"");
-                System.Console.WriteLine(""second still runs"");
-            }
-        }
-    }" + NavigationManagerDeclaration;
+            """;
 
         VerifyCSharpDiagnostic(
-            test,
-            EnabledAnalyzerOptions,
-            CreateExpectedDiagnostic(14, 17),
-            CreateExpectedDiagnostic(16, 17));
+            applicationWithMultipleMappings,
+            CreateAnalyzerOptions(propertyValue: null),
+            OutputKind.ConsoleApplication,
+            CreateExpectedDiagnostic());
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("false")]
-    public void NoDiagnosticWhenNavigateToStillThrows(string propertyValue)
+    [InlineData("true")]
+    public void NoDiagnosticForProjectWithoutServerSideRazorComponents(string propertyValue)
     {
-        var test = @"
-    namespace ConsoleApplication1
-    {
-        using Microsoft.AspNetCore.Components;
-
-        class TestClass
-        {
-            private NavigationManager Navigation;
-
-            public void Handle()
-            {
-                Navigation.NavigateTo(""/"");
-                System.Console.WriteLine(""unreachable when NavigateTo throws"");
-            }
-        }
-    }" + NavigationManagerDeclaration;
-
-        VerifyCSharpDiagnostic(test, CreateAnalyzerOptions(propertyValue));
+        VerifyCSharpDiagnostic(InteractiveOnlyApplication, CreateAnalyzerOptions(propertyValue), OutputKind.ConsoleApplication);
     }
 
-    private static DiagnosticResult CreateExpectedDiagnostic(int line, int column) => new()
+    [Fact]
+    public void ReportsForApplicationUsingMappingWrapper()
     {
-        Id = DiagnosticDescriptors.CodeAfterNavigateToWillExecute.Id,
-        Message = "Code after this 'NavigateTo' call will still execute because 'NavigateTo' does not stop execution. Add a 'return' statement after 'NavigateTo' if the following code should not run.",
+        const string applicationWithMappingWrapper = """
+            namespace Microsoft.AspNetCore.Builder
+            {
+                public static class RazorComponentsEndpointRouteBuilderExtensions
+                {
+                    public static object MapRazorComponents<TComponent>(this object endpoints) => endpoints;
+                }
+            }
+
+            namespace Microsoft.Extensions.DependencyInjection
+            {
+                public static class RazorComponentsServiceCollectionExtensions
+                {
+                    public static object AddRazorComponents(this object services) => services;
+                }
+            }
+
+            namespace TestApplication
+            {
+                using Microsoft.Extensions.DependencyInjection;
+
+                public class App { }
+
+                public static class Program
+                {
+                    public static void Main()
+                    {
+                        new object().AddRazorComponents();
+                        // The application calls a wrapper implemented in a referenced library.
+                        MappingLibrary.Configure();
+                    }
+                }
+
+                public static class MappingLibrary
+                {
+                    public static void Configure() { }
+                }
+            }
+            """;
+
+        VerifyCSharpDiagnostic(
+            applicationWithMappingWrapper,
+            CreateAnalyzerOptions(propertyValue: null, hasRazorFile: false),
+            OutputKind.ConsoleApplication,
+            CreateExpectedDiagnostic());
+    }
+
+    [Fact]
+    public void NoDiagnosticForWebProjectWithRazorFileButNoServerRendering()
+    {
+        const string applicationWithoutServerRendering = """
+            namespace Microsoft.AspNetCore.Builder
+            {
+                public static class RazorComponentsEndpointRouteBuilderExtensions
+                {
+                    public static object MapRazorComponents<TComponent>(this object endpoints) => endpoints;
+                }
+            }
+
+            namespace Microsoft.Extensions.DependencyInjection
+            {
+                public static class RazorComponentsServiceCollectionExtensions
+                {
+                    public static object AddRazorComponents(this object services) => services;
+                }
+            }
+
+            namespace TestApplication
+            {
+                public static class Program
+                {
+                    public static void Main() { }
+                }
+            }
+            """;
+
+        VerifyCSharpDiagnostic(
+            applicationWithoutServerRendering,
+            CreateAnalyzerOptions(propertyValue: null),
+            OutputKind.ConsoleApplication);
+    }
+
+    [Fact]
+    public void ReportsForDirectMappingWithoutLocalRazorFile()
+    {
+        VerifyCSharpDiagnostic(
+            BlazorSsrApplication,
+            CreateAnalyzerOptions(propertyValue: null, hasRazorFile: false),
+            OutputKind.ConsoleApplication,
+            CreateExpectedDiagnostic());
+    }
+
+    [Fact]
+    public void NoDiagnosticForMappingLibrary()
+    {
+        VerifyCSharpDiagnostic(
+            BlazorSsrApplication,
+            CreateAnalyzerOptions(propertyValue: null),
+            OutputKind.DynamicallyLinkedLibrary);
+    }
+
+    private static DiagnosticResult CreateExpectedDiagnostic() => new()
+    {
+        Id = DiagnosticId,
+        Message = DiagnosticMessage,
         Severity = DiagnosticSeverity.Warning,
-        Locations = new[]
-        {
-            new DiagnosticResultLocation("Test0.cs", line, column)
-        }
     };
 
-    private static AnalyzerOptions CreateAnalyzerOptions(string propertyValue)
+    private static AnalyzerOptions CreateAnalyzerOptions(string propertyValue, bool hasRazorFile = true)
     {
         var options = new Dictionary<string, string>();
         if (propertyValue is not null)
@@ -272,9 +255,18 @@ public class NavigateToReturnAnalyzerTest : DiagnosticVerifier
             options.Add(DisableThrowNavigationExceptionProperty, propertyValue);
         }
 
-        return new AnalyzerOptions(
-            ImmutableArray<AdditionalText>.Empty,
-            new TestAnalyzerConfigOptionsProvider(options));
+        var additionalFiles = hasRazorFile
+            ? ImmutableArray.Create<AdditionalText>(new RazorComponentAdditionalText())
+            : ImmutableArray<AdditionalText>.Empty;
+        return new AnalyzerOptions(additionalFiles, new TestAnalyzerConfigOptionsProvider(options));
+    }
+
+    private sealed class RazorComponentAdditionalText : AdditionalText
+    {
+        public override string Path => "App.razor";
+
+        public override SourceText GetText(System.Threading.CancellationToken cancellationToken = default) =>
+            SourceText.From("<h1>App</h1>");
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider

@@ -57,6 +57,14 @@ public abstract partial class DiagnosticVerifier
         VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), analyzerOptions, expected);
     }
 
+    protected void VerifyCSharpDiagnostic(string source, AnalyzerOptions analyzerOptions, OutputKind outputKind, params DiagnosticResult[] expected)
+    {
+        var project = GetDocuments(new[] { source }, LanguageNames.CSharp)[0].Project
+            .WithCompilationOptions(new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(outputKind));
+        var diagnostics = GetSortedDiagnosticsFromDocuments(GetCSharpDiagnosticAnalyzer(), project.Documents.ToArray(), analyzerOptions);
+        VerifyDiagnosticResults(diagnostics, GetCSharpDiagnosticAnalyzer(), expected);
+    }
+
     /// <summary>
     /// Called to test a VB DiagnosticAnalyzer when applied on the single inputted string as a source
     /// Note: input a DiagnosticResult for each Diagnostic expected
