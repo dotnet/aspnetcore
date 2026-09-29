@@ -149,6 +149,9 @@ function Invoke-Sanitizer
             -MaxOutputBytes $MaxOutputBytes
 
         Assert-True (-not (Test-Path $inputPath)) "The raw input must always be deleted."
+        $outputBytes = [IO.File]::ReadAllBytes($outputPath)
+        Assert-True ($outputBytes.Length -gt 0 -and $outputBytes[-1] -eq 10 -and
+            ($outputBytes.Length -eq 1 -or $outputBytes[-2] -ne 13)) "Sanitized Pulse JSON must end with LF on every platform."
         return Get-Content -Raw $outputPath | ConvertFrom-Json -Depth 100
     }
     finally

@@ -259,6 +259,54 @@ try
             }
         }
     }
+    Invoke-SnapshotCase "PublishedSnapshot/sanitizer-stable-unicode" {
+        $unicodeFixturePath = Join-Path $tempRoot "unicode-pull-requests.json"
+        $unicodeQueueFixture = Get-Content -LiteralPath (Join-Path $queueFixtureRoot "pull-requests.json") -Raw |
+            ConvertFrom-Json -Depth 100
+        $unicodeTitle = "Handle Cyrillic $([char]0x0430), zero-width $([char]0x200B), bidi $([char]0x202E), and tag $([char]::ConvertFromUtf32(0xE0061)) input"
+        $unicodeQueueFixture[0].title = $unicodeTitle
+        Write-JsonFile -Value $unicodeQueueFixture -Path $unicodeFixturePath
+
+        $blazorQueuePath = Join-Path $tempRoot "unicode-blazor-queue.json"
+        & $queueScript -Repository dotnet/aspnetcore -Preset blazor -DisablePersonalInbox `
+            -InputPath $unicodeFixturePath -Now $queueSnapshot -OutputFormat Json > $blazorQueuePath
+        Assert-True $? "The real Blazor queue producer must accept the Unicode-title fixture."
+        $unicodeBlazor = Invoke-Sanitizer -SourcePath $blazorQueuePath -Scope blazor
+
+        $repositoryQueuePath = Join-Path $tempRoot "unicode-repository-queue.json"
+        & $queueScript -Repository dotnet/aspnetcore -AllRepo -DisablePersonalInbox `
+            -InputPath $unicodeFixturePath -Now $queueSnapshot -OutputFormat Json > $repositoryQueuePath
+        Assert-True $? "The real repository-wide queue producer must accept the Unicode-title fixture."
+        $unicodeRepository = Invoke-Sanitizer -SourcePath $repositoryQueuePath -Scope repository-wide
+
+        $unicodeInputPath = Join-Path $tempRoot "unicode-pulse-input.json"
+        Write-SnapshotCombinedInput -Areas @($unicodeBlazor, $unicodeRepository) -OutputPath $unicodeInputPath
+        $publication = New-SnapshotPublication -Name "sanitizer-stable-unicode" -InputPath $unicodeInputPath
+        $pulseInputJson = [IO.File]::ReadAllText($publication.InputPath)
+        $pulseInputBytes = [IO.File]::ReadAllBytes($publication.InputPath)
+        $pulseInput = $pulseInputJson | ConvertFrom-Json -Depth 100
+        Assert-True ($pulseInputJson -notmatch "[^\x00-\x7F]") "Combined snapshot JSON must escape Unicode to remain stable through pinned sanitization."
+        Assert-True ($pulseInputBytes[-1] -eq 10 -and $pulseInputBytes[-2] -ne 13) "Combined snapshot JSON must end with LF on every platform."
+        $publishedTitles = @(
+            foreach ($area in $pulseInput.areas)
+            {
+                foreach ($view in $area.views.PSObject.Properties)
+                {
+                    foreach ($item in @($view.Value))
+                    {
+                        $item.title
+                    }
+                }
+            })
+        Assert-True ($publishedTitles -ccontains $unicodeTitle) "Escaped JSON must preserve the selected PR title when parsed."
+
+        $body = [IO.File]::ReadAllText($publication.BodyPath)
+        $collected = Invoke-PinnedCollector -Body $body
+        Invoke-SnapshotValidation -Publication $publication -AgentOutput $collected
+        & pwsh -NoProfile -File (Join-Path $testRoot "Test-PulseSnapshotRetrieval.ps1") `
+            -PulseInputPath $publication.InputPath -PublishedBodyPath $publication.BodyPath
+        Assert-True ($LASTEXITCODE -eq 0) "The documented consumer must retrieve and verify the sanitizer-stable embedded Unicode snapshot."
+    }
     $publicationA = $publications.complete
     $bodyA = [IO.File]::ReadAllText($publicationA.BodyPath)
     $outputA = Invoke-PinnedCollector -Body $bodyA
