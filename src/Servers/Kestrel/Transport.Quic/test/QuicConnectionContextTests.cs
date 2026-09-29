@@ -22,6 +22,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task Abort_AbortAfterDispose_Ignored()
     {
         // Arrange
@@ -46,6 +47,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
     {
         // Arrange
@@ -74,6 +76,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
     {
         // Arrange
@@ -113,6 +116,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientClosesConnection_ServerNotified()
     {
         // Arrange
@@ -145,6 +149,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientStartsAndStopsUnidirectionStream_ServerAccepts()
     {
         // Arrange
@@ -187,6 +192,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientStartsAndStopsBidirectionStream_ServerAccepts()
     {
         // Arrange
@@ -237,6 +243,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ServerStartsAndStopsUnidirectionStream_ClientAccepts()
     {
         // Arrange
@@ -282,6 +289,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task AcceptAsync_ClientClosesConnection_ExceptionThrown()
     {
         // Arrange
@@ -308,6 +316,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamPool_StreamAbortedOnServer_NotPooled()
     {
         // Arrange
@@ -351,6 +360,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamPool_StreamAbortedOnServerAfterComplete_NotPooled()
     {
         // Arrange
@@ -396,6 +406,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamPool_StreamAbortedOnClient_NotPooled()
     {
         // Arrange
@@ -443,6 +454,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()
     {
         // Arrange
@@ -500,6 +512,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
     {
         // Arrange
@@ -660,6 +673,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task PersistentState_StreamsReused_StatePersisted()
     {
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
@@ -741,6 +755,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     [MsQuicSupported]
     [InlineData(-1L)] // Too small
     [InlineData(1L << 62)] // Too big
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task IProtocolErrorFeature_InvalidErrorCode(long errorCode)
     {
         // Arrange
