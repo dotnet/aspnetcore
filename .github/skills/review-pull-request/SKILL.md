@@ -9,7 +9,7 @@ description: >-
 
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly
-one bootstrap: `node <installed-skill-dir>/scripts/prepare-review.mjs --pr N`; consume
+one bootstrap: `dotnet run <installed-skill-dir>/scripts/prepare-review.cs -- --pr N`; consume
 the returned manifest. Never run that bootstrap for a hosted invocation.
 
 Do not execute target code, build, test, clone, check out the PR head, modify files, or

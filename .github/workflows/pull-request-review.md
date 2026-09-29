@@ -208,6 +208,10 @@ jobs:
             }
 
 pre-agent-steps:
+  - name: Set up .NET SDK
+    uses: actions/setup-dotnet@v6.0.0
+    with:
+      dotnet-version: 11.0.100-rc.1.26420.103
   - name: Prepare trusted frozen review bundle
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -218,11 +222,13 @@ pre-agent-steps:
       set -euo pipefail
       [[ "${GITHUB_WORKFLOW_SHA:-}" =~ ^[a-f0-9]{40}$ ]]
       producer_dir="$(mktemp -d "${RUNNER_TEMP}/review-producer.XXXXXX")"
-      gh api -H 'Accept: application/vnd.github.raw' \
-        "repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/prepare-review.mjs?ref=$GITHUB_WORKFLOW_SHA" \
-        > "$producer_dir/prepare-review.mjs"
-      test -s "$producer_dir/prepare-review.mjs"
-      node "$producer_dir/prepare-review.mjs" \
+      for filename in prepare-review.cs Directory.Build.props Directory.Build.targets Directory.Packages.props; do
+        gh api -H 'Accept: application/vnd.github.raw' \
+          "repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/$filename?ref=$GITHUB_WORKFLOW_SHA" \
+          > "$producer_dir/$filename"
+        test -s "$producer_dir/$filename"
+      done
+      dotnet run "$producer_dir/prepare-review.cs" -- \
         --repo "$REVIEW_REPO" --pr "$REVIEW_PR" --head "$REVIEW_HEAD" \
         --guidance "$REVIEW_REPO@$GITHUB_WORKFLOW_SHA" --output /tmp/gh-aw/review-bundle
       test -s /tmp/gh-aw/review-bundle/manifest.json
