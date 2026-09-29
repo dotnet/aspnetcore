@@ -92,7 +92,7 @@ Capped report results, not the full queue. Authenticated ZIP artifact retained f
 <summary>Snapshot identity</summary>
 
 Repository: `dotnet/aspnetcore`; run ID: `34643961191`; attempt: `1`.
-JSON SHA-256: `562fb8408287fa20f851731bf6405e3281e9bce68c67918454e006ba69f66083`.
+JSON SHA-256: `0f4a702c1d72fab0b8cd12f94d2ce98a9882576fe3d4d065ef27af56e9b06097`.
 
 </details>
 
@@ -119,7 +119,7 @@ JSON SHA-256: `562fb8408287fa20f851731bf6405e3281e9bce68c67918454e006ba69f66083`
       "name": "blazor",
       "description": "Blazor and Components pull requests",
       "coverage": "labels-and-paths",
-      "selection": "(labels any of [area-blazor, feature-blazor-*, Blazor ♥ *] OR paths any of [src/Components/**])",
+      "selection": "(labels any of [area-blazor, feature-blazor-*, Blazor \u2665 *] OR paths any of [src/Components/**])",
       "allRepositoryPullRequests": false
     },
     "discussion": {

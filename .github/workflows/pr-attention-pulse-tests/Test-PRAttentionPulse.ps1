@@ -58,7 +58,7 @@ function Write-JsonFile
         [Parameter(Mandatory)][string]$Path
     )
 
-    $json = $Value | ConvertTo-Json -Depth 100
+    $json = $Value | ConvertTo-Json -Depth 100 -EscapeHandling EscapeNonAscii
     # Byte-hashed fixture JSON must be identical across hosts.
     [IO.File]::WriteAllText($Path, $json.Replace("`r`n", "`n") + "`n", [Text.UTF8Encoding]::new($false))
 }
@@ -99,7 +99,7 @@ function Get-FixtureSnapshotJson
     }
 
     # Match Write-JsonFile's exact text so it agrees with the hash Get-FixtureSnapshotContext computes.
-    $json = $Pulse | ConvertTo-Json -Depth 100
+    $json = $Pulse | ConvertTo-Json -Depth 100 -EscapeHandling EscapeNonAscii
     return $json.Replace("`r`n", "`n") + "`n"
 }
 
