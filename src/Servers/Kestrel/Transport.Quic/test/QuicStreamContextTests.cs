@@ -27,6 +27,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52462")]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {
         // Arrange
@@ -53,6 +54,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task BidirectionalStream_ReadAborted_NotPooled()
     {
         // Arrange
@@ -99,6 +101,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task BidirectionalStream_ClientAbortedAfterDisposeCalled_NotPooled()
     {
         // Arrange
@@ -161,6 +164,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
     [InlineData(1024)]
     [InlineData(1024 * 1024)]
     [InlineData(1024 * 1024 * 5)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task BidirectionalStream_ServerWritesDataAndDisposes_ClientReadsData(int dataLength)
     {
         // Arrange
@@ -226,6 +230,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task BidirectionalStream_MultipleStreamsOnConnection_ReusedFromPool()
     {
         // Arrange
@@ -248,6 +253,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task BidirectionalStream_ClientAbortWrite_ServerReceivesAbort()
     {
         // Arrange
@@ -292,6 +298,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientToServerUnidirectionalStream_ServerReadsData_GracefullyClosed()
     {
         // Arrange
@@ -326,6 +333,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientToServerUnidirectionalStream_ClientAbort_ServerReceivesAbort()
     {
         // Arrange
@@ -365,6 +373,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ClientToServerUnidirectionalStream_CompleteWrites_PipeProvidesDataAndCompleteTogether()
     {
         // Arrange
@@ -396,6 +405,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ServerToClientUnidirectionalStream_ServerWritesDataAndCompletes_GracefullyClosed()
     {
         // Arrange
@@ -437,6 +447,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task ServerToClientUnidirectionalStream_ServerAborts_ClientGetsAbort()
     {
         // Arrange
@@ -481,6 +492,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task StreamAbortFeature_AbortWrite_ClientReceivesAbort()
     {
         // Arrange
@@ -531,6 +543,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
     [MsQuicSupported]
     [InlineData(-1L)] // Too small
     [InlineData(1L << 62)] // Too big
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task IProtocolErrorFeature_InvalidErrorCode(long errorCode)
     {
         // Arrange
@@ -558,6 +571,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
     [MsQuicSupported]
     [InlineData(-1L)] // Too small
     [InlineData(1L << 62)] // Too big
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     public async Task IStreamAbortFeature_InvalidErrorCode(long errorCode)
     {
         // Arrange

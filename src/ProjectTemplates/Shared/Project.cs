@@ -20,6 +20,8 @@ public class Project : IDisposable
 {
     private const string _urlsNoHttps = "http://127.0.0.1:0";
     private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+    // Generated projects run with a copied SDK. Do not let the parent MSBuild process redirect that host back to the repository SDK.
+    private const string _msBuildSdksPathEnvironmentVariable = "MSBuildSDKsPath";
 
     public static string ArtifactsLogDir
     {
@@ -167,7 +169,13 @@ public class Project : IDisposable
 
         var restoreArgs = noRestore ? "--no-restore" : null;
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"publish {restoreArgs} -c Release /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);
@@ -190,7 +198,13 @@ public class Project : IDisposable
         // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
         // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-        using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
+        using var execution = ProcessEx.Run(
+            Output,
+            TemplateOutputDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            $"build --no-restore -c Debug /bl {additionalArgs}",
+            packageOptions,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await execution.Exited;
 
         var result = new ProcessResult(execution);
@@ -242,10 +256,8 @@ public class Project : IDisposable
         output.WriteLine("Running blazor-gateway on published output...");
 
         var gatewayAssemblyPath = ResolveGatewayAssemblyPath();
-        var runtimeManifestPath = Path.Combine(TemplatePublishDir, $"{ProjectName}.staticwebassets.runtime.json");
         var endpointsManifestPath = Path.Combine(TemplatePublishDir, $"{ProjectName}.staticwebassets.endpoints.json");
         Assert.True(File.Exists(gatewayAssemblyPath), $"Expected the gateway assembly to exist at '{gatewayAssemblyPath}'.");
-        Assert.True(File.Exists(runtimeManifestPath), $"Expected the static web assets runtime manifest to exist at '{runtimeManifestPath}'.");
         Assert.True(File.Exists(endpointsManifestPath), $"Expected the static web assets endpoints manifest to exist at '{endpointsManifestPath}'.");
 
         var args = string.Join(
@@ -254,7 +266,6 @@ public class Project : IDisposable
             "--urls http://127.0.0.1:0",
             "--environment Development",
             $"--contentRoot \"{TemplatePublishDir}\"",
-            $"--staticWebAssets \"{runtimeManifestPath}\"",
             $"--ClientApps:app:EndpointsManifest \"{endpointsManifestPath}\"",
             "--ClientApps:app:PathPrefix \"\"");
 
@@ -264,6 +275,7 @@ public class Project : IDisposable
 
         static string ResolveListeningUrl(ProcessEx process)
         {
+            const string listeningMessagePrefix = "Now listening on: ";
             var buffer = new List<string>();
             try
             {
@@ -272,10 +284,15 @@ public class Project : IDisposable
                     if (line != null)
                     {
                         buffer.Add(line);
-                        if (line.Trim().Contains("https://", StringComparison.Ordinal) ||
-                            line.Trim().Contains("http://", StringComparison.Ordinal))
+                        var trimmedLine = line.Trim();
+                        var prefixIndex = trimmedLine.IndexOf(listeningMessagePrefix, StringComparison.Ordinal);
+                        if (prefixIndex >= 0)
                         {
-                            return line.Trim();
+                            var listeningUri = trimmedLine[(prefixIndex + listeningMessagePrefix.Length)..];
+                            if (Uri.TryCreate(listeningUri, UriKind.Absolute, out _))
+                            {
+                                return listeningUri;
+                            }
                         }
                     }
                 }
@@ -291,11 +308,7 @@ public class Project : IDisposable
 
     private static string ResolveGatewayAssemblyPath()
     {
-        var packageRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
-            ?? typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(attribute => attribute.Key == "TestPackageRestorePath")?.Value
-            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-
+        var packageRoot = ProcessEx.NuGetPackagesRestorePath;
         if (!string.IsNullOrEmpty(packageRoot))
         {
             var gatewayPackageRoot = Path.Combine(packageRoot, "microsoft.aspnetcore.components.gateway");

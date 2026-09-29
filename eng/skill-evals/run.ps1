@@ -17,7 +17,7 @@ param(
     [string[]]$VallyPrefix = @(
         '--yes',
         '--registry=https://packagefeedproxy.microsoft.io/npm/',
-        '@microsoft/vally-cli@0.13.0'
+        '@microsoft/vally-cli@0.14.0'
     ),
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -26,6 +26,27 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
+
+if (-not $PSBoundParameters.ContainsKey('Vally')) {
+    $installedVally = if ($IsWindows) {
+        Join-Path $PSScriptRoot 'evaluation-tools/node_modules/.bin/vally.cmd'
+    } else {
+        Join-Path $PSScriptRoot 'evaluation-tools/node_modules/.bin/vally'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:SKILL_EVAL_VALLY)) {
+        $Vally = $env:SKILL_EVAL_VALLY
+        if (-not $PSBoundParameters.ContainsKey('VallyPrefix')) {
+            $VallyPrefix = @()
+        }
+    } elseif (Test-Path $installedVally -PathType Leaf) {
+        $Vally = $installedVally
+        if (-not $PSBoundParameters.ContainsKey('VallyPrefix')) {
+            $VallyPrefix = @()
+        }
+    } elseif ($Action -eq 'Run') {
+        throw 'Run requires the pinned evaluation tools. Run npm ci --prefix eng/skill-evals/evaluation-tools first.'
+    }
+}
 
 $repoRoot = if ($Root) {
     (Resolve-Path $Root).Path

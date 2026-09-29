@@ -63,8 +63,7 @@ public class StandaloneAppTelemetryTest
         Browser.Exists(By.CssSelector("table.table"));
 
         // Wait for trace exports to arrive at the fake collector.
-        // The WASM app's BackgroundExportHandler fires requests asynchronously,
-        // and the OTel batch processor has a default 5-second schedule delay.
+        // The OTel batch processor has a default 5-second schedule delay.
         var received = await _serverFixture.WaitForTracesAsync(1, TimeSpan.FromSeconds(30));
 
         Assert.True(received,
