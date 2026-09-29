@@ -11,6 +11,11 @@
 * Before implementing a reported issue, verify the behavior on the current default branch, inspect relevant history and documentation, and establish the smallest faithful reproduction. If the user asks only to investigate or characterize, do not change shipping code or create or update a pull request until implementation is explicitly requested.
 * Define the acceptance criteria before implementation. Do not claim completion or create or update a pull request until the requested acceptance criteria are green; identify any intentionally excluded cases or unverified boundaries.
 
+## Assertions and validation
+
+* Before replacing `Debug.Assert` with a runtime throw, trace supported callers and contracts to determine whether application/user-controlled input can violate the condition or only framework-controlled call-order/state can. Compare Debug and Release behavior. `internal` visibility alone does not prove an invariant framework-only; directly invoking an internal helper in a test does not prove application reachability.
+* For framework-only invariants, preserve the development-time assertion and existing Release behavior by default; do not add a throw or a test expecting one solely to enforce the invariant at runtime. If a runtime failure is intentional, explain the supported reachable scenario and why the behavior change is needed. Retain actionable runtime validation for invalid public/API arguments, configuration, external inputs, and supported application-driven states.
+
 ## Minimal diffs
 
 * Preserve untouched code exactly as written. Do not make behavior-neutral formatting, reflow, renaming, inlining, extraction, expression, or control-flow changes while implementing a functional change.
