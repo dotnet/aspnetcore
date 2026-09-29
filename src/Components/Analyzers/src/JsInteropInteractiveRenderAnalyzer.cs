@@ -169,10 +169,16 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeAssignment(IAssignmentOperation assignment, JSInteropAnalyzerState state)
     {
         if (assignment.Value is IOperation operation
-            && assignment.Target is ILocalReferenceOperation localReference
-            && OperationChecksIsInteractive(operation, state, false))
+            && assignment.Target is ILocalReferenceOperation localReference)
+        {
+            if (OperationChecksIsInteractive(operation, state, false))
         {
             state.SymbolChecks.Add(localReference.Local);
+        }
+            else if (state.SymbolChecks.Contains(localReference.Local))
+            {
+                state.SymbolChecks.Remove(localReference.Local);
+            }
         }
     }
 

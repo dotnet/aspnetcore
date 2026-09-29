@@ -414,6 +414,75 @@ namespace ConsoleApplication1
     }
 
     [Fact]
+    public void JSInvokeAfterReassignedVariableCheckShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var available = RendererInfo.IsInteractive;
+            available = true;
+            if (available)
+            {
+                await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 19, 23) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeBeforeAndAfterReassignedVariableCheckShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var available = RendererInfo.IsInteractive;
+            if (available)
+            {
+                await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+            }
+
+            available = true;
+            if (available)
+            {
+                await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 23) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
     public void JSInvokeAfterComplexVariableCheckShouldNotThrowWarning()
     {
         var test = @"
