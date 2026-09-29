@@ -176,9 +176,9 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             && assignment.Target is ILocalReferenceOperation localReference)
         {
             if (OperationChecksIsInteractive(operation, state, false))
-        {
-            state.SymbolChecks.Add(localReference.Local);
-        }
+            {
+                state.SymbolChecks.Add(localReference.Local);
+            }
             else if (state.SymbolChecks.Contains(localReference.Local))
             {
                 state.SymbolChecks.Remove(localReference.Local);
@@ -364,8 +364,8 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             AnalyzeOperationsTree(invocation.Instance, state);
         }
 
-            foreach (var argument in invocation.Arguments)
-            {
+        foreach (var argument in invocation.Arguments)
+        {
             AnalyzeOperationsTree(argument.Value, state);
         }
 
@@ -390,15 +390,15 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                     semanticModel.GetOperation(localFunctionDeclaration) is ILocalFunctionOperation localFunction ? localFunction.Body : null,
                 _ => null,
             };
-                if (methodOperation is null)
-                {
-                    continue;
-                }
-                var clonedState = state.Clone();
-                clonedState.CurrentDepth++;
-                AnalyzeOperationsTree(methodOperation, clonedState);
+            if (methodOperation is null)
+            {
+                continue;
             }
+            var clonedState = state.Clone();
+            clonedState.CurrentDepth++;
+            AnalyzeOperationsTree(methodOperation, clonedState);
         }
+    }
 
     private static void AnalyzeRendererForHandlers(IOperation operation, JSInteropAnalyzerState state)
     {
@@ -464,7 +464,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
             if (suspectOperation is IAnonymousFunctionOperation anonymousFunction)
             {
-                AnalyzeOperationsTree(anonymousFunction.Body, state);
+                AnalyzeOperationsTree(anonymousFunction.Body, state.Clone());
             }
             else if (suspectOperation is IMethodReferenceOperation methodReference)
             {

@@ -1405,6 +1405,82 @@ namespace ConsoleApplication1
     }
 
     [Theory]
+    [InlineData("AddAttribute")]
+    [InlineData("AddComponentParameter")]
+    public void JSInvokeInAnonymousEventCallbackHandlersShouldUseIndependentState(string addHandler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            __builder." + addHandler + @"(1, ""guarded"", EventCallback.Factory.Create<object>(this, () =>
+            {
+                if (!RendererInfo.IsInteractive)
+                {
+                    return;
+                }
+            }));
+            __builder." + addHandler + @"(2, ""unguarded"", EventCallback.Factory.Create<object>(this, () =>
+            {
+                JS.Invoke<double>(""getValue"");
+            }));
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 17) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInAnonymousDelegateHandlersShouldUseIndependentState()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            __builder.AddAttribute<Action>(1, ""guarded"", () =>
+            {
+                if (!RendererInfo.IsInteractive)
+                {
+                    return;
+                }
+            });
+            __builder.AddAttribute<Action>(2, ""unguarded"", () =>
+            {
+                JS.Invoke<double>(""getValue"");
+            });
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 17) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
     [InlineData("SomeInvokeMethod")]
     [InlineData("() => SomeInvokeMethod()")]
     public void JSInvokeInEventHandlerMethodShouldThrowWarning(string handler)
