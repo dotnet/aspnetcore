@@ -40,6 +40,13 @@ internal static class SansIoTlsSupport
 
     /// <summary>
     /// Whether the sans-IO TLS layer should be used for new connections.
+    ///
+    /// <para>Deliberately evaluated per connection rather than cached with
+    /// <see cref="IsSupported"/>: the switch has to stay flippable at runtime so a test can
+    /// exercise both TLS layers in one process, and so an application can decide after startup.
+    /// The probe result, which is the expensive half, is cached. <c>AppContext.TryGetSwitch</c>
+    /// costs about 44 ns and runs once per connection, and the SslStream path pays the same
+    /// check, so it cannot skew a comparison between them.</para>
     /// </summary>
     public static bool IsEnabled =>
         _isSupported && AppContext.TryGetSwitch(EnableSwitch, out var enabled) && enabled;
@@ -80,11 +87,12 @@ internal static class SansIoTlsSupport
         }
         catch
         {
-            // Anything else means the implementation is present and rejected these particular
-            // options - which still answers the question being asked here. Treating it as
-            // unsupported would silently disable the feature on a platform that has it, and
-            // letting it escape would fail at static initialisation.
-            return true;
+            // Fail closed. An exception other than the two above means this probe hit something
+            // it was not designed to interpret, and an opt-in layer is the wrong place to guess
+            // in favour of "supported" - a caller that explicitly enabled the switch on a
+            // platform where the implementation is genuinely broken would get connection
+            // failures rather than a clean fall back to SslStream.
+            return false;
         }
     }
 }
