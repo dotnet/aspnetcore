@@ -187,10 +187,10 @@ internal static partial class PrepareReviewProgram
     private static string BlobHash(byte[] bytes)
     {
         var prefix = Encoding.ASCII.GetBytes($"blob {bytes.Length}\0");
-        var buffer = new byte[prefix.Length + bytes.Length];
-        prefix.CopyTo(buffer, 0);
-        bytes.CopyTo(buffer, prefix.Length);
-        return Hash(buffer, HashAlgorithmName.SHA1);
+        using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+        digest.AppendData(prefix);
+        digest.AppendData(bytes);
+        return Convert.ToHexStringLower(digest.GetHashAndReset());
     }
 
     internal static void CheckPaths(IEnumerable<string> names)
@@ -269,16 +269,42 @@ internal static partial class PrepareReviewProgram
         return result;
     }
 
-    private static async Task<JsonObject> DirectoryDigestAsync(string directory)
+    private static Task<JsonObject> DirectoryDigestAsync(string directory)
     {
-        using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         var names = Walk(directory);
-        foreach (var name in names)
+        var hashes = new string[names.Count];
+        var parallelOptions = new ParallelOptions
         {
-            var bytes = await File.ReadAllBytesAsync(Path.Combine(directory, name.Replace('/', Path.DirectorySeparatorChar)));
-            digest.AppendData(Utf8NoBom.GetBytes($"{name}\0{Hash(bytes)}\n"));
+            MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount * 2, 4, 16),
+        };
+        return CompleteAsync();
+
+        async Task<JsonObject> CompleteAsync()
+        {
+            await Parallel.ForEachAsync(Enumerable.Range(0, names.Count), parallelOptions, async (index, cancellationToken) =>
+            {
+                var path = Path.Combine(directory, names[index].Replace('/', Path.DirectorySeparatorChar));
+                await using var stream = new FileStream(path, new FileStreamOptions
+                {
+                    Mode = FileMode.Open,
+                    Access = FileAccess.Read,
+                    Share = FileShare.Read,
+                    BufferSize = 0,
+                    Options = FileOptions.Asynchronous | FileOptions.RandomAccess,
+                });
+                hashes[index] = Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken));
+            });
+            using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            for (var index = 0; index < names.Count; index++)
+            {
+                digest.AppendData(Utf8NoBom.GetBytes($"{names[index]}\0{hashes[index]}\n"));
+            }
+            return new JsonObject
+            {
+                ["files"] = names.Count,
+                ["sha256"] = Convert.ToHexStringLower(digest.GetHashAndReset()),
+            };
         }
-        return new JsonObject { ["files"] = names.Count, ["sha256"] = Convert.ToHexStringLower(digest.GetHashAndReset()) };
     }
 
     private static List<TreeEntry> TreeEntries(string store, string commit)
@@ -499,21 +525,27 @@ internal static partial class PrepareReviewProgram
         using var child = Process.Start(start) ?? throw new InvalidOperationException("Cannot start git.");
         var inputTask = WriteBlobRequestsAsync(child, blobs);
         var stderrTask = child.StandardError.ReadToEndAsync();
+        using var stdout = new BufferedByteReader(child.StandardOutput.BaseStream, 1024 * 1024);
+        var createdDirectories = new HashSet<string>(StringComparer.Ordinal);
+        var exportedHashes = new List<(string Name, string Sha256)>(entries.Count);
         var pointers = new JsonArray();
         try
         {
             foreach (var entry in blobs)
             {
-                var header = await ReadLineAsciiAsync(child.StandardOutput.BaseStream);
+                var header = await stdout.ReadAsciiLineAsync();
                 var fields = header.Split(' ');
                 var size = -1;
                 Require(fields.Length == 3 && fields[0] == entry.Sha && fields[1] == "blob"
                     && int.TryParse(fields[2], NumberStyles.None, CultureInfo.InvariantCulture, out size),
                     "Unexpected Git blob response.");
                 Require(size <= MaximumBlobBytes, $"Source blob exceeds 16 MiB: {entry.Name}");
-                var body = await ReadExactlyAsync(child.StandardOutput.BaseStream, size);
-                Require(child.StandardOutput.BaseStream.ReadByte() == 10 && BlobHash(body) == entry.Sha, $"Blob mismatch: {entry.Name}");
-                await WriteAsync(destination, entry.Name + Suffix, body);
+                var body = new byte[size];
+                await stdout.ReadExactlyAsync(body);
+                Require(await stdout.ReadByteAsync() == 10, $"Blob mismatch: {entry.Name}");
+                Require(BlobHash(body) == entry.Sha, $"Blob mismatch: {entry.Name}");
+                exportedHashes.Add((entry.Name + Suffix, Hash(body)));
+                WriteExportFile(destination, entry.Name + Suffix, body, createdDirectories);
                 var lfsPrefix = Utf8NoBom.GetBytes("version https://git-lfs.github.com/spec/v1");
                 var lfs = body.Length >= lfsPrefix.Length && body.AsSpan(0, lfsPrefix.Length).SequenceEqual(lfsPrefix);
                 if (entry.Mode == "120000" || lfs)
@@ -540,21 +572,41 @@ internal static partial class PrepareReviewProgram
         }
         foreach (var entry in entries.Where(entry => entry.Type == "commit"))
         {
-            await WriteAsync(destination, entry.Name + Suffix, $"Unmaterialized submodule commit: {entry.Sha}\n");
+            var body = Utf8NoBom.GetBytes($"Unmaterialized submodule commit: {entry.Sha}\n");
+            WriteExportFile(destination, entry.Name + Suffix, body, createdDirectories);
+            exportedHashes.Add((entry.Name + Suffix, Hash(body)));
             pointers.Add(new JsonObject { ["path"] = entry.Name, ["kind"] = "submodule", ["commit"] = entry.Sha });
         }
-        var result = await DirectoryDigestAsync(destination);
+        var result = DirectoryDigest(exportedHashes);
         result["pointers"] = pointers;
         return result;
+    }
+
+    private static JsonObject DirectoryDigest(IEnumerable<(string Name, string Sha256)> files)
+    {
+        using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var count = 0;
+        foreach (var file in files.OrderBy(file => file.Name, StringComparer.Ordinal))
+        {
+            digest.AppendData(Utf8NoBom.GetBytes($"{file.Name}\0{file.Sha256}\n"));
+            count++;
+        }
+        return new JsonObject
+        {
+            ["files"] = count,
+            ["sha256"] = Convert.ToHexStringLower(digest.GetHashAndReset()),
+        };
     }
 
     private static async Task WriteBlobRequestsAsync(Process child, IEnumerable<TreeEntry> blobs)
     {
         try
         {
-            foreach (var entry in blobs)
+            var requests = string.Join('\n', blobs.Select(entry => entry.Sha));
+            if (requests.Length > 0)
             {
-                await child.StandardInput.WriteLineAsync(entry.Sha);
+                await child.StandardInput.WriteAsync(requests);
+                await child.StandardInput.WriteLineAsync();
             }
         }
         finally
@@ -563,22 +615,111 @@ internal static partial class PrepareReviewProgram
         }
     }
 
-    private static async Task<string> ReadLineAsciiAsync(Stream stream)
+    private static void WriteExportFile(
+        string directory, string name, byte[] bytes, HashSet<string> createdDirectories)
     {
-        var builder = new StringBuilder();
-        for (var value = stream.ReadByte(); value != 10; value = stream.ReadByte())
+        var destination = Path.Combine(directory, name.Replace('/', Path.DirectorySeparatorChar));
+        var parent = Path.GetDirectoryName(destination)!;
+        if (createdDirectories.Add(parent))
         {
-            Require(value >= 0, "Incomplete Git blob stream.");
-            builder.Append((char)value);
+            Directory.CreateDirectory(parent);
         }
-        return builder.ToString();
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            BufferSize = 0,
+        };
+        if (!OperatingSystem.IsWindows())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+        using var stream = new FileStream(destination, options);
+        stream.Write(bytes);
     }
 
-    private static async Task<byte[]> ReadExactlyAsync(Stream stream, int size)
+    private sealed class BufferedByteReader : IDisposable
     {
-        var bytes = new byte[size];
-        await stream.ReadExactlyAsync(bytes);
-        return bytes;
+        private readonly Stream _stream;
+        private readonly byte[] _buffer;
+        private int _offset;
+        private int _count;
+
+        public BufferedByteReader(Stream stream, int bufferSize)
+        {
+            _stream = stream;
+            _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        }
+
+        public async ValueTask<string> ReadAsciiLineAsync()
+        {
+            ArrayBufferWriter<byte>? overflow = null;
+            while (true)
+            {
+                if (_offset == _count)
+                {
+                    Require(await FillAsync(), "Incomplete Git blob stream.");
+                }
+                var newline = Array.IndexOf(_buffer, (byte)'\n', _offset, _count - _offset);
+                if (newline >= 0)
+                {
+                    var segment = _buffer.AsSpan(_offset, newline - _offset);
+                    _offset = newline + 1;
+                    if (overflow is null)
+                    {
+                        return Encoding.ASCII.GetString(segment);
+                    }
+                    overflow.Write(segment);
+                    return Encoding.ASCII.GetString(overflow.WrittenSpan);
+                }
+                overflow ??= new ArrayBufferWriter<byte>();
+                overflow.Write(_buffer.AsSpan(_offset, _count - _offset));
+                _offset = _count;
+            }
+        }
+
+        public async ValueTask ReadExactlyAsync(Memory<byte> destination)
+        {
+            while (destination.Length > 0)
+            {
+                if (_offset < _count)
+                {
+                    var length = Math.Min(destination.Length, _count - _offset);
+                    _buffer.AsMemory(_offset, length).CopyTo(destination);
+                    _offset += length;
+                    destination = destination[length..];
+                }
+                else if (destination.Length >= _buffer.Length)
+                {
+                    var read = await _stream.ReadAsync(destination);
+                    Require(read > 0, "Incomplete Git blob stream.");
+                    destination = destination[read..];
+                }
+                else
+                {
+                    Require(await FillAsync(), "Incomplete Git blob stream.");
+                }
+            }
+        }
+
+        public async ValueTask<byte> ReadByteAsync()
+        {
+            if (_offset == _count)
+            {
+                Require(await FillAsync(), "Incomplete Git blob stream.");
+            }
+            return _buffer[_offset++];
+        }
+
+        private async ValueTask<bool> FillAsync()
+        {
+            _offset = 0;
+            _count = await _stream.ReadAsync(_buffer);
+            return _count > 0;
+        }
+
+        public void Dispose() => ArrayPool<byte>.Shared.Return(_buffer);
     }
 
     private static async Task<JsonObject> LocalGuidanceAsync(string root)
