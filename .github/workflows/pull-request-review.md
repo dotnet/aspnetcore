@@ -177,9 +177,11 @@ jobs:
             const count = type => output.items.filter(item => item.type === type).length;
             const comments = count('create_pull_request_review_comment');
             const reviews = count('submit_pull_request_review');
+            const noop = count('noop');
             const incomplete = ['report_incomplete', 'missing_data', 'missing_tool']
               .some(type => count(type) > 0);
-            if ((incomplete && (comments || reviews)) || (comments > 0 && reviews !== 1) ||
+            if ((noop > 0 && (comments || reviews || incomplete)) ||
+                (incomplete && (comments || reviews)) || (comments > 0 && reviews !== 1) ||
                 (reviews > 0 && (comments < 1 || comments > 5))) {
               core.setFailed('Incomplete or partial review output cannot be published.');
             }
